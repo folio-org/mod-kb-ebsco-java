@@ -1,0 +1,16 @@
+{
+  "errors": [{
+      "title": "Invalid beginCoverage",
+      "detail": "Begincoverage must be blank",
+      "source": {}
+    },
+    {
+      "title": "Invalid endCoverage",
+      "detail": "Endcoverage must be blank",
+      "source": {}
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

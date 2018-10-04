@@ -1,0 +1,49 @@
+{
+  "data": {
+    "id": "123355-2880981",
+    "type": "packages",
+    "attributes": {
+      "contentType": "E-Book",
+      "customCoverage": {
+        "beginCoverage": "2003-01-01",
+        "endCoverage": "2004-01-01"
+      },
+      "isCustom": true,
+      "isSelected": true,
+      "name": "yet another custom package again",
+      "packageId": 2880981,
+      "packageType": "Custom",
+      "providerId": 123355,
+      "providerName": "API DEV CORPORATE CUSTOMER",
+      "selectedCount": 0,
+      "titleCount": 0,
+      "vendorId": 123355,
+      "vendorName": "API DEV CORPORATE CUSTOMER",
+      "visibilityData": {
+        "isHidden": true,
+        "reason": ""
+      },
+      "allowKbToAddTitles": true
+    },
+    "relationships": {
+      "resources": {
+        "meta": {
+          "included": false
+        }
+      },
+      "vendor": {
+        "meta": {
+          "included": false
+        }
+      },
+      "provider": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

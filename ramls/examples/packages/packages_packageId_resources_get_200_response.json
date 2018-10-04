@@ -1,0 +1,208 @@
+{
+  "data": [{
+      "id": "19-6581-581242",
+      "type": "resources",
+      "attributes": {
+        "description": null,
+        "edition": null,
+        "isPeerReviewed": null,
+        "isTitleCustom": false,
+        "publisherName": "Wroclaw University of Environmental & Life Sciences",
+        "titleId": 581242,
+        "contributors": [],
+        "identifiers": [{
+            "id": "1644-065X",
+            "type": "ISSN",
+            "subtype": "Print"
+          },
+          {
+            "id": "2083-8654",
+            "type": "ISSN",
+            "subtype": "Online"
+          },
+          {
+            "id": "97C7",
+            "type": "Mid",
+            "subtype": "Empty"
+          },
+          {
+            "id": "581242",
+            "type": "BHM",
+            "subtype": "Empty"
+          }
+        ],
+        "name": "Acta Scientiarum Polonorum. Biotechnologia",
+        "publicationType": "Journal",
+        "subjects": [{
+          "type": "TLI",
+          "subject": "Biological Engineering"
+        }],
+        "coverageStatement": null,
+        "customEmbargoPeriod": {
+          "embargoUnit": null,
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": false,
+        "isTokenNeeded": false,
+        "locationId": 4829613,
+        "managedEmbargoPeriod": {
+          "embargoUnit": null,
+          "embargoValue": 0
+        },
+        "packageId": "19-6581",
+        "packageName": "EBSCO Biotechnology Collection: India",
+        "url": "http://search.ebscohost.com/direct.asp?db=bti&jid=97C7&scope=site",
+        "vendorId": 19,
+        "vendorName": "EBSCO",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [{
+          "beginCoverage": "2008-12-01",
+          "endCoverage": ""
+        }],
+        "customCoverages": [],
+        "proxy": null
+      },
+      "relationships": {
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "19-6581-2467485",
+      "type": "resources",
+      "attributes": {
+        "description": null,
+        "edition": null,
+        "isPeerReviewed": null,
+        "isTitleCustom": false,
+        "publisherName": "AVS: Science & Technology of Materials, Interfaces, and Processing",
+        "titleId": 2467485,
+        "contributors": [],
+        "identifiers": [{
+            "id": "1934-8630",
+            "type": "ISSN",
+            "subtype": "Print"
+          },
+          {
+            "id": "1559-4106",
+            "type": "ISSN",
+            "subtype": "Online"
+          },
+          {
+            "id": "102667066",
+            "type": "SPID",
+            "subtype": "Empty"
+          },
+          {
+            "id": "122153798",
+            "type": "SPID",
+            "subtype": "Empty"
+          },
+          {
+            "id": "714936",
+            "type": "EjsJournalID",
+            "subtype": "Empty"
+          },
+          {
+            "id": "2F7L",
+            "type": "Mid",
+            "subtype": "Empty"
+          },
+          {
+            "id": "2248363",
+            "type": "BHM",
+            "subtype": "Empty"
+          }
+        ],
+        "name": "Biointerphases",
+        "publicationType": "Journal",
+        "subjects": [{
+          "type": "TLI",
+          "subject": "Physics"
+        }],
+        "coverageStatement": null,
+        "customEmbargoPeriod": {
+          "embargoUnit": null,
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": false,
+        "isTokenNeeded": false,
+        "locationId": 4829582,
+        "managedEmbargoPeriod": {
+          "embargoUnit": null,
+          "embargoValue": 0
+        },
+        "packageId": "19-6581",
+        "packageName": "EBSCO Biotechnology Collection: India",
+        "url": "http://search.ebscohost.com/direct.asp?db=bti&jid=2F7L&scope=site",
+        "vendorId": 19,
+        "vendorName": "EBSCO",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [{
+          "beginCoverage": "2006-12-01",
+          "endCoverage": ""
+        }],
+        "customCoverages": [],
+        "proxy": null
+      },
+      "relationships": {
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 157
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

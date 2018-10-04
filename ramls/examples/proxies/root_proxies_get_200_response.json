@@ -1,0 +1,34 @@
+{
+  "data": [
+    {
+      "id": "<n>",
+      "type": "proxyTypes",
+      "attributes": {
+        "id": "<n>",
+        "name": "None",
+        "urlMask": ""
+      }
+    },
+    {
+      "id": "EZProxy",
+      "type": "proxyTypes",
+      "attributes": {
+        "id": "EZProxy",
+        "name": "EZProxy",
+        "urlMask": "http://ezproxy.myinstitute.edu/login?url={targetURL}"
+      }
+    },
+    {
+      "id": "TestingFolio",
+      "type": "proxyTypes",
+      "attributes": {
+        "id": "TestingFolio",
+        "name": "TestingFolio",
+        "urlMask": "https://folio.frontside.io"
+      }
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "data": {
+    "id": "123355-2845510-17059786",
+    "type": "resources",
+    "attributes": {
+      "description": null,
+      "edition": null,
+      "isPeerReviewed": false,
+      "isTitleCustom": true,
+      "publisherName": null,
+      "titleId": 17059786,
+      "contributors": [],
+      "identifiers": [],
+      "name": "SD custom title",
+      "publicationType": "Book",
+      "subjects": [],
+      "coverageStatement": "hello",
+      "customEmbargoPeriod": {
+        "embargoUnit": "Weeks",
+        "embargoValue": 4
+      },
+      "isPackageCustom": true,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "locationId": 39248032,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "packageId": "123355-2845510",
+      "packageName": "\"Testing2\"",
+      "url": "https://hello.io",
+      "vendorId": 123355,
+      "vendorName": "API DEV CORPORATE CUSTOMER",
+      "providerId": 123355,
+      "providerName": "API DEV CORPORATE CUSTOMER",
+      "visibilityData": {
+        "isHidden": true,
+        "reason": ""
+      },
+      "managedCoverages": [],
+      "customCoverages": [{
+          "beginCoverage": "2018-06-05",
+          "endCoverage": "2018-06-07"
+        },
+        {
+          "beginCoverage": "2018-06-08",
+          "endCoverage": "2018-06-10"
+        }
+      ],
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      }
+    },
+    "relationships": {
+      "vendor": {
+        "meta": {
+          "included": false
+        }
+      },
+      "provider": {
+        "meta": {
+          "included": false
+        }
+      },
+      "title": {
+        "meta": {
+          "included": false
+        }
+      },
+      "package": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

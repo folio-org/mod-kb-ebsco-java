@@ -1,0 +1,45 @@
+{
+  "data": [{
+    "id": "0-1117849",
+    "type": "packages",
+    "attributes": {
+      "contentType": "Unknown",
+      "customCoverage": {
+        "beginCoverage": "",
+        "endCoverage": ""
+      },
+      "isCustom": false,
+      "isSelected": false,
+      "name": "",
+      "packageId": 1117849,
+      "packageType": "Complete",
+      "providerId": 0,
+      "providerName": "System Account",
+      "selectedCount": 0,
+      "titleCount": 0,
+      "vendorId": 0,
+      "vendorName": "System Account",
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      }
+    },
+    "relationships": {
+      "resources": {
+        "meta": {
+          "included": false
+        }
+      },
+      "vendor": {
+        "meta": {
+          "included": false
+        }
+      },
+      "provider": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  }]
+}

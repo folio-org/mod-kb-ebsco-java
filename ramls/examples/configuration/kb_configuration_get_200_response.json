@@ -1,0 +1,14 @@
+{
+  "data": {
+    "id": "configuration",
+    "type": "configurations",
+    "attributes": {
+      "customerId": "apidvcorp",
+      "apiKey": "****************************************",
+      "rmapiBaseUrl": "https://api.ebsco.io"
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

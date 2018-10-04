@@ -1,0 +1,49 @@
+{
+  "data": {
+    "type": "resources",
+    "attributes": {
+     "name": "Updated Custom Title Name",
+      "isPeerReviewed": true,
+      "publicationType": "Newspaper",
+      "publisherName": "Updated Publisher",
+      "edition": "5",
+      "description": "Updated Description",
+      "url": "https://hello.io",
+      "contributors": [
+        {
+        "type":"Author",
+        "contributor":"smith, john"
+        },
+        {
+        "type":"Illustrator",
+        "contributor":"smith, ralph"
+        }
+      ],
+      "identifiers": [
+        {
+        "id":"11-2222-3333",
+        "type":"ISSN",
+        "subtype":"Online"
+        }      
+      ],
+      "isSelected": true,
+      "visibilityData": {
+        "isHidden" : false
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit" : "Months",
+        "embargoValue" : 5
+      },
+      "customCoverages" : [
+      {
+        "beginCoverage" : "2001-01-01",
+        "endCoverage" : "2004-02-01"
+      }
+      ],
+      "coverageStatement": "Updated Coverage Statement",
+      "proxy" : {
+        "id" : "<n>"
+      }
+    }
+  }
+}

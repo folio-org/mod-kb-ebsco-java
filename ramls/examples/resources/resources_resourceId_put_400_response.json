@@ -1,0 +1,8 @@
+{
+  "errors": [{
+    "title": "CoverageList cannot contain overlapping dates."
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

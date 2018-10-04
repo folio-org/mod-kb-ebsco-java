@@ -1,0 +1,12 @@
+{
+  "errors": [
+    {
+      "title": "Invalid id",
+      "detail": "Id :Invalid proxy",
+      "source": {}
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
