@@ -21,3 +21,12 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+.idea/
+*.iml
+node_modules/
+/target
+/src/main/java/org/folio/rest/client/*
+/src/main/java/org/folio/rest/jaxrs/*
+/src/main/java/storage/model/*
+/src/main/resources/postgres-conf.json
