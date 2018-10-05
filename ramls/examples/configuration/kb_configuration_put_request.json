@@ -1,0 +1,10 @@
+{
+  "data": {
+    "type": "configurations",
+    "attributes": {
+      "customerId": "apidvcorp",
+      "apiKey": "****************************************",
+      "rmapiBaseUrl": "https://api.ebsco.io"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "data": {
+    "type": "titles",
+    "attributes": {
+      "name": "Your Brand New Title",
+      "publicationType": "Book"
+    }
+  },
+  "included": [
+    {
+      "type": "resources",
+      "attributes": {
+        "packageId": "123355-2868997"
+      }
+    }
+  ]
+}

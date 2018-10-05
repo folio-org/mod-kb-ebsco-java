@@ -1,0 +1,124 @@
+{
+  "id": "${artifactId}-${version}",
+  "name": "Module KB EBSCO Module",
+  "provides": [
+    {
+      "id": "${artifactId}",
+      "version": "1.0",
+      "handlers": [
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/packages"
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/packages"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/packages/{packageId}"
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/packages/{packageId}"
+        },
+        {
+          "methods": ["DELETE"],
+          "pathPattern": "/eholdings/packages/{packageId}"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/packages/{packageId}/resources"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/providers"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/providers/{provider_id}"
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/providers/{provider_id}"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/providers/{provider_id}/packages"
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/resources"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/resources/{resourceId}"
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/resources/{resourceId}"
+        },
+        {
+          "methods": ["DELETE"],
+          "pathPattern": "/eholdings/resources/{resourceId}"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/titles"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/titles/{title_id}"
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/titles/{title_id}"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/proxy-types"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/root-proxy"
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/root-proxy"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/configuration"
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/configuration"
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/status"
+        }
+      ]
+    },
+    {
+      "id": "_tenant",
+      "version": "1.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": ["POST"],
+          "pathPattern": "/_/tenant"
+        }
+      ]
+    }
+  ],
+  "permissionSets" : [],
+  "requires": [],
+  "launchDescriptor": {
+    "dockerImage": "${artifactId}:${version}",
+    "dockerArgs": {
+      "HostConfig": {"PortBindings": {"8081/tcp": [{"HostPort": "%p" }] } }
+    },
+    "dockerPull": false
+  }
+}

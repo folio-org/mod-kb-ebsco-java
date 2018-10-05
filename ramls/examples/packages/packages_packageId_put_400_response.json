@@ -1,0 +1,14 @@
+{
+  "errors": [{
+    "title": {
+      "errors": [{
+        "code": 1005,
+        "subCode": 0,
+        "message": "Attribute IsSelected is missing."
+      }]
+    }
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
