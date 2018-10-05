@@ -1,0 +1,127 @@
+{
+  "data": {
+    "id": "419",
+    "type": "providers",
+    "attributes": {
+      "name": "ecch",
+      "packagesTotal": 2,
+      "packagesSelected": 0,
+      "supportsCustomPackages": false,
+      "providerToken": {
+        "factName":"siteid",
+        "prompt":"/itweb/",
+        "helpText":"<ul><li>Enter your token</li></ul>",
+        "value": "123456"
+      },
+      "proxy": {
+        "id": "EZProxy",
+        "inherited": true
+      }
+    },
+    "relationships": {
+      "packages": {
+        "data": [{
+            "type": "packages",
+            "id": "419-3402"
+          },
+          {
+            "type": "packages",
+            "id": "419-3291"
+          }
+        ]
+      }
+    }
+  },
+  "included": [{
+      "id": "419-3402",
+      "type": "packages",
+      "attributes": {
+        "contentType": "Abstract and Index",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "Case Online Information System - COLIS",
+        "packageId": 3402,
+        "packageType": "Complete",
+        "providerId": 419,
+        "providerName": "ecch",
+        "selectedCount": 0,
+        "titleCount": 1,
+        "vendorId": 419,
+        "vendorName": "ecch",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "allowKbToAddTitles": null
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "419-3291",
+      "type": "packages",
+      "attributes": {
+        "contentType": "Abstract and Index",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "European Case Clearing House Collection",
+        "packageId": 3291,
+        "packageType": "Complete",
+        "providerId": 419,
+        "providerName": "ecch",
+        "selectedCount": 0,
+        "titleCount": 1,
+        "vendorId": 419,
+        "vendorName": "ecch",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "allowKbToAddTitles": null
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "errors": [{
+    "title": {
+      "errors": [{
+        "code": 1009,
+        "subCode": 0,
+        "message": "Custom Package with the provided name already exists"
+      }]
+    }
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
