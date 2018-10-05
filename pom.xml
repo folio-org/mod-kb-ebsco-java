@@ -17,6 +17,7 @@
     <raml-module-builder.version>21.0.4</raml-module-builder.version>
     <vertx.version>3.5.3</vertx.version>
     <junit.version>4.12</junit.version>
+    <aspectj.version>1.9.1</aspectj.version>
     <rest-assured.version>3.1.1</rest-assured.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -176,12 +177,12 @@
           <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.8.9</version>
+            <version>${aspectj.version}</version>
           </dependency>
           <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjtools</artifactId>
-            <version>1.8.9</version>
+            <version>${aspectj.version}</version>
           </dependency>
         </dependencies>
       </plugin>
