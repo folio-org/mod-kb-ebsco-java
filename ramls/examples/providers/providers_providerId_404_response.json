@@ -1,0 +1,8 @@
+{
+  "errors": [{
+    "title": "Provider not found"
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

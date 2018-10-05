@@ -1,0 +1,23 @@
+{
+  "data": {
+    "type": "packages",
+    "attributes": {
+      "name": "test package for documentation",
+      "contentType": "Unknown",
+      "customCoverage": {
+        "beginCoverage": "2003-01-01",
+        "endCoverage": "2003-12-01"
+      },
+      "isSelected": true,
+      "visibilityData": {
+        "isHidden": true
+      },
+      "packageToken": {
+        "value": "hellotoken"
+      },
+      "proxy": {
+        "id": "EZProxy"
+      }
+    }
+  }
+}

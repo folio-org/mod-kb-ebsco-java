@@ -1,0 +1,14 @@
+{
+  "errors": [{
+    "title": {
+      "errors": [{
+        "code": 1001,
+        "subCode": 0,
+        "message": "Vendor not found"
+      }]
+    }
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

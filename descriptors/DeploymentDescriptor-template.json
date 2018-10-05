@@ -1,0 +1,7 @@
+{
+  "srvcId": "${artifactId}-${version}",
+  "nodeId": "localhost",
+  "descriptor": {
+    "exec": "java -Dport=%p -jar ../mod-kb-ebsco-java/target/mod-kb-ebsco-java-fat.jar -Dhttp.port=%p embed_postgres=true"
+  }
+}

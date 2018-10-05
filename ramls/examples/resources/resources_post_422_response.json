@@ -1,0 +1,10 @@
+{
+  "errors": [{
+    "title": "Invalid PackageId",
+    "detail": "Packageid Cannot associate Title with a managed Package",
+    "source": {}
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

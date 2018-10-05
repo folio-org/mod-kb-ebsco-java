@@ -1,0 +1,134 @@
+{
+  "data": {
+    "id": "22-1887786-1440285",
+    "type": "resources",
+    "attributes": {
+      "description": null,
+      "edition": null,
+      "isPeerReviewed": false,
+      "isTitleCustom": false,
+      "publisherName": "Elsevier",
+      "titleId": 1440285,
+      "contributors": [{
+          "type": "Author",
+          "contributor": "Havard, Margaret"
+        },
+        {
+          "type": "Author",
+          "contributor": "Tiziani, Adriana."
+        }
+      ],
+      "identifiers": [{
+          "id": "1440285",
+          "type": "BHM",
+          "subtype": "Empty"
+        },
+        {
+          "id": "475765",
+          "type": "EPBookID",
+          "subtype": "Empty"
+        },
+        {
+          "id": "978-0-7295-3913-5",
+          "type": "ISBN",
+          "subtype": "Print"
+        },
+        {
+          "id": "978-0-7295-7913-1",
+          "type": "ISBN",
+          "subtype": "Online"
+        }
+      ],
+      "name": "Havard's Nursing Guide to Drugs (Nursing Guide to Drugs)",
+      "publicationType": "Book",
+      "subjects": [{
+        "type": "BISAC",
+        "subject": "MEDICAL / Nursing / Pharmacology"
+      }],
+      "coverageStatement": "Only 2000s issues available.",
+      "customEmbargoPeriod": {
+        "embargoUnit": "Days",
+        "embargoValue": 7
+      },
+      "isPackageCustom": false,
+      "isSelected": true,
+      "isTokenNeeded": true,
+      "locationId": 17545807,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "packageId": "22-1887786",
+      "packageName": "ProQuest Ebook Central",
+      "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=1722033",
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "providerId": 22,
+      "providerName": "Proquest Info & Learning Co",
+      "visibilityData": {
+        "isHidden": true,
+        "reason": ""
+      },
+      "managedCoverages": [{
+        "beginCoverage": "2010-01-01",
+        "endCoverage": "2010-12-31"
+      }],
+      "customCoverages": [{
+        "beginCoverage": "2003-01-01",
+        "endCoverage": "2004-01-01"
+      }],
+      "proxy": {
+        "id": "EZProxy",
+        "inherited": false
+      }
+    },
+    "relationships": {
+      "vendor": {
+        "meta": {
+          "included": false
+        }
+      },
+      "provider": {
+        "data": {
+          "type": "providers",
+          "id": "22"
+        }
+      },
+      "title": {
+        "meta": {
+          "included": false
+        }
+      },
+      "package": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "included": [{
+    "id": "22",
+    "type": "providers",
+    "attributes": {
+      "name": "Proquest Info & Learning Co",
+      "packagesTotal": 840,
+      "packagesSelected": 30,
+      "providerToken": null,
+      "supportsCustomPackages": false,
+      "proxy": {
+        "id": "EZProxy",
+        "inherited": true
+      }
+    },
+    "relationships": {
+      "packages": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

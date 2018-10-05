@@ -1,0 +1,976 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "100130",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A call to action: Changing the culture of drinking at U.S. colleges",
+        "publicationType": "Journal",
+        "publisherName": "National Institute on Alcohol Abuse and Alcoholism",
+        "subjects": [
+          {
+            "subject": "Social Services",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "100130",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "125590",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "1093-9253",
+            "subtype": "Print",
+            "type": "ISSN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A and WMA Environmental Compliance News",
+        "publicationType": "Journal",
+        "publisherName": "Elsevier",
+        "subjects": [
+          {
+            "subject": "Pollution Control & Waste Management",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "125590",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "169441",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-92-64-18255-4",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-280-03078-9",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-92-64-18256-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Better World for All: Progress Towards the International Development Goals",
+        "publicationType": "Book",
+        "publisherName": "OECD Publications Centre",
+        "subjects": [
+          {
+            "subject": "Development Economics",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "169441",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "169442",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-92-64-17007-0",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-280-08397-6",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-92-64-17259-3",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Caring World: The New Social Policy Agenda",
+        "publicationType": "Book",
+        "publisherName": "OECD Publications Centre",
+        "subjects": [
+          {
+            "subject": "Social Services",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "169442",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "200200065",
+            "subtype": "Empty",
+            "type": "Mid"
+          },
+          {
+            "id": "183204",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-1-55798-843-0",
+            "subtype": "Print",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A beginner's guide to the MCMI-III",
+        "publicationType": "Book",
+        "publisherName": "American Psychological Association",
+        "subjects": []
+      },
+      "id": "183204",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "149900",
+            "subtype": "Empty",
+            "type": "EPBookID"
+          },
+          {
+            "id": "2S63",
+            "subtype": "Empty",
+            "type": "Mid"
+          },
+          {
+            "id": "210886",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-0-471-65128-4",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-471-75812-9",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-471-75813-6",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-280-34968-3",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Basic Introduction to Pollutant Fate and Transport: An Integrated Approach with Chemistry, Modeling, Risk Assessment, and Environmental Legislation",
+        "publicationType": "Book",
+        "publisherName": "John Wiley & Sons Incorporated",
+        "subjects": [
+          {
+            "subject": "Environmental Engineering",
+            "type": "TLI"
+          },
+          {
+            "subject": "SCIENCE / Chemistry / Organic",
+            "type": "BISAC"
+          }
+        ]
+      },
+      "id": "210886",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "517665",
+            "subtype": "Empty",
+            "type": "EPBookID"
+          },
+          {
+            "id": "2R31",
+            "subtype": "Empty",
+            "type": "Mid"
+          },
+          {
+            "id": "210887",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-0-471-22490-7",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-471-22758-8",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-471-46118-0",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-280-55646-3",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Biologist's Guide to Analysis of DNA Microarray Data",
+        "publicationType": "Book",
+        "publisherName": "John Wiley & Sons Incorporated",
+        "subjects": [
+          {
+            "subject": "Physiology",
+            "type": "TLI"
+          },
+          {
+            "subject": "SCIENCE / Life Sciences / Molecular Biology",
+            "type": "BISAC"
+          }
+        ]
+      },
+      "id": "210887",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "ZCAA",
+            "subtype": "Empty",
+            "type": "NewsbankID"
+          },
+          {
+            "id": "272942",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A & G Information Service",
+        "publicationType": "Newspaper",
+        "publisherName": "New World Publishing",
+        "subjects": [
+          {
+            "subject": "News",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "272942",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "286087",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A bill to amend the law relating to the employment of waitresses in restaurants.",
+        "publicationType": "Book",
+        "publisherName": "London, Eyre & Spottiswoode",
+        "subjects": [
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "286087",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287713",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A bill to limit the hours of employment of women as bar assistants on premises where intoxicating liquors may be sold for consumption on the premises.",
+        "publicationType": "Book",
+        "publisherName": "London, Eyre & Spottiswoode",
+        "subjects": [
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287713",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287714",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A boarding home for working girls.",
+        "publicationType": "Book",
+        "publisherName": "Unspecified",
+        "subjects": [
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287714",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287715",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A book of duchesses : studies in personality",
+        "publicationType": "Book",
+        "publisherName": "A. Melrose",
+        "subjects": [
+          {
+            "subject": "Personality",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287715",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287716",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A book of noble women",
+        "publicationType": "Book",
+        "publisherName": "Small, Maynard",
+        "subjects": [
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287716",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287717",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A brief history of the movement for woman suffrage in the United States",
+        "publicationType": "Book",
+        "publisherName": "National Woman Suffrage Pub. Co.",
+        "subjects": [
+          {
+            "subject": "United States History",
+            "type": "TLI"
+          },
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287717",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287718",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A brief history of the Rhode Island Woman Suffrage Association during twenty-four years, from 1868 to 1893.",
+        "publicationType": "Book",
+        "publisherName": "E.L. Freeman",
+        "subjects": [
+          {
+            "subject": "United States History",
+            "type": "TLI"
+          },
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287718",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287719",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A brief memoir of Maria Fox, late of Tottenham.",
+        "publicationType": "Book",
+        "publisherName": "Association of Friends for the Diffusion of Religious and Useful Knowledge",
+        "subjects": [
+          {
+            "subject": "Christianity",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287719",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "2882",
+            "subtype": "Empty",
+            "type": "Mid"
+          },
+          {
+            "id": "287720",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A brief memoir with portions of the diary, letters, and other remains, of Eliza Southall, late of Birmingham, England.",
+        "publicationType": "Book",
+        "publisherName": "Book Association of Friends",
+        "subjects": [
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287720",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287721",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A brief summary, in plain language, of the most important laws concerning women : together with a few observations thereon.",
+        "publicationType": "Book",
+        "publisherName": "J. Chapman",
+        "subjects": [
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287721",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "287722",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A brief summary, in plain language, of the most important laws of England concerning women : together with a few observations thereon",
+        "publicationType": "Book",
+        "publisherName": "Trubner",
+        "subjects": [
+          {
+            "subject": "Law",
+            "type": "TLI"
+          },
+          {
+            "subject": "Women's Interest",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "287722",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "305515",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-1-885073-83-9",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-60780-124-5",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A basic guide to exporting, 3rd edition",
+        "publicationType": "Book",
+        "publisherName": "World Trade Press",
+        "subjects": [
+          {
+            "subject": "Exportation & Importation",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "305515",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "309698",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-1-60566-500-9",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-60566-500-9",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Case Study on a Security Maturity Assessment of a Business-to-Business Electronic Commerce Organization",
+        "publicationType": "Book",
+        "publisherName": "IGI Global",
+        "subjects": [
+          {
+            "subject": "Electronic Commerce",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "309698",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "309725",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-1-59904-434-7",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Case Study on Assessing the Readiness of Professional Services Company to Build an Organizational Memory Information Systems",
+        "publicationType": "Book",
+        "publisherName": "IGI Global",
+        "subjects": [
+          {
+            "subject": "Information Technology",
+            "type": "TLI"
+          },
+          {
+            "subject": "Knowledge Management",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "309725",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "403769",
+            "subtype": "Empty",
+            "type": "EPBookID"
+          },
+          {
+            "id": "315155",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-0-7735-2694-5",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-7735-7182-2",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-282-86176-3",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Bare and Impolitic Right: Internment and Ukrainian-Canadian Redress",
+        "publicationType": "Book",
+        "publisherName": "McGill-Queen's University Press",
+        "subjects": [
+          {
+            "subject": "World War I",
+            "type": "TLI"
+          },
+          {
+            "subject": "HISTORY / Canada / General",
+            "type": "BISAC"
+          }
+        ]
+      },
+      "id": "315155",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "317428",
+            "subtype": "Empty",
+            "type": "BHM"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Case Study of Sustainable Development: Brownfields",
+        "publicationType": "Book",
+        "publisherName": "Environmental Law Institute",
+        "subjects": [
+          {
+            "subject": "Land Use Planning",
+            "type": "TLI"
+          }
+        ]
+      },
+      "id": "317428",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    },
+    {
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "142423",
+            "subtype": "Empty",
+            "type": "EPBookID"
+          },
+          {
+            "id": "318444",
+            "subtype": "Empty",
+            "type": "BHM"
+          },
+          {
+            "id": "978-1-349-50750-4",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4039-0112-5",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-230-00589-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-280-28270-6",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "A Brontë Family Chronology (Author Chronologies)",
+        "publicationType": "Book",
+        "publisherName": "Institute for Urban Design (US)",
+        "subjects": [
+          {
+            "subject": "English Literature",
+            "type": "TLI"
+          },
+          {
+            "subject": "Women Authors",
+            "type": "TLI"
+          },
+          {
+            "subject": "LITERARY CRITICISM / European / English, Irish, Scottish, Welsh",
+            "type": "BISAC"
+          }
+        ]
+      },
+      "id": "318444",
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      },
+      "type": "titles"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  },
+  "meta": {
+    "totalResults": 8987
+  }
+}

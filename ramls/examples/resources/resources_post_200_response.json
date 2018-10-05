@@ -1,0 +1,74 @@
+{
+  "data": {
+    "id": "123355-2845510-17059786",
+    "type": "resources",
+    "attributes": {
+      "description": null,
+      "edition": null,
+      "isPeerReviewed": false,
+      "isTitleCustom": true,
+      "publisherName": null,
+      "titleId": 17059786,
+      "contributors": [],
+      "identifiers": [],
+      "name": "SD custom title",
+      "publicationType": "Book",
+      "subjects": [],
+      "coverageStatement": null,
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "isPackageCustom": true,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "locationId": 0,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "packageId": "123355-2845510",
+      "packageName": "Testing2",
+      "url": null,
+      "vendorId": 123355,
+      "vendorName": "API DEV CORPORATE CUSTOMER",
+      "providerId": 123355,
+      "providerName": "API DEV CORPORATE CUSTOMER",
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverages": [],
+      "customCoverages": [],
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      }
+    },
+    "relationships": {
+      "vendor": {
+        "meta": {
+          "included": false
+        }
+      },
+      "provider": {
+        "meta": {
+          "included": false
+        }
+      },
+      "title": {
+        "meta": {
+          "included": false
+        }
+      },
+      "package": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
