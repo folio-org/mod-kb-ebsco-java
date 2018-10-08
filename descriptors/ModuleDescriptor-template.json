@@ -3,7 +3,7 @@
   "name": "Module KB EBSCO Module",
   "provides": [
     {
-      "id": "${artifactId}",
+      "id": "kb-ebsco-java",
       "version": "1.0",
       "handlers": [
         {
