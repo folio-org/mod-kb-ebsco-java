@@ -118,9 +118,9 @@ types:
             example: !include examples/packages/packages_get_400_response.json
   post:
     description: Create a custom package
-#    headers:
-#      Content-Type:
-#        example: application/vnd.api+json
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
     body:
       application/vnd.api+json:
         properties:
@@ -195,9 +195,9 @@ types:
       description: |
         Update a managed or custom package using packageId
         Note that packageId is providerId-packageId
-#      headers:
-#        Content-Type:
-#          example: application/vnd.api+json
+      headers:
+        Content-Type:
+          example: application/vnd.api+json
       body:
         application/vnd.api+json:
           properties:
