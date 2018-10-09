@@ -99,17 +99,6 @@
           "pathPattern": "/eholdings/status"
         }
       ]
-    },
-    {
-      "id": "_tenant",
-      "version": "1.0",
-      "interfaceType": "system",
-      "handlers": [
-        {
-          "methods": ["POST"],
-          "pathPattern": "/_/tenant"
-        }
-      ]
     }
   ],
   "permissionSets" : [],
