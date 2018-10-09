@@ -1,10 +1,8 @@
-## 2018-10-08 v1.0.0
+## v0.1.0 2018-10-04
  * Added raml files
-## 2018-10-04 v1.0.0
  * Initial module setup
  * Added Jenkinsfile
  * Added Dockerfile
  * Updated README file
  * Added boilterplate files
-## 2018-10-04 v1.0.0
  * Repository creation

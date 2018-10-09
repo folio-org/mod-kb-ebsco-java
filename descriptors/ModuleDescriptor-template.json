@@ -1,6 +1,6 @@
 {
   "id": "${artifactId}-${version}",
-  "name": "Module KB EBSCO Module",
+  "name": "EBSCO KB Broker",
   "provides": [
     {
       "id": "kb-ebsco-java",
@@ -36,15 +36,15 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/providers/{provider_id}"
+          "pathPattern": "/eholdings/providers/{providerId}"
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/providers/{provider_id}"
+          "pathPattern": "/eholdings/providers/{providerId}"
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/providers/{provider_id}/packages"
+          "pathPattern": "/eholdings/providers/{providerId}/packages"
         },
         {
           "methods": ["POST"],
@@ -67,12 +67,12 @@
           "pathPattern": "/eholdings/titles"
         },
         {
-          "methods": ["GET"],
-          "pathPattern": "/eholdings/titles/{title_id}"
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/titles"
         },
         {
-          "methods": ["POST"],
-          "pathPattern": "/eholdings/titles/{title_id}"
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/titles/{titleId}"
         },
         {
           "methods": ["GET"],

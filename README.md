@@ -14,36 +14,6 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 ## Introduction
 Broker communication with the EBSCO knowledge base (Java)
 
-## API
-
-Module provides next API:
-
- | METHOD   |  URL                                         | DESCRIPTION                                                                           |
- |----------|----------------------------------------------|---------------------------------------------------------------------------------------|
- | GET      | /eholdings/packages                          | Retrieve a collection of packages.                                                    |
- | POST     | /eholdings/packages                          | Create a new package.                                                                 |
- | GET      | /eholdings/packages/{packageId}              | Retrieve a specific package by packageId.                                             |
- | PUT      | /eholdings/packages/{packageId}              | Update a specific package using packageId.                                            |
- | DELETE   | /eholdings/packages/{packageId}              | Delete a specific package by packageId.                                               |
- | GET      | /eholdings/packages/{packageId}/resources    | Include all resources belonging to a specific package.                                |
- | GET      | /eholdings/providers                         | Get a list of providers.                                                              |
- | GET      | /eholdings/providers/{provider_id}           | Get the provider by provider_id.                                                      |
- | PUT      | /eholdings/providers/{provider_id}           | Update provider by provider_id.                                                       |
- | GET      | /eholdings/providers/{provider_id}/packages  | Retrieve a list of packages for specific provider.                                    |
- | POST     | /eholdings/resources                         | Create a relation between an existing package and an existing custom/managed title.   |
- | GET      | /eholdings/resources/{resourceId}            | Retrieve a specific resource by resourceId.                                           |
- | PUT      | /eholdings/resources/{resourceId}            | Update a specific resource using resourceId                                           |
- | DELETE   | /eholdings/resources/{resourceId}            | Delete the association between a custom/managed title and a package using resourceId. |
- | GET      | /eholdings/titles                            | Get a set of titles matching the given search criteria.                               |
- | GET      | /eholdings/titles/{title_id}                 | Get the title by title_id.                                                            |
- | POST     | /eholdings/titles/{title_id}                 | Create a new Custom Title.                                                            |
- | GET      | /eholdings/proxy-types                       | Get a list of supported root proxy types.                                             |
- | GET      | /eholdings/root-proxy                        | Get a list of Root Proxy.                                                             |
- | PUT      | /eholdings/root-proxy                        | Update the current root proxy.                                                        |
- | GET      | /eholdings/configuration                     | Get KB configuration currently being used.                                            |
- | PUT      | /eholdings/configuration                     | Update the currently set KB configuration.                                            |
- | GET      | /eholdings/status                            | Retrives status of current KB configuration.                                          |
-
 ## Compiling
 
 ```
