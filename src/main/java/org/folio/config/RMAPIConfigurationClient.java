@@ -23,6 +23,7 @@ public class RMAPIConfigurationClient {
   private static final String EBSCO_URL_CODE = "kb.ebsco.url";
   private static final String EBSCO_API_KEY_CODE = "kb.ebsco.apiKey";
   private static final String EBSCO_CUSTOMER_ID_CODE = "kb.ebsco.customerId";
+  private static final int QUERY_LIMIT = 100;
 
   private ConfigurationClientProvider configurationClientProvider;
 
@@ -46,8 +47,9 @@ public class RMAPIConfigurationClient {
 
     try {
       URL url = new URL(okapiURL);
-      ConfigurationsClient configurationsClient = configurationClientProvider.createClient(url.getHost(), url.getPort(), tenantId, apiToken);
-      configurationsClient.getEntries("module=EKB", 0, Integer.MAX_VALUE, null, null, response ->
+      int port = url.getPort() != -1? url.getPort() : url.getDefaultPort();
+      ConfigurationsClient configurationsClient = configurationClientProvider.createClient(url.getHost(), port, tenantId, apiToken);
+      configurationsClient.getEntries("module=EKB", 0, QUERY_LIMIT, null, null, response ->
         response.bodyHandler(body -> {
           if (!Response.isSuccess(response.statusCode())) {
             LOG.error("Cannot get configuration data: error code - {} response body - {}", response.statusCode(), body);
