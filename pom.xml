@@ -6,6 +6,26 @@
   <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
+  <name>EBSCO KB Broker</name>
+  <description>Module to broker communication with the EBSCO knowledge base</description>
+  <url>https://github.com/folio-org/mod-kb-ebsco-java</url>
+  <inceptionYear>2018</inceptionYear>
+
+  <organization>
+    <name>The Open Library Foundation</name>
+    <url>https://dev.folio.org/</url>
+  </organization>
+
+  <issueManagement>
+    <url>https://issues.folio.org/projects/MODKBEKBJ</url>
+    <system>JIRA</system>
+  </issueManagement>
+
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://jenkins-aws.indexdata.com/job/folio-org/job/mod-kb-ebsco-java/</url>
+  </ciManagement>
+
   <licenses>
     <license>
       <name>Apache License 2.0</name>
@@ -332,6 +352,14 @@
       <url>https://repository.folio.org/repository/maven-folio</url>
     </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>indexdata</id>
+      <name>Index Data</name>
+      <url>http://maven.indexdata.com/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <distributionManagement>
     <repository>
