@@ -74,7 +74,7 @@ traits:
           application/vnd.api+json:
             description: List of providers matching the provider name and the total number of providers found.
             example: !include examples/providers/providers_get_200_response.json
-  /{provider_id}:
+  /{providerId}:
     description: Entity representing a provider
     get:
       description: Get the provider with providerId = {provider_id}
