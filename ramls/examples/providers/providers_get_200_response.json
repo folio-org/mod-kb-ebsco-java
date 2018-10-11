@@ -1,0 +1,45 @@
+{
+  "data": [{
+      "id": "19",
+      "type": "providers",
+      "attributes": {
+        "name": "EBSCO",
+        "packagesTotal": 627,
+        "packagesSelected": 49,
+        "providerToken": null,
+        "supportsCustomPackages": false
+      },
+      "relationships": {
+        "packages": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "273",
+      "type": "providers",
+      "attributes": {
+        "name": "EBSCO Open Access Lists",
+        "packagesTotal": 23,
+        "packagesSelected": 6,
+        "providerToken": null,
+        "supportsCustomPackages": false
+      },
+      "relationships": {
+        "packages": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 2
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

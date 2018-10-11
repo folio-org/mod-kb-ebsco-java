@@ -1,0 +1,39 @@
+{
+  "data": {
+    "attributes": {
+      "contributors": [],
+      "description": null,
+      "edition": null,
+      "identifiers": [
+        {
+          "id": "100130",
+          "subtype": "Empty",
+          "type": "BHM"
+        }
+      ],
+      "isPeerReviewed": false,
+      "isTitleCustom": false,
+      "name": "A call to action: Changing the culture of drinking at U.S. colleges",
+      "publicationType": "Journal",
+      "publisherName": "National Institute on Alcohol Abuse and Alcoholism",
+      "subjects": [
+        {
+          "subject": "Social Services",
+          "type": "TLI"
+        }
+      ]
+    },
+    "id": "100130",
+    "relationships": {
+      "resources": {
+        "meta": {
+          "included": false
+        }
+      }
+    },
+    "type": "titles"
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

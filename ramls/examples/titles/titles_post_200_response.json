@@ -1,0 +1,28 @@
+{
+  "data": {
+    "attributes": {
+      "contributors": [],
+      "description": null,
+      "edition": null,
+      "identifiers": [],
+      "isPeerReviewed": false,
+      "isTitleCustom": true,
+      "name": "Your Brand New Title",
+      "publicationType": "Book",
+      "publisherName": null,
+      "subjects": []
+    },
+    "id": "17649810",
+    "relationships": {
+      "resources": {
+        "meta": {
+          "included": false
+        }
+      }
+    },
+    "type": "titles"
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

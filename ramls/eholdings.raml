@@ -1,0 +1,141 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+version: v1
+mediaType: "application/vnd.api+json"
+
+/eholdings/proxy-types:
+  displayName: Proxy Types
+  description: List of supported root proxy types.
+  get:
+    description: Get a list of supported root proxy types.
+    responses:
+      200:
+        body:
+          application/vnd.api+json:
+            description: An array containing supported root proxy types.
+            example: !include examples/proxies/root_proxies_get_200_response.json
+
+/eholdings/root-proxy:
+  displayName: Root Proxy
+  description: Root Proxy that is currently selected from proxy-type list.
+  get:
+    description: ID of root proxy that is currently selected from proxy-type list.
+    responses:
+      200:
+        body:
+          application/vnd.api+json:
+            description: ID of root proxy that is currently selected from proxy-type list.
+            example: !include examples/proxies/selected_root_proxy_get_200_response.json
+  put:
+      description: |
+        Update the current root proxy setting by selecting one from the supported list of proxy-types.
+      headers:
+        Content-Type:
+          example: application/vnd.api+json
+      body:
+        application/vnd.api+json:
+          properties:
+            data:
+              description: Needed because of JSON API
+              type: object
+              required: true
+              properties:
+                type: string
+                attributes:
+                  description: Needed because of JSON API
+                  type: object
+                  required: true
+                  properties:
+                    proxyTypeId:
+                      description: |
+                        ID of root-proxy that current selection should be updated to.
+                      type: string
+                      example: EZProxy
+                      required: true
+          example: !include examples/proxies/root_proxy_put_request.json
+      responses:
+        200:
+          description: OK
+          body:
+            application/vnd.api+json:
+              example: !include examples/proxies/root_proxy_put_200_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              example: !include examples/proxies/root_proxy_put_422_response.json
+
+/eholdings/configuration:
+  displayName: Configuration
+  description: Setup KB Configuration.
+  get:
+    description: Details of KB configuration currently being used.
+    responses:
+      200:
+        body:
+          application/vnd.api+json:
+            description: Details of KB configuration currently being used.
+            example: !include examples/configuration/kb_configuration_get_200_response.json
+  put:
+    description: |
+      Update the currently set KB configuration.
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        properties:
+          data:
+            description: Needed because of JSON API
+            type: object
+            required: true
+            properties:
+              type: string
+              attributes:
+                description: Needed because of JSON API
+                type: object
+                required: true
+                properties:
+                  customerId:
+                    description: |
+                      Customer ID using the KB.
+                    type: string
+                    example: apidvgvmt
+                    required: true
+                  apiKey:
+                    description: |
+                      API Key to use the KB.
+                    type: string
+                    example: xxxxxx
+                    required: true
+                  rmapiBaseUrl:
+                    description: |
+                      Base URL of the KB.
+                    type: string
+                    example: https://sandbox.ebsco.io
+                    required: true
+        example: !include examples/configuration/kb_configuration_put_request.json
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            example: !include examples/configuration/kb_configuration_put_200_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            example: !include examples/configuration/kb_configuration_put_422_response.json
+
+/eholdings/status:
+  displayName: Status
+  description: Gives status of currently set KB configuration.
+  get:
+    description: Gives status of currently set KB configuration.
+    responses:
+      200:
+        body:
+          application/vnd.api+json:
+            description: Status of currently set KB configuration.
+            example: !include examples/status/status_get_200_response.json

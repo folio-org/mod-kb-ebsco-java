@@ -1,0 +1,12 @@
+{
+  "data": {
+    "id": "status",
+    "type": "statuses",
+    "attributes": {
+      "isConfigurationValid": true
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
