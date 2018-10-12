@@ -4,6 +4,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.folio.config.RMAPIConfigurationClient;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
@@ -17,6 +19,8 @@ import javax.ws.rs.core.Response;
 import java.util.Map;
 
 public class EholdingsConfigurationImpl implements EholdingsConfiguration {
+
+  private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
   private RMAPIConfigurationClient configurationClient;
   private RMAPIConfigurationConverter converter;
@@ -45,8 +49,9 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
         EholdingsConfigurationPutApplicationVndApiJsonImpl configuration = converter.convert(rmAPIconfiguration);
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond200WithApplicationVndApiJson(configuration)));
       })
-      .exceptionally(throwable -> {
-        asyncResultHandler.handle(Future.failedFuture(throwable));
+      .exceptionally(e -> {
+        logger.error("Failed to get configuration", e);
+        asyncResultHandler.handle(Future.failedFuture(e));
         return null;
       });
   }

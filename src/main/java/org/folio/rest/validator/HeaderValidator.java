@@ -23,7 +23,7 @@ public class HeaderValidator {
 
   /**
    * @param okapiHeaders request headers
-   * @param asyncResultHandler handler that will be called with error response if headers are invalid invalid
+   * @param asyncResultHandler handler that will be called with error response if headers are invalid
    * @return true if request is valid
    */
   public boolean validate(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler) {

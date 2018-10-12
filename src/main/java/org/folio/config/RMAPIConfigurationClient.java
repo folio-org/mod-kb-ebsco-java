@@ -6,8 +6,6 @@ import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,8 +15,6 @@ import java.util.concurrent.CompletableFuture;
  * Retrieves the RM API connection details from mod-configuration.
  */
 public class RMAPIConfigurationClient {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RMAPIConfigurationClient.class);
 
   private static final String EBSCO_URL_CODE = "kb.ebsco.url";
   private static final String EBSCO_API_KEY_CODE = "kb.ebsco.apiKey";
@@ -47,19 +43,22 @@ public class RMAPIConfigurationClient {
 
     try {
       URL url = new URL(okapiURL);
-      int port = url.getPort() != -1? url.getPort() : url.getDefaultPort();
+      int port = url.getPort() != -1 ? url.getPort() : url.getDefaultPort();
       ConfigurationsClient configurationsClient = configurationClientProvider.createClient(url.getHost(), port, tenantId, apiToken);
       configurationsClient.getEntries("module=EKB", 0, QUERY_LIMIT, null, null, response ->
         response.bodyHandler(body -> {
-          if (!Response.isSuccess(response.statusCode())) {
-            LOG.error("Cannot get configuration data: error code - {} response body - {}", response.statusCode(), body);
-            future.completeExceptionally(new IllegalStateException(body.toString()));
+          try {
+            if (!Response.isSuccess(response.statusCode())) {
+              throw new IllegalStateException("Cannot get configuration data: error code - " +
+                response.statusCode() + " response body - " + body.toString());
+            }
+            JsonObject entries = body.toJsonObject();
+            future.complete(mapResults(entries.getJsonArray("configs")));
+          } catch (Exception e) {
+            future.completeExceptionally(e);
           }
-          JsonObject entries = body.toJsonObject();
-          future.complete(mapResults(entries.getJsonArray("configs")));
         }));
     } catch (IOException e) {
-      LOG.error("Cannot get configuration data: " + e.getMessage(), e);
       future.completeExceptionally(e);
     }
     return future;
