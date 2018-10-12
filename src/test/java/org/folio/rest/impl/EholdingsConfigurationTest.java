@@ -91,6 +91,26 @@ public class EholdingsConfigurationTest {
   }
 
   @Test
+  public void shouldReturn500IfConfigurationIsInvalid() {
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new AnythingPattern(), false))
+        .withHeader(TENANT_HEADER.getName(), new EqualToPattern(TENANT_HEADER.getValue()))
+        .withHeader(TOKEN_HEADER.getName(), new EqualToPattern(TOKEN_HEADER.getValue()))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody("{}")));
+
+    RestAssured.given()
+      .spec(spec).port(port)
+      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, host + ":" + userMockServer.port()))
+      .header(TENANT_HEADER)
+      .header(TOKEN_HEADER)
+      .when()
+      .get("eholdings/configuration")
+      .then()
+      .statusCode(500);
+  }
+
+  @Test
   public void shouldReturn400OnGetWithoutUrlHeader() throws IOException, URISyntaxException {
     RestAssured.given()
       .spec(spec).port(port)

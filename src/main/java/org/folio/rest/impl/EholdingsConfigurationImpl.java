@@ -51,7 +51,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
       })
       .exceptionally(e -> {
         logger.error("Failed to get configuration", e);
-        asyncResultHandler.handle(Future.failedFuture(e));
+        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond500WithTextPlain("Internal Server Error")));
         return null;
       });
   }

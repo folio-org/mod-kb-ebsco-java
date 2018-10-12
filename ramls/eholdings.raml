@@ -77,6 +77,11 @@ mediaType: "application/vnd.api+json"
           application/vnd.api+json:
             description: Details of KB configuration currently being used.
             example: !include examples/configuration/kb_configuration_get_200_response.json
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"
   put:
     description: |
       Update the currently set KB configuration.
