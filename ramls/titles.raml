@@ -111,7 +111,53 @@ types:
           application/vnd.api+json:
             description: An array of titles comprising the results of the query.  The array will be paged if its length exceeds the value set with the `count` query param, or the default `count` of 25 in its stead.  The included metadata gives us the total result count outside of the paged context.
             example: !include examples/titles/titles_get_200_response.json
-  /{title_id}:
+  post:
+    description: Create a new Custom Title.
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        properties:
+          data:
+            description: Needed because of JSON API
+            type: object
+            required: true
+            properties:
+              type: string
+              attributes:
+                description: Needed because of JSON API
+                type: object
+                required: true
+                properties:
+                  name:
+                    description: |
+                      Name of the new title that is to be created.
+                    type: string
+                    example: "A New Title For You"
+                    required: true
+                  publicationType:
+                    description: Publication type for new title.
+                    type: string
+                    enum: ["All", "Audiobook", "Book", "Book Series", "Database", "Journal", "Newsletter", "Newspaper", "Proceedings", "Report", "Streaming Audio", "Streaming Video", "Thesis & Dissertation", "Website", "Unspecified"]
+                    example: "Book"
+                    required: true
+          included:
+            description: Resource used to create new title.
+            type: array
+            required: true
+            items: includedPackageId
+        example: !include examples/titles/titles_post_request.json
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            example: !include examples/titles/titles_post_200_response.json
+      400:
+        description: Bad
+
+  /{titleId}:
     description: Entity representing a title
     get:
       description: Get the title by its unique identifier.
@@ -134,48 +180,3 @@ types:
           body:
             application/vnd.api+json:
               example: !include examples/titles/titles_titleId_get_404_response.json
-    post:
-      description: Create a new Custom Title.
-      headers:
-        Content-Type:
-          example: application/vnd.api+json
-      body:
-        application/vnd.api+json:
-          properties:
-            data:
-              description: Needed because of JSON API
-              type: object
-              required: true
-              properties:
-                type: string
-                attributes:
-                  description: Needed because of JSON API
-                  type: object
-                  required: true
-                  properties:
-                    name:
-                      description: |
-                        Name of the new title that is to be created.
-                      type: string
-                      example: "A New Title For You"
-                      required: true
-                    publicationType:
-                      description: Publication type for new title.
-                      type: string
-                      enum: ["All", "Audiobook", "Book", "Book Series", "Database", "Journal", "Newsletter", "Newspaper", "Proceedings", "Report", "Streaming Audio", "Streaming Video", "Thesis & Dissertation", "Website", "Unspecified"]
-                      example: "Book"
-                      required: true
-            included:
-              description: Resource used to create new title.
-              type: array
-              required: true
-              items: includedPackageId
-          example: !include examples/titles/titles_post_request.json
-      responses:
-        200:
-          description: OK
-          body:
-            application/vnd.api+json:
-              example: !include examples/titles/titles_post_200_response.json
-        400:
-          description: Bad
