@@ -34,7 +34,9 @@ public class RMAPIConfigurationClient {
    * Returns the RM API configuration for the tenant.
    *
    * @param apiToken token used to call okapi
-   * @return The RMI API configuration for the tenant.
+   * @param tenant tenant for which configuration is retrieved
+   * @param okapiURL url of OKAPI server
+   * @return The RM API configuration for the tenant.
    */
   public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(String apiToken, String tenant, String okapiURL) {
     final String tenantId = TenantTool.calculateTenantId(tenant);
