@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Configuration Unprocessable Error Response object",
+  "description": "Configuration Unprocessable Error Response Schema for JSON API",
   "type": "object",
   "additionalProperties": false,
   "properties": {

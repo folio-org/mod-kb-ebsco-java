@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Configuration Attributes Schema",
+  "description": "Configuration Attributes Schema for JSON API",
   "type": "object",
   "additionalProperties": false,
   "properties": {
