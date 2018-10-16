@@ -6,6 +6,7 @@ import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
+import org.folio.rmapi.config.RMAPIConfiguration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -14,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Retrieves the RM API connection details from mod-configuration.
  */
-public class RMAPIConfigurationClient {
+public class RMAPIConfigurationService {
 
   private static final String EBSCO_URL_CODE = "kb.ebsco.url";
   private static final String EBSCO_API_KEY_CODE = "kb.ebsco.apiKey";
@@ -26,7 +27,7 @@ public class RMAPIConfigurationClient {
   /**
    * @param configurationClientProvider object used to get http client for sending request to okapi
    */
-  public RMAPIConfigurationClient(ConfigurationClientProvider configurationClientProvider) {
+  public RMAPIConfigurationService(ConfigurationClientProvider configurationClientProvider) {
     this.configurationClientProvider = configurationClientProvider;
   }
 
