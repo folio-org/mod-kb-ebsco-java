@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Configuration Data Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Configuration Data Id",
+      "example": "configuration"
+    },
+    "type": {
+      "type": "string",
+      "description": "Configuration Data Type",
+      "example": "configurations"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Configuration Attributes",
+      "$ref": "configurationAttributes.json"
+    }
+  }
+}

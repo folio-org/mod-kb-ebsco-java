@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Configuration Put Request Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Data object of configuration request",
+      "$ref": "configurationData.json"
+    }
+  }
+}
