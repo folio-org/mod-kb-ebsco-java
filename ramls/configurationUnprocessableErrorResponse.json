@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Configuration Unprocessable Error Response object",
+  "description": "Configuration Unprocessable Error Response Schema for JSON API",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Error Message Title",
+      "example": "Invalid KB API Credentials"
+    },
+    "detail": {
+      "type": "string",
+      "description": "Error Message Detail",
+      "example": "Kb api credentials are invalid"
+    },
+    "source": {
+      "type": "object",
+      "description": "Source of Error Message",
+      "example": {}
+    }
+  }
+}

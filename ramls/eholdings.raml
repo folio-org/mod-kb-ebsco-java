@@ -1,8 +1,18 @@
 #%RAML 1.0
 title: mod-kb-ebsco-java
 baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
 version: v1
 mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+types:
+  configuration: !include configuration.json
+  configurationPutRequest: !include configurationPutRequest.json
+  configurationUnprocessableError: !include configurationUnprocessableError.json
 
 /eholdings/proxy-types:
   displayName: Proxy Types
@@ -76,6 +86,7 @@ mediaType: "application/vnd.api+json"
         body:
           application/vnd.api+json:
             description: Details of KB configuration currently being used.
+            type: configuration
             example: !include examples/configuration/kb_configuration_get_200_response.json
   put:
     description: |
@@ -85,47 +96,20 @@ mediaType: "application/vnd.api+json"
         example: application/vnd.api+json
     body:
       application/vnd.api+json:
-        properties:
-          data:
-            description: Needed because of JSON API
-            type: object
-            required: true
-            properties:
-              type: string
-              attributes:
-                description: Needed because of JSON API
-                type: object
-                required: true
-                properties:
-                  customerId:
-                    description: |
-                      Customer ID using the KB.
-                    type: string
-                    example: apidvgvmt
-                    required: true
-                  apiKey:
-                    description: |
-                      API Key to use the KB.
-                    type: string
-                    example: xxxxxx
-                    required: true
-                  rmapiBaseUrl:
-                    description: |
-                      Base URL of the KB.
-                    type: string
-                    example: https://sandbox.ebsco.io
-                    required: true
+        type: configurationPutRequest
         example: !include examples/configuration/kb_configuration_put_request.json
     responses:
       200:
         description: OK
         body:
           application/vnd.api+json:
+            type: configuration
             example: !include examples/configuration/kb_configuration_put_200_response.json
       422:
         description: Unprocessable Entity
         body:
           application/vnd.api+json:
+            type: configurationUnprocessableError
             example: !include examples/configuration/kb_configuration_put_422_response.json
 
 /eholdings/status:

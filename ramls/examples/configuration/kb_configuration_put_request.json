@@ -1,5 +1,6 @@
 {
   "data": {
+    "id": "configuration",
     "type": "configurations",
     "attributes": {
       "customerId": "apidvcorp",
