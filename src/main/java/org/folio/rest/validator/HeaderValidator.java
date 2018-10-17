@@ -17,9 +17,8 @@ import java.util.Map;
 public class HeaderValidator {
 
   private final Collection<String> expectedHeaders = Arrays.asList(
-    HeaderConstants.OKAPI_TOKEN_HEADER,
-    HeaderConstants.OKAPI_URL_HEADER,
-    HeaderConstants.OKAPI_TENANT_HEADER);
+    HeaderConstants.OKAPI_URL_HEADER
+  );
 
   /**
    * @param okapiHeaders request headers
