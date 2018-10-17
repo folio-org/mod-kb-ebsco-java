@@ -1,160 +1,107 @@
 #%RAML 1.0
 title: mod-kb-ebsco-java
 baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
 version: v1
 mediaType: "application/vnd.api+json"
 
-types:
-  proxy:
-    type: object
-    properties:
-      id: string
-    example: |
-      {
-        "id": "EZ_Proxy"
-      }
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
 
+types:
+  providerCollection: !include types/providers/providerCollection.json
+  provider: !include types/providers/provider.json
+  providerPutRequest: !include types/providers/providerPutRequest.json
+  packageCollection: !include types/packages/packageCollection.json
+  
 traits:
-  indexable:
-    queryParameters:
-      q:
-        displayName: Query
-        type: string
-        description: Text entered in search field
-        example: Basket Weaving
-        required: false
-      page:
-        displayName: Page
-        type: number
-        description: Page offset from which results are retrieved
-        example: 1
-        minimum: 1
-        required: false
-      count:
-        displayName: Count
-        type: number
-        description: The maximum number of results to return in the response.
-        example: 10
-        minimum: 0
-        maximum: 100
-        default: 25
-        required: false
-      sort:
-        displayName: Sort options
-        type: string
-        enum: ["name", "relevance"]
-        description: Option by which results are sorted
-        default: relevance
-        required: false
-  filterable:
-    queryParameters:
-      filterSelected:
-        displayName: Selection status
-        type: string
-        enum: ["true", "false", "ebsco"]
-        description: Filter to narrow down results based on selection status
-        required: false
-      filterType:
-        displayName: Content type
-        type: string
-        enum: ["all", "aggregatefulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference"]
-        description: Filter to narrow  down results based on content type
-        default: all
-        required: false
+  queriable: !include traits/queriable.raml
+  filterable: !include traits/filterable.raml
 
 /eholdings/providers:
   displayName: Providers
   description: Collection of available providers in eholdings.
   get:
-    description: Get a list of providers based on the search field.
-    is: [indexable]
+    description: Get a list of providers based on the search query.
+    is: [queriable]
     responses:
       200:
+        description: OK
         body:
           application/vnd.api+json:
             description: List of providers matching the provider name and the total number of providers found.
-            example: !include examples/providers/providers_get_200_response.json
+            type: providerCollection
+            example:
+              strict: false
+              value: !include examples/providers/providers_get_200_response.json
   /{providerId}:
-    description: Entity representing a provider
+    displayName: Get provider by provider Id
+    description: Instance of a provider given providerId
+    uriParameters:
+      providerId:
+        description: Provider Id of provider to get
+        type: string
     get:
-      description: Get the provider with providerId = {provider_id}
+      description: Get provider given providerId
       queryParameters:
         include:
           displayName: Nested resource
           type: string
-          enum: [ "packages" ]
+          enum: [ packages ]
           description: Name of nested resource to include
-          default: "packages"
+          default: packages
+          example: packages
           required: false
       responses:
         200:
+          description: OK
           body:
             application/vnd.api+json:
-              description: Provider details from EPKB for a specific provider ID.
-              example: !include examples/providers/providers_providerId_get_200_response.json
+              description: Provider details from KB for a given provider Id.
+              type: provider
+              example:
+                strict: false
+                value: !include examples/providers/providers_providerId_get_200_response.json
         404:
           description: Not Found
           body:
             application/vnd.api+json:
-              example: !include examples/providers/providers_providerId_404_response.json
+              description: Provider details not found.
+              example:
+                strict: false
+                value: !include examples/providers/providers_providerId_404_response.json
     put:
       description: |
-        This operation allows you to update provider proxy and token values for a specific provider ID.
+        Update proxy and token information for a given provider Id.
       headers:
         Content-Type:
           example: application/vnd.api+json
       body:
         application/vnd.api+json:
-          properties:
-            data:
-              description: Needed because of JSON API
-              type: object
-              required: true
-              properties:
-                type: string
-                attributes:
-                  description: Needed because of JSON API
-                  type: object
-                  required: true
-                  properties:
-                    providerToken:
-                      displayName: Provider token
-                      type: object
-                      description: |
-                        Tokens are variables in content URLs that identify the customer.
-                        The token is text within the URL that needs to be replaced with an institute-specific value.
-                      example: |
-                        {
-                          "value": "hellotoken"
-                        }
-                      required: false
-                    proxy:
-                      displayName: Proxy ID
-                      type: proxy
-                      required: false
+          type: providerPutRequest
           example: !include examples/providers/providers_providerId_put_request.json
       responses:
         200:
+          description: OK
           body:
             application/vnd.api+json:
               description: The server has successfully fulfilled the PUT request.
-              example: !include examples/providers/providers_providerId_put_200_response.json
-        500:
-          body:
-            application/vnd.api+json:
-              description: Unexpected error.
+              type: provider
+              example:
+                strict: false
+                value: !include examples/providers/providers_providerId_put_200_response.json
     /packages:
       get:
-        description: |
-          This operation allows you to retrieve a list of packages from EPKB for a provider including customer context.
-        is: [indexable, filterable]
+        description: Search within a list of packages associated with a given provider.
+        is: [queriable, filterable]
         responses:
           200:
             description: OK
             body:
               application/vnd.api+json:
-                example: !include examples/providers/providers_providerId_packages_get_200_response.json
-          400:
-            description: Bad Request
-            body:
-              application/vnd.api+json:
+                description: List of providers matching the provider name and the total number of providers found.
+                type: packageCollection
+                example:
+                  strict: false
+                  value: !include examples/providers/providers_providerId_packages_get_200_response.json

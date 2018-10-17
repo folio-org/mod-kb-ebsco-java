@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Put Request Schema",
+  "description": "Provider Put Request Schema using JSON API",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Data object of provider put request",
+      "$ref": "providerPutData.json"
+    }
+  }
+}
