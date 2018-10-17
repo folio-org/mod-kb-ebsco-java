@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Object Data Attributes Schema",
+  "description": "Package Object Data Attributes Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contentType": {
+      "type": "string",
+      "description": "Content Type of Package",
+      "example": "Online Reference"
+    },
+    "customCoverage": {
+      "type": "object",
+      "description": "Custom Coverage",
+      "$ref": "../customCoverage.json"
+    },
+    "isCustom": {
+      "type": "boolean",
+      "description": "Whether this package is custom or not",
+      "example": false
+    },
+    "isSelected": {
+      "type": "boolean",
+      "description": "Whether this package is selected or not",
+      "example": false
+    },
+    "name": {
+      "type": "string",
+      "description": "Package name",
+      "example": "Shenbao"
+    },
+    "packageId": {
+      "type": "integer",
+      "description": "Package Id",
+      "example": 1152699
+    },
+    "packageType": {
+      "type": "string",
+      "description": "Package type",
+      "example": "Complete"
+    },
+    "providerId": {
+      "type": "integer",
+      "description": "Provider Id",
+      "example": 91525
+    },
+    "providerName": {
+      "type": "string",
+      "description": "Provider name",
+      "example": "Green Apple - Qingpingguo"
+    },
+    "selectedCount": {
+      "type": "integer",
+      "description": "Selected count",
+      "example": 0
+    },
+    "titleCount": {
+      "type": "integer",
+      "description": "Title count",
+      "example": 1
+    },
+    "visibilityData": {
+      "type": "object",
+      "description": "Visibility data",
+      "$ref": "../visibilityData.json"
+    },
+    "allowKbToAddTitles": {
+      "type": "boolean",
+      "description": "Allow KB to add titles",
+      "example": true
+    },
+    "packageToken": {
+      "type": "object",
+      "description": "Package Token",
+      "$ref": "../token.json"
+    },
+    "proxy": {
+      "type": "object",
+      "description": "Proxy",
+      "$ref": "../proxy.json"
+    }
+  }
+}

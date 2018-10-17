@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Proxy Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Proxy Id",
+      "example": "EZProxy"
+    },
+    "inherited": {
+      "type": "boolean",
+      "description": "Whether this proxy is inherited",
+      "example": true
+    }
+  }
+}

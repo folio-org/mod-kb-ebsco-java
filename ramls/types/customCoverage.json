@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Custom Coverage Schema",
+  "description": "Custom Coverage Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "beginCoverage": {
+      "type": "string",
+      "description": "Begin Coverage Date",
+      "example": "2003-01-01"
+    },
+    "endCoverage": {
+      "type": "string",
+      "description": "End Coverage Date",
+      "example": "2003-12-01"
+    }
+  }
+}

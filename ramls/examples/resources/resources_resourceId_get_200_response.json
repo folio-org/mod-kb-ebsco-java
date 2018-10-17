@@ -113,7 +113,7 @@
       "name": "Proquest Info & Learning Co",
       "packagesTotal": 840,
       "packagesSelected": 30,
-      "providerToken": null,
+      "providerToken": {},
       "supportsCustomPackages": false,
       "proxy": {
         "id": "EZProxy",
