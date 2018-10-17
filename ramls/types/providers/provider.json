@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Object Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Provider Data",
+      "$ref": "providerData.json"
+    },
+    "included": {
+      "type": "array",
+      "description": "List of packages for a given provider",
+      "items": {
+        "type": "object",
+        "$ref": "../packages/packages.json"
+      }
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "jsonapi"
+  ]
+}

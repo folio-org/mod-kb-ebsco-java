@@ -10,9 +10,9 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 types:
-  configuration: !include configuration.json
-  configurationPutRequest: !include configurationPutRequest.json
-  configurationUnprocessableError: !include configurationUnprocessableError.json
+  configuration: !include types/configuration/configuration.json
+  configurationPutRequest: !include types/configuration/configurationPutRequest.json
+  configurationUnprocessableError: !include types/configuration/configurationUnprocessableError.json
 
 /eholdings/proxy-types:
   displayName: Proxy Types
@@ -24,7 +24,9 @@ types:
         body:
           application/vnd.api+json:
             description: An array containing supported root proxy types.
-            example: !include examples/proxies/root_proxies_get_200_response.json
+            example:
+              strict: false
+              value: !include examples/proxies/root_proxies_get_200_response.json
 
 /eholdings/root-proxy:
   displayName: Root Proxy
@@ -36,7 +38,9 @@ types:
         body:
           application/vnd.api+json:
             description: ID of root proxy that is currently selected from proxy-type list.
-            example: !include examples/proxies/selected_root_proxy_get_200_response.json
+            example:
+              strict: false
+              value: !include examples/proxies/selected_root_proxy_get_200_response.json
   put:
       description: |
         Update the current root proxy setting by selecting one from the supported list of proxy-types.
@@ -69,12 +73,16 @@ types:
           description: OK
           body:
             application/vnd.api+json:
-              example: !include examples/proxies/root_proxy_put_200_response.json
+              example:
+                strict: false
+                value: !include examples/proxies/root_proxy_put_200_response.json
         422:
           description: Unprocessable Entity
           body:
             application/vnd.api+json:
-              example: !include examples/proxies/root_proxy_put_422_response.json
+              example:
+                strict: false
+                value: !include examples/proxies/root_proxy_put_422_response.json
 
 /eholdings/configuration:
   displayName: Configuration
@@ -83,11 +91,14 @@ types:
     description: Details of KB configuration currently being used.
     responses:
       200:
+        description: OK
         body:
           application/vnd.api+json:
             description: Details of KB configuration currently being used.
             type: configuration
-            example: !include examples/configuration/kb_configuration_get_200_response.json
+            example:
+              strict: false
+              value: !include examples/configuration/kb_configuration_get_200_response.json
       500:
         description: "Internal server error"
         body:
@@ -109,13 +120,17 @@ types:
         body:
           application/vnd.api+json:
             type: configuration
-            example: !include examples/configuration/kb_configuration_put_200_response.json
+            example:
+              strict: false
+              value: !include examples/configuration/kb_configuration_put_200_response.json
       422:
         description: Unprocessable Entity
         body:
           application/vnd.api+json:
             type: configurationUnprocessableError
-            example: !include examples/configuration/kb_configuration_put_422_response.json
+            example:
+              strict: false
+              value: !include examples/configuration/kb_configuration_put_422_response.json
 
 /eholdings/status:
   displayName: Status
@@ -127,4 +142,6 @@ types:
         body:
           application/vnd.api+json:
             description: Status of currently set KB configuration.
-            example: !include examples/status/status_get_200_response.json
+            example:
+              strict: false
+              value: !include examples/status/status_get_200_response.json

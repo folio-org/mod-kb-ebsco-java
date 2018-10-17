@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Put Data Schema",
+  "description": "Provider Put Data Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Provider Data Id",
+      "example": "18"
+    },
+    "type": {
+      "type": "string",
+      "description": "Provider Data Type",
+      "example": "providers"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Provider Data Attributes",
+      "$ref": "providerDataAttributes.json"
+    }
+  }
+}
