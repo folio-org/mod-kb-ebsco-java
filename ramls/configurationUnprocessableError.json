@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Configuration Unprocessable Error Response Schema",
+  "description": "Configuration Unprocessable Error Response Schema for JSON API",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "errors": {
+      "type": "array",
+      "description": "Configuration Unprocessable Error Response List",
+      "items": {
+        "type": "object",
+        "$ref": "configurationUnprocessableErrorResponse.json"
+      }
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "JSON API Version",
+      "$ref": "jsonapi.json"
+    }
+  }
+}

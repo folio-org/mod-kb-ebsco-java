@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "JSON API Version Schema",
+  "description": "JSON API Version Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Version of json api being used",
+      "example": "1.0"
+    }
+  },
+  "required": [
+    "version"
+  ]
+}

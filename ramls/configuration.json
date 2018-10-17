@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Configuration Response Schema",
+  "description": "Configuration Response Schema using JSON API",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Configuration Data",
+      "$ref": "configurationData.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "JSON API Version",
+      "$ref": "jsonapi.json"
+    }
+  }
+}

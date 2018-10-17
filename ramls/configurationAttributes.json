@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Configuration Attributes Schema",
+  "description": "Configuration Attributes Schema for JSON API",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "customerId": {
+      "type": "string",
+      "description": "Customer ID using the KB",
+      "example": "apidvgvmt"
+    },
+    "apiKey": {
+      "type": "string",
+      "description": "Customer API Key to use KB",
+      "example": "xxx"
+    },
+    "rmapiBaseUrl": {
+      "type": "string",
+      "description": "Base URL of KB to be used by this customer",
+      "example": "https://api.ebsco.io"
+    }
+  },
+  "required": [
+    "customerId",
+    "apiKey",
+    "rmapiBaseUrl"
+  ]
+}
