@@ -104,7 +104,7 @@ public class RMAPIConfigurationServiceTest {
       .withValue("value");
   }
 
-  private class HandleBodyAnswer implements Answer<Object>{
+  private class HandleBodyAnswer implements Answer<Object> {
     private Buffer body;
 
     HandleBodyAnswer(Buffer body) {
@@ -118,7 +118,7 @@ public class RMAPIConfigurationServiceTest {
     }
   }
 
-  private class HandleResponseAnswer implements Answer<Object>{
+  private class HandleResponseAnswer implements Answer<Object> {
     private HttpClientResponse response;
     private int handlerArgumentIndex;
 

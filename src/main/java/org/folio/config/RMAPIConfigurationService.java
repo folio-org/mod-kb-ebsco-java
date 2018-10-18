@@ -66,6 +66,7 @@ public class RMAPIConfigurationService {
 
   /**
    * Get configuration object from mod-configuration in the form of json
+   *
    * @param okapiData data of OKAPI server from which configuration is retrieved
    * @return future that will complete when configuration is retrieved
    */
@@ -77,7 +78,7 @@ public class RMAPIConfigurationService {
         .createClient(okapiData.getOkapiHost(), okapiData.getOkapiPort(), tenantId, okapiData.getApiToken());
       configurationsClient.getEntries("module=EKB", 0, QUERY_LIMIT, null, null, response ->
         response.bodyHandler(body -> {
-          if(verifyResponse(response, body, future)){
+          if (verifyResponse(response, body, future)) {
             future.complete(body.toJsonObject());
           }
         }));
@@ -89,7 +90,8 @@ public class RMAPIConfigurationService {
 
   /**
    * Sends a delete request for each configuration in the list
-   * @param okapiData data of OKAPI server to which delete requests are sent
+   *
+   * @param okapiData        data of OKAPI server to which delete requests are sent
    * @param configurationIds ids of configurations to be deleted
    * @return future that will complete when all configurations are deleted
    */
@@ -106,9 +108,10 @@ public class RMAPIConfigurationService {
 
   /**
    * Sends a delete request for configuration id
+   *
    * @return future that will complete when configuration is deleted
    */
-  private CompletableFuture<Void> deleteConfiguration(ConfigurationsClient configurationsClient, String configurationId){
+  private CompletableFuture<Void> deleteConfiguration(ConfigurationsClient configurationsClient, String configurationId) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     try {
       configurationsClient.deleteEntryId(configurationId, null, response -> response.bodyHandler(body -> {
@@ -124,27 +127,29 @@ public class RMAPIConfigurationService {
 
   /**
    * Sends a post request for each configuration in the list
-   * @param okapiData data of OKAPI server to which configurations are posted
+   *
+   * @param okapiData      data of OKAPI server to which configurations are posted
    * @param configurations configurations to post
    * @return future that will complete when all configurations are posted
    */
   private CompletableFuture<Void> postConfigurations(List<Config> configurations, OkapiData okapiData) {
     final String tenantId = TenantTool.calculateTenantId(okapiData.getTenant());
     List<CompletableFuture<Void>> futures = new ArrayList<>();
-      ConfigurationsClient configurationsClient = configurationClientProvider
-        .createClient(okapiData.getOkapiHost(), okapiData.getOkapiPort(), tenantId, okapiData.getApiToken());
-      for (Config configuration : configurations) {
-        futures.add(postConfiguration(configurationsClient, configuration));
-      }
-      return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+    ConfigurationsClient configurationsClient = configurationClientProvider
+      .createClient(okapiData.getOkapiHost(), okapiData.getOkapiPort(), tenantId, okapiData.getApiToken());
+    for (Config configuration : configurations) {
+      futures.add(postConfiguration(configurationsClient, configuration));
+    }
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
 
   }
 
   /**
    * Sends a post request to create configuration
+   *
    * @return future that will complete when configuration is created
    */
-  private CompletableFuture<Void> postConfiguration(ConfigurationsClient configurationsClient, Config configuration){
+  private CompletableFuture<Void> postConfiguration(ConfigurationsClient configurationsClient, Config configuration) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     try {
       configurationsClient.postEntries(null, configuration, response -> response.bodyHandler(body -> {
@@ -160,6 +165,7 @@ public class RMAPIConfigurationService {
 
   /**
    * Completes future exceptionally if response is not successful
+   *
    * @return true if response is successful
    */
   private boolean verifyResponse(HttpClientResponse response, Buffer responseBody, CompletableFuture<?> future) {
@@ -194,16 +200,10 @@ public class RMAPIConfigurationService {
           config.setUrl(value);
         }
       });
-
-    if (config.getCustomerId() == null || config.getAPIKey() == null ||
-      config.getUrl() == null) {
-      throw new IllegalStateException("Configuration data is invalid");
-    }
-
     return config;
   }
 
-  private List<String> mapToIds(JsonArray configs){
+  private List<String> mapToIds(JsonArray configs) {
     return configs.stream()
       .filter(JsonObject.class::isInstance)
       .map(JsonObject.class::cast)

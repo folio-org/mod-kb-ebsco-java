@@ -18,7 +18,9 @@ public class RMAPIConfigurationConverter {
     jsonConfig.setData(new Data());
     jsonConfig.getData().setType("configurations");
     jsonConfig.getData().setAttributes(new Attributes());
-    jsonConfig.getData().getAttributes().setApiKey(StringUtils.repeat("*", 40));
+    if(rmAPIConfig.getAPIKey() != null){
+      jsonConfig.getData().getAttributes().setApiKey(StringUtils.repeat("*", 40));
+    }
     jsonConfig.getData().getAttributes().setCustomerId(rmAPIConfig.getCustomerId());
     jsonConfig.getData().getAttributes().setRmapiBaseUrl(rmAPIConfig.getUrl());
     return jsonConfig;

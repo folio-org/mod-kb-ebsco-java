@@ -9,7 +9,8 @@ import java.util.Collections;
  * Util class for creating errors
  */
 public class ErrorUtil {
-  private ErrorUtil() { }
+  private ErrorUtil() {
+  }
 
   public static ConfigurationUnprocessableError createError(String errorMessage) {
     ConfigurationUnprocessableError configurationError = new ConfigurationUnprocessableError();

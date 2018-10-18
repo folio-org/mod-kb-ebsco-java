@@ -1,4 +1,5 @@
 package org.folio.rest.model;
+
 import org.folio.rest.util.HeaderConstants;
 
 import java.net.MalformedURLException;
