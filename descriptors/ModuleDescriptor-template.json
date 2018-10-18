@@ -89,7 +89,7 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/configuration",
-          "permissionRequired" :["kb-ebsco.configuration.get"]
+          "permissionsRequired" :["kb-ebsco.configuration.get"]
         },
         {
           "methods": ["PUT"],

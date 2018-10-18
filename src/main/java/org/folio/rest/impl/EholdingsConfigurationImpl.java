@@ -9,8 +9,8 @@ import io.vertx.core.logging.LoggerFactory;
 import org.folio.config.RMAPIConfigurationClient;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
-import org.folio.rest.jaxrs.model.EholdingsConfigurationPutApplicationVndApiJson;
-import org.folio.rest.jaxrs.model.EholdingsConfigurationPutApplicationVndApiJsonImpl;
+import org.folio.rest.jaxrs.model.Configuration;
+import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.util.HeaderConstants;
 import org.folio.rest.validator.HeaderValidator;
@@ -46,7 +46,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
       okapiHeaders.get(HeaderConstants.OKAPI_TENANT_HEADER),
       okapiHeaders.get(HeaderConstants.OKAPI_URL_HEADER))
       .thenAccept(rmAPIconfiguration -> {
-        EholdingsConfigurationPutApplicationVndApiJsonImpl configuration = converter.convert(rmAPIconfiguration);
+        Configuration configuration = converter.convert(rmAPIconfiguration);
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond200WithApplicationVndApiJson(configuration)));
       })
       .exceptionally(e -> {
@@ -57,7 +57,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   }
 
   @Override
-  public void putEholdingsConfiguration(String contentType, EholdingsConfigurationPutApplicationVndApiJson entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void putEholdingsConfiguration(String contentType, ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 }
