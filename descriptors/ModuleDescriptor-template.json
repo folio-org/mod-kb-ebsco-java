@@ -88,7 +88,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/configuration"
+          "pathPattern": "/eholdings/configuration",
+          "permissionsRequired" :["kb-ebsco.configuration.get"]
         },
         {
           "methods": ["PUT"],
@@ -101,7 +102,21 @@
       ]
     }
   ],
-  "permissionSets" : [],
+  "permissionSets": [
+    {
+      "permissionName": "kb-ebsco.configuration.get",
+      "displayName": "get RM API configuration",
+      "description": "Get RM API configuration"
+    },
+    {
+      "permissionName": "kb-ebsco.all",
+      "displayName": "EBSCO KB Broker - all permissions",
+      "description": "All permissions for EBSCO KB module",
+      "subPermissions": [
+        "kb-ebsco.configuration.get"
+      ]
+    }
+  ],
   "requires": [],
   "launchDescriptor": {
     "dockerImage": "${artifactId}:${version}",

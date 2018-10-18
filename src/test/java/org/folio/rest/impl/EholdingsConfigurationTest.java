@@ -60,7 +60,7 @@ public class EholdingsConfigurationTest {
       .notifier(new ConsoleNotifier(true)));
 
   @BeforeClass
-  public static void setUpClass(final TestContext context) throws Exception {
+  public static void setUpClass(final TestContext context) {
     Vertx vertx = Vertx.vertx();
     vertx.exceptionHandler(context.exceptionHandler());
     port = NetworkUtils.nextFreePort();
@@ -252,35 +252,11 @@ public class EholdingsConfigurationTest {
   }
 
   @Test
-  public void shouldReturn400OnGetWithoutUrlHeader() throws IOException, URISyntaxException {
+  public void shouldReturn400OnGetWithoutUrlHeader() {
     RestAssured.given()
       .spec(spec).port(port)
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
-      .when()
-      .get("eholdings/configuration")
-      .then()
-      .statusCode(400);
-  }
-
-  @Test
-  public void shouldReturn400OnGetWithoutTenant() throws IOException, URISyntaxException {
-    RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, host + ":" + userMockServer.port()))
-      .header(TOKEN_HEADER)
-      .when()
-      .get("eholdings/configuration")
-      .then()
-      .statusCode(400);
-  }
-
-  @Test
-  public void shouldReturn400OnGetWithoutToken() throws IOException, URISyntaxException {
-    RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, host + ":" + userMockServer.port()))
-      .header(TENANT_HEADER)
       .when()
       .get("eholdings/configuration")
       .then()
