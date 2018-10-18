@@ -26,6 +26,8 @@ import java.util.Map;
 public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   private static final String UPDATE_ERROR_MESSAGE = "Failed to update configuration";
+  public static final String INTERNAL_SERVER_ERROR = "Internal server error";
+  public static final String CONFIGURATION_IS_INVALID_ERROR = "Configuration is invalid";
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
   private RMAPIConfigurationService configurationService;
@@ -56,12 +58,13 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
         })
         .exceptionally(e -> {
           logger.error(UPDATE_ERROR_MESSAGE, e);
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond500WithTextPlain("Internal Server Error")));
+          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
           return null;
         });
     } catch (RuntimeException e) {
       logger.error(UPDATE_ERROR_MESSAGE, e);
-      asyncResultHandler.handle(Future.failedFuture(e));
+      asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
+        .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
     }
   }
 
@@ -82,17 +85,19 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
             .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))
         .exceptionally(e -> {
           if (e.getCause() instanceof RMAPIException) {
-            ConfigurationUnprocessableError configurationError = ErrorUtil.createError("Configuration is invalid");
+            ConfigurationUnprocessableError configurationError = ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR);
             asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse.respond422WithApplicationVndApiJson(configurationError)));
           } else {
             logger.error(UPDATE_ERROR_MESSAGE, e);
-            asyncResultHandler.handle(Future.failedFuture(e));
+            asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
+              .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
           }
           return null;
         });
     } catch (RuntimeException e) {
       logger.error(UPDATE_ERROR_MESSAGE, e);
-      asyncResultHandler.handle(Future.failedFuture(e));
+      asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
+        .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
     }
   }
 }

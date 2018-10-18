@@ -116,7 +116,11 @@ types:
           application/vnd.api+json:
             type: configurationUnprocessableError
             example: !include examples/configuration/kb_configuration_put_422_response.json
-
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"
 /eholdings/status:
   displayName: Status
   description: Gives status of currently set KB configuration.
