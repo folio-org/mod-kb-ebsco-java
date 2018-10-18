@@ -88,6 +88,11 @@ types:
             description: Details of KB configuration currently being used.
             type: configuration
             example: !include examples/configuration/kb_configuration_get_200_response.json
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"
   put:
     description: |
       Update the currently set KB configuration.

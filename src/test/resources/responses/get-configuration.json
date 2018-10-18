@@ -1,0 +1,50 @@
+{
+  "configs" : [ {
+    "id" : "efadf3d8-59c3-4508-99d4-3e36e9247d87",
+    "module" : "EKB",
+    "configName" : "api_access",
+    "code" : "kb.ebsco.url",
+    "description" : "EBSCO RM-API URL",
+    "enabled" : true,
+    "value" : "https://api.ebsco.io",
+    "metadata" : {
+      "createdDate" : "2018-09-12T12:34:52.189+0000",
+      "createdByUserId" : "1ad737b0-d847-11e6-bf26-cec0c932ce01",
+      "updatedDate" : "2018-09-12T12:34:52.189+0000",
+      "updatedByUserId" : "1ad737b0-d847-11e6-bf26-cec0c932ce01"
+    }
+  }, {
+    "id" : "6b24b703-243a-4261-a7bf-0336d34f8c94",
+    "module" : "EKB",
+    "configName" : "api_access",
+    "code" : "kb.ebsco.customerId",
+    "description" : "EBSCO RM-API Customer ID",
+    "enabled" : true,
+    "value" : "TEST_CUSTOMER_ID",
+    "metadata" : {
+      "createdDate" : "2018-09-12T12:34:52.466+0000",
+      "createdByUserId" : "1ad737b0-d847-11e6-bf26-cec0c932ce01",
+      "updatedDate" : "2018-09-12T12:34:52.466+0000",
+      "updatedByUserId" : "1ad737b0-d847-11e6-bf26-cec0c932ce01"
+    }
+  }, {
+    "id" : "8038c4f3-0b09-4d97-be46-8a5236ef3f2f",
+    "module" : "EKB",
+    "configName" : "api_access",
+    "code" : "kb.ebsco.apiKey",
+    "description" : "EBSCO RM-API API Key",
+    "enabled" : true,
+    "value" : "TEST_API_KEY",
+    "metadata" : {
+      "createdDate" : "2018-09-12T12:34:52.788+0000",
+      "createdByUserId" : "1ad737b0-d847-11e6-bf26-cec0c932ce01",
+      "updatedDate" : "2018-09-12T12:34:52.788+0000",
+      "updatedByUserId" : "1ad737b0-d847-11e6-bf26-cec0c932ce01"
+    }
+  } ],
+  "totalRecords" : 3,
+  "resultInfo" : {
+    "totalRecords" : 3,
+    "facets" : [ ]
+  }
+}
