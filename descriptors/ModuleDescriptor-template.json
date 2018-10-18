@@ -93,7 +93,8 @@
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/configuration"
+          "pathPattern": "/eholdings/configuration",
+          "permissionsRequired" :["kb-ebsco.configuration.put"]
         },
         {
           "methods": ["GET"],
@@ -109,11 +110,17 @@
       "description": "Get RM API configuration"
     },
     {
+      "permissionName": "kb-ebsco.configuration.put",
+      "displayName": "put RM API configuration",
+      "description": "Put RM API configuration"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
       "subPermissions": [
-        "kb-ebsco.configuration.get"
+        "kb-ebsco.configuration.get",
+        "kb-ebsco.configuration.put"
       ]
     }
   ],
