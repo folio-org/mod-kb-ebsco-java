@@ -57,7 +57,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   }
 
   @Override
-  public void putEholdingsConfiguration(String contentType, ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void putEholdingsConfiguration(ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 }
