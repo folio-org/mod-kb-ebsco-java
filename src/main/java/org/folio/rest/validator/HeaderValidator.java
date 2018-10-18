@@ -4,7 +4,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
-import org.folio.rest.util.HeaderConstants;
+import org.folio.rest.util.RestConstants;
 
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class HeaderValidator {
 
   private final Collection<String> expectedHeaders = Arrays.asList(
-    HeaderConstants.OKAPI_URL_HEADER
+    RestConstants.OKAPI_URL_HEADER
   );
 
   /**

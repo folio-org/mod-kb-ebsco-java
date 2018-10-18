@@ -25,7 +25,7 @@ import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.tools.utils.NetworkUtils;
-import org.folio.rest.util.HeaderConstants;
+import org.folio.rest.util.RestConstants;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,8 +45,8 @@ import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsConfigurationTest {
-  private static final Header TENANT_HEADER = new Header(HeaderConstants.OKAPI_TENANT_HEADER, "fs");
-  private static final Header TOKEN_HEADER = new Header(HeaderConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN");
+  private static final Header TENANT_HEADER = new Header(RestConstants.OKAPI_TENANT_HEADER, "fs");
+  private static final Header TOKEN_HEADER = new Header(RestConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN");
   private static final Header CONTENT_TYPE_HEADER = new Header("Content-Type", "application/vnd.api+json");
 
   private static RequestSpecification spec;
@@ -91,7 +91,7 @@ public class EholdingsConfigurationTest {
 
     RestAssured.given()
       .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, wiremockUrl))
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .when()
@@ -114,7 +114,7 @@ public class EholdingsConfigurationTest {
 
     RestAssured.given()
       .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, wiremockUrl))
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .header(CONTENT_TYPE_HEADER)
@@ -153,7 +153,7 @@ public class EholdingsConfigurationTest {
 
     RestAssured.given()
       .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, wiremockUrl))
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .header(CONTENT_TYPE_HEADER)
@@ -181,7 +181,7 @@ public class EholdingsConfigurationTest {
 
     RestAssured.given()
       .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, wiremockUrl))
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .header(CONTENT_TYPE_HEADER)
@@ -198,7 +198,7 @@ public class EholdingsConfigurationTest {
     String wiremockUrl = "wronghost";
     RestAssured.given()
       .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, wiremockUrl))
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .header(CONTENT_TYPE_HEADER)
@@ -242,7 +242,7 @@ public class EholdingsConfigurationTest {
 
     RestAssured.given()
       .spec(spec).port(port)
-      .header(new Header(HeaderConstants.OKAPI_URL_HEADER, host + ":" + userMockServer.port()))
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, host + ":" + userMockServer.port()))
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .when()

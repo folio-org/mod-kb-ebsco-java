@@ -6,6 +6,7 @@ import org.folio.rest.jaxrs.model.Attributes;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.model.Data;
+import org.folio.rest.util.RestConstants;
 
 /**
  * Converts objects between REST API representation and internal representation
@@ -23,6 +24,7 @@ public class RMAPIConfigurationConverter {
     }
     jsonConfig.getData().getAttributes().setCustomerId(rmAPIConfig.getCustomerId());
     jsonConfig.getData().getAttributes().setRmapiBaseUrl(rmAPIConfig.getUrl());
+    jsonConfig.setJsonapi(RestConstants.JSONAPI);
     return jsonConfig;
   }
 

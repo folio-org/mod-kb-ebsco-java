@@ -17,6 +17,7 @@ public class ErrorUtil {
     Error error = new Error();
     error.setDetail(errorMessage);
     configurationError.setErrors(Collections.singletonList(error));
+    configurationError.setJsonapi(RestConstants.JSONAPI);
     return configurationError;
   }
 }

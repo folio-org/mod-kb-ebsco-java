@@ -14,7 +14,7 @@ import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.model.OkapiData;
-import org.folio.rest.util.HeaderConstants;
+import org.folio.rest.util.RestConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -35,9 +35,9 @@ import static org.mockito.Mockito.when;
 
 public class RMAPIConfigurationServiceTest {
   private static final OkapiData OKAPI_DATA = new OkapiData(ImmutableMap.of(
-    HeaderConstants.OKAPI_TOKEN_HEADER, "token",
-    HeaderConstants.OKAPI_TENANT_HEADER, "tenant",
-    HeaderConstants.OKAPI_URL_HEADER, "https://localhost:8080"));
+    RestConstants.OKAPI_TOKEN_HEADER, "token",
+    RestConstants.OKAPI_TENANT_HEADER, "tenant",
+    RestConstants.OKAPI_URL_HEADER, "https://localhost:8080"));
   private ConfigurationClientProvider configurationClientProvider = mock(ConfigurationClientProvider.class);
   private ConfigurationsClient mockConfigurationsClient = mock(ConfigurationsClient.class);
   private RMAPIConfigurationService configurationService = new RMAPIConfigurationService(configurationClientProvider);

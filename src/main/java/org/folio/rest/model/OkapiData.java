@@ -1,6 +1,6 @@
 package org.folio.rest.model;
 
-import org.folio.rest.util.HeaderConstants;
+import org.folio.rest.util.RestConstants;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,9 +18,9 @@ public class OkapiData {
 
   public OkapiData(Map<String, String> headers) {
     try {
-      apiToken = headers.get(HeaderConstants.OKAPI_TOKEN_HEADER);
-      tenant = headers.get(HeaderConstants.OKAPI_TENANT_HEADER);
-      URL url = new URL(headers.get(HeaderConstants.OKAPI_URL_HEADER));
+      apiToken = headers.get(RestConstants.OKAPI_TOKEN_HEADER);
+      tenant = headers.get(RestConstants.OKAPI_TENANT_HEADER);
+      URL url = new URL(headers.get(RestConstants.OKAPI_URL_HEADER));
       okapiHost = url.getHost();
       okapiPort = url.getPort() != -1 ? url.getPort() : url.getDefaultPort();
     } catch (MalformedURLException e) {
