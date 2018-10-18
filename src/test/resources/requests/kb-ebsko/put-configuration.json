@@ -1,0 +1,10 @@
+{
+  "data": {
+    "type": "configurations",
+    "attributes": {
+      "customerId": "TEST_CUSTOMER_ID",
+      "apiKey": "TEST_API_KEY",
+      "rmapiBaseUrl": "https://api.ebsco.io"
+    }
+  }
+}
