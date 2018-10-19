@@ -7,7 +7,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.folio.config.RMAPIConfiguration;
-import org.folio.config.RMAPIConfigurationService;
+import org.folio.config.api.RMAPIConfigurationService;
+import org.folio.config.RMAPIConfigurationServiceImpl;
+import org.folio.config.exception.RMAPIConfigurationInvalidException;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
 import org.folio.rest.jaxrs.model.Configuration;
@@ -17,17 +19,16 @@ import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
-import org.folio.rmapi.RMAPIService;
-import org.folio.rmapi.exception.RMAPIException;
 
 import javax.ws.rs.core.Response;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   private static final String UPDATE_ERROR_MESSAGE = "Failed to update configuration";
-  public static final String INTERNAL_SERVER_ERROR = "Internal server error";
-  public static final String CONFIGURATION_IS_INVALID_ERROR = "Configuration is invalid";
+  private static final String INTERNAL_SERVER_ERROR = "Internal server error";
+  private static final String CONFIGURATION_IS_INVALID_ERROR = "Configuration is invalid";
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
   private RMAPIConfigurationService configurationService;
@@ -35,7 +36,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   private HeaderValidator headerValidator;
 
   public EholdingsConfigurationImpl() {
-    this(new RMAPIConfigurationService(new ConfigurationClientProvider()), new RMAPIConfigurationConverter(), new HeaderValidator());
+    this(new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider()), new RMAPIConfigurationConverter(), new HeaderValidator());
   }
 
   public EholdingsConfigurationImpl(RMAPIConfigurationService configurationService, RMAPIConfigurationConverter converter, HeaderValidator headerValidator) {
@@ -77,14 +78,19 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
       OkapiData okapiData = new OkapiData(okapiHeaders);
       RMAPIConfiguration rmapiConfiguration = converter.convertToRMAPIConfiguration(entity);
 
-      new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())
-        .verifyCredentials()
+      configurationService
+        .verifyCredentials(rmapiConfiguration, vertxContext)
+        .thenCompose(isValid -> {
+          CompletableFuture<Object> future = new CompletableFuture<>();
+          future.completeExceptionally(new RMAPIConfigurationInvalidException());
+          return future;
+        })
         .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, okapiData))
         .thenAccept(configuration ->
           asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse
             .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))
         .exceptionally(e -> {
-          if (e.getCause() instanceof RMAPIException) {
+          if (e.getCause() instanceof RMAPIConfigurationInvalidException) {
             ConfigurationUnprocessableError configurationError = ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR);
             asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse.respond422WithApplicationVndApiJson(configurationError)));
           } else {

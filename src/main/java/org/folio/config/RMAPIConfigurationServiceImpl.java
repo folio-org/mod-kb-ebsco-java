@@ -1,15 +1,18 @@
 package org.folio.config;
 
+import io.vertx.core.Context;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
+import org.folio.rmapi.RMAPIService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Retrieves the RM API connection details from mod-configuration.
  */
-public class RMAPIConfigurationService {
+public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService {
 
   private static final String EBSCO_URL_CODE = "kb.ebsco.url";
   private static final String EBSCO_API_KEY_CODE = "kb.ebsco.apiKey";
@@ -34,10 +37,11 @@ public class RMAPIConfigurationService {
   /**
    * @param configurationClientProvider object used to get http client for sending request to okapi
    */
-  public RMAPIConfigurationService(ConfigurationClientProvider configurationClientProvider) {
+  public RMAPIConfigurationServiceImpl(ConfigurationClientProvider configurationClientProvider) {
     this.configurationClientProvider = configurationClientProvider;
   }
 
+  @Override
   public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations ->
@@ -47,6 +51,7 @@ public class RMAPIConfigurationService {
   /**
    * Removes old configuration and adds new configuration for RM API
    */
+  @Override
   public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, OkapiData okapiData) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations -> {
@@ -64,6 +69,14 @@ public class RMAPIConfigurationService {
       .thenCompose(aVoid -> CompletableFuture.completedFuture(rmapiConfiguration));
   }
 
+  @Override
+  public CompletableFuture<Boolean> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext){
+    return new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
+      rmapiConfiguration.getUrl(), vertxContext.owner())
+      .verifyCredentials()
+      .thenCompose(o -> CompletableFuture.completedFuture(true))
+      .exceptionally(e -> false);
+  }
   /**
    * Get configuration object from mod-configuration in the form of json
    *
