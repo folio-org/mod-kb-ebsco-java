@@ -17,6 +17,7 @@ public class RMAPIConfigurationConverter {
   public Configuration convertToConfiguration(RMAPIConfiguration rmAPIConfig) {
     Configuration jsonConfig = new Configuration();
     jsonConfig.setData(new Data());
+    jsonConfig.getData().setId("configuration");
     jsonConfig.getData().setType("configurations");
     jsonConfig.getData().setAttributes(new Attributes());
     if(rmAPIConfig.getAPIKey() != null){

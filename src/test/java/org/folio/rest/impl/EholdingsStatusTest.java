@@ -17,11 +17,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.folio.rest.util.RestConstants;
 import org.folio.util.TestUtil;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,6 +61,11 @@ public class EholdingsStatusTest {
     spec = new RequestSpecBuilder()
       .setBaseUri(host + ":" + port)
       .build();
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    RMAPIConfigurationCache.getInstance().invalidate();
   }
 
   @Test

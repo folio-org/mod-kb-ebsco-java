@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfiguration;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
@@ -51,66 +52,56 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   @Override
   public void getEholdingsConfiguration(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    try {
-      if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
-        return;
-      }
-      OkapiData okapiData = new OkapiData(okapiHeaders);
-      configurationService.retrieveConfiguration(okapiData)
-        .thenAccept(rmapiConfiguration -> {
-          Configuration configuration = converter.convertToConfiguration(rmapiConfiguration);
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond200WithApplicationVndApiJson(configuration)));
-        })
-        .exceptionally(e -> {
-          logger.error(UPDATE_ERROR_MESSAGE, e);
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
-          return null;
-        });
-    } catch (RuntimeException e) {
-      logger.error(UPDATE_ERROR_MESSAGE, e);
-      asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
-        .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
+    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
+      return;
     }
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenAccept(rmapiConfiguration -> {
+        Configuration configuration = converter.convertToConfiguration(rmapiConfiguration);
+        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond200WithApplicationVndApiJson(configuration)));
+      })
+      .exceptionally(e -> {
+        logger.error(UPDATE_ERROR_MESSAGE, e);
+        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
+        return null;
+      });
   }
 
   @Override
   public void putEholdingsConfiguration(String contentType, ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    try {
-      if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
-        return;
-      }
-      OkapiData okapiData = new OkapiData(okapiHeaders);
-      RMAPIConfiguration rmapiConfiguration = converter.convertToRMAPIConfiguration(entity);
-
-      configurationService
-        .verifyCredentials(rmapiConfiguration, vertxContext)
-        .thenCompose(isValid -> {
-          if(!isValid) {
-            CompletableFuture<Object> future = new CompletableFuture<>();
-            future.completeExceptionally(new RMAPIConfigurationInvalidException());
-            return future;
-          }
-          return CompletableFuture.completedFuture(null);
-        })
-        .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, okapiData))
-        .thenAccept(configuration ->
-          asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse
-            .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))
-        .exceptionally(e -> {
-          if (e.getCause() instanceof RMAPIConfigurationInvalidException) {
-            ConfigurationUnprocessableError configurationError = ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR);
-            asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse.respond422WithApplicationVndApiJson(configurationError)));
-          } else {
-            logger.error(UPDATE_ERROR_MESSAGE, e);
-            asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
-              .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
-          }
-          return null;
-        });
-    } catch (RuntimeException e) {
-      logger.error(UPDATE_ERROR_MESSAGE, e);
-      asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
-        .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
+    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
+      return;
     }
+    MutableObject<OkapiData> okapiData = new MutableObject<>();
+    RMAPIConfiguration rmapiConfiguration = converter.convertToRMAPIConfiguration(entity);
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> {
+        okapiData.setValue(new OkapiData(okapiHeaders));
+        return configurationService.verifyCredentials(rmapiConfiguration, vertxContext);
+      })
+      .thenCompose(isValid -> {
+        if (!isValid) {
+          CompletableFuture<Object> future = new CompletableFuture<>();
+          future.completeExceptionally(new RMAPIConfigurationInvalidException());
+          return future;
+        }
+        return CompletableFuture.completedFuture(null);
+      })
+      .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, okapiData.getValue()))
+      .thenAccept(configuration ->
+        asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse
+          .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))
+      .exceptionally(e -> {
+        if (e.getCause() instanceof RMAPIConfigurationInvalidException) {
+          ConfigurationUnprocessableError configurationError = ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR);
+          asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse.respond422WithApplicationVndApiJson(configurationError)));
+        } else {
+          logger.error(UPDATE_ERROR_MESSAGE, e);
+          asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
+            .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
+        }
+        return null;
+      });
   }
 }
