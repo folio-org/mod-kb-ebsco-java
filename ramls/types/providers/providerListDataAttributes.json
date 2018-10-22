@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Provider List Object Data Attributes Schema",
   "description": "Provider List Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderListDataAttributes",
   "type": "object",
   "additionalProperties": false,
   "properties": {

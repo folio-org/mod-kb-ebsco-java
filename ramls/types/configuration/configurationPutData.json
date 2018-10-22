@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Configuration Put Request Schema",
   "description": "Configuration Put Request Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.ConfigurationPutData",
   "type": "object",
   "additionalProperties": false,
   "properties": {

@@ -1,6 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Provider object schema in providers collection",
+  "description": "Provider object schema in providers collection",
+  "javaType": "org.folio.rest.jaxrs.model.Providers",
   "type": "object",
   "additionalProperties": false,
   "properties": {

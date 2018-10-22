@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Provider Put Data Schema",
   "description": "Provider Put Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderPutData",
   "type": "object",
   "additionalProperties": false,
   "properties": {

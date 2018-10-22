@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Custom Coverage Schema",
   "description": "Custom Coverage Schema",
+  "javaType": "org.folio.rest.jaxrs.model.CustomCoverage",
   "type": "object",
   "additionalProperties": false,
   "properties": {

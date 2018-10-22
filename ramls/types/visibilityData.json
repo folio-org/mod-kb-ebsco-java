@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Visibility Data Schema",
   "description": "Visibility Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.VisibilityData",
   "type": "object",
   "additionalProperties": false,
   "properties": {

@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Provider Collection Schema",
   "description": "Provider Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderCollection",
   "type": "object",
   "additionalProperties": false,
   "properties": {

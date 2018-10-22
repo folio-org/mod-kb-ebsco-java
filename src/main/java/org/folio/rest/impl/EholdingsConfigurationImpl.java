@@ -11,7 +11,7 @@ import org.folio.config.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
 import org.folio.rest.jaxrs.model.Configuration;
-import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
+import org.folio.rest.jaxrs.model.ConfigurationPutData;
 import org.folio.rest.jaxrs.model.ConfigurationUnprocessableError;
 import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.model.OkapiData;
@@ -46,6 +46,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   @Override
   public void getEholdingsConfiguration(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    System.out.println(okapiHeaders);
     try {
       if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
         return;
@@ -69,7 +70,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   }
 
   @Override
-  public void putEholdingsConfiguration(String contentType, ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void putEholdingsConfiguration(String contentType, ConfigurationPutData entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     try {
       if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
         return;

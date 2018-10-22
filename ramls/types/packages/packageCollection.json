@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Package Collection Schema",
   "description": "Package Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageCollection",
   "type": "object",
   "additionalProperties": false,
   "properties": {

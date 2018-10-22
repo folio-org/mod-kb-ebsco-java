@@ -1,6 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Packages object schema",
+  "description": "Packages object schema",
+  "javaType": "org.folio.rest.jaxrs.model.Packages",
   "type": "object",
   "additionalProperties": false,
   "properties": {
