@@ -11,7 +11,7 @@ documentation:
 
 types:
   configuration: !include types/configuration/configuration.json
-  configurationPutData: !include types/configuration/configurationPutData.json
+  configurationPutRequest: !include types/configuration/configurationPutRequest.json
   configurationUnprocessableError: !include types/configuration/configurationUnprocessableError.json
 
 /eholdings/proxy-types:
@@ -112,7 +112,7 @@ types:
         example: application/vnd.api+json
     body:
       application/vnd.api+json:
-        type: configurationPutData
+        type: configurationPutRequest
         example: !include examples/configuration/kb_configuration_put_request.json
     responses:
       200:

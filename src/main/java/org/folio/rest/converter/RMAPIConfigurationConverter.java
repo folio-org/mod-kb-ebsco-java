@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.config.RMAPIConfiguration;
 import org.folio.rest.jaxrs.model.ConfigurationAttributes;
 import org.folio.rest.jaxrs.model.Configuration;
-import org.folio.rest.jaxrs.model.ConfigurationPutData;
+import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.model.ConfigurationData;
 import org.folio.rest.util.RestConstants;
 
@@ -28,7 +28,7 @@ public class RMAPIConfigurationConverter {
     return jsonConfig;
   }
 
-  public RMAPIConfiguration convertToRMAPIConfiguration(ConfigurationPutData configuration) {
+  public RMAPIConfiguration convertToRMAPIConfiguration(ConfigurationPutRequest configuration) {
     String rmapiBaseUrl = configuration.getData().getAttributes().getRmapiBaseUrl();
     rmapiBaseUrl = rmapiBaseUrl != null ? rmapiBaseUrl : DEFAULT_URL;
 
