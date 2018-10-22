@@ -1,0 +1,8 @@
+{
+  "module": "EKB",
+  "configName": "api_access",
+  "code": "kb.ebsco.customerId",
+  "description": "EBSCO RM-API Customer ID",
+  "enabled": true,
+  "value": "TEST_CUSTOMER_ID"
+}

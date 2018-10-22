@@ -1,0 +1,8 @@
+{
+  "module": "EKB",
+  "configName": "api_access",
+  "code": "kb.ebsco.apiKey",
+  "description": "EBSCO RM-API API Key",
+  "enabled": true,
+  "value": "TEST_API_KEY"
+}

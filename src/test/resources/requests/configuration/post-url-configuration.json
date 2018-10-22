@@ -1,0 +1,8 @@
+{
+  "module": "EKB",
+  "configName": "api_access",
+  "code": "kb.ebsco.url",
+  "description": "EBSCO RM-API URL",
+  "enabled": true,
+  "value": "https://api.ebsco.io"
+}
