@@ -14,7 +14,7 @@ import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rmapi.RMAPIService;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -95,7 +95,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
             future.complete(body.toJsonObject());
           }
         }));
-    } catch (IOException e) {
+    } catch (UnsupportedEncodingException e) {
       future.completeExceptionally(e);
     }
     return future;
@@ -132,7 +132,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
           future.complete(null);
         }
       }));
-    } catch (IOException e) {
+    } catch (UnsupportedEncodingException e) {
       future.completeExceptionally(e);
     }
     return future;

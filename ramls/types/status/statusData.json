@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Status Data Schema",
+  "description": "Status Data Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Status Data Id",
+      "example": "status"
+    },
+    "type": {
+      "type": "string",
+      "description": "Status Data Type",
+      "example": "statuses"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Status Attributes",
+      "$ref": "statusAttributes.json"
+    }
+  }
+}

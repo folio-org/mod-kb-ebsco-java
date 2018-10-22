@@ -7,8 +7,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.folio.config.RMAPIConfiguration;
-import org.folio.config.api.RMAPIConfigurationService;
+import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
+import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.exception.RMAPIConfigurationInvalidException;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
@@ -36,7 +37,10 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   private HeaderValidator headerValidator;
 
   public EholdingsConfigurationImpl() {
-    this(new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider()), new RMAPIConfigurationConverter(), new HeaderValidator());
+    this(
+         new RMAPIConfigurationServiceCache(
+           new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
+         new RMAPIConfigurationConverter(), new HeaderValidator());
   }
 
   public EholdingsConfigurationImpl(RMAPIConfigurationService configurationService, RMAPIConfigurationConverter converter, HeaderValidator headerValidator) {
@@ -81,9 +85,12 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
       configurationService
         .verifyCredentials(rmapiConfiguration, vertxContext)
         .thenCompose(isValid -> {
-          CompletableFuture<Object> future = new CompletableFuture<>();
-          future.completeExceptionally(new RMAPIConfigurationInvalidException());
-          return future;
+          if(!isValid) {
+            CompletableFuture<Object> future = new CompletableFuture<>();
+            future.completeExceptionally(new RMAPIConfigurationInvalidException());
+            return future;
+          }
+          return CompletableFuture.completedFuture(null);
         })
         .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, okapiData))
         .thenAccept(configuration ->

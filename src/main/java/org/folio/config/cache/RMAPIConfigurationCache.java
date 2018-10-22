@@ -28,4 +28,8 @@ public final class RMAPIConfigurationCache {
   public void putValue(RMAPIConfiguration configuration){
     cache.put(CACHE_KEY, configuration);
   }
+
+  public void invalidate(){
+    cache.invalidateAll();
+  }
 }

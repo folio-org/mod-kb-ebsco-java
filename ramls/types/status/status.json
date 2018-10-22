@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Status Response Schema",
+  "description": "Status Response Schema using JSON API",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.ConfigurationStatus",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "javaType": "org.folio.rest.jaxrs.model.StatusData",
+      "description": "Status Data",
+      "$ref": "statusData.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "JSON API Version",
+      "$ref": "../../jsonapi.json"
+    }
+  }
+}

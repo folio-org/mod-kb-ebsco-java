@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Status Attributes Schema",
+  "description": "Status Attributes Schema for JSON API",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.StatusAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "isConfigurationValid": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "isConfigurationValid"
+  ]
+}
