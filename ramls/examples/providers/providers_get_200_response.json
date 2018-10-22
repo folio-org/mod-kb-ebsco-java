@@ -6,7 +6,7 @@
         "name": "EBSCO",
         "packagesTotal": 627,
         "packagesSelected": 49,
-        "providerToken": {},
+        "providerToken": null,
         "supportsCustomPackages": false
       },
       "relationships": {
@@ -24,7 +24,7 @@
         "name": "EBSCO Open Access Lists",
         "packagesTotal": 23,
         "packagesSelected": 6,
-        "providerToken": {},
+        "providerToken": null,
         "supportsCustomPackages": false
       },
       "relationships": {
