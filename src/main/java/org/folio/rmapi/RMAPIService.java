@@ -52,6 +52,7 @@ public class RMAPIService {
     LOG.info("RMAPI Service absolute URL is" + request.absoluteURI());
 
     request.handler(response -> response.bodyHandler(body -> {
+      httpClient.close();
       if (response.statusCode() == 200) {
         try {
           final JsonObject instanceJSON = new JsonObject(body.toString());
@@ -62,12 +63,8 @@ public class RMAPIService {
             String.format("%s - Response = [%s] Target Type = [%s]", JSON_RESPONSE_ERROR, body.toString(), clazz));
           future.completeExceptionally(
             new RMAPIResultsProcessingException(String.format("%s for query = %s", JSON_RESPONSE_ERROR, query), e));
-        } finally {
-          httpClient.close();
         }
       } else {
-        httpClient.close();
-
         LOG.error(String.format("%s status code = [%s] status message = [%s] query = [%s] body = [%s]",
           INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString()));
 
