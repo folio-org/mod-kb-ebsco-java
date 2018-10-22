@@ -46,7 +46,6 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   @Override
   public void getEholdingsConfiguration(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    System.out.println(okapiHeaders);
     try {
       if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
         return;
