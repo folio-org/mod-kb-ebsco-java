@@ -3,6 +3,7 @@ package org.folio.config.cache;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.folio.config.RMAPIConfiguration;
+import org.folio.properties.PropertyConfiguration;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,8 +13,9 @@ public final class RMAPIConfigurationCache {
 
   private static final RMAPIConfigurationCache INSTANCE = new RMAPIConfigurationCache();
   private RMAPIConfigurationCache() {
+    Long expirationTime = PropertyConfiguration.getInstance().getConfiguration().getLong("configuration.cache.expire");
     this.cache =  CacheBuilder.newBuilder()
-      .expireAfterWrite(2, TimeUnit.MINUTES)
+      .expireAfterWrite(expirationTime, TimeUnit.SECONDS)
       .build();
   }
 

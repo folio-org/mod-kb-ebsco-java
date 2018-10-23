@@ -36,9 +36,7 @@
   <properties>
     <raml-module-builder.version>21.0.4</raml-module-builder.version>
     <vertx.version>3.5.4</vertx.version>
-    <junit.version>4.12</junit.version>
     <aspectj.version>1.9.1</aspectj.version>
-    <rest-assured.version>3.1.1</rest-assured.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
@@ -69,13 +67,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
-      <version>${rest-assured.version}</version>
+      <version>3.1.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -99,6 +97,16 @@
       <artifactId>mockito-core</artifactId>
       <version>2.23.0</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-configuration2</artifactId>
+      <version>2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>1.9.3</version>
     </dependency>
   </dependencies>
 
