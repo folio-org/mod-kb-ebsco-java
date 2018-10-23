@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "properties": {
     "isHidden": {
-      "type": "bolean",
+      "type": "boolean",
       "description": "Whether resource is hidden or not",
       "example": false
     },
