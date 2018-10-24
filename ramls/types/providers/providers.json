@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider object schema in providers collection",
+  "description": "Provider object schema in providers collection",
+  "javaType": "org.folio.rest.jaxrs.model.Providers",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of provider",
+      "example": "19"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "providers"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Provider object data attributes",
+      "$ref": "providerListDataAttributes.json"
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Displays if any resources are included",
+      "$ref": "../relationships.json"
+    }
+  }
+}

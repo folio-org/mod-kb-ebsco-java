@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Token Put Schema",
+  "description": "Token Put Schema",
+  "javaType": "org.folio.rest.jaxrs.model.TokenPut",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Value",
+      "example": "hellotoken"
+    }
+  }
+}

@@ -2,10 +2,10 @@ package org.folio.rest.converter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.config.RMAPIConfiguration;
-import org.folio.rest.jaxrs.model.Attributes;
+import org.folio.rest.jaxrs.model.ConfigurationAttributes;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
-import org.folio.rest.jaxrs.model.Data;
+import org.folio.rest.jaxrs.model.ConfigurationData;
 import org.folio.rest.util.RestConstants;
 
 /**
@@ -16,10 +16,10 @@ public class RMAPIConfigurationConverter {
 
   public Configuration convertToConfiguration(RMAPIConfiguration rmAPIConfig) {
     Configuration jsonConfig = new Configuration();
-    jsonConfig.setData(new Data());
+    jsonConfig.setData(new ConfigurationData());
     jsonConfig.getData().setId("configuration");
     jsonConfig.getData().setType("configurations");
-    jsonConfig.getData().setAttributes(new Attributes());
+    jsonConfig.getData().setAttributes(new ConfigurationAttributes());
     if(rmAPIConfig.getAPIKey() != null){
       jsonConfig.getData().getAttributes().setApiKey(StringUtils.repeat("*", 40));
     }

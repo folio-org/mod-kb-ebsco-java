@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Collection Schema",
+  "description": "Package Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageCollection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of packages",
+      "items": {
+        "type": "object",
+        "$ref": "packages.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in packages collection",
+      "$ref": "../metaTotalResults.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Packages object schema",
+  "description": "Packages object schema",
+  "javaType": "org.folio.rest.jaxrs.model.Packages",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of package - combination of providerId-packageId",
+      "example": "91525-1152699"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "packages"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Package object data attributes",
+      "$ref": "packageDataAttributes.json"
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Displays if any resources are included in relationships",
+      "$ref": "../relationships.json"
+    }
+  }
+}

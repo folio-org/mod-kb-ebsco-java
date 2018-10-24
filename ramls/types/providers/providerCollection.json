@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Collection Schema",
+  "description": "Provider Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderCollection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of providers",
+      "items": {
+        "type": "object",
+        "$ref": "providers.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in providers collection",
+      "$ref": "../metaTotalResults.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

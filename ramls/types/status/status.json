@@ -15,7 +15,7 @@
     "jsonapi": {
       "type": "object",
       "description": "JSON API Version",
-      "$ref": "../../jsonapi.json"
+      "$ref": "../jsonapi.json"
     }
   }
 }
