@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Proxy Schema",
+  "description": "Proxy Schema",
+  "javaType": "org.folio.rest.jaxrs.model.Proxy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Proxy Id",
+      "example": "EZProxy"
+    }
+  }
+}

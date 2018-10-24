@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Metadata of whether an object is related to this resource",
+  "description": "Metadata of whether an object is related to this resource",
+  "javaType": "org.folio.rest.jaxrs.model.MetaIncluded",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "Metadata of whether an object is related to this resource",
+      "$ref": "included.json"
+    }
+  }
+}
