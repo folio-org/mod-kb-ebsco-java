@@ -8,7 +8,6 @@ import org.folio.properties.PropertyConfiguration;
 import java.util.concurrent.TimeUnit;
 
 public final class RMAPIConfigurationCache {
-  private static final String CACHE_KEY = "Configuration";
   private final Cache<String, RMAPIConfiguration> cache;
 
   private static final RMAPIConfigurationCache INSTANCE = new RMAPIConfigurationCache();
@@ -23,12 +22,12 @@ public final class RMAPIConfigurationCache {
     return INSTANCE;
   }
 
-  public RMAPIConfiguration getValue(){
-    return cache.getIfPresent(CACHE_KEY);
+  public RMAPIConfiguration getValue(String tenant){
+    return cache.getIfPresent(tenant);
   }
 
-  public void putValue(RMAPIConfiguration configuration){
-    cache.put(CACHE_KEY, configuration);
+  public void putValue(String tenant, RMAPIConfiguration configuration){
+    cache.put(tenant, configuration);
   }
 
   public void invalidate(){

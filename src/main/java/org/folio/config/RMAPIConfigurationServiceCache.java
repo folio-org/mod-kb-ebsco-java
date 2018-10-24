@@ -18,7 +18,7 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
   @Override
   public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData) {
     RMAPIConfiguration cachedConfiguration = RMAPIConfigurationCache.getInstance()
-      .getValue();
+      .getValue(okapiData.getTenant());
     if(cachedConfiguration != null){
       return CompletableFuture.completedFuture(cachedConfiguration);
     }
@@ -26,7 +26,7 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
     return rmapiConfigurationService.retrieveConfiguration(okapiData)
     .thenCompose(rmapiConfiguration -> {
       RMAPIConfigurationCache.getInstance()
-        .putValue(rmapiConfiguration);
+        .putValue(okapiData.getTenant(), rmapiConfiguration);
       return CompletableFuture.completedFuture(rmapiConfiguration);
     });
   }
@@ -36,19 +36,19 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
     return rmapiConfigurationService.updateConfiguration(rmapiConfiguration, okapiData)
     .thenCompose(configuration ->  {
       RMAPIConfigurationCache.getInstance()
-        .putValue(configuration);
+        .putValue(okapiData.getTenant(), configuration);
       return CompletableFuture.completedFuture(configuration);
     });
   }
 
   @Override
   public CompletableFuture<Boolean> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext) {
-    if(rmapiConfiguration.getValid() != null){
-      return CompletableFuture.completedFuture(rmapiConfiguration.getValid());
+    if(rmapiConfiguration.getConfigValid() != null){
+      return CompletableFuture.completedFuture(rmapiConfiguration.getConfigValid());
     }
     return rmapiConfigurationService.verifyCredentials(rmapiConfiguration, vertxContext)
       .thenCompose(isValid -> {
-        rmapiConfiguration.setValid(isValid);
+        rmapiConfiguration.setConfigValid(isValid);
         return CompletableFuture.completedFuture(isValid);
       });
   }
