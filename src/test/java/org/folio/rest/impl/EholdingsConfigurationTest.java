@@ -10,7 +10,6 @@ import com.github.tomakehurst.wiremock.matching.AnythingPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import com.google.common.io.Files;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.Header;
@@ -20,20 +19,21 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.folio.rest.util.RestConstants;
+import org.folio.util.TestUtil;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +74,11 @@ public class EholdingsConfigurationTest {
       .build();
   }
 
+  @Before
+  public void setUp() throws Exception {
+    RMAPIConfigurationCache.getInstance().invalidate();
+  }
+
   @Test
   public void shouldReturnConfigurationOnGet() throws IOException, URISyntaxException {
     String stubResponseFilename = "responses/configuration/get-configuration.json";
@@ -87,7 +92,7 @@ public class EholdingsConfigurationTest {
         .withHeader(TENANT_HEADER.getName(), new EqualToPattern(TENANT_HEADER.getValue()))
         .withHeader(TOKEN_HEADER.getName(), new EqualToPattern(TOKEN_HEADER.getValue()))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFilename))));
+          .withBody(TestUtil.readFile(stubResponseFilename))));
 
     RestAssured.given()
       .spec(spec).port(port)
@@ -109,7 +114,7 @@ public class EholdingsConfigurationTest {
     String wiremockUrl = host + ":" + userMockServer.port();
 
     ObjectMapper mapper = new ObjectMapper();
-    Configuration configuration = mapper.readValue(getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
 
     RestAssured.given()
@@ -125,11 +130,11 @@ public class EholdingsConfigurationTest {
       .statusCode(200);
 
     WireMock.verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
-      .withRequestBody(equalToJson(readFile("requests/configuration/post-api-key-configuration.json"))));
+      .withRequestBody(equalToJson(TestUtil.readFile("requests/configuration/post-api-key-configuration.json"))));
     WireMock.verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
-      .withRequestBody(equalToJson(readFile("requests/configuration/post-customer-id-configuration.json"))));
+      .withRequestBody(equalToJson(TestUtil.readFile("requests/configuration/post-customer-id-configuration.json"))));
 
-    Config config = mapper.readValue(readFile("requests/configuration/post-url-configuration.json"), Config.class);
+    Config config = mapper.readValue(TestUtil.readFile("requests/configuration/post-url-configuration.json"), Config.class);
     config.setValue(wiremockUrl);
     WireMock.verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
       .withRequestBody(equalToJson(mapper.writeValueAsString(config))));
@@ -140,7 +145,7 @@ public class EholdingsConfigurationTest {
     ObjectMapper mapper = new ObjectMapper();
     String wiremockUrl = host + ":" + userMockServer.port();
 
-    String configsString = readFile("responses/configuration/get-configuration.json");
+    String configsString = TestUtil.readFile("responses/configuration/get-configuration.json");
     Configs configs = mapper.readValue(configsString, Configs.class);
     List<String> existingIds = configs.getConfigs().stream()
       .map(Config::getId)
@@ -148,7 +153,7 @@ public class EholdingsConfigurationTest {
 
     mockConfigurationUpdate(configsString);
 
-    Configuration configuration = mapper.readValue(getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
 
     RestAssured.given()
@@ -176,7 +181,7 @@ public class EholdingsConfigurationTest {
       WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
         .willReturn(new ResponseDefinitionBuilder().withStatus(403)));
 
-    Configuration configuration = mapper.readValue(getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
 
     RestAssured.given()
@@ -202,7 +207,7 @@ public class EholdingsConfigurationTest {
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .header(CONTENT_TYPE_HEADER)
-      .body(readFile("requests/kb-ebsko/put-configuration.json"))
+      .body(TestUtil.readFile("requests/kb-ebsko/put-configuration.json"))
       .when()
       .put("eholdings/configuration")
       .then()
@@ -261,14 +266,5 @@ public class EholdingsConfigurationTest {
       .get("eholdings/configuration")
       .then()
       .statusCode(400);
-  }
-
-  private String readFile(String filename) throws IOException, URISyntaxException {
-    return Files.toString(getFile(filename), StandardCharsets.UTF_8);
-  }
-
-  private File getFile(String filename) throws URISyntaxException {
-    return new File(this.getClass().getClassLoader()
-      .getResource(filename).toURI());
   }
 }

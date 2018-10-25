@@ -7,6 +7,7 @@ public final class RMAPIConfiguration {
   private String customerId;
   private String apiKey;
   private String url;
+  private Boolean configValid;
 
   public String getCustomerId() {
     return customerId;
@@ -20,6 +21,10 @@ public final class RMAPIConfiguration {
     return url;
   }
 
+  public Boolean getConfigValid() {
+    return configValid;
+  }
+
   public void setCustomerId(String customerId) {
     this.customerId = customerId;
   }
@@ -30,6 +35,10 @@ public final class RMAPIConfiguration {
 
   public void setUrl(String url) {
     this.url = url;
+  }
+
+  public void setConfigValid(Boolean configValid) {
+    this.configValid = configValid;
   }
 
   @Override

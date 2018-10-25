@@ -84,7 +84,8 @@ public class RMAPIService {
         }
       }
 
-    }));
+    }))
+      .exceptionHandler(future::completeExceptionally);
 
     request.end();
 

@@ -13,6 +13,7 @@ types:
   configuration: !include types/configuration/configuration.json
   configurationPutRequest: !include types/configuration/configurationPutRequest.json
   configurationUnprocessableError: !include types/configuration/configurationUnprocessableError.json
+  configurationStatus: !include types/status/status.json
 
 /eholdings/proxy-types:
   displayName: Proxy Types
@@ -146,6 +147,12 @@ types:
         body:
           application/vnd.api+json:
             description: Status of currently set KB configuration.
+            type: configurationStatus
             example:
               strict: false
               value: !include examples/status/status_get_200_response.json
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"

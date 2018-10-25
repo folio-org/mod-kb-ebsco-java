@@ -8,7 +8,8 @@ import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.impl.HttpClientResponseImpl;
 import org.folio.config.RMAPIConfiguration;
-import org.folio.config.RMAPIConfigurationService;
+import org.folio.config.api.RMAPIConfigurationService;
+import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.jaxrs.model.Config;
@@ -40,7 +41,7 @@ public class RMAPIConfigurationServiceTest {
     RestConstants.OKAPI_URL_HEADER, "https://localhost:8080"));
   private ConfigurationClientProvider configurationClientProvider = mock(ConfigurationClientProvider.class);
   private ConfigurationsClient mockConfigurationsClient = mock(ConfigurationsClient.class);
-  private RMAPIConfigurationService configurationService = new RMAPIConfigurationService(configurationClientProvider);
+  private RMAPIConfigurationService configurationService = new RMAPIConfigurationServiceImpl(configurationClientProvider);
 
   @Before
   public void setUp() throws Exception {

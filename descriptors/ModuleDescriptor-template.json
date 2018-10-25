@@ -115,12 +115,18 @@
       "description": "Put RM API configuration"
     },
     {
+      "permissionName": "kb-ebsco.status.get",
+      "displayName": "get RM API configuration status",
+      "description": "Get RM API configuration status"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
       "subPermissions": [
         "kb-ebsco.configuration.get",
-        "kb-ebsco.configuration.put"
+        "kb-ebsco.configuration.put",
+        "kb-ebsco.status.get"
       ]
     }
   ],
