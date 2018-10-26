@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Attributes object schema in titles collection",
+  "description": "Attributes object schema in titles collection",
+  "javaType": "org.folio.rest.jaxrs.model.TitleListDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "identifiers": {
+      "type": "array",
+      "description": "List of title identifiers",
+      "items": {
+        "type": "object",
+        "description": "The Identifiers Schema",
+        "$ref": "../identifier.json"
+      }
+    },
+    "isTitleCustom": {
+      "type": "boolean",
+      "description": "Defines if the title is custom",
+      "example": false
+    },
+    "name": {
+      "type": "string",
+      "description": "Title name",
+      "example": "A call to action: Changing the culture of drinking at U.S. colleges"
+    },
+    "publicationType": {
+      "type": "string",
+      "description": "Type of publication",
+      "enum": [
+        "All",
+        "Audiobook",
+        "Book",
+        "Book Series",
+        "Database",
+        "Journal",
+        "Newsletter",
+        "Newspaper",
+        "Proceedings",
+        "Report",
+        "Streaming Audio",
+        "Streaming Video",
+        "Thesis & Dissertation",
+        "Website",
+        "Unspecified"
+      ],
+      "example": "Journal"
+    },
+    "publisherName": {
+      "type": "string",
+      "description": "Publisher name",
+      "example": "Elsevier"
+    },
+    "subjects": {
+      "type": "array",
+      "description": "List of title subjects",
+      "items": {
+        "type": "object",
+        "description": "List of title subjects",
+        "$ref": "../subject.json"
+      }
+    }
+  }
+}

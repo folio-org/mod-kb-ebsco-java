@@ -9,12 +9,42 @@
     "packages": {
       "type": "object",
       "description": "Relationship of packages for a given object",
-      "$ref": "metaIncluded.json"
+      "properties": {
+        "data": {
+          "type": "array",
+          "description": "packages Data Information",
+          "items": {
+            "type": "object",
+            "description": "Resources Data",
+            "$ref": "relationshipData.json"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "description": "Meta information",
+          "$ref": "included.json"
+        }
+      }
     },
     "resources": {
       "type": "object",
       "description": "Relationship of resources for a given object",
-      "$ref": "metaIncluded.json"
+      "properties": {
+        "data": {
+          "type": "array",
+          "description": "Resources Data Information",
+          "items": {
+            "type": "object",
+            "description": "Resources Data",
+            "$ref": "relationshipData.json"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "description": "Meta information",
+          "$ref": "included.json"
+        }
+      }
     },
     "provider": {
       "type": "object",

@@ -1,0 +1,39 @@
+queryParameters:
+  filter[selected]:
+    displayName: Selection status
+    type: string
+    enum: [true, false, ebsco, all]
+    description: Filter to narrow down results based on selection status. Defaults to all.
+    example: ebsco
+    required: false
+  filter[type]:
+    displayName: Resource type
+    type: string
+    enum: [all, audiobook, book, bookseries, database, journal, newsletter, newspaper, proceedings, report,streamingaudio, streamingvideo,thesisdissertation,  website, unspecified]
+    description: Filter to narrow down results based on resource type. Defaults to all.
+    example: book
+    required: false
+  filter[name]:
+    displayName: Query by Title Name
+    type: string
+    description: String to search title name to get a collection of titles
+    example: War and Peace
+    required: false
+  filter[isxn]:
+    displayName: Query by ISSN/ISBN
+    type: string
+    description: String to search ISSN and ISBN to get a collection of titles
+    example: 1050-3331
+    required: false
+  filter[subject]:
+    displayName: Query by Subject
+    type: string
+    description: String to search subjects to get a collection of titles
+    example: history
+    required: false
+  filter[publisher]:
+    displayName: Query by Publisher
+    type: string
+    description: String to search publishers to get a collection of titles
+    example: academic
+    required: false

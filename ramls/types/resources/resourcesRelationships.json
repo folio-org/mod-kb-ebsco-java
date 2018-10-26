@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Metadata of relationships for a given object",
+  "description": "Metadata of relationships for a given object",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceRelationships",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "vendor": {
+      "type": "object",
+      "description": "Relationship of vendor for a given object",
+      "$ref": "../metaIncluded.json"
+    },
+    "provider": {
+      "type": "object",
+      "description": "Relationship of provider for a given object",
+      "$ref": "../metaIncluded.json"
+    },
+    "title": {
+      "type": "object",
+      "description": "Relationship of title for a given object",
+      "$ref": "../metaIncluded.json"
+    },
+    "package": {
+      "type": "object",
+      "description": "Relationship of package for a given object",
+      "$ref": "../metaIncluded.json"
+    }
+  }
+}

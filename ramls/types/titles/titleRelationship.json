@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Titles object schema in providers collection",
+  "description": "Provider object schema in providers collection",
+  "javaType": "org.folio.rest.jaxrs.model.TitleRelationShip",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "resources": {
+      "type": "object",
+      "description": "",
+      "$ref": "../metaIncluded.json"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Titles POST Included Schema",
+  "description": "Titles Post Included Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.TitlePostIncluded",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "The Type Schema",
+      "example": "resources"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "The Attributes Schema",
+      "$ref": "titlePostIncludedPackageId.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

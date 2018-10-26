@@ -17,14 +17,17 @@ types:
   
 traits:
   queriable: !include traits/queriable.raml
+  sortable: !include traits/sortable.raml
+  pageable: !include traits/pageable.raml
   filterable: !include traits/filterable.raml
+  includable: !include traits/includePackages.raml
 
 /eholdings/providers:
   displayName: Providers
   description: Collection of available providers in eholdings.
   get:
     description: Get a list of providers based on the search query.
-    is: [queriable]
+    is: [queriable, sortable, pageable]
     responses:
       200:
         description: OK
@@ -44,15 +47,7 @@ traits:
         type: string
     get:
       description: Get provider given providerId
-      queryParameters:
-        include:
-          displayName: Nested resource
-          type: string
-          enum: [ packages ]
-          description: Name of nested resource to include
-          default: packages
-          example: packages
-          required: false
+      is: [includable]
       responses:
         200:
           description: OK
@@ -80,7 +75,9 @@ traits:
       body:
         application/vnd.api+json:
           type: providerPutRequest
-          example: !include examples/providers/providers_providerId_put_request.json
+          example:
+            strict: false
+            value: !include examples/providers/providers_providerId_put_request.json
       responses:
         200:
           description: OK
@@ -94,7 +91,7 @@ traits:
   /packages:
       get:
         description: Search within a list of packages associated with a given provider.
-        is: [queriable, filterable]
+        is: [queriable, filterable, sortable, pageable]
         responses:
           200:
             description: OK
@@ -108,4 +105,3 @@ traits:
 
 
 
- 

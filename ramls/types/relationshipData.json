@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Data of relationships for a given object",
+  "description": "Data of relationships for a given object",
+  "javaType": "org.folio.rest.jaxrs.model.RelationshipData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "The Type Schema",
+      "example": "resources"
+    },
+    "id": {
+      "type": "string",
+      "description": "The Id Schema",
+      "example": "269-1565-316875"
+    }
+  }
+}

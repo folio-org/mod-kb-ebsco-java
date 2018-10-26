@@ -14,7 +14,7 @@
     "customCoverage": {
       "type": "object",
       "description": "Custom Coverage",
-      "$ref": "../customCoverage.json"
+      "$ref": "../coverage.json"
     },
     "isCustom": {
       "type": "boolean",

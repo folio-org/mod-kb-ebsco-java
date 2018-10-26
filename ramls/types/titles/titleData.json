@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Title attributes schema",
+  "description": "Title attributes schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.TitleAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "contributors": {
+      "type": "array",
+      "description": "The Contributors Schema",
+      "items": {
+        "type": "object",
+        "description": "The Contributors Schema",
+        "$ref": "../contributor.json"
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "The Description Schema",
+      "example": "Provides information about all areas of American Studies."
+    },
+    "edition": {
+      "type": "string",
+      "description": "The Edition Schema",
+      "example": "Second edition"
+    },
+    "identifiers": {
+      "type": "array",
+      "description": "List of title identifiers",
+      "items": {
+        "type": "object",
+        "description": "The Identifiers Schema",
+        "$ref": "../identifier.json"
+      }
+    },
+    "isPeerReviewed": {
+      "type": "boolean",
+      "description": "Defines if peer reviewed",
+      "example": false
+    },
+    "isTitleCustom": {
+      "type": "boolean",
+      "description": "Defines if the title is custom",
+      "example": false
+    },
+    "name": {
+      "type": "string",
+      "description": "Title name",
+      "example": "A call to action: Changing the culture of drinking at U.S. colleges"
+    },
+    "publicationType": {
+      "type": "string",
+      "description": "Type of publication",
+      "enum": [
+        "All",
+        "Audiobook",
+        "Book",
+        "Book Series",
+        "Database",
+        "Journal",
+        "Newsletter",
+        "Newspaper",
+        "Proceedings",
+        "Report",
+        "Streaming Audio",
+        "Streaming Video",
+        "Thesis & Dissertation",
+        "Website",
+        "Unspecified"
+      ],
+      "example": "Journal"
+    },
+    "publisherName": {
+      "type": "string",
+      "description": "Publisher name",
+      "example": "Elsevier"
+    },
+    "subjects": {
+      "type": "array",
+      "description": "List of title subjects",
+      "items": {
+        "type": "object",
+        "$ref": "../subject.json"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "publicationType"
+  ]
+}
+
+

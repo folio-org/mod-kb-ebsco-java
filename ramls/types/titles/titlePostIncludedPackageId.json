@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Titles POST Included Package Id Schema",
+  "description": "Titles Post Included Package Id Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.TitlePostIncludedPackageId",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "packageId": {
+      "type": "string",
+      "description": "The Package id Schema",
+      "example": "123355-2868997"
+    }
+  },
+  "required": [
+    "packageId"
+  ]
+}
