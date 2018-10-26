@@ -12,7 +12,7 @@ documentation:
 types:
   configuration: !include types/configuration/configuration.json
   configurationPutRequest: !include types/configuration/configurationPutRequest.json
-  configurationUnprocessableError: !include types/configuration/configurationUnprocessableError.json
+  jsonapiError: !include types/configuration/jsonapiError.json
   configurationStatus: !include types/status/status.json
 
 /eholdings/proxy-types:
@@ -128,7 +128,7 @@ types:
         description: Unprocessable Entity
         body:
           application/vnd.api+json:
-            type: configurationUnprocessableError
+            type: jsonapiError
             example:
               strict: false
               value: !include examples/configuration/kb_configuration_put_422_response.json

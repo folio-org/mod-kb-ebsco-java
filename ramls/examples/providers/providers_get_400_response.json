@@ -1,0 +1,8 @@
+{
+  "errors": [{
+    "title": "Parameter count is less than 1."
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

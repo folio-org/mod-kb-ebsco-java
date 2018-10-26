@@ -1,0 +1,205 @@
+{
+  "totalResults": 115,
+  "vendors": [
+    {
+      "vendorId": 131872,
+      "vendorName": "Editions de L'Université de Bruxelles",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 66221,
+      "vendorName": "Editions ENI",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 1,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 288,
+      "vendorName": "Editions Francis Lefebvre",
+      "isCustomer": false,
+      "packagesTotal": 16,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 274,
+      "vendorName": "Editions Legislatives",
+      "isCustomer": false,
+      "packagesTotal": 3,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 66965,
+      "vendorName": "Editora Fórum",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 114983,
+      "vendorName": "Editorial Legal SEPIN",
+      "isCustomer": false,
+      "packagesTotal": 2,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 124642,
+      "vendorName": "Editorial Medica Panamericana",
+      "isCustomer": false,
+      "packagesTotal": 3,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 702,
+      "vendorName": "Editorial Océano",
+      "isCustomer": false,
+      "packagesTotal": 9,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 132297,
+      "vendorName": "Edizioni All Insegna del Giglio ",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 334,
+      "vendorName": "Edizioni Minerva Medica",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 738,
+      "vendorName": "EDK IDES",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 131356,
+      "vendorName": "Edorium",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 218,
+      "vendorName": "EDP Sciences",
+      "isCustomer": false,
+      "packagesTotal": 12,
+      "packagesSelected": 1,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 122050,
+      "vendorName": "Edra Urban & Partner",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 62849,
+      "vendorName": "Educational Resources Information Center - ERIC ",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 111083,
+      "vendorName": "Edusites",
+      "isCustomer": false,
+      "packagesTotal": 3,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 7048,
+      "vendorName": "Edward Elgar Publishing",
+      "isCustomer": false,
+      "packagesTotal": 44,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 80291,
+      "vendorName": "eFunda",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 380,
+      "vendorName": "EG - Eurographics Digital Library",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 1109,
+      "vendorName": "E-Global Services",
+      "isCustomer": false,
+      "packagesTotal": 3,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 132393,
+      "vendorName": "Eidgenössische Ethikkommission für die Biotechnologie im Ausserhumanbereich EKAH",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 110971,
+      "vendorName": "Eisma Business Media",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 61469,
+      "vendorName": "El Instituto de Investigaciones Agropecuarias (INIA)",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 22127,
+      "vendorName": "ELearning Guild",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    },
+    {
+      "vendorId": 647,
+      "vendorName": "Electre",
+      "isCustomer": false,
+      "packagesTotal": 1,
+      "packagesSelected": 0,
+      "vendorToken": null
+    }
+  ]
+}

@@ -30,12 +30,13 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 @RunWith(VertxUnitRunner.class)
-public class EholdingsStatusTest {
+public class EholdingsProvidersImplTest {
   private static final Header TENANT_HEADER = new Header(RestConstants.OKAPI_TENANT_HEADER, "fs");
   private static final Header TOKEN_HEADER = new Header(RestConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN");
-
+  private static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
   private static RequestSpecification spec;
   private static int port;
   private static String host;
@@ -53,7 +54,8 @@ public class EholdingsStatusTest {
     port = NetworkUtils.nextFreePort();
     host = "http://localhost";
 
-    DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions().setConfig(new JsonObject().put("http.port", port));
+    DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions()
+      .setConfig(new JsonObject().put("http.port", port));
     vertx.deployVerticle(RestVerticle.class.getName(), restVerticleDeploymentOptions, context.asyncAssertSuccess());
 
     spec = new RequestSpecBuilder()
@@ -67,15 +69,13 @@ public class EholdingsStatusTest {
   }
 
   @Test
-  public void shouldReturnTrueWhenRMAPIRequestCompletesWith200Status() throws IOException, URISyntaxException {
+  public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
     String wiremockUrl = host + ":" + userMockServer.port();
-
     TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
-
     WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile("responses/rmapi/vendors/get-zero-vendors-response.json"))));
+          .withBody(TestUtil.readFile("responses/rmapi/vendors/get-vendors-response.json"))));
 
     RestAssured.given()
       .spec(spec).port(port)
@@ -83,21 +83,37 @@ public class EholdingsStatusTest {
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .when()
-      .get("eholdings/status")
+      .get("eholdings/providers?q=e&page=1&sort=VendorName")
       .then()
       .statusCode(200)
-      .body("data.attributes.isConfigurationValid", equalTo(true));
+      .body("meta.totalResults" , notNullValue())
+      .body("data[0].type", equalTo("providers"))
+      .body("data[0].id", notNullValue())
+      .body("data[0].attributes.name", notNullValue());
   }
 
   @Test
-  public void shouldReturnFalseWhenRMAPIRequestCompletesWithErrorStatus() throws IOException, URISyntaxException {
+  public void shouldReturnErrorIfParameterInvalid() {
+    RestAssured.given()
+      .spec(spec).port(port)
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, "localhost:8080"))
+      .header(TENANT_HEADER)
+      .header(TOKEN_HEADER)
+      .when()
+      .get("eholdings/providers?q=e&count=1000")
+      .then()
+      .statusCode(400)
+      .body("errors.first.title" , notNullValue());
+  }
+
+  @Test
+  public void shouldReturn500IfRMApiReturnsError() throws IOException, URISyntaxException {
     String wiremockUrl = host + ":" + userMockServer.port();
-
     TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
-
     WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(401)));
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(500)));
 
     RestAssured.given()
       .spec(spec).port(port)
@@ -105,22 +121,9 @@ public class EholdingsStatusTest {
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .when()
-      .get("eholdings/status")
+      .get("eholdings/providers?q=e&count=1")
       .then()
-      .statusCode(200)
-      .body("data.attributes.isConfigurationValid", equalTo(false));
-  }
-
-  @Test
-  public void shouldReturn500OnInvalidOkapiUrl() {
-    RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(RestConstants.OKAPI_URL_HEADER, "wrongUrl^"))
-      .header(TENANT_HEADER)
-      .header(TOKEN_HEADER)
-      .when()
-      .get("eholdings/status")
-      .then()
-      .statusCode(500);
+      .statusCode(500)
+      .body("errors.first.title" , notNullValue());
   }
 }

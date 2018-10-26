@@ -16,7 +16,6 @@ import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
-import org.folio.rest.jaxrs.model.ConfigurationUnprocessableError;
 import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorUtil;
@@ -94,8 +93,8 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
           .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))
       .exceptionally(e -> {
         if (e.getCause() instanceof RMAPIConfigurationInvalidException) {
-          ConfigurationUnprocessableError configurationError = ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR);
-          asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse.respond422WithApplicationVndApiJson(configurationError)));
+          asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
+            .respond422WithApplicationVndApiJson(ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR))));
         } else {
           logger.error(UPDATE_ERROR_MESSAGE, e);
           asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse

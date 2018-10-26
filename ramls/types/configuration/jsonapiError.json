@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Error Response Schema",
+  "description": "Error Response Schema for JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.JsonapiError",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "errors": {
+      "type": "array",
+      "description": "Error Response List",
+      "items": {
+        "type": "object",
+        "$ref": "jsonapiErrorResponse.json"
+      }
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "JSON API Version",
+      "$ref": "../jsonapi.json"
+    }
+  }
+}
