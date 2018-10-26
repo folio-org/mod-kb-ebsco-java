@@ -11,13 +11,18 @@ import org.folio.rest.resource.interfaces.InitAPI;
 public class InitAPIImpl implements InitAPI{
   @Override
   public void init(Vertx vertx, Context context, Handler<AsyncResult<Boolean>> handler) {
-    try {
-      //call getInstance to initialize configuration
-      PropertyConfiguration.getInstance();
-      handler.handle(Future.succeededFuture(true));
-    }
-    catch (RuntimeException ex){
-      handler.handle(Future.failedFuture(ex));
-    }
+    vertx.executeBlocking(
+      future -> {
+        //call getInstance to initialize configuration
+        PropertyConfiguration.getInstance();
+        future.complete();
+      },
+      result -> {
+        if (result.succeeded()) {
+          handler.handle(Future.succeededFuture(true));
+        } else {
+          handler.handle(Future.failedFuture(result.cause()));
+        }
+      });
   }
 }
