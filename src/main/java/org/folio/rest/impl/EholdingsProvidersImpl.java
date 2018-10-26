@@ -12,10 +12,8 @@ import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.converter.VendorConverter;
-import org.folio.rest.jaxrs.model.EholdingsProvidersGetSort;
 import org.folio.rest.jaxrs.model.EholdingsProvidersPackagesGetFilterSelected;
 import org.folio.rest.jaxrs.model.EholdingsProvidersPackagesGetFilterType;
-import org.folio.rest.jaxrs.model.EholdingsProvidersPackagesGetSort;
 import org.folio.rest.jaxrs.model.EholdingsProvidersProviderIdGetInclude;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
@@ -56,7 +54,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   @Override
   @Validate
-  public void getEholdingsProviders(String q, int page, int count, EholdingsProvidersGetSort sort, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProviders(String q, int page, int count, String sort, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
       return;
     }
@@ -75,7 +73,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
           .status(500)
           .header("Content-Type", "application/vnd.api+json")
-          .entity(ErrorUtil.createError(e.getMessage()))
+          .entity(ErrorUtil.createError(e.getCause().getMessage()))
           .build()));
         return null;
       });
@@ -92,7 +90,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   @Override
-  public void getEholdingsProvidersPackages(String q, int page, int count, EholdingsProvidersPackagesGetSort sort, EholdingsProvidersPackagesGetFilterSelected filterSelected, EholdingsProvidersPackagesGetFilterType filterType, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProvidersPackages(String q, int page, int count, String sort, EholdingsProvidersPackagesGetFilterSelected filterSelected, EholdingsProvidersPackagesGetFilterType filterType, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 }

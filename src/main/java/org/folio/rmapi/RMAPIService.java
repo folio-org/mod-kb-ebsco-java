@@ -7,13 +7,14 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.folio.rest.jaxrs.model.EholdingsProvidersGetSort;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.Vendors;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -104,10 +105,16 @@ public class RMAPIService {
     return this.getRequest(constructURL("vendors?search=zz12&offset=1&orderby=vendorname&count=1"), Object.class);
   }
 
-  public CompletableFuture<Vendors> retrieveProviders(String q, int page, int count, EholdingsProvidersGetSort sort) {
+  public CompletableFuture<Vendors> retrieveProviders(String q, int page, int count, String sort) {
     List<String> parameters = new ArrayList<>();
     if (!Strings.isNullOrEmpty(q)) {
-      parameters.add("search=" + q);
+      String encodedQuery;
+      try {
+        encodedQuery = URLEncoder.encode(q, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        throw new IllegalStateException("failed to encode query using UTF-8");
+      }
+      parameters.add("search=" + encodedQuery);
     }
     parameters.add("offset=" + page);
     parameters.add("count=" + count);
@@ -116,18 +123,16 @@ public class RMAPIService {
     return this.getRequest(constructURL("vendors?" + String.join("&", parameters)), Vendors.class);
   }
 
-  private String determineSortValue(EholdingsProvidersGetSort sort, String query) {
+  private String determineSortValue(String sort, String query) {
     if(sort == null){
       return query == null ? VENDOR_NAME_PARAMETER : RELEVANCE_PARAMETER;
     }
-    switch (sort) {
-      case NAME:
-        return VENDOR_NAME_PARAMETER;
-      case RELEVANCE:
-        return RELEVANCE_PARAMETER;
-      default:
-        throw new IllegalArgumentException("Invalid value for sort - " + sort.toString());
+    if(sort.equalsIgnoreCase("relevance")){
+      return RELEVANCE_PARAMETER;
+    }else if(sort.equalsIgnoreCase("name")){
+      return VENDOR_NAME_PARAMETER;
     }
+    throw new IllegalArgumentException("Invalid value for sort - " + sort);
   }
 
   /**
