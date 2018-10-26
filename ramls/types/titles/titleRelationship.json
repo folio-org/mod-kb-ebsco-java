@@ -8,7 +8,7 @@
   "properties": {
     "resources": {
       "type": "object",
-      "description": "",
+      "description": "Displays Title Relationship if any",
       "$ref": "../metaIncluded.json"
     }
   }
