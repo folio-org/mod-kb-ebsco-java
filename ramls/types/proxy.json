@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Proxy Schema",
   "description": "Proxy Schema",
-  "javaType": "org.folio.rest.jaxrs.model.Proxy",
+  "javaType": "org.folio.rest.jaxrs.model.EholdingsProxy",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -16,5 +16,8 @@
       "description": "Whether this proxy is inherited",
       "example": true
     }
-  }
+  },
+  "required": [
+    "id"
+  ]
 }
