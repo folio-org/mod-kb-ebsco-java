@@ -14,7 +14,7 @@
     "proxy": {
       "type": "object",
       "description": "Proxy",
-      "$ref": "../proxy.json"
+      "$ref": "../proxyPut.json"
     }
   }
 }
