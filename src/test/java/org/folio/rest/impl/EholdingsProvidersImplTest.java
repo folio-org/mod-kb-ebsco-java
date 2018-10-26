@@ -83,7 +83,7 @@ public class EholdingsProvidersImplTest {
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .when()
-      .get("eholdings/providers?q=e&page=1&sort=VendorName")
+      .get("eholdings/providers?q=e&page=1&sort=name")
       .then()
       .statusCode(200)
       .body("meta.totalResults" , notNullValue())
@@ -96,7 +96,7 @@ public class EholdingsProvidersImplTest {
   public void shouldReturnErrorIfParameterInvalid() {
     RestAssured.given()
       .spec(spec).port(port)
-      .header(new Header(RestConstants.OKAPI_URL_HEADER, "localhost:8080"))
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, "http://localhost:8080"))
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .when()
