@@ -38,7 +38,7 @@
       "description": "List of resources for a given title",
       "items": {
         "type": "object",
-        "$ref": "../resources/resources.json"
+        "$ref": "../resources/resourceCollectionItem.json"
       }
     },
     "jsonapi": {

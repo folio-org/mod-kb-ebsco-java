@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Packages object schema",
-  "description": "Packages object schema",
-  "javaType": "org.folio.rest.jaxrs.model.Packages",
+  "title": "Package object schema for a collection",
+  "description": "Package object schema for a collection",
+  "javaType": "org.folio.rest.jaxrs.model.PackageCollectionItem",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -14,6 +14,7 @@
     "type": {
       "type": "string",
       "description": "Type of resource",
+      "enum": ["packages"],
       "example": "packages"
     },
     "attributes": {
@@ -24,7 +25,7 @@
     "relationships": {
       "type": "object",
       "description": "Displays if any resources are included in relationships",
-      "$ref": "../relationships.json"
+      "$ref": "packageRelationships.json"
     }
   }
 }

@@ -1,45 +1,483 @@
 {
-  "data": [{
-    "id": "0-1117849",
-    "type": "packages",
-    "attributes": {
-      "contentType": "Unknown",
-      "customCoverage": {
-        "beginCoverage": "",
-        "endCoverage": ""
+  "data": [
+    {
+      "id": "583-4345",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": true,
+        "name": "ABC-CLIO eBook Collection",
+        "packageId": 4345,
+        "packageType": "Variable",
+        "providerId": 583,
+        "providerName": "ABC-CLIO",
+        "selectedCount": 9589,
+        "titleCount": 9590,
+        "vendorId": 583,
+        "vendorName": "ABC-CLIO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
       },
-      "isCustom": false,
-      "isSelected": false,
-      "name": "",
-      "packageId": 1117849,
-      "packageType": "Complete",
-      "providerId": 0,
-      "providerName": "System Account",
-      "selectedCount": 0,
-      "titleCount": 0,
-      "vendorId": 0,
-      "vendorName": "System Account",
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
       }
     },
-    "relationships": {
-      "resources": {
-        "meta": {
-          "included": false
+    {
+      "id": "583-2356523",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "ABC-CLIO eBook Collection 2008 (TAEBC)",
+        "packageId": 2356523,
+        "packageType": "Complete",
+        "providerId": 583,
+        "providerName": "ABC-CLIO",
+        "selectedCount": 0,
+        "titleCount": 693,
+        "vendorId": 583,
+        "vendorName": "ABC-CLIO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
         }
       },
-      "vendor": {
-        "meta": {
-          "included": false
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "583-2356522",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "ABC-CLIO eBook Collection 2009 (TAEBC)",
+        "packageId": 2356522,
+        "packageType": "Complete",
+        "providerId": 583,
+        "providerName": "ABC-CLIO",
+        "selectedCount": 0,
+        "titleCount": 1624,
+        "vendorId": 583,
+        "vendorName": "ABC-CLIO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
         }
       },
-      "provider": {
-        "meta": {
-          "included": false
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "583-2356521",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "ABC-CLIO eBook Collection 2010 (TAEBC)",
+        "packageId": 2356521,
+        "packageType": "Complete",
+        "providerId": 583,
+        "providerName": "ABC-CLIO",
+        "selectedCount": 0,
+        "titleCount": 359,
+        "vendorId": 583,
+        "vendorName": "ABC-CLIO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "583-2356520",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "ABC-CLIO eBook Collection 2011 (TAEBC)",
+        "packageId": 2356520,
+        "packageType": "Complete",
+        "providerId": 583,
+        "providerName": "ABC-CLIO",
+        "selectedCount": 0,
+        "titleCount": 221,
+        "vendorId": 583,
+        "vendorName": "ABC-CLIO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "583-2356519",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "ABC-CLIO eBook Collection 2012 (TAEBC)",
+        "packageId": 2356519,
+        "packageType": "Complete",
+        "providerId": 583,
+        "providerName": "ABC-CLIO",
+        "selectedCount": 0,
+        "titleCount": 302,
+        "vendorId": 583,
+        "vendorName": "ABC-CLIO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "583-2356518",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "ABC-CLIO eBook Collection 2014 (TAEBC)",
+        "packageId": 2356518,
+        "packageType": "Complete",
+        "providerId": 583,
+        "providerName": "ABC-CLIO",
+        "selectedCount": 0,
+        "titleCount": 169,
+        "vendorId": 583,
+        "vendorName": "ABC-CLIO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "203-5302",
+      "type": "packages",
+      "attributes": {
+        "contentType": "Aggregated Full Text",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "Credo ABC-CLIO Collection",
+        "packageId": 5302,
+        "packageType": "Variable",
+        "providerId": 203,
+        "providerName": "Credo Reference",
+        "selectedCount": 0,
+        "titleCount": 339,
+        "vendorId": 203,
+        "vendorName": "Credo Reference",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "203-5316",
+      "type": "packages",
+      "attributes": {
+        "contentType": "Aggregated Full Text",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "Credo ABC-CLIO Contemporary World Issues",
+        "packageId": 5316,
+        "packageType": "Variable",
+        "providerId": 203,
+        "providerName": "Credo Reference",
+        "selectedCount": 0,
+        "titleCount": 74,
+        "vendorId": 203,
+        "vendorName": "Credo Reference",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "203-5317",
+      "type": "packages",
+      "attributes": {
+        "contentType": "Aggregated Full Text",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "Credo ABC-CLIO World Mythology Collection",
+        "packageId": 5317,
+        "packageType": "Variable",
+        "providerId": 203,
+        "providerName": "Credo Reference",
+        "selectedCount": 0,
+        "titleCount": 10,
+        "vendorId": 203,
+        "vendorName": "Credo Reference",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "1075-7698",
+      "type": "packages",
+      "attributes": {
+        "contentType": "Online Reference",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": false,
+        "name": "ABC Chemistry: Directory of Free Full-Text Journals in Chemistry",
+        "packageId": 7698,
+        "packageType": "Complete",
+        "providerId": 1075,
+        "providerName": "ABC Chemistry",
+        "selectedCount": 0,
+        "titleCount": 1,
+        "vendorId": 1075,
+        "vendorName": "ABC Chemistry",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "vendor": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
         }
       }
     }
-  }]
+  ],
+  "meta": {
+    "totalResults": 11
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
 }

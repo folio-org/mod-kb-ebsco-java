@@ -1,22 +1,22 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Package Collection Schema",
-  "description": "Package Collection Schema",
-  "javaType": "org.folio.rest.jaxrs.model.PackageCollection",
+  "title": "Resource Collection Schema",
+  "description": "Resource Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceCollection",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "data": {
       "type": "array",
-      "description": "List of packages",
+      "description": "List of resources",
       "items": {
         "type": "object",
-        "$ref": "packageCollectionItem.json"
+        "$ref": "resourceCollectionItem.json"
       }
     },
     "meta": {
       "type": "object",
-      "description": "metadata containing total results in packages collection",
+      "description": "metadata containing total results in resources collection",
       "$ref": "../metaTotalResults.json"
     },
     "jsonapi": {

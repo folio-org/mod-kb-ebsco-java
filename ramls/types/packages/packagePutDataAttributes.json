@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Put Data attributes schema",
+  "description": "Package Put Data attributes schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.PackagePutDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Package name",
+      "example": "Advanced Placement Psychology Collection"
+    },
+    "contentType": {
+      "type": "string",
+      "description": "Package type",
+      "enum": [
+        "Aggregated Full Text",
+        "Abstract and Index",
+        "E-Book",
+        "E-Journal",
+        "Print",
+        "Online Reference",
+        "Unknown"],
+      "example": "E-Journal"
+    },
+    "customCoverage": {
+      "type": "object",
+      "description": "Custom Coverage",
+      "$ref": "../coverage.json"
+    },
+    "isSelected": {
+      "type": "boolean",
+      "description": "Selection of the managed or custom package to be updated. Note that selection can be updated for BOTH CUSTOM AND MANAGED PACKAGES. For custom packages, if this is set to false, it deletes the package.",
+      "example": false
+    },
+    "allowKbToAddTitles": {
+      "type": "boolean",
+      "description": "Automatically allow KB to add titles for a managed package. Note that this attribute can be updated ONLY FOR A MANAGED PACKAGE.",
+      "example": true
+    },
+    "visibilityData": {
+      "type": "object",
+      "description": "Visibility data",
+      "$ref": "../visibilityData.json"
+    },
+    "packageToken": {
+      "type": "object",
+      "description": "Tokens are variables in content URLs that identify the customer. The token is text within the URL that needs to be replaced with an institute-specific value.",
+      "$ref": "../token.json"
+    },
+    "proxy": {
+      "type": "object",
+      "description": "Proxy",
+      "$ref": "../proxy.json"
+    }
+  },
+  "required": [
+    "name",
+    "contentType"
+  ]
+}

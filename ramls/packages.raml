@@ -1,109 +1,42 @@
 #%RAML 1.0
 title: mod-kb-ebsco-java
 baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
 version: v1
 mediaType: "application/vnd.api+json"
 
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
 traits:
-  filterable:
-    queryParameters:
-      filterSelected:
-        displayName: Selection status
-        type: string
-        enum: ["true", "false", "ebsco"]
-        description: Filter to narrow down results based on selection status
-        required: false
-      filterType:
-        displayName: Content type
-        type: string
-        enum: ["all", "aggregatefulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference"]
-        description: Filter to narrow  down results based on content type
-        default: all
-        required: false
+  queriable: !include traits/queriable.raml
+  sortable: !include traits/sortable.raml
+  pageable: !include traits/pageable.raml
+  filterable: !include traits/filterable.raml
+  titleFilterable: !include traits/titlesFilterable.raml
 
 types:
-  customCoverage: # normal object type declaration
-    type: object
-    properties:
-      beginCoverage: string
-      endCoverage: string
-    example: |
-      {
-        "beginCoverage": "2003-01-01",
-        "endCoverage": "2003-12-01"
-      }
-#      TODO: should be uncommented for MODKBEKBJ-22
-#  visibilityData:
-#    type: object
-#    properties:
-#      isHidden: boolean
-#    example: |
-#      {
-#        "isHidden": true
-#      }
-#  proxy:
-#    type: object
-#    properties:
-#      id: string
-#    example: |
-#      {
-#        "id": "EZ_Proxy"
-#      }
+  packageCollection: !include types/packages/packageCollection.json
+  packagePostRequest: !include types/packages/packagePostRequest.json
+  packagePutRequest: !include types/packages/packagePutRequest.json
+  package: !include types/packages/package.json
+  resourceCollection: !include types/resources/resourceCollection.json
+  jsonapiError: !include types/jsonapiError.json
 
 /eholdings/packages:
   displayName: Packages
   get:
-    description: Retrieve a collection of packages
+    description: Retrieve a collection of packages based on the search query.
+    is: [queriable, filterable, sortable, pageable]
     queryParameters:
-      q:
-        displayName: Search query
-        type: string
-        description: String to search for to get a collection of packages
-        example: ABC-CLIO
-        required: false
-      page:
-        displayName: Page offset
-        type: integer
-        minimum: 1
-        maximum: 2147483647
-        description: Page offset to retrieve results from Ebsco KB
-        example: 1
-        required: false
-      count:
-        displayName: Count
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: Count of number of results to retrieve from Ebsco KB
-        example: 100
-        default: 25
-        required: false
-      sort:
-        displayName: Sort options
-        type: string
-        enum: ["name", "relevance"]
-        description: Option by which results are sorted
-        example: name
-        required: false
-      filterSelected:
-        displayName: Selection status
-        type: string
-        enum: ["true", "false", "ebsco", "all"]
-        description: Filter to narrow down results based on selection status
-        example: "false"
-        required: false
-      filterType:
-        displayName: Content type
-        type: string
-        enum: ["all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "onlinereference", "unknown"]
-        description: Filter to narrow down results based on content type
-        example: print
-        required: false
-      filterCustom:
+      filter[custom]:
         displayName: Custom Packages List
         type: string
-        enum: ["true"]
-        description: Filter to get list of custom packages
+        description: |
+          Filter to get list of custom packages
+          Possible values are
+            - true
         example: "true"
         required: false
     responses:
@@ -111,12 +44,22 @@ types:
         description: OK
         body:
           application/vnd.api+json:
-            example: !include examples/packages/packages_get_200_response.json
+            description: |
+              An array of packages comprising the results of the query.
+              The array will be paged if its length exceeds the value set with the `count` query param, or the default `count` of 25 in its stead.
+              The included metadata gives us the total result count outside of the paged context.
+            type: packageCollection
+            example:
+              strict: false
+              value: !include examples/packages/packages_get_200_response.json
       400:
         description: Bad Request
         body:
           application/vnd.api+json:
-            example: !include examples/packages/packages_get_400_response.json
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/packages/packages_get_400_response.json
   post:
     description: Create a custom package
     headers:
@@ -124,46 +67,45 @@ types:
         example: application/vnd.api+json
     body:
       application/vnd.api+json:
-        properties:
-          data:
-            description: Needed because of JSON API
-            type: object
-            required: true
-            properties:
-              type: string
-              attributes:
-                description: Needed because of JSON API
-                type: object
-                required: true
-                properties:
-                  name:
-                    description: Name of the custom package to be created
-                    type: string
-                    example: My test package
-                    required: true
-                  contentType:
-                    description: Content type of the custom package to be created
-                    type: string
-                    enum: ["Aggregated Full Text", "Abstract and Index", "E-Book", "E-Journal", "Print", "Online Reference", "Unknown"]
-                    example: Unknown
-                    required: true
-                  customCoverage:
-                    description: Coverage dates of the custom package to be created
-                    type: customCoverage
-                    required: false
-        example: !include examples/packages/packages_post_request.json
+          description: Create a custom package
+          type: packagePostRequest
+          example:
+            strict: false
+            value: !include examples/packages/packages_post_request.json
     responses:
       200:
         description: OK
         body:
           application/vnd.api+json:
-            example: !include examples/packages/packages_post_200_response.json
+            description: The server has successfully fulfilled the POST request.
+            type: package
+            example:
+              strict: false
+              value: !include examples/packages/packages_post_200_response.json
       400:
         description: Bad Request
         body:
           application/vnd.api+json:
-              example: !include examples/packages/packages_post_400_response.json
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/packages/packages_post_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/packages/packages_post_422_response.json
   /{packageId}:
+    displayName: Get package by package Id
+    description: Instance of a package given packageId
+    uriParameters:
+        packageId:
+          description: identifier of the package formed from Provider Id and Package Id (see example)
+          type: string
+          example: 583-4345
     get:
       description: |
         Retrieve a specific package given packageId.
@@ -172,8 +114,11 @@ types:
         include:
           displayName: Nested resources or provider
           type: string
-          enum: ["resources", "provider"]
-          description: Include resources or provider in response
+          description: |
+            Include resources or provider in response
+            Possible values are
+              - resources
+              - provider
           example: resources
           required: false
       responses:
@@ -181,17 +126,27 @@ types:
           description: OK
           body:
             application/vnd.api+json:
-              example: !include examples/packages/packages_packageId_get_200_response.json
+              description: Package details from KB for a given package Id.
+              type: package
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_get_200_response.json
         400:
           description: Bad Request
           body:
             application/vnd.api+json:
-              example: !include examples/packages/packages_packageId_get_400_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_get_400_response.json
         404:
           description: Not Found
           body:
             application/vnd.api+json:
-              example: !include examples/packages/packages_packageId_get_404_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_get_404_response.json
     put:
       description: |
         Update a managed or custom package using packageId
@@ -201,97 +156,44 @@ types:
           example: application/vnd.api+json
       body:
         application/vnd.api+json:
-          properties:
-            data:
-              description: Needed because of JSON API
-              type: object
-              required: true
-              properties:
-                type: string
-                attributes:
-                  description: Needed because of JSON API
-                  type: object
-                  required: true
-                  properties:
-                    name:
-                      description: |
-                        Name of the custom package to be updated.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM PACKAGE.
-                      type: string
-                      example: My test package
-                      required: true
-                    contentType:
-                      description: |
-                        Content type of the custom package to be updated.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM PACKAGE.
-                      type: string
-                      enum: ["Aggregated Full Text", "Abstract and Index", "E-Book", "E-Journal", "Print", "Online Reference", "Unknown"]
-                      example: Unknown
-                      required: true
-                    customCoverage:
-                      description: |
-                        Coverage dates of the custom or managed package to be updated.
-                        Note that this attribute can be updated BOTH FOR CUSTOM PACKAGES AND MANAGED PACKAGES.
-                      type: customCoverage
-                      required: false
-                    isSelected:
-                      description: |
-                        Selection of the managed or custom package to be updated.
-                        Note that selection can be updated for BOTH CUSTOM AND MANAGED PACKAGES.
-                        For custom packages, if this is set to false, it deletes the package.
-                      type: boolean
-                      example: true
-                      required: false
-                    allowKbToAddTitles:
-                      description: |
-                        Automatically allow KB to add titles for a managed package.
-                        Note that this attribute can be updated ONLY FOR A MANAGED PACKAGE.
-                      type: boolean
-                      example: true
-                      required: false
-#                    visibilityData:
-#                      description: |
-#                        Indicates whether package should be hidden or visible to patrons.
-#                        Note that this attribute can be updated both for CUSTOM AND MANAGED PACKAGES.
-#                      type: visibilityData
-#                      required: false
-                    packageToken:
-                      displayName: Package token
-                      type: object
-                      description: |
-                        Tokens are variables in content URLs that identify the customer.
-                        The token is text within the URL that needs to be replaced with an institute-specific value.
-                      example: |
-                        {
-                          "value": "hellotoken"
-                        }
-                      required: false
-#                    proxy:
-#                      displayName: Proxy ID
-#                      type: proxy
-#                      required: false
-          example: !include examples/packages/packages_put_request.json
+          type: packagePutRequest
+          example:
+            strict: false
+            value: !include examples/packages/packages_put_request.json
       responses:
         200:
           description: OK
           body:
             application/vnd.api+json:
-              example: !include examples/packages/packages_packageId_put_200_response.json
+              description: The server has successfully fulfilled the PUT request.
+              type: package
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_put_200_response.json
         400:
           description: Bad Request
           body:
             application/vnd.api+json:
-                example: !include examples/packages/packages_packageId_put_400_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_put_400_response.json
         404:
           description: Not Found
           body:
             application/vnd.api+json:
-              example: !include examples/packages/packages_packageId_put_404_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_put_404_response.json
         422:
           description: Unprocessable Entity
           body:
             application/vnd.api+json:
-              example: !include examples/packages/packages_packageId_put_422_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_put_422_response.json
     delete:
       description: |
         Delete a specific custom package using packageId.
@@ -299,58 +201,41 @@ types:
       responses:
         204:
           description: No Content
+        400:
+          description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/packages/packages_packageId_delete_400_response.json
     /resources:
       get:
         description: Include all resources belonging to a specific package
-        queryParameters:
-          sort:
-            displayName: Sort options
-            type: string
-            enum: ["name", "relevance"]
-            description: Option by which results are sorted. Defaults to relevance if query or name if no query.
-            example: name
-            required: false
-          filterSelected:
-            displayName: Selection status
-            type: string
-            enum: ["true", "false", "ebsco", "all"]
-            description: Filter to narrow down results based on selection status. Defaults to all.
-            example: "false"
-            required: false
-          filterType:
-            displayName: Resource type
-            type: string
-            enum: ["all", "audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report","streamingaudio", "streamingvideo","thesisdissertation",  "website", "unspecified"]
-            description: Filter to narrow down results based on resource type. Defaults to all.
-            example: book
-            required: false
-          filterName:
-            displayName: Query by Title Name
-            type: string
-            description: String to search title name to get a collection of titles
-            example: War and Peace
-            required: false
-          filterIsxn:
-            displayName: Query by ISSN/ISBN
-            type: string
-            description: String to search ISSN and ISBN to get a collection of titles
-            example: 1050-3331
-            required: false
-          filterSubject:
-            displayName: Query by Subject
-            type: string
-            description: String to search subjects to get a collection of titles
-            example: history
-            required: false
-          filterPublisher:
-            displayName: Query by Publisher
-            type: string
-            description: String to search publishers to get a collection of titles
-            example: academic
-            required: false
+        is: [sortable, titleFilterable]
         responses:
           200:
             description: OK
             body:
               application/vnd.api+json:
-                example: !include examples/packages/packages_packageId_resources_get_200_response.json
+                description: All resources belonging to a specific package
+                type: resourceCollection
+                example:
+                  strict: false
+                  value: !include examples/packages/packages_packageId_resources_get_200_response.json
+          400:
+            description: Bad Request
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/packages/packages_packageId_resources_get_400_response.json
+          404:
+            description: Not Found
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/packages/packages_packageId_resources_get_404_response.json

@@ -16,7 +16,7 @@
       "description": "List of packages for a given provider",
       "items": {
         "type": "object",
-        "$ref": "../packages/packages.json"
+        "$ref": "../packages/packageCollectionItem.json"
       }
     },
     "jsonapi": {
