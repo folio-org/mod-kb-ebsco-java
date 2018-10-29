@@ -1,6 +1,5 @@
 package org.folio.rmapi;
 
-import com.google.common.base.Strings;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
@@ -11,12 +10,9 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
+import org.folio.rmapi.builder.VendorUrlBuilder;
 import org.folio.rmapi.model.Vendors;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class RMAPIService {
@@ -29,8 +25,6 @@ public class RMAPIService {
 
   private static final String JSON_RESPONSE_ERROR = "Error processing RMAPI Response";
   private static final String INVALID_RMAPI_RESPONSE = "Invalid RMAPI response";
-  private static final String VENDOR_NAME_PARAMETER = "VendorName";
-  private static final String RELEVANCE_PARAMETER = "Relevance";
 
   private String customerId;
   private String apiKey;
@@ -106,33 +100,13 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Vendors> retrieveProviders(String q, int page, int count, String sort) {
-    List<String> parameters = new ArrayList<>();
-    if (!Strings.isNullOrEmpty(q)) {
-      String encodedQuery;
-      try {
-        encodedQuery = URLEncoder.encode(q, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
-        throw new IllegalStateException("failed to encode query using UTF-8");
-      }
-      parameters.add("search=" + encodedQuery);
-    }
-    parameters.add("offset=" + page);
-    parameters.add("count=" + count);
-    parameters.add("orderby=" + determineSortValue(sort, q));
-
-    return this.getRequest(constructURL("vendors?" + String.join("&", parameters)), Vendors.class);
-  }
-
-  private String determineSortValue(String sort, String query) {
-    if(sort == null){
-      return query == null ? VENDOR_NAME_PARAMETER : RELEVANCE_PARAMETER;
-    }
-    if(sort.equalsIgnoreCase("relevance")){
-      return RELEVANCE_PARAMETER;
-    }else if(sort.equalsIgnoreCase("name")){
-      return VENDOR_NAME_PARAMETER;
-    }
-    throw new IllegalArgumentException("Invalid value for sort - " + sort);
+    String path = new VendorUrlBuilder()
+      .q(q)
+      .page(page)
+      .count(count)
+      .sort(sort)
+      .build();
+    return this.getRequest(constructURL(path), Vendors.class);
   }
 
   /**
