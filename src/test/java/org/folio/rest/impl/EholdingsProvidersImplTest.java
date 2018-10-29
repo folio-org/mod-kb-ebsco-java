@@ -70,13 +70,20 @@ public class EholdingsProvidersImplTest {
 
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/vendors/get-vendors-response.json";
+    int expectedTotalResults = 115;
+    String id = "131872";
+    String name = "Editions de L'Université de Bruxelles";
+    int packagesTotal = 1;
+    int packagesSelected = 0;
+    boolean supportsCustomPackages = false;
+
     String wiremockUrl = host + ":" + userMockServer.port();
     TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
     WireMock.stubFor(
       WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile("responses/rmapi/vendors/get-vendors-response.json"))));
-
+          .withBody(TestUtil.readFile(stubResponseFile))));
     RestAssured.given()
       .spec(spec).port(port)
       .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
@@ -86,10 +93,13 @@ public class EholdingsProvidersImplTest {
       .get("eholdings/providers?q=e&page=1&sort=name")
       .then()
       .statusCode(200)
-      .body("meta.totalResults" , notNullValue())
+      .body("meta.totalResults" , equalTo(expectedTotalResults))
       .body("data[0].type", equalTo("providers"))
-      .body("data[0].id", notNullValue())
-      .body("data[0].attributes.name", notNullValue());
+      .body("data[0].id", equalTo(id))
+      .body("data[0].attributes.name", equalTo(name))
+      .body("data[0].attributes.packagesTotal", equalTo(packagesTotal))
+      .body("data[0].attributes.packagesSelected", equalTo(packagesSelected))
+      .body("data[0].attributes.supportsCustomPackages", equalTo(supportsCustomPackages));
   }
 
   @Test
