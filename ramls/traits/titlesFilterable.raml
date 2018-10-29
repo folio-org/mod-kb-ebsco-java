@@ -2,16 +2,16 @@ queryParameters:
   filter[selected]:
     displayName: Selection status
     type: string
-    enum: ["true", "false", "ebsco", "all"]
     description: Filter to narrow down results based on selection status. Defaults to all.
-    example: ebsco
+    example: |
+      ["true", "false", "ebsco", "all"]
     required: false
   filter[type]:
     displayName: Resource type
     type: string
-    enum: ["all", "audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report", "streamingaudio", "streamingvideo","thesisdissertation", "website", "unspecified"]
     description: Filter to narrow down results based on resource type. Defaults to all.
-    example: book
+    example: |
+      ["all", "audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report", "streamingaudio", "streamingvideo","thesisdissertation", "website", "unspecified"]
     required: false
   filter[name]:
     displayName: Query by Title Name
