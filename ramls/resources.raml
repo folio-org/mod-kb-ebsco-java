@@ -5,22 +5,23 @@ version: v1
 mediaType: "application/vnd.api+json"
 
 types:
-  visibilityData:
-    type: object
-    properties:
-      isHidden: boolean
-    example: |
-      {
-        "isHidden": true
-      }
-  proxy:
-    type: object
-    properties:
-      id: string
-    example: |
-      {
-        "id": "EZ_Proxy"
-      }
+# TODO: should be uncommented for MODKBEKBJ-29
+#  visibilityData:
+#    type: object
+#    properties:
+#      isHidden: boolean
+#    example: |
+#      {
+#        "isHidden": true
+#      }
+#  proxy:
+#    type: object
+#    properties:
+#      id: string
+#    example: |
+#      {
+#        "id": "EZ_Proxy"
+#      }
   customEmbargoPeriod:
     type: object
     properties:
@@ -280,12 +281,12 @@ types:
                       type: boolean
                       example: true
                       required: true
-                    visibilityData:
-                      description: |
-                        Indicates whether resource should be hidden or visible to patrons.
-                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
-                      type: visibilityData
-                      required: false
+#                    visibilityData:
+#                      description: |
+#                        Indicates whether resource should be hidden or visible to patrons.
+#                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
+#                      type: visibilityData
+#                      required: false
                     coverageStatement:
                       description: |
                         Coverage Statement of a managed or custom resource.
@@ -299,12 +300,12 @@ types:
                         Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
                       type: customEmbargoPeriod
                       required: false
-                    proxy:
-                      description: |
-                        Ability to update selection of proxy for a custom or managed resource.
-                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
-                      type: proxy
-                      required: false
+#                    proxy:
+#                      description: |
+#                        Ability to update selection of proxy for a custom or managed resource.
+#                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
+#                      type: proxy
+#                      required: false
           example: !include examples/resources/resources_put_request.json
       responses:
         200:

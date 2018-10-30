@@ -1,0 +1,10 @@
+{
+  "errors": [{
+    "title": "Invalid IdentifierSubType",
+    "detail": "Identifiersubtype :Invalid Identifier subtype",
+    "source": {}
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

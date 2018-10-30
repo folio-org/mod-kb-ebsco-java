@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Subject object schema",
+  "description": "Subject object schema",
+  "javaType": "org.folio.rest.jaxrs.model.TitleSubject",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subject": {
+      "type": "string",
+      "description": "Subject subtype",
+      "example": "Social Services"
+    },
+    "type": {
+      "type": "string",
+      "description": "Subject type",
+      "example": "TLI"
+    }
+  }
+}

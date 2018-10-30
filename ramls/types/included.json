@@ -2,12 +2,13 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Metadata of packages related to a provider",
   "description": "Metadata of packages related to a provider",
+  "javaType": "org.folio.rest.jaxrs.model.MetaDataIncluded",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "included": {
       "type": "boolean",
-      "description": "Relationship of packages to providers",
+      "description": "Relationship between objects",
       "example": false
     }
   }

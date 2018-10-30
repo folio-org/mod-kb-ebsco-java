@@ -2,13 +2,15 @@ queryParameters:
   filter[selected]:
     displayName: Selection status
     type: string
-    enum: ["all", "true", "false", "ebsco"]
-    description: Filter to narrow down results based on selection status
+    description: Filter to narrow down results based on selection status. Possible values are all, true, false, ebsco.
+    example: all
     required: false
   filter[type]:
     displayName: Content type
     type: string
-    enum: ["all", "aggregatefulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference"]
-    description: Filter to narrow down results based on content type
+    description: |
+      Filter to narrow down results based on content type.
+      Possible values are all, aggregatefulltext, abstractandindex, ebook, ejournal, print, unknown, onlinereference.
+    example: ebook
     default: all
     required: false
