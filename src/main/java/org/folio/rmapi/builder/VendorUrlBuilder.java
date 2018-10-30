@@ -9,8 +9,8 @@ import java.util.List;
 
 public class VendorUrlBuilder {
 
-  private static final String VENDOR_NAME_PARAMETER = "VendorName";
-  private static final String RELEVANCE_PARAMETER = "Relevance";
+  private static final String VENDOR_NAME_PARAMETER = "vendorname";
+  private static final String RELEVANCE_PARAMETER = "relevance";
   private String q;
   private int page = 1;
   private int count = 25;

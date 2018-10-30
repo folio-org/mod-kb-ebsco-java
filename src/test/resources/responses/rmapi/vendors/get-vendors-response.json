@@ -7,7 +7,7 @@
       "isCustomer": false,
       "packagesTotal": 1,
       "packagesSelected": 0,
-      "vendorToken": null
+      "vendorToken": "sampleToken"
     },
     {
       "vendorId": 66221,

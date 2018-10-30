@@ -77,6 +77,7 @@ public class EholdingsProvidersImplTest {
     int packagesTotal = 1;
     int packagesSelected = 0;
     boolean supportsCustomPackages = false;
+    String token = "sampleToken";
 
     String wiremockUrl = host + ":" + userMockServer.port();
     TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
@@ -84,6 +85,7 @@ public class EholdingsProvidersImplTest {
       WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(stubResponseFile))));
+
     RestAssured.given()
       .spec(spec).port(port)
       .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
@@ -99,7 +101,8 @@ public class EholdingsProvidersImplTest {
       .body("data[0].attributes.name", equalTo(name))
       .body("data[0].attributes.packagesTotal", equalTo(packagesTotal))
       .body("data[0].attributes.packagesSelected", equalTo(packagesSelected))
-      .body("data[0].attributes.supportsCustomPackages", equalTo(supportsCustomPackages));
+      .body("data[0].attributes.supportsCustomPackages", equalTo(supportsCustomPackages))
+      .body("data[0].attributes.providerToken.value", equalTo(token));
   }
 
   @Test

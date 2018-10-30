@@ -120,7 +120,7 @@
       "description": "Get RM API configuration status"
     },
     {
-      "permissionName": "kb-ebsco.provider.get",
+      "permissionName": "kb-ebsco.providerCollection.get",
       "displayName": "get providers",
       "description": "Get providers"
     },
@@ -132,7 +132,7 @@
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
-        "kb-ebsco.provider.get"
+        "kb-ebsco.providerCollection.get"
       ]
     }
   ],
