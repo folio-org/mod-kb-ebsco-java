@@ -139,4 +139,18 @@ public class EholdingsProvidersImplTest {
       .statusCode(500)
       .body("errors.first.title" , notNullValue());
   }
+
+  @Test
+  public void shouldReturnErrorIfSortParameterInvalid() {
+    RestAssured.given()
+      .spec(spec).port(port)
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, "http://localhost:8080"))
+      .header(TENANT_HEADER)
+      .header(TOKEN_HEADER)
+      .when()
+      .get("eholdings/providers?q=e&count=10&sort=abc")
+      .then()
+      .statusCode(400)
+      .body("errors.first.title" , notNullValue());
+  }
 }

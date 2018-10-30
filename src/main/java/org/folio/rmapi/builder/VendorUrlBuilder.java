@@ -1,6 +1,7 @@
 package org.folio.rmapi.builder;
 
 import com.google.common.base.Strings;
+import org.folio.rest.model.Sort;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -14,7 +15,7 @@ public class VendorUrlBuilder {
   private String q;
   private int page = 1;
   private int count = 25;
-  private String sort;
+  private Sort sort;
 
   public VendorUrlBuilder q(String q) {
     this.q = q;
@@ -31,7 +32,7 @@ public class VendorUrlBuilder {
     return this;
   }
 
-  public VendorUrlBuilder sort(String sort) {
+  public VendorUrlBuilder sort(Sort sort) {
     this.sort = sort;
     return this;
   }
@@ -54,14 +55,15 @@ public class VendorUrlBuilder {
     return "vendors?" + String.join("&", parameters);
   }
 
-  private String determineSortValue(String sort, String query) {
+  private String determineSortValue(Sort sort, String query) {
     if(sort == null){
       return query == null ? VENDOR_NAME_PARAMETER : RELEVANCE_PARAMETER;
     }
-    if(sort.equalsIgnoreCase("relevance")){
-      return RELEVANCE_PARAMETER;
-    }else if(sort.equalsIgnoreCase("name")){
-      return VENDOR_NAME_PARAMETER;
+    switch (sort){
+      case RELEVANCE:
+        return RELEVANCE_PARAMETER;
+      case NAME:
+        return VENDOR_NAME_PARAMETER;
     }
     throw new IllegalArgumentException("Invalid value for sort - " + sort);
   }

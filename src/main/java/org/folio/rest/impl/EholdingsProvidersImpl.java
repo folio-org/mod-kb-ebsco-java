@@ -18,10 +18,12 @@ import org.folio.rest.jaxrs.model.EholdingsProvidersProviderIdGetInclude;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.OkapiData;
+import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.RMAPIService;
 
+import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -58,12 +60,16 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
       return;
     }
+    if(sort != null && !Sort.contains(sort.toUpperCase())){
+      throw new ValidationException("sort parameter must have value \"relevance\" or \"name\"");
+    }
+    Sort nameSort = sort != null ? Sort.valueOf(sort.toUpperCase()) : null;
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveProviders(q, page, count, sort);
+        return rmapiService.retrieveProviders(q, page, count, nameSort);
       })
       .thenAccept(vendors ->
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse

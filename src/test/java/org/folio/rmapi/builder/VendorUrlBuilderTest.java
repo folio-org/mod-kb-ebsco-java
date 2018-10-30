@@ -1,5 +1,6 @@
 package org.folio.rmapi.builder;
 
+import org.folio.rest.model.Sort;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -7,12 +8,13 @@ import static org.junit.Assert.assertEquals;
 public class VendorUrlBuilderTest {
   @Test
   public void shouldBuildUrlForNameSortWhenSortName(){
-    String path = new VendorUrlBuilder().sort("name").build();
+    String path = new VendorUrlBuilder().sort(Sort.NAME).build();
     assertEquals("vendors?offset=1&count=25&orderby=vendorname", path);
   }
+
   @Test
   public void shouldBuildUrlForRelevanceSortWhenSortRelevance(){
-    String path = new VendorUrlBuilder().sort("relevance").build();
+    String path = new VendorUrlBuilder().sort(Sort.RELEVANCE).build();
     assertEquals("vendors?offset=1&count=25&orderby=relevance", path);
   }
 
@@ -26,10 +28,5 @@ public class VendorUrlBuilderTest {
   public void shouldBuildUrlForRelevanceSortWhenSortIsNotSetAndQueryIsSet(){
     String path = new VendorUrlBuilder().q("higher education").build();
     assertEquals("vendors?search=higher+education&offset=1&count=25&orderby=relevance", path);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionIfSortValueIsInvalid() {
-    new VendorUrlBuilder().sort("abc").build();
   }
 }
