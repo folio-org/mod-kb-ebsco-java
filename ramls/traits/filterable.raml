@@ -2,15 +2,15 @@ queryParameters:
   filter[selected]:
     displayName: Selection status
     type: string
-    description: Filter to narrow down results based on selection status
-    example: |
-      ["all", "true", "false", "ebsco"]
+    description: Filter to narrow down results based on selection status. Possible values are all, true, false, ebsco.
+    example: all
     required: false
   filter[type]:
     displayName: Content type
     type: string
-    description: Filter to narrow down results based on content type
-    example: |
-      ["all", "aggregatefulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference"]
+    description: |
+      Filter to narrow down results based on content type.
+      Possible values are all, aggregatefulltext, abstractandindex, ebook, ejournal, print, unknown, onlinereference.
+    example: ebook
     default: all
     required: false
