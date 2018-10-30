@@ -56,8 +56,11 @@ types:
             example:
               strict: false
               value: !include examples/titles/titles_post_200_response.json
-      400:
+      422:
         description: Bad
+        body:
+          application/vnd.api+json:
+            example: !include examples/titles/titles_post_422_response.json
 
   /{titleId}:
     description: Entity representing a title
