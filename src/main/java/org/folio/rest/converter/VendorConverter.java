@@ -1,8 +1,8 @@
 package org.folio.rest.converter;
 
-import org.folio.rest.jaxrs.model.Meta;
-import org.folio.rest.jaxrs.model.MetaIncluded;
+import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.Packages;
 import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.ProviderListDataAttributes;
 import org.folio.rest.jaxrs.model.Providers;
@@ -18,10 +18,8 @@ import java.util.stream.Collectors;
 public class VendorConverter {
 
   private static final Relationships EMPTY_PACKAGE_RELATIONSHIP = new Relationships()
-    .withPackages(
-      new MetaIncluded()
-        .withMeta(
-          new Meta()
+    .withPackages(new Packages().withMeta(
+      new MetaDataIncluded()
             .withIncluded(false)));
 
   public ProviderCollection convert(Vendors vendors) {

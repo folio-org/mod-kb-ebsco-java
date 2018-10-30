@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Titles POST Request Schema",
+  "description": "Titles Post Request Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.TitlePostRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of title post request",
+      "type": "object",
+       "$ref": "titlePostData.json"
+    },
+    "included": {
+      "description": "Resource used to create new title",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "Titles included packages",
+        "$ref": "titlePostIncludedPackages.json"
+      }
+    }
+  },
+  "required": [
+    "data",
+    "included"
+  ]
+}

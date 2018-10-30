@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resources object schema",
+  "description": "Resources object schema",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of resource",
+      "example": "273-1704-2985519"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "resources"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Resource object data attributes",
+      "$ref": "resourceDataAttributes.json"
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Displays if any relationship is included",
+      "$ref": "resourcesRelationships.json"
+    }
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Object Data Attributes Schema",
+  "description": "Resource Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string",
+      "description": "Description of Resource",
+      "example": "Online Reference"
+    },
+    "edition": {
+      "type": "string",
+      "description": "Edition"
+    },
+    "isPeerReviewed": {
+      "type": "boolean",
+      "description": "Defines if peer is reviewed",
+      "example": false
+    },
+    "isTitleCustom": {
+      "type": "boolean",
+      "description": "Defines if title is custom",
+      "example": false
+    },
+    "publisherName": {
+      "type": "string",
+      "description": "Publisher",
+      "example": "Indiana University-Purdue Fort Wayne"
+    },
+    "titleId": {
+      "type": "integer",
+      "description": "Title Id",
+      "example": 2985519
+    },
+    "contributors": {
+      "type": "array",
+      "description": "List of contributors",
+      "items": {
+        "type": "object",
+        "description": "The Contributors Schema",
+        "$ref": "../contributor.json"
+      }
+    },
+    "identifiers": {
+      "type": "array",
+      "description": "List of identifiers",
+      "items": {
+        "type": "object",
+        "description": "The Identifiers Schema",
+        "$ref": "../identifier.json"
+      }
+    },
+    "name": {
+      "type": "string",
+      "description": "Resource name",
+      "example": "American Journal of Undergraduate Research"
+    },
+    "publicationType": {
+      "type": "string",
+      "description": "Publication type",
+      "example": "Journal"
+    },
+    "subjects": {
+      "type": "array",
+      "description": "List of subjects for a given resource",
+      "items": {
+        "type": "object",
+        "$ref": "../subject.json"
+      }
+    },
+    "coverageStatement": {
+      "type": "string",
+      "description": "Coverage statement",
+      "example": "Only 2000s issues available."
+    },
+    "customEmbargoPeriod": {
+      "type": "object",
+      "description": "Custom Embargo Period information",
+      "$ref": "../embargo.json"
+    },
+    "isPackageCustom": {
+      "type": "boolean",
+      "description": "Defines if package is custom",
+      "example": false
+    },
+    "isSelected": {
+      "type": "boolean",
+      "description": "Defines if this item is selected",
+      "example": false
+    },
+    "isTokenNeeded": {
+      "type": "boolean",
+      "description": "Defines if token is needed",
+      "example": false
+    },
+    "locationId": {
+      "type": "integer",
+      "description": "Unique location id",
+      "example": 9091063
+    },
+    "managedEmbargoPeriod": {
+      "type": "object",
+      "description": "Managed Embargo Period information",
+      "$ref": "../embargo.json"
+    },
+    "packageId": {
+      "type": "string",
+      "description": "Unique package id",
+      "example": "19-2333046"
+    },
+    "packageName": {
+      "type": "string",
+      "description": "Package name",
+      "example": "Applied Science & Technology Source Ultimate"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL",
+      "example": "http://search.ebscohost.com/direct.asp?db=aps&jid=BDGR&scope=site"
+    },
+    "vendorId": {
+      "type": "integer",
+      "description": "Vendor Id",
+      "example": 19
+    },
+    "vendorName": {
+      "type": "string",
+      "description": "Vendor name",
+      "example": "EBSCO"
+    },
+    "providerId": {
+      "type": "integer",
+      "description": "Provider Id",
+      "example": 19
+    },
+    "providerName": {
+      "type": "string",
+      "description": "Provider name",
+      "example": "EBSCO"
+    },
+    "visibilityData": {
+      "type": "object",
+      "description": "Visibility data",
+      "$ref": "../visibilityData.json"
+    },
+    "managedCoverages": {
+      "type": "array",
+      "description": "List of Managed Coverages information",
+      "items": {
+        "type": "object",
+        "description": "Managed Coverages information",
+        "$ref": "../coverage.json"
+      }
+    },
+    "customCoverages": {
+      "type": "array",
+      "description": "List of Custom Coverages information",
+      "items": {
+        "type": "object",
+        "description": "Custom Coverages information",
+        "$ref": "../coverage.json"
+      }
+    },
+    "proxy": {
+      "type": "object",
+      "description": "Proxy",
+      "$ref": "../proxy.json"
+    }
+  }
+}

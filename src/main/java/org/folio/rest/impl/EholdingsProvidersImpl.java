@@ -12,9 +12,6 @@ import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.converter.VendorConverter;
-import org.folio.rest.jaxrs.model.EholdingsProvidersPackagesGetFilterSelected;
-import org.folio.rest.jaxrs.model.EholdingsProvidersPackagesGetFilterType;
-import org.folio.rest.jaxrs.model.EholdingsProvidersProviderIdGetInclude;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.OkapiData;
@@ -56,7 +53,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   @Override
   @Validate
-  public void getEholdingsProviders(String q, int page, int count, String sort, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
       return;
     }
@@ -73,7 +70,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       })
       .thenAccept(vendors ->
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
-        .respond200WithApplicationVndApiJson(converter.convert(vendors)))))
+          .respond200WithApplicationVndApiJson(converter.convert(vendors)))))
       .exceptionally(e -> {
         logger.error(GET_PROVIDERS_ERROR_MESSAGE, e);
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
@@ -86,7 +83,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   @Override
-  public void getEholdingsProvidersByProviderId(String providerId, EholdingsProvidersProviderIdGetInclude include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 
@@ -96,7 +93,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   @Override
-  public void getEholdingsProvidersPackages(String q, int page, int count, String sort, EholdingsProvidersPackagesGetFilterSelected filterSelected, EholdingsProvidersPackagesGetFilterType filterType, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProvidersPackages(String q, String filterSelected, String filterType, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 }

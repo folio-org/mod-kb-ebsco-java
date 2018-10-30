@@ -5,112 +5,35 @@ version: v1
 mediaType: "application/vnd.api+json"
 
 traits:
-  filterable:
-    queryParameters:
-      filterSelected:
-        displayName: Selection status
-        type: string
-        enum: ["true", "false", "ebsco"]
-        description: Filter to narrow down results based on selection status
-        required: false
-      filterType:
-        displayName: Content type
-        type: string
-        enum: ["all", "aggregatefulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference"]
-        description: Filter to narrow  down results based on content type
-        default: all
-        required: false
+  sortable: !include traits/sortable.raml
+  pageable: !include traits/pageable.raml
+  filterable: !include traits/titlesFilterable.raml
+  includable: !include traits/includeResources.raml
 
 types:
-  includedPackageId:
-    type: object
-    properties:
-      type: string
-      attributes:
-        properties:
-          packageId: string
-    example: |
-      {
-        "type": "resources",
-        "attributes": {
-          "packageId": "123-456"
-        }
-      }
+  title: !include types/titles/title.json
+  titleCollection: !include types/titles/titleCollection.json
+  titlePostRequest: !include types/titles/titlePostRequest.json
 
 /eholdings/titles:
   displayName: Titles
   description: Collection of available titles in eholdings.
   get:
     description: Get a set of titles matching the given search criteria.
-    queryParameters:
-      page:
-        displayName: Page offset
-        type: integer
-        minimum: 1
-        maximum: 2147483647
-        description: Page offset to retrieve results from Ebsco KB
-        example: 1
-        required: false
-      count:
-        displayName: Count
-        type: integer
-        minimum: 0
-        maximum: 100
-        description: Count of number of results to retrieve from Ebsco KB
-        example: 100
-        default: 25
-        required: false
-      sort:
-        displayName: Sort options
-        type: string
-        enum: ["name", "relevance"]
-        description: Option by which results are sorted. Defaults to relevance if query or name if no query.
-        example: name
-        required: false
-      filterSelected:
-        displayName: Selection status
-        type: string
-        enum: ["true", "false", "ebsco", "all"]
-        description: Filter to narrow down results based on selection status. Defaults to all.
-        example: "false"
-        required: false
-      filterType:
-        displayName: Resource type
-        type: string
-        enum: ["all", "audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report","streamingaudio", "streamingvideo","thesisdissertation",  "website", "unspecified"]
-        description: Filter to narrow down results based on resource type. Defaults to all.
-        example: book
-        required: false
-      filterName:
-        displayName: Query by Title Name
-        type: string
-        description: String to search title name to get a collection of titles
-        example: War and Peace
-        required: false
-      filterIsxn:
-        displayName: Query by ISSN/ISBN
-        type: string
-        description: String to search ISSN and ISBN to get a collection of titles
-        example: 1050-3331
-        required: false
-      filterSubject:
-        displayName: Query by Subject
-        type: string
-        description: String to search subjects to get a collection of titles
-        example: history
-        required: false
-      filterPublisher:
-        displayName: Query by Publisher
-        type: string
-        description: String to search publishers to get a collection of titles
-        example: academic
-        required: false
+    is: [filterable, sortable, pageable]
     responses:
       200:
+        description: OK
         body:
           application/vnd.api+json:
-            description: An array of titles comprising the results of the query.  The array will be paged if its length exceeds the value set with the `count` query param, or the default `count` of 25 in its stead.  The included metadata gives us the total result count outside of the paged context.
-            example: !include examples/titles/titles_get_200_response.json
+            description: |
+              An array of titles comprising the results of the query.
+              The array will be paged if its length exceeds the value set with the `count` query param, or the default `count` of 25 in its stead.
+              The included metadata gives us the total result count outside of the paged context.
+            type: titleCollection
+            example:
+              strict: false
+              value: !include examples/titles/titles_get_200_response.json
   post:
     description: Create a new Custom Title.
     headers:
@@ -118,63 +41,42 @@ types:
         example: application/vnd.api+json
     body:
       application/vnd.api+json:
-        properties:
-          data:
-            description: Needed because of JSON API
-            type: object
-            required: true
-            properties:
-              type: string
-              attributes:
-                description: Needed because of JSON API
-                type: object
-                required: true
-                properties:
-                  name:
-                    description: |
-                      Name of the new title that is to be created.
-                    type: string
-                    example: "A New Title For You"
-                    required: true
-                  publicationType:
-                    description: Publication type for new title.
-                    type: string
-                    enum: ["All", "Audiobook", "Book", "Book Series", "Database", "Journal", "Newsletter", "Newspaper", "Proceedings", "Report", "Streaming Audio", "Streaming Video", "Thesis & Dissertation", "Website", "Unspecified"]
-                    example: "Book"
-                    required: true
-          included:
-            description: Resource used to create new title.
-            type: array
-            required: true
-            items: includedPackageId
-        example: !include examples/titles/titles_post_request.json
+        description: Create a new Custom Title.
+        type: titlePostRequest
+        example:
+          strict: false
+          value: !include examples/titles/titles_post_request.json
     responses:
       200:
         description: OK
         body:
           application/vnd.api+json:
-            example: !include examples/titles/titles_post_200_response.json
-      400:
+            description: The server has successfully fulfilled the POST request.
+            type: title
+            example:
+              strict: false
+              value: !include examples/titles/titles_post_200_response.json
+      422:
         description: Bad
+        body:
+          application/vnd.api+json:
+            example: !include examples/titles/titles_post_422_response.json
 
   /{titleId}:
     description: Entity representing a title
     get:
       description: Get the title by its unique identifier.
-      queryParameters:
-        include:
-          displayName: Related Resources
-          type: string
-          enum: ["resources"]
-          description: Include related resource obects, each representing a partnering of this title with a package.  Any bogus value, like `include=deciduousTrees`, will be silently ignored.
-          example: "resources"
-          required: false
+      is: [includable]
       responses:
         200:
+          description: OK
           body:
             application/vnd.api+json:
-              description: EPKB data for the title matching {title_id}
-              example: !include examples/titles/titles_titleId_get_200_response.json
+              description: EPKB data for the title matching {title_id}.
+              type: title
+              example:
+                strict: false
+                value: !include examples/titles/titles_titleId_get_200_response.json
         404:
           description: Not Found
           body:

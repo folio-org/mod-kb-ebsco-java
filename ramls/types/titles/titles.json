@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Title object schema in titles collection",
+  "description": "Title object schema in titles collection",
+  "javaType": "org.folio.rest.jaxrs.model.Titles",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of title",
+      "example": "100130"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "title"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Title object data attributes",
+      "$ref": "titleListDataAttributes.json"
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Displays title relationships",
+      "$ref": "titleRelationship.json"
+    }
+  }
+}

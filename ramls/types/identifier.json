@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Identifier object schema",
+  "description": "Identifier object schema",
+  "javaType": "org.folio.rest.jaxrs.model.TitleIdentifier",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Identifier id",
+      "example": "100130"
+    },
+    "subtype": {
+      "type": "string",
+      "description": "Identifier subtype",
+      "example": "Empty"
+    },
+    "type": {
+      "type": "string",
+      "description": "Identifier type",
+      "example": "BHM"
+    }
+  }
+}

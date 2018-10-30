@@ -5,27 +5,3 @@ queryParameters:
     description: String used to search to retrieve a collection
     example: ABC-CLIO
     required: true
-  page:
-    displayName: Page offset
-    type: integer
-    minimum: 1
-    maximum: 2147483647
-    description: Page offset to retrieve results from Ebsco KB
-    example: 1
-    default: 1
-    required: false
-  count:
-    displayName: Count
-    type: integer
-    minimum: 0
-    maximum: 100
-    description: Count of number of results to retrieve from Ebsco KB
-    example: 100
-    default: 25
-    required: false
-  sort:
-    displayName: Sort options
-    type: string
-    description: Option by which results are sorted. Possible values are relevance, name.
-    example: name
-    required: false

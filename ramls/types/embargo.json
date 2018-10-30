@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Embargo Period Schema",
+  "description": "Embargo Period Schema",
+  "javaType": "org.folio.rest.jaxrs.model.EmbargoPeriod",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "embargoUnit": {
+      "type": "string",
+      "description": "Embargo unit",
+      "example": "Days"
+    },
+    "embargoValue": {
+      "type": "integer",
+      "description": "Embargo Value",
+      "example": 7
+    }
+  }
+}
