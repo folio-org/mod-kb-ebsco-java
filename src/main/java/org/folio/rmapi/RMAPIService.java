@@ -72,16 +72,16 @@ public class RMAPIService {
 
         if (response.statusCode() == 404) {
           future.completeExceptionally(
-            new RMAPIResourceNotFoundException(String.format("Requested resource %s not found", query)));
+            new RMAPIResourceNotFoundException(String.format("Requested resource %s not found, response body =\"%s\"", query, body.toString())));
         } else if ((response.statusCode() == 401) || (response.statusCode() == 403)) {
           future.completeExceptionally(
-            new RMAPIUnAuthorizedException(String.format("Unauthorized Access to %s", request.absoluteURI())));
+            new RMAPIUnAuthorizedException(String.format("Unauthorized Access to %s, response body =\"%s\"", request.absoluteURI(), body.toString())));
         } else {
 
           future
             .completeExceptionally(new RMAPIServiceException(
-              String.format("%s Code = %s Message = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
-                response.statusMessage()),
+              String.format("%s Code = %s Message = %s Body = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
+                response.statusMessage(), body.toString()),
               response.statusCode(), response.statusMessage(), body.toString(), query));
         }
       }
