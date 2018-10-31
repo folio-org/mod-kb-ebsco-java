@@ -1,7 +1,8 @@
 package org.folio.rest.util;
 
-import org.folio.rest.jaxrs.model.ConfigurationUnprocessableError;
-import org.folio.rest.jaxrs.model.ConfigurationUnprocessableErrorResponse;
+
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
 
 import java.util.Collections;
 
@@ -12,9 +13,9 @@ public class ErrorUtil {
   private ErrorUtil() {
   }
 
-  public static ConfigurationUnprocessableError createError(String errorMessage) {
-    ConfigurationUnprocessableError configurationError = new ConfigurationUnprocessableError();
-    ConfigurationUnprocessableErrorResponse error = new ConfigurationUnprocessableErrorResponse();
+  public static JsonapiError createError(String errorMessage) {
+    JsonapiError configurationError = new JsonapiError();
+    JsonapiErrorResponse error = new JsonapiErrorResponse();
     error.setDetail(errorMessage);
     configurationError.setErrors(Collections.singletonList(error));
     configurationError.setJsonapi(RestConstants.JSONAPI);

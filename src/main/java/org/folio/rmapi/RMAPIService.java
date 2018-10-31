@@ -6,10 +6,13 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.folio.rest.model.Sort;
+import org.folio.rmapi.builder.VendorUrlBuilder;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
+import org.folio.rmapi.model.Vendors;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -70,16 +73,16 @@ public class RMAPIService {
 
         if (response.statusCode() == 404) {
           future.completeExceptionally(
-            new RMAPIResourceNotFoundException(String.format("Requested resource %s not found", query)));
+            new RMAPIResourceNotFoundException(String.format("Requested resource %s not found, response body =\"%s\"", query, body.toString())));
         } else if ((response.statusCode() == 401) || (response.statusCode() == 403)) {
           future.completeExceptionally(
-            new RMAPIUnAuthorizedException(String.format("Unauthorized Access to %s", request.absoluteURI())));
+            new RMAPIUnAuthorizedException(String.format("Unauthorized Access to %s, response body =\"%s\"", request.absoluteURI(), body.toString())));
         } else {
 
           future
             .completeExceptionally(new RMAPIServiceException(
-              String.format("%s Code = %s Message = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
-                response.statusMessage()),
+              String.format("%s Code = %s Message = %s Body = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
+                response.statusMessage(), body.toString()),
               response.statusCode(), response.statusMessage(), body.toString(), query));
         }
       }
@@ -95,6 +98,16 @@ public class RMAPIService {
 
   public CompletableFuture<Object> verifyCredentials() {
     return this.getRequest(constructURL("vendors?search=zz12&offset=1&orderby=vendorname&count=1"), Object.class);
+  }
+
+  public CompletableFuture<Vendors> retrieveProviders(String q, int page, int count, Sort sort) {
+    String path = new VendorUrlBuilder()
+        .q(q)
+        .page(page)
+        .count(count)
+        .sort(sort)
+        .build();
+    return this.getRequest(constructURL(path), Vendors.class);
   }
 
   /**

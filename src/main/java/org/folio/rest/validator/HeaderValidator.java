@@ -3,7 +3,6 @@ package org.folio.rest.validator;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.util.RestConstants;
 
 import javax.ws.rs.core.Response;
@@ -29,7 +28,7 @@ public class HeaderValidator {
     for (String header : expectedHeaders) {
       if (!okapiHeaders.containsKey(header)) {
         asyncResultHandler.handle(Future.succeededFuture(
-          EholdingsConfiguration.GetEholdingsConfigurationResponse
+          Response
             .status(400)
             .entity("Missing header " + header)
             .build()));
