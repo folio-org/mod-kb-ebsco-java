@@ -12,6 +12,8 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
+import org.folio.rmapi.model.Vendor;
+import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.Vendors;
 
 import java.util.concurrent.CompletableFuture;
@@ -108,6 +110,14 @@ public class RMAPIService {
         .sort(sort)
         .build();
     return this.getRequest(constructURL(path), Vendors.class);
+  }
+
+    public CompletableFuture<VendorById> retrieveProvider(String id, String include) {
+
+    final String path = "vendors/" + id;
+//    TODO: add support of include parameter when MODKBEKBJ-22 is completed
+
+    return this.getRequest(constructURL(path), VendorById.class);
   }
 
   /**

@@ -1,0 +1,12 @@
+{
+  "isCustomer": false,
+  "packagesSelected": 11,
+  "packagesTotal": 625,
+  "vendorId": 19,
+  "vendorName": "EBSCO",
+  "proxy": {
+    "id": "<n>",
+    "inherited": true
+  },
+  "vendorToken": null
+}
