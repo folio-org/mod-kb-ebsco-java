@@ -7,14 +7,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.folio.rest.model.Sort;
-import org.folio.rmapi.builder.VendorUrlBuilder;
+import org.folio.rmapi.builder.QueriableUrlBuilder;
+import org.folio.rmapi.builder.TitlesFilterableUrlBuilder;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
-import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.model.Titles;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -28,6 +29,8 @@ public class RMAPIService {
 
   private static final String JSON_RESPONSE_ERROR = "Error processing RMAPI Response";
   private static final String INVALID_RMAPI_RESPONSE = "Invalid RMAPI response";
+
+  private static final String VENDOR_NAME_PARAMETER = "vendorname";
 
   private String customerId;
   private String apiKey;
@@ -103,13 +106,30 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Vendors> retrieveProviders(String q, int page, int count, Sort sort) {
-    String path = new VendorUrlBuilder()
+    String query = new QueriableUrlBuilder()
         .q(q)
         .page(page)
         .count(count)
         .sort(sort)
+        .nameParameter(VENDOR_NAME_PARAMETER)
         .build();
-    return this.getRequest(constructURL(path), Vendors.class);
+    return this.getRequest(constructURL("vendors?" + query), Vendors.class);
+  }
+
+  public CompletableFuture<Titles> retrieveTitles(String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
+                                                  String filterPublisher, Sort sort, int page, int count) {
+    String path = new TitlesFilterableUrlBuilder()
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+    return this.getRequest(constructURL("titles?" + path), Titles.class);
   }
 
     public CompletableFuture<VendorById> retrieveProvider(String id, String include) {

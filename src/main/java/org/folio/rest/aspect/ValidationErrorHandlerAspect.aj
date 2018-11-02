@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 import javax.validation.ValidationException;
 
 public aspect ValidationErrorHandlerAspect {
-  pointcut validatedMethodCall(Handler<AsyncResult<Response>> asyncResultHandler) : execution(@Validate * *(.., Handler, *)) && args(.., asyncResultHandler, *);
+  pointcut validatedMethodCall(Handler<AsyncResult<Response>> asyncResultHandler) : execution(@HandleValidationErrors * *(.., Handler, *)) && args(.., asyncResultHandler, *);
 
   @SuppressAjWarnings({"adviceDidNotMatch"})
   void around(Handler asyncResultHandler) : validatedMethodCall(asyncResultHandler) {

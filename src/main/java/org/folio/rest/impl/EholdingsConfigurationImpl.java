@@ -13,6 +13,7 @@ import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.exception.RMAPIConfigurationInvalidException;
 import org.folio.http.ConfigurationClientProvider;
+import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
@@ -50,10 +51,9 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   }
 
   @Override
+  @HandleValidationErrors
   public void getEholdingsConfiguration(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
-      return;
-    }
+    headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenAccept(rmapiConfiguration -> {
@@ -68,10 +68,9 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   }
 
   @Override
+  @HandleValidationErrors
   public void putEholdingsConfiguration(String contentType, ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
-      return;
-    }
+    headerValidator.validate(okapiHeaders);
     MutableObject<OkapiData> okapiData = new MutableObject<>();
     RMAPIConfiguration rmapiConfiguration = converter.convertToRMAPIConfiguration(entity);
     CompletableFuture.completedFuture(null)

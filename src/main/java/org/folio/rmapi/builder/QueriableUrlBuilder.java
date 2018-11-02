@@ -8,32 +8,36 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VendorUrlBuilder {
-
-  private static final String VENDOR_NAME_PARAMETER = "vendorname";
+public class QueriableUrlBuilder {
   private static final String RELEVANCE_PARAMETER = "relevance";
   private String q;
   private int page = 1;
   private int count = 25;
   private Sort sort;
+  private String nameParameter;
 
-  public VendorUrlBuilder q(String q) {
+  public QueriableUrlBuilder q(String q) {
     this.q = q;
     return this;
   }
 
-  public VendorUrlBuilder page(int page) {
+  public QueriableUrlBuilder page(int page) {
     this.page = page;
     return this;
   }
 
-  public VendorUrlBuilder count(int count) {
+  public QueriableUrlBuilder count(int count) {
     this.count = count;
     return this;
   }
 
-  public VendorUrlBuilder sort(Sort sort) {
+  public QueriableUrlBuilder sort(Sort sort) {
     this.sort = sort;
+    return this;
+  }
+
+  public QueriableUrlBuilder nameParameter(String nameParameter) {
+    this.nameParameter = nameParameter;
     return this;
   }
 
@@ -52,19 +56,20 @@ public class VendorUrlBuilder {
     parameters.add("count=" + count);
     parameters.add("orderby=" + determineSortValue(sort, q));
 
-    return "vendors?" + String.join("&", parameters);
+    return String.join("&", parameters);
   }
 
   private String determineSortValue(Sort sort, String query) {
     if(sort == null){
-      return query == null ? VENDOR_NAME_PARAMETER : RELEVANCE_PARAMETER;
+      return query == null ? nameParameter : RELEVANCE_PARAMETER;
     }
     switch (sort){
       case RELEVANCE:
         return RELEVANCE_PARAMETER;
       case NAME:
-        return VENDOR_NAME_PARAMETER;
+        return nameParameter;
+      default:
+        throw new IllegalArgumentException("Invalid value for sort - " + sort);
     }
-    throw new IllegalArgumentException("Invalid value for sort - " + sort);
   }
 }
