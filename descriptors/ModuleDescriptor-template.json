@@ -32,11 +32,13 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/providers"
+          "pathPattern": "/eholdings/providers",
+          "permissionsRequired": ["kb-ebsco.providerCollection.get"]
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/providers/{providerId}"
+          "pathPattern": "/eholdings/providers/{providerId}",
+          "permissionsRequired" :["kb-ebsco.provider.get"]
         },
         {
           "methods": ["PUT"],
@@ -125,6 +127,11 @@
       "description": "Get providers"
     },
     {
+      "permissionName": "kb-ebsco.provider.get",
+      "displayName": "get single provider",
+      "description": "Get single provider"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
@@ -132,7 +139,8 @@
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
-        "kb-ebsco.providerCollection.get"
+        "kb-ebsco.providerCollection.get",
+        "kb-ebsco.provider.get"
       ]
     }
   ],

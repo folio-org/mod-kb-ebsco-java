@@ -8,16 +8,16 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.http.Header;
 import io.restassured.specification.RequestSpecification;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.http.HttpStatus;
 import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.RestVerticle;
+import org.folio.rest.jaxrs.model.*;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.folio.rest.util.RestConstants;
 import org.folio.util.TestUtil;
@@ -29,15 +29,14 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsProvidersImplTest {
-  private static final Header TENANT_HEADER = new Header(RestConstants.OKAPI_TENANT_HEADER, "fs");
-  private static final Header TOKEN_HEADER = new Header(RestConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN");
+  private final String configurationStubFile = "responses/configuration/get-configuration.json";
   private static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
-  private static RequestSpecification spec;
+  private static final String STUB_VENDOR_ID = "19";
   private static int port;
   private static String host;
 
@@ -58,9 +57,6 @@ public class EholdingsProvidersImplTest {
       .setConfig(new JsonObject().put("http.port", port));
     vertx.deployVerticle(RestVerticle.class.getName(), restVerticleDeploymentOptions, context.asyncAssertSuccess());
 
-    spec = new RequestSpecBuilder()
-      .setBaseUri(host + ":" + port)
-      .build();
   }
 
   @Before
@@ -80,17 +76,16 @@ public class EholdingsProvidersImplTest {
     String token = "sampleToken";
 
     String wiremockUrl = host + ":" + userMockServer.port();
-    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
     WireMock.stubFor(
       WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(stubResponseFile))));
 
+    RequestSpecification requestSpecification = getRequestSpecification();
+
     RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
-      .header(TENANT_HEADER)
-      .header(TOKEN_HEADER)
+      .spec(requestSpecification)
       .when()
       .get("eholdings/providers?q=e&page=1&sort=name")
       .then()
@@ -107,11 +102,9 @@ public class EholdingsProvidersImplTest {
 
   @Test
   public void shouldReturnErrorIfParameterInvalid() {
+    RequestSpecification  requestSpecification = getRequestSpecification();
     RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(RestConstants.OKAPI_URL_HEADER, "http://localhost:8080"))
-      .header(TENANT_HEADER)
-      .header(TOKEN_HEADER)
+      .spec(requestSpecification)
       .when()
       .get("eholdings/providers?q=e&count=1000")
       .then()
@@ -121,18 +114,18 @@ public class EholdingsProvidersImplTest {
 
   @Test
   public void shouldReturn500IfRMApiReturnsError() throws IOException, URISyntaxException {
+
+
     String wiremockUrl = host + ":" + userMockServer.port();
-    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
     WireMock.stubFor(
       WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
+    RequestSpecification requestSpecification = getRequestSpecification();
     RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
-      .header(TENANT_HEADER)
-      .header(TOKEN_HEADER)
+      .spec(requestSpecification)
       .when()
       .get("eholdings/providers?q=e&count=1")
       .then()
@@ -142,15 +135,119 @@ public class EholdingsProvidersImplTest {
 
   @Test
   public void shouldReturnErrorIfSortParameterInvalid() {
+
+    RequestSpecification requestSpecification = getRequestSpecification();
     RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(RestConstants.OKAPI_URL_HEADER, "http://localhost:8080"))
-      .header(TENANT_HEADER)
-      .header(TOKEN_HEADER)
+      .spec(requestSpecification)
       .when()
       .get("eholdings/providers?q=e&count=10&sort=abc")
       .then()
       .statusCode(400)
       .body("errors.first.title" , notNullValue());
+  }
+
+  @Test
+  public void shouldReturnProviderWhenValidId() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
+
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(stubResponseFile))));
+
+    Provider expected = getExpectedProvider();
+    String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
+    RequestSpecification requestSpecification = getRequestSpecification();
+
+    Provider provider = RestAssured.given(requestSpecification)
+      .when()
+      .get(providerByIdEndpoint)
+      .then()
+      .statusCode(org.eclipse.jetty.http.HttpStatus.OK_200).extract().as(Provider.class);
+
+    compareProviders(provider, expected);
+
+  }
+  @Test
+  public void shouldReturn404WhenProviderIdNotFound() throws IOException, URISyntaxException {
+
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_NOT_FOUND)));
+
+    RequestSpecification requestSpecification = getRequestSpecification();
+    JsonapiError error = RestAssured.given()
+      .spec(requestSpecification)
+      .when()
+      .get("eholdings/providers/191919")
+      .then()
+      .statusCode(HttpStatus.SC_NOT_FOUND)
+      .extract().as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getDetail(), is("Provider not found"));
+  }
+
+  @Test
+  public void shouldReturn500WhenInvalidProviderId() throws IOException, URISyntaxException {
+
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
+
+    RequestSpecification  requestSpecification = getRequestSpecification();
+    JsonapiError error = RestAssured.given()
+      .spec(requestSpecification)
+      .when()
+      .get("eholdings/providers/19191919as")
+      .then()
+      .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+      .extract().as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getDetail(), notNullValue());
+  }
+
+  private void compareProviders(Provider actual, Provider expected) {
+    assertThat(actual.getData().getType(), equalTo(expected.getData().getType()));
+    assertThat(actual.getData().getId(), equalTo(expected.getData().getId()));
+    assertThat(actual.getData().getAttributes().getName(), equalTo(expected.getData().getAttributes().getName()));
+    assertThat(actual.getData().getAttributes().getPackagesTotal(), equalTo(expected.getData().getAttributes().getPackagesTotal()));
+    assertThat(actual.getData().getAttributes().getPackagesSelected(), equalTo(expected.getData().getAttributes().getPackagesSelected()));
+    assertThat(actual.getData().getAttributes().getSupportsCustomPackages(), equalTo(expected.getData().getAttributes().getSupportsCustomPackages()));
+    assertThat(actual.getData().getAttributes().getProviderToken(), equalTo(expected.getData().getAttributes().getProviderToken()));
+    assertThat(actual.getData().getAttributes().getProxy().getId(), equalTo(expected.getData().getAttributes().getProxy().getId())) ;
+    assertThat(actual.getData().getAttributes().getProxy().getInherited(), equalTo(expected.getData().getAttributes().getProxy().getInherited()));
+  }
+
+  private Provider getExpectedProvider() {
+
+    return new Provider()
+      .withData(new ProviderData()
+        .withType("providers")
+        .withId(STUB_VENDOR_ID)
+        .withAttributes(new ProviderDataAttributes()
+          .withName("EBSCO")
+          .withPackagesTotal(625)
+          .withPackagesSelected(11)
+          .withSupportsCustomPackages(false)
+          .withProviderToken(null)
+          .withProxy(new Proxy().withId("<n>").withInherited(true)))
+        .withRelationships(new Relationships()
+          .withPackages(new Packages()
+            .withMeta(new MetaDataIncluded()
+              .withIncluded(false)))));
+  }
+
+  private RequestSpecification getRequestSpecification() {
+    return TestUtil.getRequestSpecificationBuilder(host + ":" + port)
+      .addHeader(RestConstants.OKAPI_URL_HEADER,   host + ":" + userMockServer.port())
+    .build();
   }
 }

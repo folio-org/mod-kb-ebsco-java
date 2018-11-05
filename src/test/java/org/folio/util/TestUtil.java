@@ -6,7 +6,10 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import com.google.common.io.Files;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.LogDetail;
 import org.folio.rest.jaxrs.model.Configs;
+import org.folio.rest.util.RestConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,5 +51,19 @@ public final class TestUtil {
       WireMock.get(new UrlPathPattern(new EqualToPattern("/configurations/entries"), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(mapper.writeValueAsString(configurations))));
+  }
+
+  /**
+   * Creates request specification with predefined common headers
+   *
+   * @param uri base uri
+   * @return {@link RequestSpecBuilder}
+   */
+  public static RequestSpecBuilder getRequestSpecificationBuilder(String uri) {
+    return new RequestSpecBuilder()
+      .addHeader(RestConstants.OKAPI_TENANT_HEADER, "fs")
+      .addHeader(RestConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN")
+      .setBaseUri(uri)
+      .log(LogDetail.ALL);
   }
 }

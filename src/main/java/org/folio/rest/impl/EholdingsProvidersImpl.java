@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -19,6 +20,7 @@ import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.RMAPIService;
+import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -28,12 +30,16 @@ import java.util.concurrent.CompletableFuture;
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private static final String GET_PROVIDERS_ERROR_MESSAGE = "Failed to retrieve providers";
+  private static final String INTERNAL_SERVER_ERROR = "Internal server error";
+  private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
   private RMAPIConfigurationService configurationService;
   private HeaderValidator headerValidator;
   private VendorConverter converter;
+  private final String CONTENT_TYPE_HEADER = "Content-Type";
+  private final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
 
   public EholdingsProvidersImpl() {
     this(
@@ -74,8 +80,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .exceptionally(e -> {
         logger.error(GET_PROVIDERS_ERROR_MESSAGE, e);
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
-          .status(500)
-          .header("Content-Type", "application/vnd.api+json")
+          .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+          .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
           .entity(ErrorUtil.createError(e.getCause().getMessage()))
           .build()));
         return null;
@@ -84,7 +90,33 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   @Override
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
+      return;
+    }
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(rmapiConfiguration -> {
+        RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
+          rmapiConfiguration.getUrl(), vertxContext.owner());
+        return rmapiService.retrieveProvider(providerId, include);
+      })
+      .thenAccept(vendor ->
+        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
+          .respond200WithApplicationVndApiJson(converter.convertToVendor(vendor)))))
+      .exceptionally(e -> {
+        if (e.getCause() instanceof RMAPIResourceNotFoundException) {
+          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
+            .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE))));
+        } else {
+          logger.error(INTERNAL_SERVER_ERROR, e);
+          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
+            .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+            .entity(ErrorUtil.createError(e.getCause().getMessage()))
+            .build()));
+        }
+        return null;
+      });
   }
 
   @Override
