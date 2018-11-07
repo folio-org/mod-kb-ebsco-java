@@ -165,7 +165,7 @@ public class EholdingsProvidersImplTest {
       .when()
       .get(providerByIdEndpoint)
       .then()
-      .statusCode(org.eclipse.jetty.http.HttpStatus.OK_200).extract().as(Provider.class);
+      .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
 
     compareProviders(provider, expected);
 

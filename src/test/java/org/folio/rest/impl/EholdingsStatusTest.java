@@ -16,8 +16,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.http.HttpStatus;
 import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.RestVerticle;
+import org.folio.rest.jaxrs.model.ConfigurationStatus;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.folio.rest.util.RestConstants;
 import org.folio.util.TestUtil;
@@ -29,7 +31,9 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsStatusTest {
@@ -122,5 +126,23 @@ public class EholdingsStatusTest {
       .get("eholdings/status")
       .then()
       .statusCode(500);
+  }
+  @Test
+  public void shouldReturnFalseIfEmptyConfig() throws IOException, URISyntaxException {
+    String wiremockUrl = host + ":" + userMockServer.port();
+
+    TestUtil.mockConfiguration("responses/configuration/get-configuration-empty.json", null);
+
+    ConfigurationStatus status = RestAssured.given()
+      .spec(spec).port(port)
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
+      .header(TENANT_HEADER)
+      .header(TOKEN_HEADER)
+      .when()
+      .get("eholdings/status")
+      .then()
+      .statusCode(HttpStatus.SC_OK).extract().as(ConfigurationStatus.class);
+
+    assertThat(status.getData().getAttributes().getIsConfigurationValid(), equalTo(false));
   }
 }

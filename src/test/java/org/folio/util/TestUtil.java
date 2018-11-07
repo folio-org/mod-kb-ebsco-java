@@ -45,7 +45,9 @@ public final class TestUtil {
   public static void mockConfiguration(String configurationsFile, String wiremockUrl) throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
     Configs configurations = mapper.readValue(TestUtil.getFile(configurationsFile), Configs.class);
-    configurations.getConfigs().get(0).setValue(wiremockUrl);
+    if (!configurations.getConfigs().isEmpty()) {
+      configurations.getConfigs().get(0).setValue(wiremockUrl);
+    }
 
     WireMock.stubFor(
       WireMock.get(new UrlPathPattern(new EqualToPattern("/configurations/entries"), false))
