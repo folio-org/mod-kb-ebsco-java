@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package object schema",
+  "description": "Package object schema",
+  "javaType": "org.folio.rest.jaxrs.model.Package",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "The Data Schema",
+      "$ref": "packageCollectionItem.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "jsonapi"
+  ]
+}

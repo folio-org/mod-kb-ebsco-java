@@ -1,37 +1,37 @@
 {
   "data": {
-    "id": "123355-2880981",
+    "id": "123356-3168443",
     "type": "packages",
     "attributes": {
-      "contentType": "E-Book",
+      "contentType": "E-Journal",
       "customCoverage": {
         "beginCoverage": "2003-01-01",
-        "endCoverage": "2004-01-01"
+        "endCoverage": "2003-12-01"
       },
       "isCustom": true,
       "isSelected": true,
-      "name": "yet another custom package again",
-      "packageId": 2880981,
+      "name": "DT custom packages api test one",
+      "packageId": 3168443,
       "packageType": "Custom",
-      "providerId": 123355,
-      "providerName": "API DEV CORPORATE CUSTOMER",
+      "providerId": 123356,
+      "providerName": "API DEV GOVERNMENT CUSTOMER",
       "selectedCount": 0,
       "titleCount": 0,
-      "vendorId": 123355,
-      "vendorName": "API DEV CORPORATE CUSTOMER",
+      "vendorId": 123356,
+      "vendorName": "API DEV GOVERNMENT CUSTOMER",
       "visibilityData": {
         "isHidden": false,
         "reason": ""
       },
-      "allowKbToAddTitles": false
+      "allowKbToAddTitles": false,
+      "packageToken": null,
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      }
     },
     "relationships": {
       "resources": {
-        "meta": {
-          "included": false
-        }
-      },
-      "vendor": {
         "meta": {
           "included": false
         }

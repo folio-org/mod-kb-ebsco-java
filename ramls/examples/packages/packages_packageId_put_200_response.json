@@ -31,11 +31,6 @@
           "included": false
         }
       },
-      "vendor": {
-        "meta": {
-          "included": false
-        }
-      },
       "provider": {
         "meta": {
           "included": false

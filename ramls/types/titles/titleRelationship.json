@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Titles object schema in providers collection",
   "description": "Provider object schema in providers collection",
-  "javaType": "org.folio.rest.jaxrs.model.TitleRelationShip",
+  "javaType": "org.folio.rest.jaxrs.model.TitleRelationship",
   "type": "object",
   "additionalProperties": false,
   "properties": {

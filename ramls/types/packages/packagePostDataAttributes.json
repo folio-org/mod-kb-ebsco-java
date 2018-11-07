@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Post Data attributes schema",
+  "description": "Package Post Data attributes schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.PackagePostDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Package name",
+      "example": "Advanced Placement Psychology Collection"
+    },
+    "contentType": {
+      "type": "string",
+      "description": "Package type",
+      "enum": [
+        "Aggregated Full Text",
+        "Abstract and Index",
+        "E-Book",
+        "E-Journal",
+        "Print",
+        "Online Reference",
+        "Unknown"],
+      "example": "E-Journal"
+    },
+    "customCoverage": {
+      "type": "object",
+      "description": "Custom Coverage",
+      "$ref": "../coverage.json"
+    }
+  },
+  "required": [
+    "name",
+    "contentType"
+  ]
+}

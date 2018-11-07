@@ -1,0 +1,12 @@
+{
+  "errors": [
+    {
+      "title": "Invalid package",
+      "detail": "Package cannot be deleted",
+      "source": {}
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

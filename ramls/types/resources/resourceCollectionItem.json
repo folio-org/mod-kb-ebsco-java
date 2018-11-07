@@ -1,19 +1,20 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Resources object schema",
-  "description": "Resources object schema",
-  "javaType": "org.folio.rest.jaxrs.model.ResourceData",
+  "title": "Resource object schema for a collection",
+  "description": "Resource object schema for a collection",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceCollectionItem",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique identifier of resource",
-      "example": "273-1704-2985519"
+      "description": "Unique identifier of resource - combination of providerId-packageId-titleId",
+      "example": "583-4345-760027"
     },
     "type": {
       "type": "string",
       "description": "Type of resource",
+      "enum": ["resources"],
       "example": "resources"
     },
     "attributes": {
@@ -24,7 +25,7 @@
     "relationships": {
       "type": "object",
       "description": "Displays if any relationship is included",
-      "$ref": "resourcesRelationships.json"
+      "$ref": "resourceRelationships.json"
     }
   }
 }

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package POST Request Schema",
+  "description": "Package Post Request Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.PackagePostRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of package post request",
+      "type": "object",
+      "$ref": "packagePostData.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

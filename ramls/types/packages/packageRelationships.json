@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package relationships object schema in package collection item",
+  "description": "Package relationships object schema in package collection item",
+  "javaType": "org.folio.rest.jaxrs.model.PackageRelationship",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "resources": {
+      "type": "object",
+      "description": "Displays Resources Relationship if any",
+      "$ref": "../metaIncluded.json"
+    },
+    "provider": {
+      "type": "object",
+      "description": "Displays Provider Relationship if any",
+      "$ref": "../metaIncluded.json"
+    }
+  }
+}
