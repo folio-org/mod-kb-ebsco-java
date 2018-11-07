@@ -31,11 +31,6 @@
             "included": false
           }
         },
-        "vendor": {
-          "meta": {
-            "included": false
-          }
-        },
         "provider": {
           "meta": {
             "included": false
@@ -70,11 +65,6 @@
       },
       "relationships": {
         "resources": {
-          "meta": {
-            "included": false
-          }
-        },
-        "vendor": {
           "meta": {
             "included": false
           }
@@ -160,11 +150,6 @@
             "included": false
           }
         },
-        "vendor": {
-          "meta": {
-            "included": false
-          }
-        },
         "provider": {
           "meta": {
             "included": false
@@ -242,11 +227,6 @@
       },
       "relationships": {
         "resources": {
-          "meta": {
-            "included": false
-          }
-        },
-        "vendor": {
           "meta": {
             "included": false
           }
@@ -332,11 +312,6 @@
             "included": false
           }
         },
-        "vendor": {
-          "meta": {
-            "included": false
-          }
-        },
         "provider": {
           "meta": {
             "included": false
@@ -414,11 +389,6 @@
       },
       "relationships": {
         "resources": {
-          "meta": {
-            "included": false
-          }
-        },
-        "vendor": {
           "meta": {
             "included": false
           }

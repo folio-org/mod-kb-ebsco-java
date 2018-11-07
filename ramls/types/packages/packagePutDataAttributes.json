@@ -47,12 +47,12 @@
     "packageToken": {
       "type": "object",
       "description": "Tokens are variables in content URLs that identify the customer. The token is text within the URL that needs to be replaced with an institute-specific value.",
-      "$ref": "../token.json"
+      "$ref": "../tokenPut.json"
     },
     "proxy": {
       "type": "object",
       "description": "Proxy",
-      "$ref": "../proxy.json"
+      "$ref": "../proxyPut.json"
     }
   },
   "required": [

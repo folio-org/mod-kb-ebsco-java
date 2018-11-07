@@ -11,11 +11,6 @@
       "description": "Displays Resources Relationship if any",
       "$ref": "../metaIncluded.json"
     },
-    "vendor": {
-      "type": "object",
-      "description": "Displays Vendor Relationship if any",
-      "$ref": "../metaIncluded.json"
-    },
     "provider": {
       "type": "object",
       "description": "Displays Provider Relationship if any",
