@@ -44,8 +44,6 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
   public CompletableFuture<Boolean> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext) {
     if(rmapiConfiguration.getConfigValid() != null){
       return CompletableFuture.completedFuture(rmapiConfiguration.getConfigValid());
-    } else if(isConfigurationParametersInvalid(rmapiConfiguration)){
-      return CompletableFuture.completedFuture(false);
     }
     return rmapiConfigurationService.verifyCredentials(rmapiConfiguration, vertxContext)
       .thenCompose(isValid -> {
@@ -54,8 +52,4 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
       });
   }
 
-  private boolean isConfigurationParametersInvalid(RMAPIConfiguration rmapiConfiguration) {
-    return rmapiConfiguration.getUrl() == null || rmapiConfiguration.getAPIKey() == null
-      || rmapiConfiguration.getCustomerId() == null;
-  }
 }
