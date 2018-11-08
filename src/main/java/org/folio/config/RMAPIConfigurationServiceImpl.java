@@ -71,6 +71,9 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
 
   @Override
   public CompletableFuture<Boolean> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext){
+    if(isConfigurationParametersInvalid(rmapiConfiguration)) {
+      return CompletableFuture.completedFuture(false);
+    }
     return new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
       rmapiConfiguration.getUrl(), vertxContext.owner())
       .verifyCredentials()
@@ -233,5 +236,10 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
       .withDescription(description)
       .withEnabled(true)
       .withValue(apiKey);
+  }
+
+  private boolean isConfigurationParametersInvalid(RMAPIConfiguration rmapiConfiguration) {
+    return rmapiConfiguration.getUrl() == null || rmapiConfiguration.getAPIKey() == null
+      || rmapiConfiguration.getCustomerId() == null;
   }
 }

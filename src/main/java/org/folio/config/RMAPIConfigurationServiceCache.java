@@ -1,11 +1,10 @@
 package org.folio.config;
 
 import io.vertx.core.Context;
+import java.util.concurrent.CompletableFuture;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.model.OkapiData;
-
-import java.util.concurrent.CompletableFuture;
 
 public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService {
 
@@ -52,4 +51,5 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
         return CompletableFuture.completedFuture(isValid);
       });
   }
+
 }
