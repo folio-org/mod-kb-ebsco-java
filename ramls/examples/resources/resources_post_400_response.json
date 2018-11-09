@@ -1,0 +1,11 @@
+{
+  "errors": [
+    {
+      "title": "Package and provider id are required"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
+

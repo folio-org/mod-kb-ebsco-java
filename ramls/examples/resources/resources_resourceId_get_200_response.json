@@ -9,7 +9,8 @@
       "isTitleCustom": false,
       "publisherName": "Elsevier",
       "titleId": 1440285,
-      "contributors": [{
+      "contributors": [
+        {
           "type": "Author",
           "contributor": "Havard, Margaret"
         },
@@ -18,7 +19,8 @@
           "contributor": "Tiziani, Adriana."
         }
       ],
-      "identifiers": [{
+      "identifiers": [
+        {
           "id": "1440285",
           "type": "BHM",
           "subtype": "Empty"
@@ -41,10 +43,12 @@
       ],
       "name": "Havard's Nursing Guide to Drugs (Nursing Guide to Drugs)",
       "publicationType": "Book",
-      "subjects": [{
-        "type": "BISAC",
-        "subject": "MEDICAL / Nursing / Pharmacology"
-      }],
+      "subjects": [
+        {
+          "type": "BISAC",
+          "subject": "MEDICAL / Nursing / Pharmacology"
+        }
+      ],
       "coverageStatement": "Only 2000s issues available.",
       "customEmbargoPeriod": {
         "embargoUnit": "Days",
@@ -61,33 +65,30 @@
       "packageId": "22-1887786",
       "packageName": "ProQuest Ebook Central",
       "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=1722033",
-      "vendorId": 22,
-      "vendorName": "Proquest Info & Learning Co",
       "providerId": 22,
       "providerName": "Proquest Info & Learning Co",
       "visibilityData": {
         "isHidden": true,
         "reason": ""
       },
-      "managedCoverages": [{
-        "beginCoverage": "2010-01-01",
-        "endCoverage": "2010-12-31"
-      }],
-      "customCoverages": [{
-        "beginCoverage": "2003-01-01",
-        "endCoverage": "2004-01-01"
-      }],
+      "managedCoverages": [
+        {
+          "beginCoverage": "2010-01-01",
+          "endCoverage": "2010-12-31"
+        }
+      ],
+      "customCoverages": [
+        {
+          "beginCoverage": "2003-01-01",
+          "endCoverage": "2004-01-01"
+        }
+      ],
       "proxy": {
         "id": "EZProxy",
         "inherited": false
       }
     },
     "relationships": {
-      "vendor": {
-        "meta": {
-          "included": false
-        }
-      },
       "provider": {
         "data": {
           "type": "providers",
@@ -106,28 +107,125 @@
       }
     }
   },
-  "included": [{
-    "id": "22",
-    "type": "providers",
-    "attributes": {
-      "name": "Proquest Info & Learning Co",
-      "packagesTotal": 840,
-      "packagesSelected": 30,
-      "providerToken": null,
-      "supportsCustomPackages": false,
-      "proxy": {
-        "id": "EZProxy",
-        "inherited": true
+  "included": [
+    {
+      "id": "22",
+      "type": "providers",
+      "attributes": {
+        "name": "Proquest Info & Learning Co",
+        "packagesTotal": 840,
+        "packagesSelected": 30,
+        "providerToken": null,
+        "supportsCustomPackages": false,
+        "proxy": {
+          "id": "EZProxy",
+          "inherited": true
+        }
+      },
+      "relationships": {
+        "packages": {
+          "meta": {
+            "included": false
+          }
+        }
       }
     },
-    "relationships": {
-      "packages": {
-        "meta": {
-          "included": false
+    {
+      "id": "1440285",
+      "type": "titles",
+      "attributes": {
+        "name": "Havard's Nursing Guide to Drugs (Nursing Guide to Drugs)",
+        "publisherName": "Elsevier",
+        "isTitleCustom": false,
+        "subjects": [
+          {
+            "type": "BISAC",
+            "subject": "MEDICAL / Nursing / Pharmacology"
+          }
+        ],
+        "identifiers": [
+          {
+            "id": "978-0-7295-3913-5",
+            "type": "ISBN",
+            "subtype": "Print"
+          },
+          {
+            "id": "978-0-7295-7913-1",
+            "type": "ISBN",
+            "subtype": "Online"
+          }
+        ],
+        "publicationType": "Book",
+        "edition": null,
+        "description": null,
+        "isPeerReviewed": false,
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Havard, Margaret"
+          },
+          {
+            "type": "author",
+            "contributor": "Tiziani, Adriana."
+          }
+        ]
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "22-1887786",
+      "type": "packages",
+      "attributes": {
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": false,
+        "isSelected": true,
+        "name": "ProQuest Ebook Central",
+        "packageId": 1887786,
+        "packageType": "Variable",
+        "providerId": 22,
+        "providerName": "Proquest Info & Learning Co",
+        "selectedCount": 1305491,
+        "titleCount": 1305491,
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "allowKbToAddTitles": true,
+        "packageToken": {
+          "factName": "[[SiteID]]",
+          "helpText": "The ID may contain a combination of alphanumeric characters, varying in length.",
+          "value": null,
+          "prompt": "/lib/ "
+        },
+        "proxy": {
+          "id": "EZProxy",
+          "inherited": true
+        }
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
         }
       }
     }
-  }],
+  ],
   "jsonapi": {
     "version": "1.0"
   }

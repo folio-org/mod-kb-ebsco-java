@@ -20,6 +20,11 @@
       "type": "object",
       "description": "Relationship of package for a given object",
       "$ref": "../metaIncluded.json"
+    },
+    "resources": {
+      "type": "object",
+      "description": "Resources relationship",
+      "$ref": "../metaIncluded.json"
     }
   }
 }

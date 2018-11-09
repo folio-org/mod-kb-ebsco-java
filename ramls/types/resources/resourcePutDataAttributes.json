@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Put Data attributes schema",
+  "description": "Resource Put Data attributes schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.ResourcePutDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "URL of a custom resource",
+      "example": "https://hello.io"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name for a custom resource",
+      "example": "Sample Title"
+    },
+    "isPeerReviewed": {
+      "type": "boolean",
+      "description": "Peer review indicator",
+      "example": true
+    },
+    "publicationType": {
+      "type": "string",
+      "description": "Publication Type",
+      "enum": [
+        "Audiobook",
+        "Book",
+        "Book Series",
+        "Database",
+        "Journal",
+        "Newsletter",
+        "Newspaper",
+        "Proceedings",
+        "Report",
+        "Streaming Audio",
+        "Streaming Video",
+        "Thesis & Dissertation",
+        "Website",
+        "Unspecified"
+      ],
+      "example": "Newspaper"
+    },
+    "publisherName": {
+      "type": "string",
+      "description": "Publisher name",
+      "example": "ABC Publishing"
+    },
+    "edition": {
+      "type": "string",
+      "description": "Edition for a custom resource",
+      "example": "5"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description for a custom resource",
+      "example": "Sample title description"
+    },
+    "contributors": {
+      "type": "array",
+      "description": "List of contributors",
+      "items": {
+        "type": "object",
+        "$ref": "../contributor.json"
+      }
+    },
+    "identifiers": {
+      "type": "array",
+      "description": "List of identifiers",
+      "items": {
+        "type": "object",
+        "$ref": "../identifier.json"
+      }
+    },
+    "customCoverages": {
+      "type": "array",
+      "description": "List of custom coverages",
+      "items": {
+        "type": "object",
+        "$ref": "../coverage.json"
+      }
+    },
+    "isSelected": {
+      "type": "boolean",
+      "description": "Selection of the managed or custom resource to be updated",
+      "example": false
+    },
+    "visibilityData": {
+      "type": "object",
+      "description": "Indicates whether resource should be hidden or visible to patrons",
+      "$ref": "../visibilityData.json"
+    },
+    "coverageStatement": {
+      "type": "string",
+      "description": "Coverage Statement",
+      "example": "Sample coverage statement"
+    },
+    "customEmbargoPeriod": {
+      "type": "object",
+      "description": "Custom Embargo of a resource",
+      "$ref": "../embargo.json"
+    },
+    "proxy": {
+      "type": "object",
+      "description": "Proxy",
+      "$ref": "../proxyPut.json"
+    }
+  }
+}

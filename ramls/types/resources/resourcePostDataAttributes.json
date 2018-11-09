@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Post Data attributes schema",
+  "description": "Resource Post Data attributes schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.ResourcePostDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "packageId": {
+      "type": "string",
+      "description": "Id of the custom package",
+      "example": "123355-2845510"
+    },
+    "titleId": {
+      "type": "string",
+      "description": "Id of the managed/custom title",
+      "example": "17059786"
+    },
+    "url": {
+      "type": "string",
+      "description": "Custom URL",
+      "example": "https://hello.io"
+    }
+  },
+  "required": [
+    "packageId",
+    "titleId"
+  ]
+}

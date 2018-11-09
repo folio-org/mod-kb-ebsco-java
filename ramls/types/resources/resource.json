@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource object schema",
+  "description": "Resource object schema",
+  "javaType": "org.folio.rest.jaxrs.model.Resource",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "The Data Schema",
+      "$ref": "resourceCollectionItem.json"
+    },
+    "included": {
+      "type": "array",
+      "description": "List of included items",
+      "items": {
+        "type": "object",
+        "$ref": "resourceIncludedItem.json"
+      }
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "jsonapi"
+  ]
+}

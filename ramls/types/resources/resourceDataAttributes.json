@@ -121,16 +121,6 @@
       "description": "URL",
       "example": "http://search.ebscohost.com/direct.asp?db=aps&jid=BDGR&scope=site"
     },
-    "vendorId": {
-      "type": "integer",
-      "description": "Vendor Id",
-      "example": 19
-    },
-    "vendorName": {
-      "type": "string",
-      "description": "Vendor name",
-      "example": "EBSCO"
-    },
     "providerId": {
       "type": "integer",
       "description": "Provider Id",

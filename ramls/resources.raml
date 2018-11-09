@@ -1,81 +1,19 @@
 #%RAML 1.0
 title: mod-kb-ebsco-java
 baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
 version: v1
 mediaType: "application/vnd.api+json"
 
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
 types:
-# TODO: should be uncommented for MODKBEKBJ-29
-#  visibilityData:
-#    type: object
-#    properties:
-#      isHidden: boolean
-#    example: |
-#      {
-#        "isHidden": true
-#      }
-#  proxy:
-#    type: object
-#    properties:
-#      id: string
-#    example: |
-#      {
-#        "id": "EZ_Proxy"
-#      }
-  customEmbargoPeriod:
-    type: object
-    properties:
-      embargoValue: number
-      embargoUnit: string
-    example: |
-      {
-        "embargoValue": 4,
-        "embargoUnit": "Weeks"
-      }
-  customCoverage: # normal object type declaration
-    type: object
-    properties:
-      beginCoverage: string
-      endCoverage: string
-    example: |
-      {
-        "beginCoverage": "2003-01-01",
-        "endCoverage": "2003-12-01"
-      }
-  customIdentifierType:
-    type: string
-    enum: ["ISSN", "ISBN"]
-    example: "ISSN"
-  customIdentifierSubType:
-    type: string
-    enum: ["Print", "Online"]
-    example: "Print"
-  identifier:
-    type: object
-    properties:
-      id: string
-      type: customIdentifierType
-      subtype: customIdentifierSubType
-    example: |
-       {
-          "id": "978-0-7295-3913-5",
-          "type": "ISBN",
-          "subtype": "Print"
-        }
-  contributorType:
-    type: string
-    enum: ["Author", "Editor", "Illustrator"]
-    example: "Author"
-  contributor:
-    type: object
-    properties:
-      type: contributorType
-      contributor: string
-    example: |
-      {
-        "type": "Author",
-        "contributor": "Tiziani, Adriana."
-      }
+  resourcePostRequest: !include types/resources/resourcePostRequest.json
+  resource: !include types/resources/resource.json
+  jsonapiError: !include types/jsonapiError.json
+  resourcePutRequest: !include types/resources/resourcePutRequest.json
 
 /eholdings/resources:
   displayName: Resources
@@ -86,50 +24,53 @@ types:
         example: application/vnd.api+json
     body:
       application/vnd.api+json:
-        properties:
-          data:
-            description: Needed because of JSON API
-            type: object
-            required: true
-            properties:
-              type: string
-              attributes:
-                description: Needed because of JSON API
-                type: object
-                required: true
-                properties:
-                  packageId:
-                    description: |
-                      Id of the custom package to which the managed/custom title is to be associated.
-                      Note that packageId is a combination of vendorId-packageId.
-                    type: string
-                    example: 123355-2845510
-                    required: true
-                  titleId:
-                    description: Id of the managed/custom title that needs to be associated to a custom package.
-                    type: string
-                    example: "17059786"
-                    required: true
-                  url:
-                    description: Custom URL displaying the relationship between the custom package and custom/managed title.
-                    type: string
-                    required: false
-                    example: https://hello.io
-        example: !include examples/resources/resources_post_request.json
+        description: The server has successfully fulfilled the POST request.
+        type: resourcePostRequest
+        example:
+          strict: false
+          value: !include examples/resources/resources_post_request.json
     responses:
       200:
         description: OK
         body:
           application/vnd.api+json:
-            example: !include examples/resources/resources_post_200_response.json
+            description: The server has successfully fulfilled the POST request.
+            type: resource
+            example:
+              strict: false
+              value: !include examples/resources/resources_post_200_response.json
       400:
         description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/resources/resources_post_400_response.json
+      404:
+        description: Not Fount
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/resources/resources_post_404_response.json
       422:
         description: Unprocessable Entity
         body:
           application/vnd.api+json:
-            example: !include examples/resources/resources_post_422_response.json
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/resources/resources_post_422_response.json
   /{resourceId}:
+    displayName: Get resource by resourceId
+    description: Instance of a resource given resourceId
+    uriParameters:
+      resourceId:
+        description: Identifier of the resource to get
+        type: string
+        example: 22-1887786-1440285
     get:
       description: |
         Retrieve a specific resource given resourceId.
@@ -139,8 +80,12 @@ types:
         include:
           displayName: Nested provider, package or title
           type: string
-          enum: ["provider", "package", "title"]
-          description: Include provider, package or title in response
+          description: |
+            Include provider, package or title in response
+            Possible values are
+             - provider
+             - package
+             - title
           example: provider
           required: false
       responses:
@@ -148,14 +93,27 @@ types:
           description: OK
           body:
             application/vnd.api+json:
-              example: !include examples/resources/resources_resourceId_get_200_response.json
+              description: Resource details from KB for a given resource Id
+              type: resource
+              example:
+               strict: false
+               value: !include examples/resources/resources_resourceId_get_200_response.json
         400:
           description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_get_400_response.json
         404:
           description: Not Found
           body:
             application/vnd.api+json:
-              example: !include examples/resources/resources_resourceId_get_404_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_get_404_response.json
     put:
       description: |
         Update a managed or custom resource using resourceId
@@ -165,169 +123,44 @@ types:
           example: application/vnd.api+json
       body:
         application/vnd.api+json:
-          properties:
-            data:
-              description: Needed because of JSON API
-              type: object
-              required: true
-              properties:
-                type: string
-                attributes:
-                  description: Needed because of JSON API
-                  type: object
-                  required: true
-                  properties:
-                    url:
-                      description: |
-                        Custom URL of a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: string
-                      example: "https://hello.io"
-                      required: false
-                    name:
-                      description: |
-                        Title name for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: string
-                      example: "Sample Title"
-                      required: false
-                    isPeerReviewed:
-                      description: |
-                        Peer review indicator for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: boolean
-                      example: true
-                      required: false
-                    publicationType:
-                      description: |
-                        Publication Type for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: string
-                      enum: ["Audiobook", "Book", "Book Series", "Database", "Journal", "Newsletter", "Newspaper", "Proceedings", "Report", "Streaming Audio", "Streaming Video", "Thesis & Dissertation", "Website", "Unspecified"]
-                      example: "Newspaper"
-                      required: false
-                    publisherName:
-                      description: |
-                        Publisher Name for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: string
-                      example: "ABC Publishing"
-                      required: false
-                    edition:
-                      description: |
-                        Edition for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: string
-                      example: "5"
-                      required: false
-                    description:
-                      description: |
-                        Description for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: string
-                      example: "Sample title description"
-                      required: false
-                    contributors:
-                      description: |
-                        Contributors for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: array
-                      items: contributor
-                      example:
-                        - # start item 1
-                          type: Author
-                          contributor: Havard, Margaret
-                        - # start item 2
-                          type: Illustrator
-                          contributor: Tiziani, Adriana
-                      required: false
-                    identifiers:
-                      description: |
-                        Identifiers for a custom resource.
-                        Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.
-                      type: array
-                      items: identifier
-                      example:
-                        - # start item 1
-                          id: 978-0-7295-3913-5
-                          type: ISBN
-                          subtype: Print
-                        - # start item 2
-                          id: 1996-0794
-                          type: ISSN
-                          subtype: Print
-                      required: false
-                    customCoverages:
-                      description: |
-                        Coverage dates of the custom or managed resource to be updated.
-                        Note that this attribute can be updated BOTH FOR CUSTOM RESOURCES AND MANAGED RESOURCES.
-                      type: array
-                      items: customCoverage
-                      example:
-                        - # start item 1
-                          beginCoverage: 2018-06-03
-                          endCoverage: 2018-06-04
-                        - # start item 2
-                          beginCoverage: 2018-06-05
-                          endCoverage: 2018-06-06
-                      required: false
-                    isSelected:
-                      description: |
-                        Selection of the managed or custom resource to be updated.
-                        Note that selection can be updated for BOTH CUSTOM AND MANAGED RESOURCES.
-                        For custom resources, if this is set to false, it disassociates the resource from the contained custom package.
-                        If the title is custom and is not associated with any other package, then the title will be deleted from the knowledge base.
-                        This param is required for a custom resource and is optional for a managed resource.
-                      type: boolean
-                      example: true
-                      required: true
-#                    visibilityData:
-#                      description: |
-#                        Indicates whether resource should be hidden or visible to patrons.
-#                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
-#                      type: visibilityData
-#                      required: false
-                    coverageStatement:
-                      description: |
-                        Coverage Statement of a managed or custom resource.
-                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
-                      type: string
-                      required: false
-                      example: "Sample coverage statement"
-                    customEmbargoPeriod:
-                      description: |
-                        Custom Embargo of a managed or custom resource.
-                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
-                      type: customEmbargoPeriod
-                      required: false
-#                    proxy:
-#                      description: |
-#                        Ability to update selection of proxy for a custom or managed resource.
-#                        Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.
-#                      type: proxy
-#                      required: false
-          example: !include examples/resources/resources_put_request.json
+          type: resourcePutRequest
+          example:
+            strict: false
+            value: !include examples/resources/resources_put_request.json
       responses:
         200:
           description: OK
           body:
             application/vnd.api+json:
-              example: !include examples/resources/resources_resourceId_put_200_response.json
+              description: The server has successfully fulfilled the PUT request.
+              type: resource
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_put_200_response.json
         400:
           description: Bad Request
           body:
             application/vnd.api+json:
-                example: !include examples/resources/resources_resourceId_put_400_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_put_400_response.json
         404:
           description: Not Found
           body:
             application/vnd.api+json:
-              example: !include examples/resources/resources_resourceId_put_404_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_put_404_response.json
         422:
           description: Unprocessable Entity
           body:
             application/vnd.api+json:
-              example: !include examples/resources/resources_resourceId_put_422_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_put_422_response.json
     delete:
       description: |
         Delete the association between a custom/managed title and a custom package using resourceId.
@@ -340,9 +173,15 @@ types:
           description: Bad Request
           body:
             application/vnd.api+json:
-              example: !include examples/resources/resources_resourceId_delete_400_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_delete_400_response.json
         404:
           description: Not Found
           body:
             application/vnd.api+json:
-              example: !include examples/resources/resources_resourceId_delete_404_response.json
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resources_resourceId_delete_404_response.json
