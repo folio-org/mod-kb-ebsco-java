@@ -19,7 +19,7 @@
     "attributes": {
       "type": "object",
       "description": "Provider Data Attributes",
-      "$ref": "providerPutDataAttributes.json"
+      "$ref": "providerDataAttributes.json"
     }
   }
 }

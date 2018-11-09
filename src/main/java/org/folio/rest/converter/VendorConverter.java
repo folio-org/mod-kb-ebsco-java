@@ -1,5 +1,6 @@
 package org.folio.rest.converter;
 
+import org.folio.config.RMAPIConfiguration;
 import org.folio.rest.jaxrs.model.*;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.Vendor;
@@ -43,7 +44,7 @@ public class VendorConverter {
       .withRelationships(EMPTY_PACKAGE_RELATIONSHIP);
   }
 
-  public Provider convertToVendor(VendorById vendor) {
+  public Provider convertToProvider(VendorById vendor) {
     VendorToken vendorToken = vendor.getVendorToken();
     return new Provider()
       .withData(new ProviderData()
@@ -63,6 +64,33 @@ public class VendorConverter {
       .withIncluded(null)
       .withJsonapi(RestConstants.JSONAPI);
   }
+  
+  public VendorById convertToVendor( ProviderPutRequest provider) {
+	     
+	    VendorById vendor = new VendorById();
+
+	    //RM API gives an error when we pass inherited as true along with updated proxy value
+	    //Hard code it to false; it should not affect the state of inherited that RM API maintains
+	    org.folio.rmapi.model.Proxy vendorProxy = new org.folio.rmapi.model.Proxy();
+	    org.folio.rmapi.model.VendorToken vendorToken = new org.folio.rmapi.model.VendorToken();
+	    
+	    if (provider.getData().getAttributes().getProxy() !=null) {
+	    vendorProxy.setInherited(false);
+	    vendorProxy.setId(provider.getData().getAttributes().getProxy().getId());
+	    vendor.setProxy(vendorProxy);
+	    }
+	    
+	    if (provider.getData().getAttributes().getProviderToken() != null) {
+	    vendorToken.setValue(provider.getData().getAttributes().getProviderToken().getValue());
+	    vendor.setVendorToken(vendorToken);
+	    }
+	   
+	    return vendor;
+
+  }
+
+  
+  
 
   private Token convertToken(VendorToken vendorToken) {
     return new Token()

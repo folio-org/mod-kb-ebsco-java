@@ -6,6 +6,9 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.json.Json;
+
+
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
 import org.folio.rmapi.builder.TitlesFilterableUrlBuilder;
@@ -18,6 +21,7 @@ import org.folio.rmapi.model.Vendors;
 import org.folio.rmapi.model.Titles;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class RMAPIService {
 
@@ -100,6 +104,76 @@ public class RMAPIService {
     return future;
 
   }
+  
+  private <T> CompletableFuture<T> putRequest(String query, T putData, Class<T> clazz){
+
+	    CompletableFuture<T> future = new CompletableFuture<>();
+
+	    HttpClient httpClient = vertx.createHttpClient();
+
+	    final HttpClientRequest request = httpClient.putAbs(query);
+
+	    request.headers().add(HTTP_HEADER_ACCEPT, APPLICATION_JSON);
+	    request.headers().add(HTTP_HEADER_CONTENT_TYPE, APPLICATION_JSON);
+	    request.headers().add(RMAPI_API_KEY, apiKey);
+
+	    LOG.info("RMAPI Service absolute URL is" + request.absoluteURI());
+
+	    request.handler(response -> response.bodyHandler(body -> {
+	      httpClient.close();
+	      if (response.statusCode() == 204) {
+	    	  try {
+				future.complete(clazz.newInstance());
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	      }
+	      else if (response.statusCode() == 200) {
+	        try {
+	          final JsonObject instanceJSON = new JsonObject(body.toString());
+	          T results = instanceJSON.mapTo(clazz);
+	          future.complete(results);
+	        } catch (Exception e) {
+	          LOG.error(
+	            String.format("%s - Response = [%s] Target Type = [%s]", JSON_RESPONSE_ERROR, body.toString(), clazz));
+	          future.completeExceptionally(
+	            new RMAPIResultsProcessingException(String.format("%s for query = %s", JSON_RESPONSE_ERROR, query), e));
+	        }
+	      } else {
+	        LOG.error(String.format("%s status code = [%s] status message = [%s] query = [%s] body = [%s]",
+	          INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString()));
+
+	        if (response.statusCode() == 404) {
+	          future.completeExceptionally(
+	            new RMAPIResourceNotFoundException(String.format("Requested resource %s not found, response body =\"%s\"", query, body.toString())));
+	        } else if ((response.statusCode() == 401) || (response.statusCode() == 403)) {
+	          future.completeExceptionally(
+	            new RMAPIUnAuthorizedException(String.format("Unauthorized Access to %s, response body =\"%s\"", request.absoluteURI(), body.toString())));
+	        } else {
+
+	          future
+	            .completeExceptionally(new RMAPIServiceException(
+	              String.format("%s Code = %s Message = %s Body = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
+	                response.statusMessage(), body.toString()),
+	              response.statusCode(), response.statusMessage(), body.toString(), query));
+	        }
+	      }
+
+	    }))
+	      .exceptionHandler(future::completeExceptionally);
+
+	   
+	    String encodedBody = Json.encodePrettily(putData);
+	    request.end(encodedBody);
+
+	    return future;
+
+	  }
+
 
   public CompletableFuture<Object> verifyCredentials() {
     return this.getRequest(constructURL("vendors?search=zz12&offset=1&orderby=vendorname&count=1"), Object.class);
@@ -139,6 +213,17 @@ public class RMAPIService {
 
     return this.getRequest(constructURL(path), VendorById.class);
   }
+    
+    public CompletableFuture<VendorById> updateProvider(String id, VendorById vendor) {
+
+    	final String path = "vendors/" + id;
+    	
+    	// return this.getRequest(constructURL(path), VendorById.class);
+    	
+    	return this.putRequest(constructURL(path), vendor, VendorById.class)
+        	.thenCompose( vend -> { return this.retrieveProvider(id, "");}); 
+    
+      }
 
   /**
    * Constructs full rmapi path
