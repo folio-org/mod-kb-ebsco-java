@@ -1,11 +1,8 @@
 package org.folio.rest.validator;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import org.folio.rest.util.RestConstants;
 
-import javax.ws.rs.core.Response;
+import javax.validation.ValidationException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -21,20 +18,13 @@ public class HeaderValidator {
 
   /**
    * @param okapiHeaders request headers
-   * @param asyncResultHandler handler that will be called with error response if headers are invalid
-   * @return true if request is valid
+   * @throws ValidationException if validation failed
    */
-  public boolean validate(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler) {
+  public void validate(Map<String, String> okapiHeaders) {
     for (String header : expectedHeaders) {
       if (!okapiHeaders.containsKey(header)) {
-        asyncResultHandler.handle(Future.succeededFuture(
-          Response
-            .status(400)
-            .entity("Missing header " + header)
-            .build()));
-        return false;
+        throw new ValidationException("Missing header " + header);
       }
     }
-    return true;
   }
 }

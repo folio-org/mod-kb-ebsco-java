@@ -12,6 +12,7 @@ import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.annotations.Validate;
+import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.VendorConverter;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
@@ -21,6 +22,7 @@ import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
+import org.folio.rmapi.exception.RMAPIServiceException;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -59,40 +61,47 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   @Override
   @Validate
+  @HandleValidationErrors
   public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
-      return;
-    }
+    headerValidator.validate(okapiHeaders);
     if(sort != null && !Sort.contains(sort.toUpperCase())){
-      throw new ValidationException("sort parameter must have value \"relevance\" or \"name\"");
+      throw new ValidationException("Invalid sort parameter");
     }
     Sort nameSort = sort != null ? Sort.valueOf(sort.toUpperCase()) : null;
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
-      .thenCompose(rmapiConfiguration -> {
-        RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
-          rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveProviders(q, page, count, nameSort);
-      })
-      .thenAccept(vendors ->
+    .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+    .thenCompose(rmapiConfiguration -> {
+      RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
+        rmapiConfiguration.getUrl(), vertxContext.owner());
+      return rmapiService.retrieveProviders(q, page, count, nameSort);
+    })
+    .thenAccept(vendors ->
+      asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
+       .respond200WithApplicationVndApiJson(converter.convert(vendors)))))
+    .exceptionally(e -> {
+      if(e.getCause() instanceof RMAPIServiceException){
+        RMAPIServiceException rmApiException = (RMAPIServiceException)e.getCause();
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
-          .respond200WithApplicationVndApiJson(converter.convert(vendors)))))
-      .exceptionally(e -> {
-        logger.error(GET_PROVIDERS_ERROR_MESSAGE, e);
+          .status(rmApiException.getRMAPICode())
+          .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+          .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException))
+          .build()));
+      }
+      else {
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
           .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
           .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
           .entity(ErrorUtil.createError(e.getCause().getMessage()))
           .build()));
-        return null;
-      });
+      }
+      return null;
+    });
   }
 
   @Override
+  @HandleValidationErrors
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
-      return;
-    }
+    headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
@@ -120,11 +129,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   @Override
+  @HandleValidationErrors
   public void putEholdingsProvidersByProviderId(String providerId, String contentType, ProviderPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 
   @Override
+  @HandleValidationErrors
   public void getEholdingsProvidersPackages(String q, String filterSelected, String filterType, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }

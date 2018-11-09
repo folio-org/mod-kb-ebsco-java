@@ -132,6 +132,11 @@
       "description": "Get single provider"
     },
     {
+      "permissionName": "kb-ebsco.titleCollection.get",
+      "displayName": "get titles",
+      "description": "Get titles"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
@@ -140,7 +145,8 @@
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
         "kb-ebsco.providerCollection.get",
-        "kb-ebsco.provider.get"
+        "kb-ebsco.provider.get",
+        "kb-ebsco.titleCollection.get"
       ]
     }
   ],

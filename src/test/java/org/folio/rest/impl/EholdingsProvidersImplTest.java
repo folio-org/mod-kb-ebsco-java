@@ -189,7 +189,7 @@ public class EholdingsProvidersImplTest {
       .statusCode(HttpStatus.SC_NOT_FOUND)
       .extract().as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getDetail(), is("Provider not found"));
+    assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
   }
 
   @Test
@@ -211,7 +211,7 @@ public class EholdingsProvidersImplTest {
       .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
       .extract().as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getDetail(), notNullValue());
+    assertThat(error.getErrors().get(0).getTitle(), notNullValue());
   }
 
   private void compareProviders(Provider actual, Provider expected) {

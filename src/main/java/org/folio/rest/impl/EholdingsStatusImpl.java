@@ -10,6 +10,7 @@ import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
+import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.StatusConverter;
 import org.folio.rest.jaxrs.resource.EholdingsStatus;
 import org.folio.rest.model.OkapiData;
@@ -42,10 +43,9 @@ public class EholdingsStatusImpl implements EholdingsStatus {
   }
 
   @Override
+  @HandleValidationErrors
   public void getEholdingsStatus(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    if (!headerValidator.validate(okapiHeaders, asyncResultHandler)) {
-      return;
-    }
+    headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> CompletableFuture.completedFuture(new OkapiData(okapiHeaders)))
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(okapiData))
