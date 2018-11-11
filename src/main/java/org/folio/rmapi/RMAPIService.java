@@ -134,6 +134,7 @@ public class RMAPIService {
     })).exceptionHandler(future::completeExceptionally);
 
     String encodedBody = Json.encodePrettily(putData);
+    LOG.info("RMAPI Service PUT body is:" + encodedBody);
     request.end(encodedBody);
 
     return future;

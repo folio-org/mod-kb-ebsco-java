@@ -1,6 +1,7 @@
 package org.folio.rest.aspect;
 
 import org.folio.rest.annotations.Validate;
+import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.util.ErrorUtil;
 
 import io.vertx.core.AsyncResult;
@@ -26,6 +27,13 @@ public aspect ValidationErrorHandlerAspect {
             .entity(ErrorUtil.createError(e.getMessage()))
             .build()));
             return;
+    }
+    catch (InputValidationException e){
+      asyncResultHandler.handle(Future.succeededFuture(Response.status(422)
+      .header("Content-Type", "application/vnd.api+json")
+      .entity(ErrorUtil.createError(e.getMessage(), e.getMessageDetail()))
+      .build()));
+      return;
     }
   }
 }
