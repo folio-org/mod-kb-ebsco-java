@@ -25,20 +25,29 @@ import org.folio.rmapi.model.Vendors;
 public class VendorConverter {
 
   private static final Relationships EMPTY_PACKAGE_RELATIONSHIP = new Relationships()
-      .withPackages(new Packages().withMeta(new MetaDataIncluded().withIncluded(false)).withData(null));
+      .withPackages(new Packages()
+          .withMeta(new MetaDataIncluded()
+              .withIncluded(false))
+          .withData(null));
   private final String PROVIDERS_TYPE = "providers";
 
   public ProviderCollection convert(Vendors vendors) {
-    List<Providers> providerList = vendors.getVendorList().stream().map(this::convertVendor)
+    List<Providers> providerList = vendors.getVendorList().stream()
+        .map(this::convertVendor)
         .collect(Collectors.toList());
-    return new ProviderCollection().withJsonapi(RestConstants.JSONAPI)
-        .withMeta(new MetaTotalResults().withTotalResults(vendors.getTotalResults())).withData(providerList);
+    return new ProviderCollection()
+        .withJsonapi(RestConstants.JSONAPI)
+        .withMeta(new MetaTotalResults().withTotalResults(vendors.getTotalResults()))
+        .withData(providerList);
   }
 
   private Providers convertVendor(Vendor vendor) {
     VendorToken token = vendor.getVendorToken();
-    return new Providers().withId(String.valueOf(vendor.getVendorId())).withType(PROVIDERS_TYPE)
-        .withAttributes(new ProviderListDataAttributes().withName(vendor.getVendorName())
+    return new Providers()
+        .withId(String.valueOf(vendor.getVendorId()))
+        .withType(PROVIDERS_TYPE)
+        .withAttributes(new ProviderListDataAttributes()
+            .withName(vendor.getVendorName())
             .withPackagesTotal(vendor.getPackagesTotal()).withPackagesSelected(vendor.getPackagesSelected())
             .withSupportsCustomPackages(vendor.isCustomer())
             .withProviderToken(token != null ? new Token().withValue((String) token.getValue()) : null))
@@ -48,14 +57,21 @@ public class VendorConverter {
   public Provider convertToProvider(VendorById vendor) {
     VendorToken vendorToken = vendor.getVendorToken();
     return new Provider()
-        .withData(new ProviderData().withId(String.valueOf(vendor.getVendorId())).withType(PROVIDERS_TYPE)
-            .withAttributes(new ProviderDataAttributes().withName(vendor.getVendorName())
-                .withPackagesTotal(vendor.getPackagesTotal()).withPackagesSelected(vendor.getPackagesSelected())
+        .withData(new ProviderData()
+            .withId(String.valueOf(vendor.getVendorId()))
+            .withType(PROVIDERS_TYPE)
+            .withAttributes(new ProviderDataAttributes()
+                .withName(vendor.getVendorName())
+                .withPackagesTotal(vendor.getPackagesTotal())
+                .withPackagesSelected(vendor.getPackagesSelected())
                 .withSupportsCustomPackages(vendor.isCustomer())
-                .withProviderToken(vendorToken != null ? convertToken(vendorToken) : null).withProxy(
-                    new Proxy().withId(vendor.getProxy().getId()).withInherited(vendor.getProxy().getInherited())))
+                .withProviderToken(vendorToken != null ? convertToken(vendorToken) : null)
+                .withProxy(new Proxy()
+                    .withId(vendor.getProxy().getId())
+                    .withInherited(vendor.getProxy().getInherited())))
             .withRelationships(EMPTY_PACKAGE_RELATIONSHIP))
-        .withIncluded(null).withJsonapi(RestConstants.JSONAPI);
+        .withIncluded(null)
+        .withJsonapi(RestConstants.JSONAPI);
   }
 
   public VendorById convertToVendor(ProviderPutRequest provider) {
@@ -85,7 +101,9 @@ public class VendorConverter {
   }
 
   private Token convertToken(VendorToken vendorToken) {
-    return new Token().withFactName(vendorToken.getFactName()).withHelpText(vendorToken.getHelpText())
+    return new Token()
+        .withFactName(vendorToken.getFactName())
+        .withHelpText(vendorToken.getHelpText())
         .withPrompt(vendorToken.getPrompt())
         .withValue(vendorToken.getValue() == null ? null : (String) vendorToken.getValue());
   }
