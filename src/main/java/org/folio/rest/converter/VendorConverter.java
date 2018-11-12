@@ -1,77 +1,67 @@
 package org.folio.rest.converter;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.folio.rest.jaxrs.model.MetaDataIncluded;
-import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.jaxrs.model.Packages;
-import org.folio.rest.jaxrs.model.Provider;
-import org.folio.rest.jaxrs.model.ProviderCollection;
-import org.folio.rest.jaxrs.model.ProviderData;
-import org.folio.rest.jaxrs.model.ProviderDataAttributes;
-import org.folio.rest.jaxrs.model.ProviderListDataAttributes;
-import org.folio.rest.jaxrs.model.ProviderPutRequest;
-import org.folio.rest.jaxrs.model.Providers;
-import org.folio.rest.jaxrs.model.Proxy;
-import org.folio.rest.jaxrs.model.Relationships;
-import org.folio.rest.jaxrs.model.Token;
+import org.folio.rest.jaxrs.model.*;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorToken;
 import org.folio.rmapi.model.Vendors;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class VendorConverter {
 
   private static final Relationships EMPTY_PACKAGE_RELATIONSHIP = new Relationships()
-      .withPackages(new Packages()
-          .withMeta(new MetaDataIncluded()
-              .withIncluded(false))
-          .withData(null));
+    .withPackages(new Packages()
+      .withMeta(new MetaDataIncluded()
+        .withIncluded(false))
+      .withData(null));
   private final String PROVIDERS_TYPE = "providers";
 
   public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = vendors.getVendorList().stream()
-        .map(this::convertVendor)
-        .collect(Collectors.toList());
+      .map(this::convertVendor)
+      .collect(Collectors.toList());
     return new ProviderCollection()
-        .withJsonapi(RestConstants.JSONAPI)
-        .withMeta(new MetaTotalResults().withTotalResults(vendors.getTotalResults()))
-        .withData(providerList);
+      .withJsonapi(RestConstants.JSONAPI)
+      .withMeta(new MetaTotalResults().withTotalResults(vendors.getTotalResults()))
+      .withData(providerList);
   }
 
   private Providers convertVendor(Vendor vendor) {
     VendorToken token = vendor.getVendorToken();
     return new Providers()
-        .withId(String.valueOf(vendor.getVendorId()))
-        .withType(PROVIDERS_TYPE)
-        .withAttributes(new ProviderListDataAttributes()
-            .withName(vendor.getVendorName())
-            .withPackagesTotal(vendor.getPackagesTotal()).withPackagesSelected(vendor.getPackagesSelected())
-            .withSupportsCustomPackages(vendor.isCustomer())
-            .withProviderToken(token != null ? new Token().withValue((String) token.getValue()) : null))
-        .withRelationships(EMPTY_PACKAGE_RELATIONSHIP);
+      .withId(String.valueOf(vendor.getVendorId()))
+      .withType(PROVIDERS_TYPE)
+      .withAttributes(new ProviderListDataAttributes()
+        .withName(vendor.getVendorName())
+        .withPackagesTotal(vendor.getPackagesTotal())
+        .withPackagesSelected(vendor.getPackagesSelected())
+        .withSupportsCustomPackages(vendor.isCustomer())
+        .withProviderToken(token != null ? new Token().withValue((String) token.getValue()) : null))
+      .withRelationships(EMPTY_PACKAGE_RELATIONSHIP);
   }
 
   public Provider convertToProvider(VendorById vendor) {
     VendorToken vendorToken = vendor.getVendorToken();
     return new Provider()
-        .withData(new ProviderData()
-            .withId(String.valueOf(vendor.getVendorId()))
-            .withType(PROVIDERS_TYPE)
-            .withAttributes(new ProviderDataAttributes()
-                .withName(vendor.getVendorName())
-                .withPackagesTotal(vendor.getPackagesTotal())
-                .withPackagesSelected(vendor.getPackagesSelected())
-                .withSupportsCustomPackages(vendor.isCustomer())
-                .withProviderToken(vendorToken != null ? convertToken(vendorToken) : null)
-                .withProxy(new Proxy()
-                    .withId(vendor.getProxy().getId())
-                    .withInherited(vendor.getProxy().getInherited())))
-            .withRelationships(EMPTY_PACKAGE_RELATIONSHIP))
-        .withIncluded(null)
-        .withJsonapi(RestConstants.JSONAPI);
+      .withData(new ProviderData()
+        .withId(String.valueOf(vendor.getVendorId()))
+        .withType(PROVIDERS_TYPE)
+        .withAttributes(new ProviderDataAttributes()
+          .withName(vendor.getVendorName())
+          .withPackagesTotal(vendor.getPackagesTotal())
+          .withPackagesSelected(vendor.getPackagesSelected())
+          .withSupportsCustomPackages(vendor.isCustomer())
+          .withProviderToken(vendorToken != null ? convertToken(vendorToken) : null)
+          .withProxy(new Proxy()
+            .withId(vendor.getProxy().getId())
+            .withInherited(vendor.getProxy().getInherited()))
+        )
+        .withRelationships(EMPTY_PACKAGE_RELATIONSHIP))
+      .withIncluded(null)
+      .withJsonapi(RestConstants.JSONAPI);
   }
 
   public VendorById convertToVendor(ProviderPutRequest provider) {
@@ -102,9 +92,9 @@ public class VendorConverter {
 
   private Token convertToken(VendorToken vendorToken) {
     return new Token()
-        .withFactName(vendorToken.getFactName())
-        .withHelpText(vendorToken.getHelpText())
-        .withPrompt(vendorToken.getPrompt())
-        .withValue(vendorToken.getValue() == null ? null : (String) vendorToken.getValue());
+      .withFactName(vendorToken.getFactName())
+      .withHelpText(vendorToken.getHelpText())
+      .withPrompt(vendorToken.getPrompt())
+      .withValue(vendorToken.getValue() == null ? null : (String) vendorToken.getValue());
   }
 }
