@@ -193,14 +193,9 @@ public class EholdingsProvidersImplTest {
   }
 
   @Test
-  public void shouldReturn500WhenInvalidProviderId() throws IOException, URISyntaxException {
-
+  public void shouldReturn400WhenInvalidProviderId() throws IOException, URISyntaxException {
     String wiremockUrl = host + ":" + userMockServer.port();
     TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)));
 
     RequestSpecification  requestSpecification = getRequestSpecification();
     JsonapiError error = RestAssured.given()
@@ -208,7 +203,7 @@ public class EholdingsProvidersImplTest {
       .when()
       .get("eholdings/providers/19191919as")
       .then()
-      .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+      .statusCode(HttpStatus.SC_BAD_REQUEST)
       .extract().as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), notNullValue());
