@@ -31,10 +31,35 @@ public class TitleParametersValidatorTest {
     validator.validate("true", "book", "ebsco",
       null, "history", null, null);
   }
+  
+  /* One of filter[name], filter[isxn], filter[subject] or filter[publisher] is required */
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionWhenAtLeastOneRequiredFilterParametersIsNotProvided() {
+    validator.validate("true", "book", null,
+      null, null, null, null);
+  }
 
   @Test(expected = ValidationException.class)
-  public void shouldThrowExceptionWhenSearchParameterIsEmpty() {
+  public void shouldThrowExceptionWhenFilterNameParameterIsEmpty() {
     validator.validate("true", "book", "",
       null, null, null, null);
+  }
+  
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionWhenFilterIsxnParameterIsEmpty() {
+    validator.validate("true", "book", null,
+      "", null, null, null);
+  }
+  
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionWhenFilterSubjectParameterIsEmpty() {
+    validator.validate("true", "book", null,
+      null, "", null, null);
+  }
+  
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionWhenFilterPublisherParameterIsEmpty() {
+    validator.validate("true", "book", null,
+      null, null, "", null);
   }
 }
