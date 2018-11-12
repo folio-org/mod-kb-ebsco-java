@@ -180,7 +180,7 @@ public class RMAPIService {
     return this.getRequest(constructURL(path), VendorById.class);
   }
 
-  public CompletableFuture<VendorById> updateProvider(String id, VendorById vendor) {
+  public CompletableFuture<VendorById> updateProvider(long id, VendorById vendor) {
 
     final String path = "vendors/" + id;
 

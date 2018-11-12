@@ -146,6 +146,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @HandleValidationErrors
   public void putEholdingsProvidersByProviderId(String providerId, String contentType, ProviderPutRequest entity,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    long providerIdLong;
+    try {
+      providerIdLong = Long.parseLong(providerId);
+    } catch (NumberFormatException e) {
+      throw new ValidationException("Provider id is invalid - " + providerId, e);
+    }
     headerValidator.validate(okapiHeaders);
     bodyValidator.validate(entity);
 
@@ -156,7 +162,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         .thenCompose(rmapiConfiguration -> {
           RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(),
               rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner());
-          return rmapiService.updateProvider(providerId, rmapiVendor);
+          return rmapiService.updateProvider(providerIdLong, rmapiVendor);
         })
         .thenAccept(vendor -> asyncResultHandler.handle(Future.succeededFuture(PutEholdingsProvidersByProviderIdResponse
             .respond200WithApplicationVndApiJson(converter.convertToProvider(vendor)))))
