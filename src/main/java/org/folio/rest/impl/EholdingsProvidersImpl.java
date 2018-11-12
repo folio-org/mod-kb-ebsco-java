@@ -1,11 +1,11 @@
 package org.folio.rest.impl;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
@@ -26,18 +26,18 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.VendorById;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
+  private static final String GET_PROVIDERS_ERROR_MESSAGE = "Failed to retrieve providers";
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
   private static final String PUT_PROVIDER_ERROR_MESSAGE = "Failed to update provider";
+
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
@@ -57,8 +57,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       new ProviderPutBodyValidator());
   }
 
-  public EholdingsProvidersImpl(RMAPIConfigurationService configurationService, HeaderValidator headerValidator,
-      VendorConverter converter, ProviderPutBodyValidator bodyValidator) {
+  public EholdingsProvidersImpl(RMAPIConfigurationService configurationService,
+                                HeaderValidator headerValidator,
+                                VendorConverter converter,
+                                ProviderPutBodyValidator bodyValidator) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.converter = converter;
@@ -68,8 +70,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders,
-      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
     if(!Sort.contains(sort.toUpperCase())){
       throw new ValidationException("Invalid sort parameter");
@@ -175,12 +176,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         });
   }
 
+
   @Override
   @HandleValidationErrors
-  public void getEholdingsProvidersPackages(String q, String filterSelected, String filterType, String sort, int page,
-      int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-      Context vertxContext) {
-    asyncResultHandler
-        .handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+  public void getEholdingsProvidersPackages(String q, String filterSelected, String filterType, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 }
