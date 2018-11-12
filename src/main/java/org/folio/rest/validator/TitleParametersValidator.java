@@ -31,7 +31,7 @@ public class TitleParametersValidator {
       .anyMatch(""::equals)){
       throw new ValidationException("Value of required parameter filter[name], filter[isxn], filter[subject] or filter[publisher] is missing.");
     }
-    if ((Objects.nonNull(sort) && !Sort.contains(sort.toUpperCase()))){
+    if (!Sort.contains(sort.toUpperCase())){
       throw new ValidationException("Invalid sort parameter");
     }
     if (Objects.nonNull(filterSelected) && !FILTER_SELECTED_VALUES.contains(filterSelected)){
