@@ -60,9 +60,8 @@ public class QueriableUrlBuilder {
   }
 
   private String determineSortValue(Sort sort, String query) {
-    if(sort == null){
-      return query == null ? nameParameter : RELEVANCE_PARAMETER;
-    }
+    if(query == null)
+      return nameParameter;
     switch (sort){
       case RELEVANCE:
         return RELEVANCE_PARAMETER;

@@ -1,6 +1,5 @@
 package org.folio.rest.validator;
 
-import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.model.Sort;
 
 import javax.validation.ValidationException;
@@ -29,7 +28,7 @@ public class TitleParametersValidator {
       .anyMatch(""::equals)){
       throw new ValidationException("Required parameter 'search' is missing.");
     }
-    if ((Objects.nonNull(sort) && !Sort.contains(sort.toUpperCase()))){
+    if (!Sort.contains(sort.toUpperCase())){
       throw new ValidationException("Invalid sort parameter");
     }
     if (Objects.nonNull(filterSelected) && !FILTER_SELECTED_VALUES.contains(filterSelected)){

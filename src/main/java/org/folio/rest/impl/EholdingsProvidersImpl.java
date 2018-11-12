@@ -64,16 +64,15 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @HandleValidationErrors
   public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    if(sort != null && !Sort.contains(sort.toUpperCase())){
+    if(!Sort.contains(sort.toUpperCase())){
       throw new ValidationException("Invalid sort parameter");
     }
-    Sort nameSort = sort != null ? Sort.valueOf(sort.toUpperCase()) : null;
     CompletableFuture.completedFuture(null)
     .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
     .thenCompose(rmapiConfiguration -> {
       RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
         rmapiConfiguration.getUrl(), vertxContext.owner());
-      return rmapiService.retrieveProviders(q, page, count, nameSort);
+      return rmapiService.retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()));
     })
     .thenAccept(vendors ->
       asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse

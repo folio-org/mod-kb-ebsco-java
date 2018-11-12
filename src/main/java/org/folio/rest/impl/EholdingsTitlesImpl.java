@@ -63,7 +63,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
     parametersValidator.validate(filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher, sort);
-    Sort nameSort = sort != null ? Sort.valueOf(sort.toUpperCase()) : null;
+    Sort nameSort = Sort.valueOf(sort.toUpperCase());
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
