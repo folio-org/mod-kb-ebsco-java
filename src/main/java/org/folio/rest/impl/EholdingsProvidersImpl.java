@@ -31,7 +31,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
-  private static final String GET_PROVIDERS_ERROR_MESSAGE = "Failed to retrieve providers";
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
 
@@ -40,8 +39,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private RMAPIConfigurationService configurationService;
   private HeaderValidator headerValidator;
   private VendorConverter converter;
-  private final String CONTENT_TYPE_HEADER = "Content-Type";
-  private final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
+  private static final String CONTENT_TYPE_HEADER = "Content-Type";
+  private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
 
   public EholdingsProvidersImpl() {
     this(
@@ -101,13 +100,20 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @HandleValidationErrors
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    long providerIdLong;
+    try {
+      providerIdLong = Long.parseLong(providerId);
+    } catch (NumberFormatException e) {
+      throw new ValidationException("Provider id is invalid - " + providerId, e);
+    }
+
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveProvider(providerId, include);
+        return rmapiService.retrieveProvider(providerIdLong, include);
       })
       .thenAccept(vendor ->
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse

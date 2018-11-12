@@ -132,7 +132,7 @@ public class RMAPIService {
     return this.getRequest(constructURL("titles?" + path), Titles.class);
   }
 
-    public CompletableFuture<VendorById> retrieveProvider(String id, String include) {
+    public CompletableFuture<VendorById> retrieveProvider(long id, String include) {
 
     final String path = "vendors/" + id;
 //    TODO: add support of include parameter when MODKBEKBJ-22 is completed
