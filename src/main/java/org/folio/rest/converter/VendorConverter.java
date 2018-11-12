@@ -17,7 +17,7 @@ public class VendorConverter {
       .withMeta(new MetaDataIncluded()
         .withIncluded(false))
       .withData(null));
-  private final String PROVIDERS_TYPE = "providers";
+  private static final String PROVIDERS_TYPE = "providers";
 
   public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = vendors.getVendorList().stream()

@@ -14,14 +14,13 @@ public class ProviderPutBodyValidator {
    *           if put validation fails
    */
   public void validate(ProviderPutRequest putRequest) {
-
-    if (putRequest != null && putRequest.getData() != null && putRequest.getData().getAttributes() != null
-        && putRequest.getData().getAttributes().getProviderToken() != null
-        && putRequest.getData().getAttributes().getProviderToken().getValue() != null) {
-      if (putRequest.getData().getAttributes().getProviderToken().getValue().length() > MAX_TOKEN_LENGTH) {
-        throw new InputValidationException(INVALID_VALUE, VALUE_TOO_LONG);
-      }
+    if (putRequest != null 
+        && putRequest.getData() != null 
+        && putRequest.getData().getAttributes() != null 
+        && putRequest.getData().getAttributes().getProviderToken() != null 
+        && putRequest.getData().getAttributes().getProviderToken().getValue() != null 
+        && putRequest.getData().getAttributes().getProviderToken().getValue().length() > MAX_TOKEN_LENGTH) {
+      throw new InputValidationException(INVALID_VALUE, VALUE_TOO_LONG);
     }
   }
 }
-

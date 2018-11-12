@@ -4,7 +4,7 @@ public class InputValidationException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
   
-  private final String messageDetail;;
+  private final String messageDetail;
   
   public InputValidationException(String message, String messageDetail) {
     super(message);

@@ -109,7 +109,7 @@ public class RMAPIService {
 
   }
 
-  private <T> CompletableFuture<Void> putRequest(String query, T putData, Class<T> clazz) {
+  private <T> CompletableFuture<Void> putRequest(String query, T putData) {
 
     CompletableFuture<Void> future = new CompletableFuture<>();
 
@@ -184,7 +184,7 @@ public class RMAPIService {
 
     final String path = "vendors/" + id;
 
-    return this.putRequest(constructURL(path), vendor, VendorById.class).thenCompose(vend -> {
+    return this.putRequest(constructURL(path), vendor).thenCompose(vend -> {
       return this.retrieveProvider(id, "");
     });
 

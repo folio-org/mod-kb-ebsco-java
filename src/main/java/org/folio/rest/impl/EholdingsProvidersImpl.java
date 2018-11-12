@@ -33,7 +33,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
-  private static final String GET_PROVIDERS_ERROR_MESSAGE = "Failed to retrieve providers";
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
   private static final String PUT_PROVIDER_ERROR_MESSAGE = "Failed to update provider";
@@ -171,7 +170,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           if (e.getCause() instanceof RMAPIServiceException) {
             RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
             asyncResultHandler.handle(Future.succeededFuture(
-                Response.status(rmApiException.getRMAPICode()).header("Content-Type", "application/vnd.api+json")
+                Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
                     .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
           } else {
             asyncResultHandler.handle(Future.succeededFuture(PutEholdingsProvidersByProviderIdResponse
