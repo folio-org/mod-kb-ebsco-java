@@ -20,14 +20,21 @@ public class ErrorUtil {
   }
 
   public static JsonapiError createError(String errorMessage) {
+    return createError(errorMessage, null);
+  }
+
+  public static JsonapiError createError(String errorMessage, String errorMessageDetails) {
     JsonapiError configurationError = new JsonapiError();
     JsonapiErrorResponse error = new JsonapiErrorResponse();
     error.setTitle(errorMessage);
+    if (errorMessageDetails != null) {
+      error.setDetail(errorMessageDetails);
+    }
     configurationError.setErrors(Collections.singletonList(error));
     configurationError.setJsonapi(RestConstants.JSONAPI);
     return configurationError;
   }
-
+  
   public static JsonapiError createErrorFromRMAPIResponse(RMAPIServiceException rmApiException) {
     try {
       final JsonObject instanceJSON = new JsonObject(rmApiException.getResponseBody());

@@ -1,0 +1,17 @@
+{
+  "isCustomer": false,
+  "packagesSelected": 11,
+  "packagesTotal": 625,
+  "vendorId": 19,
+  "vendorName": "EBSCO",
+  "proxy": {
+    "id": "<n>",
+    "inherited": false
+  },
+  "vendorToken": {
+    "factName": "[[galesiteid]]",
+    "prompt": "/itweb/",
+    "helpText": "<ul><li>Enter site id</li></ul>",
+    "value": "My Test Token"
+    }
+}

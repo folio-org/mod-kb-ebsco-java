@@ -4,6 +4,7 @@ import org.folio.rest.jaxrs.model.*;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
+import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.VendorToken;
 import org.folio.rmapi.model.Vendors;
 
@@ -17,7 +18,7 @@ public class VendorConverter {
       .withMeta(new MetaDataIncluded()
         .withIncluded(false))
       .withData(null));
-  private final String PROVIDERS_TYPE = "providers";
+  private static final String PROVIDERS_TYPE = "providers";
 
   public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = vendors.getVendorList().stream()
@@ -43,7 +44,7 @@ public class VendorConverter {
       .withRelationships(EMPTY_PACKAGE_RELATIONSHIP);
   }
 
-  public Provider convertToVendor(VendorById vendor) {
+  public Provider convertToProvider(VendorById vendor) {
     VendorToken vendorToken = vendor.getVendorToken();
     return new Provider()
       .withData(new ProviderData()
@@ -62,6 +63,32 @@ public class VendorConverter {
         .withRelationships(EMPTY_PACKAGE_RELATIONSHIP))
       .withIncluded(null)
       .withJsonapi(RestConstants.JSONAPI);
+  }
+
+  public VendorPut convertToVendor(ProviderPutRequest provider) {
+
+    VendorPut vendor = new VendorPut();
+
+    // RM API gives an error when we pass inherited as true along with updated proxy
+    // value
+    // Hard code it to false; it should not affect the state of inherited that RM
+    // API maintains
+    org.folio.rmapi.model.Proxy vendorProxy = new org.folio.rmapi.model.Proxy();
+    org.folio.rmapi.model.VendorPutToken vendorToken = new org.folio.rmapi.model.VendorPutToken();
+
+    if (provider.getData().getAttributes().getProxy() != null) {
+      vendorProxy.setInherited(false);
+      vendorProxy.setId(provider.getData().getAttributes().getProxy().getId());
+      vendor.setProxy(vendorProxy);
+    }
+
+    if (provider.getData().getAttributes().getProviderToken() != null) {
+      vendorToken.setValue(provider.getData().getAttributes().getProviderToken().getValue());
+      vendor.setVendorPutToken(vendorToken);
+    }
+
+    return vendor;
+
   }
 
   private Token convertToken(VendorToken vendorToken) {

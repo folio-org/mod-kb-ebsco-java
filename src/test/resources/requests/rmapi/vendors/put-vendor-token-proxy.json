@@ -1,0 +1,9 @@
+{
+  "vendorToken" : {
+    "value" : "My Test Token"
+  },
+  "proxy" : {
+    "id" : "<n>",
+    "inherited" : false
+  }
+}

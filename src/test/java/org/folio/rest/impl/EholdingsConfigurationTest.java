@@ -114,7 +114,7 @@ public class EholdingsConfigurationTest {
     String wiremockUrl = host + ":" + userMockServer.port();
 
     ObjectMapper mapper = new ObjectMapper();
-    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
 
     RestAssured.given()
@@ -153,7 +153,7 @@ public class EholdingsConfigurationTest {
 
     mockConfigurationUpdate(configsString);
 
-    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
 
     RestAssured.given()
@@ -181,7 +181,7 @@ public class EholdingsConfigurationTest {
       WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
         .willReturn(new ResponseDefinitionBuilder().withStatus(403)));
 
-    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsko/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
 
     RestAssured.given()
@@ -207,7 +207,7 @@ public class EholdingsConfigurationTest {
       .header(TENANT_HEADER)
       .header(TOKEN_HEADER)
       .header(CONTENT_TYPE_HEADER)
-      .body(TestUtil.readFile("requests/kb-ebsko/put-configuration.json"))
+      .body(TestUtil.readFile("requests/kb-ebsco/put-configuration.json"))
       .when()
       .put("eholdings/configuration")
       .then()

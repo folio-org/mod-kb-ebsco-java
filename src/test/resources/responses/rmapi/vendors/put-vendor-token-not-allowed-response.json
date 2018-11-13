@@ -1,0 +1,9 @@
+{
+  "errors": [
+    {
+      "code": 1010,
+      "subCode": 0,
+      "message": "Vendor does not allow token"
+    }
+  ]
+}

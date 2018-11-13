@@ -20,9 +20,11 @@ import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.model.VendorPut;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -33,12 +35,15 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
+  private static final String PUT_PROVIDER_ERROR_MESSAGE = "Failed to update provider";
+
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
   private RMAPIConfigurationService configurationService;
   private HeaderValidator headerValidator;
   private VendorConverter converter;
+  private ProviderPutBodyValidator bodyValidator;
   private static final String CONTENT_TYPE_HEADER = "Content-Type";
   private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
 
@@ -47,15 +52,18 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       new RMAPIConfigurationServiceCache(
         new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
       new HeaderValidator(),
-      new VendorConverter());
+      new VendorConverter(),
+      new ProviderPutBodyValidator());
   }
 
   public EholdingsProvidersImpl(RMAPIConfigurationService configurationService,
                                 HeaderValidator headerValidator,
-                                VendorConverter converter) {
+                                VendorConverter converter,
+                                ProviderPutBodyValidator bodyValidator) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.converter = converter;
+    this.bodyValidator = bodyValidator;
   }
 
   @Override
@@ -116,7 +124,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       })
       .thenAccept(vendor ->
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
-          .respond200WithApplicationVndApiJson(converter.convertToVendor(vendor)))))
+          .respond200WithApplicationVndApiJson(converter.convertToProvider(vendor)))))
       .exceptionally(e -> {
         if (e.getCause() instanceof RMAPIResourceNotFoundException) {
           asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
@@ -135,9 +143,44 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   @Override
   @HandleValidationErrors
-  public void putEholdingsProvidersByProviderId(String providerId, String contentType, ProviderPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+  public void putEholdingsProvidersByProviderId(String providerId, String contentType, ProviderPutRequest entity,
+      Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    long providerIdLong;
+    try {
+      providerIdLong = Long.parseLong(providerId);
+    } catch (NumberFormatException e) {
+      throw new ValidationException("Provider id is invalid - " + providerId, e);
+    }
+    headerValidator.validate(okapiHeaders);
+    bodyValidator.validate(entity);
+
+    VendorPut rmapiVendor = converter.convertToVendor(entity);
+
+    CompletableFuture.completedFuture(null)
+        .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+        .thenCompose(rmapiConfiguration -> {
+          RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(),
+              rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner());
+          return rmapiService.updateProvider(providerIdLong, rmapiVendor);
+        })
+        .thenAccept(vendor -> asyncResultHandler.handle(Future.succeededFuture(PutEholdingsProvidersByProviderIdResponse
+            .respond200WithApplicationVndApiJson(converter.convertToProvider(vendor)))))
+        .exceptionally(e -> {
+          logger.error(PUT_PROVIDER_ERROR_MESSAGE, e);
+          if (e.getCause() instanceof RMAPIServiceException) {
+            RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
+            asyncResultHandler.handle(Future.succeededFuture(
+                Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+                    .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
+          } else {
+            asyncResultHandler.handle(Future.succeededFuture(PutEholdingsProvidersByProviderIdResponse
+                .status(HttpStatus.SC_INTERNAL_SERVER_ERROR).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+                .entity(ErrorUtil.createError(e.getCause().getMessage())).build()));
+          }
+          return null;
+        });
   }
+
 
   @Override
   @HandleValidationErrors
