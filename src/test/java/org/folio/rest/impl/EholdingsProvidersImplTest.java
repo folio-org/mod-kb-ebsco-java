@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -8,9 +11,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.RestVerticle;
+import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.Packages;
@@ -270,6 +275,85 @@ public class EholdingsProvidersImplTest {
         .extract().as(Provider.class);
 
     compareProviders(provider, expected);
+    
+    WireMock.verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+         .withRequestBody(equalToJson(TestUtil.readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
+  } 
+ 
+  @Test
+  public void shouldReturn400WhenRMAPIErrorOnPut() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/vendors/put-vendor-token-not-allowed-response.json";
+
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
+
+    WireMock.stubFor(
+        WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+            .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubResponseFile)).withStatus(400)));
+
+    ObjectMapper mapper = new ObjectMapper();
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-provider.json"),
+        ProviderPutRequest.class);
+
+    RequestSpecification requestSpecification = getRequestSpecification();
+
+    String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
+
+    JsonapiError error = RestAssured
+        .given()
+        .spec(requestSpecification)
+        .port(port)
+        .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
+        .header(TENANT_HEADER)
+        .header(TOKEN_HEADER)
+        .header(CONTENT_TYPE_HEADER)
+        .body(mapper.writeValueAsString(providerToBeUpdated))
+        .when()
+        .put(providerByIdEndpoint)
+        .then()
+        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .extract().as(JsonapiError.class);
+    
+    assertThat(error.getErrors().get(0).getTitle(), equalTo("Vendor does not allow token"));
+
+  } 
+ 
+  @Test
+  public void shouldReturn422WhenBodyInputInvalidOnPut() throws IOException, URISyntaxException {
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration(configurationStubFile, wiremockUrl);
+    
+    ObjectMapper mapper = new ObjectMapper();
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-provider.json"),
+        ProviderPutRequest.class);
+    
+    Token providerToken = new Token();
+    providerToken.setValue(RandomStringUtils.randomAlphanumeric(501));
+
+    providerToBeUpdated.getData().getAttributes().setProviderToken(providerToken);
+    
+    RequestSpecification requestSpecification = getRequestSpecification();
+    
+    String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
+
+    JsonapiError error = RestAssured
+        .given()
+        .spec(requestSpecification)
+        .port(port)
+        .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
+        .header(TENANT_HEADER)
+        .header(TOKEN_HEADER)
+        .header(CONTENT_TYPE_HEADER)
+        .body(mapper.writeValueAsString(providerToBeUpdated))
+        .when()
+        .put(providerByIdEndpoint)
+        .then()
+        .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+        .extract().as(JsonapiError.class);
+    
+    assertThat(error.getErrors().get(0).getTitle(), equalTo("Invalid value"));
+    assertThat(error.getErrors().get(0).getDetail(), equalTo("Value is too long (maximum is 500 characters)"));
+
   } 
  
   private void compareProviders(Provider actual, Provider expected) {
