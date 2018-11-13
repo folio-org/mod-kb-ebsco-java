@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Proxy Types Schema",
+  "description": "Proxy Types Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProxyTypes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of proxy types for a given customer",
+      "items": {
+        "type": "object",
+        "$ref": "proxyTypesData.json"
+      }
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

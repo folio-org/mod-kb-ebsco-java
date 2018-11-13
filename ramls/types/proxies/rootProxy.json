@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Root Proxy Schema",
+  "description": "Root Proxy Schema",
+  "javaType": "org.folio.rest.jaxrs.model.RootProxy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Details of root proxy set for a given customer",
+      "$ref": "rootProxyData.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

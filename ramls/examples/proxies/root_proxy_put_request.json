@@ -1,7 +1,9 @@
 {
   "data": {
+    "id": "root-proxy",
     "type": "rootProxies",
     "attributes": {
+      "id": "root-proxy",
       "proxyTypeId": "EZProxy"
     }
   }
