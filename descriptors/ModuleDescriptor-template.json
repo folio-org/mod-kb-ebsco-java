@@ -24,7 +24,8 @@
         },
         {
           "methods": ["DELETE"],
-          "pathPattern": "/eholdings/packages/{packageId}"
+          "pathPattern": "/eholdings/packages/{packageId}",
+          "permissionsRequired": ["kb-ebsco.package.delete"]
         },
         {
           "methods": ["GET"],
@@ -66,7 +67,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/titles"
+          "pathPattern": "/eholdings/titles",
+          "permissionsRequired": ["kb-ebsco.titleCollection.get"]
         },
         {
           "methods": ["POST"],
@@ -100,7 +102,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/status"
+          "pathPattern": "/eholdings/status",
+          "permissionsRequired" :["kb-ebsco.status.get"]
         }
       ]
     }
@@ -137,6 +140,11 @@
       "description": "Get titles"
     },
     {
+      "permissionName": "kb-ebsco.package.delete",
+      "displayName": "delete custom package",
+      "description": "Delete custom package"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
@@ -146,7 +154,8 @@
         "kb-ebsco.status.get",
         "kb-ebsco.providerCollection.get",
         "kb-ebsco.provider.get",
-        "kb-ebsco.titleCollection.get"
+        "kb-ebsco.titleCollection.get",
+        "kb-ebsco.package.delete"
       ]
     }
   ],

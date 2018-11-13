@@ -9,7 +9,6 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.tools.utils.NetworkUtils;
@@ -17,9 +16,11 @@ import org.folio.rest.util.RestConstants;
 import org.folio.util.TestUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
 
-@RunWith(VertxUnitRunner.class)
+/**
+ * Base test class for tests that use wiremock and vertx http servers,
+ * test that inherits this class must use VertxUnitRunner as
+ */
 public abstract class WireMockTestBase {
   protected static final Header CONTENT_TYPE_HEADER = new Header("Content-Type", "application/vnd.api+json");
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
@@ -49,6 +50,9 @@ public abstract class WireMockTestBase {
     RMAPIConfigurationCache.getInstance().invalidate();
   }
 
+  /**
+   * Creates RestAssured specification that is configured with data from Vertx and Wiremock servers
+   */
   protected RequestSpecification getRequestSpecification() {
     return TestUtil.getRequestSpecificationBuilder(host + ":" + port)
       .addHeader(RestConstants.OKAPI_URL_HEADER, getWiremockUrl())
@@ -56,6 +60,9 @@ public abstract class WireMockTestBase {
       .build();
   }
 
+  /**
+   * Returns url of Wiremock server used in this test
+   */
   protected String getWiremockUrl() {
     return host + ":" + userMockServer.port();
   }
