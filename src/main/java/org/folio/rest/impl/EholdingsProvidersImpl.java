@@ -24,7 +24,7 @@ import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
-import org.folio.rmapi.model.VendorById;
+import org.folio.rmapi.model.VendorPut;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -154,7 +154,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     headerValidator.validate(okapiHeaders);
     bodyValidator.validate(entity);
 
-    VendorById rmapiVendor = converter.convertToVendor(entity);
+    VendorPut rmapiVendor = converter.convertToVendor(entity);
 
     CompletableFuture.completedFuture(null)
         .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))

@@ -4,6 +4,7 @@ import org.folio.rest.jaxrs.model.*;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
+import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.VendorToken;
 import org.folio.rmapi.model.Vendors;
 
@@ -64,16 +65,16 @@ public class VendorConverter {
       .withJsonapi(RestConstants.JSONAPI);
   }
 
-  public VendorById convertToVendor(ProviderPutRequest provider) {
+  public VendorPut convertToVendor(ProviderPutRequest provider) {
 
-    VendorById vendor = new VendorById();
+    VendorPut vendor = new VendorPut();
 
     // RM API gives an error when we pass inherited as true along with updated proxy
     // value
     // Hard code it to false; it should not affect the state of inherited that RM
     // API maintains
     org.folio.rmapi.model.Proxy vendorProxy = new org.folio.rmapi.model.Proxy();
-    org.folio.rmapi.model.VendorToken vendorToken = new org.folio.rmapi.model.VendorToken();
+    org.folio.rmapi.model.VendorPutToken vendorToken = new org.folio.rmapi.model.VendorPutToken();
 
     if (provider.getData().getAttributes().getProxy() != null) {
       vendorProxy.setInherited(false);
@@ -83,7 +84,7 @@ public class VendorConverter {
 
     if (provider.getData().getAttributes().getProviderToken() != null) {
       vendorToken.setValue(provider.getData().getAttributes().getProviderToken().getValue());
-      vendor.setVendorToken(vendorToken);
+      vendor.setVendorPutToken(vendorToken);
     }
 
     return vendor;

@@ -18,6 +18,7 @@ import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.VendorById;
+import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
 import org.folio.rmapi.model.Titles;
 
@@ -180,11 +181,11 @@ public class RMAPIService {
     return this.getRequest(constructURL(path), VendorById.class);
   }
 
-  public CompletableFuture<VendorById> updateProvider(long id, VendorById vendor) {
+  public CompletableFuture<VendorById> updateProvider(long id, VendorPut rmapiVendor) {
 
     final String path = "vendors/" + id;
 
-    return this.putRequest(constructURL(path), vendor).thenCompose(vend -> {
+    return this.putRequest(constructURL(path), rmapiVendor).thenCompose(vend -> {
       return this.retrieveProvider(id, "");
     });
 
