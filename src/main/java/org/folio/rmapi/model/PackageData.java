@@ -36,7 +36,7 @@ public class PackageData {
   @JsonProperty("proxy")
   private Proxy proxy;
   @JsonProperty("packageToken")
-  private VendorToken packageToken;
+  private TokenInfo packageToken;
 
   public Integer getPackageId() {
     return packageId;
@@ -98,7 +98,7 @@ public class PackageData {
     return proxy;
   }
 
-  public VendorToken getPackageToken() {
+  public TokenInfo getPackageToken() {
     return packageToken;
   }
 

@@ -5,7 +5,7 @@ import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
-import org.folio.rmapi.model.VendorToken;
+import org.folio.rmapi.model.TokenInfo;
 import org.folio.rmapi.model.Vendors;
 
 import java.util.List;
@@ -31,7 +31,7 @@ public class VendorConverter {
   }
 
   private Providers convertVendor(Vendor vendor) {
-    VendorToken token = vendor.getVendorToken();
+    TokenInfo token = vendor.getVendorToken();
     return new Providers()
       .withId(String.valueOf(vendor.getVendorId()))
       .withType(PROVIDERS_TYPE)
@@ -45,7 +45,7 @@ public class VendorConverter {
   }
 
   public Provider convertToProvider(VendorById vendor) {
-    VendorToken vendorToken = vendor.getVendorToken();
+    TokenInfo vendorToken = vendor.getVendorToken();
     return new Provider()
       .withData(new ProviderData()
         .withId(String.valueOf(vendor.getVendorId()))
@@ -91,11 +91,11 @@ public class VendorConverter {
 
   }
 
-  private Token convertToken(VendorToken vendorToken) {
+  private Token convertToken(TokenInfo tokenInfo) {
     return new Token()
-      .withFactName(vendorToken.getFactName())
-      .withHelpText(vendorToken.getHelpText())
-      .withPrompt(vendorToken.getPrompt())
-      .withValue(vendorToken.getValue() == null ? null : (String) vendorToken.getValue());
+      .withFactName(tokenInfo.getFactName())
+      .withHelpText(tokenInfo.getHelpText())
+      .withPrompt(tokenInfo.getPrompt())
+      .withValue(tokenInfo.getValue() == null ? null : (String) tokenInfo.getValue());
   }
 }
