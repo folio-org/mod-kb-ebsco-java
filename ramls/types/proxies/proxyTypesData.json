@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Proxy Type Data schema in ProxyTypes collection",
+  "description": "Proxy Type Data schema in ProxyTypes collection",
+  "javaType": "org.folio.rest.jaxrs.model.ProxyTypesData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of proxy",
+      "example": "EZProxy"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of proxy",
+      "example": "proxyTypes"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Proxy Type object data attributes",
+      "$ref": "proxyTypesDataAttributes.json"
+    }
+  }
+}

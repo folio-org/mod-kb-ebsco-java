@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Root Proxy Put Data Schema",
+  "description": "Root Proxy Put Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.RootProxyPutData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Root Proxy Id",
+      "example": "root-proxy"
+    },
+    "type": {
+      "type": "string",
+      "description": "Root Proxy Type",
+      "example": "rootProxies"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Root Proxy Data Attributes",
+      "$ref": "rootProxyDataAttributes.json"
+    }
+  }
+}

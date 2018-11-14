@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Proxy Types Data Attributes Schema",
+  "description": "Proxy Types Data Attributes",
+  "javaType": "org.folio.rest.jaxrs.model.ProxyTypesDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Proxy Type ID",
+      "example": "EZProxy"
+    },
+    "name": {
+      "type": "string",
+      "description": "Proxy Type Name",
+      "example": "EZProxy"
+    },
+    "urlMask": {
+      "type": "string",
+      "description": "Proxy Type URL Mask",
+      "example": "http://ezproxy.myinstitute.edu/login?url={targetURL}"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+types:
+  proxyTypes: !include types/proxies/proxyTypes.json
+  rootProxy: !include types/proxies/rootProxy.json
+  rootProxyPutRequest: !include types/proxies/rootProxyPutRequest.json
+  jsonapiError: !include types/jsonapiError.json
+
+/eholdings/proxy-types:
+  displayName: Proxy Types
+  description: List of supported proxy types for a given customer.
+  get:
+    description: Get a list of supported proxy types.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: List of supported proxy types for a given customer.
+            type: proxyTypes
+            example:
+              strict: false
+              value: !include examples/proxies/proxy_types_get_200_response.json
+/eholdings/root-proxy:
+  displayName: Root Proxy
+  description: Root Proxy that is currently selected from proxy-type list.
+  get:
+    description: Get the ID of root proxy that is currently selected from proxy-type list.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Get the ID of root proxy that is currently selected from proxy-type list.
+            type: rootProxy
+            example:
+              strict: false
+              value: !include examples/proxies/root_proxy_get_200_response.json
+  put:
+    description: |
+      Update root-proxy for a given customer.
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        type: rootProxyPutRequest
+        example:
+          strict: false
+          value: !include examples/proxies/root_proxy_put_request.json
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: The server has successfully fulfilled the PUT request.
+            type: rootProxy
+            example:
+              strict: false
+              value: !include examples/proxies/root_proxy_put_200_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/proxies/root_proxy_put_422_response.json
