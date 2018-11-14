@@ -12,9 +12,13 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
@@ -88,5 +92,53 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .get("eholdings/titles?filter[name]=news")
       .then()
       .statusCode(500);
+  }
+
+  @Test
+  public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    WireMock.stubFor(
+        WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+            .withBody(TestUtil.readFile(stubResponseFile))));
+
+    String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
+
+    RestAssured.given()
+    .spec(spec)
+    .port(port)
+    .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
+    .header(TENANT_HEADER)
+    .header(TOKEN_HEADER)
+    .when()
+    .get(titleByIdEndpoint)
+    .then()
+    .statusCode(200)
+    .body("data.type",equalTo("titles"))
+    .body("data.id", equalTo("985846"))
+    .body("data.attributes.name", equalTo("F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)"))
+    .body("data.attributes.publisherName", equalTo("Chelsea House Publishers"))
+    .body("data.attributes.isTitleCustom", equalTo(false))
+    .body("data.attributes.subjects[0].type", equalTo("BISAC"))
+    .body("data.attributes.subjects[0].subject", equalTo("LITERARY CRITICISM / American / General"))
+    .body("data.attributes.identifiers[0].id", equalTo("978-0-7910-3651-8"))
+    .body("data.attributes.identifiers[1].id", equalTo("978-0-585-24731-1"))
+     /*
+         * List of identifiers returned below from RM API get filtered and sorted to
+         * only support types ISSN/ISBN and subtypes Print/Online
+     */
+    .body("data.attributes.identifiers[0].type", equalTo("ISBN"))
+    .body("data.attributes.identifiers[1].type",equalTo("ISBN"))
+    .body("data.attributes.identifiers[0].subtype", equalTo("Print"))
+    .body("data.attributes.identifiers[1].subtype",equalTo("Online"))
+    .body("data.attributes.publicationType", equalTo("Book"))
+    .body("data.attributes.edition", isEmptyOrNullString())
+    .body("data.attributes.description", isEmptyOrNullString())
+    .body("data.attributes.isPeerReviewed", equalTo(false))
+    .body("data.attributes.contributors[0].type", equalTo("author"))
+    .body("data.attributes.contributors[0].contributor", equalTo("Bloom, Harold"));
   }
 }

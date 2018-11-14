@@ -1,0 +1,100 @@
+{
+  "titleId": 985846,
+  "titleName": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+  "publisherName": "Chelsea House Publishers",
+  "identifiersList": [
+    {
+      "id": "38624",
+      "source": "ResourceIdentifier",
+      "subtype": 0,
+      "type": 7
+    },
+    {
+      "id": "978-0-585-24731-1",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    },
+    {
+      "id": "978-0-7910-3651-8",
+      "source": "ResourceIdentifier",
+      "subtype": 1,
+      "type": 1
+    },
+    {
+      "id": "985846",
+      "source": "AtoZ",
+      "subtype": 0,
+      "type": 9
+    },
+    {
+      "id": "U7Q",
+      "source": "MFS",
+      "subtype": 0,
+      "type": 8
+    }
+  ],
+  "subjectsList": [
+    {
+      "type": "BISAC",
+      "subject": "LITERARY CRITICISM \/ American \/ General"
+    }
+  ],
+  "isTitleCustom": false,
+  "pubType": "Book",
+  "customerResourcesList": [
+    {
+      "titleId": 985846,
+      "packageId": 5207,
+      "packageName": "EBSCO eBooks",
+      "packageType": "Selectable",
+      "proxy": {
+        "id": "EZProxy",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 19,
+      "vendorName": "EBSCO",
+      "locationId": 3464602,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "1996-01-01",
+          "endCoverage": "1996-12-31"
+        }
+      ],
+      "customCoverageList": [
+        
+      ],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http:\/\/search.ebscohost.com\/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    }
+  ],
+  "description": null,
+  "edition": null,
+  "isPeerReviewed": false,
+  "contributorsList": [
+    {
+      "type": "author",
+      "contributor": "Bloom, Harold"
+    }
+  ]
+}
