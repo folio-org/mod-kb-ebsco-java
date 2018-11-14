@@ -30,14 +30,18 @@ public class EholdingsPackagesImplTest extends WireMockTestBase {
 
     String wiremockUrl = getWiremockUrl();
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+
+    UrlPathPattern packageUrlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+
     WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false))
+      WireMock.get(packageUrlPattern)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(PACKAGE_STUB_FILE))));
 
     WireMock.stubFor(
-      WireMock.put(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false))
-        .withRequestBody(new EqualToJsonPattern("{\"isSelected\":false}", true, true))
+      WireMock.put(packageUrlPattern)
+        .withRequestBody(putBodyPattern)
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(HttpStatus.SC_NO_CONTENT)));
 
@@ -49,6 +53,9 @@ public class EholdingsPackagesImplTest extends WireMockTestBase {
       .delete("eholdings/packages/" + providerId + "-" + packageId)
       .then()
       .statusCode(HttpStatus.SC_NO_CONTENT);
+
+    WireMock.verify(1, WireMock.putRequestedFor(packageUrlPattern)
+      .withRequestBody(putBodyPattern));
   }
 
   @Test

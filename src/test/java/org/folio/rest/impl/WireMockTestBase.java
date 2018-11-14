@@ -19,7 +19,7 @@ import org.junit.BeforeClass;
 
 /**
  * Base test class for tests that use wiremock and vertx http servers,
- * test that inherits this class must use VertxUnitRunner as
+ * test that inherits this class must use VertxUnitRunner as test runner
  */
 public abstract class WireMockTestBase {
   protected static final Header CONTENT_TYPE_HEADER = new Header("Content-Type", "application/vnd.api+json");
