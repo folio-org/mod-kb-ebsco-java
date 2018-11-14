@@ -20,6 +20,7 @@ import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Titles;
 
 import java.util.concurrent.CompletableFuture;
@@ -173,7 +174,7 @@ public class RMAPIService {
     return this.getRequest(constructURL("titles?" + path), Titles.class);
   }
 
-    public CompletableFuture<VendorById> retrieveProvider(long id, String include) {
+  public CompletableFuture<VendorById> retrieveProvider(long id, String include) {
 
     final String path = "vendors/" + id;
     // TODO: add support of include parameter when MODKBEKBJ-22 is completed
@@ -189,6 +190,13 @@ public class RMAPIService {
       return this.retrieveProvider(id, "");
     });
 
+  }
+  
+  public CompletableFuture<RootProxyCustomLabels> retrieveRootProxy() {
+
+    final String path = "";
+
+    return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
   }
 
   /**
