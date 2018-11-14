@@ -213,6 +213,14 @@ public class RMAPIService {
     return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
   }
 
+  public CompletableFuture<Title> retrieveTitle(long id, String include) {
+
+    final String path = "titles/" + id;
+    // TODO: add support of include parameter when MODKBEKBJ-83 is completed
+
+    return this.getRequest(constructURL(path), Title.class);
+  }
+
   /**
    * Constructs full rmapi path
    *

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Publication Type schema",
+  "description": "Publication Type schema",
+  "javaType": "org.folio.rest.jaxrs.model.TitlePublicationType",
+  "type": "string",
+  "additionalProperties": false,
+      "enum": [
+        "All",
+        "Audiobook",
+        "Book",
+        "Book Series",
+        "Database",
+        "Journal",
+        "Newsletter",
+        "Newspaper",
+        "Proceedings",
+        "Report",
+        "Streaming Audio",
+        "Streaming Video",
+        "Thesis & Dissertation",
+        "Website",
+        "Unspecified"
+      ],
+      "example": "Journal"
+}

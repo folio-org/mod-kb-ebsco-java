@@ -1,11 +1,21 @@
 package org.folio.rest.converter;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.folio.rest.jaxrs.model.Data;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleCollection;
+import org.folio.rest.jaxrs.model.TitleContributors;
 import org.folio.rest.jaxrs.model.TitleIdentifier;
 import org.folio.rest.jaxrs.model.TitleListDataAttributes;
+import org.folio.rest.jaxrs.model.TitlePublicationType;
 import org.folio.rest.jaxrs.model.TitleRelationship;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.util.RestConstants;
@@ -14,12 +24,6 @@ import org.folio.rmapi.model.Subject;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 public class TitleConverter {
 
   private static final TitleRelationship EMPTY_RESOURCES_RELATIONSHIP = new TitleRelationship()
@@ -27,22 +31,22 @@ public class TitleConverter {
       new MetaDataIncluded()
         .withIncluded(false)));
 
-  private static final Map<String, TitleListDataAttributes.PublicationType> publicationTypes = new HashMap<>();
+  private static final Map<String, TitlePublicationType> publicationTypes = new HashMap<>();
   static {
-    publicationTypes.put("audiobook", TitleListDataAttributes.PublicationType.AUDIOBOOK);
-    publicationTypes.put("book", TitleListDataAttributes.PublicationType.BOOK);
-    publicationTypes.put("bookseries", TitleListDataAttributes.PublicationType.BOOK_SERIES);
-    publicationTypes.put("database", TitleListDataAttributes.PublicationType.DATABASE);
-    publicationTypes.put("journal", TitleListDataAttributes.PublicationType.JOURNAL);
-    publicationTypes.put("newsletter", TitleListDataAttributes.PublicationType.NEWSLETTER);
-    publicationTypes.put("newspaper", TitleListDataAttributes.PublicationType.NEWSPAPER);
-    publicationTypes.put("proceedings", TitleListDataAttributes.PublicationType.PROCEEDINGS);
-    publicationTypes.put("report", TitleListDataAttributes.PublicationType.REPORT);
-    publicationTypes.put("streamingaudio", TitleListDataAttributes.PublicationType.STREAMING_AUDIO);
-    publicationTypes.put("streamingvideo", TitleListDataAttributes.PublicationType.STREAMING_VIDEO);
-    publicationTypes.put("thesisdissertation", TitleListDataAttributes.PublicationType.THESIS_DISSERTATION);
-    publicationTypes.put("website", TitleListDataAttributes.PublicationType.WEBSITE);
-    publicationTypes.put("unspecified", TitleListDataAttributes.PublicationType.UNSPECIFIED);
+    publicationTypes.put("audiobook", TitlePublicationType.AUDIOBOOK);
+    publicationTypes.put("book", TitlePublicationType.BOOK);
+    publicationTypes.put("bookseries", TitlePublicationType.BOOK_SERIES);
+    publicationTypes.put("database", TitlePublicationType.DATABASE);
+    publicationTypes.put("journal", TitlePublicationType.JOURNAL);
+    publicationTypes.put("newsletter", TitlePublicationType.NEWSLETTER);
+    publicationTypes.put("newspaper", TitlePublicationType.NEWSPAPER);
+    publicationTypes.put("proceedings", TitlePublicationType.PROCEEDINGS);
+    publicationTypes.put("report", TitlePublicationType.REPORT);
+    publicationTypes.put("streamingaudio", TitlePublicationType.STREAMING_AUDIO);
+    publicationTypes.put("streamingvideo", TitlePublicationType.STREAMING_VIDEO);
+    publicationTypes.put("thesisdissertation", TitlePublicationType.THESIS_DISSERTATION);
+    publicationTypes.put("website", TitlePublicationType.WEBSITE);
+    publicationTypes.put("unspecified", TitlePublicationType.UNSPECIFIED);
   }
 
   private static final Map<Integer, String> IDENTIFIER_TYPES = new HashMap<>();
@@ -67,6 +71,28 @@ public class TitleConverter {
       .withData(titleList);
   }
 
+  public org.folio.rest.jaxrs.model.Title convertFromRMAPITitle(org.folio.rmapi.model.Title rmapiTitle) {
+    return new org.folio.rest.jaxrs.model.Title()
+        .withData(new Data()
+            .withId(String.valueOf(rmapiTitle.getTitleId()))
+            .withType("titles")
+            .withAttributes(new TitleAttributes()
+                .withName(rmapiTitle.getTitleName())
+                .withPublisherName(rmapiTitle.getPublisherName())
+                .withIsTitleCustom(rmapiTitle.getTitleCustom())
+                .withPublicationType(publicationTypes.get(rmapiTitle.getPubType().toLowerCase()))
+                .withSubjects(convertSubjects(rmapiTitle.getSubjectsList()))
+                .withIdentifiers(convertIdentifiers(rmapiTitle.getIdentifiersList()))
+                .withEdition(rmapiTitle.getEdition())
+                .withContributors(convertContributors(rmapiTitle.getContributorsList()))
+                .withDescription(rmapiTitle.getDescription())
+                .withIsPeerReviewed(rmapiTitle.getPeerReviewed())
+                )
+            )
+        .withIncluded(null)
+        .withJsonapi(RestConstants.JSONAPI);
+  }
+  
   private org.folio.rest.jaxrs.model.Titles convertTitle(Title title) {
     return new org.folio.rest.jaxrs.model.Titles()
       .withId(String.valueOf(title.getTitleId()))
@@ -98,6 +124,15 @@ public class TitleConverter {
                           .withId(identifier.getId())
                           .withType(IDENTIFIER_TYPES.getOrDefault(identifier.getType(), ""))
                           .withSubtype(IDENTIFIER_SUBTYPES.getOrDefault(identifier.getSubtype(), "")))
+      .collect(Collectors.toList());
+  }
+  
+  private List<TitleContributors> convertContributors(List<org.folio.rmapi.model.Contributor> contributorList) {
+    return contributorList.stream().map(contributor ->
+      new TitleContributors()
+      .withContributor(contributor.getTitleContributor())
+      .withType(contributor.getType())
+      )
       .collect(Collectors.toList());
   }
 
