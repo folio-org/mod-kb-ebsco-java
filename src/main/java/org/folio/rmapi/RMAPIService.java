@@ -215,7 +215,7 @@ public class RMAPIService {
     return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
   }
 
-  public CompletableFuture<Title> retrieveTitle(long id, String include) {
+  public CompletableFuture<Title> retrieveTitle(long id) {
 
     final String path = TITLES_PATH + '/' + id;
     return this.getRequest(constructURL(path), Title.class);

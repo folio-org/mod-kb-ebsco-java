@@ -127,7 +127,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveTitle(titleIdLong, include);
+        return rmapiService.retrieveTitle(titleIdLong);
       })
       .thenAccept(title ->
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesByTitleIdResponse
