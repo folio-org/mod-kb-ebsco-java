@@ -4,6 +4,7 @@ package org.folio.rmapi.exception;
  * @author cgodfrey
  *
  */
+@SuppressWarnings("squid:MaximumInheritanceDepth")
 public class RMAPIResourceNotFoundException extends RMAPIServiceException {
 
   private static final long serialVersionUID = 1L;
