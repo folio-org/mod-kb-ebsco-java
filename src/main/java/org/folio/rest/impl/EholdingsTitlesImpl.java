@@ -145,8 +145,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                 Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
                     .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
         } else {
-
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
+          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesByTitleIdResponse
             .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
             .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
             .entity(ErrorUtil.createError(e.getCause().getMessage()))

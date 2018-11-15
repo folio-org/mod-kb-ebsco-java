@@ -173,4 +173,46 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Title not found"));
   }
 
+  @Test
+  public void shouldReturn400WhenValidationErrorOnTitleGet() throws IOException, URISyntaxException {
+    String wiremockUrl = host + ":" + userMockServer.port();
+    String titleByIdEndpoint = "eholdings/titles/12345aaa";
+
+    JsonapiError error = RestAssured.given()
+    .spec(spec)
+    .port(port)
+    .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
+    .header(TENANT_HEADER)
+    .header(TOKEN_HEADER)
+    .when()
+    .get(titleByIdEndpoint)
+    .then()
+    .statusCode(400)
+    .extract().as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), equalTo("Title id is invalid - 12345aaa"));
+  }
+
+  @Test
+  public void shouldReturn500WhenRMApiReturns500ErrorOnTitleGet() throws IOException, URISyntaxException {
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(500)));
+
+    String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
+
+
+    RestAssured.given()
+      .spec(spec).port(port)
+      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
+      .header(TENANT_HEADER)
+      .header(TOKEN_HEADER)
+      .when()
+      .get(titleByIdEndpoint)
+      .then()
+      .statusCode(500);
+  }
 }
