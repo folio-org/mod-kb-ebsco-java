@@ -5,11 +5,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.json.Json;
-
+import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
 import org.folio.rmapi.builder.TitlesFilterableUrlBuilder;
@@ -17,11 +17,13 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
+import org.folio.rmapi.model.PackageData;
+import org.folio.rmapi.model.PackageSelectedPayload;
+import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
 import org.folio.rmapi.model.RootProxyCustomLabels;
-import org.folio.rmapi.model.Titles;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -37,6 +39,10 @@ public class RMAPIService {
   private static final String INVALID_RMAPI_RESPONSE = "Invalid RMAPI response";
 
   private static final String VENDOR_NAME_PARAMETER = "vendorname";
+
+  private static final String VENDORS_PATH = "vendors";
+  private static final String PACKAGES_PATH = "packages";
+  private static final String TITLES_PATH = "titles";
 
   private String customerId;
   private String apiKey;
@@ -55,20 +61,20 @@ public class RMAPIService {
       CompletableFuture<T> future) {
 
     LOG.error(String.format("%s status code = [%s] status message = [%s] query = [%s] body = [%s]",
-        INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString()));
+      INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString()));
 
     if (response.statusCode() == 404) {
       future.completeExceptionally(new RMAPIResourceNotFoundException(
-          String.format("Requested resource %s not found, response body =\"%s\"", query, body.toString())));
+        String.format("Requested resource %s not found", query), response.statusCode(), response.statusMessage(), body.toString(), query));
     } else if ((response.statusCode() == 401) || (response.statusCode() == 403)) {
       future.completeExceptionally(new RMAPIUnAuthorizedException(
-          String.format("Unauthorized Access to %s, response body =\"%s\"", query, body.toString())));
+        String.format("Unauthorized Access to %s", query), response.statusCode(), response.statusMessage(), body.toString(), query));
     } else {
 
       future.completeExceptionally(new RMAPIServiceException(
-          String.format("%s Code = %s Message = %s Body = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
-              response.statusMessage(), body.toString()),
-          response.statusCode(), response.statusMessage(), body.toString(), query));
+        String.format("%s Code = %s Message = %s Body = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
+          response.statusMessage(), body.toString()),
+        response.statusCode(), response.statusMessage(), body.toString(), query));
     }
   }
 
@@ -144,7 +150,7 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Object> verifyCredentials() {
-    return this.getRequest(constructURL("vendors?search=zz12&offset=1&orderby=vendorname&count=1"), Object.class);
+    return this.getRequest(constructURL(VENDORS_PATH + "?search=zz12&offset=1&orderby=vendorname&count=1"), Object.class);
   }
 
   public CompletableFuture<Vendors> retrieveProviders(String q, int page, int count, Sort sort) {
@@ -155,7 +161,7 @@ public class RMAPIService {
         .sort(sort)
         .nameParameter(VENDOR_NAME_PARAMETER)
         .build();
-    return this.getRequest(constructURL("vendors?" + query), Vendors.class);
+    return this.getRequest(constructURL(VENDORS_PATH + "?" + query), Vendors.class);
   }
 
   public CompletableFuture<Titles> retrieveTitles(String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
@@ -171,12 +177,12 @@ public class RMAPIService {
       .page(page)
       .count(count)
       .build();
-    return this.getRequest(constructURL("titles?" + path), Titles.class);
+    return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class);
   }
 
   public CompletableFuture<VendorById> retrieveProvider(long id, String include) {
 
-    final String path = "vendors/" + id;
+    final String path = VENDORS_PATH + '/' + id;
     // TODO: add support of include parameter when MODKBEKBJ-22 is completed
 
     return this.getRequest(constructURL(path), VendorById.class);
@@ -184,14 +190,22 @@ public class RMAPIService {
 
   public CompletableFuture<VendorById> updateProvider(long id, VendorPut rmapiVendor) {
 
-    final String path = "vendors/" + id;
+    final String path = VENDORS_PATH + '/' + id;
 
-    return this.putRequest(constructURL(path), rmapiVendor).thenCompose(vend -> {
-      return this.retrieveProvider(id, "");
-    });
+    return this.putRequest(constructURL(path), rmapiVendor).thenCompose(vend -> this.retrieveProvider(id, ""));
 
   }
-  
+
+  public CompletableFuture<PackageData> retrievePackage(PackageId packageId) {
+    final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
+    return this.getRequest(constructURL(path), PackageData.class);
+  }
+
+  public CompletableFuture<Void> deletePackage(PackageId packageId) {
+    final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
+    return this.putRequest(constructURL(path),new PackageSelectedPayload(false));
+  }
+
   public CompletableFuture<RootProxyCustomLabels> retrieveRootProxy() {
 
     final String path = "";

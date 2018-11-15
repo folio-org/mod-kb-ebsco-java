@@ -74,6 +74,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     if(!Sort.contains(sort.toUpperCase())){
       throw new ValidationException("Invalid sort parameter");
     }
+    if("".equals(q)){
+      throw new ValidationException("Search parameter cannot be empty");
+    }
     CompletableFuture.completedFuture(null)
     .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
     .thenCompose(rmapiConfiguration -> {

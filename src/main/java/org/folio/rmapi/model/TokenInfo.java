@@ -2,7 +2,7 @@ package org.folio.rmapi.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class VendorToken {
+public class TokenInfo {
 
   @JsonProperty("factName")
   private String factName;

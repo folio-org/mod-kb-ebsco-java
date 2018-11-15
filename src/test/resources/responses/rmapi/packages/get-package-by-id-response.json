@@ -1,0 +1,27 @@
+{
+  "packageId": 2884739,
+  "packageName": "carole and sams test",
+  "isCustom": true,
+  "vendorId": 123355,
+  "vendorName": "APIDEV CORPORATE CUSTOMER",
+  "titleCount": 6,
+  "isSelected": true,
+  "visibilityData": {
+    "isHidden": false,
+    "reason": ""
+  },
+  "selectedCount": 6,
+  "isTokenNeeded": false,
+  "contentType": "Unknown",
+  "customCoverage": {
+    "beginCoverage": "",
+    "endCoverage": ""
+  },
+  "proxy": {
+    "id": "<n>",
+    "inherited": true
+  },
+  "allowEbscoToAddTitles": false,
+  "packageToken": null,
+  "packageType": "Custom"
+}
