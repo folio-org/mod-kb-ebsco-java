@@ -7,6 +7,8 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +26,7 @@ import static org.hamcrest.Matchers.contains;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
-
+  private static final String STUB_TITLE_ID = "985846";
   @Test
   public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/searchTitles.json";
@@ -100,8 +102,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
 
-    String wiremockUrl = host + ":" + userMockServer.port();
-    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    String wiremockUrl = getWiremockUrl();
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
     WireMock.stubFor(
         WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
@@ -110,11 +112,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
 
     RestAssured.given()
-    .spec(spec)
-    .port(port)
-    .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
-    .header(TENANT_HEADER)
-    .header(TOKEN_HEADER)
+    .spec(getRequestSpecification())
     .when()
     .get(titleByIdEndpoint)
     .then()
@@ -150,8 +148,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturn404WhenRMAPINotFoundOnTitleGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-not-found-response.json";
 
-    String wiremockUrl = host + ":" + userMockServer.port();
-    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    String wiremockUrl = getWiremockUrl();
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
     WireMock.stubFor(
         WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
@@ -161,11 +159,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
 
     JsonapiError error = RestAssured.given()
-    .spec(spec)
-    .port(port)
-    .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
-    .header(TENANT_HEADER)
-    .header(TOKEN_HEADER)
+    .spec(getRequestSpecification())
     .when()
     .get(titleByIdEndpoint)
     .then()
@@ -177,15 +171,13 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenValidationErrorOnTitleGet() throws IOException, URISyntaxException {
-    String wiremockUrl = host + ":" + userMockServer.port();
+    String wiremockUrl = getWiremockUrl();
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+
     String titleByIdEndpoint = "eholdings/titles/12345aaa";
 
     JsonapiError error = RestAssured.given()
-    .spec(spec)
-    .port(port)
-    .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
-    .header(TENANT_HEADER)
-    .header(TOKEN_HEADER)
+    .spec(getRequestSpecification())
     .when()
     .get(titleByIdEndpoint)
     .then()
@@ -197,8 +189,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn500WhenRMApiReturns500ErrorOnTitleGet() throws IOException, URISyntaxException {
-    String wiremockUrl = host + ":" + userMockServer.port();
-    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    String wiremockUrl = getWiremockUrl();
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
     WireMock.stubFor(
       WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
@@ -206,12 +198,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
 
-
     RestAssured.given()
-      .spec(spec).port(port)
-      .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
-      .header(TENANT_HEADER)
-      .header(TOKEN_HEADER)
+      .spec(getRequestSpecification())
+      .when()
       .when()
       .get(titleByIdEndpoint)
       .then()

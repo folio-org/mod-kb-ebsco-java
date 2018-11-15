@@ -9,6 +9,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
@@ -19,6 +20,7 @@ import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackageData;
 import org.folio.rmapi.model.PackageSelectedPayload;
+import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
