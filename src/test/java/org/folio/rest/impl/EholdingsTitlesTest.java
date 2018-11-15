@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -141,4 +143,34 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     .body("data.attributes.contributors[0].type", equalTo("author"))
     .body("data.attributes.contributors[0].contributor", equalTo("Bloom, Harold"));
   }
+
+  @Test
+  public void shouldReturn404WhenRMAPINotFoundOnTitleGet() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-not-found-response.json";
+
+    String wiremockUrl = host + ":" + userMockServer.port();
+    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    WireMock.stubFor(
+        WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+            .withBody(TestUtil.readFile(stubResponseFile))
+            .withStatus(404)));
+
+    String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
+
+    JsonapiError error = RestAssured.given()
+    .spec(spec)
+    .port(port)
+    .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
+    .header(TENANT_HEADER)
+    .header(TOKEN_HEADER)
+    .when()
+    .get(titleByIdEndpoint)
+    .then()
+    .statusCode(404)
+    .extract().as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), equalTo("Title not found"));
+  }
+
 }

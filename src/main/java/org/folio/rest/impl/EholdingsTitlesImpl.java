@@ -139,6 +139,11 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         if (e.getCause() instanceof RMAPIResourceNotFoundException) {
           asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesByTitleIdResponse
             .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))));
+        } else if (e.getCause() instanceof RMAPIServiceException) {
+            RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
+            asyncResultHandler.handle(Future.succeededFuture(
+                Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+                    .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
         } else {
 
           asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
