@@ -17,7 +17,7 @@
     "attributes": {
       "description": "Data type attributes",
       "type": "object",
-      "$ref": "resourcePutDataAttributes.json"
+      "$ref": "resourceDataAttributes.json"
     }
   },
   "required": [

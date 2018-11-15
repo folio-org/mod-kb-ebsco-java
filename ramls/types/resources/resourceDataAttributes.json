@@ -8,36 +8,38 @@
   "properties": {
     "description": {
       "type": "string",
-      "description": "Description of Resource",
+      "description": "Description of Resource. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
       "example": "Online Reference"
     },
     "edition": {
       "type": "string",
-      "description": "Edition"
+      "description": "Edition. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE."
     },
     "isPeerReviewed": {
       "type": "boolean",
-      "description": "Defines if peer is reviewed",
+      "description": "Defines if peer is reviewed. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
       "example": false
     },
     "isTitleCustom": {
       "type": "boolean",
+      "readonly": true,
       "description": "Defines if title is custom",
       "example": false
     },
     "publisherName": {
       "type": "string",
-      "description": "Publisher",
+      "description": "Publisher. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
       "example": "Indiana University-Purdue Fort Wayne"
     },
     "titleId": {
       "type": "integer",
+      "readonly": true,
       "description": "Title Id",
       "example": 2985519
     },
     "contributors": {
       "type": "array",
-      "description": "List of contributors",
+      "description": "List of contributors. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
       "items": {
         "type": "object",
         "description": "The Contributors Schema",
@@ -46,7 +48,7 @@
     },
     "identifiers": {
       "type": "array",
-      "description": "List of identifiers",
+      "description": "List of identifiers. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
       "items": {
         "type": "object",
         "description": "The Identifiers Schema",
@@ -55,16 +57,33 @@
     },
     "name": {
       "type": "string",
-      "description": "Resource name",
+      "description": "Resource name. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
       "example": "American Journal of Undergraduate Research"
     },
     "publicationType": {
       "type": "string",
-      "description": "Publication type",
+      "description": "Publication type. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
+      "enum": [
+        "Audiobook",
+        "Book",
+        "Book Series",
+        "Database",
+        "Journal",
+        "Newsletter",
+        "Newspaper",
+        "Proceedings",
+        "Report",
+        "Streaming Audio",
+        "Streaming Video",
+        "Thesis & Dissertation",
+        "Website",
+        "Unspecified"
+      ],
       "example": "Journal"
     },
     "subjects": {
       "type": "array",
+      "readonly": true,
       "description": "List of subjects for a given resource",
       "items": {
         "type": "object",
@@ -73,71 +92,80 @@
     },
     "coverageStatement": {
       "type": "string",
-      "description": "Coverage statement",
+      "description": "Coverage statement. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "example": "Only 2000s issues available."
     },
     "customEmbargoPeriod": {
       "type": "object",
-      "description": "Custom Embargo Period information",
+      "description": "Custom Embargo Period information. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "$ref": "../embargo.json"
     },
     "isPackageCustom": {
       "type": "boolean",
+      "readonly": true,
       "description": "Defines if package is custom",
       "example": false
     },
     "isSelected": {
       "type": "boolean",
-      "description": "Defines if this item is selected",
+      "description": "Defines if this item is selected. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "example": false
     },
     "isTokenNeeded": {
       "type": "boolean",
+      "readonly": true,
       "description": "Defines if token is needed",
       "example": false
     },
     "locationId": {
       "type": "integer",
+      "readonly": true,
       "description": "Unique location id",
       "example": 9091063
     },
     "managedEmbargoPeriod": {
       "type": "object",
+      "readonly": true,
       "description": "Managed Embargo Period information",
       "$ref": "../embargo.json"
     },
     "packageId": {
       "type": "string",
+      "readonly": true,
       "description": "Unique package id",
       "example": "19-2333046"
     },
     "packageName": {
       "type": "string",
+      "readonly": true,
       "description": "Package name",
       "example": "Applied Science & Technology Source Ultimate"
     },
     "url": {
       "type": "string",
-      "description": "URL",
+      "description": "URL. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
       "example": "http://search.ebscohost.com/direct.asp?db=aps&jid=BDGR&scope=site"
     },
     "providerId": {
       "type": "integer",
+      "readonly": true,
       "description": "Provider Id",
       "example": 19
     },
     "providerName": {
       "type": "string",
+      "readonly": true,
       "description": "Provider name",
       "example": "EBSCO"
     },
     "visibilityData": {
       "type": "object",
-      "description": "Visibility data",
+      "description": "Visibility data. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "$ref": "../visibilityData.json"
     },
     "managedCoverages": {
       "type": "array",
+      "readonly": true,
       "description": "List of Managed Coverages information",
       "items": {
         "type": "object",
@@ -147,7 +175,7 @@
     },
     "customCoverages": {
       "type": "array",
-      "description": "List of Custom Coverages information",
+      "description": "List of Custom Coverages information. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "items": {
         "type": "object",
         "description": "Custom Coverages information",
@@ -156,7 +184,7 @@
     },
     "proxy": {
       "type": "object",
-      "description": "Proxy",
+      "description": "Proxy.  Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "$ref": "../proxy.json"
     }
   }

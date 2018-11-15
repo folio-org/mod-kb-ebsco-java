@@ -48,7 +48,7 @@ types:
               strict: false
               value: !include examples/resources/resources_post_400_response.json
       404:
-        description: Not Fount
+        description: Not Found
         body:
           application/vnd.api+json:
             type: jsonapiError
@@ -68,7 +68,7 @@ types:
     description: Instance of a resource given resourceId
     uriParameters:
       resourceId:
-        description: Identifier of the resource to get
+        description: Identifier of the resource formed from Provider Id, Package Id, Title Id (see example)
         type: string
         example: 22-1887786-1440285
     get:
