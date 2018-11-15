@@ -9,7 +9,7 @@ import org.folio.rest.model.Sort;
 public class PackageParametersValidator {
 
   private static final List<String> FILTER_SELECTED_VALUES = Arrays.asList("true", "false", "ebsco");
-  private List<String> FILTER_TYPE_VALUES = Arrays.asList("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference");
+  private static final List<String> FILTER_TYPE_VALUES = Arrays.asList("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference");
 
   public void validate(String filterCustom, String filterSelected, String filterType,
     String sort) {
