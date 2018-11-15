@@ -1,0 +1,27 @@
+{
+  "errors": [
+    {
+      "title": "Invalid package_id",
+      "detail": "Package can't be blank",
+      "source": {}
+    },
+    {
+      "title": "Invalid package_id",
+      "detail": "Package :Invalid package id",
+      "source": {}
+    },
+    {
+      "title": "Invalid title_id",
+      "detail": "Title can't be blank",
+      "source": {}
+    },
+    {
+      "title": "Invalid title_id",
+      "detail": "Title :Invalid title id",
+      "source": {}
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

@@ -10,7 +10,18 @@
       "publisherName": null,
       "titleId": 17059786,
       "contributors": [],
-      "identifiers": [],
+      "identifiers": [
+        {
+          "id": "978-1-4488-6317-4",
+          "type": "ISBN",
+          "subtype": "Print"
+        },
+        {
+          "id": "978-1-4488-6522-2",
+          "type": "ISBN",
+          "subtype": "Online"
+        }
+      ],
       "name": "SD custom title",
       "publicationType": "Book",
       "subjects": [],
@@ -30,8 +41,6 @@
       "packageId": "123355-2845510",
       "packageName": "Testing2",
       "url": null,
-      "vendorId": 123355,
-      "vendorName": "API DEV CORPORATE CUSTOMER",
       "providerId": 123355,
       "providerName": "API DEV CORPORATE CUSTOMER",
       "visibilityData": {
@@ -46,11 +55,6 @@
       }
     },
     "relationships": {
-      "vendor": {
-        "meta": {
-          "included": false
-        }
-      },
       "provider": {
         "meta": {
           "included": false

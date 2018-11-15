@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource POST Request Schema",
+  "description": "Resource Post Request Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.ResourcePostRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of resource post request",
+      "type": "object",
+      "$ref": "resourcePostData.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

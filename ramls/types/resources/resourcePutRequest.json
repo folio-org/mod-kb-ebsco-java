@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource PUT Request Schema",
+  "description": "Resource Put Request Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.ResourcePutRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of resource put request",
+      "type": "object",
+      "$ref": "resourcePutData.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

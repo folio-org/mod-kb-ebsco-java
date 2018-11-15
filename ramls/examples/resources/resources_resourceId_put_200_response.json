@@ -30,8 +30,6 @@
       "packageId": "123355-2845510",
       "packageName": "\"Testing2\"",
       "url": "https://hello.io",
-      "vendorId": 123355,
-      "vendorName": "API DEV CORPORATE CUSTOMER",
       "providerId": 123355,
       "providerName": "API DEV CORPORATE CUSTOMER",
       "visibilityData": {
@@ -54,11 +52,6 @@
       }
     },
     "relationships": {
-      "vendor": {
-        "meta": {
-          "included": false
-        }
-      },
       "provider": {
         "meta": {
           "included": false

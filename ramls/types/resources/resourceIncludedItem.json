@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource object schema for an included item",
+  "description": "Resource object schema for an included item",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceIncludedItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of an included item",
+      "example": "1440285"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of an included item",
+      "enum": [
+        "providers",
+        "package",
+        "titles"
+      ],
+      "example": "providers"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Resource included item attributes",
+      "$ref": "resourceIncludedItemAttributes.json"
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Resource included item relationships",
+      "$ref": "resourceRelationships.json"
+    }
+  }
+}
