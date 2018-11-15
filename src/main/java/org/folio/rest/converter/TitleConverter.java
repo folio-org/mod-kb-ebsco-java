@@ -10,6 +10,7 @@ import org.folio.rest.jaxrs.model.Data;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitleContributors;
@@ -30,7 +31,7 @@ public class TitleConverter {
     .withResources(new MetaIncluded().withMeta(
       new MetaDataIncluded()
         .withIncluded(false)));
-
+  
   private static final Map<String, TitlePublicationType> publicationTypes = new HashMap<>();
   static {
     publicationTypes.put("audiobook", TitlePublicationType.AUDIOBOOK);
@@ -88,6 +89,7 @@ public class TitleConverter {
                 .withDescription(rmapiTitle.getDescription())
                 .withIsPeerReviewed(rmapiTitle.getPeerReviewed())
                 )
+            .withRelationships(EMPTY_RESOURCES_RELATIONSHIP)
             )
         .withIncluded(null)
         .withJsonapi(RestConstants.JSONAPI);
