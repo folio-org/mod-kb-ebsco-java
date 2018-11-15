@@ -10,4 +10,12 @@ public class VisibilityInfo {
 
   @JsonProperty("reason")
   private String reason;
+
+  public Boolean getHidden() {
+    return isHidden;
+  }
+
+  public String getReason() {
+    return reason;
+  }
 }

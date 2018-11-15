@@ -14,7 +14,7 @@
     "type": {
       "type": "string",
       "description": "Type of resource",
-      "example": "title"
+      "example": "titles"
     },
     "attributes": {
       "type": "object",
