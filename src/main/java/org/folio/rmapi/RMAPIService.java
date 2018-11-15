@@ -217,9 +217,7 @@ public class RMAPIService {
 
   public CompletableFuture<Title> retrieveTitle(long id, String include) {
 
-    final String path = "titles/" + id;
-    // TODO: add support of include parameter when MODKBEKBJ-83 is completed
-
+    final String path = TITLES_PATH + '/' + id;
     return this.getRequest(constructURL(path), Title.class);
   }
 

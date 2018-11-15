@@ -10,7 +10,6 @@ import org.folio.rest.jaxrs.model.Data;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitleContributors;

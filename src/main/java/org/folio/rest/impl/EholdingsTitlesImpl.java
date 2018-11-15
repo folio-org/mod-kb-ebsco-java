@@ -17,8 +17,6 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.TitleConverter;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
-import org.folio.rest.jaxrs.resource.EholdingsProviders.GetEholdingsProvidersByProviderIdResponse;
-import org.folio.rest.jaxrs.resource.EholdingsTitles.GetEholdingsTitlesByTitleIdResponse;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorUtil;
@@ -35,7 +33,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
-  private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private static final String GET_TITLES_ERROR_MESSAGE = "Failed to retrieve titles";
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   
