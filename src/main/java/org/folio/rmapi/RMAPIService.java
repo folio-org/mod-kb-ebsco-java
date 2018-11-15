@@ -23,6 +23,7 @@ import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.model.RootProxyCustomLabels;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -203,6 +204,13 @@ public class RMAPIService {
   public CompletableFuture<Void> deletePackage(PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
     return this.putRequest(constructURL(path),new PackageSelectedPayload(false));
+  }
+
+  public CompletableFuture<RootProxyCustomLabels> retrieveRootProxy() {
+
+    final String path = "";
+
+    return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
   }
 
   /**
