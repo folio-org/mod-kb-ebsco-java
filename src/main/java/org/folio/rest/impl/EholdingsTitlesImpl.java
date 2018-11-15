@@ -93,14 +93,14 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           RMAPIServiceException rmApiException = (RMAPIServiceException)e.getCause();
           asyncResultHandler.handle(Future.succeededFuture(Response
             .status(rmApiException.getRMAPICode())
-            .header("Content-Type", "application/vnd.api+json")
+            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
             .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException))
             .build()));
         }
         else {
           asyncResultHandler.handle(Future.succeededFuture(Response
             .status(500)
-            .header("Content-Type", "application/vnd.api+json")
+            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
             .entity(ErrorUtil.createError(e.getCause().getMessage()))
             .build()));
         }
