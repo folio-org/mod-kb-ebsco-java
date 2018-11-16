@@ -1,6 +1,5 @@
 package org.folio.rmapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,9 +8,6 @@ public class VendorById extends Vendor {
 
   @JsonProperty("proxy")
   private Proxy proxy;
-
-  @JsonIgnore
-  private String vendorToken;
 
   @JsonProperty("vendorToken")
   private TokenInfo vendorByIdToken;

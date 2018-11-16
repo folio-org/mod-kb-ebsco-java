@@ -8,5 +8,10 @@
     "id": "<n>",
     "inherited": true
   },
-  "vendorToken": null
+  "vendorToken": {
+    "factName": null,
+    "prompt": null,
+    "helpText": null,
+    "value":"sampleToken"
+  }
 }
