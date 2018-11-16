@@ -31,7 +31,7 @@ public class VendorConverter {
   }
 
   private Providers convertVendor(Vendor vendor) {
-    TokenInfo token = vendor.getVendorToken();
+    String token = vendor.getVendorToken();
     return new Providers()
       .withId(String.valueOf(vendor.getVendorId()))
       .withType(PROVIDERS_TYPE)
@@ -40,12 +40,12 @@ public class VendorConverter {
         .withPackagesTotal(vendor.getPackagesTotal())
         .withPackagesSelected(vendor.getPackagesSelected())
         .withSupportsCustomPackages(vendor.isCustomer())
-        .withProviderToken(token != null ? new Token().withValue((String) token.getValue()) : null))
+        .withProviderToken(token != null ? new Token().withValue(token) : null))
       .withRelationships(EMPTY_PACKAGE_RELATIONSHIP);
   }
 
   public Provider convertToProvider(VendorById vendor) {
-    TokenInfo vendorToken = vendor.getVendorToken();
+    TokenInfo vendorToken = vendor.getVendorByIdToken();
     return new Provider()
       .withData(new ProviderData()
         .withId(String.valueOf(vendor.getVendorId()))
