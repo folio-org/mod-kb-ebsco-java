@@ -43,7 +43,8 @@
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/providers/{providerId}"
+          "pathPattern": "/eholdings/providers/{providerId}",
+          "permissionsRequired" :["kb-ebsco.provider.put"]
         },
         {
           "methods": ["GET"],
@@ -76,7 +77,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/titles/{titleId}"
+          "pathPattern": "/eholdings/titles/{titleId}",
+          "permissionsRequired" :["kb-ebsco.title.get"]
         },
         {
           "methods": ["GET"],
@@ -134,6 +136,16 @@
       "displayName": "get single provider",
       "description": "Get single provider"
     },
+     {
+      "permissionName": "kb-ebsco.provider.put",
+      "displayName": "put single provider",
+      "description": "Put single provider"
+    },
+    {
+      "permissionName": "kb-ebsco.title.get",
+      "displayName": "get single title",
+      "description": "Get single title"
+    },
     {
       "permissionName": "kb-ebsco.titleCollection.get",
       "displayName": "get titles",
@@ -154,8 +166,11 @@
         "kb-ebsco.status.get",
         "kb-ebsco.providerCollection.get",
         "kb-ebsco.provider.get",
+        "kb-ebsco.provider.put",
         "kb-ebsco.titleCollection.get",
-        "kb-ebsco.package.delete"
+        "kb-ebsco.package.delete",
+        "kb-ebsco.title.get",
+        "kb-ebsco.titleCollection.get"
       ]
     }
   ],

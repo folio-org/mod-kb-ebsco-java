@@ -52,24 +52,7 @@
     "publicationType": {
       "type": "string",
       "description": "Type of publication",
-      "enum": [
-        "All",
-        "Audiobook",
-        "Book",
-        "Book Series",
-        "Database",
-        "Journal",
-        "Newsletter",
-        "Newspaper",
-        "Proceedings",
-        "Report",
-        "Streaming Audio",
-        "Streaming Video",
-        "Thesis & Dissertation",
-        "Website",
-        "Unspecified"
-      ],
-      "example": "Journal"
+      "$ref": "../publicationType.json"
     },
     "publisherName": {
       "type": "string",

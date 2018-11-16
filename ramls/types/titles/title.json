@@ -20,16 +20,15 @@
           "description": "The Id Schema",
           "example": "100130"
         },
-        "relationships": {
+       "relationships": {
           "type": "object",
-          "description": "Title Relationships Schema",
-          "$ref": "../relationships.json"
+          "description": "Displays title relationships",
+          "$ref": "titleRelationship.json"
         },
         "type": {
           "type": "string",
           "description": "Title Type",
           "example": "titles"
-
         }
       }
     },
