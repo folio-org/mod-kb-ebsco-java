@@ -1,0 +1,26 @@
+{
+  "totalResults": 1,
+  "packagesList": [
+    {
+      "packageId": 2222222,
+      "packageName": "TEST_PACKAGE_NAME",
+      "isCustom": true,
+      "vendorId": 1111111,
+      "vendorName": "TEST_VENDOR_NAME",
+      "titleCount": 5,
+      "isSelected": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "selectedCount": 5,
+      "isTokenNeeded": false,
+      "contentType": "OnlineReference",
+      "customCoverage": {
+        "beginCoverage": "",
+        "endCoverage": ""
+      },
+      "packageType": "Custom"
+    }
+  ]
+}

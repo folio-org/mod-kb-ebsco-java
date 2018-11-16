@@ -88,7 +88,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     packageParametersValidator.validate(filterCustom, filterSelected, filterType, sort);
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
-    Sort nameSort = sort != null ? Sort.valueOf(sort.toUpperCase()) : null;
+    Sort nameSort =  Sort.valueOf(sort.toUpperCase());
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))

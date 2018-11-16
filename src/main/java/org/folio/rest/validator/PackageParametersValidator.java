@@ -23,7 +23,7 @@ public class PackageParametersValidator {
     if (Objects.nonNull(filterSelected) && !FILTER_SELECTED_VALUES.contains(filterSelected)){
       throw new ValidationException("Invalid Query Parameter for filter[:selected]");
     }
-    if(Objects.nonNull(filterCustom) && !Boolean.TRUE.equals(Boolean.parseBoolean(filterCustom))){
+    if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
       throw new ValidationException("Invalid Query Parameter for filter[:custom]");
     }
   }

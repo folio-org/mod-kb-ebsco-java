@@ -205,7 +205,7 @@ public class RMAPIService {
 
   public CompletableFuture<Vendors> getVendors(boolean filterCustom){
     CompletableFuture<Vendors> vendorsList = CompletableFuture.completedFuture(new Vendors());
-    if (Boolean.TRUE.equals(filterCustom)) {
+    if (filterCustom) {
       return retrieveProviders(customerId, 1, 25, Sort.RELEVANCE);
     }
     return vendorsList;
