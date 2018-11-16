@@ -9,11 +9,22 @@ public class VendorById extends Vendor {
   @JsonProperty("proxy")
   private Proxy proxy;
 
+  @JsonProperty("vendorToken")
+  private TokenInfo vendorByIdToken;
+
   public Proxy getProxy() {
     return proxy;
   }
 
   public void setProxy(Proxy proxy) {
     this.proxy = proxy;
+  }
+
+  public TokenInfo getVendorByIdToken() {
+    return vendorByIdToken;
+  }
+
+  public void setVendorByIdToken(TokenInfo vendorByIdToken) {
+    this.vendorByIdToken = vendorByIdToken;
   }
 }

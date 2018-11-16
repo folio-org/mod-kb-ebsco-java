@@ -16,7 +16,7 @@ public class Vendor {
   @JsonProperty("isCustomer")
   private boolean isCustomer;
   @JsonProperty("vendorToken")
-  private TokenInfo vendorToken;
+  private String vendorToken;
 
   public int getVendorId() {
     return vendorId;
@@ -58,11 +58,11 @@ public class Vendor {
     isCustomer = customer;
   }
 
-  public TokenInfo getVendorToken() {
+  public String getVendorToken() {
     return vendorToken;
   }
 
-  public void setVendorToken(TokenInfo vendorToken) {
+  public void setVendorToken(String vendorToken) {
     this.vendorToken = vendorToken;
   }
 }
