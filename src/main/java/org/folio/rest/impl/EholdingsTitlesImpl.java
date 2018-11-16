@@ -6,7 +6,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
@@ -19,6 +18,7 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.Sort;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.TitleParametersValidator;
@@ -35,7 +35,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private static final String GET_TITLES_ERROR_MESSAGE = "Failed to retrieve titles";
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
-  
+
   private static final String CONTENT_TYPE_HEADER = "Content-Type";
   private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
 
@@ -86,21 +86,10 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           .respond200WithApplicationVndApiJson(converter.convert(titles)))))
       .exceptionally(e -> {
         logger.error(GET_TITLES_ERROR_MESSAGE, e);
-        if(e.getCause() instanceof RMAPIServiceException){
-          RMAPIServiceException rmApiException = (RMAPIServiceException)e.getCause();
-          asyncResultHandler.handle(Future.succeededFuture(Response
-            .status(rmApiException.getRMAPICode())
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException))
-            .build()));
-        }
-        else {
-          asyncResultHandler.handle(Future.succeededFuture(Response
-            .status(500)
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createError(e.getCause().getMessage()))
-            .build()));
-        }
+        new ErrorHandler()
+          .addRmApiMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
         return null;
       });
   }

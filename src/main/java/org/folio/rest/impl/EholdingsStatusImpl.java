@@ -14,6 +14,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.StatusConverter;
 import org.folio.rest.jaxrs.resource.EholdingsStatus;
 import org.folio.rest.model.OkapiData;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
 
 import javax.ws.rs.core.Response;
@@ -53,8 +54,9 @@ public class EholdingsStatusImpl implements EholdingsStatus {
       .thenAccept(isValid -> asyncResultHandler.handle(Future.succeededFuture(GetEholdingsStatusResponse.respond200WithApplicationVndApiJson(converter.convert(isValid)))))
       .exceptionally(e -> {
         logger.error(INTERNAL_SERVER_ERROR, e);
-        asyncResultHandler.handle(Future.succeededFuture(
-          EholdingsStatus.GetEholdingsStatusResponse.respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
+        new ErrorHandler()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
         return null;
       });
   }

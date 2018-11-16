@@ -33,10 +33,6 @@ public class PackageData {
   private Boolean allowEbscoToAddTitles;
   @JsonProperty("packageType")
   private String packageType;
-  @JsonProperty("proxy")
-  private Proxy proxy;
-  @JsonProperty("packageToken")
-  private TokenInfo packageToken;
 
   public Integer getPackageId() {
     return packageId;
@@ -92,14 +88,6 @@ public class PackageData {
 
   public String getPackageType() {
     return packageType;
-  }
-
-  public Proxy getProxy() {
-    return proxy;
-  }
-
-  public TokenInfo getPackageToken() {
-    return packageToken;
   }
 
   public void setCustom(Boolean custom) {

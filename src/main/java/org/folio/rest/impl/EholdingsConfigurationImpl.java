@@ -19,6 +19,7 @@ import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.model.OkapiData;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 
@@ -29,7 +30,6 @@ import java.util.concurrent.CompletableFuture;
 public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   private static final String UPDATE_ERROR_MESSAGE = "Failed to update configuration";
-  private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private static final String CONFIGURATION_IS_INVALID_ERROR = "Configuration is invalid";
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
@@ -62,7 +62,9 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
       })
       .exceptionally(e -> {
         logger.error(UPDATE_ERROR_MESSAGE, e);
-        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
+        new ErrorHandler()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
         return null;
       });
   }
@@ -91,14 +93,12 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
         asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse
           .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))
       .exceptionally(e -> {
-        if (e.getCause() instanceof RMAPIConfigurationInvalidException) {
-          asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
-            .respond422WithApplicationVndApiJson(ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR))));
-        } else {
-          logger.error(UPDATE_ERROR_MESSAGE, e);
-          asyncResultHandler.handle(Future.succeededFuture(EholdingsConfiguration.PutEholdingsConfigurationResponse
-            .respond500WithTextPlain(INTERNAL_SERVER_ERROR)));
-        }
+        new ErrorHandler()
+          .add(RMAPIConfigurationInvalidException.class, exception ->
+            EholdingsConfiguration.PutEholdingsConfigurationResponse
+              .respond422WithApplicationVndApiJson(ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR)))
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
         return null;
       });
   }

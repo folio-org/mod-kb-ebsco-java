@@ -18,6 +18,7 @@ import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.Sort;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
@@ -33,7 +34,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
-  private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
   private static final String PUT_PROVIDER_ERROR_MESSAGE = "Failed to update provider";
 
@@ -129,17 +129,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
           .respond200WithApplicationVndApiJson(converter.convertToProvider(vendor)))))
       .exceptionally(e -> {
-        if (e.getCause() instanceof RMAPIResourceNotFoundException) {
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
-            .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE))));
-        } else {
-          logger.error(INTERNAL_SERVER_ERROR, e);
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
-            .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createError(e.getCause().getMessage()))
-            .build()));
-        }
+        new ErrorHandler()
+          .add(RMAPIResourceNotFoundException.class, exception ->
+            GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
+              ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)))
+        .addDefaultMapper()
+        .handle(asyncResultHandler, e);
         return null;
       });
   }
@@ -170,16 +165,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
             .respond200WithApplicationVndApiJson(converter.convertToProvider(vendor)))))
         .exceptionally(e -> {
           logger.error(PUT_PROVIDER_ERROR_MESSAGE, e);
-          if (e.getCause() instanceof RMAPIServiceException) {
-            RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
-            asyncResultHandler.handle(Future.succeededFuture(
-                Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-                    .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
-          } else {
-            asyncResultHandler.handle(Future.succeededFuture(PutEholdingsProvidersByProviderIdResponse
-                .status(HttpStatus.SC_INTERNAL_SERVER_ERROR).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-                .entity(ErrorUtil.createError(e.getCause().getMessage())).build()));
-          }
+          new ErrorHandler()
+            .addRmApiMapper()
+            .addDefaultMapper()
+            .handle(asyncResultHandler, e);
           return null;
         });
   }

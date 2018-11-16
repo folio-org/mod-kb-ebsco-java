@@ -9,11 +9,8 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import org.folio.rest.model.PackageId;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import org.apache.commons.collections.CollectionUtils;
+import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.PackagesFilterableUrlBuilder;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
@@ -22,16 +19,19 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
-import org.folio.rmapi.model.PackageData;
+import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageSelectedPayload;
+import org.folio.rmapi.model.Packages;
+import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
-import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
-import org.folio.rmapi.model.RootProxyCustomLabels;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class RMAPIService {
 
@@ -232,9 +232,9 @@ public class RMAPIService {
 
   }
 
-  public CompletableFuture<PackageData> retrievePackage(PackageId packageId) {
+  public CompletableFuture<PackageByIdData> retrievePackage(PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
-    return this.getRequest(constructURL(path), PackageData.class);
+    return this.getRequest(constructURL(path), PackageByIdData.class);
   }
 
   public CompletableFuture<Void> deletePackage(PackageId packageId) {
