@@ -1,11 +1,19 @@
 package org.folio.rest.impl;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
@@ -27,15 +35,6 @@ import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIServiceException;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -69,8 +68,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   public EholdingsPackagesImpl(RMAPIConfigurationService configurationService,
-                               HeaderValidator headerValidator, PackageParametersValidator packageParametersValidator,
-    PackagesConverter converter) {
+                               HeaderValidator headerValidator,
+                               PackageParametersValidator packageParametersValidator,
+                               PackagesConverter converter) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.packageParametersValidator = packageParametersValidator;
