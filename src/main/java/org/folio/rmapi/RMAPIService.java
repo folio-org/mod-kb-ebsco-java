@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
@@ -208,11 +209,19 @@ public class RMAPIService {
     return this.putRequest(constructURL(path),new PackageSelectedPayload(false));
   }
 
-  public CompletableFuture<RootProxyCustomLabels> retrieveRootProxy() {
-
+  public CompletableFuture<RootProxyCustomLabels> retrieveRootProxyCustomLabels() {
     final String path = "";
 
     return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
+  }
+  
+  public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest, RootProxyCustomLabels rootProxyCustomLabels) {
+    final String path = "";
+    
+    org.folio.rmapi.model.Proxy proxyRMAPI = new org.folio.rmapi.model.Proxy();   
+    proxyRMAPI.setId(rootProxyPutRequest.getData().getAttributes().getProxyTypeId());
+    rootProxyCustomLabels.setProxy(proxyRMAPI);
+    return this.putRequest(constructURL(path), rootProxyCustomLabels).thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
   }
 
   public CompletableFuture<Title> retrieveTitle(long id) {

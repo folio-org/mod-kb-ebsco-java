@@ -5,7 +5,6 @@ import org.folio.rest.jaxrs.model.RootProxyDataAttributes;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 
-
 public class RootProxyConverter {
   private static final String ROOT_PROXY_ID = "root-proxy";
   private static final String ROOT_PROXY_TYPE = "rootProxies";
