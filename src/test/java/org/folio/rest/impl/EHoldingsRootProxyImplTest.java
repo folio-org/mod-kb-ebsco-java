@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -14,7 +13,6 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RootProxy;
 import org.folio.rest.jaxrs.model.RootProxyData;
 import org.folio.rest.jaxrs.model.RootProxyDataAttributes;
-import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.util.RestConstants;
 import org.folio.util.TestUtil;
 import org.junit.Test;
@@ -111,10 +109,6 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
       WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
         .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
 
-    ObjectMapper mapper = new ObjectMapper();
-    RootProxyPutRequest rootProxyToBeUpdated = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-root-proxy.json"),
-        RootProxyPutRequest.class);
-
     RootProxy expected = getUpdatedRootProxy();
     RequestSpecification requestSpecification = getRequestSpecification();
 
@@ -124,7 +118,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
       .given()
       .spec(requestSpecification)
       .header(CONTENT_TYPE_HEADER)
-      .body(mapper.writeValueAsString(rootProxyToBeUpdated))
+      .body(TestUtil.readFile("requests/kb-ebsco/put-root-proxy.json"))
       .when()
       .put(updateRootProxyEndpoint)
       .then()
@@ -156,10 +150,6 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
       WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
         .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubPutResponseFile)).withStatus(400)));
 
-    ObjectMapper mapper = new ObjectMapper();
-    RootProxyPutRequest proxyToBeUpdated = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-root-proxy.json"),
-        RootProxyPutRequest.class);
-
     RequestSpecification requestSpecification = getRequestSpecification();
 
     String rootProxyEndpoint = "eholdings/root-proxy";
@@ -168,7 +158,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
       .given()
       .spec(requestSpecification)
       .header(CONTENT_TYPE_HEADER)
-      .body(mapper.writeValueAsString(proxyToBeUpdated))
+      .body(TestUtil.readFile("requests/kb-ebsco/put-root-proxy.json"))
       .when()
       .put(rootProxyEndpoint)
       .then()
