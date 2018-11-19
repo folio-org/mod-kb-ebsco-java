@@ -1,0 +1,13 @@
+{
+  "totalResults": 1,
+  "vendors": [
+    {
+      "vendorId": 111111,
+      "vendorName": "TEST_VENDOR_NAME",
+      "isCustomer": true,
+      "packagesTotal": 2,
+      "packagesSelected": 2,
+      "vendorToken": null
+    }
+  ]
+}

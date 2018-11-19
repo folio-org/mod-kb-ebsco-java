@@ -8,7 +8,8 @@
       "handlers": [
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/packages"
+          "pathPattern": "/eholdings/packages",
+          "permissionsRequired": ["kb-ebsco.packageCollection.get"]
         },
         {
           "methods": ["POST"],
@@ -152,6 +153,11 @@
       "description": "Get titles"
     },
     {
+      "permissionName": "kb-ebsco.packageCollection.get",
+      "displayName": "get packages",
+      "description": "Get packages"
+    },
+    {
       "permissionName": "kb-ebsco.package.delete",
       "displayName": "delete custom package",
       "description": "Delete custom package"
@@ -168,6 +174,7 @@
         "kb-ebsco.provider.get",
         "kb-ebsco.provider.put",
         "kb-ebsco.titleCollection.get",
+        "kb-ebsco.packageCollection.get",
         "kb-ebsco.package.delete",
         "kb-ebsco.title.get",
         "kb-ebsco.titleCollection.get"
