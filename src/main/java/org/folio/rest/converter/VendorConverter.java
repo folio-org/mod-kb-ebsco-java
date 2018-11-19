@@ -20,6 +20,16 @@ public class VendorConverter {
       .withData(null));
   private static final String PROVIDERS_TYPE = "providers";
 
+  private CommonAttributesConverter commonConverter;
+
+  public VendorConverter() {
+    this(new CommonAttributesConverter());
+  }
+
+  public VendorConverter(CommonAttributesConverter commonConverter) {
+    this.commonConverter = commonConverter;
+  }
+
   public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = vendors.getVendorList().stream()
       .map(this::convertVendor)
@@ -55,7 +65,7 @@ public class VendorConverter {
           .withPackagesTotal(vendor.getPackagesTotal())
           .withPackagesSelected(vendor.getPackagesSelected())
           .withSupportsCustomPackages(vendor.isCustomer())
-          .withProviderToken(vendorToken != null ? convertToken(vendorToken) : null)
+          .withProviderToken(commonConverter.convertToken(vendorToken))
           .withProxy(new Proxy()
             .withId(vendor.getProxy().getId())
             .withInherited(vendor.getProxy().getInherited()))
@@ -89,13 +99,5 @@ public class VendorConverter {
 
     return vendor;
 
-  }
-
-  private Token convertToken(TokenInfo tokenInfo) {
-    return new Token()
-      .withFactName(tokenInfo.getFactName())
-      .withHelpText(tokenInfo.getHelpText())
-      .withPrompt(tokenInfo.getPrompt())
-      .withValue(tokenInfo.getValue() == null ? null : (String) tokenInfo.getValue());
   }
 }

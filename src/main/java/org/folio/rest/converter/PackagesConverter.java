@@ -11,18 +11,15 @@ import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackageDataAttributes.ContentType;
 import org.folio.rest.jaxrs.model.PackageRelationship;
 import org.folio.rest.jaxrs.model.Proxy;
-import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
 import org.folio.rmapi.model.Packages;
-import org.folio.rmapi.model.TokenInfo;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class PackagesConverter {
@@ -46,6 +43,16 @@ public class PackagesConverter {
     contentType.put("onlinereference", ContentType.ONLINE_REFERENCE);
   }
 
+  private CommonAttributesConverter commonConverter;
+
+  public PackagesConverter() {
+    this(new CommonAttributesConverter());
+  }
+
+  public PackagesConverter(CommonAttributesConverter commonConverter) {
+    this.commonConverter = commonConverter;
+  }
+
   public PackageCollection convert(Packages packages) {
     List<PackageCollectionItem> packageList = packages.getPackagesList().stream()
       .map(this::convertPackage)
@@ -64,7 +71,7 @@ public class PackagesConverter {
       .withType(PACKAGES_TYPE)
       .getAttributes()
         .withProxy(convertToProxy(packageByIdData.getProxy()))
-        .withPackageToken(convertToToken(packageByIdData.getPackageToken()));
+        .withPackageToken(commonConverter.convertToken(packageByIdData.getPackageToken()));
     return new Package()
       .withData(packageCollectionItem)
       .withJsonapi(RestConstants.JSONAPI);
@@ -99,17 +106,6 @@ public class PackagesConverter {
               packageData.getVisibilityData().getReason().equals("Hidden by EP") ? "Set by system"
                 : "")))
       .withRelationships(EMPTY_PACKAGES_RELATIONSHIP);
-  }
-
-  private Token convertToToken(TokenInfo packageToken) {
-    if(Objects.isNull(packageToken)){
-      return null;
-    }
-    return new Token()
-      .withFactName(packageToken.getFactName())
-      .withHelpText(packageToken.getHelpText())
-      .withPrompt(packageToken.getPrompt())
-      .withValue(packageToken.getValue() == null ? null : (String) packageToken.getValue());
   }
 
   private Proxy convertToProxy(org.folio.rmapi.model.Proxy proxy) {
