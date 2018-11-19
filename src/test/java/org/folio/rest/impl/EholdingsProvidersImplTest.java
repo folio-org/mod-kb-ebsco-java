@@ -256,7 +256,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .statusCode(HttpStatus.SC_BAD_REQUEST)
       .extract().as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Vendor does not allow token"));
+    assertThat(error.getErrors().get(0).getTitle(), equalTo("Provider does not allow token"));
 
   }
 

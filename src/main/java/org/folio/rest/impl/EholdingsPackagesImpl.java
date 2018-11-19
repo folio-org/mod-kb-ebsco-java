@@ -1,42 +1,46 @@
 package org.folio.rest.impl;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
+import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.converter.PackagesConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.PackageId;
+import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIServiceException;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private static final String PACKAGE_ID_REGEX = "(\\d+)-(\\d+)";
   private static final Pattern PACKAGE_ID_PATTERN = Pattern.compile(PACKAGE_ID_REGEX);
+  private static final String GET_PACKAGES_ERROR_MESSAGE = "Failed to retrieve packages";
   public static final String PACKAGE_ID_INVALID_ERROR = "Package and provider id are required";
 
   private static final String INVALID_PACKAGE_TITLE = "Invalid package";
@@ -49,25 +53,71 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
 
   private RMAPIConfigurationService configurationService;
+  private PackagesConverter converter;
   private HeaderValidator headerValidator;
+  private PackageParametersValidator packageParametersValidator;
 
 
   public EholdingsPackagesImpl() {
     this(
       new RMAPIConfigurationServiceCache(
         new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new HeaderValidator());
+      new HeaderValidator(),
+      new PackageParametersValidator(),
+      new PackagesConverter());
   }
 
   public EholdingsPackagesImpl(RMAPIConfigurationService configurationService,
-                               HeaderValidator headerValidator) {
+                               HeaderValidator headerValidator,
+                               PackageParametersValidator packageParametersValidator,
+                               PackagesConverter converter) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
+    this.packageParametersValidator = packageParametersValidator;
+    this.converter = converter;
   }
 
   @Override
-  public void getEholdingsPackages(String filterCustom, String q, String filterSelected, String filterType, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(Response.status(Response.Status.NOT_IMPLEMENTED).build()));
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsPackages(String filterCustom, String q, String filterSelected,
+    String filterType, String sort, int page, int count, Map<String, String> okapiHeaders,
+    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+
+    headerValidator.validate(okapiHeaders);
+    packageParametersValidator.validate(filterCustom, filterSelected, filterType, sort);
+
+    boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
+    Sort nameSort =  Sort.valueOf(sort.toUpperCase());
+    MutableObject<RMAPIService> service = new MutableObject<>();
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenAccept(rmapiConfiguration ->
+        service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
+          rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
+      .thenCompose(o -> service.getValue().getVendors(isFilterCustom))
+      .thenCompose(vendors ->
+        service.getValue().retrievePackages(filterSelected, filterType,
+          service.getValue().getFirstProviderElement(vendors), q, page, count, nameSort))
+      .thenAccept(packages ->
+        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsPackagesResponse
+          .respond200WithApplicationVndApiJson(converter.convert(packages)))))
+      .exceptionally(e -> {
+        logger.error(GET_PACKAGES_ERROR_MESSAGE, e);
+        if (e.getCause() instanceof RMAPIServiceException) {
+          RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
+          asyncResultHandler.handle(Future.succeededFuture(
+            GetEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
+              ErrorUtil.createErrorFromRMAPIResponse(rmApiException))));
+        } else {
+          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsPackagesResponse
+            .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+            .entity(ErrorUtil.createError(e.getCause().getMessage()))
+            .build()));
+        }
+        return null;
+      });
   }
 
   @Override
