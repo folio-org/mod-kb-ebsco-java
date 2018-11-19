@@ -44,7 +44,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/vendors/get-vendors-response.json";
     int expectedTotalResults = 115;
     String id = "131872";
-    String name = "Editions de L'Université de Bruxelles";
+    String name = "Editions de L'Universite de Bruxelles";
     int packagesTotal = 1;
     int packagesSelected = 0;
     boolean supportsCustomPackages = false;

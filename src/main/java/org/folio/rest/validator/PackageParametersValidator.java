@@ -18,13 +18,13 @@ public class PackageParametersValidator {
       throw new ValidationException("Invalid Query Parameter for sort");
     }
     if(Objects.nonNull(filterType) &&  !FILTER_TYPE_VALUES.contains(filterType)){
-      throw new ValidationException("Invalid Query Parameter for filter[:type]");
+      throw new ValidationException("Invalid Query Parameter for filter[type]");
     }
     if (Objects.nonNull(filterSelected) && !FILTER_SELECTED_VALUES.contains(filterSelected)){
-      throw new ValidationException("Invalid Query Parameter for filter[:selected]");
+      throw new ValidationException("Invalid Query Parameter for filter[selected]");
     }
     if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
-      throw new ValidationException("Invalid Query Parameter for filter[:custom]");
+      throw new ValidationException("Invalid Query Parameter for filter[custom]");
     }
   }
 }

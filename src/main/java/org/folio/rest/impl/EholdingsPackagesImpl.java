@@ -67,8 +67,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   public EholdingsPackagesImpl(RMAPIConfigurationService configurationService,
-                               HeaderValidator headerValidator, PackageParametersValidator packageParametersValidator,
-    PackagesConverter converter) {
+                               HeaderValidator headerValidator,
+                               PackageParametersValidator packageParametersValidator,
+                               PackagesConverter converter) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.packageParametersValidator = packageParametersValidator;

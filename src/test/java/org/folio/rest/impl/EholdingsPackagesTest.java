@@ -1,8 +1,11 @@
 package org.folio.rest.impl;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
@@ -19,6 +22,7 @@ import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rest.util.RestConstants;
+import org.folio.rmapi.model.PackageData;
 import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,15 +38,17 @@ import static org.hamcrest.Matchers.equalTo;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
 
-  protected static final int STUB_VENDOR_ID = 111111;
+  private static final String PACKAGE_BY_ID_STUB_FILE = "responses/rmapi/packages/get-package-by-id-response.json";
+  private static final String CONFIGURATION_STUB_FILE = "responses/configuration/get-configuration.json";
   protected static final int STUB_PACKAGE_ID = 3964;
+  protected static final int STUB_VENDOR_ID = 111111;
 
   @Test
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/packages/get-packages-response.json";
 
-    String wiremockUrl = host + ":" + userMockServer.port();
-    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
     WireMock.stubFor(
       WireMock.get(
         new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/packages.*"),
@@ -65,21 +71,18 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packagesStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
     String providerByCustIdStubResponseFile = "responses/rmapi/packages/get-package-provider-by-id.json";
 
-    String wiremockUrl = host + ":" + userMockServer.port();
-    TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern vendorsPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true);
+    UrlPathPattern packagesByProviderIdPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true);
 
     WireMock.stubFor(
-      WireMock.get(
-        new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"),
-          true))
+      WireMock.get(vendorsPattern)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(providerByCustIdStubResponseFile))));
 
     WireMock.stubFor(
-      WireMock.get(
-        new UrlPathPattern(new RegexPattern(
-          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"),
-          true))
+      WireMock.get(packagesByProviderIdPattern)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(packagesStubResponseFile))));
 
@@ -146,6 +149,72 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .spec(getRequestSpecification())
       .when()
       .get("eholdings/packages?q=American&filter[type]=abstractandindex&count=500")
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void shouldSendDeleteRequestForPackage() throws IOException, URISyntaxException {
+    String providerId = "123355";
+    String packageId = "2884739";
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern packageUrlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+
+    WireMock.stubFor(
+      WireMock.get(packageUrlPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(PACKAGE_BY_ID_STUB_FILE))));
+
+    WireMock.stubFor(
+      WireMock.put(packageUrlPattern)
+        .withRequestBody(putBodyPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_NO_CONTENT)));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete("eholdings/packages/" + providerId + "-" + packageId)
+      .then()
+      .statusCode(HttpStatus.SC_NO_CONTENT);
+
+    WireMock.verify(1, WireMock.putRequestedFor(packageUrlPattern)
+      .withRequestBody(putBodyPattern));
+  }
+
+  @Test
+  public void shouldReturn400WhenPackageIdIsInvalid() {
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete("eholdings/packages/abc-def")
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void shouldReturn400WhenPackageIsNotCustom() throws URISyntaxException, IOException {
+    String providerId = "123355";
+    String packageId = "2884739";
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    ObjectMapper mapper = new ObjectMapper();
+    PackageData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_BY_ID_STUB_FILE), PackageData.class);
+    packageData.setCustom(false);
+
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(mapper.writeValueAsString(packageData))));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete("eholdings/packages/" + providerId + "-" + packageId)
       .then()
       .statusCode(HttpStatus.SC_BAD_REQUEST);
   }
