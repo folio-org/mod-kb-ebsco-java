@@ -88,11 +88,13 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/root-proxy"
+          "pathPattern": "/eholdings/root-proxy",
+          "permissionsRequired": ["kb-ebsco.root-proxy.get"]
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/root-proxy"
+          "pathPattern": "/eholdings/root-proxy",
+          "permissionsRequired": ["kb-ebsco.root-proxy.put"]
         },
         {
           "methods": ["GET"],
@@ -169,6 +171,16 @@
       "description": "Delete custom package"
     },
     {
+      "permissionName": "kb-ebsco.root-proxy.get",
+      "displayName": "get root proxy",
+      "description": "Get root proxy"
+    },
+    {
+      "permissionName": "kb-ebsco.root-proxy.put",
+      "displayName": "put root proxy",
+      "description": "Put root proxy"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
@@ -184,7 +196,9 @@
         "kb-ebsco.package.delete",
         "kb-ebsco.title.get",
         "kb-ebsco.titleCollection.get",
-        "kb-ebsco.package.get"
+        "kb-ebsco.package.get",
+        "kb-ebsco.root-proxy.get",
+        "kb-ebsco.root-proxy.put"
       ]
     }
   ],

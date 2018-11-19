@@ -1,0 +1,38 @@
+{
+  "proxy": {
+    "id": "Test-Proxy-ID-123",
+    "inherited": null
+  },
+  "labels": [
+    {
+      "id": 1,
+      "displayLabel": "label 1",
+      "displayOnFullTextFinder": false,
+      "displayOnPublicationFinder": false
+    },
+    {
+      "id": 2,
+      "displayLabel": "label 2",
+      "displayOnFullTextFinder": true,
+      "displayOnPublicationFinder": true
+    },
+    {
+      "id": 3,
+      "displayLabel": "label 3",
+      "displayOnFullTextFinder": false,
+      "displayOnPublicationFinder": true
+    },
+    {
+      "id": 4,
+      "displayLabel": "label 4",
+      "displayOnFullTextFinder": true,
+      "displayOnPublicationFinder": false
+    },
+    {
+      "id": 5,
+      "displayLabel": "label 5",
+      "displayOnFullTextFinder": false,
+      "displayOnPublicationFinder": false
+    }
+  ]
+}

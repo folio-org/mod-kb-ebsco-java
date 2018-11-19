@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections.CollectionUtils;
+import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.PackagesFilterableUrlBuilder;
@@ -50,6 +51,11 @@ public class RMAPIService {
   private static final String PACKAGES_PATH = "packages";
   private static final String TITLES_PATH = "titles";
 
+  private static final String VENDOR_LOWER_STRING = "vendor";
+  private static final String PROVIDER_LOWER_STRING = "provider";
+  private static final String VENDOR_UPPER_STRING = "Vendor";
+  private static final String PROVIDER_UPPER_STRING = "Provider";
+
   private String customerId;
   private String apiKey;
   private String baseURI;
@@ -69,19 +75,25 @@ public class RMAPIService {
     LOG.error(String.format("%s status code = [%s] status message = [%s] query = [%s] body = [%s]",
       INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString()));
 
+    String msgBody = mapVendorToProvider(body.toString());
+
     if (response.statusCode() == 404) {
       future.completeExceptionally(new RMAPIResourceNotFoundException(
-        String.format("Requested resource %s not found", query), response.statusCode(), response.statusMessage(), body.toString(), query));
+        String.format("Requested resource %s not found", query), response.statusCode(), response.statusMessage(), msgBody, query));
     } else if ((response.statusCode() == 401) || (response.statusCode() == 403)) {
       future.completeExceptionally(new RMAPIUnAuthorizedException(
-        String.format("Unauthorized Access to %s", query), response.statusCode(), response.statusMessage(), body.toString(), query));
+        String.format("Unauthorized Access to %s", query), response.statusCode(), response.statusMessage(), msgBody, query));
     } else {
 
       future.completeExceptionally(new RMAPIServiceException(
         String.format("%s Code = %s Message = %s Body = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
           response.statusMessage(), body.toString()),
-        response.statusCode(), response.statusMessage(), body.toString(), query));
+        response.statusCode(), response.statusMessage(), msgBody, query));
     }
+  }
+
+  private String mapVendorToProvider(String msgBody) {
+    return msgBody.replaceAll(VENDOR_LOWER_STRING, PROVIDER_LOWER_STRING).replaceAll(VENDOR_UPPER_STRING, PROVIDER_UPPER_STRING);
   }
 
   private <T> CompletableFuture<T> getRequest(String query, Class<T> clazz) {
@@ -242,11 +254,19 @@ public class RMAPIService {
     return this.putRequest(constructURL(path),new PackageSelectedPayload(false));
   }
 
-  public CompletableFuture<RootProxyCustomLabels> retrieveRootProxy() {
-
+  public CompletableFuture<RootProxyCustomLabels> retrieveRootProxyCustomLabels() {
     final String path = "";
 
     return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
+  }
+
+  public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest, RootProxyCustomLabels rootProxyCustomLabels) {
+    final String path = "";
+
+    org.folio.rmapi.model.Proxy proxyRMAPI = new org.folio.rmapi.model.Proxy();
+    proxyRMAPI.setId(rootProxyPutRequest.getData().getAttributes().getProxyTypeId());
+    rootProxyCustomLabels.setProxy(proxyRMAPI);
+    return this.putRequest(constructURL(path), rootProxyCustomLabels).thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
   }
 
   public CompletableFuture<Title> retrieveTitle(long id) {

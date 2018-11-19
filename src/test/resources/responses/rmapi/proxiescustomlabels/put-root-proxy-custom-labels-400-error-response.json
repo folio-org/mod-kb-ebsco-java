@@ -1,0 +1,9 @@
+{
+  "errors": [
+    {
+      "code": 1006,
+      "subCode": 0,
+      "message": "Invalid Proxy ID"
+    }
+  ]
+}
