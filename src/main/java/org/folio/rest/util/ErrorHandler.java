@@ -10,6 +10,7 @@ import org.folio.rmapi.exception.RMAPIServiceException;
 import javax.ws.rs.core.Response;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -45,10 +46,7 @@ public class ErrorHandler {
    * @return this
    */
   public ErrorHandler addDefaultMapper() {
-    add(Throwable.class, exception -> Response
-      .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-      .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-      .entity(ErrorUtil.createError(exception.getMessage())).build());
+    add(Throwable.class, getDefaultMapper());
     return this;
   }
 
@@ -82,13 +80,30 @@ public class ErrorHandler {
    * Use registered error mappers to create response from exception and pass it to asyncResultHandler
    */
   public void handle(Handler<AsyncResult<Response>> asyncResultHandler, Throwable e) {
-    Function<Throwable, Response> errorMapper = (Function<Throwable, Response>) errorMappers.entrySet()
+
+    Optional<? extends Function<? extends Throwable, Response>> optionalErrorMapper = errorMappers.entrySet()
       .stream()
       .filter(entry -> entry.getKey().isInstance(e.getCause()))
       .findFirst()
-      .orElseGet(null).getValue();
+      .map(Map.Entry::getValue);
 
-    asyncResultHandler.handle(Future.succeededFuture(errorMapper.apply(e.getCause())));
+    if(optionalErrorMapper.isPresent()){
+    //    Type of "e" parameter is guaranteed to match type of found mapper, because of isInstance check,
+    //    so type-safety here
+    @SuppressWarnings("unchecked")
+      Function<Throwable, Response> errorMapper = (Function<Throwable, Response>) optionalErrorMapper.get();
+      asyncResultHandler.handle(Future.succeededFuture(errorMapper.apply(e.getCause())));
+    }
+    else{
+      getDefaultMapper().apply(e.getCause());
+    }
+  }
+
+  private Function<Throwable, Response> getDefaultMapper() {
+    return exception -> Response
+      .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+      .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+      .entity(ErrorUtil.createError(exception.getMessage())).build();
   }
 }
 
