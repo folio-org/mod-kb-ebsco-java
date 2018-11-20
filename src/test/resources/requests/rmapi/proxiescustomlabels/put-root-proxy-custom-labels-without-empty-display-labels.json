@@ -1,0 +1,14 @@
+{
+  "proxy": {
+    "id": "Test-Proxy-ID-123",
+    "inherited": null
+  },
+  "labels": [
+    {
+      "id": 1,
+      "displayLabel": "label 1",
+      "displayOnFullTextFinder": false,
+      "displayOnPublicationFinder": false
+    }
+  ]
+}
