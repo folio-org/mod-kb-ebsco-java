@@ -135,6 +135,46 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
   
   @Test
+  public void shouldEliminateCustomLabelsWithEmptyDisplayLabelInRequestToRMAPIAndReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-with-empty-labels-success-response.json";
+
+    String wiremockUrl = getWiremockUrl();
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubResponseFile))));
+
+    WireMock.stubFor(
+      WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
+
+    RootProxy expected = getUpdatedRootProxy();
+    RequestSpecification requestSpecification = getRequestSpecification();
+
+    String updateRootProxyEndpoint = "eholdings/root-proxy";
+
+    RootProxy rootProxy = RestAssured
+      .given()
+      .spec(requestSpecification)
+      .header(CONTENT_TYPE_HEADER)
+      .body(TestUtil.readFile("requests/kb-ebsco/put-root-proxy.json"))
+      .when()
+      .put(updateRootProxyEndpoint)
+      .then()
+      .statusCode(HttpStatus.SC_OK)
+      .extract().as(RootProxy.class);
+    
+    assertThat(rootProxy.getData().getId(), equalTo(expected.getData().getId()));
+    assertThat(rootProxy.getData().getType(), equalTo(expected.getData().getType()));
+    assertThat(rootProxy.getData().getAttributes().getId(), equalTo(expected.getData().getAttributes().getId()));
+    assertThat(rootProxy.getData().getAttributes().getProxyTypeId(), equalTo(expected.getData().getAttributes().getProxyTypeId()));
+
+    WireMock.verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+      .withRequestBody(equalToJson(TestUtil.readFile("requests/rmapi/proxiescustomlabels/put-root-proxy-custom-labels-without-empty-display-labels.json"))));
+  }
+  
+  @Test
   public void shouldReturn400WhenInvalidProxyIDAndRMAPIErrorOnPut() throws IOException, URISyntaxException {
     String stubGetResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-updated-response.json";
     String stubPutResponseFile = "responses/rmapi/proxiescustomlabels/put-root-proxy-custom-labels-400-error-response.json";
