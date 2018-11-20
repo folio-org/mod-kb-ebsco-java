@@ -1,0 +1,98 @@
+{
+  "titleId": 762169,
+  "titleName": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+  "publisherName": "Praeger",
+  "identifiersList": [
+    {
+      "id": "300079",
+      "source": "ResourceIdentifier",
+      "subtype": 0,
+      "type": 7
+    },
+    {
+      "id": "762169",
+      "source": "AtoZ",
+      "subtype": 0,
+      "type": 9
+    },
+    {
+      "id": "978-0-275-98214-0",
+      "source": "ResourceIdentifier",
+      "subtype": 1,
+      "type": 1
+    },
+    {
+      "id": "978-0-313-06800-3",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    },
+    {
+      "id": "978-1-282-40979-8",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    }
+  ],
+  "subjectsList": [
+    {
+      "type": "BISAC",
+      "subject": "SOCIAL SCIENCE / Ethnic Studies / General"
+    }
+  ],
+  "isTitleCustom": false,
+  "pubType": "Book",
+  "customerResourcesList": [
+    {
+      "titleId": 762169,
+      "packageId": 4345,
+      "packageName": "ABC-CLIO eBook Collection",
+      "packageType": "Variable",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 583,
+      "vendorName": "ABC-CLIO",
+      "locationId": 2863717,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": true,
+        "reason": "Hidden by Customer"
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://publisher.abc-clio.com/9780313068003/",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    }
+  ],
+  "description": null,
+  "edition": null,
+  "isPeerReviewed": false,
+  "contributorsList": [
+    {
+      "type": "author",
+      "contributor": "Beeman, William O."
+    }
+  ]
+}

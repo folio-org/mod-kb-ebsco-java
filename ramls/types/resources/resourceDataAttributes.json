@@ -63,23 +63,7 @@
     "publicationType": {
       "type": "string",
       "description": "Publication type. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
-      "enum": [
-        "Audiobook",
-        "Book",
-        "Book Series",
-        "Database",
-        "Journal",
-        "Newsletter",
-        "Newspaper",
-        "Proceedings",
-        "Report",
-        "Streaming Audio",
-        "Streaming Video",
-        "Thesis & Dissertation",
-        "Website",
-        "Unspecified"
-      ],
-      "example": "Journal"
+      "$ref": "../publicationType.json"
     },
     "subjects": {
       "type": "array",
