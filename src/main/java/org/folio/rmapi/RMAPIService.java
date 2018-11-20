@@ -12,9 +12,12 @@ import io.vertx.core.logging.LoggerFactory;
 
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.PackageId;
+import org.folio.rest.model.ResourceId;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.folio.rest.model.Sort;
@@ -296,5 +299,10 @@ public class RMAPIService {
 
     LOG.info("constructurl - path=" + fullPath);
     return fullPath;
+  }
+
+  public CompletionStage<Title> retrieveResource(ResourceId resourceId) {
+    final String path = VENDORS_PATH + '/' + resourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + resourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + resourceId.getTitleIdPart();
+    return this.getRequest(constructURL(path), Title.class);
   }
 }

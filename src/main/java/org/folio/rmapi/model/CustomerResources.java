@@ -41,6 +41,9 @@ public class CustomerResources {
   @JsonProperty("visibilityData")
   private VisibilityInfo visibilityData;
 
+  @JsonProperty("proxy")
+  private Proxy proxy;
+  
   @JsonProperty("managedCoverageList")
   private List<CoverageDates> managedCoverageList;
 
@@ -108,6 +111,10 @@ public class CustomerResources {
 
   public VisibilityInfo getVisibilityData() {
     return visibilityData;
+  }
+  
+  public Proxy getProxy() {
+    return proxy;
   }
 
   public List<CoverageDates> getManagedCoverageList() {
