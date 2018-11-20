@@ -1,17 +1,21 @@
 package org.folio.rest.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
+import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.Packages;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderData;
@@ -24,15 +28,15 @@ import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 
 @RunWith(VertxUnitRunner.class)
@@ -73,6 +77,34 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .body("data[0].attributes.packagesSelected", equalTo(packagesSelected))
       .body("data[0].attributes.supportsCustomPackages", equalTo(supportsCustomPackages))
       .body("data[0].attributes.providerToken.value", equalTo(token));
+  }
+
+  @Test
+  public void shouldReturnProvidersOnGetWithPackages() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
+    String stubPackagesResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
+
+    String wiremockUrl = getWiremockUrl();
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(stubResponseFile))));
+
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" +  STUB_VENDOR_ID +  "/packages.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(stubPackagesResponseFile))));
+
+    Provider expectedProvider = getExpectedProvider(PackagesTestData.getExpectedPackageCollection().getData());
+    RequestSpecification requestSpecification = getRequestSpecification();
+    String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID + "?include=packages";
+    Provider actualProvider = RestAssured.given(requestSpecification)
+      .when()
+      .get(providerByIdEndpoint)
+      .then()
+      .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
+    compareProviders(actualProvider, expectedProvider);
   }
 
   @Test
@@ -320,6 +352,11 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       equalTo(expected.getData().getAttributes().getProxy().getInherited()));
   }
 
+  private Provider getExpectedProvider(List<PackageCollectionItem> packages) {
+    return getExpectedProvider()
+      .withIncluded(packages);
+  }
+
   private Provider getExpectedProvider() {
 
     return new Provider()
@@ -331,7 +368,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withPackagesTotal(625)
           .withPackagesSelected(11)
           .withSupportsCustomPackages(false)
-          .withProviderToken(null)
+          .withProviderToken(new Token()
+            .withValue("sampleToken"))
           .withProxy(new Proxy().withId("<n>").withInherited(true)))
         .withRelationships(new Relationships()
           .withPackages(new Packages()

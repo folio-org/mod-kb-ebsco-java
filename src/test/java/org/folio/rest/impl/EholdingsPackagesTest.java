@@ -1,6 +1,21 @@
 package org.folio.rest.impl;
 
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import org.apache.http.HttpStatus;
+import org.folio.rest.jaxrs.model.Package;
+import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rmapi.model.PackageData;
+import org.folio.util.TestUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -8,32 +23,9 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.apache.http.HttpStatus;
-import org.folio.rest.jaxrs.model.Coverage;
-import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.jaxrs.model.Package;
-import org.folio.rest.jaxrs.model.PackageCollection;
-import org.folio.rest.jaxrs.model.PackageCollectionItem;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.PackageDataAttributes.ContentType;
-import org.folio.rest.jaxrs.model.Proxy;
-import org.folio.rest.jaxrs.model.Token;
-import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.PackageData;
-import org.folio.util.TestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
@@ -63,7 +55,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
 
-    comparePackages(packages, getExpectedCollectionPackageItem());
+    comparePackages(packages, PackagesTestData.getExpectedCollectionPackageItem());
   }
 
   @Test
@@ -93,7 +85,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
 
-    comparePackages(packages, getExpectedPackageCollection());
+    comparePackages(packages, PackagesTestData.getExpectedPackageCollection());
   }
 
   @Test
@@ -119,7 +111,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_OK).extract().as(Package.class);
 
-    comparePackage(packageData, getExpectedPackage());
+    comparePackage(packageData, PackagesTestData.getExpectedPackage());
   }
 
   @Test
@@ -267,96 +259,5 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       equalTo(expectedItem.getAttributes().getCustomCoverage().getEndCoverage()));
     assertThat(actualItem.getAttributes().getAllowKbToAddTitles(),
       equalTo(expectedItem.getAttributes().getAllowKbToAddTitles()));
-  }
-
-  private PackageCollection getExpectedPackageCollection() {
-    List<PackageCollectionItem> collectionItems = new ArrayList<>();
-    PackageCollectionItem collectionItem = new PackageCollectionItem()
-      .withId("1111111-2222222")
-      .withAttributes(new PackageDataAttributes()
-        .withName("TEST_PACKAGE_NAME")
-        .withPackageId(2222222)
-        .withIsCustom(true)
-        .withProviderId(1111111)
-        .withProviderName("TEST_VENDOR_NAME")
-        .withTitleCount(5)
-        .withIsSelected(true)
-        .withSelectedCount(5)
-        .withPackageType("Custom")
-        .withContentType(ContentType.ONLINE_REFERENCE)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("")
-          .withEndCoverage(""))
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(false)
-          .withReason("")
-        ));
-    collectionItems.add(collectionItem);
-    return new PackageCollection().withData(collectionItems)
-      .withMeta(new MetaTotalResults().withTotalResults(1));
-
-  }
-
-  private Package getExpectedPackage() {
-    return new Package().withData(new PackageCollectionItem()
-      .withId("111111-3964")
-      .withType("packages")
-      .withAttributes(new PackageDataAttributes()
-        .withName("carole and sams test")
-        .withPackageId(3964)
-        .withIsCustom(true)
-        .withProviderId(111111)
-        .withProviderName("APIDEV CORPORATE CUSTOMER")
-        .withTitleCount(6)
-        .withIsSelected(true)
-        .withSelectedCount(6)
-        .withPackageType("Custom")
-        .withContentType(ContentType.UNKNOWN)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("")
-          .withEndCoverage(""))
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(false)
-          .withReason("")
-        )
-      .withProxy(new Proxy()
-        .withId("<n>")
-        .withInherited(true))
-      .withAllowKbToAddTitles(false)
-      .withPackageToken(new Token()
-        .withFactName("[[gale.customcode.infocust]]")
-        .withHelpText("help text")
-        .withValue("token value")
-        .withPrompt("res_id=info:sid/gale:")
-        )))
-    .withJsonapi(RestConstants.JSONAPI);
-  }
-
-  private PackageCollection getExpectedCollectionPackageItem() {
-    List<PackageCollectionItem> collectionItems = new ArrayList<>();
-    PackageCollectionItem collectionItem = new PackageCollectionItem()
-      .withId("392-3007")
-      .withAttributes(new PackageDataAttributes()
-        .withName("American Academy of Family Physicians")
-        .withPackageId(3007)
-        .withIsCustom(false)
-        .withProviderId(392)
-        .withProviderName("American Academy of Family Physicians")
-        .withTitleCount(3)
-        .withIsSelected(false)
-        .withSelectedCount(0)
-        .withPackageType("Variable")
-        .withContentType(ContentType.E_JOURNAL)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("")
-          .withEndCoverage(""))
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(false)
-          .withReason("")
-        ));
-    collectionItems.add(collectionItem);
-    return new PackageCollection().withData(collectionItems)
-      .withMeta(new MetaTotalResults().withTotalResults(414));
-
   }
 }

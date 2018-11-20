@@ -30,7 +30,7 @@ public class TitleConverter {
     .withResources(new MetaIncluded().withMeta(
       new MetaDataIncluded()
         .withIncluded(false)));
-  
+
   private static final Map<String, TitlePublicationType> publicationTypes = new HashMap<>();
   static {
     publicationTypes.put("audiobook", TitlePublicationType.AUDIOBOOK);
@@ -93,7 +93,7 @@ public class TitleConverter {
         .withIncluded(null)
         .withJsonapi(RestConstants.JSONAPI);
   }
-  
+
   private org.folio.rest.jaxrs.model.Titles convertTitle(Title title) {
     return new org.folio.rest.jaxrs.model.Titles()
       .withId(String.valueOf(title.getTitleId()))
@@ -127,7 +127,7 @@ public class TitleConverter {
                           .withSubtype(IDENTIFIER_SUBTYPES.getOrDefault(identifier.getSubtype(), "")))
       .collect(Collectors.toList());
   }
-  
+
   private List<TitleContributors> convertContributors(List<org.folio.rmapi.model.Contributor> contributorList) {
     return contributorList.stream().map(contributor ->
       new TitleContributors()

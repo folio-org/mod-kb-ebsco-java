@@ -1,11 +1,11 @@
 package org.folio.rest.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
@@ -27,10 +27,12 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.VendorPut;
 
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -118,6 +120,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     }
 
     headerValidator.validate(okapiHeaders);
+
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
@@ -125,9 +128,11 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           rmapiConfiguration.getUrl(), vertxContext.owner());
         return rmapiService.retrieveProvider(providerIdLong, include);
       })
-      .thenAccept(vendor ->
-        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
-          .respond200WithApplicationVndApiJson(converter.convertToProvider(vendor)))))
+      .thenAccept(
+        vendorResult ->
+          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
+            .respond200WithApplicationVndApiJson(converter.convertToProvider(vendorResult.getVendor(), vendorResult.getPackages()))))
+      )
       .exceptionally(e -> {
         new ErrorHandler()
           .add(RMAPIResourceNotFoundException.class, exception ->
