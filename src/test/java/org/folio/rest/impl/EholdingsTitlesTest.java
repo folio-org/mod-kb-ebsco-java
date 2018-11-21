@@ -134,7 +134,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     .body("data.attributes.edition", isEmptyOrNullString())
     .body("data.attributes.description", isEmptyOrNullString())
     .body("data.attributes.isPeerReviewed", equalTo(false))
-    .body("data.attributes.contributors[0].type", equalTo("author"))
+    .body("data.attributes.contributors[0].type", equalTo("Author"))
     .body("data.attributes.contributors[0].contributor", equalTo("Bloom, Harold"))
     .body("data.relationships.resources.meta.included", equalTo(false));
 

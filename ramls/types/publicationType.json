@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Publication Type schema",
   "description": "Publication Type schema",
-  "javaType": "org.folio.rest.jaxrs.model.TitlePublicationType",
+  "javaType": "org.folio.rest.jaxrs.model.PublicationType",
   "type": "string",
   "additionalProperties": false,
       "enum": [
