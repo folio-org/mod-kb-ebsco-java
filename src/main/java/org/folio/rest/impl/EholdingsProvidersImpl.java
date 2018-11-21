@@ -42,7 +42,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
   private static final String PUT_PROVIDER_ERROR_MESSAGE = "Failed to update provider";
   private static final String GET_PROVIDER_PACKAGES_ERROR_MESSAGE = "Failed to retrieve provider packages";
-
+  private static final String INVALID_PROVIDER_ID_ERROR = "Provider id is invalid - ";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
@@ -126,7 +126,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     try {
       providerIdLong = Long.parseLong(providerId);
     } catch (NumberFormatException e) {
-      throw new ValidationException("Provider id is invalid - " + providerId, e);
+      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
     }
 
     headerValidator.validate(okapiHeaders);
@@ -162,7 +162,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     try {
       providerIdLong = Long.parseLong(providerId);
     } catch (NumberFormatException e) {
-      throw new ValidationException("Provider id is invalid - " + providerId, e);
+      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
     }
     headerValidator.validate(okapiHeaders);
     bodyValidator.validate(entity);
@@ -201,7 +201,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     try {
       providerIdLong = Long.parseLong(providerId);
     } catch (NumberFormatException e) {
-      throw new ValidationException("Provider id is invalid - " + providerId, e);
+      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
     }
 
     headerValidator.validate(okapiHeaders);
