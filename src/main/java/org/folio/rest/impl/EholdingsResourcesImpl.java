@@ -21,8 +21,10 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
+import org.folio.rest.jaxrs.resource.EholdingsProviders.GetEholdingsProvidersByProviderIdResponse;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.ResourceId;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.RMAPIService;
@@ -94,26 +96,14 @@ public class EholdingsResourcesImpl implements EholdingsResources{
         .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(title)))))
     .exceptionally(e -> {
       logger.error(INTERNAL_SERVER_ERROR, e);
-      if (e.getCause() instanceof RMAPIResourceNotFoundException) {
-        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsResourcesByResourceIdResponse
-          .respond404WithApplicationVndApiJson(ErrorUtil.createError(RESOURCE_NOT_FOUND_MESSAGE))));
-      } else if (e.getCause() instanceof RMAPIServiceException) {
-          RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
-          asyncResultHandler.handle(Future.succeededFuture(
-              Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-                  .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
-      } else if (e.getCause() instanceof InputValidationException) {
-        InputValidationException inputValidationException = (InputValidationException) e.getCause();
-        asyncResultHandler.handle(Future.succeededFuture(
-            GetEholdingsResourcesByResourceIdResponse.respond400WithApplicationVndApiJson(
-            ErrorUtil.createError(inputValidationException.getMessage(), inputValidationException.getMessageDetail()))));
-      } else {
-        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsResourcesByResourceIdResponse
-          .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-          .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-          .entity(ErrorUtil.createError(e.getCause().getMessage()))
-          .build()));
-      }
+      new ErrorHandler()
+        .add(RMAPIResourceNotFoundException.class, exception ->
+        GetEholdingsResourcesByResourceIdResponse.respond404WithApplicationVndApiJson(
+            ErrorUtil.createError(RESOURCE_NOT_FOUND_MESSAGE)))
+        .addRmApiMapper()
+        .addInputValidationMapper()
+        .addDefaultMapper()
+        .handle(asyncResultHandler, e);
       return null;
     });
   }
