@@ -10,18 +10,15 @@ import java.util.regex.Pattern;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
-import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.ResourcesConverter;
-import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
-import org.folio.rest.jaxrs.resource.EholdingsProviders.GetEholdingsProvidersByProviderIdResponse;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.ResourceId;
 import org.folio.rest.util.ErrorHandler;
@@ -29,7 +26,6 @@ import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.exception.RMAPIServiceException;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -45,8 +41,6 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   private static final Pattern RESOURCE_ID_PATTERN = Pattern.compile(RESOURCE_ID_REGEX);
   private static final String RESOURCE_ID_INVALID_ERROR = "Resource id is invalid";
   private static final String RESOURCE_NOT_FOUND_MESSAGE = "Resource not found";
-  private static final String CONTENT_TYPE_HEADER = "Content-Type";
-  private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
   
   private final Logger logger = LoggerFactory.getLogger(EholdingsResourcesImpl.class);
   
