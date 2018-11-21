@@ -1,11 +1,15 @@
 package org.folio.rest.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
@@ -28,14 +32,12 @@ import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIServiceException;
 
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -85,6 +87,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     headerValidator.validate(okapiHeaders);
     packageParametersValidator.validate(filterCustom, filterSelected, filterType, sort);
+    if("".equals(q)){
+      throw new ValidationException("Search parameter cannot be empty");
+    }
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
     Sort nameSort =  Sort.valueOf(sort.toUpperCase());

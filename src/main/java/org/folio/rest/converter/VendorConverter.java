@@ -14,6 +14,7 @@ import org.folio.rest.jaxrs.model.ProviderListDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.jaxrs.model.Proxy;
+import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
@@ -31,6 +32,7 @@ public class VendorConverter {
         .withIncluded(false))
       .withData(null));
   private static final String PROVIDERS_TYPE = "providers";
+  private static final String PACKAGES_TYPE = "packages";
 
   private CommonAttributesConverter commonConverter;
 
@@ -75,7 +77,7 @@ public class VendorConverter {
 
   public Provider convertToProvider(VendorById vendor, org.folio.rmapi.model.Packages packages) {
     TokenInfo vendorToken = vendor.getVendorByIdToken();
-    return new Provider()
+    Provider provider = new Provider()
       .withData(new ProviderData()
         .withId(String.valueOf(vendor.getVendorId()))
         .withType(PROVIDERS_TYPE)
@@ -90,8 +92,27 @@ public class VendorConverter {
             .withInherited(vendor.getProxy().getInherited()))
         )
         .withRelationships(EMPTY_PACKAGE_RELATIONSHIP))
-      .withIncluded(packages == null ? null : packagesConverter.convert(packages).getData())
       .withJsonapi(RestConstants.JSONAPI);
+    if(packages != null){
+      provider
+        .withIncluded(packagesConverter.convert(packages).getData())
+        .getData()
+          .withRelationships(new Relationships()
+                              .withPackages(new Packages()
+                                .withMeta(new MetaDataIncluded().withIncluded(true))
+                                .withData(convertPackagesRelationship(packages))));
+
+    }
+    return provider;
+  }
+
+  private List<RelationshipData> convertPackagesRelationship(org.folio.rmapi.model.Packages packages) {
+    return packages.getPackagesList().stream()
+      .map(packageData ->
+        new RelationshipData()
+          .withId(packageData.getVendorId() + "-" + packageData.getPackageId())
+          .withType(PACKAGES_TYPE))
+      .collect(Collectors.toList());
   }
 
   public VendorPut convertToVendor(ProviderPutRequest provider) {
