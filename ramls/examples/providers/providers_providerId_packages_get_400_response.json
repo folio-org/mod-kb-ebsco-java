@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Parameter OrderBy should be by PackageName when parameter Search is empty."
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

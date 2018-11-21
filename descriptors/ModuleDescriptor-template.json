@@ -50,7 +50,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/providers/{providerId}/packages"
+          "pathPattern": "/eholdings/providers/{providerId}/packages",
+          "permissionRequired": ["kb-ebsco.provider.packages.get"]
         },
         {
           "methods": ["POST"],
@@ -147,6 +148,11 @@
       "description": "Put single provider"
     },
     {
+      "permissionName": "kb-ebsco.provider.packages.get",
+      "displayName": "get packages for a single provider",
+      "description": "get packages for a single provider"
+    },
+    {
       "permissionName": "kb-ebsco.title.get",
       "displayName": "get single title",
       "description": "Get single title"
@@ -197,6 +203,7 @@
         "kb-ebsco.providerCollection.get",
         "kb-ebsco.provider.get",
         "kb-ebsco.provider.put",
+        "kb-ebsco.provider.packages.get",
         "kb-ebsco.titleCollection.get",
         "kb-ebsco.packageCollection.get",
         "kb-ebsco.package.delete",

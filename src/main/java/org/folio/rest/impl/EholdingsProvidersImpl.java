@@ -21,6 +21,7 @@ import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.converter.PackagesConverter;
 import org.folio.rest.converter.VendorConverter;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
@@ -29,6 +30,7 @@ import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
@@ -39,6 +41,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
   private static final String PUT_PROVIDER_ERROR_MESSAGE = "Failed to update provider";
+  private static final String GET_PROVIDER_PACKAGES_ERROR_MESSAGE = "Failed to retrieve provider packages";
 
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
@@ -46,7 +49,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private RMAPIConfigurationService configurationService;
   private HeaderValidator headerValidator;
   private VendorConverter converter;
+  private PackagesConverter packagesConverter;
   private ProviderPutBodyValidator bodyValidator;
+  private PackageParametersValidator parametersValidator;
 
   public EholdingsProvidersImpl() {
     this(
@@ -54,17 +59,23 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
       new HeaderValidator(),
       new VendorConverter(),
-      new ProviderPutBodyValidator());
+      new ProviderPutBodyValidator(),
+      new PackagesConverter(),
+      new PackageParametersValidator());
   }
 
   public EholdingsProvidersImpl(RMAPIConfigurationService configurationService,
                                 HeaderValidator headerValidator,
                                 VendorConverter converter,
-                                ProviderPutBodyValidator bodyValidator) {
+                                ProviderPutBodyValidator bodyValidator,
+                                PackagesConverter packageConverter,
+                                PackageParametersValidator parametersValidator) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.converter = converter;
     this.bodyValidator = bodyValidator;
+    this.packagesConverter = packageConverter;
+    this.parametersValidator = parametersValidator;
   }
 
   @Override
@@ -179,8 +190,45 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
 
   @Override
+  @Validate
   @HandleValidationErrors
-  public void getEholdingsProvidersPackages(String q, String filterSelected, String filterType, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, String filterSelected,
+                                                        String filterType, String sort, int page, int count,
+                                                        Map<String, String> okapiHeaders,
+                                                        Handler<AsyncResult<Response>> asyncResultHandler,
+                                                        Context vertxContext) {
+    long providerIdLong;
+    try {
+      providerIdLong = Long.parseLong(providerId);
+    } catch (NumberFormatException e) {
+      throw new ValidationException("Provider id is invalid - " + providerId, e);
+    }
+
+    headerValidator.validate(okapiHeaders);
+    parametersValidator.validate("true", filterSelected, filterType, sort);
+
+    Sort nameSort = Sort.valueOf(sort.toUpperCase());
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(rmapiConfiguration -> {
+        RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
+          rmapiConfiguration.getUrl(), vertxContext.owner());
+        return rmapiService.retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort);
+      })
+      .thenAccept(packages ->
+        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersPackagesByProviderIdResponse
+          .respond200WithApplicationVndApiJson(packagesConverter.convert(packages)))))
+      .exceptionally(e -> {
+        logger.error(GET_PROVIDER_PACKAGES_ERROR_MESSAGE, e);
+        new ErrorHandler()
+          .add(RMAPIResourceNotFoundException.class, exception ->
+            GetEholdingsProvidersPackagesByProviderIdResponse.respond404WithApplicationVndApiJson(
+              ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)
+            ))
+          .addRmApiMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 }
