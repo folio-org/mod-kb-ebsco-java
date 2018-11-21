@@ -1,22 +1,12 @@
 package org.folio.rmapi;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
-import org.folio.rest.jaxrs.model.RootProxyPutRequest;
-import org.folio.rest.model.PackageId;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.folio.rest.jaxrs.model.RootProxyPutRequest;
+import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.PackagesFilterableUrlBuilder;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
@@ -26,16 +16,26 @@ import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.CustomLabel;
-import org.folio.rmapi.model.PackageData;
+import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageSelectedPayload;
+import org.folio.rmapi.model.Packages;
+import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
-import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
-import org.folio.rmapi.model.RootProxyCustomLabels;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class RMAPIService {
 
@@ -58,7 +58,8 @@ public class RMAPIService {
   private static final String PROVIDER_LOWER_STRING = "provider";
   private static final String VENDOR_UPPER_STRING = "Vendor";
   private static final String PROVIDER_UPPER_STRING = "Provider";
-  
+  private static final String INCLUDE_PACKAGES_VALUE = "packages";
+
   private String customerId;
   private String apiKey;
   private String baseURI;
@@ -77,9 +78,9 @@ public class RMAPIService {
 
     LOG.error(String.format("%s status code = [%s] status message = [%s] query = [%s] body = [%s]",
       INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString()));
-    
+
     String msgBody = mapVendorToProvider(body.toString());
-  
+
     if (response.statusCode() == 404) {
       future.completeExceptionally(new RMAPIResourceNotFoundException(
         String.format("Requested resource %s not found", query), response.statusCode(), response.statusMessage(), msgBody, query));
@@ -90,13 +91,13 @@ public class RMAPIService {
 
       future.completeExceptionally(new RMAPIServiceException(
         String.format("%s Code = %s Message = %s Body = %s", INVALID_RMAPI_RESPONSE, response.statusCode(),
-            response.statusMessage(), body.toString()),
+          response.statusMessage(), body.toString()),
         response.statusCode(), response.statusMessage(), msgBody, query));
     }
   }
-  
+
   private String mapVendorToProvider(String msgBody) {
-    return msgBody.replaceAll(VENDOR_LOWER_STRING, PROVIDER_LOWER_STRING).replaceAll(VENDOR_UPPER_STRING, PROVIDER_UPPER_STRING);
+    return msgBody.replace(VENDOR_LOWER_STRING, PROVIDER_LOWER_STRING).replace(VENDOR_UPPER_STRING, PROVIDER_UPPER_STRING);
   }
 
   private <T> CompletableFuture<T> getRequest(String query, Class<T> clazz) {
@@ -201,8 +202,12 @@ public class RMAPIService {
     return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class);
   }
 
+  public CompletableFuture<Packages> retrievePackages(Integer providerId) {
+    return retrievePackages(null, null, providerId, null, 1, 25, Sort.NAME);
+  }
+
   public CompletableFuture<Packages> retrievePackages(
-    String filterSelected, String filterType, Integer id, String q, int page, int count,
+    String filterSelected, String filterType, Integer providerId, String q, int page, int count,
     Sort sort) {
     String path = new PackagesFilterableUrlBuilder()
       .filterSelected(filterSelected)
@@ -213,7 +218,7 @@ public class RMAPIService {
       .sort(sort)
       .build();
 
-    String packagesPath = id == null ? PACKAGES_PATH + "?" : VENDORS_PATH+ '/' + id + '/' + PACKAGES_PATH + "?";
+    String packagesPath = providerId == null ? PACKAGES_PATH + "?" : VENDORS_PATH+ '/' + providerId + '/' + PACKAGES_PATH + "?";
 
     return this.getRequest(constructURL(packagesPath + path), Packages.class);
   }
@@ -231,25 +236,34 @@ public class RMAPIService {
     return (CollectionUtils.isEmpty(vendorList)) ? null : vendorList.get(0).getVendorId();
   }
 
-  public CompletableFuture<VendorById> retrieveProvider(long id, String include) {
-
+  public CompletableFuture<VendorResult> retrieveProvider(long id, String include) {
     final String path = VENDORS_PATH + '/' + id;
-    // TODO: add support of include parameter when MODKBEKBJ-22 is completed
 
-    return this.getRequest(constructURL(path), VendorById.class);
+    CompletableFuture<VendorById> vendorFuture;
+    CompletableFuture<Packages> packagesFuture;
+
+    vendorFuture = this.getRequest(constructURL(path), VendorById.class);
+    if (INCLUDE_PACKAGES_VALUE.equalsIgnoreCase(include)) {
+      packagesFuture = retrievePackages((int) id);
+    } else {
+      packagesFuture = CompletableFuture.completedFuture(null);
+    }
+    return CompletableFuture.allOf(vendorFuture, packagesFuture)
+      .thenCompose(o ->
+        CompletableFuture.completedFuture(new VendorResult(vendorFuture.join(), packagesFuture.join())));
   }
 
   public CompletableFuture<VendorById> updateProvider(long id, VendorPut rmapiVendor) {
-
     final String path = VENDORS_PATH + '/' + id;
 
-    return this.putRequest(constructURL(path), rmapiVendor).thenCompose(vend -> this.retrieveProvider(id, ""));
-
+    return this.putRequest(constructURL(path), rmapiVendor)
+      .thenCompose(vend -> this.retrieveProvider(id, ""))
+      .thenCompose(vendorResult -> CompletableFuture.completedFuture(vendorResult.getVendor()));
   }
 
-  public CompletableFuture<PackageData> retrievePackage(PackageId packageId) {
+  public CompletableFuture<PackageByIdData> retrievePackage(PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
-    return this.getRequest(constructURL(path), PackageData.class);
+    return this.getRequest(constructURL(path), PackageByIdData.class);
   }
 
   public CompletableFuture<Void> deletePackage(PackageId packageId) {
@@ -262,11 +276,11 @@ public class RMAPIService {
 
     return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
   }
-  
+
   public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest, RootProxyCustomLabels rootProxyCustomLabels) {
     final String path = "";
-    
-    org.folio.rmapi.model.Proxy proxyRMAPI = new org.folio.rmapi.model.Proxy();   
+
+    org.folio.rmapi.model.Proxy proxyRMAPI = new org.folio.rmapi.model.Proxy();
     proxyRMAPI.setId(rootProxyPutRequest.getData().getAttributes().getProxyTypeId());
     rootProxyCustomLabels.setProxy(proxyRMAPI);
     /* In RM API - custom labels and root proxy are updated using the same PUT endpoint.
@@ -297,4 +311,23 @@ public class RMAPIService {
     LOG.info("constructurl - path=" + fullPath);
     return fullPath;
   }
+
+  public static class VendorResult {
+    private VendorById vendor;
+    private Packages packages;
+
+    public VendorResult(VendorById vendor, Packages packages) {
+      this.vendor = vendor;
+      this.packages = packages;
+    }
+
+    public VendorById getVendor() {
+      return vendor;
+    }
+
+    public Packages getPackages() {
+      return packages;
+    }
+  }
+
 }

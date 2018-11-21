@@ -1,15 +1,27 @@
 package org.folio.rest.converter;
 
-import org.folio.rest.jaxrs.model.*;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.folio.rest.jaxrs.model.MetaDataIncluded;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.Packages;
+import org.folio.rest.jaxrs.model.Provider;
+import org.folio.rest.jaxrs.model.ProviderCollection;
+import org.folio.rest.jaxrs.model.ProviderData;
+import org.folio.rest.jaxrs.model.ProviderDataAttributes;
+import org.folio.rest.jaxrs.model.ProviderListDataAttributes;
+import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.folio.rest.jaxrs.model.Providers;
+import org.folio.rest.jaxrs.model.Proxy;
+import org.folio.rest.jaxrs.model.Relationships;
+import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
+import org.folio.rmapi.model.TokenInfo;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
-import org.folio.rmapi.model.TokenInfo;
 import org.folio.rmapi.model.Vendors;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class VendorConverter {
 
@@ -19,6 +31,19 @@ public class VendorConverter {
         .withIncluded(false))
       .withData(null));
   private static final String PROVIDERS_TYPE = "providers";
+
+  private CommonAttributesConverter commonConverter;
+
+  private PackagesConverter packagesConverter;
+
+  public VendorConverter() {
+    this(new CommonAttributesConverter(), new PackagesConverter());
+  }
+
+  public VendorConverter(CommonAttributesConverter commonConverter, PackagesConverter packagesConverter) {
+    this.commonConverter = commonConverter;
+    this.packagesConverter = packagesConverter;
+  }
 
   public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = vendors.getVendorList().stream()
@@ -45,6 +70,10 @@ public class VendorConverter {
   }
 
   public Provider convertToProvider(VendorById vendor) {
+    return convertToProvider(vendor, null);
+  }
+
+  public Provider convertToProvider(VendorById vendor, org.folio.rmapi.model.Packages packages) {
     TokenInfo vendorToken = vendor.getVendorByIdToken();
     return new Provider()
       .withData(new ProviderData()
@@ -55,13 +84,13 @@ public class VendorConverter {
           .withPackagesTotal(vendor.getPackagesTotal())
           .withPackagesSelected(vendor.getPackagesSelected())
           .withSupportsCustomPackages(vendor.isCustomer())
-          .withProviderToken(vendorToken != null ? convertToken(vendorToken) : null)
+          .withProviderToken(commonConverter.convertToken(vendorToken))
           .withProxy(new Proxy()
             .withId(vendor.getProxy().getId())
             .withInherited(vendor.getProxy().getInherited()))
         )
         .withRelationships(EMPTY_PACKAGE_RELATIONSHIP))
-      .withIncluded(null)
+      .withIncluded(packages == null ? null : packagesConverter.convert(packages).getData())
       .withJsonapi(RestConstants.JSONAPI);
   }
 
@@ -89,13 +118,5 @@ public class VendorConverter {
 
     return vendor;
 
-  }
-
-  private Token convertToken(TokenInfo tokenInfo) {
-    return new Token()
-      .withFactName(tokenInfo.getFactName())
-      .withHelpText(tokenInfo.getHelpText())
-      .withPrompt(tokenInfo.getPrompt())
-      .withValue(tokenInfo.getValue() == null ? null : (String) tokenInfo.getValue());
   }
 }

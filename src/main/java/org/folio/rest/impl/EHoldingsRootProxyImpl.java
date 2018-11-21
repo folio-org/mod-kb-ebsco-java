@@ -1,10 +1,11 @@
 package org.folio.rest.impl;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import javax.ws.rs.core.Response;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
@@ -16,33 +17,30 @@ import org.folio.rest.converter.RootProxyConverter;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsRootProxy;
 import org.folio.rest.model.OkapiData;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.RootProxyPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
-import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
-  
+
   private RMAPIConfigurationService configurationService;
   private HeaderValidator headerValidator;
   private RootProxyConverter converter;
   private RootProxyPutBodyValidator bodyValidator;
-  
+
   private static final String CONTENT_TYPE_HEADER = "Content-Type";
   private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
   private static final String PUT_ROOT_PROXY_ERROR_MESSAGE = "Failed to update root proxy";
-  
+
   private final Logger logger = LoggerFactory.getLogger(EHoldingsRootProxyImpl.class);
-  
+
   public EHoldingsRootProxyImpl() {
     this(
       new RMAPIConfigurationServiceCache(
@@ -65,7 +63,7 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
   @Override
   @HandleValidationErrors
   public void getEholdingsRootProxy(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    
+
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -78,21 +76,15 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsRootProxyResponse
           .respond200WithApplicationVndApiJson(converter.convertRootProxy(rootProxyCustomLabels)))))
       .exceptionally(e -> {
-        if(e.getCause() instanceof RMAPIUnAuthorizedException){
-          RMAPIUnAuthorizedException rmApiException = (RMAPIUnAuthorizedException)e.getCause();
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsRootProxyResponse
-            .status(HttpStatus.SC_FORBIDDEN)
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createError(rmApiException.getMessage()))
-            .build()));
-        }
-        else {
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsRootProxyResponse
-            .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createError(e.getCause().getMessage()))
-            .build()));
-        }
+        new ErrorHandler()
+          .add(RMAPIUnAuthorizedException.class, rmApiException ->
+            GetEholdingsRootProxyResponse
+              .status(HttpStatus.SC_FORBIDDEN)
+              .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+              .entity(ErrorUtil.createError(rmApiException.getMessage()))
+              .build())
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
         return null;
       });
   }
@@ -103,11 +95,11 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
     bodyValidator.validate(entity);
-    
+
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
-      .thenAccept(rmapiConfiguration -> 
+      .thenAccept(rmapiConfiguration ->
         service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner())))
       .thenCompose(o -> service.getValue().retrieveRootProxyCustomLabels())
@@ -117,27 +109,17 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
           .respond200WithApplicationVndApiJson(converter.convertRootProxy(rootProxy)))))
       .exceptionally(e -> {
         logger.error(PUT_ROOT_PROXY_ERROR_MESSAGE, e);
-        if(e.getCause() instanceof RMAPIUnAuthorizedException){
-          RMAPIUnAuthorizedException rmApiException = (RMAPIUnAuthorizedException)e.getCause();
-          asyncResultHandler.handle(Future.succeededFuture(PutEholdingsRootProxyResponse
-            .status(HttpStatus.SC_FORBIDDEN)
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createError(rmApiException.getMessage()))
-            .build()));
-        } else if (e.getCause() instanceof RMAPIServiceException) {
-          RMAPIServiceException rmApiException = (RMAPIServiceException)e.getCause();
-          asyncResultHandler.handle(Future.succeededFuture(PutEholdingsRootProxyResponse
-            .status(rmApiException.getRMAPICode())
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException))
-            .build()));
-        } else {
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsRootProxyResponse
-            .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-            .entity(ErrorUtil.createError(e.getCause().getMessage()))
-            .build()));
-        }
+        new ErrorHandler()
+          .add(RMAPIUnAuthorizedException.class, rmApiException ->
+            PutEholdingsRootProxyResponse
+              .status(HttpStatus.SC_FORBIDDEN)
+              .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+              .entity(ErrorUtil.createError(rmApiException.getMessage()))
+              .build()
+          )
+          .addRmApiMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
         return null;
       });
   }

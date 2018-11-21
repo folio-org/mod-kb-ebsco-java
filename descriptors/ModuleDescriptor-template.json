@@ -17,7 +17,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/packages/{packageId}"
+          "pathPattern": "/eholdings/packages/{packageId}",
+          "permissionsRequired": ["kb-ebsco.package.get"]
         },
         {
           "methods": ["PUT"],
@@ -160,6 +161,11 @@
       "description": "Get packages"
     },
     {
+      "permissionName": "kb-ebsco.package.get",
+      "displayName": "get package",
+      "description": "Get package"
+    },
+    {
       "permissionName": "kb-ebsco.package.delete",
       "displayName": "delete custom package",
       "description": "Delete custom package"
@@ -190,6 +196,7 @@
         "kb-ebsco.package.delete",
         "kb-ebsco.title.get",
         "kb-ebsco.titleCollection.get",
+        "kb-ebsco.package.get",
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.root-proxy.put"
       ]
