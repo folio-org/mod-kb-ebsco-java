@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "title": "Parameter OrderBy should be by PackageName when parameter Search is empty."
+      "title": "Search parameter cannot be empty"
     }
   ],
   "jsonapi": {

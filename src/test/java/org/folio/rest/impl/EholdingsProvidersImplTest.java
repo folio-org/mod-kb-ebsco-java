@@ -427,13 +427,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400IfQueryParamInvalid() throws IOException, URISyntaxException {
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" +
-        STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(HttpStatus.SC_BAD_REQUEST)));
-
     RequestSpecification requestSpecification = getRequestSpecification();
     RestAssured.given()
       .spec(requestSpecification)

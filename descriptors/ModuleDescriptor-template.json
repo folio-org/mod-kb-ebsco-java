@@ -51,7 +51,7 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/providers/{providerId}/packages",
-          "permissionRequired": ["kb-ebsco.provider.packages.get"]
+          "permissionsRequired": ["kb-ebsco.provider.packages.get"]
         },
         {
           "methods": ["POST"],

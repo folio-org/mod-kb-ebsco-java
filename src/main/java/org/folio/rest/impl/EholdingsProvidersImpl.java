@@ -206,6 +206,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     headerValidator.validate(okapiHeaders);
     parametersValidator.validate("true", filterSelected, filterType, sort);
+    if(!Sort.contains(sort.toUpperCase())){
+      throw new ValidationException("Invalid sort parameter");
+    }
+    if("".equals(q)){
+      throw new ValidationException("Search parameter cannot be empty");
+    }
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
     CompletableFuture.completedFuture(null)
