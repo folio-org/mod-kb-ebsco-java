@@ -47,7 +47,7 @@ public abstract class WireMockTestBase {
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     RMAPIConfigurationCache.getInstance().invalidate();
   }
 
