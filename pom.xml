@@ -37,6 +37,7 @@
     <raml-module-builder.version>21.0.4</raml-module-builder.version>
     <vertx.version>3.5.4</vertx.version>
     <aspectj.version>1.9.1</aspectj.version>
+    <slf4j.version>1.7.25</slf4j.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
@@ -83,6 +84,21 @@
       <artifactId>lombok</artifactId>
       <version>1.18.4</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
     </dependency>
     <!-- Test dependencies -->
     <dependency>
