@@ -1,5 +1,13 @@
 package org.folio.rest.impl;
 
+import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -26,19 +34,10 @@ import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private static final String GET_TITLES_ERROR_MESSAGE = "Failed to retrieve titles";
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
-
-  private static final String CONTENT_TYPE_HEADER = "Content-Type";
-  private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
-
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsTitlesImpl.class);
 
@@ -128,12 +127,12 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         } else if (e.getCause() instanceof RMAPIServiceException) {
             RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
             asyncResultHandler.handle(Future.succeededFuture(
-                Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+                Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
                     .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
         } else {
           asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesByTitleIdResponse
             .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-            .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+            .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
             .entity(ErrorUtil.createError(e.getCause().getMessage()))
             .build()));
         }

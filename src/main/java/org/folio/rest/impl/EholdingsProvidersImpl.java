@@ -1,11 +1,19 @@
 package org.folio.rest.impl;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
@@ -27,13 +35,6 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.VendorPut;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
@@ -46,8 +47,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private HeaderValidator headerValidator;
   private VendorConverter converter;
   private ProviderPutBodyValidator bodyValidator;
-  private static final String CONTENT_TYPE_HEADER = "Content-Type";
-  private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
 
   public EholdingsProvidersImpl() {
     this(
@@ -94,14 +93,14 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         RMAPIServiceException rmApiException = (RMAPIServiceException)e.getCause();
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
           .status(rmApiException.getRMAPICode())
-          .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+          .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
           .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException))
           .build()));
       }
       else {
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
           .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-          .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+          .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
           .entity(ErrorUtil.createError(e.getCause().getMessage()))
           .build()));
       }

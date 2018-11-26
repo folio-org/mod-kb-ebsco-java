@@ -1,5 +1,12 @@
 package org.folio.rest.impl;
 
+import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
+
+import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -24,10 +31,6 @@ import org.folio.rest.validator.RootProxyPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
 public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
 
   private RMAPIConfigurationService configurationService;
@@ -35,8 +38,6 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
   private RootProxyConverter converter;
   private RootProxyPutBodyValidator bodyValidator;
 
-  private static final String CONTENT_TYPE_HEADER = "Content-Type";
-  private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
   private static final String PUT_ROOT_PROXY_ERROR_MESSAGE = "Failed to update root proxy";
 
   private final Logger logger = LoggerFactory.getLogger(EHoldingsRootProxyImpl.class);
@@ -80,7 +81,7 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
           .add(RMAPIUnAuthorizedException.class, rmApiException ->
             GetEholdingsRootProxyResponse
               .status(HttpStatus.SC_FORBIDDEN)
-              .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+              .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
               .entity(ErrorUtil.createError(rmApiException.getMessage()))
               .build())
           .addDefaultMapper()
@@ -113,7 +114,7 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
           .add(RMAPIUnAuthorizedException.class, rmApiException ->
             PutEholdingsRootProxyResponse
               .status(HttpStatus.SC_FORBIDDEN)
-              .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+              .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
               .entity(ErrorUtil.createError(rmApiException.getMessage()))
               .build()
           )

@@ -10,6 +10,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import org.folio.config.cache.RMAPIConfigurationCache;
+import org.folio.http.HttpConsts;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.folio.rest.util.RestConstants;
@@ -22,7 +23,7 @@ import org.junit.BeforeClass;
  * test that inherits this class must use VertxUnitRunner as test runner
  */
 public abstract class WireMockTestBase {
-  protected static final Header CONTENT_TYPE_HEADER = new Header("Content-Type", "application/vnd.api+json");
+  protected static final Header CONTENT_TYPE_HEADER = new Header(HttpConsts.CONTENT_TYPE_HEADER, HttpConsts.JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
   protected static final String CONFIGURATION_STUB_FILE = "responses/configuration/get-configuration.json";
   protected static int port;
