@@ -92,7 +92,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withBody(TestUtil.readFile(stubResponseFile))));
 
     WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" +  STUB_VENDOR_ID +  "/packages.*"), true))
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(stubPackagesResponseFile))));
 

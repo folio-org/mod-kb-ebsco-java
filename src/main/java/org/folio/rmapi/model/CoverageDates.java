@@ -18,4 +18,12 @@ public class CoverageDates {
   public String getEndCoverage() {
     return endCoverage;
   }
+
+  public void setBeginCoverage(String beginCoverage) {
+    this.beginCoverage = beginCoverage;
+  }
+
+  public void setEndCoverage(String endCoverage) {
+    this.endCoverage = endCoverage;
+  }
 }

@@ -3,6 +3,7 @@ package org.folio.rmapi;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.concurrent.CompletionStage;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
@@ -19,6 +20,7 @@ import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
+import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
@@ -264,6 +266,12 @@ public class RMAPIService {
   public CompletableFuture<PackageByIdData> retrievePackage(PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
     return this.getRequest(constructURL(path), PackageByIdData.class);
+  }
+
+  public CompletionStage<Void> updatePackage(PackageId packageId, PackagePut packagePut) {
+    final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
+
+    return this.putRequest(constructURL(path), packagePut);
   }
 
   public CompletableFuture<Void> deletePackage(PackageId packageId) {

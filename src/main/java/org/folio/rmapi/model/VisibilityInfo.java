@@ -18,4 +18,8 @@ public class VisibilityInfo {
   public String getReason() {
     return reason;
   }
+
+  public void setHidden(Boolean hidden) {
+    isHidden = hidden;
+  }
 }

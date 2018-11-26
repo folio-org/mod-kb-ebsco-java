@@ -93,4 +93,20 @@ public class PackageData {
   public void setCustom(Boolean custom) {
     isCustom = custom;
   }
+
+  public void setSelected(Boolean selected) {
+    isSelected = selected;
+  }
+
+  public void setAllowEbscoToAddTitles(Boolean allowEbscoToAddTitles) {
+    this.allowEbscoToAddTitles = allowEbscoToAddTitles;
+  }
+
+  public void setPackageName(String packageName) {
+    this.packageName = packageName;
+  }
+
+  public void setContentType(String contentType) {
+    this.contentType = contentType;
+  }
 }
