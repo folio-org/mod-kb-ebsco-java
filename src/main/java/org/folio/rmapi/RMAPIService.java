@@ -1,5 +1,15 @@
 package org.folio.rmapi;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -28,16 +38,7 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.folio.rest.model.ResourceId;
 
 public class RMAPIService {
 
@@ -306,6 +307,11 @@ public class RMAPIService {
     final String path = TITLES_PATH + '/' + id;
     return this.getRequest(constructURL(path), Title.class);
   }
+  
+  public CompletableFuture<Title> retrieveResource(ResourceId resourceId) {
+    final String path = VENDORS_PATH + '/' + resourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + resourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + resourceId.getTitleIdPart();
+    return this.getRequest(constructURL(path), Title.class);
+  }
 
   /**
    * Constructs full rmapi path
@@ -337,5 +343,4 @@ public class RMAPIService {
       return packages;
     }
   }
-
 }
