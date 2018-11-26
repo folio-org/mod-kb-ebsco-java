@@ -13,6 +13,7 @@ public class ValidatorUtil {
   private static final String MUST_BE_NULL_FORMAT = "%s must be null or not specified";
   private static final String MUST_BE_EMPTY_FORMAT = "%s must be empty";
   private static final String MUST_BE_SHORTER_THAN_N_CHARACTERS = "%s is too long (maximum is %s characters)";
+  private static final String MUST_BE_VALID_DATE = "%s has invalid format. Should be YYYY-MM-DD";
 
   private ValidatorUtil() {}
 
@@ -56,9 +57,11 @@ public class ValidatorUtil {
     }
   }
 
-  public static void checkDateValid(String paramName, String beginCoverage) {
-    if (!org.apache.commons.lang3.StringUtils.isEmpty(beginCoverage) && !isDateValid(beginCoverage)) {
-      throw new InputValidationException("Invalid beginCoverage", String.format("%s has invalid format. Should be YYYY-MM-DD", paramName));
+  public static void checkDateValid(String paramName, String date) {
+    if (!org.apache.commons.lang3.StringUtils.isEmpty(date) && !isDateValid(date)) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_BE_VALID_DATE, paramName));
     }
   }
 
@@ -70,9 +73,9 @@ public class ValidatorUtil {
     }
   }
 
-  private static boolean isDateValid(String beginCoverage) {
+  private static boolean isDateValid(String date) {
     try {
-      new SimpleDateFormat("yyyy-MM-dd").parse(beginCoverage);
+      new SimpleDateFormat("yyyy-MM-dd").parse(date);
       return true;
     } catch (ParseException e) {
       return false;
