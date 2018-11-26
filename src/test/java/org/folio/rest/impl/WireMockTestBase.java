@@ -43,7 +43,7 @@ public abstract class WireMockTestBase {
 
     @Override
     protected void starting(Description description) {
-      log.info("Running: {}.{}", description.getClassName(), description.getMethodName());
+      log.info("********** Running test method: {}.{} ********** ", description.getClassName(), description.getMethodName());
     }
 
   };
