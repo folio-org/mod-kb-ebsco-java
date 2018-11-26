@@ -24,6 +24,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.TitleConverter;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
+import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorHandler;
@@ -70,15 +71,22 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                  String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    parametersValidator.validate(filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher, sort);
+
+    FilterQuery fq = FilterQuery.builder()
+      .selected(filterSelected).type(filterType)
+      .name(filterName).isxn(filterIsxn).subject(filterSubject)
+      .publisher(filterPublisher).build();
+
+    parametersValidator.validate(fq, sort);
+    
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
+    
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveTitles(filterSelected, filterType, filterName, filterIsxn, filterSubject,
-          filterPublisher, nameSort, page, count);
+        return rmapiService.retrieveTitles(fq, nameSort, page, count);
       })
       .thenAccept(titles ->
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesResponse

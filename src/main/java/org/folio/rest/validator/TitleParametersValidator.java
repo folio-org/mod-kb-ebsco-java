@@ -1,23 +1,35 @@
 package org.folio.rest.validator;
 
-import org.folio.rest.model.Sort;
+import static java.util.Objects.nonNull;
 
 import javax.validation.ValidationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import org.folio.rest.model.FilterQuery;
+import org.folio.rest.model.Sort;
+
 public class TitleParametersValidator {
 
   private static final List<String> FILTER_SELECTED_VALUES = Arrays.asList("true", "false", "ebsco");
-  private static final List<String> FILTER_TYPE_VALUES = Arrays.asList("audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report", "streamingaudio", "streamingvideo", "thesisdissertation", "website", "unspecified");
+  private static final List<String> FILTER_TYPE_VALUES = Arrays.asList("audiobook", "book", "bookseries", "database",
+    "journal", "newsletter", "newspaper", "proceedings", "report", "streamingaudio", "streamingvideo",
+    "thesisdissertation", "website", "unspecified");
+
 
   /**
    * @throws ValidationException if validation fails
    */
-  public void validate(String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
-                       String filterPublisher, String sort) {
-    List<String> searchParameters = Arrays.asList(filterName, filterIsxn, filterSubject, filterPublisher);
+  public void validate(FilterQuery filterQuery, String sort) {
+    validateFilter(filterQuery);
+    validateSort(sort);
+  }
+
+  private void validateFilter(FilterQuery fq) {
+    List<String> searchParameters = Arrays.asList(fq.getName(), fq.getIsxn(), fq.getSubject(),
+      fq.getPublisher());
+
     long nonNullFilters = searchParameters.stream()
       .filter(Objects::nonNull)
       .count();
@@ -31,15 +43,19 @@ public class TitleParametersValidator {
       .anyMatch(""::equals)){
       throw new ValidationException("Value of required parameter filter[name], filter[isxn], filter[subject] or filter[publisher] is missing.");
     }
-    if (!Sort.contains(sort.toUpperCase())){
-      throw new ValidationException("Invalid sort parameter");
-    }
-    if (Objects.nonNull(filterSelected) && !FILTER_SELECTED_VALUES.contains(filterSelected)){
+    if (nonNull(fq.getSelected()) && !FILTER_SELECTED_VALUES.contains(fq.getSelected())){
       throw new ValidationException("Invalid Query Parameter for filter[selected]");
     }
-    if (Objects.nonNull(filterType) && !FILTER_TYPE_VALUES.contains(filterType)){
+    if (nonNull(fq.getType()) && !FILTER_TYPE_VALUES.contains(fq.getType())){
       throw new ValidationException("Invalid Query Parameter for filter[type]");
     }
   }
+
+  private void validateSort(String sort) {
+    if (!Sort.contains(sort.toUpperCase())){
+      throw new ValidationException("Invalid sort parameter");
+    }
+  }
+  
 }
 

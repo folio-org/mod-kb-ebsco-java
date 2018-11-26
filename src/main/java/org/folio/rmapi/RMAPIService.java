@@ -1,5 +1,9 @@
 package org.folio.rmapi;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -9,14 +13,11 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
+import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
+import org.folio.rest.model.ResourceId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.PackagesFilterableUrlBuilder;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
@@ -37,7 +38,6 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
-import org.folio.rest.model.ResourceId;
 
 public class RMAPIService {
 
@@ -188,15 +188,9 @@ public class RMAPIService {
     return this.getRequest(constructURL(VENDORS_PATH + "?" + query), Vendors.class);
   }
 
-  public CompletableFuture<Titles> retrieveTitles(String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
-                                                  String filterPublisher, Sort sort, int page, int count) {
+  public CompletableFuture<Titles> retrieveTitles(FilterQuery filterQuery, Sort sort, int page, int count) {
     String path = new TitlesFilterableUrlBuilder()
-      .filterSelected(filterSelected)
-      .filterType(filterType)
-      .filterName(filterName)
-      .filterIsxn(filterIsxn)
-      .filterSubject(filterSubject)
-      .filterPublisher(filterPublisher)
+      .filter(filterQuery)
       .sort(sort)
       .page(page)
       .count(count)
