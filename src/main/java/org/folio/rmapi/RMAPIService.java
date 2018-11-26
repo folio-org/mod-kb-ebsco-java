@@ -29,6 +29,7 @@ import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
+import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
@@ -273,9 +274,11 @@ public class RMAPIService {
   }
 
   public CompletableFuture<RootProxyCustomLabels> retrieveRootProxyCustomLabels() {
-    final String path = "";
+    return this.getRequest(constructURL(""), RootProxyCustomLabels.class);
+  }
 
-    return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
+  public CompletableFuture<Proxies> retrieveProxies() {
+    return getRequest(constructURL("proxies"), Proxies.class);
   }
 
   public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest, RootProxyCustomLabels rootProxyCustomLabels) {
@@ -299,7 +302,7 @@ public class RMAPIService {
     final String path = TITLES_PATH + '/' + id;
     return this.getRequest(constructURL(path), Title.class);
   }
-  
+
   public CompletableFuture<Title> retrieveResource(ResourceId resourceId) {
     final String path = VENDORS_PATH + '/' + resourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + resourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + resourceId.getTitleIdPart();
     return this.getRequest(constructURL(path), Title.class);
