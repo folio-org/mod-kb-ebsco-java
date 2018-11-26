@@ -22,6 +22,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   private static final String RMI_PROXIES_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/proxies.*";
+  private static final String EHOLDINGS_PROXY_TYPES_URL = "eholdings/proxy-types";
 
   @Override
   @Before
@@ -36,7 +37,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   public void shouldReturnProxyTypesFromValidRMApiResponse() throws IOException, URISyntaxException {
     mockGet(RMI_PROXIES_URL, "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
-    String actual = getResponseWithStatus("eholdings/proxy-types", HttpStatus.SC_OK).asString();
+    String actual = getResponseWithStatus(EHOLDINGS_PROXY_TYPES_URL, HttpStatus.SC_OK).asString();
 
     String expected = readFile("responses/proxytypes/get-proxy-types-response.json");
     JSONAssert.assertEquals(expected, actual, false);
@@ -46,14 +47,14 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   public void shouldReturnForbiddenWhenRMAPIRequestCompletesWith401ErrorStatus() {
     mockGet(RMI_PROXIES_URL, HttpStatus.SC_UNAUTHORIZED);
 
-    getResponse("eholdings/proxy-types").statusCode(HttpStatus.SC_FORBIDDEN);
+    getResponse(EHOLDINGS_PROXY_TYPES_URL).statusCode(HttpStatus.SC_FORBIDDEN);
   }
 
   @Test
   public void shouldReturnForbiddenWhenRMAPIRequestCompletesWith403ErrorStatus() {
     mockGet(RMI_PROXIES_URL, HttpStatus.SC_FORBIDDEN);
 
-    getResponse("eholdings/proxy-types").statusCode(HttpStatus.SC_FORBIDDEN);
+    getResponse(EHOLDINGS_PROXY_TYPES_URL).statusCode(HttpStatus.SC_FORBIDDEN);
   }
 
   private ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {

@@ -16,7 +16,7 @@ import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
 
 public class TitleConverter {
-  
+
   private CommonAttributesConverter commonConverter;
 
   private static final TitleRelationship EMPTY_RESOURCES_RELATIONSHIP = new TitleRelationship()
@@ -27,7 +27,7 @@ public class TitleConverter {
   public TitleConverter() {
     this(new CommonAttributesConverter());
   }
-  
+
   public TitleConverter(CommonAttributesConverter commonConverter) {
     this.commonConverter = commonConverter;
   }
@@ -50,14 +50,14 @@ public class TitleConverter {
             .withAttributes(new TitleAttributes()
                 .withName(rmapiTitle.getTitleName())
                 .withPublisherName(rmapiTitle.getPublisherName())
-                .withIsTitleCustom(rmapiTitle.getTitleCustom())
+                .withIsTitleCustom(rmapiTitle.getIsTitleCustom())
                 .withPublicationType(CommonAttributesConverter.publicationTypes.get(rmapiTitle.getPubType().toLowerCase()))
                 .withSubjects(commonConverter.convertSubjects(rmapiTitle.getSubjectsList()))
                 .withIdentifiers(commonConverter.convertIdentifiers(rmapiTitle.getIdentifiersList()))
                 .withEdition(rmapiTitle.getEdition())
                 .withContributors(commonConverter.convertContributors(rmapiTitle.getContributorsList()))
                 .withDescription(rmapiTitle.getDescription())
-                .withIsPeerReviewed(rmapiTitle.getPeerReviewed())
+                .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
                 )
             .withRelationships(EMPTY_RESOURCES_RELATIONSHIP)
             )
@@ -73,7 +73,7 @@ public class TitleConverter {
       .withAttributes(new TitleListDataAttributes()
         .withName(title.getTitleName())
         .withPublisherName(title.getPublisherName())
-        .withIsTitleCustom(title.getTitleCustom())
+        .withIsTitleCustom(title.getIsTitleCustom())
         .withPublicationType(CommonAttributesConverter.publicationTypes.get(title.getPubType().toLowerCase()))
         .withSubjects(commonConverter.convertSubjects(title.getSubjectsList()))
         .withIdentifiers(commonConverter.convertIdentifiers(title.getIdentifiersList())));

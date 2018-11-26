@@ -22,6 +22,7 @@ import org.folio.rmapi.model.TokenInfo;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
+import org.folio.rmapi.model.VendorPutToken;
 import org.folio.rmapi.model.Vendors;
 
 public class VendorConverter {
@@ -117,27 +118,26 @@ public class VendorConverter {
 
   public VendorPut convertToVendor(ProviderPutRequest provider) {
 
-    VendorPut vendor = new VendorPut();
+    VendorPut.VendorPutBuilder vpb = VendorPut.builder();
 
     // RM API gives an error when we pass inherited as true along with updated proxy
     // value
     // Hard code it to false; it should not affect the state of inherited that RM
     // API maintains
-    org.folio.rmapi.model.Proxy vendorProxy = new org.folio.rmapi.model.Proxy();
-    org.folio.rmapi.model.VendorPutToken vendorToken = new org.folio.rmapi.model.VendorPutToken();
-
     if (provider.getData().getAttributes().getProxy() != null) {
-      vendorProxy.setInherited(false);
-      vendorProxy.setId(provider.getData().getAttributes().getProxy().getId());
-      vendor.setProxy(vendorProxy);
+      vpb.proxy(org.folio.rmapi.model.Proxy.builder()
+        .inherited(false)
+        .id(provider.getData().getAttributes().getProxy().getId())
+        .build());
     }
 
     if (provider.getData().getAttributes().getProviderToken() != null) {
-      vendorToken.setValue(provider.getData().getAttributes().getProviderToken().getValue());
-      vendor.setVendorPutToken(vendorToken);
+      vpb.vendorToken(VendorPutToken.builder()
+        .value(provider.getData().getAttributes().getProviderToken().getValue())
+        .build());
     }
 
-    return vendor;
+    return vpb.build();
 
   }
 }

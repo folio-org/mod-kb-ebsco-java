@@ -4,7 +4,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
 
+@Value
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RootProxyCustomLabels {
 
@@ -13,20 +17,5 @@ public class RootProxyCustomLabels {
   
   @JsonProperty("labels")
   private List<CustomLabel> labelList;
-
-  public Proxy getProxy() {
-    return proxy;
-  }
-
-  public void setProxy(Proxy proxy) {
-    this.proxy = proxy;
-  }
   
-  public List<CustomLabel> getLabelList() {
-    return labelList;
-  }
-  
-  public void setLabelList(List<CustomLabel> labelList) {
-    this.labelList = labelList;
-  }
 }
