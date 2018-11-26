@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaIncluded;
@@ -14,6 +14,7 @@ import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
+import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.PackageRelationship;
 import org.folio.rest.jaxrs.model.Proxy;
@@ -22,13 +23,14 @@ import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
+import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.TokenInfo;
 
 public class PackagesConverter {
 
-  private static final Map<String, PackageDataAttributes.ContentType> contentTypes = new HashMap<>();
+  private static final Map<String, ContentType> contentTypes = new HashMap<>();
   private static final PackageRelationship EMPTY_PACKAGES_RELATIONSHIP = new PackageRelationship()
     .withProvider(new MetaIncluded()
       .withMeta(new MetaDataIncluded().withIncluded(false)))
@@ -36,26 +38,26 @@ public class PackagesConverter {
       .withMeta(new MetaDataIncluded()
         .withIncluded(false)));
   private static final String PACKAGES_TYPE = "packages";
-  private static final Map<PackageDataAttributes.ContentType, Integer> contentTypeToRMAPICode = new EnumMap<>(PackageDataAttributes.ContentType.class);
+  private static final Map<ContentType, Integer> contentTypeToRMAPICode = new EnumMap<>(ContentType.class);
 
   static {
-    contentTypes.put("aggregatedfulltext", PackageDataAttributes.ContentType.AGGREGATED_FULL_TEXT);
-    contentTypes.put("abstractandindex", PackageDataAttributes.ContentType.ABSTRACT_AND_INDEX);
-    contentTypes.put("ebook", PackageDataAttributes.ContentType.E_BOOK);
-    contentTypes.put("ejournal", PackageDataAttributes.ContentType.E_JOURNAL);
-    contentTypes.put("print", PackageDataAttributes.ContentType.PRINT);
-    contentTypes.put("unknown", PackageDataAttributes.ContentType.UNKNOWN);
-    contentTypes.put("onlinereference", PackageDataAttributes.ContentType.ONLINE_REFERENCE);
+    contentTypes.put("aggregatedfulltext", ContentType.AGGREGATED_FULL_TEXT);
+    contentTypes.put("abstractandindex", ContentType.ABSTRACT_AND_INDEX);
+    contentTypes.put("ebook", ContentType.E_BOOK);
+    contentTypes.put("ejournal", ContentType.E_JOURNAL);
+    contentTypes.put("print", ContentType.PRINT);
+    contentTypes.put("unknown", ContentType.UNKNOWN);
+    contentTypes.put("onlinereference", ContentType.ONLINE_REFERENCE);
   }
 
   static {
-    contentTypeToRMAPICode.put(PackageDataAttributes.ContentType.AGGREGATED_FULL_TEXT, 1);
-    contentTypeToRMAPICode.put(PackageDataAttributes.ContentType.ABSTRACT_AND_INDEX, 2);
-    contentTypeToRMAPICode.put(PackageDataAttributes.ContentType.E_BOOK, 3);
-    contentTypeToRMAPICode.put(PackageDataAttributes.ContentType.E_JOURNAL, 4);
-    contentTypeToRMAPICode.put(PackageDataAttributes.ContentType.PRINT, 5);
-    contentTypeToRMAPICode.put(PackageDataAttributes.ContentType.UNKNOWN, 6);
-    contentTypeToRMAPICode.put(PackageDataAttributes.ContentType.ONLINE_REFERENCE, 7);
+    contentTypeToRMAPICode.put(ContentType.AGGREGATED_FULL_TEXT, 1);
+    contentTypeToRMAPICode.put(ContentType.ABSTRACT_AND_INDEX, 2);
+    contentTypeToRMAPICode.put(ContentType.E_BOOK, 3);
+    contentTypeToRMAPICode.put(ContentType.E_JOURNAL, 4);
+    contentTypeToRMAPICode.put(ContentType.PRINT, 5);
+    contentTypeToRMAPICode.put(ContentType.UNKNOWN, 6);
+    contentTypeToRMAPICode.put(ContentType.ONLINE_REFERENCE, 7);
   }
 
   private CommonAttributesConverter commonConverter;
@@ -179,4 +181,22 @@ public class PackagesConverter {
 
     return builder;
   }
+  public PackagePost convertToPackage(PackagePostRequest postPackageBody) {
+
+    PackagePost.PackagePostBuilder postRequest = PackagePost.builder()
+      .contentType(contentTypeToRMAPICode.getOrDefault(postPackageBody.getData().getAttributes().getContentType(), 6))
+      .packageName(postPackageBody.getData().getAttributes().getName());
+
+    Coverage customCoverage = postPackageBody.getData().getAttributes().getCustomCoverage();
+    if (customCoverage != null) {
+      postRequest.coverage(
+        org.folio.rmapi.model.CoverageDates.builder()
+          .beginCoverage(customCoverage.getBeginCoverage())
+          .endCoverage(customCoverage.getEndCoverage())
+          .build());
+    }
+
+    return postRequest.build();
+  }
+
 }

@@ -9,15 +9,7 @@
     "contentType": {
       "type": "string",
       "description": "Content Type of Package",
-      "enum": [
-        "Aggregated Full Text",
-        "Abstract and Index",
-        "E-Book",
-        "E-Journal",
-        "Print",
-        "Unknown",
-        "Online Reference"
-      ],
+      "$ref" : "contentTypeEnum.json",
       "example": "Online Reference"
     },
     "customCoverage": {

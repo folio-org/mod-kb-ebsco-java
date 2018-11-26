@@ -28,5 +28,4 @@ public class Vendor {
   private boolean isCustomer;
   @JsonProperty("vendorToken")
   private String vendorToken;
-
 }
