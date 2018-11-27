@@ -1,0 +1,518 @@
+{
+  "titleId": 762169,
+  "titleName": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+  "publisherName": "Praeger",
+  "identifiersList": [
+    {
+      "id": "300079",
+      "source": "ResourceIdentifier",
+      "subtype": 0,
+      "type": 7
+    },
+    {
+      "id": "762169",
+      "source": "AtoZ",
+      "subtype": 0,
+      "type": 9
+    },
+    {
+      "id": "978-0-275-98214-0",
+      "source": "ResourceIdentifier",
+      "subtype": 1,
+      "type": 1
+    },
+    {
+      "id": "978-0-313-06800-3",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    },
+    {
+      "id": "978-1-282-40979-8",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    }
+  ],
+  "subjectsList": [
+    {
+      "type": "BISAC",
+      "subject": "SOCIAL SCIENCE / Ethnic Studies / General"
+    }
+  ],
+  "isTitleCustom": false,
+  "pubType": "Book",
+  "customerResourcesList": [
+    {
+      "titleId": 762169,
+      "packageId": 4345,
+      "packageName": "ABC-CLIO eBook Collection",
+      "packageType": "Variable",
+      "proxy": {
+        "id": "Proxy-ID-123",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 583,
+      "vendorName": "ABC-CLIO",
+      "locationId": 2863717,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": true,
+        "reason": "Hidden by Customer"
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://publisher.abc-clio.com/9780313068003/",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 5207,
+      "packageName": "EBSCO eBooks",
+      "packageType": "Selectable",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 19,
+      "vendorName": "EBSCO",
+      "locationId": 3829920,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=300079",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 6822,
+      "packageName": "DawsonEra eBooks",
+      "packageType": "Variable",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 977,
+      "vendorName": "Dawson Books Ltd.",
+      "locationId": 5452285,
+      "isSelected": false,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://www.dawsonera.com/abstract/9780313068003",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 1861142,
+      "packageName": "MyiLibrary",
+      "packageType": "Variable",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 58388,
+      "vendorName": "Ingram Content Group, Inc.",
+      "locationId": 8396574,
+      "isSelected": false,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://lib.myilibrary.com?id=240979",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 1884903,
+      "packageName": "ProQuest Ebook Library (EBL)",
+      "packageType": "Variable",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "locationId": 20595944,
+      "isSelected": false,
+      "isTokenNeeded": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "http://[[SiteID]].eblib.com/patron/FullRecord.aspx?p=496907",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 2513961,
+      "packageName": "ProQuest Ebook Central - Academic Complete",
+      "packageType": "Complete",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "locationId": 38315987,
+      "isSelected": false,
+      "isTokenNeeded": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=496907",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 2601876,
+      "packageName": "ProQuest Ebook Central - College Complete",
+      "packageType": "Complete",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "locationId": 39154827,
+      "isSelected": false,
+      "isTokenNeeded": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=496907",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 2602580,
+      "packageName": "ProQuest Ebook Central - Academic Complete International",
+      "packageType": "Complete",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "locationId": 39164683,
+      "isSelected": false,
+      "isTokenNeeded": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=496907",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 2601181,
+      "packageName": "ProQuest Ebook Central - History Ebooks",
+      "packageType": "Complete",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "locationId": 40170489,
+      "isSelected": false,
+      "isTokenNeeded": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=496907",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 2515411,
+      "packageName": "ProQuest Ebook Central - Academic Complete UK & Ireland",
+      "packageType": "Complete",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "locationId": 41543581,
+      "isSelected": false,
+      "isTokenNeeded": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=496907",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    },
+    {
+      "titleId": 762169,
+      "packageId": 1887786,
+      "packageName": "ProQuest Ebook Central",
+      "packageType": "Variable",
+      "proxy": {
+        "id": "Proxy-ID-123",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 22,
+      "vendorName": "Proquest Info & Learning Co",
+      "locationId": 20817274,
+      "isSelected": true,
+      "isTokenNeeded": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=496907",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    }
+  ],
+  "description": null,
+  "edition": null,
+  "isPeerReviewed": false,
+  "contributorsList": [
+    {
+      "type": "Author",
+      "contributor": "Beeman, William O."
+    }
+  ]
+}

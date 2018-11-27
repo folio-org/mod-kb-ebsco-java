@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Relationship for a given object",
+  "description": "Metadata of relationship that describes single object",
+  "javaType": "org.folio.rest.jaxrs.model.HasOneRelationship",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "relationship Data Information",
+      "$ref": "relationshipData.json"
+    },
+    "meta": {
+      "type": "object",
+      "description": "Meta information",
+      "$ref": "included.json"
+    }
+  }
+}
