@@ -31,6 +31,7 @@ import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
+import org.folio.rmapi.model.Proxy;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
@@ -125,7 +126,8 @@ public class RMAPIService {
           future.complete(results);
         } catch (Exception e) {
           LOG.error(
-              String.format("%s - Response = [%s] Target Type = [%s]", JSON_RESPONSE_ERROR, body.toString(), clazz));
+              String.format("%s - Response = [%s] Target Type = [%s] Cause: [%s]",
+                  JSON_RESPONSE_ERROR, body.toString(), clazz, e.getMessage()));
           future.completeExceptionally(
               new RMAPIResultsProcessingException(String.format("%s for query = %s", JSON_RESPONSE_ERROR, query), e));
         }
@@ -220,7 +222,7 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Vendors> getVendors(boolean filterCustom){
-    CompletableFuture<Vendors> vendorsList = CompletableFuture.completedFuture(new Vendors());
+    CompletableFuture<Vendors> vendorsList = CompletableFuture.completedFuture(Vendors.builder().build());
     if (filterCustom) {
       return retrieveProviders(customerId, 1, 25, Sort.RELEVANCE);
     }
@@ -275,20 +277,27 @@ public class RMAPIService {
     return getRequest(constructURL("proxies"), Proxies.class);
   }
 
-  public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest, RootProxyCustomLabels rootProxyCustomLabels) {
+  public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest,
+                                                                              RootProxyCustomLabels rootProxyCustomLabels) {
     final String path = "";
 
-    org.folio.rmapi.model.Proxy proxyRMAPI = new org.folio.rmapi.model.Proxy();
-    proxyRMAPI.setId(rootProxyPutRequest.getData().getAttributes().getProxyTypeId());
-    rootProxyCustomLabels.setProxy(proxyRMAPI);
+    Proxy.ProxyBuilder pb = Proxy.builder();
+    pb.id(rootProxyPutRequest.getData().getAttributes().getProxyTypeId());
+
+    RootProxyCustomLabels.RootProxyCustomLabelsBuilder clb = rootProxyCustomLabels.toBuilder().proxy(pb.build());
     /* In RM API - custom labels and root proxy are updated using the same PUT endpoint.
      * We are GETting the object containing both, updating the root proxy with the new one and making a PUT request to RM API.
      * One gotcha here is that we have to prune custom labels in PUT request to not include any that have displayLabel = '' since RM API
      * gives a 400 Bad Request if we send them along as part of the update. Hence, the step below.
      */
-    List<CustomLabel> filteredCustomLabelList = rootProxyCustomLabels.getLabelList().stream().filter(item -> !item.getDisplayLabel().isEmpty()).collect((Collectors.toList()));
-    rootProxyCustomLabels.setLabelList(filteredCustomLabelList);
-    return this.putRequest(constructURL(path), rootProxyCustomLabels).thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
+    List<CustomLabel> filteredCustomLabelList = rootProxyCustomLabels.getLabelList().stream()
+      .filter(item -> !item.getDisplayLabel().isEmpty())
+      .collect((Collectors.toList()));
+
+    clb.labelList(filteredCustomLabelList);
+    
+    return this.putRequest(constructURL(path), clb.build())
+      .thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
   }
 
   public CompletableFuture<Title> retrieveTitle(long id) {

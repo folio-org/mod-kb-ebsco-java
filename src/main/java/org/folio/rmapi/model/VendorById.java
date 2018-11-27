@@ -23,9 +23,9 @@ public class VendorById extends Vendor {
   @Builder(builderMethodName = "byIdBuilder")
   VendorById(@JsonProperty("vendorId") int vendorId, @JsonProperty("vendorName") String vendorName,
              @JsonProperty("packagesTotal") int packagesTotal, @JsonProperty("packagesSelected") int packagesSelected,
-             @JsonProperty("isCustomer") boolean isCustomer, @JsonProperty("vendorToken") String vendorToken,
-             @JsonProperty("proxy") Proxy proxy, @JsonProperty("vendorToken") TokenInfo vendorByIdToken) {
-    super(vendorId, vendorName, packagesTotal, packagesSelected, isCustomer, vendorToken);
+             @JsonProperty("isCustomer") boolean isCustomer, @JsonProperty("proxy") Proxy proxy,
+             @JsonProperty("vendorToken") TokenInfo vendorByIdToken) {
+    super(vendorId, vendorName, packagesTotal, packagesSelected, isCustomer, null);
     this.proxy = proxy;
     this.vendorByIdToken = vendorByIdToken;
   }

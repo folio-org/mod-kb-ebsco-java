@@ -195,8 +195,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     ObjectMapper mapper = new ObjectMapper();
-    PackageData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_BY_ID_STUB_FILE), PackageData.class);
-    packageData.setCustom(false);
+    PackageData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_BY_ID_STUB_FILE), PackageData.class)
+                                .toBuilder().isCustom(false).build();
 
     WireMock.stubFor(
       WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false))

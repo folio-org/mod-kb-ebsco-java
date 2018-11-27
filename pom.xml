@@ -242,6 +242,7 @@
         <configuration>
           <verbose>true</verbose>
           <complianceLevel>1.8</complianceLevel>
+          <forceAjcCompile>true</forceAjcCompile>
           <includes>
             <include>**/impl/*.java</include>
             <include>**/*.aj</include>
