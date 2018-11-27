@@ -1,7 +1,5 @@
 package org.folio.rest.impl;
 
-import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
-import static org.folio.http.HttpConsts.JSON_API_TYPE;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -14,7 +12,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -33,12 +30,13 @@ import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.exception.RMAPIServiceException;
+
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private static final String GET_TITLES_ERROR_MESSAGE = "Failed to retrieve titles";
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
+  private static final String GET_TITLES_BY_ID_ERROR_MESSAGE = "Failed to retrieve title by title id";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsTitlesImpl.class);
 
@@ -46,6 +44,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private HeaderValidator headerValidator;
   private TitleConverter converter;
   private TitleParametersValidator parametersValidator;
+
   public EholdingsTitlesImpl() {
     this(
       new RMAPIConfigurationServiceCache(
@@ -78,9 +77,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .publisher(filterPublisher).build();
 
     parametersValidator.validate(fq, sort);
-    
+
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
-    
+
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
@@ -127,23 +126,17 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       })
       .thenAccept(title ->
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesByTitleIdResponse
-          .respond200WithApplicationVndApiJson(converter.convertFromRMAPITitle(title)))))
+          .respond200WithApplicationVndApiJson(converter.convertFromRMAPITitle(title, include)))))
       .exceptionally(e -> {
-        if (e.getCause() instanceof RMAPIResourceNotFoundException) {
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesByTitleIdResponse
-            .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))));
-        } else if (e.getCause() instanceof RMAPIServiceException) {
-            RMAPIServiceException rmApiException = (RMAPIServiceException) e.getCause();
-            asyncResultHandler.handle(Future.succeededFuture(
-                Response.status(rmApiException.getRMAPICode()).header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
-                    .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException)).build()));
-        } else {
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesByTitleIdResponse
-            .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-            .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
-            .entity(ErrorUtil.createError(e.getCause().getMessage()))
-            .build()));
-        }
+        logger.error(GET_TITLES_BY_ID_ERROR_MESSAGE);
+        new ErrorHandler()
+          .add(RMAPIResourceNotFoundException.class, exception ->
+            GetEholdingsTitlesByTitleIdResponse
+              .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))
+          )
+          .addRmApiMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
         return null;
       });
   }

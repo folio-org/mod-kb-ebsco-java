@@ -24,7 +24,7 @@
     "relationships": {
       "type": "object",
       "description": "Displays title relationships",
-      "$ref": "titleRelationship.json"
+      "$ref": "../relationships.json"
     }
   }
 }
