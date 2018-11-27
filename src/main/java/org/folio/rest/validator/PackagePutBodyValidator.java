@@ -1,13 +1,8 @@
 package org.folio.rest.validator;
 
-import java.util.Optional;
-
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rest.jaxrs.model.Token;
-import org.folio.rest.jaxrs.model.VisibilityData;
 
 public class PackagePutBodyValidator {
 
@@ -24,18 +19,16 @@ public class PackagePutBodyValidator {
     PackageDataAttributes attributes = request.getData().getAttributes();
     Boolean isSelected = attributes.getIsSelected();
     Boolean allowKbToAddTitles = attributes.getAllowKbToAddTitles();
-    Boolean isHidden = Optional.ofNullable(attributes.getVisibilityData())
-      .map(VisibilityData::getIsHidden)
-      .orElse(null);
-    String beginCoverage = Optional.ofNullable(attributes.getCustomCoverage())
-      .map(Coverage::getBeginCoverage)
-      .orElse(null);
-    String endCoverage = Optional.ofNullable(attributes.getCustomCoverage())
-      .map(Coverage::getEndCoverage)
-      .orElse(null);
-    String value = Optional.ofNullable(attributes.getPackageToken())
-      .map(Token::getValue)
-      .orElse(null);
+
+    Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
+    String beginCoverage = null;
+    String endCoverage = null;
+    if (attributes.getCustomCoverage() != null) {
+      beginCoverage = attributes.getCustomCoverage().getBeginCoverage();
+      endCoverage = attributes.getCustomCoverage().getEndCoverage();
+    }
+
+    String value = attributes.getPackageToken() != null ? attributes.getPackageToken().getValue() : null;
 
     if (isSelected == null || !isSelected) {
       ValidatorUtil.checkFalseOrNull("allowKbToAddTitles", allowKbToAddTitles);

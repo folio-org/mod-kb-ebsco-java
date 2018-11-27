@@ -1,9 +1,6 @@
 package org.folio.rest.validator;
 
-import java.util.Optional;
-
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 
@@ -21,13 +18,13 @@ public class CustomPackagePutBodyValidator
     PackageDataAttributes attributes = request.getData().getAttributes();
     String name = attributes.getName();
     PackageDataAttributes.ContentType contentType = attributes.getContentType();
-    String beginCoverage = Optional.ofNullable(attributes.getCustomCoverage())
-      .map(Coverage::getBeginCoverage)
-      .orElse(null);
 
-    String endCoverage = Optional.ofNullable(attributes.getCustomCoverage())
-      .map(Coverage::getEndCoverage)
-      .orElse(null);
+    String beginCoverage = null;
+    String endCoverage = null;
+    if(attributes.getCustomCoverage() !=null){
+      beginCoverage =attributes.getCustomCoverage().getBeginCoverage();
+      endCoverage = attributes.getCustomCoverage().getEndCoverage();
+    }
 
     ValidatorUtil.checkIsNotEmpty("name", name);
     ValidatorUtil.checkIsNotNull("contentType", contentType);
