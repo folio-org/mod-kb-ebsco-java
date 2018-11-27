@@ -165,7 +165,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         return rmapiService.getValue().retrievePackage(parsedPackageId);
       })
       .thenCompose( packageData -> {
-        if(!packageData.getCustom()){
+        if(!packageData.getIsCustom()){
           throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
         }
         return rmapiService.getValue().deletePackage(parsedPackageId);

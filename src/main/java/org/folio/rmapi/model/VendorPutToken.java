@@ -1,19 +1,14 @@
 package org.folio.rmapi.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
 
+@Value
+@Builder(toBuilder = true)
 public class VendorPutToken {
 
    @JsonProperty("value")
   private Object value;
 
-  @JsonProperty("value")
-  public Object getValue() {
-    return value;
-  }
-
-  @JsonProperty("value")
-  public void setValue(Object value) {
-    this.value = value;
-  }
 }

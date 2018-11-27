@@ -1,5 +1,9 @@
 package org.folio.rmapi;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -9,14 +13,11 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
+import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
+import org.folio.rest.model.ResourceId;
 import org.folio.rest.model.Sort;
 import org.folio.rmapi.builder.PackagesFilterableUrlBuilder;
 import org.folio.rmapi.builder.QueriableUrlBuilder;
@@ -29,6 +30,8 @@ import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
+import org.folio.rmapi.model.Proxies;
+import org.folio.rmapi.model.Proxy;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
@@ -36,7 +39,6 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
-import org.folio.rest.model.ResourceId;
 
 public class RMAPIService {
 
@@ -124,7 +126,8 @@ public class RMAPIService {
           future.complete(results);
         } catch (Exception e) {
           LOG.error(
-              String.format("%s - Response = [%s] Target Type = [%s]", JSON_RESPONSE_ERROR, body.toString(), clazz));
+              String.format("%s - Response = [%s] Target Type = [%s] Cause: [%s]",
+                  JSON_RESPONSE_ERROR, body.toString(), clazz, e.getMessage()));
           future.completeExceptionally(
               new RMAPIResultsProcessingException(String.format("%s for query = %s", JSON_RESPONSE_ERROR, query), e));
         }
@@ -187,15 +190,9 @@ public class RMAPIService {
     return this.getRequest(constructURL(VENDORS_PATH + "?" + query), Vendors.class);
   }
 
-  public CompletableFuture<Titles> retrieveTitles(String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
-                                                  String filterPublisher, Sort sort, int page, int count) {
+  public CompletableFuture<Titles> retrieveTitles(FilterQuery filterQuery, Sort sort, int page, int count) {
     String path = new TitlesFilterableUrlBuilder()
-      .filterSelected(filterSelected)
-      .filterType(filterType)
-      .filterName(filterName)
-      .filterIsxn(filterIsxn)
-      .filterSubject(filterSubject)
-      .filterPublisher(filterPublisher)
+      .filter(filterQuery)
       .sort(sort)
       .page(page)
       .count(count)
@@ -225,7 +222,7 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Vendors> getVendors(boolean filterCustom){
-    CompletableFuture<Vendors> vendorsList = CompletableFuture.completedFuture(new Vendors());
+    CompletableFuture<Vendors> vendorsList = CompletableFuture.completedFuture(Vendors.builder().build());
     if (filterCustom) {
       return retrieveProviders(customerId, 1, 25, Sort.RELEVANCE);
     }
@@ -273,25 +270,34 @@ public class RMAPIService {
   }
 
   public CompletableFuture<RootProxyCustomLabels> retrieveRootProxyCustomLabels() {
-    final String path = "";
-
-    return this.getRequest(constructURL(path), RootProxyCustomLabels.class);
+    return this.getRequest(constructURL(""), RootProxyCustomLabels.class);
   }
 
-  public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest, RootProxyCustomLabels rootProxyCustomLabels) {
+  public CompletableFuture<Proxies> retrieveProxies() {
+    return getRequest(constructURL("proxies"), Proxies.class);
+  }
+
+  public CompletableFuture<RootProxyCustomLabels> updateRootProxyCustomLabels(RootProxyPutRequest rootProxyPutRequest,
+                                                                              RootProxyCustomLabels rootProxyCustomLabels) {
     final String path = "";
 
-    org.folio.rmapi.model.Proxy proxyRMAPI = new org.folio.rmapi.model.Proxy();
-    proxyRMAPI.setId(rootProxyPutRequest.getData().getAttributes().getProxyTypeId());
-    rootProxyCustomLabels.setProxy(proxyRMAPI);
+    Proxy.ProxyBuilder pb = Proxy.builder();
+    pb.id(rootProxyPutRequest.getData().getAttributes().getProxyTypeId());
+
+    RootProxyCustomLabels.RootProxyCustomLabelsBuilder clb = rootProxyCustomLabels.toBuilder().proxy(pb.build());
     /* In RM API - custom labels and root proxy are updated using the same PUT endpoint.
      * We are GETting the object containing both, updating the root proxy with the new one and making a PUT request to RM API.
      * One gotcha here is that we have to prune custom labels in PUT request to not include any that have displayLabel = '' since RM API
      * gives a 400 Bad Request if we send them along as part of the update. Hence, the step below.
      */
-    List<CustomLabel> filteredCustomLabelList = rootProxyCustomLabels.getLabelList().stream().filter(item -> !item.getDisplayLabel().isEmpty()).collect((Collectors.toList()));
-    rootProxyCustomLabels.setLabelList(filteredCustomLabelList);
-    return this.putRequest(constructURL(path), rootProxyCustomLabels).thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
+    List<CustomLabel> filteredCustomLabelList = rootProxyCustomLabels.getLabelList().stream()
+      .filter(item -> !item.getDisplayLabel().isEmpty())
+      .collect((Collectors.toList()));
+
+    clb.labelList(filteredCustomLabelList);
+    
+    return this.putRequest(constructURL(path), clb.build())
+      .thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
   }
 
   public CompletableFuture<Title> retrieveTitle(long id) {
@@ -299,7 +305,7 @@ public class RMAPIService {
     final String path = TITLES_PATH + '/' + id;
     return this.getRequest(constructURL(path), Title.class);
   }
-  
+
   public CompletableFuture<Title> retrieveResource(ResourceId resourceId) {
     final String path = VENDORS_PATH + '/' + resourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + resourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + resourceId.getTitleIdPart();
     return this.getRequest(constructURL(path), Title.class);

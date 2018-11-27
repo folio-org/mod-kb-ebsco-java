@@ -1,5 +1,10 @@
 package org.folio.rest.converter;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaIncluded;
@@ -16,11 +21,6 @@ import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
 import org.folio.rmapi.model.Packages;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class PackagesConverter {
 
@@ -90,8 +90,8 @@ public class PackagesConverter {
           new Coverage()
             .withBeginCoverage(packageData.getCustomCoverage().getBeginCoverage())
             .withEndCoverage(packageData.getCustomCoverage().getEndCoverage()))
-        .withIsCustom(packageData.getCustom())
-        .withIsSelected(packageData.getSelected())
+        .withIsCustom(packageData.getIsCustom())
+        .withIsSelected(packageData.getIsSelected())
         .withName(packageData.getPackageName())
         .withPackageId(packageId)
         .withPackageType(packageData.getPackageType())

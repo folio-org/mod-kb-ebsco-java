@@ -2,7 +2,11 @@ package org.folio.rmapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
 
+@Value
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Identifier {
 
@@ -29,19 +33,4 @@ public class Identifier {
   @JsonProperty("type")
   public Integer type;
 
-  public String getId() {
-    return id;
-  }
-
-  public String getSource() {
-    return source;
-  }
-
-  public Integer getSubtype() {
-    return subtype;
-  }
-
-  public Integer getType() {
-    return type;
-  }
 }

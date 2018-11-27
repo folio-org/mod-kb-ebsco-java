@@ -87,7 +87,7 @@ public class CommonAttributesConverter {
   public List<TitleSubject> convertSubjects(List<Subject> subjectsList) {
     return subjectsList.stream().map(subject ->
       new TitleSubject()
-      .withSubject(subject.getSubject())
+      .withSubject(subject.getValue())
       .withType(subject.getType())
       )
       .collect(Collectors.toList());

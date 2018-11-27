@@ -1,20 +1,23 @@
 package org.folio.util;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import com.google.common.io.Files;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.util.RestConstants;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 
 public final class TestUtil {
 
@@ -49,8 +52,7 @@ public final class TestUtil {
       configurations.getConfigs().get(0).setValue(wiremockUrl);
     }
 
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new EqualToPattern("/configurations/entries"), false))
+    stubFor(get(new UrlPathPattern(new EqualToPattern("/configurations/entries"), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(mapper.writeValueAsString(configurations))));
   }
@@ -67,5 +69,16 @@ public final class TestUtil {
       .addHeader(RestConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN")
       .setBaseUri(uri)
       .log(LogDetail.ALL);
+  }
+
+  public static void mockGet(String requestUrlPattern, String responseFile) throws IOException, URISyntaxException {
+    stubFor(get(new UrlPathPattern(new RegexPattern(requestUrlPattern), true))
+      .willReturn(new ResponseDefinitionBuilder()
+        .withBody(readFile(responseFile))));
+  }
+
+  public static void mockGet(String requestUrlPattern, int status) {
+    stubFor(get(new UrlPathPattern(new RegexPattern(requestUrlPattern), true))
+      .willReturn(new ResponseDefinitionBuilder().withStatus(status)));
   }
 }
