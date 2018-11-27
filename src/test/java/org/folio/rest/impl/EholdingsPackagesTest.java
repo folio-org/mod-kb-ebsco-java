@@ -337,13 +337,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422WhenPackageIsNotSelectedAndIsHiddenIsTrue() throws URISyntaxException, IOException {
-    String providerId = "3964";
-    String packageId = "111111";
-
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false))
+      WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(PACKAGE_STUB_FILE))));
 
@@ -352,9 +349,35 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .header(CONTENT_TYPE_HEADER)
       .when()
       .body(TestUtil.readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json"))
-      .put("eholdings/packages/" + providerId + "-" + packageId)
+      .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
       .then()
       .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  public void shouldReturn400WhenRMAPIReturns400() throws URISyntaxException, IOException {
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    WireMock.stubFor(
+      WireMock.get(urlPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(PACKAGE_STUB_FILE))));
+
+    WireMock.stubFor(
+      WireMock.put(urlPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_BAD_REQUEST)));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .when()
+      .body(TestUtil.readFile("requests/kb-ebsco/package/put-package-selected.json"))
+      .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
   }
 
   private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage, String updatedPackage){
