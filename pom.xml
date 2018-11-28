@@ -43,6 +43,25 @@
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
   </properties>
 
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <jacoco.skip>true</jacoco.skip>
+      </properties>
+    </profile>
+    <profile>
+      <id>test-coverage</id>
+      <properties>
+        <jacoco.skip>false</jacoco.skip>
+        <maven.test.skip>false</maven.test.skip>
+      </properties>
+    </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>org.folio</groupId>
@@ -419,8 +438,37 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.2</version>
+        <executions>
+          <execution>
+            <id>jacoco-initialize</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>jacoco-coverage-report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>2.22.1</version>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <scm>
     <url>https://github.com/folio-org/mod-kb-ebsco-java</url>
