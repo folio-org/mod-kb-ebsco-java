@@ -1,15 +1,25 @@
 package org.folio.rmapi.builder;
 
+import static org.junit.Assert.assertEquals;
+
+import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.Sort;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class TitlesFilterableUrlBuilderTest {
+
+  private FilterQuery.FilterQueryBuilder fqb;
+
+  @Before
+  public void setUp() {
+    fqb = FilterQuery.builder();
+  }
+
   @Test
   public void shouldBuildUrlWithCount(){
     String url = new TitlesFilterableUrlBuilder()
-      .filterName("ebsco")
+      .filter(fqb.name("ebsco").build())
       .count(5)
       .sort(Sort.RELEVANCE)
       .build();
@@ -20,7 +30,7 @@ public class TitlesFilterableUrlBuilderTest {
   @Test
   public void shouldBuildUrlWithSort(){
     String url = new TitlesFilterableUrlBuilder()
-      .filterName("ebsco")
+      .filter(fqb.name("ebsco").build())
       .sort(Sort.NAME)
       .build();
     assertEquals("searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=ebsco" +
@@ -30,7 +40,7 @@ public class TitlesFilterableUrlBuilderTest {
   @Test
   public void shouldBuildUrlWithPage(){
     String url = new TitlesFilterableUrlBuilder()
-      .filterName("ebsco")
+      .filter(fqb.name("ebsco").build())
       .page(2)
       .sort(Sort.RELEVANCE)
       .build();
@@ -41,9 +51,7 @@ public class TitlesFilterableUrlBuilderTest {
   @Test
   public void shouldBuildUrlForFilterBySelectedStatus(){
     String url = new TitlesFilterableUrlBuilder()
-      .filterName("news")
-      .filterType("book")
-      .filterSelected("true")
+      .filter(fqb.name("news").type("book").selected("true").build())
       .sort(Sort.RELEVANCE)
       .build();
     assertEquals("searchfield=titlename&selection=selected&resourcetype=book&searchtype=advanced&search=news" +
@@ -53,7 +61,7 @@ public class TitlesFilterableUrlBuilderTest {
   @Test
   public void shouldBuildUrlForFilterByIsxn(){
     String url = new TitlesFilterableUrlBuilder()
-      .filterIsxn("1362-3613")
+      .filter(fqb.isxn("1362-3613").build())
       .sort(Sort.RELEVANCE)
       .build();
     assertEquals("searchfield=isxn&selection=all&resourcetype=all&searchtype=advanced&search=1362-3613" +
@@ -63,7 +71,7 @@ public class TitlesFilterableUrlBuilderTest {
   @Test
   public void shouldBuildUrlForFilterBySubject(){
     String url = new TitlesFilterableUrlBuilder()
-      .filterSubject("history")
+      .filter(fqb.subject("history").build())
       .sort(Sort.RELEVANCE)
       .build();
     assertEquals("searchfield=subject&selection=all&resourcetype=all&searchtype=advanced&search=history" +
@@ -73,7 +81,7 @@ public class TitlesFilterableUrlBuilderTest {
   @Test
   public void shouldBuildUrlForFilterByPublisher(){
     String url = new TitlesFilterableUrlBuilder()
-      .filterPublisher("publisherName")
+      .filter(fqb.publisher("publisherName").build())
       .sort(Sort.RELEVANCE)
       .build();
     assertEquals("searchfield=publisher&selection=all&resourcetype=all&searchtype=advanced&search=publisherName" +

@@ -18,7 +18,7 @@ public class PackagesConverterTest {
     PackagePut packagePut = packagesConverter.convertToRMAPIPackagePutRequest(PackagesTestData.getPackagePutRequest(
       new PackageDataAttributes()
         .withIsSelected(true)));
-    assertTrue(packagePut.getSelected());
+    assertTrue(packagePut.getIsSelected());
   }
 
   @Test
@@ -28,7 +28,7 @@ public class PackagesConverterTest {
         .withIsSelected(true)
         .withVisibilityData(new VisibilityData()
           .withIsHidden(true))));
-    assertTrue(packagePut.getHidden());
+    assertTrue(packagePut.getIsHidden());
   }
 
   @Test
@@ -98,6 +98,6 @@ public class PackagesConverterTest {
       new PackageDataAttributes()
         .withVisibilityData(new VisibilityData()
           .withIsHidden(true))));
-    assertTrue(packagePut.getHidden());
+    assertTrue(packagePut.getIsHidden());
   }
 }

@@ -105,8 +105,8 @@ public class PackagesConverter {
           new Coverage()
             .withBeginCoverage(packageData.getCustomCoverage().getBeginCoverage())
             .withEndCoverage(packageData.getCustomCoverage().getEndCoverage()))
-        .withIsCustom(packageData.getCustom())
-        .withIsSelected(packageData.getSelected())
+        .withIsCustom(packageData.getIsCustom())
+        .withIsSelected(packageData.getIsSelected())
         .withName(packageData.getPackageName())
         .withPackageId(packageId)
         .withPackageType(packageData.getPackageType())
@@ -116,7 +116,7 @@ public class PackagesConverter {
         .withTitleCount(packageData.getTitleCount())
         .withAllowKbToAddTitles(packageData.getAllowEbscoToAddTitles())
         .withVisibilityData(
-          new VisibilityData().withIsHidden(packageData.getVisibilityData().getHidden())
+          new VisibilityData().withIsHidden(packageData.getVisibilityData().getIsHidden())
             .withReason(
               packageData.getVisibilityData().getReason().equals("Hidden by EP") ? "Set by system"
                 : "")))
@@ -130,50 +130,53 @@ public class PackagesConverter {
 
   public PackagePut convertToRMAPICustomPackagePutRequest(PackagePutRequest request) {
     PackageDataAttributes attributes = request.getData().getAttributes();
-    PackagePut packagePut = convertCommonAttributesToPackagePutRequest(attributes);
-    packagePut.setPackageName(attributes.getName());
+    PackagePut.PackagePutBuilder builder = convertCommonAttributesToPackagePutRequest(attributes);
+    builder.packageName(attributes.getName());
     Integer contentType = contentTypeToRMAPICode.get(attributes.getContentType());
-    packagePut.setContentType(contentType != null ? contentType : 6);
-    return packagePut;
+    builder.contentType(contentType != null ? contentType : 6);
+    return builder.build();
   }
 
   public PackagePut convertToRMAPIPackagePutRequest(PackagePutRequest request) {
     PackageDataAttributes attributes = request.getData().getAttributes();
-    PackagePut packagePut = convertCommonAttributesToPackagePutRequest(attributes);
-    packagePut.setAllowEbscoToAddTitles(attributes.getAllowKbToAddTitles());
+    PackagePut.PackagePutBuilder builder = convertCommonAttributesToPackagePutRequest(attributes);
+    builder.allowEbscoToAddTitles(attributes.getAllowKbToAddTitles());
     if (attributes.getPackageToken() != null) {
-      TokenInfo tokenInfo = new TokenInfo();
-      tokenInfo.setValue(attributes.getPackageToken().getValue());
-      packagePut.setPackageToken(tokenInfo);
+      TokenInfo tokenInfo = TokenInfo.builder()
+        .value(attributes.getPackageToken().getValue())
+        .build();
+      builder.packageToken(tokenInfo);
     }
-    return packagePut;
+    return builder.build();
   }
 
-  private PackagePut convertCommonAttributesToPackagePutRequest(PackageDataAttributes attributes) {
-    PackagePut packagePut = new PackagePut();
+  private PackagePut.PackagePutBuilder convertCommonAttributesToPackagePutRequest(PackageDataAttributes attributes) {
+    PackagePut.PackagePutBuilder builder = PackagePut.builder();
 
-    packagePut.setSelected(attributes.getIsSelected());
+    builder.isSelected(attributes.getIsSelected());
 
     if (attributes.getProxy() != null) {
-      org.folio.rmapi.model.Proxy proxy = new org.folio.rmapi.model.Proxy();
-      proxy.setId(attributes.getProxy().getId());
+      org.folio.rmapi.model.Proxy proxy = org.folio.rmapi.model.Proxy.builder()
+        .id(attributes.getProxy().getId())
 //    RM API gives an error when we pass inherited as true along with updated proxy value
 //    Hard code it to false; it should not affect the state of inherited that RM API maintains
-      proxy.setInherited(false);
-      packagePut.setProxy(proxy);
+        .inherited(false)
+        .build();
+      builder.proxy(proxy);
     }
 
     if (attributes.getVisibilityData() != null) {
-      packagePut.setHidden(attributes.getVisibilityData().getIsHidden());
+      builder.isHidden(attributes.getVisibilityData().getIsHidden());
     }
 
     if (attributes.getCustomCoverage() != null) {
-      CoverageDates coverageDates = new CoverageDates();
-      coverageDates.setBeginCoverage(attributes.getCustomCoverage().getBeginCoverage());
-      coverageDates.setEndCoverage(attributes.getCustomCoverage().getEndCoverage());
-      packagePut.setCustomCoverage(coverageDates);
+      CoverageDates coverageDates = CoverageDates.builder()
+        .beginCoverage(attributes.getCustomCoverage().getBeginCoverage())
+        .endCoverage(attributes.getCustomCoverage().getEndCoverage())
+        .build();
+      builder.customCoverage(coverageDates);
     }
 
-    return packagePut;
+    return builder;
   }
 }

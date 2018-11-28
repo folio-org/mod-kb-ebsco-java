@@ -2,7 +2,18 @@ package org.folio.rmapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
+@Getter
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
+@EqualsAndHashCode
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Vendor {
   @JsonProperty("vendorId")
@@ -18,51 +29,4 @@ public class Vendor {
   @JsonProperty("vendorToken")
   private String vendorToken;
 
-  public int getVendorId() {
-    return vendorId;
-  }
-
-  public void setVendorId(int vendorId) {
-    this.vendorId = vendorId;
-  }
-
-  public String getVendorName() {
-    return vendorName;
-  }
-
-  public void setVendorName(String vendorName) {
-    this.vendorName = vendorName;
-  }
-
-  public int getPackagesTotal() {
-    return packagesTotal;
-  }
-
-  public void setPackagesTotal(int packagesTotal) {
-    this.packagesTotal = packagesTotal;
-  }
-
-  public int getPackagesSelected() {
-    return packagesSelected;
-  }
-
-  public void setPackagesSelected(int packagesSelected) {
-    this.packagesSelected = packagesSelected;
-  }
-
-  public boolean isCustomer() {
-    return isCustomer;
-  }
-
-  public void setCustomer(boolean customer) {
-    isCustomer = customer;
-  }
-
-  public String getVendorToken() {
-    return vendorToken;
-  }
-
-  public void setVendorToken(String vendorToken) {
-    this.vendorToken = vendorToken;
-  }
 }

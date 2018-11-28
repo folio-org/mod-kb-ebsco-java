@@ -1,16 +1,16 @@
 package org.folio.rest.util;
 
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.Errors;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Util class for creating errors
@@ -40,7 +40,7 @@ public class ErrorUtil {
       final JsonObject instanceJSON = new JsonObject(rmApiException.getResponseBody());
       Errors errors = instanceJSON.mapTo(Errors.class);
       JsonapiError configurationError = new JsonapiError();
-      List<JsonapiErrorResponse> jsonApiErrors = errors.getErrors().stream()
+      List<JsonapiErrorResponse> jsonApiErrors = errors.getErrorList().stream()
         .map(error -> new JsonapiErrorResponse()
           .withTitle(error.getMessage()))
         .collect(Collectors.toList());

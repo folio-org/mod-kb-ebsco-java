@@ -13,6 +13,7 @@ import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
+import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
 import org.folio.util.TestUtil;
@@ -193,8 +194,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     ObjectMapper mapper = new ObjectMapper();
-    PackageData packageData = mapper.readValue(TestUtil.getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class);
-    packageData.setCustom(false);
+    PackageData packageData = mapper.readValue(TestUtil.getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class)
+                                .toBuilder().isCustom(false).build();
 
     WireMock.stubFor(
       WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false))
@@ -221,7 +222,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     ObjectMapper mapper = new ObjectMapper();
     PackageByIdData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
     String initialPackageValue = mapper.writeValueAsString(packageData);
-    packageData.setSelected(updatedIsSelected);
+    packageData = packageData.toByIdBuilder().isSelected(updatedIsSelected).build();
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(urlPattern, initialPackageValue, updatedPackageValue);
 
@@ -258,11 +259,15 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     PackageByIdData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
     String initialPackageValue = mapper.writeValueAsString(packageData);
 
-    packageData.setSelected(updatedSelected);
-    packageData.getCustomCoverage().setBeginCoverage(updatedBeginCoverage);
-    packageData.getCustomCoverage().setEndCoverage(updatedEndCoverage);
-    packageData.setAllowEbscoToAddTitles(updatedAllowEbscoToAddTitles);
-    packageData.getVisibilityData().setHidden(updatedHidden);
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(urlPattern, initialPackageValue, updatedPackageValue);
@@ -304,12 +309,15 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     PackageByIdData packageData = mapper.readValue(TestUtil.getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
     String initialPackageValue = mapper.writeValueAsString(packageData);
 
-    packageData.setSelected(updatedSelected);
-    packageData.getVisibilityData().setHidden(updatedHidden);
-    packageData.getCustomCoverage().setBeginCoverage(updatedBeginCoverage);
-    packageData.getCustomCoverage().setEndCoverage(updatedEndCoverage);
-    packageData.setPackageName(updatedPackageName);
-    packageData.setContentType("AggregatedFullText");
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .packageName(updatedPackageName)
+      .contentType("AggregatedFullText").build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(urlPattern, initialPackageValue, updatedPackageValue);

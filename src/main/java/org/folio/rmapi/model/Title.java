@@ -1,10 +1,14 @@
 package org.folio.rmapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Title {
   @JsonProperty("description")
@@ -43,51 +47,4 @@ public class Title {
   @JsonProperty("customerResourcesList")
   private List<CustomerResources> customerResourcesList;
 
-  public String getDescription() {
-    return description;
-  }
-
-  public String getEdition() {
-    return edition;
-  }
-
-  public Boolean getPeerReviewed() {
-    return isPeerReviewed;
-  }
-
-  public List<Contributor> getContributorsList() {
-    return contributorsList;
-  }
-
-  public Integer getTitleId() {
-    return titleId;
-  }
-
-  public String getTitleName() {
-    return titleName;
-  }
-
-  public String getPublisherName() {
-    return publisherName;
-  }
-
-  public List<Identifier> getIdentifiersList() {
-    return identifiersList;
-  }
-
-  public List<Subject> getSubjectsList() {
-    return subjectsList;
-  }
-
-  public Boolean getTitleCustom() {
-    return isTitleCustom;
-  }
-
-  public String getPubType() {
-    return pubType;
-  }
-
-  public List<CustomerResources> getCustomerResourcesList() {
-    return customerResourcesList;
-  }
 }

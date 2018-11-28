@@ -8,12 +8,13 @@ import lombok.Value;
 @Value
 @Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class VendorPut {
-  
-  @JsonProperty("vendorToken")
-  private VendorPutToken vendorToken;
-  
-  @JsonProperty("proxy")
-  private Proxy proxy;
+public class ProxyWithUrl {
+
+  @JsonProperty(value = "id", required = true)
+  private String id;
+  @JsonProperty("name")
+  private String name;
+  @JsonProperty("urlMask")
+  private String urlMask;
 
 }

@@ -1,10 +1,14 @@
 package org.folio.rmapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CustomerResources {
 
@@ -43,7 +47,7 @@ public class CustomerResources {
 
   @JsonProperty("proxy")
   private Proxy proxy;
-  
+
   @JsonProperty("managedCoverageList")
   private List<CoverageDates> managedCoverageList;
 
@@ -73,95 +77,4 @@ public class CustomerResources {
   @JsonProperty("userDefinedField5")
   private String userDefinedField5;
 
-  public Integer getTitleId() {
-    return titleId;
-  }
-
-  public Integer getPackageId() {
-    return packageId;
-  }
-
-  public String getPackageName() {
-    return packageName;
-  }
-
-  public Boolean getPackageCustom() {
-    return isPackageCustom;
-  }
-
-  public Integer getVendorId() {
-    return vendorId;
-  }
-
-  public String getVendorName() {
-    return vendorName;
-  }
-
-  public Integer getLocationId() {
-    return locationId;
-  }
-
-  public Boolean getSelected() {
-    return isSelected;
-  }
-
-  public Boolean getTokenNeeded() {
-    return isTokenNeeded;
-  }
-
-  public VisibilityInfo getVisibilityData() {
-    return visibilityData;
-  }
-  
-  public Proxy getProxy() {
-    return proxy;
-  }
-
-  public List<CoverageDates> getManagedCoverageList() {
-    return managedCoverageList;
-  }
-
-  public List<CoverageDates> getCustomCoverageList() {
-    return customCoverageList;
-  }
-
-  public String getCoverageStatement() {
-    return coverageStatement;
-  }
-
-  public EmbargoPeriod getManagedEmbargoPeriod() {
-    return managedEmbargoPeriod;
-  }
-
-  public EmbargoPeriod getCustomEmbargoPeriod() {
-    return customEmbargoPeriod;
-  }
-
-  public String getUrl() {
-    return url;
-  }
-
-  public String getUserDefinedField1() {
-    return userDefinedField1;
-  }
-
-  public String getUserDefinedField2() {
-    return userDefinedField2;
-  }
-
-  public String getUserDefinedField3() {
-    return userDefinedField3;
-  }
-
-  public String getUserDefinedField4() {
-    return userDefinedField4;
-  }
-
-  public String getUserDefinedField5() {
-    return userDefinedField5;
-  }
-
-  public String getPackageType() {
-    return packageType;
-  }
 }

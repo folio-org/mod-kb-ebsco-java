@@ -1,10 +1,14 @@
 package org.folio.rmapi.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Titles {
 
@@ -13,12 +17,5 @@ public class Titles {
 
   @JsonProperty("totalResults")
   private Integer totalResults;
-
-  public List<Title> getTitleList() {
-    return titleList;
-  }
-
-  public Integer getTotalResults() {
-    return totalResults;
-  }
+  
 }

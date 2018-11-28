@@ -2,7 +2,11 @@ package org.folio.rmapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
 
+@Value
+@Builder(toBuilder = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CoverageDates {
   @JsonProperty("beginCoverage")
@@ -11,19 +15,4 @@ public class CoverageDates {
   @JsonProperty("endCoverage")
   private String endCoverage;
 
-  public String getBeginCoverage() {
-    return beginCoverage;
-  }
-
-  public String getEndCoverage() {
-    return endCoverage;
-  }
-
-  public void setBeginCoverage(String beginCoverage) {
-    this.beginCoverage = beginCoverage;
-  }
-
-  public void setEndCoverage(String endCoverage) {
-    this.endCoverage = endCoverage;
-  }
 }
