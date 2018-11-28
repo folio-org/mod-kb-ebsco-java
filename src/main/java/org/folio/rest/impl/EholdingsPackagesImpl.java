@@ -288,6 +288,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
 
+
     FilterQuery fq = FilterQuery.builder()
         .selected(filterSelected).type(filterType)
         .name(filterName).isxn(filterIsxn).subject(filterSubject)
