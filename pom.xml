@@ -50,14 +50,13 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <jacoco.skip>true</jacoco.skip>
+        <test.coverage.skip>false</test.coverage.skip>
       </properties>
     </profile>
     <profile>
-      <id>test-coverage</id>
+      <id>no-coverage</id>
       <properties>
-        <jacoco.skip>false</jacoco.skip>
-        <maven.test.skip>false</maven.test.skip>
+        <test.coverage.skip>true</test.coverage.skip>
       </properties>
     </profile>
   </profiles>
@@ -448,6 +447,9 @@
             <goals>
               <goal>prepare-agent</goal>
             </goals>
+            <configuration>
+              <skip>${test.coverage.skip}</skip>
+            </configuration>
           </execution>
           <execution>
             <id>jacoco-coverage-report</id>
@@ -455,6 +457,9 @@
             <goals>
               <goal>report</goal>
             </goals>
+            <configuration>
+              <skip>${test.coverage.skip}</skip>
+            </configuration>
           </execution>
         </executions>
       </plugin>
