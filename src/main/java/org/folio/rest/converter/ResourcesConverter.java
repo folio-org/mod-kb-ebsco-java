@@ -10,13 +10,26 @@ import java.util.ArrayList;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.RelationshipData;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.folio.rest.jaxrs.model.Coverage;
+import org.folio.rest.jaxrs.model.MetaDataIncluded;
+import org.folio.rest.jaxrs.model.MetaIncluded;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourceRelationships;
+import org.folio.rest.jaxrs.model.TitleCollection;
+import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.PackageByIdData;
+import org.folio.rmapi.model.CustomerResources;
+import org.folio.rmapi.model.PackageData;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.Titles;
@@ -49,35 +62,8 @@ public class ResourcesConverter {
         .withData(new ResourceCollectionItem()
           .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))
           .withType(ResourceCollectionItem.Type.RESOURCES)
-          .withAttributes(new ResourceDataAttributes()
-            .withDescription(title.getDescription())
-            .withEdition(title.getEdition())
-            .withIsPeerReviewed(title.getIsPeerReviewed())
-            .withIsTitleCustom(title.getIsTitleCustom())
-            .withPublisherName(title.getPublisherName())
-            .withTitleId(title.getTitleId())
-            .withContributors(commonConverter.convertContributors(title.getContributorsList()))
-            .withIdentifiers(commonConverter.convertIdentifiers(title.getIdentifiersList()))
-            .withName(title.getTitleName())
-            .withPublicationType(CommonAttributesConverter.publicationTypes.get(title.getPubType().toLowerCase()))
-            .withSubjects(commonConverter.convertSubjects(title.getSubjectsList()))
-            .withCoverageStatement(resource.getCoverageStatement())
-            .withCustomEmbargoPeriod(commonConverter.convertEmbargo(resource.getCustomEmbargoPeriod()))
-            .withIsPackageCustom(resource.getIsPackageCustom())
-            .withIsSelected(resource.getIsSelected())
-            .withIsTokenNeeded(resource.getIsTokenNeeded())
-            .withLocationId(resource.getLocationId())
-            .withManagedEmbargoPeriod(commonConverter.convertEmbargo(resource.getManagedEmbargoPeriod()))
-            .withPackageId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId()))
-            .withPackageName(resource.getPackageName())
-            .withUrl(resource.getUrl())
-            .withProviderId(resource.getVendorId())
-            .withProviderName(resource.getVendorName())
-            .withVisibilityData(commonConverter.convertVisibilityData(resource.getVisibilityData()))
-            .withManagedCoverages(commonConverter.convertCoverages(resource.getManagedCoverageList()))
-            .withCustomCoverages(commonConverter.convertCoverages(resource.getCustomCoverageList()))
-            .withProxy(commonConverter.convertProxy(resource.getProxy())))
-          .withRelationships(createEmptyRelationship())
+          .withAttributes(createResourceDataAttributes(title, resource))
+          .withRelationships(createEmptyRelationship()
         )
         .withIncluded(null)
         .withJsonapi(RestConstants.JSONAPI);
@@ -127,8 +113,55 @@ public class ResourcesConverter {
           .withIncluded(false)));
   }
 
-  public ResourceCollection convertFromRMAPIResourceList(Titles title) {
-    return new org.folio.rest.jaxrs.model.ResourceCollection();
+  public ResourceCollection convertFromRMAPIResourceList(Titles titles) {
 
+    List<ResourceCollectionItem> titleList = titles.getTitleList().stream()
+        .map(this::convertResource)
+        .collect(Collectors.toList());
+      return new ResourceCollection()
+        .withJsonapi(RestConstants.JSONAPI)
+        .withMeta(new MetaTotalResults().withTotalResults(titles.getTotalResults()))
+        .withData(titleList);
+
+  }
+
+  private ResourceCollectionItem convertResource(Title title) {
+    CustomerResources resource = title.getCustomerResourcesList().get(0);
+    return new ResourceCollectionItem()
+    .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))
+    .withType(ResourceCollectionItem.Type.RESOURCES)
+    .withAttributes(createResourceDataAttributes(title, resource));
+  }
+
+
+  private ResourceDataAttributes createResourceDataAttributes(Title title, CustomerResources resource) {
+     return new ResourceDataAttributes()
+      .withDescription(title.getDescription())
+      .withEdition(title.getEdition())
+      .withIsPeerReviewed(title.getIsPeerReviewed())
+      .withIsTitleCustom(title.getIsTitleCustom())
+      .withPublisherName(title.getPublisherName())
+      .withTitleId(title.getTitleId())
+      .withContributors(commonConverter.convertContributors(title.getContributorsList()))
+      .withIdentifiers(commonConverter.convertIdentifiers(title.getIdentifiersList()))
+      .withName(title.getTitleName())
+      .withPublicationType(CommonAttributesConverter.publicationTypes.get(title.getPubType().toLowerCase()))
+      .withSubjects(commonConverter.convertSubjects(title.getSubjectsList()))
+      .withCoverageStatement(resource.getCoverageStatement())
+      .withCustomEmbargoPeriod(commonConverter.convertEmbargo(resource.getCustomEmbargoPeriod()))
+      .withIsPackageCustom(resource.getIsPackageCustom())
+      .withIsSelected(resource.getIsSelected())
+      .withIsTokenNeeded(resource.getIsTokenNeeded())
+      .withLocationId(resource.getLocationId())
+      .withManagedEmbargoPeriod(commonConverter.convertEmbargo(resource.getManagedEmbargoPeriod()))
+      .withPackageId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId()))
+      .withPackageName(resource.getPackageName())
+      .withUrl(resource.getUrl())
+      .withProviderId(resource.getVendorId())
+      .withProviderName(resource.getVendorName())
+      .withVisibilityData(commonConverter.convertVisibilityData(resource.getVisibilityData()))
+      .withManagedCoverages(commonConverter.convertCoverages(resource.getManagedCoverageList()))
+      .withCustomCoverages(commonConverter.convertCoverages(resource.getCustomCoverageList()))
+      .withProxy(commonConverter.convertProxy(resource.getProxy()));
   }
 }

@@ -65,6 +65,10 @@ public class CommonAttributesConverter {
   }
 
   public List<TitleContributors> convertContributors(List<org.folio.rmapi.model.Contributor> contributorList) {
+    
+    if(Objects.isNull(contributorList)){
+      return null;
+    }
     return contributorList.stream().map(contributor ->
       new TitleContributors()
       .withContributor(contributor.getTitleContributor())
@@ -74,6 +78,9 @@ public class CommonAttributesConverter {
   }
 
   public List<TitleIdentifier> convertIdentifiers(List<Identifier> identifiersList) {
+    if(Objects.isNull(identifiersList)){
+      return null;
+    }
     return identifiersList.stream()
       .filter(identifier -> IDENTIFIER_TYPES.keySet().contains(identifier.getType()) && IDENTIFIER_SUBTYPES.keySet().contains(identifier.getSubtype()))
       .sorted(Comparator.comparing(Identifier::getType).thenComparing(Identifier::getSubtype))
@@ -85,6 +92,9 @@ public class CommonAttributesConverter {
   }
 
   public List<TitleSubject> convertSubjects(List<Subject> subjectsList) {
+    if(Objects.isNull(subjectsList)){
+      return null;
+    }
     return subjectsList.stream().map(subject ->
       new TitleSubject()
       .withSubject(subject.getValue())
@@ -94,6 +104,9 @@ public class CommonAttributesConverter {
   }
 
   public org.folio.rest.jaxrs.model.EmbargoPeriod convertEmbargo(EmbargoPeriod customEmbargoPeriod) {
+    if(Objects.isNull(customEmbargoPeriod)){
+      return null;
+    }
     org.folio.rest.jaxrs.model.EmbargoPeriod customEmbargo = new org.folio.rest.jaxrs.model.EmbargoPeriod();
     customEmbargo.setEmbargoUnit(customEmbargoPeriod.getEmbargoUnit());
     customEmbargo.setEmbargoValue(customEmbargoPeriod.getEmbargoValue());
@@ -101,6 +114,10 @@ public class CommonAttributesConverter {
   }
 
   public org.folio.rest.jaxrs.model.VisibilityData convertVisibilityData(VisibilityInfo visibilityData) {
+    
+    if(Objects.isNull(visibilityData)){
+      return null;
+    }
     org.folio.rest.jaxrs.model.VisibilityData visibility = new org.folio.rest.jaxrs.model.VisibilityData();
     visibility.setIsHidden(visibilityData.getIsHidden());
     visibility.setReason(visibilityData.getReason().equals("Hidden by EP") ? "Set by system" : "");
@@ -108,6 +125,9 @@ public class CommonAttributesConverter {
   }
 
   public List<Coverage> convertCoverages(List<CoverageDates> coverageList) {
+    if(Objects.isNull(coverageList)){
+      return null;
+    }
     return coverageList.stream().map(coverageItem ->
     new Coverage()
       .withBeginCoverage(coverageItem.getBeginCoverage())
@@ -117,6 +137,10 @@ public class CommonAttributesConverter {
   }
 
   public org.folio.rest.jaxrs.model.Proxy convertProxy(org.folio.rmapi.model.Proxy proxy) {
+    
+    if(Objects.isNull(proxy)){
+      return null;
+    }
     org.folio.rest.jaxrs.model.Proxy p = new org.folio.rest.jaxrs.model.Proxy();
     p.setId(proxy.getId());
     p.setInherited(proxy.getInherited());
