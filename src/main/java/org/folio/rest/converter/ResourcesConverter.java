@@ -12,26 +12,25 @@ import org.folio.rest.jaxrs.model.ResourceRelationships;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.Title;
+import org.folio.rmapi.model.VendorById;
 
 public class ResourcesConverter {
   private CommonAttributesConverter commonConverter;
 
   private TitleConverter titleConverter;
+  private VendorConverter vendorConverter;
 
   public ResourcesConverter() {
-    this(new CommonAttributesConverter(), new TitleConverter());
+    this(new CommonAttributesConverter(), new TitleConverter(), new VendorConverter());
   }
 
-  public ResourcesConverter(CommonAttributesConverter commonConverter, TitleConverter titleConverter) {
+  public ResourcesConverter(CommonAttributesConverter commonConverter, TitleConverter titleConverter, VendorConverter vendorConverter) {
     this.commonConverter = commonConverter;
     this.titleConverter = titleConverter;
+    this.vendorConverter = vendorConverter;
   }
 
-  public Resource convertFromRMAPIResource(Title title) {
-    return convertFromRMAPIResource(title, false);
-  }
-
-  public Resource convertFromRMAPIResource(Title title, boolean includeTitle) {
+  public Resource convertFromRMAPIResource(Title title, VendorById vendor, boolean includeTitle) {
     CustomerResources resource = title.getCustomerResourcesList().get(0);
 
     Resource resultResource = new Resource()
@@ -80,6 +79,15 @@ public class ResourcesConverter {
             .withData(new RelationshipData()
               .withId(String.valueOf(title.getTitleId()))
               .withType("titles")));
+    }
+    if(vendor != null){
+      resultResource.getIncluded().add(vendorConverter.convertToProvider(vendor).getData());
+      resultResource.getData()
+        .getRelationships()
+        .withProvider(new HasOneRelationship()
+          .withData(new RelationshipData()
+            .withId(String.valueOf(vendor.getVendorId()))
+            .withType("providers")));
     }
     return resultResource;
   }

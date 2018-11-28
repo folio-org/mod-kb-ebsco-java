@@ -89,11 +89,11 @@ public class EholdingsResourcesImpl implements EholdingsResources{
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveResource(parsedResourceId);
+        return rmapiService.retrieveResource(parsedResourceId, includedObjects);
     })
     .thenAccept(title ->
       asyncResultHandler.handle(Future.succeededFuture(GetEholdingsResourcesByResourceIdResponse
-        .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(title, includeTitle)))))
+        .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(title.getTitle(),title.getVendor(), includeTitle)))))
     .exceptionally(e -> {
       logger.error(INTERNAL_SERVER_ERROR, e);
       new ErrorHandler()

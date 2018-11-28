@@ -4,15 +4,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
@@ -40,6 +31,16 @@ import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 public class RMAPIService {
 
   private static final Logger LOG = LoggerFactory.getLogger(RMAPIService.class);
@@ -63,6 +64,7 @@ public class RMAPIService {
   private static final String PROVIDER_UPPER_STRING = "Provider";
   private static final String INCLUDE_PACKAGES_VALUE = "packages";
 
+  private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private String customerId;
   private String apiKey;
   private String baseURI;
@@ -295,7 +297,7 @@ public class RMAPIService {
       .collect((Collectors.toList()));
 
     clb.labelList(filteredCustomLabelList);
-    
+
     return this.putRequest(constructURL(path), clb.build())
       .thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
   }
@@ -306,9 +308,21 @@ public class RMAPIService {
     return this.getRequest(constructURL(path), Title.class);
   }
 
-  public CompletableFuture<Title> retrieveResource(ResourceId resourceId) {
+  public CompletableFuture<ResourceResult> retrieveResource(ResourceId resourceId, List<String> includes) {
+    CompletableFuture<Title> titleFuture;
+    CompletableFuture<VendorResult> vendorFuture;
+
     final String path = VENDORS_PATH + '/' + resourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + resourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + resourceId.getTitleIdPart();
-    return this.getRequest(constructURL(path), Title.class);
+    titleFuture = this.getRequest(constructURL(path), Title.class);
+    if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
+      vendorFuture = retrieveProvider(resourceId.getProviderIdPart(), "");
+    } else {
+      vendorFuture = CompletableFuture.completedFuture(new VendorResult(null, null));
+    }
+
+    return CompletableFuture.allOf(titleFuture, vendorFuture)
+      .thenCompose(o ->
+        CompletableFuture.completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor())));
   }
 
   /**
@@ -339,6 +353,24 @@ public class RMAPIService {
 
     public Packages getPackages() {
       return packages;
+    }
+  }
+
+  public static class ResourceResult {
+    private Title title;
+    private VendorById vendor;
+
+    public ResourceResult(Title title, VendorById vendor) {
+      this.title = title;
+      this.vendor = vendor;
+    }
+
+    public Title getTitle() {
+      return title;
+    }
+
+    public VendorById getVendor() {
+      return vendor;
     }
   }
 }
