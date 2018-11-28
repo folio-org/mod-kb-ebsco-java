@@ -264,6 +264,19 @@ public class RMAPIService {
 
     return this.getRequest(constructURL(packagesPath + path), Packages.class);
   }
+  
+  public CompletableFuture<Titles> retrieveResources(long providerId, long packageId, FilterQuery filterQuery, Sort sort, int page, int count) {
+    String path = new TitlesFilterableUrlBuilder()
+      .filter(filterQuery)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+    
+    String resourcessPath = VENDORS_PATH+ '/' + providerId + '/' + PACKAGES_PATH + '/' + packageId + '/' + TITLES_PATH + "?";
+
+    return this.getRequest(constructURL(resourcessPath + path), Titles.class);
+  }
 
   public CompletableFuture<Vendors> getVendors(boolean filterCustom){
     CompletableFuture<Vendors> vendorsList = CompletableFuture.completedFuture(Vendors.builder().build());

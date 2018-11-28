@@ -11,6 +11,7 @@ import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourceRelationships;
@@ -18,6 +19,7 @@ import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.VendorById;
+import org.folio.rmapi.model.Titles;
 
 import java.util.List;
 
@@ -123,5 +125,10 @@ public class ResourcesConverter {
       .withTitle(new HasOneRelationship().withMeta(
         new MetaDataIncluded()
           .withIncluded(false)));
+  }
+
+  public ResourceCollection convertFromRMAPIResourceList(Titles title) {
+    return new org.folio.rest.jaxrs.model.ResourceCollection();
+
   }
 }
