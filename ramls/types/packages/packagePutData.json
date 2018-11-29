@@ -6,6 +6,12 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "id": {
+      "type": "string",
+      "readonly": true,
+      "description": "Unique package id",
+      "example": "19-2333046"
+    },
     "type": {
       "description": "Data type",
       "type": "string",
@@ -15,7 +21,7 @@
     "attributes": {
       "description": "Data type attributes",
       "type": "object",
-      "$ref": "packagePutDataAttributes.json"
+      "$ref": "packageDataAttributes.json"
     }
   },
   "required": [

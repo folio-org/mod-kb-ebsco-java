@@ -2,17 +2,9 @@ package org.folio.rmapi;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
@@ -28,6 +20,7 @@ import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
+import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
@@ -39,6 +32,16 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class RMAPIService {
 
@@ -264,6 +267,12 @@ public class RMAPIService {
     return this.getRequest(constructURL(path), PackageByIdData.class);
   }
 
+  public CompletionStage<Void> updatePackage(PackageId packageId, PackagePut packagePut) {
+    final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
+
+    return this.putRequest(constructURL(path), packagePut);
+  }
+
   public CompletableFuture<Void> deletePackage(PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
     return this.putRequest(constructURL(path),new PackageSelectedPayload(false));
@@ -295,7 +304,7 @@ public class RMAPIService {
       .collect((Collectors.toList()));
 
     clb.labelList(filteredCustomLabelList);
-    
+
     return this.putRequest(constructURL(path), clb.build())
       .thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
   }

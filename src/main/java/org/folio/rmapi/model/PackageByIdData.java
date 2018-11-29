@@ -35,4 +35,23 @@ public class PackageByIdData extends PackageData {
     this.packageToken = packageToken;
   }
 
+  public PackageByIdData.PackageByIdDataBuilder toByIdBuilder() {
+    return PackageByIdData.byIdBuilder()
+      .allowEbscoToAddTitles(getAllowEbscoToAddTitles())
+      .contentType(getContentType())
+      .customCoverage(getCustomCoverage())
+      .isCustom(getIsCustom())
+      .isSelected(getIsSelected())
+      .isTokenNeeded(getIsTokenNeeded())
+      .packageId(getPackageId())
+      .packageName(getPackageName())
+      .packageToken(getPackageToken())
+      .packageType(getPackageType())
+      .proxy(getProxy())
+      .selectedCount(getSelectedCount())
+      .titleCount(getTitleCount())
+      .vendorId(getVendorId())
+      .vendorName(getVendorName())
+      .visibilityData(getVisibilityData());
+  }
 }

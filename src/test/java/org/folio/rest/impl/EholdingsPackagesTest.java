@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,6 +12,9 @@ import org.apache.http.HttpStatus;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackageDataAttributes;
+import org.folio.rmapi.model.CoverageDates;
+import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
 import org.folio.util.TestUtil;
 import org.junit.Test;
@@ -30,10 +34,13 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
 
-  private static final String PACKAGE_BY_ID_STUB_FILE = "responses/rmapi/packages/get-package-by-id-response.json";
+  private static final String PACKAGE_STUB_FILE = "responses/rmapi/packages/get-package-by-id-response.json";
+  private static final String CUSTOM_PACKAGE_STUB_FILE = "responses/rmapi/packages/get-custom-package-by-id-response.json";
   private static final String CONFIGURATION_STUB_FILE = "responses/configuration/get-configuration.json";
-  protected static final int STUB_PACKAGE_ID = 3964;
-  protected static final int STUB_VENDOR_ID = 111111;
+  private static final int STUB_PACKAGE_ID = 3964;
+  private static final int STUB_VENDOR_ID = 111111;
+  private static final String PACKAGED_UPDATED_STATE = "Packaged updated";
+  private static final String GET_PACKAGE_SCENARIO = "Get package";
 
   @Test
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
@@ -90,8 +97,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnPackagesOnGetById() throws IOException, URISyntaxException {
-    String packagesStubResponseFile = "responses/rmapi/packages/get-package-by-id-response.json";
-
     String wiremockUrl = getWiremockUrl();
     TestUtil.mockConfiguration("responses/configuration/get-configuration.json", wiremockUrl);
 
@@ -101,7 +106,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
           "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID),
           true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(packagesStubResponseFile))));
+          .withBody(TestUtil.readFile(CUSTOM_PACKAGE_STUB_FILE))));
 
 
     Package packageData = RestAssured.given()
@@ -147,18 +152,15 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldSendDeleteRequestForPackage() throws IOException, URISyntaxException {
-    String providerId = "123355";
-    String packageId = "2884739";
-
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern packageUrlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false);
+    UrlPathPattern packageUrlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
 
     WireMock.stubFor(
       WireMock.get(packageUrlPattern)
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(PACKAGE_BY_ID_STUB_FILE))));
+          .withBody(TestUtil.readFile(CUSTOM_PACKAGE_STUB_FILE))));
 
     WireMock.stubFor(
       WireMock.put(packageUrlPattern)
@@ -169,7 +171,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     RestAssured.given()
       .spec(getRequestSpecification())
       .when()
-      .delete("eholdings/packages/" + providerId + "-" + packageId)
+      .delete("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
       .then()
       .statusCode(HttpStatus.SC_NO_CONTENT);
 
@@ -189,26 +191,223 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenPackageIsNotCustom() throws URISyntaxException, IOException {
-    String providerId = "123355";
-    String packageId = "2884739";
-
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     ObjectMapper mapper = new ObjectMapper();
-    PackageData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_BY_ID_STUB_FILE), PackageData.class)
+    PackageData packageData = mapper.readValue(TestUtil.getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class)
                                 .toBuilder().isCustom(false).build();
 
     WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + providerId + "/packages/" + packageId), false))
+      WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(mapper.writeValueAsString(packageData))));
 
     RestAssured.given()
       .spec(getRequestSpecification())
       .when()
-      .delete("eholdings/packages/" + providerId + "-" + packageId)
+      .delete("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
       .then()
       .statusCode(HttpStatus.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void shouldReturn200WhenSelectingPackage() throws URISyntaxException, IOException {
+    boolean updatedIsSelected = true;
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(TestUtil.readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
+
+    ObjectMapper mapper = new ObjectMapper();
+    PackageByIdData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
+    String initialPackageValue = mapper.writeValueAsString(packageData);
+    packageData = packageData.toByIdBuilder().isSelected(updatedIsSelected).build();
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(urlPattern, initialPackageValue, updatedPackageValue);
+
+    Package aPackage = RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .when()
+      .body(TestUtil.readFile("requests/kb-ebsco/package/put-package-selected.json"))
+      .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_OK)
+      .extract().as(Package.class);
+
+    assertEquals(updatedIsSelected, aPackage.getData().getAttributes().getIsSelected());
+
+    WireMock.verify(WireMock.putRequestedFor(urlPattern)
+    .withRequestBody(putBodyPattern));
+  }
+
+  @Test
+  public void shouldUpdateAllAttributesInSelectedPackage() throws URISyntaxException, IOException {
+    boolean updatedSelected = true;
+    boolean updatedAllowEbscoToAddTitles = true;
+    boolean updatedHidden = true;
+    String updatedBeginCoverage = "2003-01-01";
+    String updatedEndCoverage = "2004-01-01";
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(TestUtil.readFile("requests/rmapi/packages/put-package-is-selected-multiple-attributes.json"), true, true);
+
+    ObjectMapper mapper = new ObjectMapper();
+    PackageByIdData packageData = mapper.readValue(TestUtil.getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
+    String initialPackageValue = mapper.writeValueAsString(packageData);
+
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .build();
+
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(urlPattern, initialPackageValue, updatedPackageValue);
+
+    Package aPackage = RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .when()
+      .body(TestUtil.readFile("requests/kb-ebsco/package/put-package-selected-multiple-attributes"))
+      .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_OK)
+      .extract().as(Package.class);
+
+    WireMock.verify(WireMock.putRequestedFor(urlPattern)
+      .withRequestBody(putBodyPattern));
+
+    assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+    assertEquals(updatedAllowEbscoToAddTitles, aPackage.getData().getAttributes().getAllowKbToAddTitles());
+    assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+    assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+    assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+  }
+
+  @Test
+  public void shouldUpdateAllAttributesInCustomPackage() throws URISyntaxException, IOException {
+    boolean updatedSelected = true;
+    boolean updatedHidden = true;
+    String updatedBeginCoverage = "2003-01-01";
+    String updatedEndCoverage = "2004-01-01";
+    String updatedPackageName = "name of the ages forever and ever";
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(TestUtil.readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
+
+    ObjectMapper mapper = new ObjectMapper();
+    PackageByIdData packageData = mapper.readValue(TestUtil.getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+    String initialPackageValue = mapper.writeValueAsString(packageData);
+
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .packageName(updatedPackageName)
+      .contentType("AggregatedFullText").build();
+
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(urlPattern, initialPackageValue, updatedPackageValue);
+
+    Package aPackage = RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .when()
+      .body(TestUtil.readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes"))
+      .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_OK)
+      .extract().as(Package.class);
+
+    WireMock.verify(WireMock.putRequestedFor(urlPattern)
+      .withRequestBody(putBodyPattern));
+
+    assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+    assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+    assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+    assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+    assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
+    assertEquals(PackageDataAttributes.ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+  }
+
+  @Test
+  public void shouldReturn422WhenPackageIsNotSelectedAndIsHiddenIsTrue() throws URISyntaxException, IOException {
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    WireMock.stubFor(
+      WireMock.get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(PACKAGE_STUB_FILE))));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .when()
+      .body(TestUtil.readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json"))
+      .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
+  }
+
+  @Test
+  public void shouldReturn400WhenRMAPIReturns400() throws URISyntaxException, IOException {
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    WireMock.stubFor(
+      WireMock.get(urlPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(PACKAGE_STUB_FILE))));
+
+    WireMock.stubFor(
+      WireMock.put(urlPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_BAD_REQUEST)));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .when()
+      .body(TestUtil.readFile("requests/kb-ebsco/package/put-package-selected.json"))
+      .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
+  }
+
+  private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage, String updatedPackage){
+    WireMock.stubFor(
+      WireMock.get(urlPattern)
+        .inScenario(GET_PACKAGE_SCENARIO)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(initialPackage)));
+
+    WireMock.stubFor(
+      WireMock.put(urlPattern)
+        .inScenario(GET_PACKAGE_SCENARIO)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_NO_CONTENT))
+        .willSetStateTo(PACKAGED_UPDATED_STATE));
+
+    WireMock.stubFor(
+      WireMock.get(urlPattern)
+        .inScenario(GET_PACKAGE_SCENARIO)
+        .whenScenarioStateIs(PACKAGED_UPDATED_STATE)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(updatedPackage)));
   }
 
   private void comparePackage(Package actual, Package expected) {
