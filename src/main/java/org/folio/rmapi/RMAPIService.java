@@ -30,6 +30,8 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.result.ResourceResult;
+import org.folio.rmapi.result.VendorResult;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -336,41 +338,5 @@ public class RMAPIService {
 
     LOG.info("constructurl - path=" + fullPath);
     return fullPath;
-  }
-
-  public static class VendorResult {
-    private VendorById vendor;
-    private Packages packages;
-
-    public VendorResult(VendorById vendor, Packages packages) {
-      this.vendor = vendor;
-      this.packages = packages;
-    }
-
-    public VendorById getVendor() {
-      return vendor;
-    }
-
-    public Packages getPackages() {
-      return packages;
-    }
-  }
-
-  public static class ResourceResult {
-    private Title title;
-    private VendorById vendor;
-
-    public ResourceResult(Title title, VendorById vendor) {
-      this.title = title;
-      this.vendor = vendor;
-    }
-
-    public Title getTitle() {
-      return title;
-    }
-
-    public VendorById getVendor() {
-      return vendor;
-    }
   }
 }
