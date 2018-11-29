@@ -22,11 +22,17 @@ public class TitleParametersValidator {
    * @throws ValidationException if validation fails
    */
   public void validate(FilterQuery filterQuery, String sort) {
-    validateFilter(filterQuery);
+    Boolean allowNullFilters = false;
+    validateFilter(filterQuery, allowNullFilters);
+    validateSort(sort);
+  }
+  
+  public void validate(FilterQuery filterQuery, String sort, Boolean allowNullFilters) {
+    validateFilter(filterQuery, allowNullFilters);
     validateSort(sort);
   }
 
-  private void validateFilter(FilterQuery fq) {
+  private void validateFilter(FilterQuery fq, Boolean allowNullFilters) {
     List<String> searchParameters = Arrays.asList(fq.getName(), fq.getIsxn(), fq.getSubject(),
       fq.getPublisher());
 
@@ -36,7 +42,7 @@ public class TitleParametersValidator {
     if(nonNullFilters > 1){
       throw new ValidationException("Conflicting filter parameters");
     }
-    if(nonNullFilters < 1){
+    if((nonNullFilters < 1)&&(allowNullFilters == false)){
       throw new ValidationException("All of filter[name], filter[isxn], filter[subject] and filter[publisher] cannot be missing.");
     }
     if(searchParameters.stream()

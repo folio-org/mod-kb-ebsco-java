@@ -57,6 +57,8 @@ public class TitlesFilterableUrlBuilder {
     } else if (filterQuery.getPublisher() != null) {
       search = filterQuery.getPublisher();
       searchField = "publisher";
+    } else {
+      searchField = "titlename";
     }
 
     String selection = FILTER_SELECTED_MAPPING.getOrDefault(filterQuery.getSelected(), "all");

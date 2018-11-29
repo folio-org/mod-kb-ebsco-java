@@ -21,7 +21,7 @@ public class QueriableUrlBuilderTest {
   @Test
   public void shouldBuildUrlForNameSortWhenQueryIsNotSet(){
     String path = new QueriableUrlBuilder().nameParameter("vendorname").build();
-    assertEquals("offset=1&count=25&orderby=vendorname", path);
+    assertEquals("search=&offset=1&count=25&orderby=vendorname", path);
   }
 
 }

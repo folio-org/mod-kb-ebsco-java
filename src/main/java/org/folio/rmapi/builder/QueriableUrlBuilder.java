@@ -52,6 +52,10 @@ public class QueriableUrlBuilder {
       }
       parameters.add("search=" + encodedQuery);
     }
+    else {
+      parameters.add("search=");
+    }
+    
     parameters.add("offset=" + page);
     parameters.add("count=" + count);
     parameters.add("orderby=" + determineSortValue(sort, q));

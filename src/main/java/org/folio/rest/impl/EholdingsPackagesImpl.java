@@ -1,6 +1,8 @@
 package org.folio.rest.impl;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -16,6 +18,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -29,6 +32,7 @@ import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.jaxrs.resource.EholdingsPackages.GetEholdingsPackagesResourcesByPackageIdResponse;
+import org.folio.rest.jaxrs.resource.EholdingsRootProxy.GetEholdingsRootProxyResponse;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.PackageId;
@@ -42,6 +46,7 @@ import org.folio.rest.validator.PackagePutBodyValidator;
 import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackagePut;
 import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rmapi.model.PackagePost;
@@ -62,6 +67,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private static final String POST_PACKAGES_ERROR_MESSAGE = "Failed to create packages";
   public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
   public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
+  private static final String GET_PACKAGE_RESOURCES_ERROR_MESSAGE = "Failed to retrieve package resources";
 
   private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
@@ -293,7 +299,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         .name(filterName).isxn(filterIsxn).subject(filterSubject)
         .publisher(filterPublisher).build();
 
-    titleParametersValidator.validate(fq, sort);
+    titleParametersValidator.validate(fq, sort, true);
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
@@ -308,7 +314,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         asyncResultHandler.handle(Future.succeededFuture(
             GetEholdingsPackagesResourcesByPackageIdResponse.respond200WithApplicationVndApiJson(resourceConverter.convertFromRMAPIResourceList(resourceList)))))
       .exceptionally(e -> {
-        logger.error(INTERNAL_SERVER_ERROR, e);
+        logger.error(GET_PACKAGE_RESOURCES_ERROR_MESSAGE, e);
         handleError(asyncResultHandler, e);
         return null;
       });
