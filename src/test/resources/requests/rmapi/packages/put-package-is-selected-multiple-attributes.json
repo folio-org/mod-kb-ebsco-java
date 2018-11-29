@@ -1,0 +1,10 @@
+{
+  "isSelected": true,
+  "customCoverage": {
+    "beginCoverage": "2003-01-01",
+    "endCoverage": "2004-01-01"
+  },
+  "allowEbscoToAddTitles": true,
+  "packageToken": null,
+  "isHidden": true
+}

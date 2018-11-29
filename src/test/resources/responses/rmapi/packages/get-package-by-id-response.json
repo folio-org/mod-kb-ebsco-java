@@ -1,18 +1,18 @@
 {
   "packageId": 3964,
-  "packageName": "carole and sams test",
-  "isCustom": true,
+  "packageName": "EBSCO Biotechnology Collection: India",
+  "isCustom": false,
   "vendorId": 111111,
-  "vendorName": "APIDEV CORPORATE CUSTOMER",
-  "titleCount": 6,
-  "isSelected": true,
+  "vendorName": "EBSCO",
+  "titleCount": 156,
+  "isSelected": false,
   "visibilityData": {
     "isHidden": false,
     "reason": ""
   },
-  "selectedCount": 6,
+  "selectedCount": 0,
   "isTokenNeeded": false,
-  "contentType": "Unknown",
+  "contentType": "AggregatedFullText",
   "customCoverage": {
     "beginCoverage": "",
     "endCoverage": ""
@@ -22,11 +22,6 @@
     "inherited": true
   },
   "allowEbscoToAddTitles": false,
-  "packageToken": {
-    "factName": "[[gale.customcode.infocust]]",
-    "helpText": "help text",
-    "value": "token value",
-    "prompt": "res_id=info:sid/gale:"
-  },
-  "packageType": "Custom"
+  "packageToken": null,
+  "packageType": "Complete"
 }

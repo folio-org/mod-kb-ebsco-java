@@ -1,0 +1,17 @@
+{
+  "data": {
+    "type": "packages",
+    "attributes": {
+      "customCoverage": {
+        "beginCoverage": null,
+        "endCoverage": null
+      },
+      "isSelected": true,
+      "allowKbToAddTitles": true,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      }
+    }
+  }
+}

@@ -22,7 +22,7 @@ import org.folio.rmapi.model.VisibilityInfo;
 import org.folio.rmapi.model.TokenInfo;
 
 public class CommonAttributesConverter {
-  
+
   private static final Map<Integer, String> IDENTIFIER_TYPES = new HashMap<>();
   static {
     IDENTIFIER_TYPES.put(0,"ISSN");
@@ -34,7 +34,7 @@ public class CommonAttributesConverter {
     IDENTIFIER_SUBTYPES.put(1,"Print");
     IDENTIFIER_SUBTYPES.put(2,"Online");
   }
-  
+
   static final Map<String, PublicationType> publicationTypes = new HashMap<>();
   static {
     publicationTypes.put("audiobook", PublicationType.AUDIOBOOK);
@@ -52,7 +52,7 @@ public class CommonAttributesConverter {
     publicationTypes.put("website", PublicationType.WEBSITE);
     publicationTypes.put("unspecified", PublicationType.UNSPECIFIED);
   }
-  
+
   public Token convertToken(TokenInfo tokenInfo) {
     if(Objects.isNull(tokenInfo)){
       return null;
@@ -63,7 +63,7 @@ public class CommonAttributesConverter {
       .withPrompt(tokenInfo.getPrompt())
       .withValue(tokenInfo.getValue() == null ? null : (String) tokenInfo.getValue());
   }
-  
+
   public List<TitleContributors> convertContributors(List<org.folio.rmapi.model.Contributor> contributorList) {
     return contributorList.stream().map(contributor ->
       new TitleContributors()
@@ -72,7 +72,7 @@ public class CommonAttributesConverter {
       )
       .collect(Collectors.toList());
   }
-  
+
   public List<TitleIdentifier> convertIdentifiers(List<Identifier> identifiersList) {
     return identifiersList.stream()
       .filter(identifier -> IDENTIFIER_TYPES.keySet().contains(identifier.getType()) && IDENTIFIER_SUBTYPES.keySet().contains(identifier.getSubtype()))
@@ -83,7 +83,7 @@ public class CommonAttributesConverter {
                           .withSubtype(IDENTIFIER_SUBTYPES.getOrDefault(identifier.getSubtype(), "")))
       .collect(Collectors.toList());
   }
-  
+
   public List<TitleSubject> convertSubjects(List<Subject> subjectsList) {
     return subjectsList.stream().map(subject ->
       new TitleSubject()
@@ -102,7 +102,7 @@ public class CommonAttributesConverter {
 
   public org.folio.rest.jaxrs.model.VisibilityData convertVisibilityData(VisibilityInfo visibilityData) {
     org.folio.rest.jaxrs.model.VisibilityData visibility = new org.folio.rest.jaxrs.model.VisibilityData();
-    visibility.setIsHidden(visibilityData.getHidden());
+    visibility.setIsHidden(visibilityData.getIsHidden());
     visibility.setReason(visibilityData.getReason().equals("Hidden by EP") ? "Set by system" : "");
     return visibility;
   }

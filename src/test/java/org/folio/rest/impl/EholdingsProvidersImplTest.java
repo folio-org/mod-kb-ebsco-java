@@ -2,6 +2,7 @@ package org.folio.rest.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;

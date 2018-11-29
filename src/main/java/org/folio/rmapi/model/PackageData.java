@@ -44,5 +44,4 @@ public class PackageData {
   private Boolean allowEbscoToAddTitles;
   @JsonProperty("packageType")
   private String packageType;
-
 }

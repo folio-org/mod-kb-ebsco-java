@@ -11,6 +11,8 @@ import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
+import org.folio.rest.jaxrs.model.PackagePutData;
+import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.jaxrs.model.VisibilityData;
@@ -107,5 +109,12 @@ public class PackagesTestData {
     return new PackageCollection().withData(collectionItems)
       .withMeta(new MetaTotalResults().withTotalResults(414));
 
+  }
+
+  public static PackagePutRequest getPackagePutRequest(PackageDataAttributes attributes) {
+    return new PackagePutRequest()
+      .withData(new PackagePutData()
+        .withType(PackagePutData.Type.PACKAGES)
+        .withAttributes(attributes));
   }
 }
