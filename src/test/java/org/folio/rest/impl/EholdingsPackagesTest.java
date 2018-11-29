@@ -1,6 +1,7 @@
 package org.folio.rest.impl;
 
 
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -226,7 +227,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   private void comparePackageItem(PackageCollectionItem actualItem, PackageCollectionItem expectedItem) {
     assertThat(actualItem.getId(), equalTo(expectedItem.getId()));
-    assertThat(actualItem.getType(), equalTo("packages"));
+    assertThat(actualItem.getType(), equalTo(PACKAGES_TYPE));
     assertThat(actualItem.getAttributes().getName(),
       equalTo(expectedItem.getAttributes().getName()));
     assertThat(actualItem.getAttributes().getPackageId(),

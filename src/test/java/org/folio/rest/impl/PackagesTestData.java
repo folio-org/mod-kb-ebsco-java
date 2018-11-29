@@ -1,5 +1,7 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +49,7 @@ public class PackagesTestData {
   public static Package getExpectedPackage() {
     return new Package().withData(new PackageCollectionItem()
       .withId("111111-3964")
-      .withType("packages")
+      .withType(PACKAGES_TYPE)
       .withAttributes(new PackageDataAttributes()
         .withName("carole and sams test")
         .withPackageId(3964)

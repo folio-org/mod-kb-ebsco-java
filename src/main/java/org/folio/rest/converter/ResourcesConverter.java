@@ -1,5 +1,9 @@
 package org.folio.rest.converter;
 
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
+import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+
 import java.util.ArrayList;
 
 import org.folio.rest.jaxrs.model.HasOneRelationship;
@@ -11,6 +15,7 @@ import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourceRelationships;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.CustomerResources;
+import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.VendorById;
 
@@ -19,18 +24,20 @@ public class ResourcesConverter {
 
   private TitleConverter titleConverter;
   private VendorConverter vendorConverter;
+  private PackagesConverter packagesConverter;
 
   public ResourcesConverter() {
-    this(new CommonAttributesConverter(), new TitleConverter(), new VendorConverter());
+    this(new CommonAttributesConverter(), new TitleConverter(), new VendorConverter(), new PackagesConverter());
   }
 
-  public ResourcesConverter(CommonAttributesConverter commonConverter, TitleConverter titleConverter, VendorConverter vendorConverter) {
+  public ResourcesConverter(CommonAttributesConverter commonConverter, TitleConverter titleConverter, VendorConverter vendorConverter, PackagesConverter packagesConverter) {
     this.commonConverter = commonConverter;
     this.titleConverter = titleConverter;
     this.vendorConverter = vendorConverter;
+    this.packagesConverter = packagesConverter;
   }
 
-  public Resource convertFromRMAPIResource(Title title, VendorById vendor, boolean includeTitle) {
+  public Resource convertFromRMAPIResource(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
     CustomerResources resource = title.getCustomerResourcesList().get(0);
 
     Resource resultResource = new Resource()
@@ -78,7 +85,7 @@ public class ResourcesConverter {
           .withTitle(new HasOneRelationship()
             .withData(new RelationshipData()
               .withId(String.valueOf(title.getTitleId()))
-              .withType("titles")));
+              .withType(TITLES_TYPE)));
     }
     if(vendor != null){
       resultResource.getIncluded().add(vendorConverter.convertToProvider(vendor).getData());
@@ -87,7 +94,16 @@ public class ResourcesConverter {
         .withProvider(new HasOneRelationship()
           .withData(new RelationshipData()
             .withId(String.valueOf(vendor.getVendorId()))
-            .withType("providers")));
+            .withType(PROVIDERS_TYPE)));
+    }
+    if(packageData != null){
+      resultResource.getIncluded().add(packagesConverter.convert(packageData).getData());
+      resultResource.getData()
+        .getRelationships()
+        .withPackage(new HasOneRelationship()
+          .withData(new RelationshipData()
+            .withId(String.valueOf(packageData.getVendorId() + "-" + packageData.getPackageId()))
+            .withType(PACKAGES_TYPE)));
     }
     return resultResource;
   }

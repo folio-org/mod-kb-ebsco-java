@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,7 +45,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .statusCode(200)
 
       .body("meta.totalResults", equalTo(8766))
-      .body("data[0].type", equalTo("titles"))
+      .body("data[0].type", equalTo(TITLES_TYPE))
       .body("data[0].id", equalTo("1175655"))
       .body("data[0].attributes.name", equalTo("The $1 Million Reason to Change Your Mind"))
       .body("data[0].attributes.publisherName", isEmptyOrNullString())

@@ -67,6 +67,8 @@ public class RMAPIService {
   private static final String INCLUDE_PACKAGES_VALUE = "packages";
 
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
+  private static final String INCLUDE_PACKAGE_VALUE = "package";
+
   private String customerId;
   private String apiKey;
   private String baseURI;
@@ -312,6 +314,7 @@ public class RMAPIService {
 
   public CompletableFuture<ResourceResult> retrieveResource(ResourceId resourceId, List<String> includes) {
     CompletableFuture<Title> titleFuture;
+    CompletableFuture<PackageByIdData> packageFuture;
     CompletableFuture<VendorResult> vendorFuture;
 
     final String path = VENDORS_PATH + '/' + resourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + resourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + resourceId.getTitleIdPart();
@@ -321,10 +324,16 @@ public class RMAPIService {
     } else {
       vendorFuture = CompletableFuture.completedFuture(new VendorResult(null, null));
     }
+    if (includes.contains(INCLUDE_PACKAGE_VALUE)) {
+      packageFuture = retrievePackage(new PackageId(resourceId.getProviderIdPart(), resourceId.getPackageIdPart()));
+    } else {
+      packageFuture = CompletableFuture.completedFuture(null);
+    }
 
-    return CompletableFuture.allOf(titleFuture, vendorFuture)
+
+    return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
-        CompletableFuture.completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor())));
+        CompletableFuture.completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join())));
   }
 
   /**

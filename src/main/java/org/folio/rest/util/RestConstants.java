@@ -7,5 +7,9 @@ public final class RestConstants {
   public static final String OKAPI_URL_HEADER = "x-okapi-url";
   public static final String OKAPI_TENANT_HEADER = "x-okapi-tenant";
   public static final JsonAPI JSONAPI = new JsonAPI().withVersion("1.0");
+  public static final String PACKAGES_TYPE = "packages";
+  public static final String PROVIDERS_TYPE = "providers";
+  public static final String TITLES_TYPE = "titles";
+
   private RestConstants(){ }
 }

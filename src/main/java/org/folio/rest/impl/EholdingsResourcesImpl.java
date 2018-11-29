@@ -93,7 +93,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
     })
     .thenAccept(title ->
       asyncResultHandler.handle(Future.succeededFuture(GetEholdingsResourcesByResourceIdResponse
-        .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(title.getTitle(),title.getVendor(), includeTitle)))))
+        .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(title.getTitle(), title.getVendor(), title.getPackageData(), includeTitle)))))
     .exceptionally(e -> {
       logger.error(INTERNAL_SERVER_ERROR, e);
       new ErrorHandler()

@@ -1,5 +1,7 @@
 package org.folio.rest.converter;
 
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +33,6 @@ public class PackagesConverter {
     .withResources(new MetaIncluded()
       .withMeta(new MetaDataIncluded()
         .withIncluded(false)));
-  private static final String PACKAGES_TYPE = "packages";
 
   static {
     contentType.put("aggregatedfulltext", ContentType.AGGREGATED_FULL_TEXT);
