@@ -1,0 +1,27 @@
+{
+  "packageId": 4345,
+  "packageName": "ABC-CLIO eBook Collection",
+  "isCustom": false,
+  "vendorId": 583,
+  "vendorName": "ABC-CLIO",
+  "titleCount": 9590,
+  "isSelected": true,
+  "visibilityData": {
+    "isHidden": true,
+    "reason": "Hidden by Customer"
+  },
+  "selectedCount": 9590,
+  "isTokenNeeded": false,
+  "contentType": "EBook",
+  "customCoverage": {
+    "beginCoverage": "2018-08-13",
+    "endCoverage": "2018-09-13"
+  },
+  "proxy": {
+    "id": "Proxy-ID-123",
+    "inherited": true
+  },
+  "allowEbscoToAddTitles": false,
+  "packageToken": null,
+  "packageType": "Variable"
+}
