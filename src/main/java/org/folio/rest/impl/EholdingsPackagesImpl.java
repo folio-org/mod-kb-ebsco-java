@@ -89,7 +89,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       new PackagePutBodyValidator(),
       new CustomPackagePutBodyValidator(),
       new PackagesPostBodyValidator(),
-      new PackagesConverter());
       new PackagesConverter(),
       new TitleParametersValidator(),
       new ResourcesConverter());
