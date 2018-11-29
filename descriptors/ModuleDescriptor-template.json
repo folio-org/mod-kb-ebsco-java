@@ -113,6 +113,11 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/status",
           "permissionsRequired" :["kb-ebsco.status.get"]
+        },
+        {
+          "methods": ["DELETE"],
+          "pathPattern": "/eholdings/cache",
+          "permissionsRequired" :["kb-ebsco.cache.delete"]
         }
       ]
     }
@@ -132,6 +137,11 @@
       "permissionName": "kb-ebsco.status.get",
       "displayName": "get RM API configuration status",
       "description": "Get RM API configuration status"
+    },
+    {
+      "permissionName": "kb-ebsco.cache.delete",
+      "displayName": "delete RM API configuration cache",
+      "description": "Delete RM API configuration cache"
     },
     {
       "permissionName": "kb-ebsco.providerCollection.get",
@@ -206,6 +216,7 @@
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
+        "kb-ebsco.cache.delete",
         "kb-ebsco.providerCollection.get",
         "kb-ebsco.provider.get",
         "kb-ebsco.provider.put",

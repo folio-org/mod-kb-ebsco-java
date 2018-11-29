@@ -30,7 +30,7 @@ public final class RMAPIConfigurationCache {
     cache.put(tenant, configuration);
   }
 
-  public void invalidate(){
-    cache.invalidateAll();
+  public void invalidate(String tenant){
+    cache.invalidate(tenant);
   }
 }
