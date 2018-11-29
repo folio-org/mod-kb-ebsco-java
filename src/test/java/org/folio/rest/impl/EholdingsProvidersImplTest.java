@@ -2,6 +2,8 @@ package org.folio.rest.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -11,6 +13,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+import io.restassured.RestAssured;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -27,16 +39,7 @@ import org.folio.rest.jaxrs.model.Token;
 import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
-import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 
 @RunWith(VertxUnitRunner.class)
@@ -92,7 +95,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withBody(TestUtil.readFile(stubResponseFile))));
 
     WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" +  STUB_VENDOR_ID +  "/packages.*"), true))
+      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(stubPackagesResponseFile))));
 
@@ -326,6 +329,75 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   }
 
+  @Test
+  public void shouldReturnProviderPackagesWhenValidId() throws IOException, URISyntaxException {
+    String rmapiProviderPackagesUrl = "/rm/rmaccounts.*" + STUB_CUSTOMER_ID + "/vendors/"
+      + STUB_VENDOR_ID + "/packages.*";
+    String providerPackagesUrl = "eholdings/providers/" + STUB_VENDOR_ID + "/packages";
+    String packageStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockGet(rmapiProviderPackagesUrl, packageStubResponseFile);
+
+    String actual = getResponseWithStatus(providerPackagesUrl, 200).asString();
+    String expected = readFile("responses/packages/get-packages-by-provider-id-response.json");
+
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldReturn400IfProviderIdInvalid() {
+    errorTitleIsNotEmptyWith400Status("eholdings/providers/invalid/packages");
+  }
+
+  @Test
+  public void shouldReturn400IfCountOutOfRange() {
+    errorTitleIsNotEmptyWith400Status("eholdings/providers/" + STUB_VENDOR_ID + "/packages?count=120");
+  }
+
+  @Test
+  public void shouldReturn400IfFilterTypeInvalid() {
+    errorTitleIsNotEmptyWith400Status("eholdings/providers/" + STUB_VENDOR_ID +
+      "/packages?q=Search&filter[selected]=true&filter[type]=unsupported");
+  }
+
+  @Test
+  public void shouldReturn400IfFilterSelectedInvalid() {
+    errorTitleIsNotEmptyWith400Status("eholdings/providers/" + STUB_VENDOR_ID +
+      "/packages?q=Search&filter[selected]=invalid");
+  }
+
+  @Test
+  public void shouldReturn400IfPageOffsetInvalid() {
+    getResponseWithStatus("eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=Search&count=5&page=abc",
+      HttpStatus.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void shouldReturn400IfSortInvalid() {
+    errorTitleIsNotEmptyWith400Status("eholdings/providers/" +
+      STUB_VENDOR_ID + "/packages?q=Search&sort=invalid");
+  }
+
+  @Test
+  public void shouldReturn400IfQueryParamInvalid() throws IOException, URISyntaxException {
+    errorTitleIsNotEmptyWith400Status("/eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=");
+  }
+
+  @Test
+  public void shouldReturn404WhenNonProviderIdNotFound() throws IOException, URISyntaxException {
+    String rmapiInvalidProviderIdUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/191919/packages";
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    mockGet(rmapiInvalidProviderIdUrl, HttpStatus.SC_NOT_FOUND);
+
+    JsonapiError error = getResponseWithStatus("/eholdings/providers/191919/packages",
+      HttpStatus.SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
+  }
+
   private void compareProviders(Provider actual, Provider expected) {
     assertThat(actual.getData().getType(), equalTo(expected.getData().getType()));
     assertThat(actual.getData().getId(), equalTo(expected.getData().getId()));
@@ -398,5 +470,25 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withPackages(new Packages()
             .withMeta(new MetaDataIncluded()
               .withIncluded(false)))));
+  }
+
+  private ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
+    return RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(resourcePath)
+      .then()
+      .statusCode(expectedStatus).extract();
+  }
+
+  private void errorTitleIsNotEmptyWith400Status(String resourcePath) {
+    RequestSpecification requestSpecification = getRequestSpecification();
+    RestAssured.given()
+      .spec(requestSpecification)
+      .when()
+      .get(resourcePath)
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST)
+      .body("errors.first.title", notNullValue());
   }
 }
