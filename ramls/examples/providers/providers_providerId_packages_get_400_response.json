@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Search parameter cannot be empty"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

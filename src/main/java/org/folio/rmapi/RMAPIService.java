@@ -206,12 +206,12 @@ public class RMAPIService {
     return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class);
   }
 
-  public CompletableFuture<Packages> retrievePackages(Integer providerId) {
+  public CompletableFuture<Packages> retrievePackages(Long providerId) {
     return retrievePackages(null, null, providerId, null, 1, 25, Sort.NAME);
   }
 
   public CompletableFuture<Packages> retrievePackages(
-    String filterSelected, String filterType, Integer providerId, String q, int page, int count,
+    String filterSelected, String filterType, Long providerId, String q, int page, int count,
     Sort sort) {
     String path = new PackagesFilterableUrlBuilder()
       .filterSelected(filterSelected)
@@ -235,7 +235,7 @@ public class RMAPIService {
     return vendorsList;
   }
 
-  public Integer getFirstProviderElement(Vendors vendors) {
+  public Long getFirstProviderElement(Vendors vendors) {
     List<Vendor> vendorList = vendors.getVendorList();
     return (CollectionUtils.isEmpty(vendorList)) ? null : vendorList.get(0).getVendorId();
   }
@@ -248,7 +248,7 @@ public class RMAPIService {
 
     vendorFuture = this.getRequest(constructURL(path), VendorById.class);
     if (INCLUDE_PACKAGES_VALUE.equalsIgnoreCase(include)) {
-      packagesFuture = retrievePackages((int) id);
+      packagesFuture = retrievePackages(id);
     } else {
       packagesFuture = CompletableFuture.completedFuture(null);
     }

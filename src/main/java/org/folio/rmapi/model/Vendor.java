@@ -17,7 +17,7 @@ import lombok.ToString;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Vendor {
   @JsonProperty("vendorId")
-  private int vendorId;
+  private long vendorId;
   @JsonProperty("vendorName")
   private String vendorName;
   @JsonProperty("packagesTotal")
