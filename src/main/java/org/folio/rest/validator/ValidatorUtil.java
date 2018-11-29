@@ -1,10 +1,10 @@
 package org.folio.rest.validator;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.exception.InputValidationException;
 
 public class ValidatorUtil {
@@ -14,6 +14,7 @@ public class ValidatorUtil {
   private static final String MUST_BE_EMPTY_FORMAT = "%s must be empty";
   private static final String MUST_BE_SHORTER_THAN_N_CHARACTERS = "%s is too long (maximum is %s characters)";
   private static final String MUST_BE_VALID_DATE = "%s has invalid format. Should be YYYY-MM-DD";
+  private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   private ValidatorUtil() {}
 
@@ -75,9 +76,9 @@ public class ValidatorUtil {
 
   private static boolean isDateValid(String date) {
     try {
-      new SimpleDateFormat("yyyy-MM-dd").parse(date);
+      DATE_PATTERN.parse(date);
       return true;
-    } catch (ParseException e) {
+    } catch (DateTimeParseException e) {
       return false;
     }
   }
