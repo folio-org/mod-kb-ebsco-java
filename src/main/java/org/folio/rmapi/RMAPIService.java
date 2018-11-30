@@ -1,6 +1,7 @@
 package org.folio.rmapi;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -231,7 +232,11 @@ public class RMAPIService {
       .page(page)
       .count(count)
       .build();
-    return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class);
+    return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class)
+          .thenCompose(titles -> {
+            titles.getTitleList().removeIf(Objects::isNull);
+            return CompletableFuture.completedFuture(titles);
+          });
   }
 
   public CompletableFuture<Packages> retrievePackages(Long providerId) {
