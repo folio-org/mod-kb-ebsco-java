@@ -1,0 +1,439 @@
+{
+  "data": [
+    {
+      "id": "295-2545963-2099944",
+      "type": "resources",
+      "attributes": {
+        "isTitleCustom": false,
+        "publisherName": "IGI Global",
+        "titleId": 2099944,
+        "identifiers": [
+          {
+            "id": "978-1-4666-4518-9",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-299-80666-5",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4519-6",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4521-9",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "A Systemic Perspective to Managing Complexity with Enterprise Architecture",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "BUSINESS & ECONOMICS \/ Industrial Management",
+            "type": "BISAC"
+          },
+          {
+            "subject": "BUSINESS & ECONOMICS \/ Management",
+            "type": "BISAC"
+          },
+          {
+            "subject": "BUSINESS & ECONOMICS \/ Management Science",
+            "type": "BISAC"
+          },
+          {
+            "subject": "BUSINESS & ECONOMICS \/ Organizational Behavior",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 28972134,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "295-2545963",
+        "packageName": "InfoSci-Books 2014",
+        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4518-9",
+        "providerId": 295,
+        "providerName": "IGI Global",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "2014-01-01",
+            "endCoverage": "2014-12-31"
+          }
+        ],
+        "customCoverages": [
+
+        ]
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "295-2545963-2324668",
+      "type": "resources",
+      "attributes": {
+        "isTitleCustom": false,
+        "publisherName": "IGI Global",
+        "titleId": 2324668,
+        "identifiers": [
+          {
+            "id": "978-1-4666-4797-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4798-5",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4800-5",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "Academic Knowledge Construction and Multimodal Curriculum Development",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "Education (General)",
+            "type": "TLI"
+          },
+          {
+            "subject": "EDUCATION \/ Higher",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 28972354,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "295-2545963",
+        "packageName": "InfoSci-Books 2014",
+        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4797-8",
+        "providerId": 295,
+        "providerName": "IGI Global",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "2014-01-01",
+            "endCoverage": "2014-12-31"
+          }
+        ],
+        "customCoverages": [
+
+        ]
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "295-2545963-2172685",
+      "type": "resources",
+      "attributes": {
+        "isTitleCustom": false,
+        "publisherName": "IGI Global",
+        "titleId": 2172685,
+        "identifiers": [
+          {
+            "id": "978-1-4666-4590-5",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4591-2",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4593-6",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "Activity Theory Perspectives on Technology in Higher Education",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "EDUCATION \/ Higher",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 28972340,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "295-2545963",
+        "packageName": "InfoSci-Books 2014",
+        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4590-5",
+        "providerId": 295,
+        "providerName": "IGI Global",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "2014-01-01",
+            "endCoverage": "2014-12-31"
+          }
+        ],
+        "customCoverages": [
+
+        ]
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "295-2545963-2423505",
+      "type": "resources",
+      "attributes": {
+        "isTitleCustom": false,
+        "publisherName": "IGI Global",
+        "titleId": 2423505,
+        "identifiers": [
+          {
+            "id": "978-1-4666-4490-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4493-9",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-4491-5",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "Advanced Research and Trends in New Technologies, Software, Human-Computer Interaction, and Communicability",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "PSYCHOLOGY \/ Social Psychology",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 28972237,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "295-2545963",
+        "packageName": "InfoSci-Books 2014",
+        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-4490-8",
+        "providerId": 295,
+        "providerName": "IGI Global",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "2014-01-01",
+            "endCoverage": "2014-12-31"
+          }
+        ],
+        "customCoverages": [
+
+        ]
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "295-2545963-2733268",
+      "type": "resources",
+      "attributes": {
+        "isTitleCustom": false,
+        "publisherName": "IGI Global",
+        "titleId": 2733268,
+        "identifiers": [
+          {
+            "id": "978-1-4666-5780-9",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-5781-6",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-4666-5782-3",
+            "subtype": "Online",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-1-78539-188-0",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "Adult and Continuing Education: Concepts, Methodologies, Tools, and Applications",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "Education (General)",
+            "type": "TLI"
+          },
+          {
+            "subject": "EDUCATION \/ Adult & Continuing Education",
+            "type": "BISAC"
+          },
+          {
+            "subject": "EDUCATION \/ Non-Formal Education",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 28972367,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "295-2545963",
+        "packageName": "InfoSci-Books 2014",
+        "url": "http:\/\/services.igi-global.com\/resolvedoi\/resolve.aspx?doi=10.4018\/978-1-4666-5780-9",
+        "providerId": 295,
+        "providerName": "IGI Global",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "2014-01-01",
+            "endCoverage": "2014-12-31"
+          }
+        ],
+        "customCoverages": [
+
+        ]
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 5
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

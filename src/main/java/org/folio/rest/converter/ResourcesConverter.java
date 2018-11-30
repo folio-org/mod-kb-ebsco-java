@@ -130,6 +130,7 @@ public class ResourcesConverter {
     return new ResourceCollectionItem()
     .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))
     .withType(ResourceCollectionItem.Type.RESOURCES)
+      .withRelationships(EMPTY_RELATIONSHIPS)
     .withAttributes(createResourceDataAttributes(title, resource));
   }
 

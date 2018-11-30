@@ -5,7 +5,10 @@ import static org.folio.util.TestUtil.STUB_TENANT;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.restassured.RestAssured;
 import io.restassured.http.Header;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -88,4 +91,14 @@ public abstract class WireMockTestBase {
   protected String getWiremockUrl() {
     return host + ":" + userMockServer.port();
   }
+
+  protected ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
+    return RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(resourcePath)
+      .then()
+      .statusCode(expectedStatus).extract();
+  }
+
 }
