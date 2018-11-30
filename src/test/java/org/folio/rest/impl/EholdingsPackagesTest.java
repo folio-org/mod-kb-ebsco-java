@@ -18,34 +18,35 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import org.apache.http.HttpStatus;
-import org.folio.rest.jaxrs.model.ContentType;
-import org.folio.rest.jaxrs.model.Package;
-import org.folio.rest.jaxrs.model.PackageCollection;
-import org.folio.rest.jaxrs.model.PackageCollectionItem;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.PackageData;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.ResourceCollection;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.PackageData;
-import org.folio.util.TestUtil;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.http.HttpStatus;
+import org.folio.rest.jaxrs.model.*;
+import org.folio.rest.jaxrs.model.Package;
+import org.folio.rmapi.model.CoverageDates;
+import org.folio.rmapi.model.PackageByIdData;
+import org.folio.rmapi.model.PackageData;
+import org.folio.util.TestUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.folio.util.TestUtil.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
