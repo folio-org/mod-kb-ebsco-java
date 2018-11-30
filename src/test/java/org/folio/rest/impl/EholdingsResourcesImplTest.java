@@ -1,5 +1,9 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -7,12 +11,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
@@ -30,12 +32,11 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   public void shouldReturnResourceWhenValidId() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-        WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + vendorId + "/packages/" + packageId + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + vendorId + "/packages/" + packageId + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-            .withBody(TestUtil.readFile(stubResponseFile))));
+            .withBody(readFile(stubResponseFile))));
 
     String resourceByIdEndpoint = "eholdings/resources/" + STUB_RESOURCE_ID;
 
@@ -96,12 +97,11 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   public void shouldReturn404WhenRMAPINotFoundOnResourceGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-        WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + vendorId + "/packages/" + packageId + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + vendorId + "/packages/" + packageId + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-            .withBody(TestUtil.readFile(stubResponseFile))
+            .withBody(readFile(stubResponseFile))
             .withStatus(404)));
 
     String resourceByIdEndpoint = "eholdings/resources/" + STUB_RESOURCE_ID;
@@ -119,8 +119,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenValidationErrorOnResourceGet() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     String resourceByIdEndpoint = "eholdings/resources/583-abc-762169";
 
@@ -137,10 +136,9 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn500WhenRMApiReturns500ErrorOnResourceGet() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + vendorId + "/packages/" + packageId + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + vendorId + "/packages/" + packageId + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 

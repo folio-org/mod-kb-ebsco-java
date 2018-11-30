@@ -23,7 +23,6 @@ import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
@@ -434,7 +433,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     String actual = RestAssured.given()
       .spec(getRequestSpecification())
-      .header("Content-type", "application/json")
       .body(readFile(packagePostStubRequestFile))
       .when()
       .post("eholdings/packages")
@@ -472,7 +470,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     RestAssured.given()
       .spec(getRequestSpecification())
-      .header("Content-type", "application/json")
       .body(readFile(packagePostStubRequestFile))
       .when()
       .post("eholdings/packages")
@@ -512,7 +509,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     PackageCollectionItem actualItem = actual.getData().get(0);
     PackageCollectionItem expectedItem = expected.getData().get(0);
     comparePackageItem(actualItem, expectedItem);
-
   }
 
   private void comparePackageItem(PackageCollectionItem actualItem, PackageCollectionItem expectedItem) {
