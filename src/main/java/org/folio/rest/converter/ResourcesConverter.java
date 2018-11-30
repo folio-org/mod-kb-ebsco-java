@@ -7,35 +7,37 @@ import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourceRelationships;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.Title;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ResourcesConverter {
-  
+
   private static final ResourceRelationships EMPTY_RELATIONSHIPS = new ResourceRelationships()
-      .withProvider(new MetaIncluded().withMeta(
-        new MetaDataIncluded()
-          .withIncluded(false)))
-      .withPackage(new MetaIncluded().withMeta(
-          new MetaDataIncluded()
-            .withIncluded(false)))
-      .withTitle(new MetaIncluded().withMeta(
-          new MetaDataIncluded()
-            .withIncluded(false)));    
+    .withProvider(new MetaIncluded().withMeta(
+      new MetaDataIncluded()
+        .withIncluded(false)))
+    .withPackage(new MetaIncluded().withMeta(
+      new MetaDataIncluded()
+        .withIncluded(false)))
+    .withTitle(new MetaIncluded().withMeta(
+      new MetaDataIncluded()
+        .withIncluded(false)));
 
   private CommonAttributesConverter commonConverter;
-  
+
   public ResourcesConverter() {
     this(new CommonAttributesConverter());
   }
-  
+
   public ResourcesConverter(CommonAttributesConverter commonConverter) {
     this.commonConverter = commonConverter;
   }
 
-  public Resource convertFromRMAPIResource(Title title) {
-    CustomerResources resource = title.getCustomerResourcesList().get(0);
-    return new org.folio.rest.jaxrs.model.Resource()
+  public List<Resource> convertFromRMAPIResource(Title title) {
+    return title.getCustomerResourcesList().stream().map(resource ->
+      new org.folio.rest.jaxrs.model.Resource()
         .withData(new ResourceCollectionItem()
           .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))
           .withType(ResourceCollectionItem.Type.RESOURCES)
@@ -68,8 +70,9 @@ public class ResourcesConverter {
             .withCustomCoverages(commonConverter.convertCoverages(resource.getCustomCoverageList()))
             .withProxy(commonConverter.convertProxy(resource.getProxy())))
           .withRelationships(EMPTY_RELATIONSHIPS)
-          )
+        )
         .withIncluded(null)
-        .withJsonapi(RestConstants.JSONAPI);
+        .withJsonapi(RestConstants.JSONAPI))
+      .collect(Collectors.toList());
   }
 }

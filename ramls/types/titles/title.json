@@ -10,25 +10,25 @@
       "type": "object",
       "description": "The Data Schema",
       "properties": {
-        "attributes": {
-          "type": "object",
-          "description": "The Attributes Schema",
-          "$ref": "titleData.json"
-        },
         "id": {
           "type": "string",
           "description": "The Id Schema",
           "example": "100130"
         },
-       "relationships": {
-          "type": "object",
-          "description": "Displays title relationships",
-          "$ref": "titleRelationship.json"
-        },
         "type": {
           "type": "string",
           "description": "Title Type",
           "example": "titles"
+        },
+        "attributes": {
+          "type": "object",
+          "description": "The Attributes Schema",
+          "$ref": "titleData.json"
+        },
+        "relationships": {
+          "type": "object",
+          "description": "Displays title relationships",
+          "$ref": "../relationships.json"
         }
       }
     },
