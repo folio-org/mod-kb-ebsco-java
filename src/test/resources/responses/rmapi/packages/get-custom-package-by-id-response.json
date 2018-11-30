@@ -12,7 +12,7 @@
   },
   "selectedCount": 6,
   "isTokenNeeded": false,
-  "contentType": "Unknown",
+  "contentType": "AggregatedFullText",
   "customCoverage": {
     "beginCoverage": "",
     "endCoverage": ""

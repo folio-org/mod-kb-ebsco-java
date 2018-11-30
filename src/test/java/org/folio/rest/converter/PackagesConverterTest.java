@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.folio.rest.impl.PackagesTestData;
+import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
@@ -87,7 +88,7 @@ public class PackagesConverterTest {
   public void shouldCreateRequestToChangeCustomPackageContentType() {
     PackagePut packagePut = packagesConverter.convertToRMAPICustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
       new PackageDataAttributes()
-        .withContentType(PackageDataAttributes.ContentType.AGGREGATED_FULL_TEXT)));
+        .withContentType(ContentType.AGGREGATED_FULL_TEXT)));
     Integer aggregatedFullTextContentTypeCode = 1;
     assertEquals(aggregatedFullTextContentTypeCode, packagePut.getContentType());
   }

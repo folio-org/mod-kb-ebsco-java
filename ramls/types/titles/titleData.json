@@ -6,24 +6,28 @@
   "javaType": "org.folio.rest.jaxrs.model.TitleAttributes",
   "additionalProperties": false,
   "properties": {
-    "contributors": {
+    "name": {
+      "type": "string",
+      "description": "Title name",
+      "example": "A call to action: Changing the culture of drinking at U.S. colleges"
+    },
+    "publisherName": {
+      "type": "string",
+      "description": "Publisher name",
+      "example": "Elsevier"
+    },
+    "isTitleCustom": {
+      "type": "boolean",
+      "description": "Defines if the title is custom",
+      "example": false
+    },
+    "subjects": {
       "type": "array",
-      "description": "The Contributors Schema",
+      "description": "List of title subjects",
       "items": {
         "type": "object",
-        "description": "The Contributors Schema",
-        "$ref": "../contributor.json"
+        "$ref": "../subject.json"
       }
-    },
-    "description": {
-      "type": "string",
-      "description": "The Description Schema",
-      "example": "Provides information about all areas of American Studies."
-    },
-    "edition": {
-      "type": "string",
-      "description": "The Edition Schema",
-      "example": "Second edition"
     },
     "identifiers": {
       "type": "array",
@@ -34,37 +38,33 @@
         "$ref": "../identifier.json"
       }
     },
-    "isPeerReviewed": {
-      "type": "boolean",
-      "description": "Defines if peer reviewed",
-      "example": false
-    },
-    "isTitleCustom": {
-      "type": "boolean",
-      "description": "Defines if the title is custom",
-      "example": false
-    },
-    "name": {
-      "type": "string",
-      "description": "Title name",
-      "example": "A call to action: Changing the culture of drinking at U.S. colleges"
-    },
     "publicationType": {
       "type": "string",
       "description": "Type of publication",
       "$ref": "../publicationType.json"
     },
-    "publisherName": {
+    "edition": {
       "type": "string",
-      "description": "Publisher name",
-      "example": "Elsevier"
+      "description": "The Edition Schema",
+      "example": "Second edition"
     },
-    "subjects": {
+    "description": {
+      "type": "string",
+      "description": "The Description Schema",
+      "example": "Provides information about all areas of American Studies."
+    },
+    "isPeerReviewed": {
+      "type": "boolean",
+      "description": "Defines if peer reviewed",
+      "example": false
+    },
+    "contributors": {
       "type": "array",
-      "description": "List of title subjects",
+      "description": "The Contributors Schema",
       "items": {
         "type": "object",
-        "$ref": "../subject.json"
+        "description": "The Contributors Schema",
+        "$ref": "../contributor.json"
       }
     }
   },

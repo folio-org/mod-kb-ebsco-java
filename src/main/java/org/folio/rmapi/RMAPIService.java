@@ -6,6 +6,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.mutable.MutableObject;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -21,6 +22,8 @@ import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackagePut;
+import org.folio.rmapi.model.PackageCreated;
+import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
@@ -119,31 +122,11 @@ public class RMAPIService {
 
     final HttpClientRequest request = httpClient.getAbs(query);
 
-    request.headers().add(HTTP_HEADER_ACCEPT, APPLICATION_JSON);
-    request.headers().add(HTTP_HEADER_CONTENT_TYPE, APPLICATION_JSON);
-    request.headers().add(RMAPI_API_KEY, apiKey);
+    addRequestHeaders(request);
 
     LOG.info("RMAPI Service GET absolute URL is:" + request.absoluteURI());
 
-    request.handler(response -> response.bodyHandler(body -> {
-      httpClient.close();
-      if (response.statusCode() == 200) {
-        try {
-          final JsonObject instanceJSON = new JsonObject(body.toString());
-          T results = instanceJSON.mapTo(clazz);
-          future.complete(results);
-        } catch (Exception e) {
-          LOG.error(
-              String.format("%s - Response = [%s] Target Type = [%s] Cause: [%s]",
-                  JSON_RESPONSE_ERROR, body.toString(), clazz, e.getMessage()));
-          future.completeExceptionally(
-              new RMAPIResultsProcessingException(String.format("%s for query = %s", JSON_RESPONSE_ERROR, query), e));
-        }
-      } else {
-
-        handleRMAPIError(response, query, body, future);
-      }
-    })).exceptionHandler(future::completeExceptionally);
+    executeRequest(query, clazz, future, httpClient, request);
 
     request.end();
 
@@ -159,9 +142,7 @@ public class RMAPIService {
 
     final HttpClientRequest request = httpClient.putAbs(query);
 
-    request.headers().add(HTTP_HEADER_ACCEPT, APPLICATION_JSON);
-    request.headers().add(HTTP_HEADER_CONTENT_TYPE, APPLICATION_JSON);
-    request.headers().add(RMAPI_API_KEY, apiKey);
+    addRequestHeaders(request);
 
     LOG.info("RMAPI Service PUT absolute URL is:" + request.absoluteURI());
 
@@ -181,6 +162,56 @@ public class RMAPIService {
 
     return future;
 
+  }
+
+  private <T, P> CompletableFuture<T> postRequest(String query, P postData, Class<T> clazz){
+
+    CompletableFuture<T> future = new CompletableFuture<>();
+
+    HttpClient httpClient = vertx.createHttpClient();
+
+    final HttpClientRequest request = httpClient.postAbs(query);
+
+    addRequestHeaders(request);
+
+    LOG.info("RMAPI Service POST absolute URL is:" + request.absoluteURI());
+
+    executeRequest(query, clazz, future, httpClient, request);
+
+    String encodedBody = Json.encodePrettily(postData);
+    LOG.info("RMAPI Service POST body is:" + encodedBody);
+    request.end(encodedBody);
+
+      return future;
+  }
+
+  private <T> void executeRequest(String query, Class<T> clazz, CompletableFuture<T> future,
+    HttpClient httpClient, HttpClientRequest request) {
+    request.handler(response -> response.bodyHandler(body -> {
+      httpClient.close();
+      if (response.statusCode() == 200) {
+          try {
+            final JsonObject instanceJSON = new JsonObject(body.toString());
+            T results = instanceJSON.mapTo(clazz);
+            future.complete(results);
+          } catch (Exception e) {
+            LOG.error(
+              String.format("%s - Response = [%s] Target Type = [%s] Cause: [%s]",
+                JSON_RESPONSE_ERROR, body.toString(), clazz, e.getMessage()));
+            future.completeExceptionally(
+              new RMAPIResultsProcessingException(String.format("%s for query = %s", JSON_RESPONSE_ERROR, query), e));
+          }
+        } else {
+
+          handleRMAPIError(response, query, body, future);
+        }
+      })).exceptionHandler(future::completeExceptionally);
+  }
+
+  private void addRequestHeaders(HttpClientRequest request) {
+    request.headers().add(HTTP_HEADER_ACCEPT, APPLICATION_JSON);
+    request.headers().add(HTTP_HEADER_CONTENT_TYPE, APPLICATION_JSON);
+    request.headers().add(RMAPI_API_KEY, apiKey);
   }
 
   public CompletableFuture<Object> verifyCredentials() {
@@ -280,7 +311,7 @@ public class RMAPIService {
 
   public CompletableFuture<Void> deletePackage(PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
-    return this.putRequest(constructURL(path),new PackageSelectedPayload(false));
+    return this.putRequest(constructURL(path), new PackageSelectedPayload(false));
   }
 
   public CompletableFuture<RootProxyCustomLabels> retrieveRootProxyCustomLabels() {
@@ -315,7 +346,6 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Title> retrieveTitle(long id) {
-
     final String path = TITLES_PATH + '/' + id;
     return this.getRequest(constructURL(path), Title.class);
   }
@@ -342,6 +372,26 @@ public class RMAPIService {
     return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
         CompletableFuture.completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join())));
+  }
+
+  public CompletableFuture<PackageByIdData> postPackage(PackagePost entity) {
+
+    MutableObject providerId = new MutableObject();
+     return this
+      .retrieveProviders(customerId, 1, 25, Sort.RELEVANCE)
+      .thenCompose(
+        vendors -> CompletableFuture.completedFuture(this.getFirstProviderElement(vendors)))
+      .thenCompose(vendorId -> {
+        providerId.setValue(vendorId);
+        return this.postPackage(entity, vendorId);
+      })
+       .thenCompose(packageCreated -> retrievePackage(new PackageId((Long) providerId.getValue(), packageCreated.getPackageId())));
+
+  }
+
+  public CompletableFuture<PackageCreated> postPackage(PackagePost entity, Long id) {
+    String path = VENDORS_PATH + '/' + id + '/' + PACKAGES_PATH;
+    return this.postRequest(constructURL(path), entity, PackageCreated.class);
   }
 
   /**

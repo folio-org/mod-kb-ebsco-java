@@ -1,9 +1,14 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static com.github.tomakehurst.wiremock.client.WireMock.deleteRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.io.IOException;
@@ -21,7 +26,6 @@ import org.junit.runner.RunWith;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.AnythingPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -44,8 +48,8 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
     String stubUrl = "https://api.ebsco.io";
     String expectedMaskedApiKey = "****************************************";
 
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new AnythingPattern(), false))
+    stubFor(
+      get(new UrlPathPattern(new AnythingPattern(), false))
         .withHeader(TENANT_HEADER.getName(), new EqualToPattern(TENANT_HEADER.getValue()))
         .withHeader(TOKEN_HEADER.getName(), new EqualToPattern(TOKEN_HEADER.getValue()))
         .willReturn(new ResponseDefinitionBuilder()
@@ -80,21 +84,20 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
       .then()
       .statusCode(200);
 
-    WireMock.verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
+    verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
       .withRequestBody(equalToJson(TestUtil.readFile("requests/configuration/post-api-key-configuration.json"))));
-    WireMock.verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
+    verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
       .withRequestBody(equalToJson(TestUtil.readFile("requests/configuration/post-customer-id-configuration.json"))));
 
     Config config = mapper.readValue(TestUtil.readFile("requests/configuration/post-url-configuration.json"), Config.class);
     config.setValue(wiremockUrl);
-    WireMock.verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
+    verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
       .withRequestBody(equalToJson(mapper.writeValueAsString(config))));
   }
 
   @Test
   public void shouldDeleteOldConfigurationOnPutWhenConfigurationExists() throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
-    String wiremockUrl = getWiremockUrl();
 
     String configsString = TestUtil.readFile("responses/configuration/get-configuration.json");
     Configs configs = mapper.readValue(configsString, Configs.class);
@@ -105,7 +108,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
     mockConfigurationUpdate(configsString);
 
     Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
-    configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
+    configuration.getData().getAttributes().setRmapiBaseUrl(getWiremockUrl());
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -117,20 +120,19 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
       .statusCode(200);
 
     for (String id : existingIds) {
-      WireMock.verify(1, deleteRequestedFor(urlEqualTo("/configurations/entries/" + id)));
+      verify(1, deleteRequestedFor(urlEqualTo("/configurations/entries/" + id)));
     }
   }
 
   @Test
   public void shouldReturn422OnPutWhenVerificationOfConfigurationFailed() throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
-    String wiremockUrl = getWiremockUrl();
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
         .willReturn(new ResponseDefinitionBuilder().withStatus(403)));
 
     Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
-    configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
+    configuration.getData().getAttributes().setRmapiBaseUrl(getWiremockUrl());
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -157,31 +159,31 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
   }
 
   private void mockConfigurationUpdate(String configsString) {
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(configsString)));
 
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody("{\"totalResults\": 0, \"vendors\": []}")));
 
-    WireMock.stubFor(
-      WireMock.delete(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
+    stubFor(
+      delete(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(200)));
 
-    WireMock.stubFor(
-      WireMock.post(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
+    stubFor(
+      post(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(200)));
   }
 
   @Test
   public void shouldReturn500IfConfigurationIsInvalid() {
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new AnythingPattern(), false))
+    stubFor(
+      get(new UrlPathPattern(new AnythingPattern(), false))
         .withHeader(TENANT_HEADER.getName(), new EqualToPattern(TENANT_HEADER.getValue()))
         .withHeader(TOKEN_HEADER.getName(), new EqualToPattern(TOKEN_HEADER.getValue()))
         .willReturn(new ResponseDefinitionBuilder()

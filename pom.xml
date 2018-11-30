@@ -34,7 +34,7 @@
   </licenses>
 
   <properties>
-    <raml-module-builder.version>21.0.4</raml-module-builder.version>
+    <raml-module-builder.version>23.2.0</raml-module-builder.version>
     <vertx.version>3.5.4</vertx.version>
     <aspectj.version>1.9.1</aspectj.version>
     <slf4j.version>1.7.25</slf4j.version>
@@ -155,6 +155,11 @@
       <version>1.5.0</version>
       <scope>test</scope>
   </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.4.9</version>
+    </dependency>
   </dependencies>
 
   <dependencyManagement>

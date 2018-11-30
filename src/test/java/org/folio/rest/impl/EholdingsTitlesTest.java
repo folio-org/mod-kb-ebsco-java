@@ -1,5 +1,10 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.readFile;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,14 +14,15 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
 import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
@@ -26,16 +32,16 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
   private static final String STUB_TITLE_ID = "985846";
+
   @Test
   public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/searchTitles.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubResponseFile))));
+          .withBody(readFile(stubResponseFile))));
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -82,10 +88,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn500WhenRMApiReturns500Error() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
@@ -101,12 +106,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-        WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-            .withBody(TestUtil.readFile(stubResponseFile))));
+            .withBody(readFile(stubResponseFile))));
 
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
 
@@ -126,51 +130,48 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturn404WhenRMAPINotFoundOnTitleGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-not-found-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-        WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-            .withBody(TestUtil.readFile(stubResponseFile))
+            .withBody(readFile(stubResponseFile))
             .withStatus(404)));
 
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
 
     JsonapiError error = RestAssured.given()
-    .spec(getRequestSpecification())
-    .when()
-    .get(titleByIdEndpoint)
-    .then()
-    .statusCode(404)
-    .extract().as(JsonapiError.class);
+      .spec(getRequestSpecification())
+      .when()
+      .get(titleByIdEndpoint)
+      .then()
+      .statusCode(404)
+      .extract().as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Title not found"));
   }
 
   @Test
   public void shouldReturn400WhenValidationErrorOnTitleGet() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     String titleByIdEndpoint = "eholdings/titles/12345aaa";
 
     JsonapiError error = RestAssured.given()
-    .spec(getRequestSpecification())
-    .when()
-    .get(titleByIdEndpoint)
-    .then()
-    .statusCode(400)
-    .extract().as(JsonapiError.class);
+      .spec(getRequestSpecification())
+      .when()
+      .get(titleByIdEndpoint)
+      .then()
+      .statusCode(400)
+      .extract().as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Title id is invalid - 12345aaa"));
   }
 
   @Test
   public void shouldReturn500WhenRMApiReturns500ErrorOnTitleGet() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
@@ -183,5 +184,44 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .get(titleByIdEndpoint)
       .then()
       .statusCode(500);
+  }
+
+  @Test
+  public void shouldReturnTitleWithResourcesWhenIncludeResources() throws IOException, URISyntaxException {
+    String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+    String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockGet(rmapiUrl, rmapiResponseFile);
+    String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID + "?include=resources";
+
+    String actual = getResponseWithStatus(titleByIdEndpoint, HttpStatus.SC_OK).asString();
+    String expected = readFile("responses/titles/get-title-by-id-include-resources-response.json");
+
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldReturnTitleWithoutResourcesWhenInvalidInclude() throws IOException, URISyntaxException {
+    String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+    String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockGet(rmapiUrl, rmapiResponseFile);
+    String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID + "?include=badValue";
+
+    String actual = getResponseWithStatus(titleByIdEndpoint, HttpStatus.SC_OK).asString();
+    String expected = readFile("responses/titles/get-title-by-id-invalid-include-response.json");
+
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  private ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
+    return RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(resourcePath)
+      .then()
+      .statusCode(expectedStatus).extract();
   }
 }

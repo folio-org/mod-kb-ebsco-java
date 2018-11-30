@@ -34,6 +34,8 @@ import org.folio.rest.validator.PackagePutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.PackagePut;
+import org.folio.rest.validator.PackagesPostBodyValidator;
+import org.folio.rmapi.model.PackagePost;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -48,6 +50,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private static final Pattern PACKAGE_ID_PATTERN = Pattern.compile(PACKAGE_ID_REGEX);
   private static final String GET_PACKAGES_ERROR_MESSAGE = "Failed to retrieve packages";
   private static final String PUT_PACKAGE_ERROR_MESSAGE = "Failed to update package";
+  private static final String POST_PACKAGES_ERROR_MESSAGE = "Failed to create packages";
   public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
   public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
 
@@ -63,6 +66,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private PackageParametersValidator packageParametersValidator;
   private PackagePutBodyValidator packagePutBodyValidator;
   private CustomPackagePutBodyValidator customPackagePutBodyValidator;
+  private PackagesPostBodyValidator packagesPostBodyValidator;
 
   public EholdingsPackagesImpl() {
     this(
@@ -72,6 +76,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       new PackageParametersValidator(),
       new PackagePutBodyValidator(),
       new CustomPackagePutBodyValidator(),
+      new PackagesPostBodyValidator(),
       new PackagesConverter());
   }
 
@@ -79,10 +84,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                HeaderValidator headerValidator,
                                PackageParametersValidator packageParametersValidator,
                                PackagePutBodyValidator packagePutBodyValidator,
-                               CustomPackagePutBodyValidator customPackagePutBodyValidator, PackagesConverter converter) {
+                               CustomPackagePutBodyValidator customPackagePutBodyValidator,
+                               PackagesPostBodyValidator packagesPostBodyValidator,
+                               PackagesConverter converter) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.packageParametersValidator = packageParametersValidator;
+    this.packagesPostBodyValidator = packagesPostBodyValidator;
     this.converter = converter;
     this.packagePutBodyValidator = packagePutBodyValidator;
     this.customPackagePutBodyValidator = customPackagePutBodyValidator;
@@ -102,7 +110,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     }
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
-    Sort nameSort =  Sort.valueOf(sort.toUpperCase());
+    Sort nameSort = Sort.valueOf(sort.toUpperCase());
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -130,8 +138,36 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   @Override
+  @HandleValidationErrors
   public void postEholdingsPackages(String contentType, PackagePostRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(Response.status(Response.Status.NOT_IMPLEMENTED).build()));
+
+    headerValidator.validate(okapiHeaders);
+    packagesPostBodyValidator.validate(entity);
+
+    PackagePost packagePost = converter.convertToPackage(entity);
+
+    MutableObject<RMAPIService> service = new MutableObject<>();
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenAccept(rmapiConfiguration ->
+        service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
+          rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
+      .thenCompose(o  ->  service.getValue().postPackage(packagePost))
+      .thenAccept(packageCreated ->
+        asyncResultHandler.handle(Future.succeededFuture(PostEholdingsPackagesResponse
+          .respond200WithApplicationVndApiJson(converter.convert(packageCreated)))))
+      .exceptionally(e -> {
+        logger.error(POST_PACKAGES_ERROR_MESSAGE, e);
+        new ErrorHandler()
+          .add(RMAPIServiceException.class,
+            exception ->
+              PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
+                ErrorUtil.createErrorFromRMAPIResponse(exception)))
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
+
   }
 
   @Override

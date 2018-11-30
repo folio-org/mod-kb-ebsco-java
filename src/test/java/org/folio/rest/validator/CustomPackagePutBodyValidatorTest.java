@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.impl.PackagesTestData;
+import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.junit.Rule;
@@ -24,7 +25,7 @@ public class CustomPackagePutBodyValidatorTest {
     validator.validate(PackagesTestData.getPackagePutRequest(
       new PackageDataAttributes()
         .withIsSelected(true)
-        .withContentType(PackageDataAttributes.ContentType.E_BOOK)
+        .withContentType(ContentType.E_BOOK)
         .withName("package name")
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("abcd-10-ab"))));
@@ -36,7 +37,7 @@ public class CustomPackagePutBodyValidatorTest {
     expectedEx.expectMessage(containsString("name"));
     validator.validate(PackagesTestData.getPackagePutRequest(
       new PackageDataAttributes()
-        .withContentType(PackageDataAttributes.ContentType.E_BOOK)
+        .withContentType(ContentType.E_BOOK)
         .withName("")));
   }
 

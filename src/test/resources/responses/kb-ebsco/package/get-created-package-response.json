@@ -1,0 +1,52 @@
+{
+  "data" : {
+    "id" : "111111-3964",
+    "type" : "packages",
+    "attributes" : {
+      "contentType" : "E-Journal",
+      "customCoverage" : {
+        "beginCoverage" : "",
+        "endCoverage" : ""
+      },
+      "isCustom" : true,
+      "isSelected" : true,
+      "name" : "carole and sams test",
+      "packageId" : 3964,
+      "packageType" : "Custom",
+      "providerId" : 111111,
+      "providerName" : "APIDEV CORPORATE CUSTOMER",
+      "selectedCount" : 6,
+      "titleCount" : 6,
+      "visibilityData" : {
+        "isHidden" : false,
+        "reason" : ""
+      },
+      "allowKbToAddTitles" : false,
+      "packageToken" : {
+        "factName" : "[[gale.customcode.infocust]]",
+        "prompt" : "res_id=info:sid/gale:",
+        "helpText" : "help text",
+        "value" : "token value"
+      },
+      "proxy" : {
+        "id" : "<n>",
+        "inherited" : true
+      }
+    },
+    "relationships" : {
+      "resources" : {
+        "meta" : {
+          "included" : false
+        }
+      },
+      "provider" : {
+        "meta" : {
+          "included" : false
+        }
+      }
+    }
+  },
+  "jsonapi" : {
+    "version" : "1.0"
+  }
+}

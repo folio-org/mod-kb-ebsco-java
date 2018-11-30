@@ -13,16 +13,8 @@
     },
     "contentType": {
       "type": "string",
-      "description": "Package type",
-      "enum": [
-        "Aggregated Full Text",
-        "Abstract and Index",
-        "E-Book",
-        "E-Journal",
-        "Print",
-        "Online Reference",
-        "Unknown"],
-      "example": "E-Journal"
+      "description": "Package content type",
+      "$ref": "contentTypeEnum.json"
     },
     "customCoverage": {
       "type": "object",
