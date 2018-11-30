@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Status Data Schema",
   "description": "Status Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.StatusData",
   "type": "object",
   "additionalProperties": false,
   "properties": {

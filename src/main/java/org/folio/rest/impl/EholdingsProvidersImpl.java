@@ -83,12 +83,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @HandleValidationErrors
   public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    if(!Sort.contains(sort.toUpperCase())){
-      throw new ValidationException("Invalid sort parameter");
-    }
-    if("".equals(q)){
-      throw new ValidationException("Search parameter cannot be empty");
-    }
+    validateSort(sort);
+    validateQuery(q);
+
     CompletableFuture.completedFuture(null)
     .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
     .thenCompose(rmapiConfiguration -> {
@@ -122,12 +119,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @HandleValidationErrors
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    long providerIdLong;
-    try {
-      providerIdLong = Long.parseLong(providerId);
-    } catch (NumberFormatException e) {
-      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
-    }
+
+    long providerIdLong = getProviderId(providerId);
 
     headerValidator.validate(okapiHeaders);
 
@@ -158,12 +151,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @HandleValidationErrors
   public void putEholdingsProvidersByProviderId(String providerId, String contentType, ProviderPutRequest entity,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    long providerIdLong;
-    try {
-      providerIdLong = Long.parseLong(providerId);
-    } catch (NumberFormatException e) {
-      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
-    }
+
+    long providerIdLong = getProviderId(providerId);
+
     headerValidator.validate(okapiHeaders);
     bodyValidator.validate(entity);
 
@@ -188,7 +178,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         });
   }
 
-
   @Override
   @Validate
   @HandleValidationErrors
@@ -197,21 +186,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         Map<String, String> okapiHeaders,
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
-    long providerIdLong;
-    try {
-      providerIdLong = Long.parseLong(providerId);
-    } catch (NumberFormatException e) {
-      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
-    }
+    long providerIdLong = getProviderId(providerId);
 
     headerValidator.validate(okapiHeaders);
     parametersValidator.validate("true", filterSelected, filterType, sort);
-    if(!Sort.contains(sort.toUpperCase())){
-      throw new ValidationException("Invalid sort parameter");
-    }
-    if("".equals(q)){
-      throw new ValidationException("Search parameter cannot be empty");
-    }
+    validateSort(sort);
+    validateQuery(q);
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
     CompletableFuture.completedFuture(null)
@@ -236,5 +216,27 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           .handle(asyncResultHandler, e);
         return null;
       });
+  }
+
+  private long getProviderId(String providerId) {
+    long providerIdLong;
+    try {
+      providerIdLong = Long.parseLong(providerId);
+    } catch (NumberFormatException e) {
+      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
+    }
+    return providerIdLong;
+  }
+
+  private void validateSort(String sort) {
+    if (!Sort.contains(sort.toUpperCase())) {
+      throw new ValidationException("Invalid sort parameter");
+    }
+  }
+
+  private void validateQuery(String query) {
+    if ("".equals(query)) {
+      throw new ValidationException("Search parameter cannot be empty");
+    }
   }
 }

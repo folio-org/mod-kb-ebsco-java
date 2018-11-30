@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.Package;
@@ -32,7 +33,7 @@ public class PackagesTestData {
         .withIsSelected(true)
         .withSelectedCount(5)
         .withPackageType("Custom")
-        .withContentType(PackageDataAttributes.ContentType.ONLINE_REFERENCE)
+        .withContentType(ContentType.ONLINE_REFERENCE)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("")
           .withEndCoverage(""))
@@ -60,7 +61,7 @@ public class PackagesTestData {
         .withIsSelected(true)
         .withSelectedCount(6)
         .withPackageType("Custom")
-        .withContentType(PackageDataAttributes.ContentType.UNKNOWN)
+        .withContentType(ContentType.AGGREGATED_FULL_TEXT)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("")
           .withEndCoverage(""))
@@ -95,7 +96,7 @@ public class PackagesTestData {
         .withIsSelected(false)
         .withSelectedCount(0)
         .withPackageType("Variable")
-        .withContentType(PackageDataAttributes.ContentType.E_JOURNAL)
+        .withContentType(ContentType.E_JOURNAL)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("")
           .withEndCoverage(""))

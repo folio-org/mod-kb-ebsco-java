@@ -1,7 +1,13 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.folio.util.TestUtil.getFile;
+import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,7 +21,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
@@ -57,17 +62,14 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     boolean supportsCustomPackages = false;
     String token = "sampleToken";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubResponseFile))));
-
-    RequestSpecification requestSpecification = getRequestSpecification();
+          .withBody(readFile(stubResponseFile))));
 
     RestAssured.given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .when()
       .get("eholdings/providers?q=e&page=1&sort=name")
       .then()
@@ -87,17 +89,16 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
     String stubPackagesResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubResponseFile))));
+          .withBody(readFile(stubResponseFile))));
 
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubPackagesResponseFile))));
+          .withBody(readFile(stubPackagesResponseFile))));
 
     Provider expectedProvider = getExpectedProvider(PackagesTestData.getExpectedPackageCollection().getData());
     RequestSpecification requestSpecification = getRequestSpecification();
@@ -111,10 +112,10 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnErrorIfParameterInvalid() {
-    RequestSpecification requestSpecification = getRequestSpecification();
+  public void shouldReturnErrorIfParameterInvalid(){
+
     RestAssured.given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .when()
       .get("eholdings/providers?q=e&count=1000")
       .then()
@@ -127,15 +128,14 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
 
     String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
-    RequestSpecification requestSpecification = getRequestSpecification();
     RestAssured.given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .when()
       .get("eholdings/providers?q=e&count=1")
       .then()
@@ -146,9 +146,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnErrorIfSortParameterInvalid() {
 
-    RequestSpecification requestSpecification = getRequestSpecification();
     RestAssured.given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .when()
       .get("eholdings/providers?q=e&count=10&sort=abc")
       .then()
@@ -160,12 +159,11 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldReturnProviderWhenValidId() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubResponseFile))));
+          .withBody(readFile(stubResponseFile))));
 
     Provider expected = getExpectedProvider();
     String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
@@ -184,10 +182,9 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404WhenProviderIdNotFound() throws IOException, URISyntaxException {
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(HttpStatus.SC_NOT_FOUND)));
 
@@ -205,8 +202,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenInvalidProviderId() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     RequestSpecification requestSpecification = getRequestSpecification();
     JsonapiError error = RestAssured.given()
@@ -224,19 +220,18 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldUpdateAndReturnProviderOnPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
-        .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubResponseFile))));
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
-    WireMock.stubFor(
-      WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
         .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
 
     ObjectMapper mapper = new ObjectMapper();
-    ProviderPutRequest providerToBeUpdated = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-provider.json"),
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
       ProviderPutRequest.class);
 
     Provider expected = getUpdatedProvider();
@@ -257,32 +252,29 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     compareProviders(provider, expected);
 
-    WireMock.verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
-      .withRequestBody(equalToJson(TestUtil.readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+      .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
   }
 
   @Test
   public void shouldReturn400WhenRMAPIErrorOnPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/put-vendor-token-not-allowed-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    WireMock.stubFor(
-      WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
-        .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubResponseFile)).withStatus(400)));
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile)).withStatus(400)));
 
     ObjectMapper mapper = new ObjectMapper();
-    ProviderPutRequest providerToBeUpdated = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-provider.json"),
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
       ProviderPutRequest.class);
-
-    RequestSpecification requestSpecification = getRequestSpecification();
 
     String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
 
     JsonapiError error = RestAssured
       .given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .header(CONTENT_TYPE_HEADER)
       .body(mapper.writeValueAsString(providerToBeUpdated))
       .when()
@@ -297,11 +289,10 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422WhenBodyInputInvalidOnPut() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     ObjectMapper mapper = new ObjectMapper();
-    ProviderPutRequest providerToBeUpdated = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-provider.json"),
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
       ProviderPutRequest.class);
 
     Token providerToken = new Token();
@@ -309,13 +300,11 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     providerToBeUpdated.getData().getAttributes().setProviderToken(providerToken);
 
-    RequestSpecification requestSpecification = getRequestSpecification();
-
     String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
 
     JsonapiError error = RestAssured
       .given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .header(CONTENT_TYPE_HEADER)
       .body(mapper.writeValueAsString(providerToBeUpdated))
       .when()
@@ -336,7 +325,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String providerPackagesUrl = "eholdings/providers/" + STUB_VENDOR_ID + "/packages";
     String packageStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
 
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
     mockGet(rmapiProviderPackagesUrl, packageStubResponseFile);
 
     String actual = getResponseWithStatus(providerPackagesUrl, 200).asString();
@@ -388,7 +377,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldReturn404WhenNonProviderIdNotFound() throws IOException, URISyntaxException {
     String rmapiInvalidProviderIdUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/191919/packages";
 
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     mockGet(rmapiInvalidProviderIdUrl, HttpStatus.SC_NOT_FOUND);
 

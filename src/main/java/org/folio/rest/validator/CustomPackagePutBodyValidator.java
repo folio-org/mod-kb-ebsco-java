@@ -1,6 +1,7 @@
 package org.folio.rest.validator;
 
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 
@@ -17,7 +18,7 @@ public class CustomPackagePutBodyValidator
     }
     PackageDataAttributes attributes = request.getData().getAttributes();
     String name = attributes.getName();
-    PackageDataAttributes.ContentType contentType = attributes.getContentType();
+    ContentType contentType = attributes.getContentType();
 
     String beginCoverage = null;
     String endCoverage = null;

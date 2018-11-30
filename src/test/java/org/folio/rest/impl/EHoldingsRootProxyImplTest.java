@@ -1,11 +1,9 @@
 package org.folio.rest.impl;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.apache.http.HttpStatus;
@@ -14,7 +12,6 @@ import org.folio.rest.jaxrs.model.RootProxy;
 import org.folio.rest.jaxrs.model.RootProxyData;
 import org.folio.rest.jaxrs.model.RootProxyDataAttributes;
 import org.folio.rest.util.RestConstants;
-import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -22,7 +19,13 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -30,6 +33,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   private static final String ROOT_PROXY_ID = "root-proxy";
   private static final String ROOT_PROXY_TYPE = "rootProxies";
+  private static final String UPDATEROOT_PROXY_ENDPOINT = "eholdings/root-proxy";
   
   @Test
   public void shouldReturnRootProxyWhenCustIdAndAPIKeyAreValid() throws IOException, URISyntaxException {
@@ -37,21 +41,18 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
     String expectedRootProxyID = "<n>";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubResponseFile))));
-
-    RequestSpecification requestSpecification = getRequestSpecification();
+          .withBody(readFile(stubResponseFile))));
 
     RestAssured.given()
-      .spec(requestSpecification)
+      .spec( getRequestSpecification())
       .when()
-      .get("eholdings/root-proxy")
+      .get(UPDATEROOT_PROXY_ENDPOINT)
       .then()
-      .statusCode(200)
+      .statusCode(HttpStatus.SC_OK)
       .body("data.id", equalTo(ROOT_PROXY_ID))
       .body("data.type", equalTo(ROOT_PROXY_TYPE))
       .body("data.attributes.id", equalTo(ROOT_PROXY_ID))
@@ -60,67 +61,57 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   
   @Test
   public void shouldReturnUnauthorizedWhenRMAPIRequestCompletesWith401ErrorStatus() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(401)));
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_UNAUTHORIZED)));
     
-    RequestSpecification requestSpecification = getRequestSpecification();
-
     RestAssured.given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .when()
       .get("eholdings/root-proxy")
       .then()
-      .statusCode(403);
+      .statusCode(HttpStatus.SC_FORBIDDEN);
   }
   
   @Test
   public void shouldReturnUnauthorizedWhenRMAPIRequestCompletesWith403ErrorStatus() throws IOException, URISyntaxException {
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(403)));
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_FORBIDDEN)));
     
-    RequestSpecification requestSpecification = getRequestSpecification();
-
     RestAssured.given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .when()
-      .get("eholdings/root-proxy")
+      .get(UPDATEROOT_PROXY_ENDPOINT)
       .then()
-      .statusCode(403);
+      .statusCode(HttpStatus.SC_FORBIDDEN);
   }
   
   @Test
   public void shouldReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-updated-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubResponseFile))));
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
-    WireMock.stubFor(
-      WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_NO_CONTENT)));
 
     RootProxy expected = getUpdatedRootProxy();
-    RequestSpecification requestSpecification = getRequestSpecification();
-
-    String updateRootProxyEndpoint = "eholdings/root-proxy";
 
     RootProxy rootProxy = RestAssured
       .given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .header(CONTENT_TYPE_HEADER)
-      .body(TestUtil.readFile("requests/kb-ebsco/put-root-proxy.json"))
+      .body(readFile("requests/kb-ebsco/put-root-proxy.json"))
       .when()
-      .put(updateRootProxyEndpoint)
+      .put(UPDATEROOT_PROXY_ENDPOINT)
       .then()
       .statusCode(HttpStatus.SC_OK)
       .extract().as(RootProxy.class);
@@ -130,37 +121,33 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     assertThat(rootProxy.getData().getAttributes().getId(), equalTo(expected.getData().getAttributes().getId()));
     assertThat(rootProxy.getData().getAttributes().getProxyTypeId(), equalTo(expected.getData().getAttributes().getProxyTypeId()));
 
-    WireMock.verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-      .withRequestBody(equalToJson(TestUtil.readFile("requests/rmapi/proxiescustomlabels/put-root-proxy-custom-labels.json"))));
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+      .withRequestBody(equalToJson(readFile("requests/rmapi/proxiescustomlabels/put-root-proxy-custom-labels.json"))));
   }
   
   @Test
   public void shouldEliminateCustomLabelsWithEmptyDisplayLabelInRequestToRMAPIAndReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-with-empty-labels-success-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    WireMock.stubFor(
-      WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubResponseFile))));
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
-    WireMock.stubFor(
-      WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_NO_CONTENT)));
 
     RootProxy expected = getUpdatedRootProxy();
-    RequestSpecification requestSpecification = getRequestSpecification();
-
-    String updateRootProxyEndpoint = "eholdings/root-proxy";
 
     RootProxy rootProxy = RestAssured
       .given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .header(CONTENT_TYPE_HEADER)
-      .body(TestUtil.readFile("requests/kb-ebsco/put-root-proxy.json"))
+      .body(readFile("requests/kb-ebsco/put-root-proxy.json"))
       .when()
-      .put(updateRootProxyEndpoint)
+      .put(UPDATEROOT_PROXY_ENDPOINT)
       .then()
       .statusCode(HttpStatus.SC_OK)
       .extract().as(RootProxy.class);
@@ -170,8 +157,8 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     assertThat(rootProxy.getData().getAttributes().getId(), equalTo(expected.getData().getAttributes().getId()));
     assertThat(rootProxy.getData().getAttributes().getProxyTypeId(), equalTo(expected.getData().getAttributes().getProxyTypeId()));
 
-    WireMock.verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-      .withRequestBody(equalToJson(TestUtil.readFile("requests/rmapi/proxiescustomlabels/put-root-proxy-custom-labels-without-empty-display-labels.json"))));
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+      .withRequestBody(equalToJson(readFile("requests/rmapi/proxiescustomlabels/put-root-proxy-custom-labels-without-empty-display-labels.json"))));
   }
   
   @Test
@@ -179,28 +166,23 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     String stubGetResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-updated-response.json";
     String stubPutResponseFile = "responses/rmapi/proxiescustomlabels/put-root-proxy-custom-labels-400-error-response.json";
 
-    String wiremockUrl = getWiremockUrl();
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
     
-    WireMock.stubFor(
-        WireMock.get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-          .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubGetResponseFile))));
+    stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+          .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubGetResponseFile))));
 
-    WireMock.stubFor(
-      WireMock.put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withBody(TestUtil.readFile(stubPutResponseFile)).withStatus(400)));
-
-    RequestSpecification requestSpecification = getRequestSpecification();
-
-    String rootProxyEndpoint = "eholdings/root-proxy";
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubPutResponseFile)).withStatus(HttpStatus.SC_BAD_REQUEST)));
 
     JsonapiError error = RestAssured
       .given()
-      .spec(requestSpecification)
+      .spec(getRequestSpecification())
       .header(CONTENT_TYPE_HEADER)
-      .body(TestUtil.readFile("requests/kb-ebsco/put-root-proxy.json"))
+      .body(readFile("requests/kb-ebsco/put-root-proxy.json"))
       .when()
-      .put(rootProxyEndpoint)
+      .put(UPDATEROOT_PROXY_ENDPOINT)
       .then()
       .statusCode(HttpStatus.SC_BAD_REQUEST)
       .extract().as(JsonapiError.class);

@@ -13,7 +13,8 @@
         },
         {
           "methods": ["POST"],
-          "pathPattern": "/eholdings/packages"
+          "pathPattern": "/eholdings/packages",
+          "permissionsRequired": ["kb-ebsco.package.post"]
         },
         {
           "methods": ["GET"],
@@ -179,10 +180,14 @@
       "description": "Get package"
     },
     {
+      "permissionName": "kb-ebsco.package.post",
+      "displayName": "post package",
+      "description": "Post package"
+    },
+    {
       "permissionName": "kb-ebsco.package.put",
       "displayName": "put package",
-      "description": "Put package"
-    },
+      "description": "Put package"},
     {
       "permissionName": "kb-ebsco.package.delete",
       "displayName": "delete custom package",
@@ -212,6 +217,7 @@
         "kb-ebsco.provider.packageCollection.get",
         "kb-ebsco.titleCollection.get",
         "kb-ebsco.packageCollection.get",
+        "kb-ebsco.package.post",
         "kb-ebsco.package.delete",
         "kb-ebsco.title.get",
         "kb-ebsco.titleCollection.get",
