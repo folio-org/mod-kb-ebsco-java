@@ -210,7 +210,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     ObjectMapper mapper = new ObjectMapper();
     PackageData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class)
-                                .toBuilder().isCustom(false).build();
+      .toBuilder().isCustom(false).build();
 
     stubFor(
       get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false))
@@ -254,7 +254,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(updatedIsSelected, aPackage.getData().getAttributes().getIsSelected());
 
     verify(putRequestedFor(urlPattern)
-    .withRequestBody(putBodyPattern));
+      .withRequestBody(putBodyPattern));
   }
 
   @Test
@@ -401,6 +401,86 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .when()
       .body(readFile("requests/kb-ebsco/package/put-package-selected.json"))
       .put("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
+  }
+
+  public void shouldReturn200WhenPackagePostIsValid() throws URISyntaxException, IOException {
+    String providerStubResponseFile = "responses/rmapi/packages/get-package-provider-by-id.json";
+    String packagePostStubRequestFile = "requests/kb-ebsco/package/post-package-request.json";
+    String packageCreatedIdStubResponseFile = "responses/rmapi/packages/post-package-response.json";
+    String packageByIdStubResponseFile = "responses/rmapi/packages/get-package-by-id-response.json";
+    String packagePostStubResponseFile = "responses/kb-ebsco/package/get-created-package-response.json";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern vendorsPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true);
+    UrlPathPattern postPackagePattern = new UrlPathPattern(new EqualToPattern(
+      "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"+ STUB_VENDOR_ID + "/packages"), false);
+    UrlPathPattern packagesByProviderIdPattern = new UrlPathPattern(new EqualToPattern(
+      "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+
+    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"contentType\" : 4,\n  \"packageName\" : \"TEST_NAME\",\n  \"customCoverage\" : {\n    \"beginCoverage\" : \"2017-12-23\",\n    \"endCoverage\" : \"2018-03-30\"\n  }\n}", false, true);
+
+    stubFor(
+      get(vendorsPattern)
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(providerStubResponseFile))));
+
+    stubFor(
+      post(postPackagePattern)
+        .withRequestBody(postBodyPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(packageCreatedIdStubResponseFile))
+          .withStatus(HttpStatus.SC_OK)));
+
+    stubFor(
+      get(packagesByProviderIdPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(packageByIdStubResponseFile))
+          .withStatus(HttpStatus.SC_OK)));
+
+    String actual = RestAssured.given()
+      .spec(getRequestSpecification())
+      .body(readFile(packagePostStubRequestFile))
+      .when()
+      .post("eholdings/packages")
+      .then()
+      .statusCode(HttpStatus.SC_OK).extract().body().asString();
+
+    String expected = readFile(packagePostStubResponseFile);
+
+    JSONAssert.assertEquals(expected, actual, false);
+    verify(1, postRequestedFor(postPackagePattern).withRequestBody(postBodyPattern));
+  }
+
+  @Test
+  public void shouldReturn400WhenPackagePostDataIsInvalid()throws URISyntaxException, IOException{
+    String providerStubResponseFile = "responses/rmapi/packages/get-package-provider-by-id.json";
+    String packagePostStubRequestFile = "requests/kb-ebsco/package/post-package-request.json";
+    String response = "responses/rmapi/packages/post-package-400-error-response.json";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern vendorsPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true);
+    UrlPathPattern postPackagePattern = new UrlPathPattern(new EqualToPattern(
+      "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"+ STUB_VENDOR_ID + "/packages"), false);
+    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"contentType\" : 1,\n  \"packageName\" : \"TEST_NAME\",\n  \"customCoverage\" : {\n    \"beginCoverage\" : \"2017-12-23\",\n    \"endCoverage\" : \"2018-03-30\"\n  }\n}", false, true);
+
+    stubFor(
+      get(vendorsPattern)
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(providerStubResponseFile))));
+
+    stubFor(
+      post(postPackagePattern)
+        .withRequestBody(postBodyPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(response)).withStatus(HttpStatus.SC_BAD_REQUEST)));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .body(readFile(packagePostStubRequestFile))
+      .when()
+      .post("eholdings/packages")
       .then()
       .statusCode(HttpStatus.SC_BAD_REQUEST);
   }
