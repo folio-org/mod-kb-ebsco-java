@@ -88,5 +88,15 @@ public class TitlesFilterableUrlBuilderTest {
       "&offset=1&count=25&orderby=relevance", url);
   }
 
+
+  @Test
+  public void shouldBuildDefaultUrlforNulllFilter(){
+    String url = new TitlesFilterableUrlBuilder()
+      .filter(fqb.name(null).build())
+      .sort(Sort.RELEVANCE)
+      .build();
+    assertEquals("searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=" +
+      "&offset=1&count=25&orderby=titlename", url);
+  }
 }
 
