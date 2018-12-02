@@ -33,7 +33,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/packages/{packageId}/resources"
+          "pathPattern": "/eholdings/packages/{packageId}/resources",
+          "permissionsRequired": ["kb-ebsco.package.resourceCollection.get"]
         },
         {
           "methods": ["GET"],
@@ -204,6 +205,11 @@
       "description": "Delete custom package"
     },
     {
+      "permissionName": "kb-ebsco.package.resourceCollection.get",
+      "displayName": "get resources for a single package",
+      "description": "get resources for a single package"
+    },
+    {
       "permissionName": "kb-ebsco.root-proxy.get",
       "displayName": "get root proxy",
       "description": "Get root proxy"
@@ -230,6 +236,7 @@
         "kb-ebsco.packageCollection.get",
         "kb-ebsco.package.post",
         "kb-ebsco.package.delete",
+        "kb-ebsco.package.resourceCollection.get",
         "kb-ebsco.title.get",
         "kb-ebsco.titleCollection.get",
         "kb-ebsco.package.get",

@@ -486,30 +486,81 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourcesOnGetWithResources() throws IOException, URISyntaxException {
+  public void shouldReturnDefaultResourcestOnGetWithResources() throws IOException, URISyntaxException {
+
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources";
+    String query = "/titles?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithPagingOnGetWithResources() throws IOException, URISyntaxException {
+
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?page=2";
+    String query = "/titles?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=2&count=25&orderby=titlename";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithNameFilterOnGetWithResources() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[name]=test";
+    String query = "/titles?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=test&offset=1&count=25&orderby=relevance";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithSubjectFilterOnGetWithResources() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[subject]=test";
+    String query = "/titles?searchfield=subject&selection=all&resourcetype=all&searchtype=advanced&search=test&offset=1&count=25&orderby=relevance";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithPublisherFilterOnGetWithResources() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[publisher]=test";
+    String query = "/titles?searchfield=publisher&selection=all&resourcetype=all&searchtype=advanced&search=test&offset=1&count=25&orderby=relevance";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithISXNFilterOnGetWithResources() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[isxn]=1362-3613";
+    String query = "/titles?searchfield=isxn&selection=all&resourcetype=all&searchtype=advanced&search=1362-3613&offset=1&count=25&orderby=relevance";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithSelectedFilterOnGetWithResources() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[selected]=ebsco";
+    String query = "/titles?searchfield=titlename&selection=orderedthroughebsco&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithResourceTypeFilterOnGetWithResources() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[type]=book";
+    String query = "/titles?searchfield=titlename&selection=all&resourcetype=book&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
+    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  private void shouldReturnResourcesOnGetWithResources(String getURL, String rmAPIQuery) throws IOException, URISyntaxException {
     String packageResourcesResponseFile = "responses/rmapi/resources/get-resources-by-package-id-response.json";
 
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern packagesResourcesPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles.*" ), true);
+    String baseUrl =  "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
+    UrlPathPattern packagesResourcesPattern = new UrlPathPattern(new RegexPattern(baseUrl + "/titles.*" ), true);
     WireMock.stubFor(
       WireMock.get(packagesResourcesPattern)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(packageResourcesResponseFile))));
 
-    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources";
-
-    ResourceCollection resources = RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(packageResourcesUrl)
-      .then()
-      .statusCode(HttpStatus.SC_OK).extract().as(ResourceCollection.class);
-
-    String actual = getResponseWithStatus(packageResourcesUrl, 200).asString();
+    String actual = getResponseWithStatus(getURL, 200).asString();
     String expected = readFile("responses/resources/get-resources-by-package-id-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
+
+    verify(1, getRequestedFor(urlEqualTo(baseUrl + rmAPIQuery)));
   }
 
   private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage, String updatedPackage){
