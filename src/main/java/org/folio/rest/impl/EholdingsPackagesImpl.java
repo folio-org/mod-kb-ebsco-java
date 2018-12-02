@@ -1,24 +1,12 @@
 package org.folio.rest.impl;
 
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
-import static org.folio.http.HttpConsts.JSON_API_TYPE;
-
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.validation.ValidationException;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -31,32 +19,27 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.jaxrs.resource.EholdingsPackages.GetEholdingsPackagesResourcesByPackageIdResponse;
-import org.folio.rest.jaxrs.resource.EholdingsRootProxy.GetEholdingsRootProxyResponse;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
-import org.folio.rest.validator.CustomPackagePutBodyValidator;
-import org.folio.rest.validator.HeaderValidator;
-import org.folio.rest.validator.PackageParametersValidator;
-import org.folio.rest.validator.PackagePutBodyValidator;
-import org.folio.rest.validator.TitleParametersValidator;
+import org.folio.rest.validator.*;
 import org.folio.rmapi.RMAPIService;
+import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
-import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
-import org.folio.rmapi.model.PackagePut;
-import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rmapi.model.PackagePost;
+import org.folio.rmapi.model.PackagePut;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -68,6 +51,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
   public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
   private static final String GET_PACKAGE_RESOURCES_ERROR_MESSAGE = "Failed to retrieve package resources";
+  private static final String PACKAGE_NOT_FOUND_MESSAGE = "Package not found";
 
   private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
@@ -115,7 +99,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     this.packagesPostBodyValidator = packagesPostBodyValidator;
     this.converter = converter;
     this.packagePutBodyValidator = packagePutBodyValidator;
-    this.packagesPostBodyValidator = packagesPostBodyValidator;
     this.customPackagePutBodyValidator = customPackagePutBodyValidator;
     this.titleParametersValidator = titleParametersValidator;
     this.resourceConverter = resourceConverter;
@@ -314,7 +297,15 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
             GetEholdingsPackagesResourcesByPackageIdResponse.respond200WithApplicationVndApiJson(resourceConverter.convertFromRMAPIResourceList(resourceList)))))
       .exceptionally(e -> {
         logger.error(GET_PACKAGE_RESOURCES_ERROR_MESSAGE, e);
-        handleError(asyncResultHandler, e);
+        new ErrorHandler()
+          .add(RMAPIResourceNotFoundException.class, exception ->
+            GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
+              ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
+          .add(RMAPIServiceException.class,
+          exception ->
+            GetEholdingsPackagesResourcesByPackageIdResponse.respond400WithApplicationVndApiJson(
+              ErrorUtil.createErrorFromRMAPIResponse(exception)))
+          .handle(asyncResultHandler, e);
         return null;
       });
   }

@@ -90,9 +90,9 @@ public class TitlesFilterableUrlBuilderTest {
 
 
   @Test
-  public void shouldBuildDefaultUrlforNulllFilter(){
+  public void shouldBuildUrlforDefaultTitleSearchAndSort(){
     String url = new TitlesFilterableUrlBuilder()
-      .filter(fqb.name(null).build())
+      .filter(fqb.build())
       .sort(Sort.RELEVANCE)
       .build();
     assertEquals("searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=" +
