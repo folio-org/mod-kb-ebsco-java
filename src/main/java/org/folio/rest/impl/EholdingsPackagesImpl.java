@@ -83,7 +83,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       new TitleParametersValidator(),
       new ResourcesConverter());
   }
-
+  // Surpressed warning on number parameters greater than 7 for constructor
+  @SuppressWarnings("squid:S00107")
   public EholdingsPackagesImpl(RMAPIConfigurationService configurationService,
                                HeaderValidator headerValidator,
                                PackageParametersValidator packageParametersValidator,
@@ -305,6 +306,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           exception ->
             GetEholdingsPackagesResourcesByPackageIdResponse.respond400WithApplicationVndApiJson(
               ErrorUtil.createErrorFromRMAPIResponse(exception)))
+          .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
       });
