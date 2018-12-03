@@ -16,7 +16,7 @@
       "description": "List of included items",
       "items": {
         "type": "object",
-        "$ref": "resourceIncludedItem.json"
+        "javaType" : "java.lang.Object"
       }
     },
     "jsonapi": {

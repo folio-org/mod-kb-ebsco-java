@@ -5,6 +5,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.readFile;
+import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -18,6 +20,7 @@ import org.apache.http.HttpStatus;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -25,7 +28,6 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
@@ -49,7 +51,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .statusCode(200)
 
       .body("meta.totalResults", equalTo(8766))
-      .body("data[0].type", equalTo("titles"))
+      .body("data[0].type", equalTo(TITLES_TYPE))
       .body("data[0].id", equalTo("1175655"))
       .body("data[0].attributes.name", equalTo("The $1 Million Reason to Change Your Mind"))
       .body("data[0].attributes.publisherName", isEmptyOrNullString())
@@ -112,37 +114,16 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
 
-    RestAssured.given()
+    String actualResponse = RestAssured.given()
       .spec(getRequestSpecification())
       .when()
       .get(titleByIdEndpoint)
       .then()
       .statusCode(200)
-      .body("data.type", equalTo("titles"))
-      .body("data.id", equalTo("985846"))
-      .body("data.attributes.name", equalTo("F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)"))
-      .body("data.attributes.publisherName", equalTo("Chelsea House Publishers"))
-      .body("data.attributes.isTitleCustom", equalTo(false))
-      .body("data.attributes.subjects[0].type", equalTo("BISAC"))
-      .body("data.attributes.subjects[0].subject", equalTo("LITERARY CRITICISM / American / General"))
-      .body("data.attributes.identifiers[0].id", equalTo("978-0-7910-3651-8"))
-      .body("data.attributes.identifiers[1].id", equalTo("978-0-585-24731-1"))
-      /*
-       * List of identifiers returned below from RM API get filtered and sorted to
-       * only support types ISSN/ISBN and subtypes Print/Online
-       */
-      .body("data.attributes.identifiers[0].type", equalTo("ISBN"))
-      .body("data.attributes.identifiers[1].type", equalTo("ISBN"))
-      .body("data.attributes.identifiers[0].subtype", equalTo("Print"))
-      .body("data.attributes.identifiers[1].subtype", equalTo("Online"))
-      .body("data.attributes.publicationType", equalTo("Book"))
-      .body("data.attributes.edition", isEmptyOrNullString())
-      .body("data.attributes.description", isEmptyOrNullString())
-      .body("data.attributes.isPeerReviewed", equalTo(false))
-      .body("data.attributes.contributors[0].type", equalTo("Author"))
-      .body("data.attributes.contributors[0].contributor", equalTo("Bloom, Harold"))
-      .body("data.relationships.resources.meta.included", equalTo(false));
+      .extract().asString();
 
+    JSONAssert.assertEquals(
+      readFile("responses/kb-ebsco/titles/expected-title-by-id.json"), actualResponse, false);
   }
 
   @Test

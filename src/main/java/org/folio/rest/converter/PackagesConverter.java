@@ -1,5 +1,7 @@
 package org.folio.rest.converter;
 
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +39,6 @@ public class PackagesConverter {
     .withResources(new MetaIncluded()
       .withMeta(new MetaDataIncluded()
         .withIncluded(false)));
-  private static final String PACKAGES_TYPE = "packages";
   private static final Map<ContentType, Integer> contentTypeToRMAPICode = new EnumMap<>(ContentType.class);
 
   static {

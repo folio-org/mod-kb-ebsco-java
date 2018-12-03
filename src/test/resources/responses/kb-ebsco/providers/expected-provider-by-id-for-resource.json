@@ -1,0 +1,21 @@
+{
+  "id": "583",
+  "type": "providers",
+  "attributes": {
+    "name": "ABC-CLIO",
+    "packagesTotal": 34,
+    "packagesSelected": 1,
+    "supportsCustomPackages": false,
+    "proxy": {
+      "id": "Proxy-ID-123",
+      "inherited": true
+    }
+  },
+  "relationships": {
+    "packages": {
+      "meta": {
+        "included": false
+      }
+    }
+  }
+}

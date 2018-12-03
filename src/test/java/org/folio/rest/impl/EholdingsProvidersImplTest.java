@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.folio.util.TestUtil.getFile;
 import static org.folio.util.TestUtil.mockConfiguration;
@@ -75,7 +76,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .then()
       .statusCode(200)
       .body("meta.totalResults", equalTo(expectedTotalResults))
-      .body("data[0].type", equalTo("providers"))
+      .body("data[0].type", equalTo(PROVIDERS_TYPE))
       .body("data[0].id", equalTo(id))
       .body("data[0].attributes.name", equalTo(name))
       .body("data[0].attributes.packagesTotal", equalTo(packagesTotal))
@@ -422,7 +423,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     return new Provider()
       .withData(new ProviderData()
-        .withType("providers")
+        .withType(PROVIDERS_TYPE)
         .withId(STUB_VENDOR_ID)
         .withAttributes(new ProviderDataAttributes()
           .withName("EBSCO")
@@ -442,7 +443,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     return new Provider()
       .withData(new ProviderData()
-        .withType("providers")
+        .withType(PROVIDERS_TYPE)
         .withId(STUB_VENDOR_ID)
         .withAttributes(new ProviderDataAttributes()
           .withName("EBSCO")

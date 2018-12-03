@@ -1,0 +1,12 @@
+{
+  "isCustomer": false,
+  "packagesSelected": 1,
+  "packagesTotal": 34,
+  "vendorId": 583,
+  "vendorName": "ABC-CLIO",
+  "proxy": {
+    "id": "Proxy-ID-123",
+    "inherited": true
+  },
+  "vendorToken": null
+}
