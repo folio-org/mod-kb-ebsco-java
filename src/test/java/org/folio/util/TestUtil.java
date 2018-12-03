@@ -21,6 +21,9 @@ import org.folio.rest.util.RestConstants;
 
 public final class TestUtil {
 
+  public static final String STUB_TENANT = "fs";
+  public static final String STUB_TOKEN = "TEST_OKAPI_TOKEN";
+
   private TestUtil() {
   }
 
@@ -65,8 +68,8 @@ public final class TestUtil {
    */
   public static RequestSpecBuilder getRequestSpecificationBuilder(String uri) {
     return new RequestSpecBuilder()
-      .addHeader(RestConstants.OKAPI_TENANT_HEADER, "fs")
-      .addHeader(RestConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN")
+      .addHeader(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
+      .addHeader(RestConstants.OKAPI_TOKEN_HEADER, STUB_TOKEN)
       .setBaseUri(uri)
       .log(LogDetail.ALL);
   }

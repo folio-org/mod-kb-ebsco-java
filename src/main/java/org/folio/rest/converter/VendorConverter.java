@@ -1,5 +1,8 @@
 package org.folio.rest.converter;
 
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,8 +35,6 @@ public class VendorConverter {
       .withMeta(new MetaDataIncluded()
         .withIncluded(false))
       .withData(null));
-  private static final String PROVIDERS_TYPE = "providers";
-  private static final String PACKAGES_TYPE = "packages";
 
   private CommonAttributesConverter commonConverter;
 

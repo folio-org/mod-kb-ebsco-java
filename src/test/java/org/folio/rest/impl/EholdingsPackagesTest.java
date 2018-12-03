@@ -1,6 +1,6 @@
 package org.folio.rest.impl;
 
-
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -513,7 +513,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   private void comparePackageItem(PackageCollectionItem actualItem, PackageCollectionItem expectedItem) {
     assertThat(actualItem.getId(), equalTo(expectedItem.getId()));
-    assertThat(actualItem.getType(), equalTo("packages"));
+    assertThat(actualItem.getType(), equalTo(PACKAGES_TYPE));
     assertThat(actualItem.getAttributes().getName(),
       equalTo(expectedItem.getAttributes().getName()));
     assertThat(actualItem.getAttributes().getPackageId(),

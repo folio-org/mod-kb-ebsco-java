@@ -2,6 +2,9 @@ package org.folio.rest.impl;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -36,18 +39,18 @@ import io.vertx.core.logging.LoggerFactory;
 
 
 public class EholdingsResourcesImpl implements EholdingsResources{
-  
+
   private static final String RESOURCE_ID_REGEX = "([^-]+)-([^-]+)-([^-]+)";
   private static final Pattern RESOURCE_ID_PATTERN = Pattern.compile(RESOURCE_ID_REGEX);
   private static final String RESOURCE_ID_INVALID_ERROR = "Resource id is invalid";
   private static final String RESOURCE_NOT_FOUND_MESSAGE = "Resource not found";
-  
+
   private final Logger logger = LoggerFactory.getLogger(EholdingsResourcesImpl.class);
-  
+
   private RMAPIConfigurationService configurationService;
   private HeaderValidator headerValidator;
   private ResourcesConverter converter;
-  
+
   public EholdingsResourcesImpl() {
     this(
       new RMAPIConfigurationServiceCache(
@@ -55,7 +58,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
       new HeaderValidator(),
       new ResourcesConverter());
   }
-  
+
   public EholdingsResourcesImpl(RMAPIConfigurationService configurationService,
       HeaderValidator headerValidator,
       ResourcesConverter converter) {
@@ -68,7 +71,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   public void postEholdingsResources(String contentType, ResourcePostRequest entity, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(Future.succeededFuture(PostEholdingsResourcesResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
-    
+
   }
 
   @Override
@@ -77,17 +80,20 @@ public class EholdingsResourcesImpl implements EholdingsResources{
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     ResourceId parsedResourceId = parseResourceId(resourceId);
     headerValidator.validate(okapiHeaders);
-    
+
+    List<String> includedObjects = include != null ? Arrays.asList(include.split(",")) : Collections.emptyList();
+    boolean includeTitle = includedObjects.contains("title");
+
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveResource(parsedResourceId);
+        return rmapiService.retrieveResource(parsedResourceId, includedObjects);
     })
     .thenAccept(title ->
       asyncResultHandler.handle(Future.succeededFuture(GetEholdingsResourcesByResourceIdResponse
-        .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(title).get(0)))))
+        .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(title.getTitle(), title.getVendor(), title.getPackageData(), includeTitle).get(0)))))
     .exceptionally(e -> {
       logger.error(INTERNAL_SERVER_ERROR, e);
       new ErrorHandler()
@@ -107,9 +113,9 @@ public class EholdingsResourcesImpl implements EholdingsResources{
       long providerId;
       long packageId;
       long titleId;
-      
+
       Matcher matcher = RESOURCE_ID_PATTERN.matcher(resourceIdString);
-      
+
       if(matcher.find() && matcher.hitEnd()) {
         providerId = Long.parseLong(matcher.group(1));
         packageId = Long.parseLong(matcher.group(2));
@@ -117,7 +123,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
       } else {
         throw new ValidationException(RESOURCE_ID_INVALID_ERROR );
       }
-      
+
       return new ResourceId(providerId, packageId, titleId);
     } catch (NumberFormatException e) {
       throw new ValidationException(RESOURCE_ID_INVALID_ERROR);
@@ -133,6 +139,6 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   @Override
   public void deleteEholdingsResourcesByResourceId(String resourceId, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(DeleteEholdingsResourcesByResourceIdResponse.status(Response.Status.NOT_IMPLEMENTED).build())); 
+    asyncResultHandler.handle(Future.succeededFuture(DeleteEholdingsResourcesByResourceIdResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 }

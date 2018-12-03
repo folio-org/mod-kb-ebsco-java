@@ -9,17 +9,17 @@
     "provider": {
       "type": "object",
       "description": "Relationship of provider for a given object",
-      "$ref": "../metaIncluded.json"
+      "$ref": "../hasOneRelationship.json"
     },
     "title": {
       "type": "object",
       "description": "Relationship of title for a given object",
-      "$ref": "../metaIncluded.json"
+      "$ref": "../hasOneRelationship.json"
     },
     "package": {
       "type": "object",
       "description": "Relationship of package for a given object",
-      "$ref": "../metaIncluded.json"
+      "$ref": "../hasOneRelationship.json"
     },
     "resources": {
       "type": "object",

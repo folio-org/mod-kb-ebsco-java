@@ -1,0 +1,47 @@
+{
+  "data": {
+    "type": "titles",
+    "id": "985846",
+    "attributes": {
+      "contributors": [
+        {
+          "type": "Author",
+          "contributor": "Bloom, Harold"
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "978-0-7910-3651-8",
+          "subtype": "Print",
+          "type": "ISBN"
+        },
+        {
+          "id": "978-0-585-24731-1",
+          "subtype": "Online",
+          "type": "ISBN"
+        }
+      ],
+      "isPeerReviewed": false,
+      "isTitleCustom": false,
+      "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+      "publicationType": "Book",
+      "publisherName": "Chelsea House Publishers",
+      "subjects": [
+        {
+          "subject": "LITERARY CRITICISM / American / General",
+          "type": "BISAC"
+        }
+      ]
+    },
+    "relationships": {
+      "resources": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

@@ -1,5 +1,7 @@
 package org.folio.rest.converter;
 
+import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -58,7 +60,7 @@ public class TitleConverter {
     org.folio.rest.jaxrs.model.Title title = new org.folio.rest.jaxrs.model.Title()
       .withData(new Data()
         .withId(String.valueOf(rmapiTitle.getTitleId()))
-        .withType("titles")
+        .withType(TITLES_TYPE)
         .withAttributes(new TitleAttributes()
           .withName(rmapiTitle.getTitleName())
           .withPublisherName(rmapiTitle.getPublisherName())
@@ -77,7 +79,7 @@ public class TitleConverter {
       .withJsonapi(RestConstants.JSONAPI);
     if (INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include) && Objects.nonNull(customerResourcesList)) {
       title
-        .withIncluded(resourcesConverter.convertFromRMAPIResource(rmapiTitle)
+        .withIncluded(resourcesConverter.convertFromRMAPIResource(rmapiTitle, null, null, false)
           .stream()
           .map(Resource::getData)
           .collect(Collectors.toList())).getData()
@@ -100,7 +102,7 @@ public class TitleConverter {
     return new org.folio.rest.jaxrs.model.Titles()
       .withId(String.valueOf(title.getTitleId()))
       .withRelationships(EMPTY_RESOURCES_RELATIONSHIP)
-      .withType("titles")
+      .withType(TITLES_TYPE)
       .withAttributes(new TitleListDataAttributes()
         .withName(title.getTitleName())
         .withPublisherName(title.getPublisherName())
