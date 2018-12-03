@@ -10,6 +10,7 @@ public final class RestConstants {
   public static final String PACKAGES_TYPE = "packages";
   public static final String PROVIDERS_TYPE = "providers";
   public static final String TITLES_TYPE = "titles";
+  public static final String RESOURCES_TYPE = "resources";
 
   private RestConstants(){ }
 }

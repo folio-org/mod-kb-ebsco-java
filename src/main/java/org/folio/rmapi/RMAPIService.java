@@ -39,6 +39,7 @@ import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.Proxy;
 import org.folio.rmapi.model.ResourceSelectedPayload;
+import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.TitleCreated;
@@ -49,7 +50,6 @@ import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
 import org.folio.rmapi.result.ResourceResult;
-import org.folio.rmapi.result.VendorResult;
 
 public class RMAPIService {
 
@@ -382,17 +382,16 @@ public class RMAPIService {
 
     final String path = String.format(RESOURCE_ENDPOINT_FORMAT, resourceId.getProviderIdPart(), resourceId.getPackageIdPart(), resourceId.getTitleIdPart());
     titleFuture = this.getRequest(constructURL(path), Title.class);
-    if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
+    if (Objects.nonNull(includes) && includes.contains(INCLUDE_PROVIDER_VALUE)) {
       vendorFuture = retrieveProvider(resourceId.getProviderIdPart(), "");
     } else {
       vendorFuture = CompletableFuture.completedFuture(new VendorResult(null, null));
     }
-    if (includes.contains(INCLUDE_PACKAGE_VALUE)) {
+    if (Objects.nonNull(includes) && includes.contains(INCLUDE_PACKAGE_VALUE)) {
       packageFuture = retrievePackage(new PackageId(resourceId.getProviderIdPart(), resourceId.getPackageIdPart()));
     } else {
       packageFuture = CompletableFuture.completedFuture(null);
     }
-
 
     return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
@@ -445,5 +444,28 @@ public class RMAPIService {
 
     LOG.info("constructurl - path=" + fullPath);
     return fullPath;
+  }
+
+  public static class VendorResult {
+    private VendorById vendor;
+    private Packages packages;
+
+    public VendorResult(VendorById vendor, Packages packages) {
+      this.vendor = vendor;
+      this.packages = packages;
+    }
+
+    public VendorById getVendor() {
+      return vendor;
+    }
+
+    public Packages getPackages() {
+      return packages;
+    }
+  }
+
+  public CompletionStage<Void> updateResource(ResourceId parsedResourceId, ResourcePut resourcePutBody) {
+    final String path = VENDORS_PATH + '/' + parsedResourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + parsedResourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + parsedResourceId.getTitleIdPart();
+    return this.putRequest(constructURL(path), resourcePutBody);
   }
 }

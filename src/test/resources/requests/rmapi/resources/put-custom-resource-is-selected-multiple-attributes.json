@@ -1,0 +1,33 @@
+{
+  "isSelected": true,
+  "isHidden": false,
+  "coverageStatement": "My test statement",
+  "customEmbargoPeriod": {
+    "embargoUnit": "Weeks",
+    "embargoValue": 30
+  },
+  "titleName": "sd-test-java-again",
+  "pubType": "Book",
+  "publisherName": "Not Empty",
+  "isPeerReviewed": true,
+  "description": "test description",
+  "edition": "test edition",
+  "proxy": {
+    "id": "Proxy-ID-234",
+    "inherited": false
+  },
+  "url": "https://hello",
+  "contributorsList": [{
+    "type": "Author",
+    "contributor": "Rappaport, Helen"
+  }],
+  "identifiersList": [{
+    "id": "978-1-280-71298-2",
+    "subtype": 2,
+    "type": 1
+  }],
+  "customCoverageList": [{
+   "beginCoverage": "2018-01-10",
+   "endCoverage": "2018-01-11"
+  }]
+}

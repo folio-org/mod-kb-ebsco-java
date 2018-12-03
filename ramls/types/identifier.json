@@ -14,13 +14,13 @@
     "subtype": {
       "type": "string",
       "description": "Subtype for the identifier. Valid values are  Print, Online.",
-      "enum": [ "Print", "Online"],
+      "enum": [ "Empty", "Print", "Online", "Preceding", "Succeeding", "Regional", "Linking", "Invalid"],
       "example": "Print"
     },
     "type": {
       "type": "string",
       "description": "Type of identifier. Valid values are ISSN, ISBN.",
-      "enum": [ "ISSN", "ISBN"],
+      "enum": [ "ISSN", "ISBN", "TSDID", "SPID", "EjsJournalID", "NewsbankID", "ZDBID", "EPBookID", "Mid", "BHM"],
       "example": "ISSN"
     }
   }
