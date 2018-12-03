@@ -1,40 +1,17 @@
 package org.folio.rest.converter;
 
-import static java.util.stream.Collectors.toList;
-import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
-import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
-import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import org.folio.rest.jaxrs.model.*;
+import org.folio.rest.util.RestConstants;
+import org.folio.rmapi.model.*;
+import org.folio.rmapi.model.Title;
+import org.folio.rmapi.model.Titles;
 
 import java.util.ArrayList;
-
-import org.folio.rest.jaxrs.model.HasOneRelationship;
-import org.folio.rest.jaxrs.model.MetaDataIncluded;
-import org.folio.rest.jaxrs.model.RelationshipData;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.folio.rest.jaxrs.model.Coverage;
-import org.folio.rest.jaxrs.model.MetaDataIncluded;
-import org.folio.rest.jaxrs.model.MetaIncluded;
-import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.jaxrs.model.PackageCollectionItem;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.Resource;
-import org.folio.rest.jaxrs.model.ResourceCollection;
-import org.folio.rest.jaxrs.model.ResourceCollectionItem;
-import org.folio.rest.jaxrs.model.ResourceDataAttributes;
-import org.folio.rest.jaxrs.model.ResourceRelationships;
-import org.folio.rest.jaxrs.model.TitleCollection;
-import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rest.jaxrs.model.*;
-import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.model.VendorById;
-import org.folio.rmapi.model.Titles;
-
-import java.util.List;
+import static java.util.stream.Collectors.toList;
+import static org.folio.rest.util.RestConstants.*;
 
 public class ResourcesConverter {
   private CommonAttributesConverter commonConverter;
