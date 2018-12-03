@@ -273,6 +273,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   @Override
+  @Validate
+  @HandleValidationErrors
   public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject, String filterPublisher,  int page,   int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);

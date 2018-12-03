@@ -565,6 +565,21 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertThat(error.getErrors().get(0).getTitle(), is("Package not found"));
   }
 
+  @Test
+  public void shouldReturn400OnGetWithResourcesWhenCountOutOfRange() throws IOException, URISyntaxException {
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?count=500";
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(packageResourcesUrl)
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
+
+  }
+
   @Ignore
   @Test
   public void shouldReturn400OnGetWithResourcesWhenRMAPI400() throws IOException, URISyntaxException {
