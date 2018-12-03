@@ -42,7 +42,7 @@ public class TitleParametersValidator {
     if(nonNullFilters > 1){
       throw new ValidationException("Conflicting filter parameters");
     }
-    if((nonNullFilters < 1)&&(allowNullFilters == false)){
+    if((nonNullFilters < 1)&&(!allowNullFilters)){
       throw new ValidationException("All of filter[name], filter[isxn], filter[subject] and filter[publisher] cannot be missing.");
     }
     if(searchParameters.stream()
