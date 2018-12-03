@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -7,6 +10,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -29,6 +33,7 @@ import org.folio.rest.validator.*;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
 
@@ -304,6 +309,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           .add(RMAPIResourceNotFoundException.class, exception ->
             GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
               ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
+          .add(RMAPIUnAuthorizedException.class, rmApiException ->
+            GetEholdingsPackagesResourcesByPackageIdResponse
+              .status(HttpStatus.SC_FORBIDDEN)
+              .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
+              .entity(ErrorUtil.createError(rmApiException.getMessage()))
+              .build())
           .add(RMAPIServiceException.class,
           exception ->
             GetEholdingsPackagesResourcesByPackageIdResponse.respond400WithApplicationVndApiJson(
