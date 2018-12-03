@@ -35,6 +35,7 @@ import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
 import org.folio.util.TestUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -46,6 +47,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.folio.util.TestUtil.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(VertxUnitRunner.class)
@@ -486,7 +488,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnDefaultResourcestOnGetWithResources() throws IOException, URISyntaxException {
+  public void shouldReturnDefaultResourcesOnGetWithResources() throws IOException, URISyntaxException {
 
     String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources";
     String query = "/titles?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
@@ -541,6 +543,48 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[type]=book";
     String query = "/titles?searchfield=titlename&selection=all&resourcetype=book&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+
+  @Test
+  public void shouldReturn404OnGetWithResourcesWhenPackageNotFound() throws IOException, URISyntaxException {
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    stubFor(
+      get(
+        new UrlPathPattern(new RegexPattern(
+          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles.*" ),
+          true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_NOT_FOUND)));
+
+    JsonapiError error = getResponseWithStatus("/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources",
+      HttpStatus.SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), is("Package not found"));
+  }
+
+  @Ignore
+  @Test
+  public void shouldReturn400OnGetWithResourcesWhenRMAPI400() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/packages/get-package-resources-400-response.json";
+
+    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    stubFor(
+      get(
+        new UrlPathPattern(new RegexPattern(
+          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles.*" ),
+          true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile))
+          .withStatus(HttpStatus.SC_BAD_REQUEST)));
+
+    JsonapiError error = getResponseWithStatus("/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources",
+      HttpStatus.SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), is("Parameter Count is outside the range 1-100."));
   }
 
   private void shouldReturnResourcesOnGetWithResources(String getURL, String rmAPIQuery) throws IOException, URISyntaxException {
