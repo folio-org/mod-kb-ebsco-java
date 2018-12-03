@@ -30,7 +30,6 @@ import java.util.concurrent.CompletableFuture;
 public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   private static final String UPDATE_ERROR_MESSAGE = "Failed to update configuration";
-  private static final String CONFIGURATION_IS_INVALID_ERROR = "Configuration is invalid";
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
   private RMAPIConfigurationService configurationService;
@@ -80,10 +79,10 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
         okapiData.setValue(new OkapiData(okapiHeaders));
         return configurationService.verifyCredentials(rmapiConfiguration, vertxContext);
       })
-      .thenCompose(isValid -> {
-        if (!isValid) {
+      .thenCompose(errors -> {
+        if (!errors.isEmpty()) {
           CompletableFuture<Object> future = new CompletableFuture<>();
-          future.completeExceptionally(new RMAPIConfigurationInvalidException());
+          future.completeExceptionally(new RMAPIConfigurationInvalidException(errors));
           return future;
         }
         return CompletableFuture.completedFuture(null);
@@ -96,7 +95,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
         new ErrorHandler()
           .add(RMAPIConfigurationInvalidException.class, exception ->
             EholdingsConfiguration.PutEholdingsConfigurationResponse
-              .respond422WithApplicationVndApiJson(ErrorUtil.createError(CONFIGURATION_IS_INVALID_ERROR)))
+              .respond422WithApplicationVndApiJson(ErrorUtil.createError(exception.getErrors().get(0).getMessage())))
           .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;

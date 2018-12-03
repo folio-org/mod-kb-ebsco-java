@@ -1,25 +1,30 @@
 package org.folio.config;
 
-import io.vertx.core.Context;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.folio.config.api.RMAPIConfigurationService;
+import org.folio.config.model.ConfigurationError;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
+import org.folio.rest.validator.ValidatorUtil;
 import org.folio.rmapi.RMAPIService;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import io.vertx.core.Context;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Retrieves the RM API connection details from mod-configuration.
@@ -70,16 +75,18 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
   }
 
   @Override
-  public CompletableFuture<Boolean> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext){
-    if(isConfigurationParametersInvalid(rmapiConfiguration)) {
-      return CompletableFuture.completedFuture(false);
+  public CompletableFuture<List<ConfigurationError>> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext) {
+    List<ConfigurationError> errors = new ArrayList<>();
+    if (!isConfigurationParametersValid(rmapiConfiguration, errors)) {
+      return CompletableFuture.completedFuture(errors);
     }
     return new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
       rmapiConfiguration.getUrl(), vertxContext.owner())
       .verifyCredentials()
-      .thenCompose(o -> CompletableFuture.completedFuture(true))
-      .exceptionally(e -> false);
+      .thenCompose(o -> CompletableFuture.completedFuture(Collections.<ConfigurationError>emptyList()))
+      .exceptionally(e -> Collections.singletonList(new ConfigurationError("KB API Credentials are invalid")));
   }
+
   /**
    * Get configuration object from mod-configuration in the form of json
    *
@@ -238,8 +245,19 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
       .withValue(apiKey);
   }
 
-  private boolean isConfigurationParametersInvalid(RMAPIConfiguration rmapiConfiguration) {
-    return rmapiConfiguration.getUrl() == null || rmapiConfiguration.getAPIKey() == null
-      || rmapiConfiguration.getCustomerId() == null;
+  private boolean isConfigurationParametersValid(RMAPIConfiguration rmapiConfiguration, List<ConfigurationError> errors) {
+    if(StringUtils.isEmpty(rmapiConfiguration.getUrl())){
+      errors.add(new ConfigurationError("Url is empty"));
+    }
+    if(StringUtils.isEmpty(rmapiConfiguration.getAPIKey())){
+      errors.add(new ConfigurationError("API key is empty"));
+    }
+    if(StringUtils.isEmpty(rmapiConfiguration.getCustomerId())){
+      errors.add(new ConfigurationError("Customer ID is empty"));
+    }
+    if(!ValidatorUtil.isUrlValid(rmapiConfiguration.getUrl())){
+      errors.add(new ConfigurationError("Url is invalid"));
+    }
+    return errors.isEmpty();
   }
 }
