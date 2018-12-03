@@ -231,13 +231,21 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Titles> retrieveTitles(FilterQuery filterQuery, Sort sort, int page, int count) {
+
+    return retrieveTitles(null, null, filterQuery, sort, page, count);
+  }
+
+  public CompletableFuture<Titles> retrieveTitles(Long providerId, Long packageId, FilterQuery filterQuery, Sort sort, int page, int count) {
     String path = new TitlesFilterableUrlBuilder()
       .filter(filterQuery)
       .sort(sort)
       .page(page)
       .count(count)
       .build();
-    return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class)
+
+    String titlesPath = (providerId == null) ? (TITLES_PATH + "?") : (VENDORS_PATH + '/' + providerId + '/' + PACKAGES_PATH + '/' + packageId + '/' + TITLES_PATH + "?");
+
+    return this.getRequest(constructURL(titlesPath + path), Titles.class)
           .thenCompose(titles -> {
             titles.getTitleList().removeIf(Objects::isNull);
             return CompletableFuture.completedFuture(titles);
@@ -263,19 +271,6 @@ public class RMAPIService {
     String packagesPath = providerId == null ? PACKAGES_PATH + "?" : VENDORS_PATH+ '/' + providerId + '/' + PACKAGES_PATH + "?";
 
     return this.getRequest(constructURL(packagesPath + path), Packages.class);
-  }
-  
-  public CompletableFuture<Titles> retrieveResources(long providerId, long packageId, FilterQuery filterQuery, Sort sort, int page, int count) {
-    String path = new TitlesFilterableUrlBuilder()
-      .filter(filterQuery)
-      .sort(sort)
-      .page(page)
-      .count(count)
-      .build();
-    
-    String resourcessPath = VENDORS_PATH+ '/' + providerId + '/' + PACKAGES_PATH + '/' + packageId + '/' + TITLES_PATH + "?";
-
-    return this.getRequest(constructURL(resourcessPath + path), Titles.class);
   }
 
   public CompletableFuture<Vendors> getVendors(boolean filterCustom){

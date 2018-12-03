@@ -293,7 +293,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveResources(parsedPackageId.getProviderIdPart(),parsedPackageId.getPackageIdPart(), fq, nameSort, page, count);
+        return rmapiService.retrieveTitles(parsedPackageId.getProviderIdPart(),parsedPackageId.getPackageIdPart(), fq, nameSort, page, count);
       })
       .thenAccept(resourceList ->
         asyncResultHandler.handle(Future.succeededFuture(
