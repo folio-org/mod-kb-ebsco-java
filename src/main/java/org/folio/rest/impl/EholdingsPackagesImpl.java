@@ -315,10 +315,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
               .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
               .entity(ErrorUtil.createError(rmApiException.getMessage()))
               .build())
-          .add(RMAPIServiceException.class,
-          exception ->
-            GetEholdingsPackagesResourcesByPackageIdResponse.respond400WithApplicationVndApiJson(
-              ErrorUtil.createErrorFromRMAPIResponse(exception)))
+          .addRmApiMapper()
           .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
