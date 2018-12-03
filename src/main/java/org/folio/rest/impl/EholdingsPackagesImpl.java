@@ -54,8 +54,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
   public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
 
-  private static final String INVALID_PACKAGE_TITLE = "Invalid package";
-  private static final String INVALID_PACKAGE_DETAILS = "Package cannot be deleted";
+  private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
+  private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsPackagesImpl.class);
 
@@ -249,7 +249,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       })
       .thenCompose(packageData -> {
         if (!packageData.getIsCustom()) {
-          throw new InputValidationException(INVALID_PACKAGE_DETAILS, INVALID_PACKAGE_TITLE);
+          throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
         }
         return rmapiService.getValue().deletePackage(parsedPackageId);
       })
