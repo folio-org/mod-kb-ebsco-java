@@ -63,7 +63,7 @@ public class ResourcesConverter {
           .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))
           .withType(ResourceCollectionItem.Type.RESOURCES)
           .withAttributes(createResourceDataAttributes(title, resource))
-          .withRelationships(createEmptyRelationship()
+          .withRelationships(createEmptyRelationship())
         )
         .withIncluded(null)
         .withJsonapi(RestConstants.JSONAPI);
@@ -130,7 +130,7 @@ public class ResourcesConverter {
     return new ResourceCollectionItem()
     .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))
     .withType(ResourceCollectionItem.Type.RESOURCES)
-      .withRelationships(EMPTY_RELATIONSHIPS)
+      .withRelationships(createEmptyRelationship())
     .withAttributes(createResourceDataAttributes(title, resource));
   }
 
