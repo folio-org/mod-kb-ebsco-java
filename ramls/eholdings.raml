@@ -86,3 +86,11 @@ types:
         body:
           text/plain:
             example: "Internal server error, contact administrator"
+/eholdings/cache:
+  displayName: Cache
+  delete:
+    description: |
+      Invalidate configuration cache for tenant
+    responses:
+      204:
+        description: No Content

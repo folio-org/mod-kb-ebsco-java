@@ -1,5 +1,7 @@
 package org.folio.rest.impl;
 
+import static org.folio.util.TestUtil.STUB_TENANT;
+
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -67,7 +69,7 @@ public abstract class WireMockTestBase {
 
   @Before
   public void setUp() throws Exception {
-    RMAPIConfigurationCache.getInstance().invalidate();
+    RMAPIConfigurationCache.getInstance().invalidate(STUB_TENANT);
   }
 
   /**
