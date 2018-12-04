@@ -2,7 +2,11 @@ package org.folio.rest.impl;
 
 import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
 import static org.folio.http.HttpConsts.JSON_API_TYPE;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import javax.ws.rs.core.Response;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -27,6 +31,7 @@ import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
+import org.folio.rest.parser.PackageParser;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.*;
@@ -37,24 +42,11 @@ import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
 
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
-  private static final String PACKAGE_ID_REGEX = "([^-]+)-([^-]+)";
-  private static final Pattern PACKAGE_ID_PATTERN = Pattern.compile(PACKAGE_ID_REGEX);
   private static final String GET_PACKAGES_ERROR_MESSAGE = "Failed to retrieve packages";
   private static final String PUT_PACKAGE_ERROR_MESSAGE = "Failed to update package";
   private static final String POST_PACKAGES_ERROR_MESSAGE = "Failed to create packages";
-  public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
-  public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
   private static final String GET_PACKAGE_RESOURCES_ERROR_MESSAGE = "Failed to retrieve package resources";
   private static final String PACKAGE_NOT_FOUND_MESSAGE = "Package not found";
 
@@ -73,7 +65,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private PackagesPostBodyValidator packagesPostBodyValidator;
   private TitleParametersValidator titleParametersValidator;
   private ResourcesConverter resourceConverter;
-
+  private PackageParser packageParser;
 
   public EholdingsPackagesImpl() {
     this(
@@ -86,7 +78,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       new PackagesPostBodyValidator(),
       new PackagesConverter(),
       new TitleParametersValidator(),
-      new ResourcesConverter());
+      new ResourcesConverter(),
+      new PackageParser());
   }
   // Surpressed warning on number parameters greater than 7 for constructor
   @SuppressWarnings("squid:S00107")
@@ -98,7 +91,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                PackagesPostBodyValidator packagesPostBodyValidator,
                                PackagesConverter converter,
                                TitleParametersValidator titleParametersValidator,
-                               ResourcesConverter resourceConverter) {
+                               ResourcesConverter resourceConverter,
+                               PackageParser packageParser) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.packageParametersValidator = packageParametersValidator;
@@ -108,6 +102,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     this.customPackagePutBodyValidator = customPackagePutBodyValidator;
     this.titleParametersValidator = titleParametersValidator;
     this.resourceConverter = resourceConverter;
+    this.packageParser = packageParser;
   }
 
   @Override
@@ -118,10 +113,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     headerValidator.validate(okapiHeaders);
-    packageParametersValidator.validate(filterCustom, filterSelected, filterType, sort);
-    if ("".equals(q)) {
-      throw new ValidationException("Search parameter cannot be empty");
-    }
+    packageParametersValidator.validate(filterCustom, filterSelected, filterType, sort, q);
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
@@ -187,7 +179,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @HandleValidationErrors
   public void getEholdingsPackagesByPackageId(String packageId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = parsePackageId(packageId);
+    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -210,7 +202,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    PackageId parsedPackageId = parsePackageId(packageId);
+    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -252,7 +244,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void deleteEholdingsPackagesByPackageId(String packageId, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    PackageId parsedPackageId = parsePackageId(packageId);
+    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -281,7 +273,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject, String filterPublisher,  int page,   int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = parsePackageId(packageId);
+    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
 
     FilterQuery fq = FilterQuery.builder()
@@ -328,25 +320,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .addInputValidationMapper()
       .addDefaultMapper()
       .handle(asyncResultHandler, e);
-  }
-
-  private PackageId parsePackageId(String packageIdString) {
-    try {
-      long providerId;
-      long packageId;
-      Matcher matcher = PACKAGE_ID_PATTERN.matcher(packageIdString);
-
-      if (matcher.find() && matcher.hitEnd()) {
-        providerId = Long.parseLong(matcher.group(1));
-        packageId = Long.parseLong(matcher.group(2));
-      } else {
-        throw new ValidationException(PACKAGE_ID_MISSING_ERROR);
-      }
-
-      return new PackageId(providerId, packageId);
-    } catch (NumberFormatException e) {
-      throw new ValidationException(PACKAGE_ID_INVALID_ERROR);
-    }
   }
 
 }

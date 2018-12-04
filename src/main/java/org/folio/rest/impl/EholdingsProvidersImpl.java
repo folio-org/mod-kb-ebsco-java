@@ -2,6 +2,7 @@ package org.folio.rest.impl;
 
 import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
 import static org.folio.http.HttpConsts.JSON_API_TYPE;
+import static org.folio.rest.validator.ValidatorUtil.*;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -189,9 +190,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     long providerIdLong = getProviderId(providerId);
 
     headerValidator.validate(okapiHeaders);
-    parametersValidator.validate("true", filterSelected, filterType, sort);
-    validateSort(sort);
-    validateQuery(q);
+    parametersValidator.validate("true", filterSelected, filterType, sort, q);
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
     CompletableFuture.completedFuture(null)

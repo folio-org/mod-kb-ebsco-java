@@ -9,27 +9,32 @@ public class PackageParametersValidatorTest {
 
   @Test
   public void shouldNotThrowExceptionWhenParametersAreValid() {
-    validator.validate(null, null, null, "relevance");
+    validator.validate(null, null, null, "relevance", "query");
   }
 
   @Test(expected = ValidationException.class)
-  public void shouldNotThrowExceptionWhenFilterCustomIsInvalid() {
-    validator.validate("false", null, null, "relevance");
+  public void shouldThrowExceptionWhenFilterCustomIsInvalid() {
+    validator.validate("false", null, null, "relevance", "query");
   }
 
   @Test(expected = ValidationException.class)
-  public void shouldNotThrowExceptionWhenFilterSelectedIsInvalid() {
-    validator.validate("true", "notall", null, "relevance");
+  public void shouldThrowExceptionWhenFilterSelectedIsInvalid() {
+    validator.validate("true", "notall", null, "relevance", "query");
   }
 
   @Test(expected = ValidationException.class)
-  public void shouldNotThrowExceptionWhenFilterTypeIsInvalid() {
-    validator.validate("true", "true", "notall", "relevance");
+  public void shouldThrowExceptionWhenFilterTypeIsInvalid() {
+    validator.validate("true", "true", "notall", "relevance", "query");
   }
 
   @Test(expected = ValidationException.class)
-  public void shouldNotThrowExceptionWhenSortIsInvalid() {
-    validator.validate("true", "true", "all", "abc");
+  public void shouldThrowExceptionWhenSortIsInvalid() {
+    validator.validate("true", "true", "all", "abc", "query");
+  }
+
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionWhenSearchQueryIsEmpty() {
+    validator.validate("true", "true", "all", "abc", "");
   }
 
 }
