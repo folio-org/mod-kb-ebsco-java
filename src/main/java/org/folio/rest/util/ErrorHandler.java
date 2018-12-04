@@ -27,6 +27,7 @@ public class ErrorHandler {
 
   private static final String CONTENT_TYPE_HEADER = "Content-Type";
   private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
+  private static final String INTERNAL_SERVER_ERROR = "Internal server error";
 
   private Map<Class<? extends Throwable>, Function<? extends Throwable, Response>> errorMappers = new LinkedHashMap<>();
 
@@ -103,7 +104,7 @@ public class ErrorHandler {
     return exception -> Response
       .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
       .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-      .entity(ErrorUtil.createError(exception.getMessage())).build();
+      .entity(ErrorUtil.createError(INTERNAL_SERVER_ERROR)).build();
   }
 }
 
