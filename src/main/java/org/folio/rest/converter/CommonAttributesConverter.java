@@ -61,7 +61,7 @@ public class CommonAttributesConverter {
   }
 
   public List<TitleContributors> convertContributors(List<org.folio.rmapi.model.Contributor> contributorList) {
-    if(Objects.isNull(contributorList)) return new ArrayList<>();
+    if(Objects.isNull(contributorList)) return Collections.emptyList();
     return contributorList.stream().map(contributor ->
       new TitleContributors()
       .withContributor(contributor.getTitleContributor())
@@ -71,7 +71,7 @@ public class CommonAttributesConverter {
   }
 
   public List<TitleIdentifier> convertIdentifiers(List<Identifier> identifiersList) {
-    if(Objects.isNull(identifiersList)) return new ArrayList<>();
+    if(Objects.isNull(identifiersList)) return Collections.emptyList();
     return identifiersList.stream()
       .filter(identifier -> IDENTIFIER_TYPES.keySet().contains(identifier.getType()) && IDENTIFIER_SUBTYPES.keySet().contains(identifier.getSubtype()))
       .sorted(Comparator.comparing(Identifier::getType).thenComparing(Identifier::getSubtype))
@@ -83,7 +83,7 @@ public class CommonAttributesConverter {
   }
 
   public List<TitleSubject> convertSubjects(List<Subject> subjectsList) {
-    if(Objects.isNull(subjectsList)) return new ArrayList<>();
+    if(Objects.isNull(subjectsList)) return Collections.emptyList();
     return subjectsList.stream().map(subject ->
       new TitleSubject()
       .withSubject(subject.getValue())
@@ -114,7 +114,7 @@ public class CommonAttributesConverter {
   }
 
   public List<Coverage> convertCoverages(List<CoverageDates> coverageList) {
-    if(Objects.isNull(coverageList)) return new ArrayList<>();
+    if(Objects.isNull(coverageList)) return Collections.emptyList();
     return coverageList.stream().map(coverageItem ->
     new Coverage()
       .withBeginCoverage(coverageItem.getBeginCoverage())
