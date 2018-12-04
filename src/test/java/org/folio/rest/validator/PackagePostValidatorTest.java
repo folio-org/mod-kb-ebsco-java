@@ -1,10 +1,10 @@
 package org.folio.rest.validator;
 
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePostData;
 import org.folio.rest.jaxrs.model.PackagePostDataAttributes;
-import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.junit.Test;
 

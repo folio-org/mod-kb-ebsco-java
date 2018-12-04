@@ -48,7 +48,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
           .withBody(readFile(stubResponseFile))));
 
     RestAssured.given()
-      .spec( getRequestSpecification())
+      .spec(getRequestSpecification())
       .when()
       .get(UPDATEROOT_PROXY_ENDPOINT)
       .then()
@@ -69,7 +69,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     RestAssured.given()
       .spec(getRequestSpecification())
       .when()
-      .get("eholdings/root-proxy")
+      .get(UPDATEROOT_PROXY_ENDPOINT)
       .then()
       .statusCode(HttpStatus.SC_FORBIDDEN);
   }

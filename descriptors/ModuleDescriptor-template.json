@@ -80,7 +80,8 @@
         },
         {
           "methods": ["POST"],
-          "pathPattern": "/eholdings/titles"
+          "pathPattern": "/eholdings/titles",
+          "permissionsRequired" :["kb-ebsco.title.post"]
         },
         {
           "methods": ["GET"],
@@ -176,6 +177,11 @@
       "description": "Get titles"
     },
     {
+      "permissionName": "kb-ebsco.title.post",
+      "displayName": "post title",
+      "description": "Post title"
+    },
+    {
       "permissionName": "kb-ebsco.resource.get",
       "displayName": "get single resource",
       "description": "Get single resource"
@@ -233,6 +239,7 @@
         "kb-ebsco.provider.put",
         "kb-ebsco.provider.packageCollection.get",
         "kb-ebsco.titleCollection.get",
+        "kb-ebsco.title.post",
         "kb-ebsco.packageCollection.get",
         "kb-ebsco.package.post",
         "kb-ebsco.package.delete",

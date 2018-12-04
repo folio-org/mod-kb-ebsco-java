@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Title attributes schema",
+  "description": "Title attributes schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.TitlePostDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Title Name",
+      "example": "A call to action: Changing the culture of drinking at U.S. colleges"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description",
+      "example": "Provides information about all areas of American Studies."
+    },
+    "publicationType": {
+      "type": "string",
+      "description": "Type of publication. Valid values are 'Audiobook', 'Book', 'Book Series', 'Database', 'Journal', 'Newsletter', 'Newspaper', 'Proceedings', 'Report', 'Streaming Audio', 'Streaming Video', 'Thesis & Dissertation', 'Website', 'Unspecified'.",
+      "$ref": "../publicationType.json"
+    },
+    "publisherName": {
+      "type": "string",
+      "description": "Publisher name",
+      "example": "Elsevier"
+    },
+    "isPeerReviewed": {
+      "type": "boolean",
+      "description": "Field to indicate if title is peer reviewed.",
+      "example": false
+    },
+    "edition": {
+      "type": "string",
+      "description": "Title Edition",
+      "example": "Second edition"
+    },
+    "contributors": {
+      "type": "array",
+      "description": "Contributor ID List",
+      "items": {
+        "type": "object",
+        "description": "The Identifiers Schema",
+        "$ref": "../contributor.json"
+      }
+    },
+    "identifiers": {
+      "type": "array",
+      "description": "Identifiers",
+      "items": {
+        "type": "object",
+        "description": "The Custom Identifiers Schema",
+        "$ref": "../identifier.json"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "publicationType"
+  ]
+}
+
+

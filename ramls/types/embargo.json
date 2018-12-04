@@ -8,12 +8,13 @@
   "properties": {
     "embargoUnit": {
       "type": "string",
-      "description": "Embargo unit",
+      "description": "The unit of time to use for the embargo. Possible values are 'Days', 'Weeks', 'Months', 'Years'",
+      "enum":	["Days", "Weeks", "Months", "Years"],
       "example": "Days"
     },
     "embargoValue": {
       "type": "integer",
-      "description": "Embargo Value",
+      "description": "The embargo value (number of embargoUnits). A Null value means there is no embargo.",
       "example": 7
     }
   }

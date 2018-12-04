@@ -2,24 +2,26 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Identifier object schema",
   "description": "Identifier object schema",
-  "javaType": "org.folio.rest.jaxrs.model.TitleIdentifier",
+  "javaType": "org.folio.rest.jaxrs.model.Identifier",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "id": {
       "type": "string",
-      "description": "Identifier id",
+      "description": "Identifier Value",
       "example": "100130"
     },
     "subtype": {
       "type": "string",
-      "description": "Identifier subtype",
-      "example": "Empty"
+      "description": "Subtype for the identifier. Valid values are  Print, Online.",
+      "enum": [ "Print", "Online"],
+      "example": "Print"
     },
     "type": {
       "type": "string",
-      "description": "Identifier type",
-      "example": "BHM"
+      "description": "Type of identifier. Valid values are ISSN, ISBN.",
+      "enum": [ "ISSN", "ISBN"],
+      "example": "ISSN"
     }
   }
 }

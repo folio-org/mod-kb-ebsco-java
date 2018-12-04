@@ -1,0 +1,68 @@
+{
+  "titleId": 985846,
+  "titleName": "Test Title",
+  "publisherName": "Test publisher",
+  "identifiersList": [
+    {
+      "id": "1111-2222-3333",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 0
+    }
+  ],
+  "subjectsList": [],
+  "isTitleCustom": true,
+  "pubType": "ThesisDissertation",
+  "customerResourcesList": [
+    {
+      "titleId": 985846,
+      "packageId": 3964,
+      "packageName": "a",
+      "packageType": "Custom",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": true,
+      "vendorId": 111111,
+      "vendorName": "TEST",
+      "locationId": 0,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": true,
+        "reason": "Hidden by Customer"
+      },
+      "managedCoverageList": [],
+      "customCoverageList": [],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "url": null,
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    }
+  ],
+  "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+  "edition": "Test edition",
+  "isPeerReviewed": true,
+  "contributorsList": [
+    {
+      "type": "author",
+      "contributor": "smith, john"
+    },
+    {
+    "type": "illustrator",
+    "contributor": "smith, ralph"
+    }
+  ]
+}

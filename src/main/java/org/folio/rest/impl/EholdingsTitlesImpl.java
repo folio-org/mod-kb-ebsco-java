@@ -1,6 +1,8 @@
 package org.folio.rest.impl;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -12,6 +14,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -23,20 +26,29 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
+import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.TitleParametersValidator;
+import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 
+import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.model.TitlePost;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
+  private static final String PACKAGE_ID_REGEX = "([^-]+)-([^-]+)";
+  private static final Pattern PACKAGE_ID_PATTERN = Pattern.compile(PACKAGE_ID_REGEX);
+  public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
+  public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
   private static final String GET_TITLES_ERROR_MESSAGE = "Failed to retrieve titles";
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   private static final String GET_TITLES_BY_ID_ERROR_MESSAGE = "Failed to retrieve title by title id";
+  private static final String POST_TITLES_ERROR_MESSAGE = "Failed to create title";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsTitlesImpl.class);
 
@@ -45,22 +57,27 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private TitleConverter converter;
   private TitleParametersValidator parametersValidator;
 
+  private TitlesPostBodyValidator titlesPostBodyValidator;
   public EholdingsTitlesImpl() {
     this(
       new RMAPIConfigurationServiceCache(
         new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
       new HeaderValidator(),
       new TitleParametersValidator(),
+      new TitlesPostBodyValidator(),
       new TitleConverter());
   }
 
   public EholdingsTitlesImpl(RMAPIConfigurationService configurationService,
-                             HeaderValidator headerValidator, TitleParametersValidator parametersValidator,
+                             HeaderValidator headerValidator,
+                             TitleParametersValidator parametersValidator,
+                             TitlesPostBodyValidator titlesPostBodyValidator,
                              TitleConverter converter) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.converter = converter;
     this.parametersValidator = parametersValidator;
+    this.titlesPostBodyValidator = titlesPostBodyValidator;
   }
 
   @Override
@@ -103,7 +120,34 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @HandleValidationErrors
   public void postEholdingsTitles(String contentType, TitlePostRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+
+    headerValidator.validate(okapiHeaders);
+    titlesPostBodyValidator.validate(entity);
+
+    TitlePost titlePost = converter.convertToPost(entity);
+    PackageId packageId = parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
+
+    MutableObject<RMAPIService> service = new MutableObject<>();
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenAccept(rmapiConfiguration ->
+        service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
+          rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
+      .thenCompose(o  ->  service.getValue().postTitle(titlePost, packageId))
+      .thenAccept(title ->
+        asyncResultHandler.handle(Future.succeededFuture(PostEholdingsTitlesResponse
+          .respond200WithApplicationVndApiJson(converter.convertFromRMAPITitle(title, "")))))
+      .exceptionally(e -> {
+        logger.error(POST_TITLES_ERROR_MESSAGE, e);
+        new ErrorHandler()
+          .add(RMAPIServiceException.class,
+            exception ->
+              PostEholdingsTitlesResponse.respond400WithApplicationVndApiJson(
+                ErrorUtil.createErrorFromRMAPIResponse(exception)))
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 
   @Override
@@ -139,5 +183,24 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           .handle(asyncResultHandler, e);
         return null;
       });
+  }
+
+  private PackageId parsePackageId(String packageIdString) {
+    try {
+      long providerId;
+      long packageId;
+      Matcher matcher = PACKAGE_ID_PATTERN.matcher(packageIdString);
+
+      if (matcher.find() && matcher.hitEnd()) {
+        providerId = Long.parseLong(matcher.group(1));
+        packageId = Long.parseLong(matcher.group(2));
+      } else {
+        throw new ValidationException(PACKAGE_ID_MISSING_ERROR);
+      }
+
+      return new PackageId(providerId, packageId);
+    } catch (NumberFormatException e) {
+      throw new ValidationException(PACKAGE_ID_INVALID_ERROR);
+    }
   }
 }
