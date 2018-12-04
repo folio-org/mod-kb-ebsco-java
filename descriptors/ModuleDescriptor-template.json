@@ -90,7 +90,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/proxy-types"
+          "pathPattern": "/eholdings/proxy-types",
+          "permissionsRequired": ["kb-ebsco.proxyTypes.get"]
         },
         {
           "methods": ["GET"],
@@ -216,6 +217,11 @@
       "description": "get resources for a single package"
     },
     {
+      "permissionName": "kb-ebsco.proxyTypes.get",
+      "displayName": "get proxy types",
+      "description": "Get proxy types"
+    },
+    {
       "permissionName": "kb-ebsco.root-proxy.get",
       "displayName": "get root proxy",
       "description": "Get root proxy"
@@ -249,6 +255,7 @@
         "kb-ebsco.package.get",
         "kb-ebsco.package.put",
         "kb-ebsco.resource.get",
+        "kb-ebsco.proxyTypes.get",
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.root-proxy.put"
       ]

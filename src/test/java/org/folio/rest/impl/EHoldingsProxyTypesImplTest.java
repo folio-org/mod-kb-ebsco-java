@@ -44,6 +44,16 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnEmptyProxyTypesFromEmptyRMApiResponse() throws IOException, URISyntaxException {
+    mockGet(RMI_PROXIES_URL, "responses/rmapi/proxytypes/get-proxy-types-empty-response.json");
+
+    String actual = getResponseWithStatus(EHOLDINGS_PROXY_TYPES_URL, HttpStatus.SC_OK).asString();
+
+    String expected = readFile("responses/proxytypes/get-proxy-types-empty-response.json");
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
   public void shouldReturnForbiddenWhenRMAPIRequestCompletesWith401ErrorStatus() {
     mockGet(RMI_PROXIES_URL, HttpStatus.SC_UNAUTHORIZED);
 

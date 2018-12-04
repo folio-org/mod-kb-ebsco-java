@@ -47,7 +47,6 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -193,12 +192,11 @@ public class RMAPIService {
     request.handler(response -> response.bodyHandler(body -> {
       httpClient.close();
       if (response.statusCode() == 200) {
-          try {
-            final JsonObject instanceJSON = new JsonObject(body.toString());
-            T results = instanceJSON.mapTo(clazz);
-            future.complete(results);
-          } catch (Exception e) {
-            LOG.error(
+        try {
+          T results = Json.decodeValue(body.toString(), clazz);
+          future.complete(results);
+        } catch (Exception e) {
+          LOG.error(
               String.format("%s - Response = [%s] Target Type = [%s] Cause: [%s]",
                 JSON_RESPONSE_ERROR, body.toString(), clazz, e.getMessage()));
             future.completeExceptionally(
