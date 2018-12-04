@@ -484,48 +484,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
   }
 
-  @Test
-  public void shouldReturnResourcesWithNameFilterOnGetWithResources() throws IOException, URISyntaxException {
-    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[name]=test";
-    String query = "/titles?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=test&offset=1&count=25&orderby=relevance";
-    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
-  }
-
-  @Test
-  public void shouldReturnResourcesWithSubjectFilterOnGetWithResources() throws IOException, URISyntaxException {
-    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[subject]=test";
-    String query = "/titles?searchfield=subject&selection=all&resourcetype=all&searchtype=advanced&search=test&offset=1&count=25&orderby=relevance";
-    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
-  }
-
-  @Test
-  public void shouldReturnResourcesWithPublisherFilterOnGetWithResources() throws IOException, URISyntaxException {
-    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[publisher]=test";
-    String query = "/titles?searchfield=publisher&selection=all&resourcetype=all&searchtype=advanced&search=test&offset=1&count=25&orderby=relevance";
-    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
-  }
-
-  @Test
-  public void shouldReturnResourcesWithISXNFilterOnGetWithResources() throws IOException, URISyntaxException {
-    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[isxn]=1362-3613";
-    String query = "/titles?searchfield=isxn&selection=all&resourcetype=all&searchtype=advanced&search=1362-3613&offset=1&count=25&orderby=relevance";
-    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
-  }
-
-  @Test
-  public void shouldReturnResourcesWithSelectedFilterOnGetWithResources() throws IOException, URISyntaxException {
-    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[selected]=ebsco";
-    String query = "/titles?searchfield=titlename&selection=orderedthroughebsco&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
-    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
-  }
-
-  @Test
-  public void shouldReturnResourcesWithResourceTypeFilterOnGetWithResources() throws IOException, URISyntaxException {
-    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?filter[type]=book";
-    String query = "/titles?searchfield=titlename&selection=all&resourcetype=book&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
-    shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
-  }
-
 
   @Test
   public void shouldReturn404OnGetWithResourcesWhenPackageNotFound() throws IOException, URISyntaxException {
