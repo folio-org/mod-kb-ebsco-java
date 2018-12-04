@@ -1,9 +1,13 @@
 package org.folio.config;
 
 import io.vertx.core.Context;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.cache.RMAPIConfigurationCache;
+import org.folio.config.model.ConfigurationError;
 import org.folio.rest.model.OkapiData;
 
 public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService {
@@ -41,14 +45,16 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
   }
 
   @Override
-  public CompletableFuture<Boolean> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext) {
-    if(rmapiConfiguration.getConfigValid() != null){
-      return CompletableFuture.completedFuture(rmapiConfiguration.getConfigValid());
+  public CompletableFuture<List<ConfigurationError>> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext) {
+    if(rmapiConfiguration.getConfigValid() != null && rmapiConfiguration.getConfigValid()){
+      return CompletableFuture.completedFuture(Collections.emptyList());
     }
     return rmapiConfigurationService.verifyCredentials(rmapiConfiguration, vertxContext)
-      .thenCompose(isValid -> {
-        rmapiConfiguration.setConfigValid(isValid);
-        return CompletableFuture.completedFuture(isValid);
+      .thenCompose(errors -> {
+        if(errors.isEmpty()){
+          rmapiConfiguration.setConfigValid(true);
+        }
+        return CompletableFuture.completedFuture(errors);
       });
   }
 

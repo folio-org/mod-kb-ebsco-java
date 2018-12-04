@@ -1,5 +1,7 @@
 package org.folio.rest.validator;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -97,5 +99,14 @@ public class ValidatorUtil {
 
   private static LocalDate parseDate(String date) {
     return LocalDate.parse(date, DATE_PATTERN);
+  }
+
+  public static boolean isUrlValid(String url) {
+    try {
+      new URL(url);
+      return true;
+    } catch (MalformedURLException e) {
+      return false;
+    }
   }
 }
