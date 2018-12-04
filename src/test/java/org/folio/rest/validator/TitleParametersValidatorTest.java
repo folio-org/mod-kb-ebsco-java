@@ -22,6 +22,14 @@ public class TitleParametersValidatorTest {
     validator.validate(fqb.selected("true").type("book").name("ebsco").build(), "relevance");
   }
 
+  @Test
+  public void shouldNotThrowExceptionWhenNoFilterParametersAndAllowNullTrue() {
+    validator.validate(fqb
+      .selected(null).type(null)
+      .name(null).isxn(null).subject(null)
+      .publisher(null).build(), "relevance", true);
+  }
+
   @Test(expected = ValidationException.class)
   public void shouldThrowExceptionWhenSelectedParameterIsInvalid() {
     validator.validate(fqb.selected("doNotEnter").type("book").name("ebsco").build(), "relevance");

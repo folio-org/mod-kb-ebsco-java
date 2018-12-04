@@ -57,14 +57,6 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
     getResponse(EHOLDINGS_PROXY_TYPES_URL).statusCode(HttpStatus.SC_FORBIDDEN);
   }
 
-  private ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
-    return RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(resourcePath)
-      .then()
-      .statusCode(expectedStatus).extract();
-  }
 
   private ValidatableResponse getResponse(String resourcePath) {
     return RestAssured.given()

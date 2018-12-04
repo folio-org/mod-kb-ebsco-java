@@ -1,17 +1,16 @@
 package org.folio.rest.util;
 
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.Errors;
 
-import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonObject;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Util class for creating errors
@@ -38,14 +37,17 @@ public class ErrorUtil {
 
   public static JsonapiError createErrorFromRMAPIResponse(RMAPIServiceException rmApiException) {
     try {
-      final JsonObject instanceJSON = new JsonObject(rmApiException.getResponseBody());
-      Errors errors = instanceJSON.mapTo(Errors.class);
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+
+      Errors errors = objectMapper.readValue(rmApiException.getResponseBody(), Errors.class);
       JsonapiError configurationError = new JsonapiError();
       Errors errorsObject = errors;
 
       if (errorsObject.getErrorList() == null) {
         errorsObject = errorsObject.toBuilder()
-          .errorList(Collections.singletonList(instanceJSON.mapTo(org.folio.rmapi.model.Error.class)))
+          .errorList(Collections.singletonList(objectMapper.readValue(rmApiException.getResponseBody(), org.folio.rmapi.model.Error.class)))
           .build();
       }
 
@@ -56,7 +58,8 @@ public class ErrorUtil {
       configurationError.setErrors(jsonApiErrors);
       configurationError.setJsonapi(RestConstants.JSONAPI);
       return configurationError;
-    } catch (DecodeException e) {
+    }
+    catch(Exception e){
       //If RM API didn't return valid json then just include response body as error message
       return createError(rmApiException.getMessage());
     }

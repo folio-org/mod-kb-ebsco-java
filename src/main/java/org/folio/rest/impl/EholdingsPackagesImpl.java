@@ -1,41 +1,7 @@
 package org.folio.rest.impl;
 
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.lang3.mutable.MutableObject;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
-import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
-import org.folio.rest.annotations.Validate;
-import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.PackagesConverter;
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.PackagePostRequest;
-import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.model.OkapiData;
-import org.folio.rest.model.PackageId;
-import org.folio.rest.model.Sort;
-import org.folio.rest.util.ErrorHandler;
-import org.folio.rest.util.ErrorUtil;
-import org.folio.rest.validator.CustomPackagePutBodyValidator;
-import org.folio.rest.validator.HeaderValidator;
-import org.folio.rest.validator.PackageParametersValidator;
-import org.folio.rest.validator.PackagePutBodyValidator;
-import org.folio.rmapi.RMAPIService;
-import org.folio.rmapi.exception.RMAPIServiceException;
-import org.folio.rmapi.model.PackagePut;
-import org.folio.rest.validator.PackagesPostBodyValidator;
-import org.folio.rmapi.model.PackagePost;
+import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -43,6 +9,42 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.http.HttpStatus;
+import org.folio.config.RMAPIConfigurationServiceCache;
+import org.folio.config.RMAPIConfigurationServiceImpl;
+import org.folio.config.api.RMAPIConfigurationService;
+import org.folio.http.ConfigurationClientProvider;
+import org.folio.rest.annotations.Validate;
+import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.converter.PackagesConverter;
+import org.folio.rest.converter.ResourcesConverter;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.PackagePostRequest;
+import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.jaxrs.resource.EholdingsPackages;
+import org.folio.rest.model.FilterQuery;
+import org.folio.rest.model.OkapiData;
+import org.folio.rest.model.PackageId;
+import org.folio.rest.model.Sort;
+import org.folio.rest.util.ErrorHandler;
+import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.validator.*;
+import org.folio.rmapi.RMAPIService;
+import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
+import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
+import org.folio.rmapi.model.PackagePost;
+import org.folio.rmapi.model.PackagePut;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -53,6 +55,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private static final String POST_PACKAGES_ERROR_MESSAGE = "Failed to create packages";
   public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
   public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
+  private static final String GET_PACKAGE_RESOURCES_ERROR_MESSAGE = "Failed to retrieve package resources";
+  private static final String PACKAGE_NOT_FOUND_MESSAGE = "Package not found";
 
   private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
@@ -67,6 +71,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private PackagePutBodyValidator packagePutBodyValidator;
   private CustomPackagePutBodyValidator customPackagePutBodyValidator;
   private PackagesPostBodyValidator packagesPostBodyValidator;
+  private TitleParametersValidator titleParametersValidator;
+  private ResourcesConverter resourceConverter;
+
 
   public EholdingsPackagesImpl() {
     this(
@@ -77,16 +84,21 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       new PackagePutBodyValidator(),
       new CustomPackagePutBodyValidator(),
       new PackagesPostBodyValidator(),
-      new PackagesConverter());
+      new PackagesConverter(),
+      new TitleParametersValidator(),
+      new ResourcesConverter());
   }
-
+  // Surpressed warning on number parameters greater than 7 for constructor
+  @SuppressWarnings("squid:S00107")
   public EholdingsPackagesImpl(RMAPIConfigurationService configurationService,
                                HeaderValidator headerValidator,
                                PackageParametersValidator packageParametersValidator,
                                PackagePutBodyValidator packagePutBodyValidator,
                                CustomPackagePutBodyValidator customPackagePutBodyValidator,
                                PackagesPostBodyValidator packagesPostBodyValidator,
-                               PackagesConverter converter) {
+                               PackagesConverter converter,
+                               TitleParametersValidator titleParametersValidator,
+                               ResourcesConverter resourceConverter) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.packageParametersValidator = packageParametersValidator;
@@ -94,6 +106,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     this.converter = converter;
     this.packagePutBodyValidator = packagePutBodyValidator;
     this.customPackagePutBodyValidator = customPackagePutBodyValidator;
+    this.titleParametersValidator = titleParametersValidator;
+    this.resourceConverter = resourceConverter;
   }
 
   @Override
@@ -264,8 +278,48 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   @Override
-  public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject, String filterPublisher, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(Response.status(Response.Status.NOT_IMPLEMENTED).build()));
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject, String filterPublisher,  int page,   int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    PackageId parsedPackageId = parsePackageId(packageId);
+    headerValidator.validate(okapiHeaders);
+
+    FilterQuery fq = FilterQuery.builder()
+        .selected(filterSelected).type(filterType)
+        .name(filterName).isxn(filterIsxn).subject(filterSubject)
+        .publisher(filterPublisher).build();
+
+    titleParametersValidator.validate(fq, sort, true);
+
+    Sort nameSort = Sort.valueOf(sort.toUpperCase());
+
+    CompletableFuture.completedFuture(null)
+      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(rmapiConfiguration -> {
+        RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
+          rmapiConfiguration.getUrl(), vertxContext.owner());
+        return rmapiService.retrieveTitles(parsedPackageId.getProviderIdPart(),parsedPackageId.getPackageIdPart(), fq, nameSort, page, count);
+      })
+      .thenAccept(resourceList ->
+        asyncResultHandler.handle(Future.succeededFuture(
+            GetEholdingsPackagesResourcesByPackageIdResponse.respond200WithApplicationVndApiJson(resourceConverter.convertFromRMAPIResourceList(resourceList)))))
+      .exceptionally(e -> {
+        logger.error(GET_PACKAGE_RESOURCES_ERROR_MESSAGE, e);
+        new ErrorHandler()
+          .add(RMAPIResourceNotFoundException.class, exception ->
+            GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
+              ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
+          .add(RMAPIUnAuthorizedException.class, rmApiException ->
+            GetEholdingsPackagesResourcesByPackageIdResponse
+              .status(HttpStatus.SC_FORBIDDEN)
+              .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
+              .entity(ErrorUtil.createError(rmApiException.getMessage()))
+              .build())
+          .addRmApiMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 
   private void handleError(Handler<AsyncResult<Response>> asyncResultHandler, Throwable e) {

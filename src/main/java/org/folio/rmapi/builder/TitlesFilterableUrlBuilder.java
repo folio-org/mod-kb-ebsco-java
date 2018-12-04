@@ -16,6 +16,10 @@ public class TitlesFilterableUrlBuilder {
       "false", "notselected",
       "ebsco", "orderedthroughebsco"
     );
+  private static final String SEARCHFIELD_TITLENAME = "titlename";
+  private static final String SEARCHFIELD_ISXN = "isxn";
+  private static final String SEARCHFIELD_PUBLISHER = "publisher";
+  private static final String SEARCHFIELD_SUBJECT = "subject";
 
   private FilterQuery filterQuery;
   private int page = 1;
@@ -47,16 +51,18 @@ public class TitlesFilterableUrlBuilder {
     String searchField = null;
     if (filterQuery.getName() != null) {
       search = filterQuery.getName();
-      searchField = "titlename";
+      searchField = SEARCHFIELD_TITLENAME;
     } else if (filterQuery.getIsxn() != null) {
       search = filterQuery.getIsxn();
-      searchField = "isxn";
+      searchField = SEARCHFIELD_ISXN;
     } else if (filterQuery.getSubject() != null) {
       search = filterQuery.getSubject();
-      searchField = "subject";
+      searchField = SEARCHFIELD_SUBJECT;
     } else if (filterQuery.getPublisher() != null) {
       search = filterQuery.getPublisher();
-      searchField = "publisher";
+      searchField = SEARCHFIELD_PUBLISHER;
+    } else {
+      searchField = SEARCHFIELD_TITLENAME;
     }
 
     String selection = FILTER_SELECTED_MAPPING.getOrDefault(filterQuery.getSelected(), "all");
@@ -64,9 +70,8 @@ public class TitlesFilterableUrlBuilder {
     String resourceType = StringUtils.defaultString(filterQuery.getType(), "all");
 
     List<String> parameters = new ArrayList<>();
-    if(searchField != null){
-      parameters.add("searchfield="+searchField);
-    }
+
+    parameters.add("searchfield="+searchField);
     parameters.add("selection=" + selection);
     parameters.add("resourcetype=" + resourceType);
     parameters.add("searchtype=advanced");
@@ -76,7 +81,7 @@ public class TitlesFilterableUrlBuilder {
       .page(page)
       .count(count)
       .sort(sort)
-      .nameParameter("titlename")
+      .nameParameter(SEARCHFIELD_TITLENAME)
       .build();
 
     parameters.add(query);

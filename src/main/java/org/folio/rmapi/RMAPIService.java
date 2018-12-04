@@ -237,7 +237,25 @@ public class RMAPIService {
       .page(page)
       .count(count)
       .build();
+
     return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class)
+      .thenCompose(titles -> {
+        titles.getTitleList().removeIf(Objects::isNull);
+        return CompletableFuture.completedFuture(titles);
+      });
+  }
+
+  public CompletableFuture<Titles> retrieveTitles(Long providerId, Long packageId, FilterQuery filterQuery, Sort sort, int page, int count) {
+    String path = new TitlesFilterableUrlBuilder()
+      .filter(filterQuery)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+
+    String titlesPath =  VENDORS_PATH + '/' + providerId + '/' + PACKAGES_PATH + '/' + packageId + '/' + TITLES_PATH + "?";
+
+    return this.getRequest(constructURL(titlesPath + path), Titles.class)
           .thenCompose(titles -> {
             titles.getTitleList().removeIf(Objects::isNull);
             return CompletableFuture.completedFuture(titles);

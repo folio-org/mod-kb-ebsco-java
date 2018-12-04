@@ -1,11 +1,14 @@
 package org.folio.rmapi.builder;
 
-import static org.junit.Assert.assertEquals;
-
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.Sort;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import static org.junit.Assert.assertEquals;
 
 public class TitlesFilterableUrlBuilderTest {
 
@@ -88,5 +91,23 @@ public class TitlesFilterableUrlBuilderTest {
       "&offset=1&count=25&orderby=relevance", url);
   }
 
-}
+  @Test
+  public void shouldBuildUrlForFilterByType(){
+    String url = new TitlesFilterableUrlBuilder()
+      .filter(fqb.type("book").build())
+      .sort(Sort.RELEVANCE)
+      .build();
+    assertEquals("searchfield=titlename&selection=all&resourcetype=book&searchtype=advanced&search=" +
+      "&offset=1&count=25&orderby=titlename", url);
+  }
 
+  @Test
+  public void shouldBuildUrlforDefaultTitleSearchAndSort(){
+    String url = new TitlesFilterableUrlBuilder()
+      .filter(fqb.build())
+      .sort(Sort.RELEVANCE)
+      .build();
+    assertEquals("searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=" +
+      "&offset=1&count=25&orderby=titlename", url);
+  }
+}

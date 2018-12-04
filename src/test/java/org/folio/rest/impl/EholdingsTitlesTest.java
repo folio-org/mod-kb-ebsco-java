@@ -25,9 +25,23 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.http.HttpStatus;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static org.folio.util.TestUtil.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
@@ -214,14 +228,5 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String expected = readFile("responses/titles/get-title-by-id-invalid-include-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
-  }
-
-  private ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
-    return RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(resourcePath)
-      .then()
-      .statusCode(expectedStatus).extract();
   }
 }

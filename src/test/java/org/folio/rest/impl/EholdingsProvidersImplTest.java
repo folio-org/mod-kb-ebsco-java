@@ -462,15 +462,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
               .withIncluded(false)))));
   }
 
-  private ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
-    return RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(resourcePath)
-      .then()
-      .statusCode(expectedStatus).extract();
-  }
-
   private void errorTitleIsNotEmptyWith400Status(String resourcePath) {
     RequestSpecification requestSpecification = getRequestSpecification();
     RestAssured.given()
