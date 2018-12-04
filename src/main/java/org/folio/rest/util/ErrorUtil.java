@@ -47,7 +47,7 @@ public class ErrorUtil {
 
       if (errorsObject.getErrorList() == null) {
         errorsObject = errorsObject.toBuilder()
-          .errorList(Collections.singletonList(instanceJSON.mapTo(org.folio.rmapi.model.Error.class)))
+          .errorList(Collections.singletonList(objectMapper.readValue(rmApiException.getResponseBody(), org.folio.rmapi.model.Error.class)))
           .build();
       }
 
