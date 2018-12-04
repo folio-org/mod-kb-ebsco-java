@@ -54,8 +54,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
   public static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";
 
-  private static final String INVALID_PACKAGE_TITLE = "Invalid package";
-  private static final String INVALID_PACKAGE_DETAILS = "Package cannot be deleted";
+  private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
+  private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsPackagesImpl.class);
 
@@ -100,12 +100,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackages(String filterCustom, String q, String filterSelected,
-    String filterType, String sort, int page, int count, Map<String, String> okapiHeaders,
-    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                   String filterType, String sort, int page, int count, Map<String, String> okapiHeaders,
+                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     headerValidator.validate(okapiHeaders);
     packageParametersValidator.validate(filterCustom, filterSelected, filterType, sort);
-    if("".equals(q)){
+    if ("".equals(q)) {
       throw new ValidationException("Search parameter cannot be empty");
     }
 
@@ -130,7 +130,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           .add(RMAPIServiceException.class,
             exception ->
               GetEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
-            ErrorUtil.createErrorFromRMAPIResponse(exception)))
+                ErrorUtil.createErrorFromRMAPIResponse(exception)))
           .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
@@ -152,7 +152,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenAccept(rmapiConfiguration ->
         service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
-      .thenCompose(o  ->  service.getValue().postPackage(packagePost))
+      .thenCompose(o -> service.getValue().postPackage(packagePost))
       .thenAccept(packageCreated ->
         asyncResultHandler.handle(Future.succeededFuture(PostEholdingsPackagesResponse
           .respond200WithApplicationVndApiJson(converter.convert(packageCreated)))))
@@ -247,8 +247,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           rmapiConfiguration.getUrl(), vertxContext.owner()));
         return rmapiService.getValue().retrievePackage(parsedPackageId);
       })
-      .thenCompose( packageData -> {
-        if(!packageData.getIsCustom()){
+      .thenCompose(packageData -> {
+        if (!packageData.getIsCustom()) {
           throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
         }
         return rmapiService.getValue().deletePackage(parsedPackageId);
