@@ -1,0 +1,38 @@
+{
+  "data": {
+    "type": "titles",
+    "attributes": {
+      "name": "Test Title",
+      "edition": "Test edition",
+      "publisherName": "Test publisher",
+      "publicationType": "Thesis & Dissertation",
+      "isPeerReviewed": true,
+      "contributors": [
+        {
+          "type":"author",
+          "contributor":"smith, john"
+        },
+        {
+          "type":"illustrator",
+          "contributor":"smith, ralph"
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "1111-2222-3333",
+          "type":"ISSN",
+          "subtype":"Online"
+        }
+      ],
+      "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
+    }
+  },
+  "included": [
+    {
+      "type": "resource",
+      "attributes": {
+        "packageId": "111111-3964"
+      }
+    }
+  ]
+}

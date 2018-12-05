@@ -14,7 +14,7 @@
     "attributes": {
       "description": "Data type attributes",
       "type": "object",
-      "$ref": "titleData.json"
+      "$ref": "titlePostDataAttributes.json"
     }
   },
   "required": [

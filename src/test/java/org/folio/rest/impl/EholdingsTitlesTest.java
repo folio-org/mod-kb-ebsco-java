@@ -1,16 +1,18 @@
 package org.folio.rest.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.readFile;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
+import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -46,6 +48,8 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
   private static final String STUB_TITLE_ID = "985846";
+  private static final int STUB_PACKAGE_ID = 3964;
+  private static final int STUB_VENDOR_ID = 111111;
 
   @Test
   public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
@@ -228,5 +232,68 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String expected = readFile("responses/titles/get-title-by-id-invalid-include-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldReturnTitleWhenValidPostRequest() throws IOException, URISyntaxException {
+
+    String titleCreatedIdStubResponseFile = "responses/rmapi/titles/post-title-response.json";
+    String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
+    String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"Author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"Illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}", true, true);
+
+    stubFor(
+      post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
+        + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles"), false))
+        .withRequestBody(postBodyPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(titleCreatedIdStubResponseFile))
+          .withStatus(org.apache.http.HttpStatus.SC_OK)));
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_TITLE_ID), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(getTitleByTitleIdStubFile))
+          .withStatus(HttpStatus.SC_OK)));
+
+    String actual = postResponseWithStatus("eholdings/titles", org.apache.http.HttpStatus.SC_OK, titlePostStubRequestFile).asString();
+    String expected = readFile("responses/titles/get-created-title-response.json");
+
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldReturn400WhenInvalidPostRequest() throws URISyntaxException, IOException {
+
+    String errorResponse = "responses/rmapi/packages/post-package-400-error-response.json";
+    String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
+    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"Author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"Illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}", true, true);
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    stubFor(
+      post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
+        + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles"), false))
+        .withRequestBody(postBodyPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(errorResponse))
+          .withStatus(HttpStatus.SC_BAD_REQUEST)));
+
+    postResponseWithStatus("eholdings/titles", HttpStatus.SC_BAD_REQUEST, titlePostStubRequestFile);
+
+  }
+
+  private ExtractableResponse<Response> postResponseWithStatus(String resourcePath, int expectedStatus, String body)
+    throws IOException, URISyntaxException {
+    return RestAssured.given()
+      .spec(getRequestSpecification())
+      .header("Content-type","application/vnd.api+json")
+      .body(readFile(body))
+      .when()
+      .post(resourcePath)
+      .then()
+      .statusCode(expectedStatus).extract();
   }
 }

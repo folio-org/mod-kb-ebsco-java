@@ -3,13 +3,14 @@
   "title": "Contributor object schema",
   "description": "Contributor object schema",
   "type": "object",
-  "javaType": "org.folio.rest.jaxrs.model.Contributors",
+  "javaType": "org.folio.rest.jaxrs.model.TitleContributor",
   "additionalProperties": false,
   "properties": {
     "type": {
       "type": "string",
-      "description": "Type of contributor. Valid values are Author, Illustrator, and Editor.",
-      "example": "Author"
+      "description": "Type of contributor. Valid values are author, illustrator, and editor.",
+      "enum": ["author", "illustrator", "editor"],
+      "example": "author"
     },
     "contributor": {
       "type": "string",

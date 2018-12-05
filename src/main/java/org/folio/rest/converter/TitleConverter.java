@@ -16,9 +16,11 @@ import org.folio.rest.jaxrs.model.Resources;
 import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitleListDataAttributes;
+import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.Title;
+import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.model.Titles;
 
 public class TitleConverter {
@@ -110,5 +112,28 @@ public class TitleConverter {
         .withPublicationType(CommonAttributesConverter.publicationTypes.get(title.getPubType().toLowerCase()))
         .withSubjects(commonConverter.convertSubjects(title.getSubjectsList()))
         .withIdentifiers(commonConverter.convertIdentifiers(title.getIdentifiersList())));
+  }
+
+  public TitlePost convertToPost(TitlePostRequest entity) {
+    Boolean isPeerReviewed = entity.getData().getAttributes().getIsPeerReviewed();
+    TitlePost.TitlePostBuilder titlePost = TitlePost.builder()
+      .titleName(entity.getData().getAttributes().getName())
+      .description(entity.getData().getAttributes().getDescription())
+      .edition(entity.getData().getAttributes().getEdition())
+      .isPeerReviewed(java.util.Objects.isNull(isPeerReviewed) ? Boolean.FALSE : isPeerReviewed)
+      .publisherName(entity.getData().getAttributes().getPublisherName())
+      .pubType(CommonAttributesConverter.publicationTypes.inverseBidiMap().get(entity.getData().getAttributes().getPublicationType()));
+
+    List<org.folio.rest.jaxrs.model.Identifier> identifiersList = entity.getData().getAttributes().getIdentifiers();
+    if(!identifiersList.isEmpty()) {
+      titlePost.identifiersList(commonConverter.convertToIdentifiers(identifiersList));
+    }
+
+    List<org.folio.rest.jaxrs.model.Contributors> contributorsList = entity.getData().getAttributes().getContributors();
+    if(!contributorsList.isEmpty()){
+      titlePost.contributorsList(commonConverter.convertToContributors(contributorsList));
+    }
+
+    return titlePost.build();
   }
 }

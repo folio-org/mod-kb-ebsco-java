@@ -14,6 +14,7 @@ types:
   title: !include types/titles/title.json
   titleCollection: !include types/titles/titleCollection.json
   titlePostRequest: !include types/titles/titlePostRequest.json
+  jsonapiError: !include types/jsonapiError.json
 
 /eholdings/titles:
   displayName: Titles
@@ -56,6 +57,14 @@ types:
             example:
               strict: false
               value: !include examples/titles/titles_post_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/packages/packages_post_400_response.json
       422:
         description: Bad
         body:

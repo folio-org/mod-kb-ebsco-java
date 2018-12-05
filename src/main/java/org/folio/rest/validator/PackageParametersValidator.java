@@ -12,10 +12,13 @@ public class PackageParametersValidator {
   private static final List<String> FILTER_TYPE_VALUES = Arrays.asList("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference");
 
   public void validate(String filterCustom, String filterSelected, String filterType,
-    String sort) {
+    String sort, String query) {
 
     if (!Sort.contains(sort.toUpperCase())){
       throw new ValidationException("Invalid Query Parameter for sort");
+    }
+    if ("".equals(query)) {
+      throw new ValidationException("Search parameter cannot be empty");
     }
     if(Objects.nonNull(filterType) &&  !FILTER_TYPE_VALUES.contains(filterType)){
       throw new ValidationException("Invalid Query Parameter for filter[type]");

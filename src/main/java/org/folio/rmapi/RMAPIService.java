@@ -31,6 +31,8 @@ import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.Proxy;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
+import org.folio.rmapi.model.TitleCreated;
+import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
@@ -415,6 +417,15 @@ public class RMAPIService {
   public CompletableFuture<PackageCreated> postPackage(PackagePost entity, Long id) {
     String path = VENDORS_PATH + '/' + id + '/' + PACKAGES_PATH;
     return this.postRequest(constructURL(path), entity, PackageCreated.class);
+  }
+
+  public CompletableFuture<TitleCreated> createTitle(TitlePost entity, PackageId packageId) {
+    final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart() + '/' + TITLES_PATH;
+    return this.postRequest(constructURL(path), entity, TitleCreated.class);
+  }
+
+  public CompletableFuture<Title> postTitle(TitlePost titlePost, PackageId packageId) {
+    return  this.createTitle(titlePost, packageId).thenCompose(titleCreated -> retrieveTitle(titleCreated.getTitleId()));
   }
 
   /**

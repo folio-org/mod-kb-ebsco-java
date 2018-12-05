@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -12,6 +11,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -23,20 +23,26 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
+import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
+import org.folio.rest.parser.PackageParser;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.TitleParametersValidator;
+import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 
+import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.model.TitlePost;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private static final String GET_TITLES_ERROR_MESSAGE = "Failed to retrieve titles";
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   private static final String GET_TITLES_BY_ID_ERROR_MESSAGE = "Failed to retrieve title by title id";
+  private static final String POST_TITLES_ERROR_MESSAGE = "Failed to create title";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsTitlesImpl.class);
 
@@ -44,23 +50,32 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private HeaderValidator headerValidator;
   private TitleConverter converter;
   private TitleParametersValidator parametersValidator;
+  private PackageParser packageParser;
 
+  private TitlesPostBodyValidator titlesPostBodyValidator;
   public EholdingsTitlesImpl() {
     this(
       new RMAPIConfigurationServiceCache(
         new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
       new HeaderValidator(),
       new TitleParametersValidator(),
-      new TitleConverter());
+      new TitlesPostBodyValidator(),
+      new TitleConverter(),
+      new org.folio.rest.parser.PackageParser());
   }
 
   public EholdingsTitlesImpl(RMAPIConfigurationService configurationService,
-                             HeaderValidator headerValidator, TitleParametersValidator parametersValidator,
-                             TitleConverter converter) {
+                             HeaderValidator headerValidator,
+                             TitleParametersValidator parametersValidator,
+                             TitlesPostBodyValidator titlesPostBodyValidator,
+                             TitleConverter converter,
+                             PackageParser packageParser) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.converter = converter;
     this.parametersValidator = parametersValidator;
+    this.titlesPostBodyValidator = titlesPostBodyValidator;
+    this.packageParser = packageParser;
   }
 
   @Override
@@ -103,7 +118,34 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @HandleValidationErrors
   public void postEholdingsTitles(String contentType, TitlePostRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(GetEholdingsTitlesResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+
+    headerValidator.validate(okapiHeaders);
+    titlesPostBodyValidator.validate(entity);
+
+    TitlePost titlePost = converter.convertToPost(entity);
+    PackageId packageId = packageParser.parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
+
+    MutableObject<RMAPIService> service = new MutableObject<>();
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenAccept(rmapiConfiguration ->
+        service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
+          rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
+      .thenCompose(o  ->  service.getValue().postTitle(titlePost, packageId))
+      .thenAccept(title ->
+        asyncResultHandler.handle(Future.succeededFuture(PostEholdingsTitlesResponse
+          .respond200WithApplicationVndApiJson(converter.convertFromRMAPITitle(title, "")))))
+      .exceptionally(e -> {
+        logger.error(POST_TITLES_ERROR_MESSAGE, e);
+        new ErrorHandler()
+          .add(RMAPIServiceException.class,
+            exception ->
+              PostEholdingsTitlesResponse.respond400WithApplicationVndApiJson(
+                ErrorUtil.createErrorFromRMAPIResponse(exception)))
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 
   @Override
