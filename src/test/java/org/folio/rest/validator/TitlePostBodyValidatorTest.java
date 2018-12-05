@@ -1,8 +1,14 @@
 package org.folio.rest.validator;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Identifier;
+import org.folio.rest.jaxrs.model.PublicationType;
 import org.folio.rest.jaxrs.model.TitlePostData;
 import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
+import org.folio.rest.jaxrs.model.TitlePostIncluded;
+import org.folio.rest.jaxrs.model.TitlePostIncludedPackageId;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.junit.Test;
 
@@ -138,8 +144,8 @@ public class TitlePostBodyValidatorTest {
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionIfTitleIdentifierIdTooLong() {
     TitlePostRequest titlePostRequest = new TitlePostRequest();
-    java.util.List<org.folio.rest.jaxrs.model.Identifier> titleIdentifiers = new java.util.ArrayList<>();
-    titleIdentifiers.add(new org.folio.rest.jaxrs.model.Identifier().withId("1234567-1234567-1234567"));
+    List<Identifier> titleIdentifiers = new ArrayList<>();
+    titleIdentifiers.add(new Identifier().withId("1234567-1234567-1234567"));
 
     titlePostRequest
       .withData(new TitlePostData()
@@ -158,7 +164,7 @@ public class TitlePostBodyValidatorTest {
       .withData(new TitlePostData()
         .withAttributes(new TitlePostDataAttributes()
           .withName(TITLE_TEST_NAME)
-          .withPublicationType(org.folio.rest.jaxrs.model.PublicationType.BOOK)
+          .withPublicationType(PublicationType.BOOK)
           .withDescription("")))
       .withIncluded(getTitlePostIncluded());
 
@@ -171,7 +177,7 @@ public class TitlePostBodyValidatorTest {
       .withData(new TitlePostData()
         .withAttributes(new TitlePostDataAttributes()
           .withName(TITLE_TEST_NAME)
-          .withPublicationType(org.folio.rest.jaxrs.model.PublicationType.BOOK)
+          .withPublicationType(PublicationType.BOOK)
           .withDescription(null)))
       .withIncluded(getTitlePostIncluded());
 
@@ -185,7 +191,7 @@ public class TitlePostBodyValidatorTest {
       .withData(new TitlePostData()
         .withAttributes(new TitlePostDataAttributes()
           .withName(TITLE_TEST_NAME)
-          .withPublicationType(org.folio.rest.jaxrs.model.PublicationType.BOOK)
+          .withPublicationType(PublicationType.BOOK)
           .withEdition("")))
       .withIncluded(getTitlePostIncluded());
 
@@ -199,7 +205,7 @@ public class TitlePostBodyValidatorTest {
       .withData(new TitlePostData()
         .withAttributes(new TitlePostDataAttributes()
           .withName(TITLE_TEST_NAME)
-          .withPublicationType(org.folio.rest.jaxrs.model.PublicationType.BOOK)
+          .withPublicationType(PublicationType.BOOK)
           .withEdition(null)))
       .withIncluded(getTitlePostIncluded());
 
@@ -213,7 +219,7 @@ public class TitlePostBodyValidatorTest {
       .withData(new TitlePostData()
         .withAttributes(new TitlePostDataAttributes()
           .withName(TITLE_TEST_NAME)
-          .withPublicationType(org.folio.rest.jaxrs.model.PublicationType.BOOK)
+          .withPublicationType(PublicationType.BOOK)
           .withPublisherName(null)))
       .withIncluded(getTitlePostIncluded());
 
@@ -227,18 +233,18 @@ public class TitlePostBodyValidatorTest {
       .withData(new TitlePostData()
         .withAttributes(new TitlePostDataAttributes()
           .withName(TITLE_TEST_NAME)
-          .withPublicationType(org.folio.rest.jaxrs.model.PublicationType.BOOK)
+          .withPublicationType(PublicationType.BOOK)
           .withPublisherName("")))
       .withIncluded(getTitlePostIncluded());
 
     validator.validate(titlePostRequest);
   }
 
-  private java.util.List<org.folio.rest.jaxrs.model.TitlePostIncluded> getTitlePostIncluded() {
-    java.util.List<org.folio.rest.jaxrs.model.TitlePostIncluded> titleIncluded = new java.util.ArrayList<>();
-    titleIncluded.add(new org.folio.rest.jaxrs.model.TitlePostIncluded()
+  private List<TitlePostIncluded> getTitlePostIncluded() {
+    List<TitlePostIncluded> titleIncluded = new ArrayList<>();
+    titleIncluded.add(new TitlePostIncluded()
       .withType("resource")
-      .withAttributes(new org.folio.rest.jaxrs.model.TitlePostIncludedPackageId()
+      .withAttributes(new TitlePostIncludedPackageId()
         .withPackageId("123456-123456")));
     return titleIncluded;
   }

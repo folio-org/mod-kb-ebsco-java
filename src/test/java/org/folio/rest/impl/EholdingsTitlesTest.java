@@ -7,11 +7,9 @@ import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.readFile;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.mockito.BDDMockito.willReturn;
 
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -288,7 +286,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   private ExtractableResponse<Response> postResponseWithStatus(String resourcePath, int expectedStatus, String body)
-    throws java.io.IOException, java.net.URISyntaxException {
+    throws IOException, URISyntaxException {
     return RestAssured.given()
       .spec(getRequestSpecification())
       .header("Content-type","application/vnd.api+json")

@@ -115,7 +115,7 @@ public class CommonAttributesConverter {
 
     return identifiersList.stream()
       .sorted(Comparator.comparing(org.folio.rest.jaxrs.model.Identifier::getSubtype).thenComparing(org.folio.rest.jaxrs.model.Identifier::getType))
-      .map(identifier ->  org.folio.rmapi.model.Identifier.builder()
+      .map(identifier ->  Identifier.builder()
         .id(identifier.getId())
         .type(IDENTIFIER_TYPES.inverseBidiMap().get(identifier.getType()))
         .subtype(IDENTIFIER_SUBTYPES.inverseBidiMap().get(identifier.getSubtype()))
