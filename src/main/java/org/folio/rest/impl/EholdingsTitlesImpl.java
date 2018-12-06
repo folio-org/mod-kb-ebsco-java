@@ -34,7 +34,6 @@ import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 
-import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.TitlePost;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
@@ -138,10 +137,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .exceptionally(e -> {
         logger.error(POST_TITLES_ERROR_MESSAGE, e);
         new ErrorHandler()
-          .add(RMAPIServiceException.class,
-            exception ->
-              PostEholdingsTitlesResponse.respond400WithApplicationVndApiJson(
-                ErrorUtil.createErrorFromRMAPIResponse(exception)))
+          .addRmApiMapper()
           .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
