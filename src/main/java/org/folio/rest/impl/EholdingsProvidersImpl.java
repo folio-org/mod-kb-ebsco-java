@@ -28,6 +28,7 @@ import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.Sort;
+import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
@@ -43,7 +44,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
   private static final String PUT_PROVIDER_ERROR_MESSAGE = "Failed to update provider";
   private static final String GET_PROVIDER_PACKAGES_ERROR_MESSAGE = "Failed to retrieve provider packages";
-  private static final String INVALID_PROVIDER_ID_ERROR = "Provider id is invalid - ";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
@@ -53,6 +53,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private PackagesConverter packagesConverter;
   private ProviderPutBodyValidator bodyValidator;
   private PackageParametersValidator parametersValidator;
+  private IdParser idParser;
 
   public EholdingsProvidersImpl() {
     this(
@@ -62,7 +63,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       new VendorConverter(),
       new ProviderPutBodyValidator(),
       new PackagesConverter(),
-      new PackageParametersValidator());
+      new PackageParametersValidator(),
+      new IdParser());
   }
 
   public EholdingsProvidersImpl(RMAPIConfigurationService configurationService,
@@ -70,13 +72,15 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                 VendorConverter converter,
                                 ProviderPutBodyValidator bodyValidator,
                                 PackagesConverter packageConverter,
-                                PackageParametersValidator parametersValidator) {
+                                PackageParametersValidator parametersValidator,
+                                IdParser idParser) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.converter = converter;
     this.bodyValidator = bodyValidator;
     this.packagesConverter = packageConverter;
     this.parametersValidator = parametersValidator;
+    this.idParser = idParser;
   }
 
   @Override
@@ -121,7 +125,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @HandleValidationErrors
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    long providerIdLong = getProviderId(providerId);
+    long providerIdLong = idParser.parseProviderId(providerId);
 
     headerValidator.validate(okapiHeaders);
 
@@ -153,7 +157,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   public void putEholdingsProvidersByProviderId(String providerId, String contentType, ProviderPutRequest entity,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    long providerIdLong = getProviderId(providerId);
+    long providerIdLong = idParser.parseProviderId(providerId);
 
     headerValidator.validate(okapiHeaders);
     bodyValidator.validate(entity);
@@ -187,7 +191,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         Map<String, String> okapiHeaders,
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
-    long providerIdLong = getProviderId(providerId);
+    long providerIdLong = idParser.parseProviderId(providerId);
 
     headerValidator.validate(okapiHeaders);
     parametersValidator.validate("true", filterSelected, filterType, sort, q);
@@ -215,16 +219,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           .handle(asyncResultHandler, e);
         return null;
       });
-  }
-
-  private long getProviderId(String providerId) {
-    long providerIdLong;
-    try {
-      providerIdLong = Long.parseLong(providerId);
-    } catch (NumberFormatException e) {
-      throw new ValidationException(INVALID_PROVIDER_ID_ERROR + providerId, e);
-    }
-    return providerIdLong;
   }
 
   private void validateSort(String sort) {

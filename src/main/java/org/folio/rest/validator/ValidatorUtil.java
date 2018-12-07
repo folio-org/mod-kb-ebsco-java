@@ -15,6 +15,8 @@ public class ValidatorUtil {
   private static final String INVALID_FIELD_FORMAT = "Invalid %s";
   private static final String MUST_BE_FALSE_FORMAT = "%s must be false";
   private static final String MUST_BE_NULL_FORMAT = "%s must be null or not specified";
+  private static final String MUST_NOT_BE_NULL_FORMAT = "%s must not be null";
+  private static final String MUST_NOT_BE_EMPTY_FORMAT = "%s must be empty";
   private static final String MUST_BE_EMPTY_FORMAT = "%s must be empty";
   private static final String MUST_BE_SHORTER_THAN_N_CHARACTERS = "%s is too long (maximum is %s characters)";
   private static final String MUST_BE_VALID_DATE = "%s has invalid format. Should be YYYY-MM-DD";
@@ -27,7 +29,7 @@ public class ValidatorUtil {
     if (StringUtils.isEmpty(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
-        String.format(MUST_BE_EMPTY_FORMAT, paramName));
+        String.format(MUST_NOT_BE_EMPTY_FORMAT, paramName));
     }
   }
 
@@ -51,7 +53,7 @@ public class ValidatorUtil {
     if (Objects.isNull(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
-        String.format(MUST_BE_NULL_FORMAT, paramName));
+        String.format(MUST_NOT_BE_NULL_FORMAT, paramName));
     }
   }
 
