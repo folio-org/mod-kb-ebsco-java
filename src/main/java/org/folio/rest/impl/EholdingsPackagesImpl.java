@@ -31,7 +31,7 @@ import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
-import org.folio.rest.parser.PackageParser;
+import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.*;
@@ -65,7 +65,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private PackagesPostBodyValidator packagesPostBodyValidator;
   private TitleParametersValidator titleParametersValidator;
   private ResourcesConverter resourceConverter;
-  private PackageParser packageParser;
+  private IdParser idParser;
 
   public EholdingsPackagesImpl() {
     this(
@@ -79,7 +79,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       new PackagesConverter(),
       new TitleParametersValidator(),
       new ResourcesConverter(),
-      new PackageParser());
+      new IdParser());
   }
   // Surpressed warning on number parameters greater than 7 for constructor
   @SuppressWarnings("squid:S00107")
@@ -92,7 +92,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                PackagesConverter converter,
                                TitleParametersValidator titleParametersValidator,
                                ResourcesConverter resourceConverter,
-                               PackageParser packageParser) {
+                               IdParser idParser) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.packageParametersValidator = packageParametersValidator;
@@ -102,7 +102,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     this.customPackagePutBodyValidator = customPackagePutBodyValidator;
     this.titleParametersValidator = titleParametersValidator;
     this.resourceConverter = resourceConverter;
-    this.packageParser = packageParser;
+    this.idParser = idParser;
   }
 
   @Override
@@ -179,7 +179,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @HandleValidationErrors
   public void getEholdingsPackagesByPackageId(String packageId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
+    PackageId parsedPackageId = idParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -202,7 +202,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
+    PackageId parsedPackageId = idParser.parsePackageId(packageId);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -244,7 +244,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void deleteEholdingsPackagesByPackageId(String packageId, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
+    PackageId parsedPackageId = idParser.parsePackageId(packageId);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
@@ -273,7 +273,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject, String filterPublisher,  int page,   int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = packageParser.parsePackageId(packageId);
+    PackageId parsedPackageId = idParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
 
     FilterQuery fq = FilterQuery.builder()

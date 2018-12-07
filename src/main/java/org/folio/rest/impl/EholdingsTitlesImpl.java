@@ -1,16 +1,10 @@
 package org.folio.rest.impl;
 
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
@@ -25,7 +19,7 @@ import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.Sort;
-import org.folio.rest.parser.PackageParser;
+import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
@@ -33,8 +27,14 @@ import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-
 import org.folio.rmapi.model.TitlePost;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
@@ -49,7 +49,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private HeaderValidator headerValidator;
   private TitleConverter converter;
   private TitleParametersValidator parametersValidator;
-  private PackageParser packageParser;
+  private IdParser idParser;
 
   private TitlesPostBodyValidator titlesPostBodyValidator;
   public EholdingsTitlesImpl() {
@@ -60,7 +60,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       new TitleParametersValidator(),
       new TitlesPostBodyValidator(),
       new TitleConverter(),
-      new org.folio.rest.parser.PackageParser());
+      new IdParser());
   }
 
   public EholdingsTitlesImpl(RMAPIConfigurationService configurationService,
@@ -68,13 +68,13 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                              TitleParametersValidator parametersValidator,
                              TitlesPostBodyValidator titlesPostBodyValidator,
                              TitleConverter converter,
-                             PackageParser packageParser) {
+                             IdParser idParser) {
     this.configurationService = configurationService;
     this.headerValidator = headerValidator;
     this.converter = converter;
     this.parametersValidator = parametersValidator;
     this.titlesPostBodyValidator = titlesPostBodyValidator;
-    this.packageParser = packageParser;
+    this.idParser = idParser;
   }
 
   @Override
@@ -122,7 +122,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     titlesPostBodyValidator.validate(entity);
 
     TitlePost titlePost = converter.convertToPost(entity);
-    PackageId packageId = packageParser.parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
+    PackageId packageId = idParser.parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
 
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
@@ -147,12 +147,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @HandleValidationErrors
   public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    long titleIdLong;
-    try {
-      titleIdLong = Long.parseLong(titleId);
-    } catch (NumberFormatException e) {
-      throw new ValidationException("Title id is invalid - " + titleId, e);
-    }
+    long titleIdLong = idParser.parseTitleId(titleId);
 
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
