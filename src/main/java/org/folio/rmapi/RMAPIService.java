@@ -1,5 +1,6 @@
 package org.folio.rmapi;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -22,13 +23,14 @@ import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.PackageCreated;
 import org.folio.rmapi.model.PackagePost;
+import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.Proxy;
+import org.folio.rmapi.model.ResourceSelectedPayload;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.TitleCreated;
@@ -75,6 +77,8 @@ public class RMAPIService {
 
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
+
+  public static final String RESOURCE_ENDPOINT_FORMAT = "vendors/%s/packages/%s/titles/%s";
 
   private String customerId;
   private String apiKey;
@@ -378,7 +382,7 @@ public class RMAPIService {
     CompletableFuture<PackageByIdData> packageFuture;
     CompletableFuture<VendorResult> vendorFuture;
 
-    final String path = VENDORS_PATH + '/' + resourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + resourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + resourceId.getTitleIdPart();
+    final String path = String.format(RESOURCE_ENDPOINT_FORMAT, resourceId.getProviderIdPart(), resourceId.getPackageIdPart(), resourceId.getTitleIdPart());
     titleFuture = this.getRequest(constructURL(path), Title.class);
     if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
       vendorFuture = retrieveProvider(resourceId.getProviderIdPart(), "");
@@ -395,6 +399,12 @@ public class RMAPIService {
     return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
         CompletableFuture.completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join())));
+  }
+
+  public CompletableFuture<ResourceResult> postResource(ResourceSelectedPayload resourcePost, ResourceId resourceId) {
+    final String path = String.format(RESOURCE_ENDPOINT_FORMAT, resourceId.getProviderIdPart(), resourceId.getPackageIdPart(), resourceId.getTitleIdPart());
+    return this.putRequest(constructURL(path), resourcePost)
+      .thenCompose(o -> this.retrieveResource(resourceId, Collections.emptyList()));
   }
 
   public CompletableFuture<PackageByIdData> postPackage(PackagePost entity) {
