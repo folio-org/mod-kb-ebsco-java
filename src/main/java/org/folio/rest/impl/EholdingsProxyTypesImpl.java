@@ -38,7 +38,7 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes {
   private ProxyConverter converter;
   private HeaderValidator headerValidator;
 
-  
+
   public EholdingsProxyTypesImpl() {
     this(new RMAPIConfigurationServiceCache(
             new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
@@ -58,7 +58,7 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes {
     headerValidator.validate(okapiHeaders);
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());

@@ -47,7 +47,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
   }
 
   @Override
-  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData) {
+  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData, Context vertxContext) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations ->
         CompletableFuture.completedFuture(mapResults(configurations.getJsonArray("configs"))));
@@ -57,7 +57,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
    * Removes old configuration and adds new configuration for RM API
    */
   @Override
-  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, OkapiData okapiData) {
+  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, Context vertxContext, OkapiData okapiData) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations -> {
         List<String> ids = mapToIds(configurations.getJsonArray("configs"));
@@ -75,7 +75,8 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
   }
 
   @Override
-  public CompletableFuture<List<ConfigurationError>> verifyCredentials(RMAPIConfiguration rmapiConfiguration, Context vertxContext) {
+  public CompletableFuture<List<ConfigurationError>> verifyCredentials(
+    RMAPIConfiguration rmapiConfiguration, Context vertxContext, String tenant) {
     List<ConfigurationError> errors = new ArrayList<>();
     if (!isConfigurationParametersValid(rmapiConfiguration, errors)) {
       return CompletableFuture.completedFuture(errors);
@@ -126,7 +127,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
     for (String id : configurationIds) {
       futures.add(deleteConfiguration(configurationsClient, id));
     }
-    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
   }
 
   /**
@@ -163,7 +164,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
     for (Config configuration : configurations) {
       futures.add(postConfiguration(configurationsClient, configuration));
     }
-    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
 
   }
 
@@ -208,7 +209,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
    *                mod-configuration.
    */
   private RMAPIConfiguration mapResults(JsonArray configs) {
-    RMAPIConfiguration config = new RMAPIConfiguration();
+    RMAPIConfiguration.RMAPIConfigurationBuilder configBuilder = RMAPIConfiguration.builder();
     configs.stream()
       .filter(JsonObject.class::isInstance)
       .map(JsonObject.class::cast)
@@ -216,14 +217,14 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
         String code = entry.getString("code");
         String value = entry.getString("value");
         if (EBSCO_CUSTOMER_ID_CODE.equalsIgnoreCase(code)) {
-          config.setCustomerId(value);
+          configBuilder.customerId(value);
         } else if (EBSCO_API_KEY_CODE.equalsIgnoreCase(code)) {
-          config.setApiKey(value);
+          configBuilder.apiKey(value);
         } else if (EBSCO_URL_CODE.equalsIgnoreCase(code)) {
-          config.setUrl(value);
+          configBuilder.url(value);
         }
       });
-    return config;
+    return configBuilder.build();
   }
 
   private List<String> mapToIds(JsonArray configs) {

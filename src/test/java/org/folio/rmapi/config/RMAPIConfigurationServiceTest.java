@@ -44,7 +44,7 @@ public class RMAPIConfigurationServiceTest {
   private RMAPIConfigurationService configurationService = new RMAPIConfigurationServiceImpl(configurationClientProvider);
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     when(configurationClientProvider.createClient(anyString(), anyInt(), anyString(), anyString())).thenReturn(mockConfigurationsClient);
   }
 
@@ -55,7 +55,7 @@ public class RMAPIConfigurationServiceTest {
     when(response.bodyHandler(any())).thenAnswer(new HandleBodyAnswer(new BufferImpl()));
     doAnswer(new HandleResponseAnswer(response, 5))
       .when(mockConfigurationsClient).getEntries(anyString(), anyInt(), anyInt(), any(), any(), any());
-    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA);
+    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA, null);
     assertTrue(future.isCompletedExceptionally());
   }
 
@@ -63,7 +63,7 @@ public class RMAPIConfigurationServiceTest {
   public void shouldCompleteExceptionallyWhenHttpClientThrowsException() throws Exception {
     doThrow(new UnsupportedEncodingException()).when(mockConfigurationsClient)
       .getEntries(anyString(), anyInt(), anyInt(), any(), any(), any());
-    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA);
+    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA, null);
     assertTrue(future.isCompletedExceptionally());
   }
 
@@ -91,7 +91,7 @@ public class RMAPIConfigurationServiceTest {
     doAnswer(new HandleResponseAnswer(deleteResponse, 2))
       .when(mockConfigurationsClient).deleteEntryId(any(), any(), any());
 
-    CompletableFuture<RMAPIConfiguration> future = configurationService.updateConfiguration(new RMAPIConfiguration(), OKAPI_DATA);
+    CompletableFuture<RMAPIConfiguration> future = configurationService.updateConfiguration(RMAPIConfiguration.builder().build(), null , OKAPI_DATA);
     assertTrue(future.isCompletedExceptionally());
   }
 
@@ -113,7 +113,7 @@ public class RMAPIConfigurationServiceTest {
     }
 
     @Override
-    public Object answer(InvocationOnMock invocation) throws Throwable {
+    public Object answer(InvocationOnMock invocation) {
       ((Handler<Buffer>) invocation.getArgument(0)).handle(body);
       return invocation.getMock();
     }
@@ -129,7 +129,7 @@ public class RMAPIConfigurationServiceTest {
     }
 
     @Override
-    public Object answer(InvocationOnMock invocation) throws Throwable {
+    public Object answer(InvocationOnMock invocation) {
       ((Handler<HttpClientResponse>) invocation.getArgument(handlerArgumentIndex)).handle(response);
       return null;
     }

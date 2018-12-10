@@ -36,10 +36,10 @@ public class RMAPIConfigurationConverter {
     String rmapiBaseUrl = configuration.getData().getAttributes().getRmapiBaseUrl();
     rmapiBaseUrl = rmapiBaseUrl != null ? rmapiBaseUrl : DEFAULT_URL;
 
-    RMAPIConfiguration rmapiConfiguration = new RMAPIConfiguration();
-    rmapiConfiguration.setUrl(rmapiBaseUrl);
-    rmapiConfiguration.setApiKey(configuration.getData().getAttributes().getApiKey());
-    rmapiConfiguration.setCustomerId(configuration.getData().getAttributes().getCustomerId());
-    return rmapiConfiguration;
+    RMAPIConfiguration.RMAPIConfigurationBuilder builder = RMAPIConfiguration.builder();
+    builder.url(rmapiBaseUrl);
+    builder.apiKey(configuration.getData().getAttributes().getApiKey());
+    builder.customerId(configuration.getData().getAttributes().getCustomerId());
+    return builder.build();
   }
 }

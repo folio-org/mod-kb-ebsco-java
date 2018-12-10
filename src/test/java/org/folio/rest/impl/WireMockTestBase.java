@@ -42,6 +42,7 @@ public abstract class WireMockTestBase {
   protected static final String CONFIGURATION_STUB_FILE = "responses/configuration/get-configuration.json";
   protected static int port;
   protected static String host;
+  protected static final Vertx vertx = Vertx.vertx();
 
   @Rule
   public TestRule watcher = new TestWatcher() {
@@ -61,7 +62,6 @@ public abstract class WireMockTestBase {
 
   @BeforeClass
   public static void setUpClass(final TestContext context) {
-    Vertx vertx = Vertx.vertx();
     vertx.exceptionHandler(context.exceptionHandler());
     port = NetworkUtils.nextFreePort();
     host = "http://localhost";
@@ -72,7 +72,7 @@ public abstract class WireMockTestBase {
 
   @Before
   public void setUp() throws Exception {
-    RMAPIConfigurationCache.getInstance().invalidate(STUB_TENANT);
+    new RMAPIConfigurationCache(vertx).invalidate(STUB_TENANT);
   }
 
   /**
