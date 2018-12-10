@@ -58,7 +58,8 @@
         },
         {
           "methods": ["POST"],
-          "pathPattern": "/eholdings/resources"
+          "pathPattern": "/eholdings/resources",
+          "permissionsRequired": ["kb-ebsco.resource.post"]
         },
         {
           "methods": ["GET"],
@@ -157,7 +158,7 @@
       "displayName": "get single provider",
       "description": "Get single provider"
     },
-     {
+    {
       "permissionName": "kb-ebsco.provider.put",
       "displayName": "put single provider",
       "description": "Put single provider"
@@ -186,6 +187,11 @@
       "permissionName": "kb-ebsco.resource.get",
       "displayName": "get single resource",
       "description": "Get single resource"
+    },
+    {
+      "permissionName": "kb-ebsco.resource.post",
+      "displayName": "post resource",
+      "description": "Post resource"
     },
     {
       "permissionName": "kb-ebsco.packageCollection.get",
@@ -255,6 +261,7 @@
         "kb-ebsco.package.get",
         "kb-ebsco.package.put",
         "kb-ebsco.resource.get",
+        "kb-ebsco.resource.post",
         "kb-ebsco.proxyTypes.get",
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.root-proxy.put"
