@@ -20,6 +20,8 @@ import io.vertx.core.Vertx;
 public class EholdingsCacheImpl implements EholdingsCache {
   @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
+  private RMAPIConfigurationCache rmapiConfigurationCache;
 
   @SuppressWarnings("squid:S1172")
   public EholdingsCacheImpl(Vertx vertx, String tenantId) {
@@ -29,7 +31,7 @@ public class EholdingsCacheImpl implements EholdingsCache {
   @Override
   public void deleteEholdingsCache(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    new RMAPIConfigurationCache(vertxContext.owner()).invalidate(okapiHeaders.get(RestConstants.OKAPI_TENANT_HEADER));
+    rmapiConfigurationCache.invalidate(okapiHeaders.get(RestConstants.OKAPI_TENANT_HEADER));
     asyncResultHandler.handle(Future.succeededFuture(EholdingsCacheImpl.DeleteEholdingsCacheResponse.respond204()));
   }
 }

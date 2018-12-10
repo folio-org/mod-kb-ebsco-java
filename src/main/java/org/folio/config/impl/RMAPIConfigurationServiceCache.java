@@ -9,6 +9,7 @@ import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.config.model.ConfigurationError;
 import org.folio.rest.model.OkapiData;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -19,34 +20,39 @@ import io.vertx.core.Context;
 @Primary
 public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService {
 
-  @Qualifier("rmAPIConfigurationServiceImpl")
   private RMAPIConfigurationService rmapiConfigurationService;
 
-  public RMAPIConfigurationServiceCache(RMAPIConfigurationService rmapiConfigurationService) {
+  private RMAPIConfigurationCache rmapiConfigurationCache;
+
+  @Autowired
+  public RMAPIConfigurationServiceCache(
+    @Qualifier("rmAPIConfigurationServiceImpl") RMAPIConfigurationService rmapiConfigurationService,
+    RMAPIConfigurationCache rmapiConfigurationCache) {
     this.rmapiConfigurationService = rmapiConfigurationService;
+    this.rmapiConfigurationCache = rmapiConfigurationCache;
   }
 
   @Override
-  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData, Context vertxContext) {
-    RMAPIConfiguration cachedConfiguration = new RMAPIConfigurationCache(vertxContext.owner())
+  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData) {
+    RMAPIConfiguration cachedConfiguration = rmapiConfigurationCache
       .getValue(okapiData.getTenant());
     if(cachedConfiguration != null){
       return CompletableFuture.completedFuture(cachedConfiguration);
     }
 
-    return rmapiConfigurationService.retrieveConfiguration(okapiData, vertxContext)
+    return rmapiConfigurationService.retrieveConfiguration(okapiData)
     .thenCompose(rmapiConfiguration -> {
-      new RMAPIConfigurationCache(vertxContext.owner())
+      rmapiConfigurationCache
         .putValue(okapiData.getTenant(), rmapiConfiguration);
       return CompletableFuture.completedFuture(rmapiConfiguration);
     });
   }
 
   @Override
-  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, Context vertxContext, OkapiData okapiData) {
-    return rmapiConfigurationService.updateConfiguration(rmapiConfiguration, vertxContext, okapiData)
+  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, OkapiData okapiData) {
+    return rmapiConfigurationService.updateConfiguration(rmapiConfiguration, okapiData)
     .thenCompose(configuration ->  {
-      new RMAPIConfigurationCache(vertxContext.owner())
+      rmapiConfigurationCache
         .putValue(okapiData.getTenant(), configuration);
       return CompletableFuture.completedFuture(configuration);
     });
@@ -60,7 +66,7 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
     return rmapiConfigurationService.verifyCredentials(rmapiConfiguration, vertxContext, tenant)
       .thenCompose(errors -> {
         if(errors.isEmpty()){
-          new RMAPIConfigurationCache(vertxContext.owner()).putValue(tenant,
+          rmapiConfigurationCache.putValue(tenant,
             rmapiConfiguration.toBuilder().configValid(true).build());
         }
         return CompletableFuture.completedFuture(errors);

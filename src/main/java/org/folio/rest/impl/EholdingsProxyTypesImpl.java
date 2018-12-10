@@ -61,7 +61,7 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes {
     headerValidator.validate(okapiHeaders);
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());

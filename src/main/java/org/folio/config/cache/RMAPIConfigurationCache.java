@@ -4,22 +4,26 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import org.folio.config.RMAPIConfiguration;
-import org.folio.properties.PropertyConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
 import lombok.Builder;
-import lombok.Value;
 
-public final class RMAPIConfigurationCache {
+@Component
+public class RMAPIConfigurationCache {
   private static final String CONFIGURATION_MAP_KEY = "configurationMap";
+
   private Vertx vertx;
   private long expirationTime;
 
-  public RMAPIConfigurationCache(Vertx vertx) {
-    this.expirationTime = PropertyConfiguration.getInstance().getConfiguration().getLong("configuration.cache.expire");
+  @Autowired
+  public RMAPIConfigurationCache(Vertx vertx, @Value("${configuration.cache.expire}") long expirationTime) {
     this.vertx = vertx;
+    this.expirationTime = expirationTime;
   }
 
   public RMAPIConfiguration getValue(String tenant) {
@@ -50,7 +54,7 @@ public final class RMAPIConfigurationCache {
     return vertx.sharedData().getLocalMap(CONFIGURATION_MAP_KEY);
   }
 
-  @Value
+  @lombok.Value
   @Builder(toBuilder = true)
   private static class RMAPIConfigurationWrapper implements Shareable {
     private final LocalDateTime expireTime;

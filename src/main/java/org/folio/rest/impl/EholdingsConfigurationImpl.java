@@ -49,7 +49,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   public void getEholdingsConfiguration(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenAccept(rmapiConfiguration -> {
         Configuration configuration = converter.convertToConfiguration(rmapiConfiguration);
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond200WithApplicationVndApiJson(configuration)));
@@ -82,7 +82,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
         }
         return CompletableFuture.completedFuture(null);
       })
-      .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, vertxContext, okapiData.getValue()))
+      .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, okapiData.getValue()))
       .thenAccept(configuration ->
         asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse
           .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))

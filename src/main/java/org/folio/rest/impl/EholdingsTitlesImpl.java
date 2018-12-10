@@ -82,7 +82,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -113,7 +113,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenAccept(rmapiConfiguration ->
         service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
@@ -138,7 +138,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());

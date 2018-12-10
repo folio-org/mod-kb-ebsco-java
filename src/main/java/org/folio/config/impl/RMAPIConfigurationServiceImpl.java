@@ -50,7 +50,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
   }
 
   @Override
-  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData, Context vertxContext) {
+  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations ->
         CompletableFuture.completedFuture(mapResults(configurations.getJsonArray("configs"))));
@@ -60,7 +60,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
    * Removes old configuration and adds new configuration for RM API
    */
   @Override
-  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, Context vertxContext, OkapiData okapiData) {
+  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, OkapiData okapiData) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations -> {
         List<String> ids = mapToIds(configurations.getJsonArray("configs"));

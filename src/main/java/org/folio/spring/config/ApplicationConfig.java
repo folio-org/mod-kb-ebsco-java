@@ -12,7 +12,8 @@ import org.springframework.core.io.ClassPathResource;
   "org.folio.rest.parser",
   "org.folio.rest.validator",
   "org.folio.http",
-  "org.folio.config.impl"})
+  "org.folio.config.impl",
+  "org.folio.config.cache"})
 public class ApplicationConfig {
   @Bean
   public PropertySourcesPlaceholderConfigurer placeholderConfigurer(){

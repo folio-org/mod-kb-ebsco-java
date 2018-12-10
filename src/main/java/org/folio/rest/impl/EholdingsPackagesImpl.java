@@ -96,7 +96,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenAccept(rmapiConfiguration ->
         service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
@@ -131,7 +131,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenAccept(rmapiConfiguration ->
         service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
@@ -159,7 +159,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
-      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -182,7 +182,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner()));
@@ -224,7 +224,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner()));
@@ -263,7 +263,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());

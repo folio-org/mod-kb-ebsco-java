@@ -2,12 +2,12 @@ package org.folio.rest.converter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.config.RMAPIConfiguration;
-import org.folio.properties.PropertyConfiguration;
 import org.folio.rest.jaxrs.model.ConfigurationAttributes;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.model.ConfigurationData;
 import org.folio.rest.util.RestConstants;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,7 +15,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class RMAPIConfigurationConverter {
-  private static final String DEFAULT_URL = PropertyConfiguration.getInstance().getConfiguration().getString("configuration.base.url.default");
+  private final String defaultUrl;
+
+  public RMAPIConfigurationConverter(@Value("${configuration.base.url.default}") String defaultUrl) {
+    this.defaultUrl = defaultUrl;
+  }
 
   public Configuration convertToConfiguration(RMAPIConfiguration rmAPIConfig) {
     Configuration jsonConfig = new Configuration();
@@ -28,7 +32,7 @@ public class RMAPIConfigurationConverter {
     }
     jsonConfig.getData().getAttributes().setCustomerId(rmAPIConfig.getCustomerId());
     String baseUrl = rmAPIConfig.getUrl();
-    baseUrl = baseUrl != null ? baseUrl : DEFAULT_URL;
+    baseUrl = baseUrl != null ? baseUrl : defaultUrl;
     jsonConfig.getData().getAttributes().setRmapiBaseUrl(baseUrl);
     jsonConfig.setJsonapi(RestConstants.JSONAPI);
     return jsonConfig;
@@ -36,7 +40,7 @@ public class RMAPIConfigurationConverter {
 
   public RMAPIConfiguration convertToRMAPIConfiguration(ConfigurationPutRequest configuration) {
     String rmapiBaseUrl = configuration.getData().getAttributes().getRmapiBaseUrl();
-    rmapiBaseUrl = rmapiBaseUrl != null ? rmapiBaseUrl : DEFAULT_URL;
+    rmapiBaseUrl = rmapiBaseUrl != null ? rmapiBaseUrl : defaultUrl;
 
     RMAPIConfiguration.RMAPIConfigurationBuilder builder = RMAPIConfiguration.builder();
     builder.url(rmapiBaseUrl);
