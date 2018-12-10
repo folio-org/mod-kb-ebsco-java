@@ -7,7 +7,9 @@ import javax.validation.ValidationException;
 
 import org.folio.rest.model.PackageId;
 import org.folio.rest.model.ResourceId;
+import org.springframework.stereotype.Component;
 
+@Component
 public class IdParser {
   private static final String RESOURCE_ID_INVALID_ERROR = "Resource id is invalid";
   private static final String TITLE_ID_IS_INVALID_ERROR = "Title id is invalid - %s";

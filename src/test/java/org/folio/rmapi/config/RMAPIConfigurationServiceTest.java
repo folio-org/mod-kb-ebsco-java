@@ -9,7 +9,7 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.impl.HttpClientResponseImpl;
 import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.config.RMAPIConfigurationServiceImpl;
+import org.folio.config.impl.RMAPIConfigurationServiceImpl;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.jaxrs.model.Config;

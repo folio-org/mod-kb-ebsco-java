@@ -11,14 +11,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.http.HttpStatus;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.RootProxyConverter;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
@@ -30,35 +28,27 @@ import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.RootProxyPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
   private RootProxyConverter converter;
+  @Autowired
   private RootProxyPutBodyValidator bodyValidator;
 
   private static final String PUT_ROOT_PROXY_ERROR_MESSAGE = "Failed to update root proxy";
 
   private final Logger logger = LoggerFactory.getLogger(EHoldingsRootProxyImpl.class);
 
-  public EHoldingsRootProxyImpl() {
-    this(
-      new RMAPIConfigurationServiceCache(
-        new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new HeaderValidator(),
-      new RootProxyConverter(),
-      new RootProxyPutBodyValidator());
-  }
-
-  public EHoldingsRootProxyImpl(RMAPIConfigurationService configurationService,
-                                HeaderValidator headerValidator,
-                                RootProxyConverter converter,
-                                RootProxyPutBodyValidator bodyValidator) {
-    this.configurationService = configurationService;
-    this.headerValidator = headerValidator;
-    this.converter = converter;
-    this.bodyValidator = bodyValidator;
+  @SuppressWarnings("squid:S1172")
+  public EHoldingsRootProxyImpl(Vertx vertx, String tenantId) {
+    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
   }
 
   @Override

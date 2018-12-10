@@ -5,6 +5,8 @@ import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.*;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,25 +15,17 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static org.folio.rest.util.RestConstants.*;
 
+@Component
 public class ResourcesConverter {
+
+  @Autowired
   private CommonAttributesConverter commonConverter;
-
+  @Autowired
   private TitleConverter titleConverter;
+  @Autowired
   private VendorConverter vendorConverter;
+  @Autowired
   private PackagesConverter packagesConverter;
-  public ResourcesConverter() {
-    this.commonConverter = new CommonAttributesConverter();
-    this.vendorConverter = new VendorConverter();
-    this.packagesConverter = new PackagesConverter();
-    this.titleConverter = new TitleConverter(commonConverter,this);
-  }
-
-  public ResourcesConverter(CommonAttributesConverter commonConverter, TitleConverter titleConverter, VendorConverter vendorConverter, PackagesConverter packagesConverter) {
-    this.commonConverter = commonConverter;
-    this.titleConverter = titleConverter;
-    this.vendorConverter = vendorConverter;
-    this.packagesConverter = packagesConverter;
-  }
 
   public List<Resource> convertFromRMAPIResource(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
     return title.getCustomerResourcesList().stream().map(resource -> {

@@ -1,4 +1,4 @@
-package org.folio.config;
+package org.folio.config.impl;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.model.ConfigurationError;
 import org.folio.http.ConfigurationClientProvider;
@@ -19,6 +20,7 @@ import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.validator.ValidatorUtil;
 import org.folio.rmapi.RMAPIService;
+import org.springframework.stereotype.Component;
 
 import io.vertx.core.Context;
 import io.vertx.core.buffer.Buffer;
@@ -29,6 +31,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Retrieves the RM API connection details from mod-configuration.
  */
+@Component(value = "rmAPIConfigurationServiceImpl")
 public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService {
 
   private static final String EBSCO_URL_CODE = "kb.ebsco.url";

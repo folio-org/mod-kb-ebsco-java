@@ -3,7 +3,9 @@ package org.folio.rest.validator;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PackagePutBodyValidator {
 
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";

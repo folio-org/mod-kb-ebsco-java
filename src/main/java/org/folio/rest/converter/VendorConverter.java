@@ -27,7 +27,10 @@ import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.VendorPutToken;
 import org.folio.rmapi.model.Vendors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class VendorConverter {
 
   private static final Relationships EMPTY_PACKAGE_RELATIONSHIP = new Relationships()
@@ -36,18 +39,11 @@ public class VendorConverter {
         .withIncluded(false))
       .withData(null));
 
+  @Autowired
   private CommonAttributesConverter commonConverter;
 
+  @Autowired
   private PackagesConverter packagesConverter;
-
-  public VendorConverter() {
-    this(new CommonAttributesConverter(), new PackagesConverter());
-  }
-
-  public VendorConverter(CommonAttributesConverter commonConverter, PackagesConverter packagesConverter) {
-    this.commonConverter = commonConverter;
-    this.packagesConverter = packagesConverter;
-  }
 
   public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = vendors.getVendorList().stream()

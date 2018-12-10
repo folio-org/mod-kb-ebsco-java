@@ -8,10 +8,12 @@ import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.model.ConfigurationData;
 import org.folio.rest.util.RestConstants;
+import org.springframework.stereotype.Component;
 
 /**
  * Converts objects between REST API representation and internal representation
  */
+@Component
 public class RMAPIConfigurationConverter {
   private static final String DEFAULT_URL = PropertyConfiguration.getInstance().getConfiguration().getString("configuration.base.url.default");
 

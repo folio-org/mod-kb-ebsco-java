@@ -8,21 +8,22 @@ import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.rest.jaxrs.resource.EholdingsCache;
 import org.folio.rest.util.RestConstants;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class EholdingsCacheImpl implements EholdingsCache {
+  @Autowired
   private HeaderValidator headerValidator;
 
-  public EholdingsCacheImpl() {
-    this(new HeaderValidator());
-  }
-
-  public EholdingsCacheImpl(HeaderValidator headerValidator) {
-    this.headerValidator = headerValidator;
+  @SuppressWarnings("squid:S1172")
+  public EholdingsCacheImpl(Vertx vertx, String tenantId) {
+    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
   }
 
   @Override

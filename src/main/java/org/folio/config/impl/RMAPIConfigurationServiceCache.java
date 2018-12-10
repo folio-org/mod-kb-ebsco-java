@@ -1,18 +1,25 @@
-package org.folio.config;
+package org.folio.config.impl;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.config.model.ConfigurationError;
 import org.folio.rest.model.OkapiData;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 
 import io.vertx.core.Context;
 
+@Component
+@Primary
 public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService {
 
+  @Qualifier("rmAPIConfigurationServiceImpl")
   private RMAPIConfigurationService rmapiConfigurationService;
 
   public RMAPIConfigurationServiceCache(RMAPIConfigurationService rmapiConfigurationService) {

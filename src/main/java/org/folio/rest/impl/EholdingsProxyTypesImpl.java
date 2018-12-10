@@ -6,21 +6,13 @@ import static org.folio.http.HttpConsts.JSON_API_TYPE;
 import static org.folio.rest.jaxrs.resource.EholdingsProxyTypes.GetEholdingsProxyTypesResponse.respond200WithApplicationVndApiJson;
 import static org.folio.rest.util.ErrorUtil.createError;
 
-import javax.ws.rs.core.Response;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import javax.ws.rs.core.Response;
+
 import org.apache.http.HttpStatus;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.ProxyConverter;
 import org.folio.rest.jaxrs.model.ProxyTypes;
@@ -29,20 +21,31 @@ import org.folio.rest.model.OkapiData;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsProxyTypesImpl implements EholdingsProxyTypes {
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsProxyTypesImpl.class);
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private ProxyConverter converter;
+  @Autowired
   private HeaderValidator headerValidator;
 
-
-  public EholdingsProxyTypesImpl() {
-    this(new RMAPIConfigurationServiceCache(
-            new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new ProxyConverter(), new HeaderValidator());
+  @SuppressWarnings("squid:S1172")
+  public EholdingsProxyTypesImpl(Vertx vertx, String tenantId) {
+    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
   }
 
   public EholdingsProxyTypesImpl(RMAPIConfigurationService configurationService, ProxyConverter converter,

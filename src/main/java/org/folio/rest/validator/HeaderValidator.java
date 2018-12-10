@@ -1,6 +1,7 @@
 package org.folio.rest.validator;
 
 import org.folio.rest.util.RestConstants;
+import org.springframework.stereotype.Component;
 
 import javax.validation.ValidationException;
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.Map;
 /**
  * Verifies that headers are valid
  */
+@Component
 public class HeaderValidator {
 
   private final Collection<String> expectedHeaders = Arrays.asList(

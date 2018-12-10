@@ -6,21 +6,21 @@ import java.util.concurrent.CompletableFuture;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.StatusConverter;
 import org.folio.rest.jaxrs.resource.EholdingsStatus;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -28,16 +28,16 @@ public class EholdingsStatusImpl implements EholdingsStatus {
 
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private final Logger logger = LoggerFactory.getLogger(EholdingsStatusImpl.class);
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
   private StatusConverter converter;
 
-  public EholdingsStatusImpl() {
-    this(
-      new RMAPIConfigurationServiceCache(
-        new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new HeaderValidator(),
-      new StatusConverter());
+  @SuppressWarnings("squid:S1172")
+  public EholdingsStatusImpl(Vertx vertx, String tenantId) {
+    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
   }
 
   public EholdingsStatusImpl(RMAPIConfigurationService configurationService, HeaderValidator headerValidator, StatusConverter converter) {

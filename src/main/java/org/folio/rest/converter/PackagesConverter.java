@@ -29,7 +29,10 @@ import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.TokenInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PackagesConverter {
 
   private static final Map<String, ContentType> contentTypes = new HashMap<>();
@@ -61,15 +64,8 @@ public class PackagesConverter {
     contentTypeToRMAPICode.put(ContentType.ONLINE_REFERENCE, 7);
   }
 
+  @Autowired
   private CommonAttributesConverter commonConverter;
-
-  public PackagesConverter() {
-    this(new CommonAttributesConverter());
-  }
-
-  public PackagesConverter(CommonAttributesConverter commonConverter) {
-    this.commonConverter = commonConverter;
-  }
 
   public PackageCollection convert(Packages packages) {
     List<PackageCollectionItem> packageList = packages.getPackagesList().stream()

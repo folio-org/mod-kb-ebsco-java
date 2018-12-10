@@ -4,15 +4,13 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfiguration;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.exception.RMAPIConfigurationInvalidException;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
 import org.folio.rest.jaxrs.model.Configuration;
@@ -22,6 +20,8 @@ import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -32,21 +32,16 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   private static final String UPDATE_ERROR_MESSAGE = "Failed to update configuration";
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private RMAPIConfigurationConverter converter;
+  @Autowired
   private HeaderValidator headerValidator;
 
-  public EholdingsConfigurationImpl() {
-    this(
-         new RMAPIConfigurationServiceCache(
-           new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-         new RMAPIConfigurationConverter(), new HeaderValidator());
-  }
-
-  public EholdingsConfigurationImpl(RMAPIConfigurationService configurationService, RMAPIConfigurationConverter converter, HeaderValidator headerValidator) {
-    this.configurationService = configurationService;
-    this.converter = converter;
-    this.headerValidator = headerValidator;
+  @SuppressWarnings("squid:S1172")
+  public EholdingsConfigurationImpl(Vertx vertx, String tenantId) {
+    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
   }
 
   @Override

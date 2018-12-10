@@ -6,10 +6,12 @@ import org.apache.commons.lang.StringUtils;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
+import org.springframework.stereotype.Component;
 
 /**
  * Verifies that post data for packages are valid
  */
+@Component
 public class PackagesPostBodyValidator {
 
   private static final String INVALID_BEGIN_COVERAGE = "Begin Coverage has an invalid date.";

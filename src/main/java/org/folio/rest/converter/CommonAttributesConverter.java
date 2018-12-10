@@ -23,7 +23,9 @@ import org.folio.rmapi.model.Identifier;
 import org.folio.rmapi.model.Subject;
 import org.folio.rmapi.model.VisibilityInfo;
 import org.folio.rmapi.model.TokenInfo;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CommonAttributesConverter {
 
   private static final BidiMap<Integer, org.folio.rest.jaxrs.model.Identifier.Type> IDENTIFIER_TYPES = new TreeBidiMap<>();
@@ -45,7 +47,7 @@ public class CommonAttributesConverter {
     EMBARGO_UNITS.put("Months", EmbargoUnit.MONTHS);
     EMBARGO_UNITS.put("Years", EmbargoUnit.YEARS);
   }
-  
+
   static final BidiMap<String, PublicationType> publicationTypes = new TreeBidiMap<>();
   static {
     publicationTypes.put("audiobook", PublicationType.AUDIOBOOK);
@@ -147,7 +149,7 @@ public class CommonAttributesConverter {
   }
 
   public org.folio.rest.jaxrs.model.VisibilityData convertVisibilityData(VisibilityInfo visibilityData) {
-    
+
     if(Objects.isNull(visibilityData)){
       return null;
     }
@@ -170,7 +172,7 @@ public class CommonAttributesConverter {
   }
 
   public org.folio.rest.jaxrs.model.Proxy convertProxy(org.folio.rmapi.model.Proxy proxy) {
-    
+
     if(Objects.isNull(proxy)){
       return null;
     }

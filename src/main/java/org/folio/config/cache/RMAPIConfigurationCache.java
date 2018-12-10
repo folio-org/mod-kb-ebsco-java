@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Value;
 
 public final class RMAPIConfigurationCache {
+  private static final String CONFIGURATION_MAP_KEY = "configurationMap";
   private Vertx vertx;
   private long expirationTime;
 
@@ -46,7 +47,7 @@ public final class RMAPIConfigurationCache {
   }
 
   private LocalMap<String, RMAPIConfigurationWrapper> getLocalMap() {
-    return vertx.sharedData().getLocalMap("configurationMap");
+    return vertx.sharedData().getLocalMap(CONFIGURATION_MAP_KEY);
   }
 
   @Value

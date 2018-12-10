@@ -22,14 +22,19 @@ import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.model.Titles;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TitleConverter {
 
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
   private static final String RESOURCES_TYPE = "resources";
 
+  @Autowired
   private CommonAttributesConverter commonConverter;
 
+  @Autowired
   private ResourcesConverter resourcesConverter;
 
   private static final Relationships EMPTY_RESOURCES_RELATIONSHIP = new Relationships()
@@ -37,15 +42,6 @@ public class TitleConverter {
       .withMeta(new MetaDataIncluded()
         .withIncluded(false))
       .withData(null));
-
-  public TitleConverter() {
-    this(new CommonAttributesConverter(), new ResourcesConverter());
-  }
-
-  public TitleConverter(CommonAttributesConverter commonConverter, ResourcesConverter resourcesConverter) {
-    this.commonConverter = commonConverter;
-    this.resourcesConverter = resourcesConverter;
-  }
 
   public TitleCollection convert(Titles titles) {
     List<org.folio.rest.jaxrs.model.Titles> titleList = titles.getTitleList().stream()

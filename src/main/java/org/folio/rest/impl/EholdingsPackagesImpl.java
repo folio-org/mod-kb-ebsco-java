@@ -11,14 +11,12 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.http.HttpStatus;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.PackagesConverter;
@@ -41,6 +39,8 @@ import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -56,53 +56,30 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private final Logger logger = LoggerFactory.getLogger(EholdingsPackagesImpl.class);
 
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private PackagesConverter converter;
+  @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
   private PackageParametersValidator packageParametersValidator;
+  @Autowired
   private PackagePutBodyValidator packagePutBodyValidator;
+  @Autowired
   private CustomPackagePutBodyValidator customPackagePutBodyValidator;
+  @Autowired
   private PackagesPostBodyValidator packagesPostBodyValidator;
+  @Autowired
   private TitleParametersValidator titleParametersValidator;
+  @Autowired
   private ResourcesConverter resourceConverter;
+  @Autowired
   private IdParser idParser;
 
-  public EholdingsPackagesImpl() {
-    this(
-      new RMAPIConfigurationServiceCache(
-        new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new HeaderValidator(),
-      new PackageParametersValidator(),
-      new PackagePutBodyValidator(),
-      new CustomPackagePutBodyValidator(),
-      new PackagesPostBodyValidator(),
-      new PackagesConverter(),
-      new TitleParametersValidator(),
-      new ResourcesConverter(),
-      new IdParser());
-  }
-  // Surpressed warning on number parameters greater than 7 for constructor
-  @SuppressWarnings("squid:S00107")
-  public EholdingsPackagesImpl(RMAPIConfigurationService configurationService,
-                               HeaderValidator headerValidator,
-                               PackageParametersValidator packageParametersValidator,
-                               PackagePutBodyValidator packagePutBodyValidator,
-                               CustomPackagePutBodyValidator customPackagePutBodyValidator,
-                               PackagesPostBodyValidator packagesPostBodyValidator,
-                               PackagesConverter converter,
-                               TitleParametersValidator titleParametersValidator,
-                               ResourcesConverter resourceConverter,
-                               IdParser idParser) {
-    this.configurationService = configurationService;
-    this.headerValidator = headerValidator;
-    this.packageParametersValidator = packageParametersValidator;
-    this.packagesPostBodyValidator = packagesPostBodyValidator;
-    this.converter = converter;
-    this.packagePutBodyValidator = packagePutBodyValidator;
-    this.customPackagePutBodyValidator = customPackagePutBodyValidator;
-    this.titleParametersValidator = titleParametersValidator;
-    this.resourceConverter = resourceConverter;
-    this.idParser = idParser;
+  @SuppressWarnings("squid:S1172")
+  public EholdingsPackagesImpl(Vertx vertx, String tenantId) {
+    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
   }
 
   @Override
