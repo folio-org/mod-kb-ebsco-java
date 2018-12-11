@@ -9,7 +9,6 @@ import org.folio.properties.PropertyConfiguration;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
-import lombok.Builder;
 import lombok.Value;
 
 public final class RMAPIConfigurationCache {
@@ -50,7 +49,6 @@ public final class RMAPIConfigurationCache {
   }
 
   @Value
-  @Builder(toBuilder = true)
   private static class RMAPIConfigurationWrapper implements Shareable {
     private final LocalDateTime expireTime;
     private final RMAPIConfiguration rmapiConfiguration;
