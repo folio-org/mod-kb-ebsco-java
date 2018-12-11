@@ -1,36 +1,56 @@
 package org.folio.config.cache;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 import org.folio.config.RMAPIConfiguration;
 import org.folio.properties.PropertyConfiguration;
 
-import java.util.concurrent.TimeUnit;
+import io.vertx.core.Vertx;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.Shareable;
+import lombok.Value;
 
 public final class RMAPIConfigurationCache {
-  private final Cache<String, RMAPIConfiguration> cache;
+  private Vertx vertx;
+  private long expirationTime;
 
-  private static final RMAPIConfigurationCache INSTANCE = new RMAPIConfigurationCache();
-  private RMAPIConfigurationCache() {
-    Long expirationTime = PropertyConfiguration.getInstance().getConfiguration().getLong("configuration.cache.expire");
-    this.cache =  CacheBuilder.newBuilder()
-      .expireAfterWrite(expirationTime, TimeUnit.SECONDS)
-      .build();
+  public RMAPIConfigurationCache(Vertx vertx) {
+    this.expirationTime = PropertyConfiguration.getInstance().getConfiguration().getLong("configuration.cache.expire");
+    this.vertx = vertx;
   }
 
-  public static RMAPIConfigurationCache getInstance(){
-    return INSTANCE;
-  }
-
-  public RMAPIConfiguration getValue(String tenant){
-    return cache.getIfPresent(tenant);
+  public RMAPIConfiguration getValue(String tenant) {
+    RMAPIConfigurationWrapper configurationWrapper = getLocalMap().computeIfPresent(tenant, (key, configuration) -> {
+      if (LocalDateTime.now().isBefore(configuration.getExpireTime())) {
+        return configuration;
+      } else {
+        return null;
+      }
+    });
+    if (configurationWrapper == null) {
+      return null;
+    } else {
+      return configurationWrapper.getRmapiConfiguration();
+    }
   }
 
   public void putValue(String tenant, RMAPIConfiguration configuration){
-    cache.put(tenant, configuration);
+    LocalDateTime expireTime = LocalDateTime.now().plus(expirationTime, ChronoUnit.SECONDS);
+    getLocalMap().put(tenant, new RMAPIConfigurationWrapper(expireTime, configuration));
   }
 
   public void invalidate(String tenant){
-    cache.invalidate(tenant);
+    getLocalMap().remove(tenant);
+  }
+
+  private LocalMap<String, RMAPIConfigurationWrapper> getLocalMap() {
+    return vertx.sharedData().getLocalMap("configurationMap");
+  }
+
+  @Value
+  private static class RMAPIConfigurationWrapper implements Shareable {
+    private final LocalDateTime expireTime;
+    private final RMAPIConfiguration rmapiConfiguration;
   }
 }

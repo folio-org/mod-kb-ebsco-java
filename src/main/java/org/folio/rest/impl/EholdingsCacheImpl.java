@@ -28,7 +28,7 @@ public class EholdingsCacheImpl implements EholdingsCache {
   @Override
   public void deleteEholdingsCache(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
-    RMAPIConfigurationCache.getInstance().invalidate(okapiHeaders.get(RestConstants.OKAPI_TENANT_HEADER));
+    new RMAPIConfigurationCache(vertxContext.owner()).invalidate(okapiHeaders.get(RestConstants.OKAPI_TENANT_HEADER));
     asyncResultHandler.handle(Future.succeededFuture(EholdingsCacheImpl.DeleteEholdingsCacheResponse.respond204()));
   }
 }

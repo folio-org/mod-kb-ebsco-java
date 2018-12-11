@@ -1,11 +1,11 @@
 package org.folio.rest.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfigurationServiceCache;
 import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -17,9 +17,12 @@ import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
 
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsStatusImpl implements EholdingsStatus {
 
@@ -47,10 +50,13 @@ public class EholdingsStatusImpl implements EholdingsStatus {
   @HandleValidationErrors
   public void getEholdingsStatus(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
+    MutableObject<OkapiData> okapiData = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> CompletableFuture.completedFuture(new OkapiData(okapiHeaders)))
-      .thenCompose(okapiData -> configurationService.retrieveConfiguration(okapiData))
-      .thenCompose(configuration -> configurationService.verifyCredentials(configuration, vertxContext))
+      .thenCompose(o -> {
+        okapiData.setValue(new OkapiData(okapiHeaders));
+        return configurationService.retrieveConfiguration(okapiData.getValue(), vertxContext);
+      })
+      .thenCompose(configuration -> configurationService.verifyCredentials(configuration, vertxContext, okapiData.getValue().getTenant()))
       .thenAccept(errors -> asyncResultHandler.handle(Future.succeededFuture(GetEholdingsStatusResponse.respond200WithApplicationVndApiJson(converter.convert(errors.isEmpty())))))
       .exceptionally(e -> {
         logger.error(INTERNAL_SERVER_ERROR, e);

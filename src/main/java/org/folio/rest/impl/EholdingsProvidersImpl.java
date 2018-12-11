@@ -92,7 +92,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     validateQuery(q);
 
     CompletableFuture.completedFuture(null)
-    .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+    .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
     .thenCompose(rmapiConfiguration -> {
       RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
         rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -130,7 +130,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     headerValidator.validate(okapiHeaders);
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -165,7 +165,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     VendorPut rmapiVendor = converter.convertToVendor(entity);
 
     CompletableFuture.completedFuture(null)
-        .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+        .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
         .thenCompose(rmapiConfiguration -> {
           RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(),
               rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -198,7 +198,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());

@@ -1,13 +1,19 @@
 package org.folio.config;
 
+import io.vertx.core.shareddata.Shareable;
+import lombok.Builder;
+import lombok.Value;
+
 /**
  * Contains the RM API connection details from mod-configuration.
  */
-public final class RMAPIConfiguration {
-  private String customerId;
-  private String apiKey;
-  private String url;
-  private Boolean configValid;
+@Value
+@Builder(toBuilder = true)
+public final class RMAPIConfiguration implements Shareable {
+  private final String customerId;
+  private final String apiKey;
+  private final String url;
+  private final Boolean configValid;
 
   public String getCustomerId() {
     return customerId;
@@ -23,27 +29,5 @@ public final class RMAPIConfiguration {
 
   public Boolean getConfigValid() {
     return configValid;
-  }
-
-  public void setCustomerId(String customerId) {
-    this.customerId = customerId;
-  }
-
-  public void setApiKey(String apiKey) {
-    this.apiKey = apiKey;
-  }
-
-  public void setUrl(String url) {
-    this.url = url;
-  }
-
-  public void setConfigValid(Boolean configValid) {
-    this.configValid = configValid;
-  }
-
-  @Override
-  public String toString() {
-    return "RMAPIConfiguration [customerId=" + customerId
-      + ", apiKey=" + apiKey + ", url=" + url + ']';
   }
 }
