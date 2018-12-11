@@ -7,6 +7,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.mutable.MutableObject;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
@@ -42,15 +50,6 @@ import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class RMAPIService {
 
@@ -96,8 +95,8 @@ public class RMAPIService {
   private <T> void handleRMAPIError(HttpClientResponse response, String query, Buffer body,
       CompletableFuture<T> future) {
 
-    LOG.error(String.format("%s status code = [%s] status message = [%s] query = [%s] body = [%s]",
-      INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString()));
+    LOG.error("{} status code = [{}] status message = [{}] query = [{}] body = [{}]",
+      INVALID_RMAPI_RESPONSE, response.statusCode(), response.statusMessage(), query, body.toString());
 
     String msgBody = mapVendorToProvider(body.toString());
 
@@ -130,7 +129,7 @@ public class RMAPIService {
 
     addRequestHeaders(request);
 
-    LOG.info("RMAPI Service GET absolute URL is:" + request.absoluteURI());
+    LOG.info("RMAPI Service GET absolute URL is: {}", request.absoluteURI());
 
     executeRequest(query, clazz, future, httpClient, request);
 
@@ -150,7 +149,7 @@ public class RMAPIService {
 
     addRequestHeaders(request);
 
-    LOG.info("RMAPI Service PUT absolute URL is:" + request.absoluteURI());
+    LOG.info("RMAPI Service PUT absolute URL is: {}", request.absoluteURI());
 
     request.handler(response -> response.bodyHandler(body -> {
       httpClient.close();
@@ -163,7 +162,7 @@ public class RMAPIService {
     })).exceptionHandler(future::completeExceptionally);
 
     String encodedBody = Json.encodePrettily(putData);
-    LOG.info("RMAPI Service PUT body is:" + encodedBody);
+    LOG.info("RMAPI Service PUT body is: {}", encodedBody);
     request.end(encodedBody);
 
     return future;
@@ -180,15 +179,15 @@ public class RMAPIService {
 
     addRequestHeaders(request);
 
-    LOG.info("RMAPI Service POST absolute URL is:" + request.absoluteURI());
+    LOG.info("RMAPI Service POST absolute URL is: {}", request.absoluteURI());
 
     executeRequest(query, clazz, future, httpClient, request);
 
     String encodedBody = Json.encodePrettily(postData);
-    LOG.info("RMAPI Service POST body is:" + encodedBody);
+    LOG.info("RMAPI Service POST body is: {}", encodedBody);
     request.end(encodedBody);
 
-      return future;
+    return future;
   }
 
   private <T> void executeRequest(String query, Class<T> clazz, CompletableFuture<T> future,
@@ -200,9 +199,8 @@ public class RMAPIService {
           T results = Json.decodeValue(body.toString(), clazz);
           future.complete(results);
         } catch (Exception e) {
-          LOG.error(
-              String.format("%s - Response = [%s] Target Type = [%s] Cause: [%s]",
-                JSON_RESPONSE_ERROR, body.toString(), clazz, e.getMessage()));
+          LOG.error("{} - Response = [{}] Target Type = [{}] Cause: [{}]",
+                JSON_RESPONSE_ERROR, body.toString(), clazz, e.getMessage());
             future.completeExceptionally(
               new RMAPIResultsProcessingException(String.format("%s for query = %s", JSON_RESPONSE_ERROR, query), e));
           }

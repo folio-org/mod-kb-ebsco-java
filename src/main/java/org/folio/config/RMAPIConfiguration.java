@@ -30,10 +30,4 @@ public final class RMAPIConfiguration implements Shareable {
   public Boolean getConfigValid() {
     return configValid;
   }
-
-  @Override
-  public String toString() {
-    return "RMAPIConfiguration [customerId=" + customerId
-      + ", apiKey=" + apiKey + ", url=" + url + ']';
-  }
 }

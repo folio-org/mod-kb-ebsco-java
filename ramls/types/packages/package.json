@@ -11,6 +11,14 @@
       "description": "The Data Schema",
       "$ref": "packageCollectionItem.json"
     },
+    "included": {
+      "type": "array",
+      "description": "List of included items",
+      "items": {
+        "type": "object",
+        "javaType" : "java.lang.Object"
+      }
+    },
     "jsonapi": {
       "type": "object",
       "description": "version of json api",

@@ -4,14 +4,13 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import org.folio.config.RMAPIConfiguration;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
-import lombok.Builder;
 
 @Component
 public class RMAPIConfigurationCache {
@@ -55,7 +54,6 @@ public class RMAPIConfigurationCache {
   }
 
   @lombok.Value
-  @Builder(toBuilder = true)
   private static class RMAPIConfigurationWrapper implements Shareable {
     private final LocalDateTime expireTime;
     private final RMAPIConfiguration rmapiConfiguration;
