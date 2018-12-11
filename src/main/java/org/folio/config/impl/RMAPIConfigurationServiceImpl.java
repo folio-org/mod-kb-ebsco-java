@@ -20,6 +20,7 @@ import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.validator.ValidatorUtil;
 import org.folio.rmapi.RMAPIService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.vertx.core.Context;
@@ -45,6 +46,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
   /**
    * @param configurationClientProvider object used to get http client for sending request to okapi
    */
+  @Autowired
   public RMAPIConfigurationServiceImpl(ConfigurationClientProvider configurationClientProvider) {
     this.configurationClientProvider = configurationClientProvider;
   }
