@@ -37,7 +37,6 @@
     <raml-module-builder.version>23.2.0</raml-module-builder.version>
     <vertx.version>3.5.4</vertx.version>
     <aspectj.version>1.9.1</aspectj.version>
-    <slf4j.version>1.7.25</slf4j.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
@@ -104,19 +103,14 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.4.9</version>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.9.1</version>
     </dependency>
     <!-- Test dependencies -->
     <dependency>
@@ -154,11 +148,6 @@
       <artifactId>jsonassert</artifactId>
       <version>1.5.0</version>
       <scope>test</scope>
-  </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcore</artifactId>
-      <version>4.4.9</version>
     </dependency>
   </dependencies>
 
@@ -382,8 +371,8 @@
             <configuration>
               <properties>
                 <property>
-                  <name>log4j.configuration</name>
-                  <value>${project.baseUri}src/main/resources/log4j.properties</value>
+                  <name>log4j.configurationFile</name>
+                  <value>${project.baseUri}src/main/resources/log4j2.xml</value>
                 </property>
               </properties>
             </configuration>
@@ -439,6 +428,11 @@
                https://issues.apache.org/jira/browse/SUREFIRE-1588
           -->
           <useSystemClassLoader>false</useSystemClassLoader>
+          <systemPropertyVariables>
+            <vertx.logger-delegate-factory-class-name>
+              io.vertx.core.logging.Log4j2LogDelegateFactory
+            </vertx.logger-delegate-factory-class-name>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
 
