@@ -7,10 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
+import org.folio.rest.jaxrs.model.HasManyRelationship;
+import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
-import org.folio.rest.jaxrs.model.MetaIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -34,9 +36,9 @@ public class PackagesConverter {
 
   private static final Map<String, ContentType> contentTypes = new HashMap<>();
   private static final PackageRelationship EMPTY_PACKAGES_RELATIONSHIP = new PackageRelationship()
-    .withProvider(new MetaIncluded()
+    .withProvider(new HasOneRelationship()
       .withMeta(new MetaDataIncluded().withIncluded(false)))
-    .withResources(new MetaIncluded()
+    .withResources(new HasManyRelationship()
       .withMeta(new MetaDataIncluded()
         .withIncluded(false)));
   private static final Map<ContentType, Integer> contentTypeToRMAPICode = new EnumMap<>(ContentType.class);

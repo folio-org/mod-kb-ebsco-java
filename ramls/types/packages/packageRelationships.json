@@ -9,12 +9,12 @@
     "resources": {
       "type": "object",
       "description": "Displays Resources Relationship if any",
-      "$ref": "../metaIncluded.json"
+      "$ref": "../hasManyRelationship.json"
     },
     "provider": {
       "type": "object",
       "description": "Displays Provider Relationship if any",
-      "$ref": "../metaIncluded.json"
+      "$ref": "../hasOneRelationship.json"
     }
   }
 }

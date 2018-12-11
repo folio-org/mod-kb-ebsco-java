@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Relationship for an array of objects",
+  "description": "Metadata of relationship that describes array of objects",
+  "javaType": "org.folio.rest.jaxrs.model.HasManyRelationship",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "relationship Data Information",
+      "items": {
+        "type": "object",
+        "$ref": "relationshipData.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Meta information",
+      "$ref": "included.json"
+    }
+  }
+}
