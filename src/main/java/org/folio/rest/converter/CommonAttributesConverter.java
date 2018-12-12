@@ -38,7 +38,7 @@ public class CommonAttributesConverter {
     IDENTIFIER_SUBTYPES.put(2, Subtype.ONLINE);
   }
 
-  private static final Map<String, org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit> EMBARGO_UNITS = new HashMap<>();
+  protected static final Map<String, org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit> EMBARGO_UNITS = new HashMap<>();
   static {
     EMBARGO_UNITS.put("Days", EmbargoUnit.DAYS);
     EMBARGO_UNITS.put("Weeks", EmbargoUnit.WEEKS);
