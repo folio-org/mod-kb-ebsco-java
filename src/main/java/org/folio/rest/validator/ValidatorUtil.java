@@ -131,7 +131,7 @@ public class ValidatorUtil {
   }
 
   public static void checkUrlFormat(String paramName, String value) {
-    if(!StringUtils.startsWith(value, "http://") && !StringUtils.startsWith(value, "https://")) {
+    if(!isUrlValid(value)) {
       throw new InputValidationException(
           String.format(INVALID_FIELD_FORMAT, paramName),
           String.format(MUST_BE_VALID_URL, paramName));
@@ -139,8 +139,7 @@ public class ValidatorUtil {
   }
 
   public static void checkIdentifierValid(String paramName, Identifier identifier) {
-    if(Objects.isNull(identifier.getId()) || identifier.getId().length() > 20 ){
-      throw new InputValidationException("INVALID_FIELD_FORMAT", paramName);
-    }
+    checkIsNotNull(paramName, identifier);
+    checkMaxLength(paramName, identifier.getId(), 20);
   }
 }

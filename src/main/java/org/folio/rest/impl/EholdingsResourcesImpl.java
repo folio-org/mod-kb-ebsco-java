@@ -182,7 +182,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
       })
       .thenCompose(resourceData -> {
         ResourcePut resourcePutBody;
-        boolean isTitleCustom = resourceData.getTitle().getIsTitleCustom().booleanValue();
+        boolean isTitleCustom = resourceData.getTitle().getIsTitleCustom();
         resourcePutBodyValidator.validate(entity, isTitleCustom);
         if (isTitleCustom) {
           resourcePutBody = converter.convertToRMAPICustomResourcePutRequest(entity);

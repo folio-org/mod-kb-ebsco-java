@@ -25,7 +25,7 @@ public class ResourcePutBodyValidator {
     }
     
     ResourceDataAttributes attributes = request.getData().getAttributes();
-    boolean isSelected = attributes.getIsSelected().booleanValue();
+    boolean isSelected = attributes.getIsSelected();
     String cvgStmt = attributes.getCoverageStatement();
 
     /**
@@ -37,32 +37,7 @@ public class ResourcePutBodyValidator {
        * for both managed and custom resources
        */
       if(isTitleCustom) {
-        String name = attributes.getName();
-        String pubType = attributes.getPublicationType() != null ? attributes.getPublicationType().value() : null;
-        String pubName = attributes.getPublisherName();
-        String edition = attributes.getEdition();
-        String description = attributes.getDescription();
-        String url = attributes.getUrl();
-        
-        ValidatorUtil.checkIsBlank("name", name);
-        ValidatorUtil.checkMaxLength("name", name, 400);
-        ValidatorUtil.checkIsBlank("publicationType", pubType);
-        if(!StringUtils.isBlank(pubName)) {
-          ValidatorUtil.checkMaxLength("publisherName", pubName, 250);
-        }
-        if(!StringUtils.isBlank(edition)) {
-          ValidatorUtil.checkMaxLength("edition", edition, 250);
-        }
-        if(!StringUtils.isBlank(description)) {
-          ValidatorUtil.checkMaxLength("description", description, 1500);
-        }
-        if(!StringUtils.isBlank(url)) {
-          ValidatorUtil.checkMaxLength("url", url, 600);
-          ValidatorUtil.checkUrlFormat("url", url);
-        }
-        if(Objects.nonNull(attributes.getIdentifiers())) {
-          attributes.getIdentifiers().forEach(identifier -> ValidatorUtil.checkIdentifierValid("identifier", identifier));
-        }
+        validateCustomResource(attributes);
       }
 
       /**
@@ -72,20 +47,49 @@ public class ResourcePutBodyValidator {
       if(!StringUtils.isBlank(cvgStmt)) {
         ValidatorUtil.checkMaxLength("coverageStatement", cvgStmt, 250);
       }
-      if(Objects.nonNull(attributes.getCustomCoverages())) {
-        attributes.getCustomCoverages().forEach(customCoverage -> {
-          ValidatorUtil.checkDateValid("beginCoverage", customCoverage.getBeginCoverage());
-          ValidatorUtil.checkDateValid("endCoverage", customCoverage.getEndCoverage());
-        });  
-      }
+      attributes.getCustomCoverages().forEach(customCoverage -> {
+        ValidatorUtil.checkDateValid("beginCoverage", customCoverage.getBeginCoverage());
+        ValidatorUtil.checkDateValid("endCoverage", customCoverage.getEndCoverage());
+      });  
     } else {
-      Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
-      EmbargoUnit embargoUnit = attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
-      List<Coverage> customCoverages = attributes.getCustomCoverages();
-      if (!isTitleCustom && (!Objects.isNull(cvgStmt) || !Objects.isNull(embargoUnit) || isHidden || (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()))) {
-        throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
-      }
+      validateManagedResourceIfNotSelected(attributes, isTitleCustom, cvgStmt);
     }
+  }
+
+  private void validateManagedResourceIfNotSelected(ResourceDataAttributes attributes, boolean isTitleCustom, String cvgStmt) {
+    Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
+    EmbargoUnit embargoUnit = attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
+    List<Coverage> customCoverages = attributes.getCustomCoverages();
+    if (!isTitleCustom && (!Objects.isNull(cvgStmt) || !Objects.isNull(embargoUnit) || (!Objects.isNull(isHidden) && isHidden) || (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()))) {
+      throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
+    }
+  }
+
+  private void validateCustomResource(ResourceDataAttributes attributes) {
+    String name = attributes.getName();
+    String pubType = attributes.getPublicationType() != null ? attributes.getPublicationType().value() : null;
+    String pubName = attributes.getPublisherName();
+    String edition = attributes.getEdition();
+    String description = attributes.getDescription();
+    String url = attributes.getUrl();
+    
+    ValidatorUtil.checkIsBlank("name", name);
+    ValidatorUtil.checkMaxLength("name", name, 400);
+    ValidatorUtil.checkIsBlank("publicationType", pubType);
+    if(!StringUtils.isBlank(pubName)) {
+      ValidatorUtil.checkMaxLength("publisherName", pubName, 250);
+    }
+    if(!StringUtils.isBlank(edition)) {
+      ValidatorUtil.checkMaxLength("edition", edition, 250);
+    }
+    if(!StringUtils.isBlank(description)) {
+      ValidatorUtil.checkMaxLength("description", description, 1500);
+    }
+    if(!StringUtils.isBlank(url)) {
+      ValidatorUtil.checkMaxLength("url", url, 600);
+      ValidatorUtil.checkUrlFormat("url", url);
+    }
+    attributes.getIdentifiers().forEach(identifier -> ValidatorUtil.checkIdentifierValid("identifier", identifier));
   }
 }
 
