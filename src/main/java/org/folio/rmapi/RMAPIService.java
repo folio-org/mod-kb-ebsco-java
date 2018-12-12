@@ -40,6 +40,7 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
 
@@ -77,6 +78,7 @@ public class RMAPIService {
 
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
+  private static final String INCLUDE_RESOURCES_VALUE = "resources";
 
   public static final String RESOURCE_ENDPOINT_FORMAT = "vendors/%s/packages/%s/titles/%s";
 
@@ -323,6 +325,21 @@ public class RMAPIService {
     return this.putRequest(constructURL(path), rmapiVendor)
       .thenCompose(vend -> this.retrieveProvider(id, ""))
       .thenCompose(vendorResult -> CompletableFuture.completedFuture(vendorResult.getVendor()));
+  }
+
+  public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects) {
+    CompletableFuture<PackageByIdData> packageFuture = retrievePackage(packageId);
+    CompletableFuture<Titles> titlesFuture;
+    if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
+      titlesFuture = retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(),
+        Sort.NAME, 1, 25);
+    } else {
+      titlesFuture = CompletableFuture.completedFuture(null);
+    }
+
+    return CompletableFuture.allOf(packageFuture, titlesFuture)
+      .thenCompose(o ->
+        CompletableFuture.completedFuture(new PackageResult(packageFuture.join(), titlesFuture.join())));
   }
 
   public CompletableFuture<PackageByIdData> retrievePackage(PackageId packageId) {

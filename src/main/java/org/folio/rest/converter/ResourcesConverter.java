@@ -21,8 +21,8 @@ public class ResourcesConverter {
   private PackagesConverter packagesConverter;
   public ResourcesConverter() {
     this.commonConverter = new CommonAttributesConverter();
-    this.vendorConverter = new VendorConverter();
-    this.packagesConverter = new PackagesConverter();
+    this.packagesConverter = new PackagesConverter(commonConverter, this);
+    this.vendorConverter = new VendorConverter(commonConverter, packagesConverter);
     this.titleConverter = new TitleConverter(commonConverter,this);
   }
 
