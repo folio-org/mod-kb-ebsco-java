@@ -49,41 +49,6 @@ public class PackagesTestData {
 
   }
 
-  public static Package getExpectedPackage() {
-    return new Package().withData(new PackageCollectionItem()
-      .withId("111111-3964")
-      .withType(PACKAGES_TYPE)
-      .withAttributes(new PackageDataAttributes()
-        .withName("carole and sams test")
-        .withPackageId(3964)
-        .withIsCustom(true)
-        .withProviderId(111111)
-        .withProviderName("APIDEV CORPORATE CUSTOMER")
-        .withTitleCount(6)
-        .withIsSelected(true)
-        .withSelectedCount(6)
-        .withPackageType("Custom")
-        .withContentType(ContentType.AGGREGATED_FULL_TEXT)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("")
-          .withEndCoverage(""))
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(false)
-          .withReason("")
-        )
-        .withProxy(new Proxy()
-          .withId("<n>")
-          .withInherited(true))
-        .withAllowKbToAddTitles(false)
-        .withPackageToken(new Token()
-          .withFactName("[[gale.customcode.infocust]]")
-          .withHelpText("help text")
-          .withValue("token value")
-          .withPrompt("res_id=info:sid/gale:")
-        )))
-      .withJsonapi(RestConstants.JSONAPI);
-  }
-
   public static PackageCollection getExpectedCollectionPackageItem() {
     List<PackageCollectionItem> collectionItems = new ArrayList<>();
     PackageCollectionItem collectionItem = new PackageCollectionItem()

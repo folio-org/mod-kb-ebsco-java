@@ -1,18 +1,17 @@
 package org.folio.rest.impl;
 
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
 import static org.folio.http.HttpConsts.JSON_API_TYPE;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
 import javax.ws.rs.core.Response;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfigurationServiceCache;
@@ -34,13 +33,25 @@ import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
-import org.folio.rest.validator.*;
+import org.folio.rest.validator.CustomPackagePutBodyValidator;
+import org.folio.rest.validator.HeaderValidator;
+import org.folio.rest.validator.PackageParametersValidator;
+import org.folio.rest.validator.PackagePutBodyValidator;
+import org.folio.rest.validator.PackagesPostBodyValidator;
+import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -181,16 +192,18 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void getEholdingsPackagesByPackageId(String packageId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
+    List<String> includedObjects = include != null ? Arrays.asList(include.split(",")) : Collections.emptyList();
     CompletableFuture.completedFuture(null)
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrievePackage(parsedPackageId);
+        return rmapiService.retrievePackage(parsedPackageId, includedObjects);
       })
-      .thenAccept(packageData ->
+      .thenAccept(result ->
         asyncResultHandler.handle(Future.succeededFuture(
-          GetEholdingsPackagesByPackageIdResponse.respond200WithApplicationVndApiJson(converter.convert(packageData)))))
+          GetEholdingsPackagesByPackageIdResponse.respond200WithApplicationVndApiJson(
+            converter.convert(result.getPackageData(), result.getTitles())))))
       .exceptionally(e -> {
         logger.error(INTERNAL_SERVER_ERROR, e);
         handleError(asyncResultHandler, e);
