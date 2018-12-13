@@ -1,9 +1,9 @@
 {
   "id": "${artifactId}-${version}",
-  "name": "EBSCO KB Broker",
+  "name": "kb-ebsco",
   "provides": [
     {
-      "id": "kb-ebsco-java",
+      "id": "eholdings",
       "version": "1.0",
       "handlers": [
         {
