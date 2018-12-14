@@ -1,6 +1,7 @@
 package org.folio.rest.converter;
 
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 
 import java.util.EnumMap;
@@ -34,6 +35,7 @@ import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.TokenInfo;
+import org.folio.rmapi.model.VendorById;
 
 public class PackagesConverter {
 
@@ -67,15 +69,13 @@ public class PackagesConverter {
   }
 
   private CommonAttributesConverter commonConverter;
+  private VendorConverter vendorConverter;
   private ResourcesConverter resourcesConverter;
 
   public PackagesConverter() {
-    this(new CommonAttributesConverter(), new ResourcesConverter());
-  }
-
-  public PackagesConverter(CommonAttributesConverter commonConverter, ResourcesConverter resourcesConverter) {
-    this.commonConverter = commonConverter;
-    this.resourcesConverter = resourcesConverter;
+    this.commonConverter = new CommonAttributesConverter();
+    this.vendorConverter = new VendorConverter(commonConverter, this);
+    this.resourcesConverter = new ResourcesConverter(commonConverter, vendorConverter, this);
   }
 
   public PackageCollection convert(Packages packages) {
@@ -89,10 +89,10 @@ public class PackagesConverter {
   }
 
   public Package convert(PackageByIdData packageByIdData) {
-    return convert(packageByIdData, null);
+    return convert(packageByIdData, null, null);
   }
 
-  public Package convert(PackageByIdData packageByIdData, Titles titles) {
+  public Package convert(PackageByIdData packageByIdData, VendorById vendor, Titles titles) {
     Package packageData = new Package()
       .withData(convertPackage(packageByIdData))
       .withJsonapi(RestConstants.JSONAPI);
@@ -116,6 +116,17 @@ public class PackagesConverter {
         .getIncluded()
           .addAll(resourcesConverter.convertFromRMAPIResourceList(titles).getData());
     }
+
+    if (vendor != null) {
+      packageData.getIncluded().add(vendorConverter.convertToProvider(vendor).getData());
+      packageData.getData()
+        .getRelationships()
+        .withProvider(new HasOneRelationship()
+          .withData(new RelationshipData()
+            .withId(String.valueOf(vendor.getVendorId()))
+            .withType(PROVIDERS_TYPE)));
+    }
+
     return packageData;
   }
 

@@ -9,19 +9,33 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
+import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+import static org.folio.util.TestUtil.getFile;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.readFile;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+import io.restassured.RestAssured;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Package;
@@ -32,33 +46,22 @@ import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
 import org.folio.util.TestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
-import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
-import io.restassured.RestAssured;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
 
   private static final String PACKAGE_STUB_FILE = "responses/rmapi/packages/get-package-by-id-response.json";
   private static final String CUSTOM_PACKAGE_STUB_FILE = "responses/rmapi/packages/get-custom-package-by-id-response.json";
-  private static final String CONFIGURATION_STUB_FILE = "responses/configuration/get-configuration.json";
+  private static final String CONFIGURATION_STUB_FILE = "responses/kb-ebsco/configuration/get-configuration.json";
   private static final String RESOURCES_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response.json";
   private static final String EXPECTED_PACKAGE_BY_ID_STUB_FILE = "responses/kb-ebsco/packages/expected-package-by-id.json";
-  public static final String EXPECTED_RESOURCES_STUB_FILE = "responses/resources/get-resources-by-package-id-response.json";
+  private static final String EXPECTED_RESOURCES_STUB_FILE = "responses/kb-ebsco/resources/get-resources-by-package-id-response.json";
+  private static final String VENDOR_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/vendors/get-vendor-by-id-for-package.json";
+
   private static final int STUB_PACKAGE_ID = 3964;
   private static final int STUB_VENDOR_ID = 111111;
-  private static final String RESOURCES_BY_PACKAGE_ID_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles";
+  private static final String PACKAGE_BY_ID_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
+  private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
   private static final String PACKAGED_UPDATED_STATE = "Packaged updated";
   private static final String GET_PACKAGE_SCENARIO = "Get package";
 
@@ -67,20 +70,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/packages/get-packages-response.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/packages.*"), stubResponseFile);
 
-    stubFor(
-      get(
-        new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/packages.*"),
-          true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile))));
-
-    PackageCollection packages = RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get("eholdings/packages?q=American&filter[type]=abstractandindex&count=5")
-      .then()
-      .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+    PackageCollection packages = getOkResponse("eholdings/packages?q=American&filter[type]=abstractandindex&count=5")
+      .as(PackageCollection.class);
 
     comparePackages(packages, PackagesTestData.getExpectedCollectionPackageItem());
   }
@@ -92,77 +85,45 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern vendorsPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true);
-    UrlPathPattern packagesByProviderIdPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), providerByCustIdStubResponseFile);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*")
+      , packagesStubResponseFile);
 
-    stubFor(
-      get(vendorsPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(providerByCustIdStubResponseFile))));
-
-    stubFor(
-      get(packagesByProviderIdPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(packagesStubResponseFile))));
-
-    PackageCollection packages = RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get("eholdings/packages?q=a&count=5&page=1&filter[custom]=true")
-      .then()
-      .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+    PackageCollection packages = getOkResponse("eholdings/packages?q=a&count=5&page=1&filter[custom]=true")
+      .as(PackageCollection.class);
 
     comparePackages(packages, PackagesTestData.getExpectedPackageCollection());
   }
 
   @Test
   public void shouldReturnPackagesOnGetById() throws IOException, URISyntaxException {
-    mockConfiguration("responses/configuration/get-configuration.json", getWiremockUrl());
+    mockConfiguration("responses/kb-ebsco/configuration/get-configuration.json", getWiremockUrl());
 
-    mockPackageById(CUSTOM_PACKAGE_STUB_FILE);
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
-    String packageData = RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
-      .then()
-      .statusCode(HttpStatus.SC_OK).extract().asString();
+    String packageData = getOkResponse("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID).asString();
 
     JSONAssert.assertEquals(readFile(EXPECTED_PACKAGE_BY_ID_STUB_FILE), packageData, false);
   }
 
   @Test
   public void shouldReturn404WhenPackageIsNotFoundOnRMAPI() throws IOException, URISyntaxException {
-    mockConfiguration("responses/configuration/get-configuration.json", getWiremockUrl());
+    mockConfiguration("responses/kb-ebsco/configuration/get-configuration.json", getWiremockUrl());
 
-    stubFor(
-      get(
-        new UrlPathPattern(new RegexPattern(
-          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID),
-          true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(HttpStatus.SC_NOT_FOUND)));
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), HttpStatus.SC_NOT_FOUND);
 
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
-      .then()
+    getResponse("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)
       .statusCode(HttpStatus.SC_NOT_FOUND);
   }
 
   @Test
   public void shouldReturnResourcesWhenIncludedFlagIsSetToResources() throws IOException, URISyntaxException {
-    mockConfiguration("responses/configuration/get-configuration.json", getWiremockUrl());
-    mockPackageById(CUSTOM_PACKAGE_STUB_FILE);
+    mockConfiguration("responses/kb-ebsco/configuration/get-configuration.json", getWiremockUrl());
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
-    Package packageData = RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "?include=resources")
-      .then()
-      .statusCode(HttpStatus.SC_OK).extract().as(Package.class);
+    Package packageData = getOkResponse("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "?include=resources")
+      .as(Package.class);
 
     ObjectMapper mapper = new ObjectMapper();
     Package expectedPackage = mapper.readValue(readFile(EXPECTED_PACKAGE_BY_ID_STUB_FILE), Package.class);
@@ -173,13 +134,24 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnProviderWhenIncludedFlagIsSetToProvider() throws IOException, URISyntaxException {
+    mockConfiguration("responses/kb-ebsco/configuration/get-configuration.json", getWiremockUrl());
+
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID),
+      VENDOR_BY_PACKAGE_ID_STUB_FILE);
+
+    String actual = getOkResponse("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "?include=provider")
+      .asString();
+
+    String expected = readFile("responses/kb-ebsco/packages/expected-package-by-id-with-provider.json");
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
   public void shouldReturn400WhenCountInvalid() {
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get("eholdings/packages?q=American&filter[type]=abstractandindex&count=500")
-      .then()
-      .statusCode(HttpStatus.SC_BAD_REQUEST);
+    getResponseWithStatus("eholdings/packages?q=American&filter[type]=abstractandindex&count=500",
+      HttpStatus.SC_BAD_REQUEST);
   }
 
   @Test
@@ -187,13 +159,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern packageUrlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+    UrlPathPattern packageUrlPattern = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
 
-    stubFor(
-      get(packageUrlPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(CUSTOM_PACKAGE_STUB_FILE))));
+    mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
     stubFor(
       put(packageUrlPattern)
@@ -231,7 +200,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .toBuilder().isCustom(false).build();
 
     stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false))
+      get(new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(mapper.writeValueAsString(packageData))));
 
@@ -249,7 +218,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
     ObjectMapper mapper = new ObjectMapper();
@@ -285,7 +254,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected-multiple-attributes.json"), true, true);
 
     ObjectMapper mapper = new ObjectMapper();
@@ -335,7 +304,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
 
     ObjectMapper mapper = new ObjectMapper();
@@ -380,10 +349,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturn422WhenPackageIsNotSelectedAndIsHiddenIsTrue() throws URISyntaxException, IOException {
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(PACKAGE_STUB_FILE))));
+    mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -397,19 +363,16 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenRMAPIReturns400() throws URISyntaxException, IOException {
-    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(
+    EqualToPattern urlPattern = new EqualToPattern(
       "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/"
-        + STUB_PACKAGE_ID), false);
+        + STUB_PACKAGE_ID);
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    stubFor(
-      get(urlPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(PACKAGE_STUB_FILE))));
+    mockGet(urlPattern, PACKAGE_STUB_FILE);
 
     stubFor(
-      put(urlPattern)
+      put(new UrlPathPattern(urlPattern, false))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(HttpStatus.SC_BAD_REQUEST)));
 
@@ -428,21 +391,16 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packagePostStubRequestFile = "requests/kb-ebsco/package/post-package-request.json";
     String packageCreatedIdStubResponseFile = "responses/rmapi/packages/post-package-response.json";
     String packageByIdStubResponseFile = "responses/rmapi/packages/get-package-by-id-response.json";
-    String packagePostStubResponseFile = "responses/kb-ebsco/package/get-created-package-response.json";
+    String packagePostStubResponseFile = "responses/kb-ebsco/packages/get-created-package-response.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern vendorsPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true);
     UrlPathPattern postPackagePattern = new UrlPathPattern(new EqualToPattern(
       "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"+ STUB_VENDOR_ID + "/packages"), false);
-    UrlPathPattern packagesByProviderIdPattern = new UrlPathPattern(new EqualToPattern(
-      "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), false);
 
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"contentType\" : 4,\n  \"packageName\" : \"TEST_NAME\",\n  \"customCoverage\" : {\n    \"beginCoverage\" : \"2017-12-23\",\n    \"endCoverage\" : \"2018-03-30\"\n  }\n}", false, true);
 
-    stubFor(
-      get(vendorsPattern)
-        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(providerStubResponseFile))));
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), providerStubResponseFile);
 
     stubFor(
       post(postPackagePattern)
@@ -451,11 +409,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
           .withBody(readFile(packageCreatedIdStubResponseFile))
           .withStatus(HttpStatus.SC_OK)));
 
-    stubFor(
-      get(packagesByProviderIdPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(packageByIdStubResponseFile))
-          .withStatus(HttpStatus.SC_OK)));
+    mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), packageByIdStubResponseFile);
 
     String actual = RestAssured.given()
       .spec(getRequestSpecification())
@@ -479,14 +433,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    UrlPathPattern vendorsPattern = new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true);
     UrlPathPattern postPackagePattern = new UrlPathPattern(new EqualToPattern(
       "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"+ STUB_VENDOR_ID + "/packages"), false);
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"contentType\" : 1,\n  \"packageName\" : \"TEST_NAME\",\n  \"customCoverage\" : {\n    \"beginCoverage\" : \"2017-12-23\",\n    \"endCoverage\" : \"2018-03-30\"\n  }\n}", false, true);
 
-    stubFor(
-      get(vendorsPattern)
-        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(providerStubResponseFile))));
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), providerStubResponseFile);
 
     stubFor(
       post(postPackagePattern)
@@ -519,19 +470,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
   }
 
-
   @Test
   public void shouldReturn404OnGetWithResourcesWhenPackageNotFound() throws IOException, URISyntaxException {
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    stubFor(
-      get(
-        new UrlPathPattern(new RegexPattern(
-          RESOURCES_BY_PACKAGE_ID_URL + ".*"),
-          true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(HttpStatus.SC_NOT_FOUND)));
+    mockGet(new RegexPattern(RESOURCES_BY_PACKAGE_ID_URL + ".*"), HttpStatus.SC_NOT_FOUND);
 
     JsonapiError error = getResponseWithStatus("/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources",
       HttpStatus.SC_NOT_FOUND).as(JsonapiError.class);
@@ -545,13 +488,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?count=500";
 
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(packageResourcesUrl)
-      .then()
-      .statusCode(HttpStatus.SC_BAD_REQUEST);
-
+    getResponse(packageResourcesUrl).statusCode(HttpStatus.SC_BAD_REQUEST);
   }
 
   @Test
@@ -559,11 +496,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/packages/get-package-resources-400-response.json";
 
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
+    
     stubFor(
       get(
         new UrlPathPattern(new RegexPattern(
-          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles.*" ),
+          PACKAGE_BY_ID_URL + "/titles.*" ),
           true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))
@@ -579,13 +516,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnUnauthorizedOnGetWithResourcesWhenRMAPI401() throws IOException, URISyntaxException {
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    stubFor(
-      get(
-        new UrlPathPattern(new RegexPattern(
-          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles.*" ),
-          true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(HttpStatus.SC_UNAUTHORIZED)));
+
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL + "/titles.*" ), HttpStatus.SC_UNAUTHORIZED);
 
     JsonapiError error = getResponseWithStatus("/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources",
       HttpStatus.SC_FORBIDDEN).as(JsonapiError.class);
@@ -594,13 +526,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnUnauthorizedOnGetWithResourcesWhenRMAPI403() throws IOException, URISyntaxException {
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    stubFor(
-      get(
-        new UrlPathPattern(new RegexPattern(
-          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles.*" ),
-          true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(HttpStatus.SC_FORBIDDEN)));
+
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL + "/titles.*" ), HttpStatus.SC_FORBIDDEN);
 
     JsonapiError error = getResponseWithStatus("/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources",
       HttpStatus.SC_FORBIDDEN).as(JsonapiError.class);
@@ -621,20 +548,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   private void mockResourceById(String stubFile) throws IOException, URISyntaxException {
-    UrlPathPattern packagesResourcesPattern = new UrlPathPattern(new RegexPattern(RESOURCES_BY_PACKAGE_ID_URL + ".*" ), true);
-    WireMock.stubFor(
-      WireMock.get(packagesResourcesPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubFile))));
-  }
-
-  private void mockPackageById(String stubFile) throws IOException, URISyntaxException {
-    stubFor(
-      get(
-        new UrlPathPattern(new RegexPattern(
-          "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubFile))));
+    mockGet(new RegexPattern(RESOURCES_BY_PACKAGE_ID_URL + ".*" ), stubFile);
   }
 
   private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage, String updatedPackage){

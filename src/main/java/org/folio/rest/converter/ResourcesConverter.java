@@ -1,34 +1,36 @@
 package org.folio.rest.converter;
 
-import org.folio.rest.jaxrs.model.*;
 import static java.util.stream.Collectors.toList;
+
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceRelationships;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.*;
 import org.folio.rmapi.model.CoverageDates;
+import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.EmbargoPeriod;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import org.folio.rmapi.model.VendorById;
 
 public class ResourcesConverter {
   private CommonAttributesConverter commonConverter;
@@ -36,18 +38,19 @@ public class ResourcesConverter {
   private TitleConverter titleConverter;
   private VendorConverter vendorConverter;
   private PackagesConverter packagesConverter;
+
   public ResourcesConverter() {
     this.commonConverter = new CommonAttributesConverter();
-    this.packagesConverter = new PackagesConverter(commonConverter, this);
+    this.packagesConverter = new PackagesConverter();
     this.vendorConverter = new VendorConverter(commonConverter, packagesConverter);
     this.titleConverter = new TitleConverter(commonConverter,this);
   }
 
-  public ResourcesConverter(CommonAttributesConverter commonConverter, TitleConverter titleConverter, VendorConverter vendorConverter, PackagesConverter packagesConverter) {
+  public ResourcesConverter(CommonAttributesConverter commonConverter, VendorConverter vendorConverter, PackagesConverter packagesConverter) {
     this.commonConverter = commonConverter;
-    this.titleConverter = titleConverter;
-    this.vendorConverter = vendorConverter;
     this.packagesConverter = packagesConverter;
+    this.vendorConverter = vendorConverter;
+    this.titleConverter = new TitleConverter(commonConverter, this);
   }
 
   public List<Resource> convertFromRMAPIResource(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
@@ -204,11 +207,11 @@ public class ResourcesConverter {
     if (attributes.getVisibilityData() != null) {
       builder.isHidden(attributes.getVisibilityData().getIsHidden());
     }
-    
+
     if (attributes.getCoverageStatement() != null) {
       builder.coverageStatement(attributes.getCoverageStatement());
     }
-    
+
     if (attributes.getCustomEmbargoPeriod() != null) {
       EmbargoUnit embargoUnit = attributes.getCustomEmbargoPeriod().getEmbargoUnit();
       EmbargoPeriod customEmbargo = EmbargoPeriod.builder()
@@ -221,10 +224,10 @@ public class ResourcesConverter {
     if (attributes.getCustomCoverages() != null && !attributes.getCustomCoverages().isEmpty()) {
       builder.customCoverageList(convertToRMAPICustomCoverageList(attributes.getCustomCoverages()));
     }
-    
+
     // For now, we do not have any attributes specific to managed resources to be mapped to RM API fields
     // but below, we set the same values as we conduct a GET for pubType and isPeerReviewed because otherwise RM API gives
-    // a bad request error if those values are set to null. All of the other fields are retained as is by RM API because they 
+    // a bad request error if those values are set to null. All of the other fields are retained as is by RM API because they
     // cannot be updated.
     builder.pubType(attributes.getPublicationType() != null ? attributes.getPublicationType().value() : null);
     builder.isPeerReviewed(attributes.getIsPeerReviewed());

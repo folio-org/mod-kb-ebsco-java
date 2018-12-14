@@ -193,6 +193,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
     List<String> includedObjects = include != null ? Arrays.asList(include.split(",")) : Collections.emptyList();
+
     CompletableFuture.completedFuture(null)
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
       .thenCompose(rmapiConfiguration -> {
@@ -203,7 +204,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenAccept(result ->
         asyncResultHandler.handle(Future.succeededFuture(
           GetEholdingsPackagesByPackageIdResponse.respond200WithApplicationVndApiJson(
-            converter.convert(result.getPackageData(), result.getTitles())))))
+            converter.convert(result.getPackageData(), result.getVendor(), result.getTitles())))))
       .exceptionally(e -> {
         logger.error(INTERNAL_SERVER_ERROR, e);
         handleError(asyncResultHandler, e);
