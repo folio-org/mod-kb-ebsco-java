@@ -9,6 +9,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Identifier;
 
 public class ValidatorUtil {
 
@@ -16,11 +17,12 @@ public class ValidatorUtil {
   private static final String MUST_BE_FALSE_FORMAT = "%s must be false";
   private static final String MUST_BE_NULL_FORMAT = "%s must be null or not specified";
   private static final String MUST_NOT_BE_NULL_FORMAT = "%s must not be null";
-  private static final String MUST_NOT_BE_EMPTY_FORMAT = "%s must be empty";
   private static final String MUST_BE_EMPTY_FORMAT = "%s must be empty";
+  private static final String MUST_NOT_BE_EMPTY_FORMAT = "%s must not be empty";
   private static final String MUST_BE_SHORTER_THAN_N_CHARACTERS = "%s is too long (maximum is %s characters)";
   private static final String MUST_BE_VALID_DATE = "%s has invalid format. Should be YYYY-MM-DD";
   private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+  private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
 
   private ValidatorUtil() {}
@@ -35,6 +37,22 @@ public class ValidatorUtil {
 
   public static void checkIsEmpty(String paramName, String value) {
     if (!StringUtils.isEmpty(value)) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_BE_EMPTY_FORMAT, paramName));
+    }
+  }
+  
+  public static void checkIsBlank(String paramName, String value) {
+    if (StringUtils.isBlank(value)) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_NOT_BE_EMPTY_FORMAT, paramName));
+    }
+  }
+  
+  public static void checkIsNotBlank(String paramName, String value) {
+    if (!StringUtils.isBlank(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_EMPTY_FORMAT, paramName));
@@ -110,5 +128,18 @@ public class ValidatorUtil {
     } catch (MalformedURLException e) {
       return false;
     }
+  }
+
+  public static void checkUrlFormat(String paramName, String value) {
+    if(!isUrlValid(value)) {
+      throw new InputValidationException(
+          String.format(INVALID_FIELD_FORMAT, paramName),
+          String.format(MUST_BE_VALID_URL, paramName));
+    }
+  }
+
+  public static void checkIdentifierValid(String paramName, Identifier identifier) {
+    checkIsNotNull(paramName, identifier);
+    checkMaxLength(paramName, identifier.getId(), 20);
   }
 }

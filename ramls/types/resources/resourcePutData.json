@@ -6,6 +6,12 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "id": {
+      "type": "string",
+      "readonly": true,
+      "description": "Unique resource id",
+      "example": "123356-3157038-394579"
+    },
     "type": {
       "description": "Data type",
       "type": "string",

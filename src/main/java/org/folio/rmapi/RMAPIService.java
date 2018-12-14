@@ -39,6 +39,7 @@ import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.Proxy;
 import org.folio.rmapi.model.ResourceSelectedPayload;
+import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.TitleCreated;
@@ -48,6 +49,7 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
 
@@ -76,6 +78,7 @@ public class RMAPIService {
 
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
+  private static final String INCLUDE_RESOURCES_VALUE = "resources";
 
   public static final String RESOURCE_ENDPOINT_FORMAT = "vendors/%s/packages/%s/titles/%s";
 
@@ -323,6 +326,21 @@ public class RMAPIService {
       .thenCompose(vendorResult -> CompletableFuture.completedFuture(vendorResult.getVendor()));
   }
 
+  public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects) {
+    CompletableFuture<PackageByIdData> packageFuture = retrievePackage(packageId);
+    CompletableFuture<Titles> titlesFuture;
+    if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
+      titlesFuture = retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(),
+        Sort.NAME, 1, 25);
+    } else {
+      titlesFuture = CompletableFuture.completedFuture(null);
+    }
+
+    return CompletableFuture.allOf(packageFuture, titlesFuture)
+      .thenCompose(o ->
+        CompletableFuture.completedFuture(new PackageResult(packageFuture.join(), titlesFuture.join())));
+  }
+
   public CompletableFuture<PackageByIdData> retrievePackage(PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart();
     return this.getRequest(constructURL(path), PackageByIdData.class);
@@ -382,17 +400,16 @@ public class RMAPIService {
 
     final String path = String.format(RESOURCE_ENDPOINT_FORMAT, resourceId.getProviderIdPart(), resourceId.getPackageIdPart(), resourceId.getTitleIdPart());
     titleFuture = this.getRequest(constructURL(path), Title.class);
-    if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
+    if (Objects.nonNull(includes) && includes.contains(INCLUDE_PROVIDER_VALUE)) {
       vendorFuture = retrieveProvider(resourceId.getProviderIdPart(), "");
     } else {
       vendorFuture = CompletableFuture.completedFuture(new VendorResult(null, null));
     }
-    if (includes.contains(INCLUDE_PACKAGE_VALUE)) {
+    if (Objects.nonNull(includes) && includes.contains(INCLUDE_PACKAGE_VALUE)) {
       packageFuture = retrievePackage(new PackageId(resourceId.getProviderIdPart(), resourceId.getPackageIdPart()));
     } else {
       packageFuture = CompletableFuture.completedFuture(null);
     }
-
 
     return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
@@ -445,5 +462,10 @@ public class RMAPIService {
 
     LOG.info("constructurl - path=" + fullPath);
     return fullPath;
+  }
+
+  public CompletionStage<Void> updateResource(ResourceId parsedResourceId, ResourcePut resourcePutBody) {
+    final String path = VENDORS_PATH + '/' + parsedResourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + parsedResourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + parsedResourceId.getTitleIdPart();
+    return this.putRequest(constructURL(path), resourcePutBody);
   }
 }

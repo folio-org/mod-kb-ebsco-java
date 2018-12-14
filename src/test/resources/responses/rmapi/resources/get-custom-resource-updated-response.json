@@ -1,0 +1,69 @@
+{
+  "titleId": 19412030,
+  "titleName": "sd-test-java-again",
+  "publisherName": "Not Empty",
+  "identifiersList": [
+    {
+      "id": "978-1-280-71298-2",
+      "source": "ResourceIdentifier",
+      "subtype": 2,
+      "type": 1
+    }
+  ],
+  "subjectsList": [],
+  "isTitleCustom": true,
+  "pubType": "Book",
+  "customerResourcesList": [
+    {
+      "titleId": 19412030,
+      "packageId": 3157070,
+      "packageName": "Andrii custom package ",
+      "packageType": "Custom",
+      "proxy": {
+        "id": "Proxy-ID-234",
+        "inherited": false
+      },
+      "isPackageCustom": true,
+      "vendorId": 123356,
+      "vendorName": "API DEV GOVERNMENT CUSTOMER",
+      "locationId": 43006476,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [],
+      "customCoverageList": [
+        {
+          "beginCoverage": "2018-01-10",
+          "endCoverage": "2018-01-11"
+        }
+      ],
+      "coverageStatement": "My test statement",
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": "Weeks",
+        "embargoValue": 30
+      },
+      "url": "https://hello",
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    }
+  ],
+  "description": "test description",
+  "edition": "test edition",
+  "isPeerReviewed": true,
+  "contributorsList": [
+    {
+      "type": "author",
+      "contributor": "Rappaport, Helen"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 package org.folio.rest.converter;
 
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.PackageRelationship;
 import org.folio.rest.jaxrs.model.Proxy;
+import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.CoverageDates;
@@ -30,6 +32,7 @@ import org.folio.rmapi.model.PackageData;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.Packages;
+import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.TokenInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -68,6 +71,8 @@ public class PackagesConverter {
 
   @Autowired
   private CommonAttributesConverter commonConverter;
+  @Autowired
+  private ResourcesConverter resourcesConverter;
 
   public PackageCollection convert(Packages packages) {
     List<PackageCollectionItem> packageList = packages.getPackagesList().stream()
@@ -80,17 +85,34 @@ public class PackagesConverter {
   }
 
   public Package convert(PackageByIdData packageByIdData) {
-    PackageCollectionItem packageCollectionItem = convertPackage(packageByIdData);
-    packageCollectionItem
-      .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId())
+    return convert(packageByIdData, null);
+  }
+
+  public Package convert(PackageByIdData packageByIdData, Titles titles) {
+    Package packageData = new Package()
+      .withData(convertPackage(packageByIdData))
+      .withJsonapi(RestConstants.JSONAPI);
+
+    packageData.getData()
       .withRelationships(EMPTY_PACKAGES_RELATIONSHIP)
       .withType(PACKAGES_TYPE)
       .getAttributes()
-      .withProxy(convertToProxy(packageByIdData.getProxy()))
-      .withPackageToken(commonConverter.convertToken(packageByIdData.getPackageToken()));
-    return new Package()
-      .withData(packageCollectionItem)
-      .withJsonapi(RestConstants.JSONAPI);
+        .withProxy(convertToProxy(packageByIdData.getProxy()))
+        .withPackageToken(commonConverter.convertToken(packageByIdData.getPackageToken()));
+
+    if (titles != null) {
+      packageData.getData()
+        .withRelationships(new PackageRelationship()
+          .withResources(new HasManyRelationship()
+            .withMeta(new MetaDataIncluded()
+              .withIncluded(true))
+            .withData(convertResourcesRelationship(packageByIdData, titles))));
+
+      packageData
+        .getIncluded()
+          .addAll(resourcesConverter.convertFromRMAPIResourceList(titles).getData());
+    }
+    return packageData;
   }
 
   private PackageCollectionItem convertPackage(PackageData packageData) {
@@ -198,4 +220,12 @@ public class PackagesConverter {
     return postRequest.build();
   }
 
+  private List<RelationshipData> convertResourcesRelationship(PackageByIdData packageByIdData, Titles titles) {
+    return titles.getTitleList().stream()
+      .map(title ->
+        new RelationshipData()
+          .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId() + "-" + title.getTitleId())
+          .withType(RESOURCES_TYPE))
+      .collect(Collectors.toList());
+  }
 }

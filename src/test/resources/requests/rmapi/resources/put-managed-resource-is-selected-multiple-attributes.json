@@ -1,0 +1,23 @@
+{
+  "isSelected": true,
+  "isHidden": false,
+  "coverageStatement": "test coverage statement",
+  "customEmbargoPeriod": {
+    "embargoUnit": "Years",
+    "embargoValue": 10
+  },
+  "titleName": null,
+  "pubType": "Book",
+  "publisherName": null,
+  "isPeerReviewed": false,
+  "description": null,
+  "edition": null,
+  "proxy": {
+    "id": "Test-proxy-id",
+    "inherited": false
+  },
+  "url": null,
+  "contributorsList": null,
+  "identifiersList": null,
+  "customCoverageList": null
+}
