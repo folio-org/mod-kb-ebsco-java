@@ -10,6 +10,7 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import static org.folio.util.TestUtil.readFile;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static org.folio.util.TestUtil.getFile;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -24,6 +25,7 @@ import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rmapi.model.PackageData;
 import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -568,7 +570,65 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       .then()
       .statusCode(422);
   }
+  
+  @Test
+  public void shouldSendDeleteRequestForResourceAssociatedWithCustomPackage() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
+    UrlPathPattern resourceUrlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID), false);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+
+    stubFor(
+      get(resourceUrlPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile))));
+
+    stubFor(
+      put(resourceUrlPattern)
+        .withRequestBody(putBodyPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(HttpStatus.SC_NO_CONTENT)));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_NO_CONTENT);
+
+    verify(1, putRequestedFor(resourceUrlPattern)
+      .withRequestBody(putBodyPattern));
+  }
+
+  @Test
+  public void shouldReturn400WhenResourceIdIsInvalid() {
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete("eholdings/resources/abc-def")
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void shouldReturn400WhenTryingToDeleteResourceAssociatedWithManagedPackage() throws URISyntaxException, IOException {
+    String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    UrlPathPattern resourceUrlPattern = new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_MANAGED_VENDOR_ID + "/packages/" + STUB_MANAGED_PACKAGE_ID + "/titles/" + STUB_MANAGED_TITLE_ID), false);
+    stubFor(
+        get(resourceUrlPattern)
+          .willReturn(new ResponseDefinitionBuilder()
+            .withBody(readFile(stubResponseFile))));
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete("eholdings/resources/" + STUB_MANAGED_RESOURCE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST);
+  }
 
   private void mockPackageResources(String stubPackageResourcesFile) throws IOException, URISyntaxException {
     UrlPathPattern packagesResourcesPattern = new UrlPathPattern(

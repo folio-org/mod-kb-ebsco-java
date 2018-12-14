@@ -53,6 +53,8 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   private static final String RESOURCE_NOT_FOUND_MESSAGE = "Resource not found";
   private static final int MAX_TITLE_COUNT = 100;
   private static final String PUT_RESOURCE_ERROR_MESSAGE = "Failed to update package";
+  private static final String RESOURCE_CANNOT_BE_DELETED_TITLE = "Resource cannot be deleted";
+  private static final String RESOURCE_CANNOT_BE_DELETED_DETAIL = "Resource is not in a custom package";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsResourcesImpl.class);
 
@@ -168,6 +170,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   }
 
   @Override
+  @HandleValidationErrors
   public void putEholdingsResourcesByResourceId(String resourceId, String contentType, ResourcePutRequest entity,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
@@ -212,9 +215,36 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   }
 
   @Override
+  @HandleValidationErrors
   public void deleteEholdingsResourcesByResourceId(String resourceId, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(DeleteEholdingsResourcesByResourceIdResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+    headerValidator.validate(okapiHeaders);
+    ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
+    MutableObject<RMAPIService> rmapiService = new MutableObject<>();
+    CompletableFuture.completedFuture(null)
+      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(rmapiConfiguration -> {
+        rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
+          rmapiConfiguration.getUrl(), vertxContext.owner()));
+        return rmapiService.getValue().retrieveResource(parsedResourceId, null);
+      })
+      .thenCompose(resourceData -> {
+        if (!resourceData.getTitle().getCustomerResourcesList().get(0).getIsPackageCustom()) {
+          throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
+        }
+        return rmapiService.getValue().deleteResource(parsedResourceId);
+      })
+      .thenAccept(o -> asyncResultHandler.handle(Future.succeededFuture(
+        EholdingsResources.DeleteEholdingsResourcesByResourceIdResponse.respond204())))
+      .exceptionally(e -> {
+        logger.error(INTERNAL_SERVER_ERROR, e);
+        new ErrorHandler()
+          .addRmApiMapper()
+          .addInputValidationMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 
   private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, RMAPIService rmapiService) {

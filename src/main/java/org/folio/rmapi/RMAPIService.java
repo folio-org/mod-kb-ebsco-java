@@ -38,6 +38,7 @@ import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.Proxy;
+import org.folio.rmapi.model.ResourceDeletePayload;
 import org.folio.rmapi.model.ResourceSelectedPayload;
 import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.RootProxyCustomLabels;
@@ -467,5 +468,10 @@ public class RMAPIService {
   public CompletionStage<Void> updateResource(ResourceId parsedResourceId, ResourcePut resourcePutBody) {
     final String path = VENDORS_PATH + '/' + parsedResourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + parsedResourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + parsedResourceId.getTitleIdPart();
     return this.putRequest(constructURL(path), resourcePutBody);
+  }
+
+  public CompletableFuture<Void> deleteResource(ResourceId parsedResourceId) {
+    final String path = VENDORS_PATH + '/' + parsedResourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + parsedResourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + parsedResourceId.getTitleIdPart();
+    return this.putRequest(constructURL(path), new ResourceDeletePayload(false));
   }
 }
