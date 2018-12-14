@@ -23,9 +23,8 @@ public class EholdingsCacheImpl implements EholdingsCache {
   @Autowired
   private RMAPIConfigurationCache rmapiConfigurationCache;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsCacheImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsCacheImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override

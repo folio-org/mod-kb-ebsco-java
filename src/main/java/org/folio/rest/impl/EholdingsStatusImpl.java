@@ -35,9 +35,8 @@ public class EholdingsStatusImpl implements EholdingsStatus {
   @Autowired
   private StatusConverter converter;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsStatusImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsStatusImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   public EholdingsStatusImpl(RMAPIConfigurationService configurationService, HeaderValidator headerValidator, StatusConverter converter) {

@@ -60,8 +60,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private TitlesPostBodyValidator titlesPostBodyValidator;
 
   @SuppressWarnings("squid:S1172")
-  public EholdingsTitlesImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsTitlesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override

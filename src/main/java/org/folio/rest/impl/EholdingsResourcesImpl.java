@@ -65,9 +65,8 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   @Autowired
   private ResourcePostValidator postValidator;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsResourcesImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsResourcesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override

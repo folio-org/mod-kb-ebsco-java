@@ -77,9 +77,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   private IdParser idParser;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsPackagesImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsPackagesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override

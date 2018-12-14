@@ -39,9 +39,8 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   @Autowired
   private HeaderValidator headerValidator;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsConfigurationImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsConfigurationImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
