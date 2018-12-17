@@ -11,5 +11,8 @@
       "description": "Data object of provider put request",
       "$ref": "providerPutData.json"
     }
-  }
+  },
+  "required": [
+    "data"
+  ]
 }
