@@ -32,12 +32,6 @@ public class TitleConverter {
 
   private ResourcesConverter resourcesConverter;
 
-  private static final Relationships EMPTY_RESOURCES_RELATIONSHIP = new Relationships()
-    .withResources(new Resources()
-      .withMeta(new MetaDataIncluded()
-        .withIncluded(false))
-      .withData(null));
-
   public TitleConverter() {
     this(new CommonAttributesConverter(), new ResourcesConverter());
   }
@@ -75,7 +69,7 @@ public class TitleConverter {
           .withDescription(rmapiTitle.getDescription())
           .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
         )
-        .withRelationships(EMPTY_RESOURCES_RELATIONSHIP)
+        .withRelationships(createEmptyResourcesRelationships())
       )
       .withIncluded(null)
       .withJsonapi(RestConstants.JSONAPI);
@@ -103,7 +97,7 @@ public class TitleConverter {
   private org.folio.rest.jaxrs.model.Titles convertTitle(Title title) {
     return new org.folio.rest.jaxrs.model.Titles()
       .withId(String.valueOf(title.getTitleId()))
-      .withRelationships(EMPTY_RESOURCES_RELATIONSHIP)
+      .withRelationships(createEmptyResourcesRelationships())
       .withType(TITLES_TYPE)
       .withAttributes(new TitleListDataAttributes()
         .withName(title.getTitleName())
@@ -135,5 +129,13 @@ public class TitleConverter {
     }
 
     return titlePost.build();
+  }
+
+  private static Relationships createEmptyResourcesRelationships() {
+    return new Relationships()
+      .withResources(new Resources()
+        .withMeta(new MetaDataIncluded()
+          .withIncluded(false))
+        .withData(null));
   }
 }
