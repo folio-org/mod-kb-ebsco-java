@@ -21,5 +21,9 @@
       "description": "Provider Data Attributes",
       "$ref": "providerDataAttributes.json"
     }
-  }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
 }

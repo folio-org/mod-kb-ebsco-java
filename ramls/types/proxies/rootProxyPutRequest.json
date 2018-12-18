@@ -11,5 +11,8 @@
       "description": "Data object of root proxy put request",
       "$ref": "rootProxyPutData.json"
     }
-  }
+  },
+  "required": [
+    "data"
+  ]
 }
