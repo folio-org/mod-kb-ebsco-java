@@ -9,6 +9,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -16,18 +17,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
-import org.folio.config.cache.RMAPIConfigurationCache;
-import org.folio.http.HttpConsts;
-import org.folio.rest.RestVerticle;
-import org.folio.rest.tools.utils.NetworkUtils;
-import org.folio.rest.util.RestConstants;
-import org.folio.util.TestUtil;
+import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+
+import org.folio.config.cache.RMAPIConfigurationCache;
+import org.folio.http.HttpConsts;
+import org.folio.rest.RestVerticle;
+import org.folio.rest.tools.utils.NetworkUtils;
+import org.folio.rest.util.RestConstants;
+import org.folio.util.TestUtil;
 
 /**
  * Base test class for tests that use wiremock and vertx http servers,
@@ -39,7 +42,7 @@ public abstract class WireMockTestBase {
 
   protected static final Header CONTENT_TYPE_HEADER = new Header(HttpConsts.CONTENT_TYPE_HEADER, HttpConsts.JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
-  protected static final String CONFIGURATION_STUB_FILE = "responses/configuration/get-configuration.json";
+  protected static final String CONFIGURATION_STUB_FILE = "responses/kb-ebsco/configuration/get-configuration.json";
   protected static int port;
   protected static String host;
   protected static final Vertx vertx = Vertx.vertx();
@@ -92,6 +95,18 @@ public abstract class WireMockTestBase {
     return host + ":" + userMockServer.port();
   }
 
+  protected ValidatableResponse getResponse(String resourcePath) {
+    return RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(resourcePath)
+      .then();
+  }
+
+  protected ExtractableResponse<Response> getOkResponse(String resourcePath) {
+    return getResponseWithStatus(resourcePath, HttpStatus.SC_OK);
+  }
+  
   protected ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
     return RestAssured.given()
       .spec(getRequestSpecification())
