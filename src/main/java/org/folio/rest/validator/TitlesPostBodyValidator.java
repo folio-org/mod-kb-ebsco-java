@@ -35,7 +35,7 @@ public class TitlesPostBodyValidator {
 
     ValidatorUtil.checkMaxLength("Publisher name", entity.getData().getAttributes().getPublisherName(), 250);
     ValidatorUtil.checkMaxLength("Edition", entity.getData().getAttributes().getEdition(), 250);
-    ValidatorUtil.checkMaxLength("Description", entity.getData().getAttributes().getDescription(), 1500);
+    ValidatorUtil.checkMaxLength("Description", entity.getData().getAttributes().getDescription(), 400);
 
     ValidatorUtil.checkIsNotNull("Publication Type", entity.getData().getAttributes().getPublicationType());
 

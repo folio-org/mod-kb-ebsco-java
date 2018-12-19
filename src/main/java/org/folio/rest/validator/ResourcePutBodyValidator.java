@@ -11,28 +11,28 @@ import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 
 public class ResourcePutBodyValidator {
-  
+
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
   private static final String INVALID_IS_SELECTED_TITLE = "Resource cannot be updated unless added to holdings";
   private static final String INVALID_IS_SELECTED_DETAILS = "Resource must be added to holdings to be able to update";
-  
+
   public void validate(ResourcePutRequest request, boolean isTitleCustom) {
     if (request == null ||
       request.getData() == null ||
       request.getData().getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
-    
+
     ResourceDataAttributes attributes = request.getData().getAttributes();
     boolean isSelected = attributes.getIsSelected();
     String cvgStmt = attributes.getCoverageStatement();
 
-    /**
+    /*
      * Updates cannot be made to a resource unless it is selected
      */
     if(isSelected) {
-      /**
+      /*
        * Following fields can be updated only for a custom resource although UI sends complete payload
        * for both managed and custom resources
        */
@@ -40,7 +40,7 @@ public class ResourcePutBodyValidator {
         validateCustomResource(attributes);
       }
 
-      /**
+      /*
        * Following fields can be updated only for a managed resource although UI sends complete payload
        * for both managed and custom resources
        */
@@ -50,7 +50,7 @@ public class ResourcePutBodyValidator {
       attributes.getCustomCoverages().forEach(customCoverage -> {
         ValidatorUtil.checkDateValid("beginCoverage", customCoverage.getBeginCoverage());
         ValidatorUtil.checkDateValid("endCoverage", customCoverage.getEndCoverage());
-      });  
+      });
     } else {
       validateManagedResourceIfNotSelected(attributes, isTitleCustom, cvgStmt);
     }
@@ -72,7 +72,7 @@ public class ResourcePutBodyValidator {
     String edition = attributes.getEdition();
     String description = attributes.getDescription();
     String url = attributes.getUrl();
-    
+
     ValidatorUtil.checkIsBlank("name", name);
     ValidatorUtil.checkMaxLength("name", name, 400);
     ValidatorUtil.checkIsBlank("publicationType", pubType);
@@ -83,7 +83,7 @@ public class ResourcePutBodyValidator {
       ValidatorUtil.checkMaxLength("edition", edition, 250);
     }
     if(!StringUtils.isBlank(description)) {
-      ValidatorUtil.checkMaxLength("description", description, 1500);
+      ValidatorUtil.checkMaxLength("description", description, 400);
     }
     if(!StringUtils.isBlank(url)) {
       ValidatorUtil.checkMaxLength("url", url, 600);
