@@ -21,10 +21,5 @@
       "description": "Base URL of KB to be used by this customer",
       "example": "https://api.ebsco.io"
     }
-  },
-  "required": [
-    "customerId",
-    "apiKey",
-    "rmapiBaseUrl"
-  ]
+  }
 }
