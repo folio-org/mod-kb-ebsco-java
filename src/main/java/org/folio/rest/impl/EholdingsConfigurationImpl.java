@@ -21,6 +21,7 @@ import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.validator.ConfigurationPutBodyValidator;
 import org.folio.rest.validator.HeaderValidator;
 
 import javax.ws.rs.core.Response;
@@ -35,18 +36,20 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   private RMAPIConfigurationService configurationService;
   private RMAPIConfigurationConverter converter;
   private HeaderValidator headerValidator;
+  private ConfigurationPutBodyValidator bodyValidator;
 
   public EholdingsConfigurationImpl() {
     this(
          new RMAPIConfigurationServiceCache(
            new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-         new RMAPIConfigurationConverter(), new HeaderValidator());
+         new RMAPIConfigurationConverter(), new HeaderValidator(), new ConfigurationPutBodyValidator());
   }
 
-  public EholdingsConfigurationImpl(RMAPIConfigurationService configurationService, RMAPIConfigurationConverter converter, HeaderValidator headerValidator) {
+  public EholdingsConfigurationImpl(RMAPIConfigurationService configurationService, RMAPIConfigurationConverter converter, HeaderValidator headerValidator, ConfigurationPutBodyValidator bodyValidator) {
     this.configurationService = configurationService;
     this.converter = converter;
     this.headerValidator = headerValidator;
+    this.bodyValidator = bodyValidator;
   }
 
   @Override
@@ -72,6 +75,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   @HandleValidationErrors
   public void putEholdingsConfiguration(String contentType, ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
+    bodyValidator.validate(entity);
     MutableObject<OkapiData> okapiData = new MutableObject<>();
     RMAPIConfiguration rmapiConfiguration = converter.convertToRMAPIConfiguration(entity);
     CompletableFuture.completedFuture(null)
