@@ -1,6 +1,7 @@
 package org.folio.rest.converter;
 
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 
 import java.util.EnumMap;
@@ -34,6 +35,7 @@ import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.TokenInfo;
+import org.folio.rmapi.model.VendorById;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,12 +43,7 @@ import org.springframework.stereotype.Component;
 public class PackagesConverter {
 
   private static final Map<String, ContentType> contentTypes = new HashMap<>();
-  private static final PackageRelationship EMPTY_PACKAGES_RELATIONSHIP = new PackageRelationship()
-    .withProvider(new HasOneRelationship()
-      .withMeta(new MetaDataIncluded().withIncluded(false)))
-    .withResources(new HasManyRelationship()
-      .withMeta(new MetaDataIncluded()
-        .withIncluded(false)));
+
   private static final Map<ContentType, Integer> contentTypeToRMAPICode = new EnumMap<>(ContentType.class);
 
   static {
@@ -72,6 +69,8 @@ public class PackagesConverter {
   @Autowired
   private CommonAttributesConverter commonConverter;
   @Autowired
+  private VendorConverter vendorConverter;
+  @Autowired
   private ResourcesConverter resourcesConverter;
 
   public PackageCollection convert(Packages packages) {
@@ -85,16 +84,16 @@ public class PackagesConverter {
   }
 
   public Package convert(PackageByIdData packageByIdData) {
-    return convert(packageByIdData, null);
+    return convert(packageByIdData, null, null);
   }
 
-  public Package convert(PackageByIdData packageByIdData, Titles titles) {
+  public Package convert(PackageByIdData packageByIdData, VendorById vendor, Titles titles) {
     Package packageData = new Package()
       .withData(convertPackage(packageByIdData))
       .withJsonapi(RestConstants.JSONAPI);
 
     packageData.getData()
-      .withRelationships(EMPTY_PACKAGES_RELATIONSHIP)
+      .withRelationships(createEmptyPackageRelationship())
       .withType(PACKAGES_TYPE)
       .getAttributes()
         .withProxy(convertToProxy(packageByIdData.getProxy()))
@@ -112,6 +111,17 @@ public class PackagesConverter {
         .getIncluded()
           .addAll(resourcesConverter.convertFromRMAPIResourceList(titles).getData());
     }
+
+    if (vendor != null) {
+      packageData.getIncluded().add(vendorConverter.convertToProvider(vendor).getData());
+      packageData.getData()
+        .getRelationships()
+        .withProvider(new HasOneRelationship()
+          .withData(new RelationshipData()
+            .withId(String.valueOf(vendor.getVendorId()))
+            .withType(PROVIDERS_TYPE)));
+    }
+
     return packageData;
   }
 
@@ -143,7 +153,7 @@ public class PackagesConverter {
             .withReason(
               packageData.getVisibilityData().getReason().equals("Hidden by EP") ? "Set by system"
                 : "")))
-      .withRelationships(EMPTY_PACKAGES_RELATIONSHIP);
+      .withRelationships(createEmptyPackageRelationship());
   }
 
   private Proxy convertToProxy(org.folio.rmapi.model.Proxy proxy) {
@@ -227,5 +237,14 @@ public class PackagesConverter {
           .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId() + "-" + title.getTitleId())
           .withType(RESOURCES_TYPE))
       .collect(Collectors.toList());
+  }
+
+  private static PackageRelationship createEmptyPackageRelationship() {
+    return new PackageRelationship()
+      .withProvider(new HasOneRelationship()
+        .withMeta(new MetaDataIncluded().withIncluded(false)))
+      .withResources(new HasManyRelationship()
+        .withMeta(new MetaDataIncluded()
+          .withIncluded(false)));
   }
 }

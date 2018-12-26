@@ -79,7 +79,7 @@ public class EholdingsStatusTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnFalseIfEmptyConfig() throws IOException, URISyntaxException {
-    mockConfiguration("responses/configuration/get-configuration-empty.json", null);
+    mockConfiguration("responses/kb-ebsco/configuration/get-configuration-empty.json", null);
 
     ConfigurationStatus status = RestAssured.given()
       .spec(getRequestSpecification())

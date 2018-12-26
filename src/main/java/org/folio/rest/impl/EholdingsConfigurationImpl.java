@@ -19,7 +19,10 @@ import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.validator.ConfigurationPutBodyValidator;
+import org.folio.rest.validator.ConfigurationPutBodyValidator;
 import org.folio.rest.validator.HeaderValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,6 +41,8 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   private RMAPIConfigurationConverter converter;
   @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
+  private ConfigurationPutBodyValidator bodyValidator;
 
   public EholdingsConfigurationImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -66,6 +71,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   @HandleValidationErrors
   public void putEholdingsConfiguration(String contentType, ConfigurationPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
+    bodyValidator.validate(entity);
     MutableObject<OkapiData> okapiData = new MutableObject<>();
     RMAPIConfiguration rmapiConfiguration = converter.convertToRMAPIConfiguration(entity);
     CompletableFuture.completedFuture(null)

@@ -1,0 +1,12 @@
+{
+  "isCustomer": false,
+  "packagesSelected": 1,
+  "packagesTotal": 34,
+  "vendorId": 111111,
+  "vendorName": "APIDEV CORPORATE CUSTOMER",
+  "proxy": {
+    "id": "<n>",
+    "inherited": true
+  },
+  "vendorToken": null
+}

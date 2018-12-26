@@ -1,26 +1,30 @@
 package org.folio.rest.converter;
 
-import org.folio.rest.jaxrs.model.*;
 import static java.util.stream.Collectors.toList;
+
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceRelationships;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.*;
 import org.folio.rmapi.model.CoverageDates;
+import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.EmbargoPeriod;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.ResourcePut;
@@ -29,8 +33,7 @@ import org.folio.rmapi.model.Titles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import org.folio.rmapi.model.VendorById;
 
 @Component
 public class ResourcesConverter {

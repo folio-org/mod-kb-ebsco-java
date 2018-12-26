@@ -43,7 +43,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnConfigurationOnGet() throws IOException, URISyntaxException {
-    String stubResponseFilename = "responses/configuration/get-configuration.json";
+    String stubResponseFilename = "responses/kb-ebsco/configuration/get-configuration.json";
     String stubCustomerId = "TEST_CUSTOMER_ID";
     String stubUrl = "https://api.ebsco.io";
     String expectedMaskedApiKey = "****************************************";
@@ -85,11 +85,11 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
       .statusCode(200);
 
     verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
-      .withRequestBody(equalToJson(TestUtil.readFile("requests/configuration/post-api-key-configuration.json"))));
+      .withRequestBody(equalToJson(TestUtil.readFile("requests/kb-ebsco/configuration/post-api-key-configuration.json"))));
     verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
-      .withRequestBody(equalToJson(TestUtil.readFile("requests/configuration/post-customer-id-configuration.json"))));
+      .withRequestBody(equalToJson(TestUtil.readFile("requests/kb-ebsco/configuration/post-customer-id-configuration.json"))));
 
-    Config config = mapper.readValue(TestUtil.readFile("requests/configuration/post-url-configuration.json"), Config.class);
+    Config config = mapper.readValue(TestUtil.readFile("requests/kb-ebsco/configuration/post-url-configuration.json"), Config.class);
     config.setValue(wiremockUrl);
     verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
       .withRequestBody(equalToJson(mapper.writeValueAsString(config))));
@@ -99,7 +99,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
   public void shouldDeleteOldConfigurationOnPutWhenConfigurationExists() throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
 
-    String configsString = TestUtil.readFile("responses/configuration/get-configuration.json");
+    String configsString = TestUtil.readFile("responses/kb-ebsco/configuration/get-configuration.json");
     Configs configs = mapper.readValue(configsString, Configs.class);
     List<String> existingIds = configs.getConfigs().stream()
       .map(Config::getId)

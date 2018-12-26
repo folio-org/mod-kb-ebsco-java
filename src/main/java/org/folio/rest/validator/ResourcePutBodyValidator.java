@@ -30,11 +30,11 @@ public class ResourcePutBodyValidator {
     boolean isSelected = attributes.getIsSelected();
     String cvgStmt = attributes.getCoverageStatement();
 
-    /**
+    /*
      * Updates cannot be made to a resource unless it is selected
      */
     if(isSelected) {
-      /**
+      /*
        * Following fields can be updated only for a custom resource although UI sends complete payload
        * for both managed and custom resources
        */
@@ -42,7 +42,7 @@ public class ResourcePutBodyValidator {
         validateCustomResource(attributes);
       }
 
-      /**
+      /*
        * Following fields can be updated only for a managed resource although UI sends complete payload
        * for both managed and custom resources
        */
@@ -85,7 +85,7 @@ public class ResourcePutBodyValidator {
       ValidatorUtil.checkMaxLength("edition", edition, 250);
     }
     if(!StringUtils.isBlank(description)) {
-      ValidatorUtil.checkMaxLength("description", description, 1500);
+      ValidatorUtil.checkMaxLength("description", description, 400);
     }
     if(!StringUtils.isBlank(url)) {
       ValidatorUtil.checkMaxLength("url", url, 600);

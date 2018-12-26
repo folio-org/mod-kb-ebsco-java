@@ -3,47 +3,29 @@ package org.folio.rest.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.readFile;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
-
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
-import org.apache.http.HttpStatus;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import org.apache.http.HttpStatus;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.folio.util.TestUtil.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
@@ -210,11 +192,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    mockGet(rmapiUrl, rmapiResponseFile);
+    mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID + "?include=resources";
 
     String actual = getResponseWithStatus(titleByIdEndpoint, HttpStatus.SC_OK).asString();
-    String expected = readFile("responses/titles/get-title-by-id-include-resources-response.json");
+    String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
   }
@@ -225,11 +207,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    mockGet(rmapiUrl, rmapiResponseFile);
+    mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
     String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID + "?include=badValue";
 
     String actual = getResponseWithStatus(titleByIdEndpoint, HttpStatus.SC_OK).asString();
-    String expected = readFile("responses/titles/get-title-by-id-invalid-include-response.json");
+    String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-invalid-include-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
   }
@@ -259,7 +241,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withStatus(HttpStatus.SC_OK)));
 
     String actual = postResponseWithStatus("eholdings/titles", org.apache.http.HttpStatus.SC_OK, titlePostStubRequestFile).asString();
-    String expected = readFile("responses/titles/get-created-title-response.json");
+    String expected = readFile("responses/kb-ebsco/titles/get-created-title-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
   }
