@@ -15,6 +15,7 @@ import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourceCollection;
@@ -31,6 +32,7 @@ import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.rmapi.model.VendorById;
@@ -45,7 +47,7 @@ public class ResourcesConverter {
   @Autowired
   private VendorConverter vendorConverter;
   @Autowired
-  private PackagesConverter packagesConverter;
+  private Converter<PackageByIdData, Package> packageByIdConverter;
 
   public List<Resource> convertFromRMAPIResource(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
     return title.getCustomerResourcesList().stream().map(resource -> {
@@ -78,7 +80,7 @@ public class ResourcesConverter {
               .withType(PROVIDERS_TYPE)));
       }
       if(packageData != null){
-        resultResource.getIncluded().add(packagesConverter.convert(packageData).getData());
+        resultResource.getIncluded().add(packageByIdConverter.convert(packageData).getData());
         resultResource.getData()
           .getRelationships()
           .withPackage(new HasOneRelationship()
@@ -104,19 +106,7 @@ public class ResourcesConverter {
           .withIncluded(false)));
   }
 
-  public ResourceCollection convertFromRMAPIResourceList(Titles titles) {
-
-    List<ResourceCollectionItem> titleList = titles.getTitleList().stream()
-        .map(this::convertResource)
-        .collect(Collectors.toList());
-      return new ResourceCollection()
-        .withJsonapi(RestConstants.JSONAPI)
-        .withMeta(new MetaTotalResults().withTotalResults(titles.getTotalResults()))
-        .withData(titleList);
-
-  }
-
-  private ResourceCollectionItem convertResource(Title title) {
+  public ResourceCollectionItem convertResource(Title title) {
     CustomerResources resource = title.getCustomerResourcesList().get(0);
     return new ResourceCollectionItem()
     .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))

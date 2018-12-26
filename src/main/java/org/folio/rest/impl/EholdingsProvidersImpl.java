@@ -19,8 +19,8 @@ import org.apache.http.HttpStatus;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.PackagesConverter;
 import org.folio.rest.converter.VendorConverter;
+import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.OkapiData;
@@ -37,6 +37,7 @@ import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -53,7 +54,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Autowired
   private VendorConverter converter;
   @Autowired
-  private PackagesConverter packagesConverter;
+  private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
   @Autowired
   private ProviderPutBodyValidator bodyValidator;
   @Autowired

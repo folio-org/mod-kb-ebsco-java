@@ -38,7 +38,7 @@ public class ErrorHandler {
    * @return this
    */
   public <T extends Throwable> ErrorHandler add(Class<T> exceptionClass, Function<T, Response> errorMapper) {
-    errorMappers.put(exceptionClass, errorMapper);
+    errorMappers.putIfAbsent(exceptionClass, errorMapper);
     return this;
   }
 

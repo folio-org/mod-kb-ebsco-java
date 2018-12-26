@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 
 import org.folio.config.api.RMAPIConfigurationService;
+import org.folio.rest.validator.HeaderValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,10 @@ public class RMAPITemplateFactory {
   private Vertx vertx;
   @Autowired
   private ConversionService conversionService;
+  @Autowired
+  private HeaderValidator headerValidator;
 
   public RMAPITemplate createTemplate(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler){
-    return new RMAPITemplate(configurationService, vertx, conversionService, okapiHeaders, asyncResultHandler);
+    return new RMAPITemplate(configurationService, vertx, conversionService, headerValidator, okapiHeaders, asyncResultHandler);
   }
 }

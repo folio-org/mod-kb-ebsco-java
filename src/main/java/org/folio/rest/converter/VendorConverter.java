@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Packages;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
@@ -28,6 +29,7 @@ import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.VendorPutToken;
 import org.folio.rmapi.model.Vendors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -37,7 +39,7 @@ public class VendorConverter {
   private CommonAttributesConverter commonConverter;
 
   @Autowired
-  private PackagesConverter packagesConverter;
+  private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
 
   public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = vendors.getVendorList().stream()

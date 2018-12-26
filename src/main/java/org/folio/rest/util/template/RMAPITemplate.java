@@ -14,6 +14,7 @@ import org.folio.http.HttpConsts;
 import org.folio.rest.impl.EholdingsPackagesImpl;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
+import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.RMAPIService;
 import org.springframework.core.convert.ConversionService;
 
@@ -48,6 +49,7 @@ public class RMAPITemplate {
   private RMAPIConfigurationService configurationService;
   private Vertx vertx;
   private ConversionService conversionService;
+  private HeaderValidator headerValidator;
 
   private Map<String, String> okapiHeaders;
   private Handler<AsyncResult<Response>> asyncResultHandler;
@@ -57,11 +59,12 @@ public class RMAPITemplate {
   private ErrorHandler errorHandler = new ErrorHandler();
 
 
-  RMAPITemplate(RMAPIConfigurationService configurationService, Vertx vertx, ConversionService conversionService,
-                       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler) {
+  public RMAPITemplate(RMAPIConfigurationService configurationService, Vertx vertx, ConversionService conversionService,
+                       HeaderValidator headerValidator, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler) {
     this.configurationService = configurationService;
     this.vertx = vertx;
     this.conversionService = conversionService;
+    this.headerValidator = headerValidator;
     this.okapiHeaders = okapiHeaders;
     this.asyncResultHandler = asyncResultHandler;
   }
@@ -114,6 +117,7 @@ public class RMAPITemplate {
   }
 
   private void executeInternal(Function<Object, Response> successHandler) {
+    headerValidator.validate(okapiHeaders);
     MutableObject<OkapiData> okapiData = new MutableObject<>();
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)

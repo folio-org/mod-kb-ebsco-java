@@ -1,5 +1,6 @@
 package org.folio.rest.converter;
 
+import static org.folio.rest.converter.PackagesConverter.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 
 import java.util.HashMap;
@@ -20,14 +21,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PackageCollectionItemConverter implements Converter<PackageData, PackageCollectionItem> {
-
-  private static final PackageRelationship EMPTY_PACKAGES_RELATIONSHIP = new PackageRelationship()
-    .withProvider(new HasOneRelationship()
-      .withMeta(new MetaDataIncluded().withIncluded(false)))
-    .withResources(new HasManyRelationship()
-      .withMeta(new MetaDataIncluded()
-        .withIncluded(false)));
-
   private static final Map<String, ContentType> contentTypes = new HashMap<>();
 
   static {
@@ -69,6 +62,6 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
             .withReason(
               packageData.getVisibilityData().getReason().equals("Hidden by EP") ? "Set by system"
                 : "")))
-      .withRelationships(EMPTY_PACKAGES_RELATIONSHIP);
+      .withRelationships(createEmptyPackageRelationship());
   }
 }
