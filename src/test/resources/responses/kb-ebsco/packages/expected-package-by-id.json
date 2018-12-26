@@ -1,0 +1,40 @@
+{
+  "data": {
+    "id": "111111-3964",
+    "type": "packages",
+    "attributes": {
+      "name": "carole and sams test",
+      "packageId": 3964,
+      "isCustom": true,
+      "providerId": 111111,
+      "providerName": "APIDEV CORPORATE CUSTOMER",
+      "titleCount": 6,
+      "isSelected": true,
+      "selectedCount": 6,
+      "packageType": "Custom",
+      "contentType": "Aggregated Full Text",
+      "customCoverage": {
+        "beginCoverage": "",
+        "endCoverage": ""
+      },
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "allowKbToAddTitles": false,
+      "packageToken": {
+        "factName": "[[gale.customcode.infocust]]",
+        "helpText": "help text",
+        "value": "token value",
+        "prompt": "res_id=info:sid/gale:"
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

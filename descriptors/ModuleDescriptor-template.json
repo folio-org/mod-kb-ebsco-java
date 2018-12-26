@@ -1,9 +1,9 @@
 {
   "id": "${artifactId}-${version}",
-  "name": "EBSCO KB Broker",
+  "name": "kb-ebsco",
   "provides": [
     {
-      "id": "kb-ebsco-java",
+      "id": "eholdings",
       "version": "1.0",
       "handlers": [
         {
@@ -68,11 +68,13 @@
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/resources/{resourceId}"
+          "pathPattern": "/eholdings/resources/{resourceId}",
+          "permissionsRequired": ["kb-ebsco.resource.put"]
         },
         {
           "methods": ["DELETE"],
-          "pathPattern": "/eholdings/resources/{resourceId}"
+          "pathPattern": "/eholdings/resources/{resourceId}",
+          "permissionsRequired": ["kb-ebsco.resource.delete"]
         },
         {
           "methods": ["GET"],
@@ -123,6 +125,28 @@
           "methods": ["DELETE"],
           "pathPattern": "/eholdings/cache",
           "permissionsRequired" :["kb-ebsco.cache.delete"]
+        }
+      ]
+    },
+    {
+      "id": "_jsonSchemas",
+      "version": "1.0",
+      "interfaceType" : "multiple",
+      "handlers" : [
+        {
+          "methods" : [ "GET" ],
+          "pathPattern" : "/_/jsonSchemas"
+        }
+      ]
+    },
+    {
+      "id": "_ramls",
+      "version": "1.0",
+      "interfaceType" : "multiple",
+      "handlers" : [
+        {
+          "methods" : [ "GET" ],
+          "pathPattern" : "/_/ramls"
         }
       ]
     }
@@ -194,6 +218,16 @@
       "description": "Post resource"
     },
     {
+      "permissionName": "kb-ebsco.resource.put",
+      "displayName": "put single resource",
+      "description": "Put single resource"
+    },
+    {
+      "permissionName": "kb-ebsco.resource.delete",
+      "displayName": "delete single resource",
+      "description": "Delete single resource"
+    },
+    {
       "permissionName": "kb-ebsco.packageCollection.get",
       "displayName": "get packages",
       "description": "Get packages"
@@ -262,6 +296,8 @@
         "kb-ebsco.package.put",
         "kb-ebsco.resource.get",
         "kb-ebsco.resource.post",
+        "kb-ebsco.resource.put",
+        "kb-ebsco.resource.delete",
         "kb-ebsco.proxyTypes.get",
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.root-proxy.put"

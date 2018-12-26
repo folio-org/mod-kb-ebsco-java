@@ -21,5 +21,9 @@
       "description": "Root Proxy Data Attributes",
       "$ref": "rootProxyDataAttributes.json"
     }
-  }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
 }

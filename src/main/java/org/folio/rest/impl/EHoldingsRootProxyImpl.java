@@ -47,8 +47,8 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
   private final Logger logger = LoggerFactory.getLogger(EHoldingsRootProxyImpl.class);
 
   @SuppressWarnings("squid:S1172")
-  public EHoldingsRootProxyImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EHoldingsRootProxyImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override

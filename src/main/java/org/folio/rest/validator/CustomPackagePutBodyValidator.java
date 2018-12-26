@@ -30,6 +30,7 @@ public class CustomPackagePutBodyValidator
     }
 
     ValidatorUtil.checkIsNotEmpty("name", name);
+    ValidatorUtil.checkMaxLength("name", name, 200);
     ValidatorUtil.checkIsNotNull("contentType", contentType);
     ValidatorUtil.checkDateValid("beginCoverage", beginCoverage);
     ValidatorUtil.checkDateValid("endCoverage", endCoverage);

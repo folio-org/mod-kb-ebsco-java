@@ -43,9 +43,8 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes {
   @Autowired
   private HeaderValidator headerValidator;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsProxyTypesImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsProxyTypesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   public EholdingsProxyTypesImpl(RMAPIConfigurationService configurationService, ProxyConverter converter,

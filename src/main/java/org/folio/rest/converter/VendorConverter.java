@@ -33,12 +33,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class VendorConverter {
 
-  private static final Relationships EMPTY_PACKAGE_RELATIONSHIP = new Relationships()
-    .withPackages(new Packages()
-      .withMeta(new MetaDataIncluded()
-        .withIncluded(false))
-      .withData(null));
-
   @Autowired
   private CommonAttributesConverter commonConverter;
 
@@ -66,7 +60,7 @@ public class VendorConverter {
         .withPackagesSelected(vendor.getPackagesSelected())
         .withSupportsCustomPackages(vendor.isCustomer())
         .withProviderToken(token != null ? new Token().withValue(token) : null))
-      .withRelationships(EMPTY_PACKAGE_RELATIONSHIP);
+      .withRelationships(createEmptyProviderRelationships());
   }
 
   public Provider convertToProvider(VendorById vendor) {
@@ -89,7 +83,7 @@ public class VendorConverter {
             .withId(vendor.getProxy().getId())
             .withInherited(vendor.getProxy().getInherited()))
         )
-        .withRelationships(EMPTY_PACKAGE_RELATIONSHIP))
+        .withRelationships(createEmptyProviderRelationships()))
       .withJsonapi(RestConstants.JSONAPI);
     if(packages != null){
       provider
@@ -136,5 +130,13 @@ public class VendorConverter {
 
     return vpb.build();
 
+  }
+
+  private static Relationships createEmptyProviderRelationships() {
+    return new Relationships()
+      .withPackages(new Packages()
+        .withMeta(new MetaDataIncluded()
+          .withIncluded(false))
+        .withData(null));
   }
 }

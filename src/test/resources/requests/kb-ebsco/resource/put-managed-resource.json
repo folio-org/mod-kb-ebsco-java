@@ -1,0 +1,60 @@
+{
+  "data" : {
+    "id" : "583-4345-762169",
+    "type" : "resources",
+    "attributes" : {
+      "isPeerReviewed" : false,
+      "isTitleCustom" : false,
+      "publisherName" : "Praeger",
+      "titleId" : 762169,
+      "contributors" : [ {
+        "type" : "Author",
+        "contributor" : "Beeman, William O."
+      } ],
+      "identifiers" : [ {
+        "id" : "978-0-275-98214-0",
+        "subtype" : "Print",
+        "type" : "ISBN"
+      }, {
+        "id" : "978-0-313-06800-3",
+        "subtype" : "Online",
+        "type" : "ISBN"
+      }, {
+        "id" : "978-1-282-40979-8",
+        "subtype" : "Online",
+        "type" : "ISBN"
+      } ],
+      "name" : "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+      "publicationType" : "Book",
+      "subjects" : [ {
+        "subject" : "SOCIAL SCIENCE / Ethnic Studies / General",
+        "type" : "BISAC"
+      } ],
+      "coverageStatement" : "test coverage statement",
+      "customEmbargoPeriod" : {
+        "embargoValue" : 10,
+        "embargoUnit": "Years"
+      },
+      "isPackageCustom" : false,
+      "isSelected" : true,
+      "isTokenNeeded" : false,
+      "locationId" : 2863717,
+      "managedEmbargoPeriod" : {
+        "embargoValue" : 0
+      },
+      "packageId" : "583-4345",
+      "packageName" : "ABC-CLIO eBook Collection",
+      "url" : "https://publisher.abc-clio.com/9780313068003/",
+      "providerId" : 583,
+      "providerName" : "ABC-CLIO",
+      "visibilityData" : {
+        "isHidden" : false,
+        "reason" : ""
+      },
+      "proxy" : {
+        "id" : "Test-proxy-id",
+        "inherited" : true
+      }
+    }
+  }
+}

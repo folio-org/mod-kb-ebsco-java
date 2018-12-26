@@ -38,7 +38,8 @@ import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.ResourceSelectedPayload;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.result.ObjectsForPostResourceResult;
-
+import org.folio.rest.validator.ResourcePutBodyValidator;
+import org.folio.rmapi.model.ResourcePut;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -51,6 +52,9 @@ import io.vertx.core.logging.LoggerFactory;
 public class EholdingsResourcesImpl implements EholdingsResources{
   private static final String RESOURCE_NOT_FOUND_MESSAGE = "Resource not found";
   private static final int MAX_TITLE_COUNT = 100;
+  private static final String PUT_RESOURCE_ERROR_MESSAGE = "Failed to update package";
+  private static final String RESOURCE_CANNOT_BE_DELETED_TITLE = "Resource cannot be deleted";
+  private static final String RESOURCE_CANNOT_BE_DELETED_DETAIL = "Resource is not in a custom package";
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsResourcesImpl.class);
 
@@ -64,10 +68,11 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   private IdParser idParser;
   @Autowired
   private ResourcePostValidator postValidator;
+  @Autowired
+  private ResourcePutBodyValidator resourcePutBodyValidator;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsResourcesImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsResourcesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
@@ -150,15 +155,81 @@ public class EholdingsResourcesImpl implements EholdingsResources{
   }
 
   @Override
+  @HandleValidationErrors
   public void putEholdingsResourcesByResourceId(String resourceId, String contentType, ResourcePutRequest entity,
       Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(PutEholdingsResourcesByResourceIdResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+    ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
+    headerValidator.validate(okapiHeaders);
+    MutableObject<RMAPIService> rmapiService = new MutableObject<>();
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(rmapiConfiguration -> {
+        rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
+          rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner()));
+        return rmapiService.getValue().retrieveResource(parsedResourceId, null);
+      })
+      .thenCompose(resourceData -> {
+        ResourcePut resourcePutBody;
+        boolean isTitleCustom = resourceData.getTitle().getIsTitleCustom();
+        resourcePutBodyValidator.validate(entity, isTitleCustom);
+        if (isTitleCustom) {
+          resourcePutBody = converter.convertToRMAPICustomResourcePutRequest(entity);
+        } else {
+          resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity);
+        }
+        return rmapiService.getValue().updateResource(parsedResourceId, resourcePutBody);
+      })
+      .thenCompose(o -> rmapiService.getValue().retrieveResource(parsedResourceId, null))
+      .thenAccept(resourceData ->
+        asyncResultHandler.handle(Future.succeededFuture(EholdingsResources.PutEholdingsResourcesByResourceIdResponse
+          .respond200WithApplicationVndApiJson(converter.convertFromRMAPIResource(resourceData.getTitle(), null, null, false).get(0)))))
+      .exceptionally(e -> {
+        logger.error(PUT_RESOURCE_ERROR_MESSAGE, e);
+        new ErrorHandler()
+          .add(InputValidationException.class, exception ->
+            EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond422WithApplicationVndApiJson(
+              ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail())))
+          .add(RMAPIResourceNotFoundException.class, exception ->
+            EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond404WithApplicationVndApiJson(
+              ErrorUtil.createError(RESOURCE_NOT_FOUND_MESSAGE)))
+          .addRmApiMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 
   @Override
+  @HandleValidationErrors
   public void deleteEholdingsResourcesByResourceId(String resourceId, Map<String, String> okapiHeaders,
       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(DeleteEholdingsResourcesByResourceIdResponse.status(Response.Status.NOT_IMPLEMENTED).build()));
+    headerValidator.validate(okapiHeaders);
+    ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
+    MutableObject<RMAPIService> rmapiService = new MutableObject<>();
+    CompletableFuture.completedFuture(null)
+      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
+      .thenCompose(rmapiConfiguration -> {
+        rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
+          rmapiConfiguration.getUrl(), vertxContext.owner()));
+        return rmapiService.getValue().retrieveResource(parsedResourceId, null);
+      })
+      .thenCompose(resourceData -> {
+        if (!resourceData.getTitle().getCustomerResourcesList().get(0).getIsPackageCustom()) {
+          throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
+        }
+        return rmapiService.getValue().deleteResource(parsedResourceId);
+      })
+      .thenAccept(o -> asyncResultHandler.handle(Future.succeededFuture(
+        EholdingsResources.DeleteEholdingsResourcesByResourceIdResponse.respond204())))
+      .exceptionally(e -> {
+        logger.error(INTERNAL_SERVER_ERROR, e);
+        new ErrorHandler()
+          .addRmApiMapper()
+          .addInputValidationMapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 
   private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, RMAPIService rmapiService) {

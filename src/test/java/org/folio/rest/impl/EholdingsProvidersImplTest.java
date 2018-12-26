@@ -25,8 +25,6 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang.RandomStringUtils;
@@ -42,7 +40,6 @@ import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
-import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -327,10 +324,10 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String packageStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    mockGet(rmapiProviderPackagesUrl, packageStubResponseFile);
+    mockGet(new RegexPattern(rmapiProviderPackagesUrl), packageStubResponseFile);
 
     String actual = getResponseWithStatus(providerPackagesUrl, 200).asString();
-    String expected = readFile("responses/packages/get-packages-by-provider-id-response.json");
+    String expected = readFile("responses/kb-ebsco/packages/get-packages-by-provider-id-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
   }
@@ -380,7 +377,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    mockGet(rmapiInvalidProviderIdUrl, HttpStatus.SC_NOT_FOUND);
+    mockGet(new RegexPattern(rmapiInvalidProviderIdUrl), HttpStatus.SC_NOT_FOUND);
 
     JsonapiError error = getResponseWithStatus("/eholdings/providers/191919/packages",
       HttpStatus.SC_NOT_FOUND).as(JsonapiError.class);

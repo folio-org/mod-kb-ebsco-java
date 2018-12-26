@@ -1,5 +1,7 @@
 package org.folio.rmapi;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +19,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.mutable.MutableObject;
+
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -38,7 +41,9 @@ import org.folio.rmapi.model.PackageSelectedPayload;
 import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.Proxy;
+import org.folio.rmapi.model.ResourceDeletePayload;
 import org.folio.rmapi.model.ResourceSelectedPayload;
+import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.TitleCreated;
@@ -48,6 +53,7 @@ import org.folio.rmapi.model.Vendor;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
 
@@ -76,6 +82,7 @@ public class RMAPIService {
 
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
+  private static final String INCLUDE_RESOURCES_VALUE = "resources";
 
   public static final String RESOURCE_ENDPOINT_FORMAT = "vendors/%s/packages/%s/titles/%s";
 
@@ -243,7 +250,7 @@ public class RMAPIService {
     return this.getRequest(constructURL(TITLES_PATH + "?" + path), Titles.class)
       .thenCompose(titles -> {
         titles.getTitleList().removeIf(Objects::isNull);
-        return CompletableFuture.completedFuture(titles);
+        return completedFuture(titles);
       });
   }
 
@@ -260,7 +267,7 @@ public class RMAPIService {
     return this.getRequest(constructURL(titlesPath + path), Titles.class)
           .thenCompose(titles -> {
             titles.getTitleList().removeIf(Objects::isNull);
-            return CompletableFuture.completedFuture(titles);
+            return completedFuture(titles);
           });
   }
 
@@ -286,7 +293,7 @@ public class RMAPIService {
   }
 
   public CompletableFuture<Vendors> getVendors(boolean filterCustom){
-    CompletableFuture<Vendors> vendorsList = CompletableFuture.completedFuture(Vendors.builder().build());
+    CompletableFuture<Vendors> vendorsList = completedFuture(Vendors.builder().build());
     if (filterCustom) {
       return retrieveProviders(customerId, 1, 25, Sort.RELEVANCE);
     }
@@ -308,11 +315,11 @@ public class RMAPIService {
     if (INCLUDE_PACKAGES_VALUE.equalsIgnoreCase(include)) {
       packagesFuture = retrievePackages(id);
     } else {
-      packagesFuture = CompletableFuture.completedFuture(null);
+      packagesFuture = completedFuture(null);
     }
     return CompletableFuture.allOf(vendorFuture, packagesFuture)
       .thenCompose(o ->
-        CompletableFuture.completedFuture(new VendorResult(vendorFuture.join(), packagesFuture.join())));
+        completedFuture(new VendorResult(vendorFuture.join(), packagesFuture.join())));
   }
 
   public CompletableFuture<VendorById> updateProvider(long id, VendorPut rmapiVendor) {
@@ -320,7 +327,30 @@ public class RMAPIService {
 
     return this.putRequest(constructURL(path), rmapiVendor)
       .thenCompose(vend -> this.retrieveProvider(id, ""))
-      .thenCompose(vendorResult -> CompletableFuture.completedFuture(vendorResult.getVendor()));
+      .thenCompose(vendorResult -> completedFuture(vendorResult.getVendor()));
+  }
+
+  public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects) {
+    CompletableFuture<PackageByIdData> packageFuture = retrievePackage(packageId);
+
+    CompletableFuture<Titles> titlesFuture;
+    if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
+      titlesFuture = retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(),
+        Sort.NAME, 1, 25);
+    } else {
+      titlesFuture = completedFuture(null);
+    }
+
+    CompletableFuture<VendorResult> vendorFuture;
+    if (includedObjects.contains(INCLUDE_PROVIDER_VALUE)) {
+      vendorFuture = retrieveProvider(packageId.getProviderIdPart(), null);
+    } else {
+      vendorFuture = completedFuture(new VendorResult(null, null));
+    }
+
+    return CompletableFuture.allOf(packageFuture, titlesFuture, vendorFuture)
+      .thenCompose(o ->
+        completedFuture(new PackageResult(packageFuture.join(), vendorFuture.join().getVendor(), titlesFuture.join())));
   }
 
   public CompletableFuture<PackageByIdData> retrievePackage(PackageId packageId) {
@@ -382,21 +412,20 @@ public class RMAPIService {
 
     final String path = String.format(RESOURCE_ENDPOINT_FORMAT, resourceId.getProviderIdPart(), resourceId.getPackageIdPart(), resourceId.getTitleIdPart());
     titleFuture = this.getRequest(constructURL(path), Title.class);
-    if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
+    if (Objects.nonNull(includes) && includes.contains(INCLUDE_PROVIDER_VALUE)) {
       vendorFuture = retrieveProvider(resourceId.getProviderIdPart(), "");
     } else {
-      vendorFuture = CompletableFuture.completedFuture(new VendorResult(null, null));
+      vendorFuture = completedFuture(new VendorResult(null, null));
     }
-    if (includes.contains(INCLUDE_PACKAGE_VALUE)) {
+    if (Objects.nonNull(includes) && includes.contains(INCLUDE_PACKAGE_VALUE)) {
       packageFuture = retrievePackage(new PackageId(resourceId.getProviderIdPart(), resourceId.getPackageIdPart()));
     } else {
-      packageFuture = CompletableFuture.completedFuture(null);
+      packageFuture = completedFuture(null);
     }
-
 
     return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
-        CompletableFuture.completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join())));
+        completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join())));
   }
 
   public CompletableFuture<ResourceResult> postResource(ResourceSelectedPayload resourcePost, ResourceId resourceId) {
@@ -411,7 +440,7 @@ public class RMAPIService {
      return this
       .retrieveProviders(customerId, 1, 25, Sort.RELEVANCE)
       .thenCompose(
-        vendors -> CompletableFuture.completedFuture(this.getFirstProviderElement(vendors)))
+        vendors -> completedFuture(this.getFirstProviderElement(vendors)))
       .thenCompose(vendorId -> {
         providerId.setValue(vendorId);
         return this.postPackage(entity, vendorId);
@@ -420,12 +449,12 @@ public class RMAPIService {
 
   }
 
-  public CompletableFuture<PackageCreated> postPackage(PackagePost entity, Long id) {
+  private CompletableFuture<PackageCreated> postPackage(PackagePost entity, Long id) {
     String path = VENDORS_PATH + '/' + id + '/' + PACKAGES_PATH;
     return this.postRequest(constructURL(path), entity, PackageCreated.class);
   }
 
-  public CompletableFuture<TitleCreated> createTitle(TitlePost entity, PackageId packageId) {
+  private CompletableFuture<TitleCreated> createTitle(TitlePost entity, PackageId packageId) {
     final String path = VENDORS_PATH + '/' + packageId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + packageId.getPackageIdPart() + '/' + TITLES_PATH;
     return this.postRequest(constructURL(path), entity, TitleCreated.class);
   }
@@ -445,5 +474,15 @@ public class RMAPIService {
 
     LOG.info("constructurl - path=" + fullPath);
     return fullPath;
+  }
+
+  public CompletionStage<Void> updateResource(ResourceId parsedResourceId, ResourcePut resourcePutBody) {
+    final String path = VENDORS_PATH + '/' + parsedResourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + parsedResourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + parsedResourceId.getTitleIdPart();
+    return this.putRequest(constructURL(path), resourcePutBody);
+  }
+
+  public CompletableFuture<Void> deleteResource(ResourceId parsedResourceId) {
+    final String path = VENDORS_PATH + '/' + parsedResourceId.getProviderIdPart() + '/' + PACKAGES_PATH + '/' + parsedResourceId.getPackageIdPart() + '/' + TITLES_PATH + '/' + parsedResourceId.getTitleIdPart();
+    return this.putRequest(constructURL(path), new ResourceDeletePayload(false));
   }
 }

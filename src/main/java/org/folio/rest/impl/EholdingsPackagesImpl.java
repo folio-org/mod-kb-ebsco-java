@@ -4,6 +4,9 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
 import static org.folio.http.HttpConsts.JSON_API_TYPE;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -88,9 +91,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   private RMAPITemplateFactory templateFactory;
 
-  @SuppressWarnings("squid:S1172")
-  public EholdingsPackagesImpl(Vertx vertx, String tenantId) {
-    SpringContextUtil.autowireDependencies(this, vertx.getOrCreateContext());
+  public EholdingsPackagesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
@@ -157,16 +159,19 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void getEholdingsPackagesByPackageId(String packageId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     headerValidator.validate(okapiHeaders);
+    List<String> includedObjects = include != null ? Arrays.asList(include.split(",")) : Collections.emptyList();
+
     CompletableFuture.completedFuture(null)
       .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrievePackage(parsedPackageId);
+        return rmapiService.retrievePackage(parsedPackageId, includedObjects);
       })
-      .thenAccept(packageData ->
+      .thenAccept(result ->
         asyncResultHandler.handle(Future.succeededFuture(
-          GetEholdingsPackagesByPackageIdResponse.respond200WithApplicationVndApiJson(converter.convert(packageData)))))
+          GetEholdingsPackagesByPackageIdResponse.respond200WithApplicationVndApiJson(
+            converter.convert(result.getPackageData(), result.getVendor(), result.getTitles())))))
       .exceptionally(e -> {
         logger.error(INTERNAL_SERVER_ERROR, e);
         handleError(asyncResultHandler, e);

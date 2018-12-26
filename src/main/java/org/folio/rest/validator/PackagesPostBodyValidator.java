@@ -29,6 +29,7 @@ public class PackagesPostBodyValidator {
     }
 
     ValidatorUtil.checkIsNotEmpty("name", entity.getData().getAttributes().getName());
+    ValidatorUtil.checkMaxLength("name", entity.getData().getAttributes().getName(), 200);
     ValidatorUtil.checkIsNotNull("Content type", entity.getData().getAttributes().getContentType());
 
     Coverage customCoverage = entity.getData().getAttributes().getCustomCoverage();
