@@ -8,12 +8,8 @@ import java.util.Map;
 
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
-import org.folio.rest.jaxrs.model.HasManyRelationship;
-import org.folio.rest.jaxrs.model.HasOneRelationship;
-import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.PackageRelationship;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rmapi.model.PackageData;
 import org.springframework.core.convert.converter.Converter;

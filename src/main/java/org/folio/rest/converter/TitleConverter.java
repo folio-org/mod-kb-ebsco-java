@@ -22,7 +22,9 @@ import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.model.Titles;
+import org.folio.rmapi.result.ResourceResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,7 +37,15 @@ public class TitleConverter {
   private CommonAttributesConverter commonConverter;
 
   @Autowired
-  private ResourcesConverter resourcesConverter;
+  private Converter<ResourceResult, List<Resource>> resourcesConverter;
+
+  private static Relationships createEmptyResourcesRelationships() {
+    return new Relationships()
+      .withResources(new Resources()
+        .withMeta(new MetaDataIncluded()
+          .withIncluded(false))
+        .withData(null));
+  }
 
   public TitleCollection convert(Titles titles) {
     List<org.folio.rest.jaxrs.model.Titles> titleList = titles.getTitleList().stream()
@@ -71,7 +81,7 @@ public class TitleConverter {
       .withJsonapi(RestConstants.JSONAPI);
     if (INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include) && Objects.nonNull(customerResourcesList)) {
       title
-        .withIncluded(resourcesConverter.convertFromRMAPIResource(rmapiTitle, null, null, false)
+        .withIncluded(resourcesConverter.convert(new ResourceResult(rmapiTitle, null, null, false))
           .stream()
           .map(Resource::getData)
           .collect(Collectors.toList())).getData()
@@ -115,23 +125,15 @@ public class TitleConverter {
       .pubType(CommonAttributesConverter.publicationTypes.inverseBidiMap().get(entity.getData().getAttributes().getPublicationType()));
 
     List<org.folio.rest.jaxrs.model.Identifier> identifiersList = entity.getData().getAttributes().getIdentifiers();
-    if(!identifiersList.isEmpty()) {
+    if (!identifiersList.isEmpty()) {
       titlePost.identifiersList(commonConverter.convertToIdentifiers(identifiersList));
     }
 
     List<org.folio.rest.jaxrs.model.Contributors> contributorsList = entity.getData().getAttributes().getContributors();
-    if(!contributorsList.isEmpty()){
+    if (!contributorsList.isEmpty()) {
       titlePost.contributorsList(commonConverter.convertToContributors(contributorsList));
     }
 
     return titlePost.build();
-  }
-
-  private static Relationships createEmptyResourcesRelationships() {
-    return new Relationships()
-      .withResources(new Resources()
-        .withMeta(new MetaDataIncluded()
-          .withIncluded(false))
-        .withData(null));
   }
 }

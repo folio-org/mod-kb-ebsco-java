@@ -8,11 +8,13 @@ public class ResourceResult {
   private Title title;
   private VendorById vendor;
   private PackageByIdData packageData;
+  private boolean includeTitle;
 
-  public ResourceResult(Title title, VendorById vendor, PackageByIdData packageData) {
+  public ResourceResult(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
     this.title = title;
     this.vendor = vendor;
     this.packageData = packageData;
+    this.includeTitle = includeTitle;
   }
 
   public Title getTitle() {
@@ -25,5 +27,9 @@ public class ResourceResult {
 
   public PackageByIdData getPackageData() {
     return packageData;
+  }
+
+  public boolean isIncludeTitle() {
+    return includeTitle;
   }
 }

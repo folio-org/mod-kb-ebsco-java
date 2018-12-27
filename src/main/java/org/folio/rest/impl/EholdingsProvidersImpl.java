@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
-import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.VendorConverter;
@@ -18,22 +17,17 @@ import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateFactory;
-import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 

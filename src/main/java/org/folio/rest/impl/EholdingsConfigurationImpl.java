@@ -1,12 +1,10 @@
 package org.folio.rest.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
@@ -20,15 +18,17 @@ import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.ConfigurationPutBodyValidator;
-import org.folio.rest.validator.ConfigurationPutBodyValidator;
 import org.folio.rest.validator.HeaderValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
