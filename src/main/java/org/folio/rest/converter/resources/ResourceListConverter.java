@@ -9,7 +9,6 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.folio.rest.converter.titles.TitleRequestConverter;
 import org.folio.rest.converter.util.CommonResourceConverter;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.Package;
@@ -35,7 +34,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
   @Autowired
   private CommonResourceConverter commonResourceConverter;
   @Autowired
-  private TitleRequestConverter titlesConverter;
+  private Converter<TitleResult, org.folio.rest.jaxrs.model.Title> titlesConverter;
   @Autowired
   private Converter<VendorById, Provider> vendorConverter;
   @Autowired
@@ -60,7 +59,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
         .withJsonapi(RestConstants.JSONAPI);
       resultResource.setIncluded(new ArrayList<>());
       if (includeTitle) {
-        resultResource.getIncluded().add(titlesConverter.convertFromRMAPITitle(new TitleResult(title, false)).getData());
+        resultResource.getIncluded().add(titlesConverter.convert(new TitleResult(title, false)).getData());
         resultResource.getData()
           .getRelationships()
           .withTitle(new HasOneRelationship()
