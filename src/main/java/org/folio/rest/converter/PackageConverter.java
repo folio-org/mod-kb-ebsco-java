@@ -14,6 +14,7 @@ import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageRelationship;
+import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.ResourceCollection;
@@ -34,7 +35,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
   private Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
 
   @Autowired
-  private VendorConverter vendorConverter;
+  private Converter<VendorById, Provider> vendorConverter;
   @Autowired
   private Converter<Titles, ResourceCollection> resourcesConverter;
   @Autowired
@@ -71,7 +72,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     }
 
     if (vendor != null) {
-      packageData.getIncluded().add(vendorConverter.convertToProvider(vendor).getData());
+      packageData.getIncluded().add(vendorConverter.convert(vendor).getData());
       packageData.getData()
         .getRelationships()
         .withProvider(new HasOneRelationship()

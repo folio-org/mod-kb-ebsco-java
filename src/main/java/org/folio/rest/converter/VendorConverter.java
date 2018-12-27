@@ -28,6 +28,7 @@ import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.VendorPutToken;
 import org.folio.rmapi.model.Vendors;
+import org.folio.rmapi.result.VendorResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -40,50 +41,6 @@ public class VendorConverter {
 
   @Autowired
   private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
-
-  public Provider convertToProvider(VendorById vendor) {
-    return convertToProvider(vendor, null);
-  }
-
-  public Provider convertToProvider(VendorById vendor, org.folio.rmapi.model.Packages packages) {
-    TokenInfo vendorToken = vendor.getVendorByIdToken();
-    Provider provider = new Provider()
-      .withData(new ProviderData()
-        .withId(String.valueOf(vendor.getVendorId()))
-        .withType(PROVIDERS_TYPE)
-        .withAttributes(new ProviderDataAttributes()
-          .withName(vendor.getVendorName())
-          .withPackagesTotal(vendor.getPackagesTotal())
-          .withPackagesSelected(vendor.getPackagesSelected())
-          .withSupportsCustomPackages(vendor.isCustomer())
-          .withProviderToken(commonConverter.convertToken(vendorToken))
-          .withProxy(new Proxy()
-            .withId(vendor.getProxy().getId())
-            .withInherited(vendor.getProxy().getInherited()))
-        )
-        .withRelationships(createEmptyProviderRelationships()))
-      .withJsonapi(RestConstants.JSONAPI);
-    if(packages != null){
-      provider
-        .withIncluded(packagesConverter.convert(packages).getData())
-        .getData()
-          .withRelationships(new Relationships()
-                              .withPackages(new Packages()
-                                .withMeta(new MetaDataIncluded().withIncluded(true))
-                                .withData(convertPackagesRelationship(packages))));
-
-    }
-    return provider;
-  }
-
-  private List<RelationshipData> convertPackagesRelationship(org.folio.rmapi.model.Packages packages) {
-    return packages.getPackagesList().stream()
-      .map(packageData ->
-        new RelationshipData()
-          .withId(packageData.getVendorId() + "-" + packageData.getPackageId())
-          .withType(PACKAGES_TYPE))
-      .collect(Collectors.toList());
-  }
 
   public VendorPut convertToVendor(ProviderPutRequest provider) {
 

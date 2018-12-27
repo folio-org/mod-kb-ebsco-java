@@ -17,6 +17,7 @@ import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.VendorConverter;
 import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
@@ -31,6 +32,7 @@ import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
+import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private HeaderValidator headerValidator;
   @Autowired
   private VendorConverter converter;
+  @Autowired
+  private Converter<VendorById, Provider> vendorByIdConverter;
   @Autowired
   private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
   @Autowired
@@ -82,32 +86,16 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @HandleValidationErrors
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-
     long providerIdLong = idParser.parseProviderId(providerId);
 
-    headerValidator.validate(okapiHeaders);
-
-    CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
-      .thenCompose(rmapiConfiguration -> {
-        RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
-          rmapiConfiguration.getUrl(), vertxContext.owner());
-        return rmapiService.retrieveProvider(providerIdLong, include);
-      })
-      .thenAccept(
-        vendorResult ->
-          asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersByProviderIdResponse
-            .respond200WithApplicationVndApiJson(converter.convertToProvider(vendorResult.getVendor(), vendorResult.getPackages()))))
-      )
-      .exceptionally(e -> {
-        new ErrorHandler()
-          .add(RMAPIResourceNotFoundException.class, exception ->
-            GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
-              ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)))
-        .addDefaultMapper()
-        .handle(asyncResultHandler, e);
-        return null;
-      });
+    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+      .requestAction((rmapiService, okapiData) ->
+          rmapiService.retrieveProvider(providerIdLong, include)
+        )
+      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+        GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
+          ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)))
+      .executeWithResult(Provider.class);
   }
 
   @Override
@@ -130,7 +118,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           return rmapiService.updateProvider(providerIdLong, rmapiVendor);
         })
         .thenAccept(vendor -> asyncResultHandler.handle(Future.succeededFuture(PutEholdingsProvidersByProviderIdResponse
-            .respond200WithApplicationVndApiJson(converter.convertToProvider(vendor)))))
+            .respond200WithApplicationVndApiJson(vendorByIdConverter.convert(vendor)))))
         .exceptionally(e -> {
           logger.error(PUT_PROVIDER_ERROR_MESSAGE, e);
           new ErrorHandler()
