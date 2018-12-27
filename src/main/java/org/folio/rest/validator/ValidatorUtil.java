@@ -24,8 +24,10 @@ public class ValidatorUtil {
   private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
+  private static final String IDENTIFIER_ID = "identifier id";
 
-  private ValidatorUtil() {}
+  private ValidatorUtil() {
+  }
 
   public static void checkIsNotEmpty(String paramName, String value) {
     if (StringUtils.isEmpty(value)) {
@@ -42,7 +44,7 @@ public class ValidatorUtil {
         String.format(MUST_BE_EMPTY_FORMAT, paramName));
     }
   }
-  
+
   public static void checkIsBlank(String paramName, String value) {
     if (StringUtils.isBlank(value)) {
       throw new InputValidationException(
@@ -50,7 +52,7 @@ public class ValidatorUtil {
         String.format(MUST_NOT_BE_EMPTY_FORMAT, paramName));
     }
   }
-  
+
   public static void checkIsNotBlank(String paramName, String value) {
     if (!StringUtils.isBlank(value)) {
       throw new InputValidationException(
@@ -112,7 +114,7 @@ public class ValidatorUtil {
     LocalDate start = parseDate(beginCoverage);
     LocalDate end = parseDate(endCoverage);
 
-    if(start.isAfter(end)) {
+    if (start.isAfter(end)) {
       throw new InputValidationException(INVALID_DATES_ORDER, "");
     }
   }
@@ -131,15 +133,16 @@ public class ValidatorUtil {
   }
 
   public static void checkUrlFormat(String paramName, String value) {
-    if(!isUrlValid(value)) {
+    if (!isUrlValid(value)) {
       throw new InputValidationException(
-          String.format(INVALID_FIELD_FORMAT, paramName),
-          String.format(MUST_BE_VALID_URL, paramName));
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_BE_VALID_URL, paramName));
     }
   }
 
   public static void checkIdentifierValid(String paramName, Identifier identifier) {
     checkIsNotNull(paramName, identifier);
+    checkIsNotNull(IDENTIFIER_ID, identifier.getId());
     checkMaxLength(paramName, identifier.getId(), 20);
   }
 }
