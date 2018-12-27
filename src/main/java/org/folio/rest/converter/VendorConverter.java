@@ -41,30 +41,6 @@ public class VendorConverter {
   @Autowired
   private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
 
-  public ProviderCollection convert(Vendors vendors) {
-    List<Providers> providerList = vendors.getVendorList().stream()
-      .map(this::convertVendor)
-      .collect(Collectors.toList());
-    return new ProviderCollection()
-      .withJsonapi(RestConstants.JSONAPI)
-      .withMeta(new MetaTotalResults().withTotalResults(vendors.getTotalResults()))
-      .withData(providerList);
-  }
-
-  private Providers convertVendor(Vendor vendor) {
-    String token = vendor.getVendorToken();
-    return new Providers()
-      .withId(String.valueOf(vendor.getVendorId()))
-      .withType(PROVIDERS_TYPE)
-      .withAttributes(new ProviderListDataAttributes()
-        .withName(vendor.getVendorName())
-        .withPackagesTotal(vendor.getPackagesTotal())
-        .withPackagesSelected(vendor.getPackagesSelected())
-        .withSupportsCustomPackages(vendor.isCustomer())
-        .withProviderToken(token != null ? new Token().withValue(token) : null))
-      .withRelationships(createEmptyProviderRelationships());
-  }
-
   public Provider convertToProvider(VendorById vendor) {
     return convertToProvider(vendor, null);
   }
@@ -134,7 +110,7 @@ public class VendorConverter {
 
   }
 
-  private static Relationships createEmptyProviderRelationships() {
+  public static Relationships createEmptyProviderRelationships() {
     return new Relationships()
       .withPackages(new Packages()
         .withMeta(new MetaDataIncluded()

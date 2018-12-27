@@ -1,8 +1,5 @@
 package org.folio.rest.impl;
 
-import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
-import static org.folio.http.HttpConsts.JSON_API_TYPE;
-
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -15,12 +12,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.http.HttpStatus;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.VendorConverter;
 import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.OkapiData;
@@ -28,12 +25,12 @@ import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +58,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private PackageParametersValidator parametersValidator;
   @Autowired
   private IdParser idParser;
+  @Autowired
+  private RMAPITemplateFactory templateFactory;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -70,38 +69,14 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Validate
   @HandleValidationErrors
   public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    headerValidator.validate(okapiHeaders);
     validateSort(sort);
     validateQuery(q);
 
-    CompletableFuture.completedFuture(null)
-    .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
-    .thenCompose(rmapiConfiguration -> {
-      RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
-        rmapiConfiguration.getUrl(), vertxContext.owner());
-      return rmapiService.retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()));
-    })
-    .thenAccept(vendors ->
-      asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
-       .respond200WithApplicationVndApiJson(converter.convert(vendors)))))
-    .exceptionally(e -> {
-      if(e.getCause() instanceof RMAPIServiceException){
-        RMAPIServiceException rmApiException = (RMAPIServiceException)e.getCause();
-        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
-          .status(rmApiException.getRMAPICode())
-          .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
-          .entity(ErrorUtil.createErrorFromRMAPIResponse(rmApiException))
-          .build()));
-      }
-      else {
-        asyncResultHandler.handle(Future.succeededFuture(GetEholdingsProvidersResponse
-          .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-          .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
-          .entity(ErrorUtil.createError(e.getCause().getMessage()))
-          .build()));
-      }
-      return null;
-    });
+    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+      .requestAction((rmapiService, okapiData) ->
+        rmapiService.retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
+      )
+      .executeWithResult(ProviderCollection.class);
   }
 
   @Override

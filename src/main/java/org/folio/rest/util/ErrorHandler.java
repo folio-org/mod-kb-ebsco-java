@@ -1,5 +1,7 @@
 package org.folio.rest.util;
 
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -26,7 +28,6 @@ import java.util.function.Function;
 public class ErrorHandler {
 
   private static final String CONTENT_TYPE_HEADER = "Content-Type";
-  private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
 
   private Map<Class<? extends Throwable>, Function<? extends Throwable, Response>> errorMappers = new LinkedHashMap<>();
@@ -58,7 +59,7 @@ public class ErrorHandler {
   public ErrorHandler addInputValidationMapper() {
     add(InputValidationException.class, exception ->
       Response.status(HttpStatus.SC_BAD_REQUEST)
-        .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+        .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
         .entity(ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail()))
         .build());
     return this;
@@ -71,7 +72,7 @@ public class ErrorHandler {
   public ErrorHandler addRmApiMapper() {
     add(RMAPIServiceException.class, exception -> Response
       .status(exception.getRMAPICode())
-      .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+      .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
       .entity(ErrorUtil.createErrorFromRMAPIResponse(exception))
       .build());
     return this;
@@ -103,7 +104,7 @@ public class ErrorHandler {
   private Function<Throwable, Response> getDefaultMapper() {
     return exception -> Response
       .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-      .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+      .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
       .entity(ErrorUtil.createError(INTERNAL_SERVER_ERROR)).build();
   }
 }
