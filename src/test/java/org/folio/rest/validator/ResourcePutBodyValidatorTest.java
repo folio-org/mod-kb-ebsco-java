@@ -189,4 +189,13 @@ public class ResourcePutBodyValidatorTest {
       .withIsSelected(false)
       .withCustomEmbargoPeriod(new EmbargoPeriod().withEmbargoUnit(EmbargoUnit.DAYS))), false);
   }
+
+  @Test
+  public void shouldThrowExceptionWhenIsSelectedIsNull() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage("Invalid request body");
+    validator.validate(ResourcesTestData.getResourcePutRequest(
+      new ResourceDataAttributes()
+        .withIsSelected(null)), false);
+  }
 }
