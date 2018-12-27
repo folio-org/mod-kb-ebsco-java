@@ -20,6 +20,7 @@ import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.result.ResourceResult;
+import org.folio.rmapi.result.TitleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
   @Autowired
   private CommonResourceConverter commonResourceConverter;
   @Autowired
-  private TitleConverter titleConverter;
+  private TitlesConverter titlesConverter;
   @Autowired
   private Converter<VendorById, Provider> vendorConverter;
   @Autowired
@@ -57,7 +58,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
         .withJsonapi(RestConstants.JSONAPI);
       resultResource.setIncluded(new ArrayList<>());
       if (includeTitle) {
-        resultResource.getIncluded().add(titleConverter.convertFromRMAPITitle(title, null).getData());
+        resultResource.getIncluded().add(titlesConverter.convertFromRMAPITitle(new TitleResult(title, false)).getData());
         resultResource.getData()
           .getRelationships()
           .withTitle(new HasOneRelationship()

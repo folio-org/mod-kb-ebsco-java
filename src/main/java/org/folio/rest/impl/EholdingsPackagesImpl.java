@@ -87,9 +87,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((rmapiService, okapiData) ->
         rmapiService.getVendors(isFilterCustom)
-        .thenCompose(vendors ->
-          rmapiService.retrievePackages(filterSelected, filterType, rmapiService.getFirstProviderElement(vendors),
-            q, page, count, nameSort)))
+          .thenCompose(vendors ->
+            rmapiService.retrievePackages(filterSelected, filterType, rmapiService.getFirstProviderElement(vendors),
+              q, page, count, nameSort)))
       .addErrorMapper(RMAPIServiceException.class,
         exception ->
           GetEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
