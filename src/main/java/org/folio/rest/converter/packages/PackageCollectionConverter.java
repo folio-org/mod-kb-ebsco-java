@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.packages;
 
 import java.util.List;
 import java.util.stream.Collectors;

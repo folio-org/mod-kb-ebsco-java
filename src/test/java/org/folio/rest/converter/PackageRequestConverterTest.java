@@ -3,6 +3,7 @@ package org.folio.rest.converter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
@@ -18,9 +19,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class PackagesConverterTest {
+public class PackageRequestConverterTest {
   @Autowired
-  private PackagesConverter packagesConverter;
+  private PackageRequestConverter packagesConverter;
 
   @Test
   public void shouldCreateRequestToSelectPackage() {

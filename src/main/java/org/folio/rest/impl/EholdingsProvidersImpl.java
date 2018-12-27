@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.VendorConverter;
+import org.folio.rest.converter.providers.ProviderRequestConverter;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
@@ -34,7 +34,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
 
   @Autowired
-  private VendorConverter converter;
+  private ProviderRequestConverter converter;
   @Autowired
   private ProviderPutBodyValidator bodyValidator;
   @Autowired

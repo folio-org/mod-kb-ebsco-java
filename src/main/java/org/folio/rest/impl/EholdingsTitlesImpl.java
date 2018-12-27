@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.TitlesConverter;
+import org.folio.rest.converter.titles.TitleRequestConverter;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
@@ -36,7 +36,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
 
   @Autowired
-  private TitlesConverter converter;
+  private TitleRequestConverter converter;
   @Autowired
   private TitleParametersValidator parametersValidator;
   @Autowired

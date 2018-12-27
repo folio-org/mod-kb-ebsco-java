@@ -10,7 +10,7 @@ import java.util.concurrent.CompletionStage;
 import javax.ws.rs.core.Response;
 
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.ResourcesConverter;
+import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
@@ -49,7 +49,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private static final String RESOURCE_CANNOT_BE_DELETED_DETAIL = "Resource is not in a custom package";
 
   @Autowired
-  private ResourcesConverter converter;
+  private ResourceRequestConverter converter;
   @Autowired
   private IdParser idParser;
   @Autowired

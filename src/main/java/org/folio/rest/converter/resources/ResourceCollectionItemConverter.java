@@ -1,7 +1,9 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.resources;
 
-import static org.folio.rest.converter.ResourcesConverter.createEmptyRelationship;
+import static org.folio.rest.converter.resources.ResourceRequestConverter.createEmptyRelationship;
 
+import org.folio.rest.converter.util.CommonAttributesConverter;
+import org.folio.rest.converter.util.CommonResourceConverter;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.Title;

@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.StatusConverter;
+import org.folio.rest.converter.configuration.StatusConverter;
 import org.folio.rest.jaxrs.resource.EholdingsStatus;
 import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;

@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.providers;
 
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rmapi.model.VendorById;
@@ -8,7 +8,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class VendorByIdConverter implements Converter<VendorById, Provider> {
+public class ProviderByIdConverter implements Converter<VendorById, Provider> {
 
   @Autowired
   private Converter<VendorResult, Provider> vendorConverter;

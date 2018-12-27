@@ -1,8 +1,9 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.titles;
 
-import static org.folio.rest.converter.TitlesConverter.createEmptyResourcesRelationships;
+import static org.folio.rest.converter.titles.TitleRequestConverter.createEmptyResourcesRelationships;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
+import org.folio.rest.converter.util.CommonAttributesConverter;
 import org.folio.rest.jaxrs.model.TitleListDataAttributes;
 import org.folio.rest.jaxrs.model.Titles;
 import org.folio.rmapi.model.Title;

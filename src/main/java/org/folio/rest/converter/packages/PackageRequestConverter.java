@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.packages;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ import org.folio.rmapi.model.TokenInfo;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PackagesConverter {
+public class PackageRequestConverter {
 
   private static final Map<String, ContentType> contentTypes = new HashMap<>();
 

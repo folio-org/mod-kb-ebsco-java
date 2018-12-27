@@ -1,6 +1,6 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.providers;
 
-import static org.folio.rest.converter.VendorConverter.createEmptyProviderRelationships;
+import static org.folio.rest.converter.providers.ProviderRequestConverter.createEmptyProviderRelationships;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 
 import org.folio.rest.jaxrs.model.ProviderListDataAttributes;

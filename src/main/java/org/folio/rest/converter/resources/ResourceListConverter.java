@@ -1,7 +1,7 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.resources;
 
 import static java.util.stream.Collectors.toList;
-import static org.folio.rest.converter.ResourcesConverter.createEmptyRelationship;
+import static org.folio.rest.converter.resources.ResourceRequestConverter.createEmptyRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
@@ -9,6 +9,8 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.folio.rest.converter.titles.TitleRequestConverter;
+import org.folio.rest.converter.util.CommonResourceConverter;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.Provider;
@@ -33,7 +35,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
   @Autowired
   private CommonResourceConverter commonResourceConverter;
   @Autowired
-  private TitlesConverter titlesConverter;
+  private TitleRequestConverter titlesConverter;
   @Autowired
   private Converter<VendorById, Provider> vendorConverter;
   @Autowired

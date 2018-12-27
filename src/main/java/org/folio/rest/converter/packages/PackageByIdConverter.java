@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.packages;
 
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rmapi.model.PackageByIdData;

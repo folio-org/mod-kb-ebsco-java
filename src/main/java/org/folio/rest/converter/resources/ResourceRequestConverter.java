@@ -1,8 +1,9 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.resources;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.folio.rest.converter.util.CommonAttributesConverter;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
@@ -17,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResourcesConverter {
+public class ResourceRequestConverter {
 
   @Autowired
   private CommonAttributesConverter commonConverter;

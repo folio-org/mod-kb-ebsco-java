@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.titles;
 
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.folio.rest.converter.util.CommonAttributesConverter;
 import org.folio.rest.jaxrs.model.Data;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.RelationshipData;
@@ -25,7 +26,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TitlesConverter {
+public class TitleRequestConverter {
 
   private static final String RESOURCES_TYPE = "resources";
 

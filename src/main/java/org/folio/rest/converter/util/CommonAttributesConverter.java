@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.util;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,7 +48,7 @@ public class CommonAttributesConverter {
     EMBARGO_UNITS.put("Years", EmbargoUnit.YEARS);
   }
 
-  static final BidiMap<String, PublicationType> publicationTypes = new TreeBidiMap<>();
+  public static final BidiMap<String, PublicationType> publicationTypes = new TreeBidiMap<>();
   static {
     publicationTypes.put("audiobook", PublicationType.AUDIOBOOK);
     publicationTypes.put("book", PublicationType.BOOK);

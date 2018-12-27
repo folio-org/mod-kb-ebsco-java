@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.PackagesConverter;
+import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -53,7 +53,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
 
   @Autowired
-  private PackagesConverter converter;
+  private PackageRequestConverter converter;
   @Autowired
   private PackageParametersValidator packageParametersValidator;
   @Autowired

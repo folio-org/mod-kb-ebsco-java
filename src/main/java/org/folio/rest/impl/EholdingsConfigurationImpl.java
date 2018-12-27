@@ -10,7 +10,7 @@ import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.exception.RMAPIConfigurationInvalidException;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.RMAPIConfigurationConverter;
+import org.folio.rest.converter.configuration.RMAPIConfigurationConverter;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsConfiguration;

@@ -1,5 +1,6 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.providers;
 
+import org.folio.rest.converter.util.CommonAttributesConverter;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Packages;
@@ -12,7 +13,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class VendorConverter {
+public class ProviderRequestConverter {
 
   @Autowired
   private CommonAttributesConverter commonConverter;

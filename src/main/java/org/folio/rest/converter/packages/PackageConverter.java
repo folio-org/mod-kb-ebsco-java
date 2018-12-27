@@ -1,6 +1,6 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.PackagesConverter.createEmptyPackageRelationship;
+import static org.folio.rest.converter.packages.PackageRequestConverter.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
@@ -8,6 +8,7 @@ import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.folio.rest.converter.util.CommonAttributesConverter;
 import org.folio.rest.jaxrs.model.HasManyRelationship;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;

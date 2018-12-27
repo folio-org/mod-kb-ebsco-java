@@ -1,6 +1,6 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.PackagesConverter.createEmptyPackageRelationship;
+import static org.folio.rest.converter.packages.PackageRequestConverter.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 
 import java.util.HashMap;

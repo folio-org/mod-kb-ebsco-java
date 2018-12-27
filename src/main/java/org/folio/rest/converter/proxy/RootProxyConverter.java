@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.proxy;
 
 import org.folio.rest.jaxrs.model.RootProxy;
 import org.folio.rest.jaxrs.model.RootProxyData;
