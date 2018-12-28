@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.util;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
+import org.apache.commons.collections4.bidimap.UnmodifiableBidiMap;
 import org.apache.commons.lang.StringUtils;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.Identifier.Subtype;
@@ -48,22 +49,24 @@ public class CommonAttributesConverter {
     EMBARGO_UNITS.put("Years", EmbargoUnit.YEARS);
   }
 
-  static final BidiMap<String, PublicationType> publicationTypes = new TreeBidiMap<>();
+  public static final BidiMap<String, PublicationType> publicationTypes;
   static {
-    publicationTypes.put("audiobook", PublicationType.AUDIOBOOK);
-    publicationTypes.put("book", PublicationType.BOOK);
-    publicationTypes.put("bookseries", PublicationType.BOOK_SERIES);
-    publicationTypes.put("database", PublicationType.DATABASE);
-    publicationTypes.put("journal", PublicationType.JOURNAL);
-    publicationTypes.put("newsletter", PublicationType.NEWSLETTER);
-    publicationTypes.put("newspaper", PublicationType.NEWSPAPER);
-    publicationTypes.put("proceedings", PublicationType.PROCEEDINGS);
-    publicationTypes.put("report", PublicationType.REPORT);
-    publicationTypes.put("streamingaudio", PublicationType.STREAMING_AUDIO);
-    publicationTypes.put("streamingvideo", PublicationType.STREAMING_VIDEO);
-    publicationTypes.put("thesisdissertation", PublicationType.THESIS_DISSERTATION);
-    publicationTypes.put("website", PublicationType.WEBSITE);
-    publicationTypes.put("unspecified", PublicationType.UNSPECIFIED);
+    BidiMap<String, PublicationType> bidiMap = new TreeBidiMap<>();
+    bidiMap.put("audiobook", PublicationType.AUDIOBOOK);
+    bidiMap.put("book", PublicationType.BOOK);
+    bidiMap.put("bookseries", PublicationType.BOOK_SERIES);
+    bidiMap.put("database", PublicationType.DATABASE);
+    bidiMap.put("journal", PublicationType.JOURNAL);
+    bidiMap.put("newsletter", PublicationType.NEWSLETTER);
+    bidiMap.put("newspaper", PublicationType.NEWSPAPER);
+    bidiMap.put("proceedings", PublicationType.PROCEEDINGS);
+    bidiMap.put("report", PublicationType.REPORT);
+    bidiMap.put("streamingaudio", PublicationType.STREAMING_AUDIO);
+    bidiMap.put("streamingvideo", PublicationType.STREAMING_VIDEO);
+    bidiMap.put("thesisdissertation", PublicationType.THESIS_DISSERTATION);
+    bidiMap.put("website", PublicationType.WEBSITE);
+    bidiMap.put("unspecified", PublicationType.UNSPECIFIED);
+    publicationTypes = UnmodifiableBidiMap.unmodifiableBidiMap(bidiMap);
   }
 
   public Token convertToken(TokenInfo tokenInfo) {

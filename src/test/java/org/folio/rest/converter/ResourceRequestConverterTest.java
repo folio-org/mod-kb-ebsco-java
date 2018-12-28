@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
@@ -14,8 +15,8 @@ import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rmapi.model.ResourcePut;
 import org.junit.Test;
 
-public class ResourcesConverterTest {
-  private ResourcesConverter resourcesConverter = new ResourcesConverter();
+public class ResourceRequestConverterTest {
+  private ResourceRequestConverter resourcesConverter = new ResourceRequestConverter();
 
   @Test
   public void shouldCreateRequestToSelectManagedResource() {
@@ -24,7 +25,7 @@ public class ResourcesConverterTest {
         .withIsSelected(true)));
     assertTrue(resourcePut.getIsSelected());
   }
-  
+
   @Test
   public void shouldCreateRequestToSelectCustomResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -42,7 +43,7 @@ public class ResourcesConverterTest {
           .withId("test-proxy-id"))));
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateProxyForCustomResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -52,7 +53,7 @@ public class ResourcesConverterTest {
           .withId("test-proxy-id"))));
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateIsHiddenForCustomResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -62,7 +63,7 @@ public class ResourcesConverterTest {
           .withIsHidden(true))));
     assertTrue(resourcePut.getIsHidden());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateCoverageStatementForManagedResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -71,7 +72,7 @@ public class ResourcesConverterTest {
         .withCoverageStatement("test coverage stmt")));
       assertEquals("test coverage stmt", resourcePut.getCoverageStatement());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateCoverageStatementForCustomResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -80,7 +81,7 @@ public class ResourcesConverterTest {
         .withCoverageStatement("test coverage stmt")));
     assertEquals("test coverage stmt", resourcePut.getCoverageStatement());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateIsHiddenForManagedResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -90,7 +91,7 @@ public class ResourcesConverterTest {
             .withIsHidden(false))));
       assertFalse(resourcePut.getIsHidden());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateCustomEmbargoPeriodForManagedResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -102,7 +103,7 @@ public class ResourcesConverterTest {
       assertEquals("Days", resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
       assertEquals(10, (long)resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateCustomEmbargoPeriodForCustomResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
@@ -123,7 +124,7 @@ public class ResourcesConverterTest {
         .withPublicationType(PublicationType.BOOK_SERIES)));
       assertEquals("Book Series", resourcePut.getPubType());
   }
-  
+
   @Test
   public void shouldCreateRequestToUpdateIsPeerReviewedForCustomResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(

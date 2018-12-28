@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.configuration;
 
 import org.folio.rest.jaxrs.model.ConfigurationStatus;
 import org.folio.rest.jaxrs.model.StatusAttributes;

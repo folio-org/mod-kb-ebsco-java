@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.configuration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.config.RMAPIConfiguration;
