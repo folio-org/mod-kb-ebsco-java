@@ -1,4 +1,4 @@
-package org.folio.config;
+package org.folio.config.impl;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.model.ConfigurationError;
 import org.folio.http.ConfigurationClientProvider;
@@ -19,6 +20,8 @@ import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.validator.ValidatorUtil;
 import org.folio.rmapi.RMAPIService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.vertx.core.Context;
 import io.vertx.core.buffer.Buffer;
@@ -29,6 +32,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * Retrieves the RM API connection details from mod-configuration.
  */
+@Component(value = "rmAPIConfigurationServiceImpl")
 public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService {
 
   private static final String EBSCO_URL_CODE = "kb.ebsco.url";
@@ -42,12 +46,13 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
   /**
    * @param configurationClientProvider object used to get http client for sending request to okapi
    */
+  @Autowired
   public RMAPIConfigurationServiceImpl(ConfigurationClientProvider configurationClientProvider) {
     this.configurationClientProvider = configurationClientProvider;
   }
 
   @Override
-  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData, Context vertxContext) {
+  public CompletableFuture<RMAPIConfiguration> retrieveConfiguration(OkapiData okapiData) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations ->
         CompletableFuture.completedFuture(mapResults(configurations.getJsonArray("configs"))));
@@ -57,7 +62,7 @@ public class RMAPIConfigurationServiceImpl implements RMAPIConfigurationService 
    * Removes old configuration and adds new configuration for RM API
    */
   @Override
-  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, Context vertxContext, OkapiData okapiData) {
+  public CompletableFuture<RMAPIConfiguration> updateConfiguration(RMAPIConfiguration rmapiConfiguration, OkapiData okapiData) {
     return retrieveConfigurations(okapiData)
       .thenCompose(configurations -> {
         List<String> ids = mapToIds(configurations.getJsonArray("configs"));

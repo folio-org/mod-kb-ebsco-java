@@ -7,7 +7,9 @@ import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ResourcePostValidator {
 
   public void validate(ResourcePostRequest request) {

@@ -9,7 +9,9 @@ import org.folio.rest.jaxrs.model.ProxyTypesDataAttributes;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.ProxyWithUrl;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProxyConverter {
 
   public ProxyTypes convert(Proxies proxies) {

@@ -9,7 +9,7 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.impl.HttpClientResponseImpl;
 import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.config.RMAPIConfigurationServiceImpl;
+import org.folio.config.impl.RMAPIConfigurationServiceImpl;
 import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.jaxrs.model.Config;
@@ -55,7 +55,7 @@ public class RMAPIConfigurationServiceTest {
     when(response.bodyHandler(any())).thenAnswer(new HandleBodyAnswer(new BufferImpl()));
     doAnswer(new HandleResponseAnswer(response, 5))
       .when(mockConfigurationsClient).getEntries(anyString(), anyInt(), anyInt(), any(), any(), any());
-    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA, null);
+    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA);
     assertTrue(future.isCompletedExceptionally());
   }
 
@@ -63,7 +63,7 @@ public class RMAPIConfigurationServiceTest {
   public void shouldCompleteExceptionallyWhenHttpClientThrowsException() throws Exception {
     doThrow(new UnsupportedEncodingException()).when(mockConfigurationsClient)
       .getEntries(anyString(), anyInt(), anyInt(), any(), any(), any());
-    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA, null);
+    CompletableFuture<RMAPIConfiguration> future = configurationService.retrieveConfiguration(OKAPI_DATA);
     assertTrue(future.isCompletedExceptionally());
   }
 
@@ -91,7 +91,7 @@ public class RMAPIConfigurationServiceTest {
     doAnswer(new HandleResponseAnswer(deleteResponse, 2))
       .when(mockConfigurationsClient).deleteEntryId(any(), any(), any());
 
-    CompletableFuture<RMAPIConfiguration> future = configurationService.updateConfiguration(RMAPIConfiguration.builder().build(), null , OKAPI_DATA);
+    CompletableFuture<RMAPIConfiguration> future = configurationService.updateConfiguration(RMAPIConfiguration.builder().build(), OKAPI_DATA);
     assertTrue(future.isCompletedExceptionally());
   }
 

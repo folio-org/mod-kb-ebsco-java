@@ -36,7 +36,10 @@ import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.TokenInfo;
 import org.folio.rmapi.model.VendorById;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PackagesConverter {
 
   private static final Map<String, ContentType> contentTypes = new HashMap<>();
@@ -63,15 +66,12 @@ public class PackagesConverter {
     contentTypeToRMAPICode.put(ContentType.ONLINE_REFERENCE, 7);
   }
 
+  @Autowired
   private CommonAttributesConverter commonConverter;
+  @Autowired
   private VendorConverter vendorConverter;
+  @Autowired
   private ResourcesConverter resourcesConverter;
-
-  public PackagesConverter() {
-    this.commonConverter = new CommonAttributesConverter();
-    this.vendorConverter = new VendorConverter(commonConverter, this);
-    this.resourcesConverter = new ResourcesConverter(commonConverter, vendorConverter, this);
-  }
 
   public PackageCollection convert(Packages packages) {
     List<PackageCollectionItem> packageList = packages.getPackagesList().stream()

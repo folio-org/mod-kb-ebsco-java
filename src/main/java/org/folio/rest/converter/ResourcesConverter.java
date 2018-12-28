@@ -30,28 +30,22 @@ import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.Titles;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.folio.rmapi.model.VendorById;
 
+@Component
 public class ResourcesConverter {
+
+  @Autowired
   private CommonAttributesConverter commonConverter;
-
+  @Autowired
   private TitleConverter titleConverter;
+  @Autowired
   private VendorConverter vendorConverter;
+  @Autowired
   private PackagesConverter packagesConverter;
-
-  public ResourcesConverter() {
-    this.commonConverter = new CommonAttributesConverter();
-    this.packagesConverter = new PackagesConverter();
-    this.vendorConverter = new VendorConverter(commonConverter, packagesConverter);
-    this.titleConverter = new TitleConverter(commonConverter,this);
-  }
-
-  public ResourcesConverter(CommonAttributesConverter commonConverter, VendorConverter vendorConverter, PackagesConverter packagesConverter) {
-    this.commonConverter = commonConverter;
-    this.packagesConverter = packagesConverter;
-    this.vendorConverter = vendorConverter;
-    this.titleConverter = new TitleConverter(commonConverter, this);
-  }
 
   public List<Resource> convertFromRMAPIResource(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
     return title.getCustomerResourcesList().stream().map(resource -> {

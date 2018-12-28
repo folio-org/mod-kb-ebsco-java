@@ -75,7 +75,7 @@ public abstract class WireMockTestBase {
 
   @Before
   public void setUp() throws Exception {
-    new RMAPIConfigurationCache(vertx).invalidate(STUB_TENANT);
+    new RMAPIConfigurationCache(vertx, 100L).invalidate(STUB_TENANT);
   }
 
   /**

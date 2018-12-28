@@ -9,7 +9,9 @@ import java.util.Objects;
 
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.Sort;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TitleParametersValidator {
 
   private static final List<String> FILTER_SELECTED_VALUES = Arrays.asList("true", "false", "ebsco");
@@ -26,7 +28,7 @@ public class TitleParametersValidator {
     validateFilter(filterQuery, allowNullFilters);
     validateSort(sort);
   }
-  
+
   public void validate(FilterQuery filterQuery, String sort, Boolean allowNullFilters) {
     validateFilter(filterQuery, allowNullFilters);
     validateSort(sort);
@@ -62,6 +64,6 @@ public class TitleParametersValidator {
       throw new ValidationException("Invalid sort parameter");
     }
   }
-  
+
 }
 

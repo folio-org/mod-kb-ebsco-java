@@ -9,7 +9,9 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ResourcePutBodyValidator {
 
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";

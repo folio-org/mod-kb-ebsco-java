@@ -9,10 +9,12 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
 import org.folio.rest.jaxrs.model.TitlePostIncluded;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.springframework.stereotype.Component;
 
 /**
  * Verifies that post data for titles are valid
  */
+@Component
 public class TitlesPostBodyValidator {
 
   private static final String INVALID_POST_BODY = "Invalid request body";

@@ -9,10 +9,18 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rmapi.model.PackagePut;
+import org.folio.spring.config.TestConfig;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = TestConfig.class)
 public class PackagesConverterTest {
-  private PackagesConverter packagesConverter = new PackagesConverter();
+  @Autowired
+  private PackagesConverter packagesConverter;
 
   @Test
   public void shouldCreateRequestToSelectPackage() {

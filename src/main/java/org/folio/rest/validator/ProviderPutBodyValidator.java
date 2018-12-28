@@ -2,7 +2,9 @@ package org.folio.rest.validator;
 
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProviderPutBodyValidator {
 
   private static final int MAX_TOKEN_LENGTH = 500;
@@ -14,11 +16,11 @@ public class ProviderPutBodyValidator {
    *           if put validation fails
    */
   public void validate(ProviderPutRequest putRequest) {
-    if (putRequest != null 
-        && putRequest.getData() != null 
-        && putRequest.getData().getAttributes() != null 
-        && putRequest.getData().getAttributes().getProviderToken() != null 
-        && putRequest.getData().getAttributes().getProviderToken().getValue() != null 
+    if (putRequest != null
+        && putRequest.getData() != null
+        && putRequest.getData().getAttributes() != null
+        && putRequest.getData().getAttributes().getProviderToken() != null
+        && putRequest.getData().getAttributes().getProviderToken().getValue() != null
         && putRequest.getData().getAttributes().getProviderToken().getValue().length() > MAX_TOKEN_LENGTH) {
       throw new InputValidationException(INVALID_VALUE, VALUE_TOO_LONG);
     }

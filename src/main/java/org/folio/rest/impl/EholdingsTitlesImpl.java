@@ -6,10 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.TitleConverter;
@@ -28,11 +25,14 @@ import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.model.TitlePost;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -45,36 +45,23 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsTitlesImpl.class);
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
   private TitleConverter converter;
+  @Autowired
   private TitleParametersValidator parametersValidator;
+  @Autowired
   private IdParser idParser;
 
+  @Autowired
   private TitlesPostBodyValidator titlesPostBodyValidator;
-  public EholdingsTitlesImpl() {
-    this(
-      new RMAPIConfigurationServiceCache(
-        new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new HeaderValidator(),
-      new TitleParametersValidator(),
-      new TitlesPostBodyValidator(),
-      new TitleConverter(),
-      new IdParser());
-  }
 
-  public EholdingsTitlesImpl(RMAPIConfigurationService configurationService,
-                             HeaderValidator headerValidator,
-                             TitleParametersValidator parametersValidator,
-                             TitlesPostBodyValidator titlesPostBodyValidator,
-                             TitleConverter converter,
-                             IdParser idParser) {
-    this.configurationService = configurationService;
-    this.headerValidator = headerValidator;
-    this.converter = converter;
-    this.parametersValidator = parametersValidator;
-    this.titlesPostBodyValidator = titlesPostBodyValidator;
-    this.idParser = idParser;
+  @SuppressWarnings("squid:S1172")
+  public EholdingsTitlesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
@@ -95,7 +82,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -126,7 +113,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     MutableObject<RMAPIService> service = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenAccept(rmapiConfiguration ->
         service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner())))
@@ -151,7 +138,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());

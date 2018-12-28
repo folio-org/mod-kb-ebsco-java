@@ -2,7 +2,6 @@ package org.folio.rest.impl;
 
 import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
 import static org.folio.http.HttpConsts.JSON_API_TYPE;
-import static org.folio.rest.validator.ValidatorUtil.*;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -13,13 +12,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.http.HttpStatus;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.PackagesConverter;
@@ -38,6 +35,8 @@ import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.model.VendorPut;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -47,40 +46,23 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
   private VendorConverter converter;
+  @Autowired
   private PackagesConverter packagesConverter;
+  @Autowired
   private ProviderPutBodyValidator bodyValidator;
+  @Autowired
   private PackageParametersValidator parametersValidator;
+  @Autowired
   private IdParser idParser;
 
   public EholdingsProvidersImpl() {
-    this(
-      new RMAPIConfigurationServiceCache(
-        new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new HeaderValidator(),
-      new VendorConverter(),
-      new ProviderPutBodyValidator(),
-      new PackagesConverter(),
-      new PackageParametersValidator(),
-      new IdParser());
-  }
-
-  public EholdingsProvidersImpl(RMAPIConfigurationService configurationService,
-                                HeaderValidator headerValidator,
-                                VendorConverter converter,
-                                ProviderPutBodyValidator bodyValidator,
-                                PackagesConverter packageConverter,
-                                PackageParametersValidator parametersValidator,
-                                IdParser idParser) {
-    this.configurationService = configurationService;
-    this.headerValidator = headerValidator;
-    this.converter = converter;
-    this.bodyValidator = bodyValidator;
-    this.packagesConverter = packageConverter;
-    this.parametersValidator = parametersValidator;
-    this.idParser = idParser;
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
@@ -92,7 +74,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     validateQuery(q);
 
     CompletableFuture.completedFuture(null)
-    .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+    .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
     .thenCompose(rmapiConfiguration -> {
       RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
         rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -130,7 +112,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     headerValidator.validate(okapiHeaders);
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -165,7 +147,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     VendorPut rmapiVendor = converter.convertToVendor(entity);
 
     CompletableFuture.completedFuture(null)
-        .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+        .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
         .thenCompose(rmapiConfiguration -> {
           RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(),
               rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -198,7 +180,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());

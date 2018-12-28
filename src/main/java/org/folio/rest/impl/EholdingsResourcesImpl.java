@@ -12,10 +12,7 @@ import java.util.concurrent.CompletionStage;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.ResourcesConverter;
 import org.folio.rest.exception.InputValidationException;
@@ -35,6 +32,8 @@ import org.folio.rest.validator.HeaderValidator;
 import org.folio.rest.validator.ResourcePostValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.ResourceSelectedPayload;
 import org.folio.rmapi.model.Title;
@@ -45,6 +44,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -58,37 +58,22 @@ public class EholdingsResourcesImpl implements EholdingsResources{
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsResourcesImpl.class);
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
   private ResourcesConverter converter;
+  @Autowired
   private IdParser idParser;
+  @Autowired
   private ResourcePostValidator postValidator;
+  @Autowired
   private ResourcePutBodyValidator resourcePutBodyValidator;
-  
-  public EholdingsResourcesImpl() {
-    this(
-      new RMAPIConfigurationServiceCache(
-        new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-      new HeaderValidator(),
-      new ResourcePostValidator(),
-      new ResourcesConverter(),
-      new IdParser(),
-      new ResourcePutBodyValidator());
-  }
 
-  public EholdingsResourcesImpl(RMAPIConfigurationService configurationService,
-      HeaderValidator headerValidator,
-      ResourcePostValidator postValidator,
-      ResourcesConverter converter,
-      IdParser idParser,
-      ResourcePutBodyValidator resourcePutBodyValidator) {
-    this.configurationService = configurationService;
-    this.headerValidator = headerValidator;
-    this.postValidator = postValidator;
-    this.converter = converter;
-    this.idParser = idParser;
-    this.resourcePutBodyValidator = resourcePutBodyValidator;
-}
+  public EholdingsResourcesImpl() {
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
+  }
 
   @Override
   @HandleValidationErrors
@@ -104,7 +89,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
 
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner()));
@@ -146,7 +131,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
     boolean includeTitle = includedObjects.contains("title");
 
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         RMAPIService rmapiService = new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner());
@@ -177,7 +162,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
     headerValidator.validate(okapiHeaders);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertxContext.owner()));
@@ -222,7 +207,7 @@ public class EholdingsResourcesImpl implements EholdingsResources{
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
     MutableObject<RMAPIService> rmapiService = new MutableObject<>();
     CompletableFuture.completedFuture(null)
-      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(okapiData -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenCompose(rmapiConfiguration -> {
         rmapiService.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getAPIKey(),
           rmapiConfiguration.getUrl(), vertxContext.owner()));

@@ -1,18 +1,14 @@
 package org.folio.rest.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.config.RMAPIConfiguration;
-import org.folio.config.RMAPIConfigurationServiceCache;
-import org.folio.config.RMAPIConfigurationServiceImpl;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.config.exception.RMAPIConfigurationInvalidException;
-import org.folio.http.ConfigurationClientProvider;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.RMAPIConfigurationConverter;
 import org.folio.rest.jaxrs.model.Configuration;
@@ -23,33 +19,33 @@ import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.ConfigurationPutBodyValidator;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class EholdingsConfigurationImpl implements EholdingsConfiguration {
 
   private static final String UPDATE_ERROR_MESSAGE = "Failed to update configuration";
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
+  @Autowired
   private RMAPIConfigurationService configurationService;
+  @Autowired
   private RMAPIConfigurationConverter converter;
+  @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
   private ConfigurationPutBodyValidator bodyValidator;
 
   public EholdingsConfigurationImpl() {
-    this(
-         new RMAPIConfigurationServiceCache(
-           new RMAPIConfigurationServiceImpl(new ConfigurationClientProvider())),
-         new RMAPIConfigurationConverter(), new HeaderValidator(), new ConfigurationPutBodyValidator());
-  }
-
-  public EholdingsConfigurationImpl(RMAPIConfigurationService configurationService, RMAPIConfigurationConverter converter, HeaderValidator headerValidator, ConfigurationPutBodyValidator bodyValidator) {
-    this.configurationService = configurationService;
-    this.converter = converter;
-    this.headerValidator = headerValidator;
-    this.bodyValidator = bodyValidator;
+    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
   @Override
@@ -57,7 +53,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   public void getEholdingsConfiguration(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
     CompletableFuture.completedFuture(null)
-      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders), vertxContext))
+      .thenCompose(o -> configurationService.retrieveConfiguration(new OkapiData(okapiHeaders)))
       .thenAccept(rmapiConfiguration -> {
         Configuration configuration = converter.convertToConfiguration(rmapiConfiguration);
         asyncResultHandler.handle(Future.succeededFuture(GetEholdingsConfigurationResponse.respond200WithApplicationVndApiJson(configuration)));
@@ -91,7 +87,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
         }
         return CompletableFuture.completedFuture(null);
       })
-      .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, vertxContext, okapiData.getValue()))
+      .thenCompose(o -> configurationService.updateConfiguration(rmapiConfiguration, okapiData.getValue()))
       .thenAccept(configuration ->
         asyncResultHandler.handle(Future.succeededFuture(PutEholdingsConfigurationResponse
           .respond200WithApplicationVndApiJson(converter.convertToConfiguration(rmapiConfiguration)))))

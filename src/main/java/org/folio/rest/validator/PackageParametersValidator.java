@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Objects;
 import javax.validation.ValidationException;
 import org.folio.rest.model.Sort;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PackageParametersValidator {
 
   private static final List<String> FILTER_SELECTED_VALUES = Arrays.asList("true", "false", "ebsco");
