@@ -18,6 +18,7 @@ public class ResourcePutBodyValidator {
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
   private static final String INVALID_IS_SELECTED_TITLE = "Resource cannot be updated unless added to holdings";
   private static final String INVALID_IS_SELECTED_DETAILS = "Resource must be added to holdings to be able to update";
+  private static final String IS_SELECTED_MUST_NOT_BE_EMPTY = "isSelected must not be empty";
 
   public void validate(ResourcePutRequest request, boolean isTitleCustom) {
     if (request == null ||
@@ -27,18 +28,22 @@ public class ResourcePutBodyValidator {
     }
 
     ResourceDataAttributes attributes = request.getData().getAttributes();
-    boolean isSelected = attributes.getIsSelected();
+
+    Boolean isSelected = attributes.getIsSelected();
+    if (Objects.isNull(isSelected)) {
+      throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, IS_SELECTED_MUST_NOT_BE_EMPTY);
+    }
     String cvgStmt = attributes.getCoverageStatement();
 
     /*
      * Updates cannot be made to a resource unless it is selected
      */
-    if(isSelected) {
+    if (isSelected) {
       /*
        * Following fields can be updated only for a custom resource although UI sends complete payload
        * for both managed and custom resources
        */
-      if(isTitleCustom) {
+      if (isTitleCustom) {
         validateCustomResource(attributes);
       }
 
@@ -46,7 +51,7 @@ public class ResourcePutBodyValidator {
        * Following fields can be updated only for a managed resource although UI sends complete payload
        * for both managed and custom resources
        */
-      if(!StringUtils.isBlank(cvgStmt)) {
+      if (!StringUtils.isBlank(cvgStmt)) {
         ValidatorUtil.checkMaxLength("coverageStatement", cvgStmt, 250);
       }
       attributes.getCustomCoverages().forEach(customCoverage -> {
@@ -78,16 +83,16 @@ public class ResourcePutBodyValidator {
     ValidatorUtil.checkIsBlank("name", name);
     ValidatorUtil.checkMaxLength("name", name, 400);
     ValidatorUtil.checkIsBlank("publicationType", pubType);
-    if(!StringUtils.isBlank(pubName)) {
+    if (!StringUtils.isBlank(pubName)) {
       ValidatorUtil.checkMaxLength("publisherName", pubName, 250);
     }
-    if(!StringUtils.isBlank(edition)) {
+    if (!StringUtils.isBlank(edition)) {
       ValidatorUtil.checkMaxLength("edition", edition, 250);
     }
-    if(!StringUtils.isBlank(description)) {
+    if (!StringUtils.isBlank(description)) {
       ValidatorUtil.checkMaxLength("description", description, 400);
     }
-    if(!StringUtils.isBlank(url)) {
+    if (!StringUtils.isBlank(url)) {
       ValidatorUtil.checkMaxLength("url", url, 600);
       ValidatorUtil.checkUrlFormat("url", url);
     }
