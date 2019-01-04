@@ -10,7 +10,14 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.packages.PackageRequestConverter;
@@ -38,12 +45,6 @@ import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
 import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -54,6 +55,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   @Autowired
   private PackageRequestConverter converter;
+  @Autowired
+  private Converter<PackagePostRequest, PackagePost> packagePostRequestConverter;
   @Autowired
   private PackageParametersValidator packageParametersValidator;
   @Autowired
@@ -102,7 +105,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void postEholdingsPackages(String contentType, PackagePostRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     packagesPostBodyValidator.validate(entity);
 
-    PackagePost packagePost = converter.convertToPackage(entity);
+    PackagePost packagePost = packagePostRequestConverter.convert(entity);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((rmapiService, okapiData) ->

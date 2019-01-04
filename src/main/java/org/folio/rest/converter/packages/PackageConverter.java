@@ -1,6 +1,6 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.packages.PackageRequestConverter.createEmptyPackageRelationship;
+import static org.folio.rest.converter.packages.PackageConverterUtils.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
@@ -8,7 +8,11 @@ import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.folio.rest.converter.util.CommonAttributesConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
 import org.folio.rest.jaxrs.model.HasManyRelationship;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -19,15 +23,14 @@ import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.ResourceCollection;
+import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
 import org.folio.rmapi.model.Titles;
+import org.folio.rmapi.model.TokenInfo;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.result.PackageResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
 
 @Component
 public class PackageConverter implements Converter<PackageResult, Package> {
@@ -40,10 +43,11 @@ public class PackageConverter implements Converter<PackageResult, Package> {
   @Autowired
   private Converter<Titles, ResourceCollection> resourcesConverter;
   @Autowired
-  private CommonAttributesConverter commonConverter;
+  private Converter<TokenInfo, Token> tokenInfoConverter;
+
 
   @Override
-  public Package convert(PackageResult result) {
+  public Package convert(@NonNull PackageResult result) {
     PackageByIdData packageByIdData = result.getPackageData();
     Titles titles = result.getTitles();
     VendorById vendor = result.getVendor();
@@ -57,7 +61,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
       .withType(PACKAGES_TYPE)
       .getAttributes()
       .withProxy(convertToProxy(packageByIdData.getProxy()))
-      .withPackageToken(commonConverter.convertToken(packageByIdData.getPackageToken()));
+      .withPackageToken(tokenInfoConverter.convert(packageByIdData.getPackageToken()));
 
     if (titles != null) {
       packageData.getData()

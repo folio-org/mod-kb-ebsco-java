@@ -1,13 +1,17 @@
 package org.folio.rest.converter.providers;
 
-import static org.folio.rest.converter.providers.ProviderRequestConverter.createEmptyProviderRelationships;
+import static org.folio.rest.converter.providers.ProviderConverterUtils.createEmptyProviderRelationships;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.folio.rest.converter.util.CommonAttributesConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Packages;
@@ -17,24 +21,22 @@ import org.folio.rest.jaxrs.model.ProviderDataAttributes;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
+import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.model.TokenInfo;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.result.VendorResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
 
 @Component
 public class ProviderConverter implements Converter<VendorResult, Provider> {
 
   @Autowired
-  CommonAttributesConverter commonConverter;
-  @Autowired
   private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
+  @Autowired
+  private Converter<TokenInfo, Token> tokenInfoConverter;
 
   @Override
-  public Provider convert(VendorResult result) {
+  public Provider convert(@NonNull VendorResult result) {
     VendorById vendor = result.getVendor();
     org.folio.rmapi.model.Packages packages = result.getPackages();
 
@@ -48,7 +50,7 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
           .withPackagesTotal(vendor.getPackagesTotal())
           .withPackagesSelected(vendor.getPackagesSelected())
           .withSupportsCustomPackages(vendor.isCustomer())
-          .withProviderToken(commonConverter.convertToken(vendorToken))
+          .withProviderToken(tokenInfoConverter.convert(vendorToken))
           .withProxy(new Proxy()
             .withId(vendor.getProxy().getId())
             .withInherited(vendor.getProxy().getInherited()))

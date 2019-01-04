@@ -2,40 +2,28 @@ package org.folio.rest.converter.resources;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.folio.rest.converter.util.CommonAttributesConverter;
+import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
-import org.folio.rest.jaxrs.model.HasOneRelationship;
-import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
-import org.folio.rest.jaxrs.model.ResourceRelationships;
+import org.folio.rmapi.model.Contributor;
 import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.EmbargoPeriod;
+import org.folio.rmapi.model.Identifier;
 import org.folio.rmapi.model.ResourcePut;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceRequestConverter {
 
   @Autowired
-  private CommonAttributesConverter commonConverter;
+  private Converter<List<org.folio.rest.jaxrs.model.Identifier>, List<Identifier>> toIdentifiersConverter;
+  @Autowired
+  private Converter<List<Contributors>, List<Contributor>> toContributorsConverter;
 
-  public static ResourceRelationships createEmptyRelationship() {
-    return new ResourceRelationships()
-      .withProvider(new HasOneRelationship()
-        .withMeta(
-          new MetaDataIncluded()
-            .withIncluded(false)))
-      .withPackage(new HasOneRelationship().withMeta(
-        new MetaDataIncluded()
-          .withIncluded(false)))
-      .withTitle(new HasOneRelationship().withMeta(
-        new MetaDataIncluded()
-          .withIncluded(false)));
-  }
 
   public org.folio.rmapi.model.ResourcePut convertToRMAPIResourcePutRequest(ResourcePutRequest entity) {
     ResourceDataAttributes attributes = entity.getData().getAttributes();
@@ -55,10 +43,10 @@ public class ResourceRequestConverter {
     builder.description(attributes.getDescription());
     builder.url(attributes.getUrl());
     if (attributes.getIdentifiers() != null && !attributes.getIdentifiers().isEmpty()) {
-      builder.identifiersList(commonConverter.convertToIdentifiers(attributes.getIdentifiers()));
+      builder.identifiersList(toIdentifiersConverter.convert(attributes.getIdentifiers()));
     }
     if (attributes.getContributors() != null && !attributes.getContributors().isEmpty()) {
-      builder.contributorsList(commonConverter.convertToContributors(attributes.getContributors()));
+      builder.contributorsList(toContributorsConverter.convert(attributes.getContributors()));
     }
     return builder.build();
   }

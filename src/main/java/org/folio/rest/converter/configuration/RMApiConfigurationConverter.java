@@ -1,27 +1,28 @@
 package org.folio.rest.converter.configuration;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.config.RMAPIConfiguration;
-import org.folio.rest.jaxrs.model.ConfigurationAttributes;
-import org.folio.rest.jaxrs.model.Configuration;
-import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
-import org.folio.rest.jaxrs.model.ConfigurationData;
-import org.folio.rest.util.RestConstants;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-/**
- * Converts objects between REST API representation and internal representation
- */
+import org.folio.config.RMAPIConfiguration;
+import org.folio.rest.jaxrs.model.Configuration;
+import org.folio.rest.jaxrs.model.ConfigurationAttributes;
+import org.folio.rest.jaxrs.model.ConfigurationData;
+import org.folio.rest.util.RestConstants;
+
 @Component
-public class RMAPIConfigurationConverter {
+public class RMApiConfigurationConverter implements Converter<RMAPIConfiguration, Configuration> {
+
   private final String defaultUrl;
 
-  public RMAPIConfigurationConverter(@Value("${configuration.base.url.default}") String defaultUrl) {
+  public RMApiConfigurationConverter(@Value("${configuration.base.url.default}") String defaultUrl) {
     this.defaultUrl = defaultUrl;
   }
 
-  public Configuration convertToConfiguration(RMAPIConfiguration rmAPIConfig) {
+  @Override
+  public Configuration convert(@NonNull RMAPIConfiguration rmAPIConfig) {
     Configuration jsonConfig = new Configuration();
     jsonConfig.setData(new ConfigurationData());
     jsonConfig.getData().setId("configuration");
@@ -36,16 +37,5 @@ public class RMAPIConfigurationConverter {
     jsonConfig.getData().getAttributes().setRmapiBaseUrl(baseUrl);
     jsonConfig.setJsonapi(RestConstants.JSONAPI);
     return jsonConfig;
-  }
-
-  public RMAPIConfiguration convertToRMAPIConfiguration(ConfigurationPutRequest configuration) {
-    String rmapiBaseUrl = configuration.getData().getAttributes().getRmapiBaseUrl();
-    rmapiBaseUrl = rmapiBaseUrl != null ? rmapiBaseUrl : defaultUrl;
-
-    RMAPIConfiguration.RMAPIConfigurationBuilder builder = RMAPIConfiguration.builder();
-    builder.url(rmapiBaseUrl);
-    builder.apiKey(configuration.getData().getAttributes().getApiKey());
-    builder.customerId(configuration.getData().getAttributes().getCustomerId());
-    return builder.build();
   }
 }

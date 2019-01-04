@@ -1,10 +1,14 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.packages.PackageRequestConverter.createEmptyPackageRelationship;
+import static org.folio.rest.converter.packages.PackageConverterUtils.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
@@ -12,8 +16,6 @@ import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.rmapi.model.PackageData;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
 
 @Component
 public class PackageCollectionItemConverter implements Converter<PackageData, PackageCollectionItem> {
@@ -30,7 +32,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
   }
 
   @Override
-  public PackageCollectionItem convert(PackageData packageData) {
+  public PackageCollectionItem convert(@NonNull PackageData packageData) {
     Integer providerId = packageData.getVendorId();
     String providerName = packageData.getVendorName();
     Integer packageId = packageData.getPackageId();

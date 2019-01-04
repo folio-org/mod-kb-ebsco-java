@@ -5,9 +5,15 @@ import java.util.Map;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.providers.ProviderRequestConverter;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
@@ -22,19 +28,13 @@ import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
 
   @Autowired
-  private ProviderRequestConverter converter;
+  private Converter<ProviderPutRequest, VendorPut> putRequestConverter;
   @Autowired
   private ProviderPutBodyValidator bodyValidator;
   @Autowired
@@ -85,7 +85,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     bodyValidator.validate(entity);
 
-    VendorPut rmapiVendor = converter.convertToVendor(entity);
+    VendorPut rmapiVendor = putRequestConverter.convert(entity);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((rmapiService, okapiData) ->

@@ -1,7 +1,8 @@
 package org.folio.rest.converter.resources;
 
 import static java.util.stream.Collectors.toList;
-import static org.folio.rest.converter.resources.ResourceRequestConverter.createEmptyRelationship;
+
+import static org.folio.rest.converter.resources.ResourceConverterUtils.createEmptyRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
@@ -9,7 +10,11 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.folio.rest.converter.util.CommonResourceConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.Provider;
@@ -22,12 +27,9 @@ import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
 
 @Component
-public class ResourceListConverter implements Converter<ResourceResult, List<Resource>> {
+public class ResourceResultConverter implements Converter<ResourceResult, List<Resource>> {
 
   @Autowired
   private Converter<Title, ResourceCollectionItem> resourceCollectionItemConverter;
@@ -41,7 +43,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
   private Converter<PackageByIdData, Package> packageByIdConverter;
 
   @Override
-  public List<Resource> convert(ResourceResult resourceResult) {
+  public List<Resource> convert(@NonNull ResourceResult resourceResult) {
     Title title = resourceResult.getTitle();
     PackageByIdData packageData = resourceResult.getPackageData();
     VendorById vendor = resourceResult.getVendor();
@@ -50,7 +52,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
     return title.getCustomerResourcesList().stream().map(resource -> {
       Resource resultResource = new org.folio.rest.jaxrs.model.Resource()
         .withData(new ResourceCollectionItem()
-          .withId(String.valueOf(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId()))
+          .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
           .withType(ResourceCollectionItem.Type.RESOURCES)
           .withAttributes(commonResourceConverter.createResourceDataAttributes(title, resource))
           .withRelationships(createEmptyRelationship())
@@ -82,7 +84,7 @@ public class ResourceListConverter implements Converter<ResourceResult, List<Res
           .getRelationships()
           .withPackage(new HasOneRelationship()
             .withData(new RelationshipData()
-              .withId(String.valueOf(packageData.getVendorId() + "-" + packageData.getPackageId()))
+              .withId(packageData.getVendorId() + "-" + packageData.getPackageId())
               .withType(PACKAGES_TYPE)));
       }
       return resultResource;

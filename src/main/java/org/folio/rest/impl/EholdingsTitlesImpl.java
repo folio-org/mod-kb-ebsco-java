@@ -5,9 +5,15 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.titles.TitleRequestConverter;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
@@ -24,19 +30,13 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
 
   @Autowired
-  private TitleRequestConverter converter;
+  private Converter<TitlePostRequest, TitlePost> titlePostRequestConverter;
   @Autowired
   private TitleParametersValidator parametersValidator;
   @Autowired
@@ -77,7 +77,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   public void postEholdingsTitles(String contentType, TitlePostRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     titlesPostBodyValidator.validate(entity);
 
-    TitlePost titlePost = converter.convertToPost(entity);
+    TitlePost titlePost = titlePostRequestConverter.convert(entity);
     PackageId packageId = idParser.parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
