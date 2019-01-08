@@ -1,23 +1,14 @@
 package org.folio.rest.impl;
 
-import static org.folio.http.HttpConsts.CONTENT_TYPE_HEADER;
-import static org.folio.http.HttpConsts.JSON_API_TYPE;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.core.Response;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.apache.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import javax.ws.rs.core.Response;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.packages.PackageRequestConverter;
@@ -41,10 +32,11 @@ import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
-import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -195,12 +187,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
         GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
-      .addErrorMapper(RMAPIUnAuthorizedException.class, rmApiException ->
-        GetEholdingsPackagesResourcesByPackageIdResponse
-          .status(HttpStatus.SC_FORBIDDEN)
-          .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
-          .entity(ErrorUtil.createError(rmApiException.getMessage()))
-          .build())
       .executeWithResult(ResourceCollection.class);
   }
 }

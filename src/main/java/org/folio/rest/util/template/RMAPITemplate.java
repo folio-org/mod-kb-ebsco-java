@@ -134,7 +134,7 @@ public class RMAPITemplate {
         logger.error("Internal Server Error", e);
         errorHandler
           .addInputValidationMapper()
-          .addRmApiMapper()
+          .addRmApiMapping()
           .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;

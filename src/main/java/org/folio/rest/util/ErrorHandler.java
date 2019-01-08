@@ -1,19 +1,19 @@
 package org.folio.rest.util;
 
 import static org.folio.http.HttpConsts.JSON_API_TYPE;
-
+import static org.folio.rest.util.ErrorUtil.createErrorFromRMAPIResponse;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import org.apache.http.HttpStatus;
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rmapi.exception.RMAPIServiceException;
-
-import javax.ws.rs.core.Response;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import javax.ws.rs.core.Response;
+import org.apache.http.HttpStatus;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 
 /**
  * Utility class for mapping exceptions to response that is passed to io.vertx.core.Handler
@@ -66,14 +66,19 @@ public class ErrorHandler {
   }
 
   /**
-   * Register error mapper for RMAPIServiceException
+   * Register error mapping for RMAPIServiceException and RMAPIUnAuthorizedException
    * @return this
    */
-  public ErrorHandler addRmApiMapper() {
+  public ErrorHandler addRmApiMapping() {
+    add(RMAPIUnAuthorizedException.class, exception -> Response
+      .status(HttpStatus.SC_FORBIDDEN)
+      .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
+      .entity(createErrorFromRMAPIResponse(exception))
+      .build());
     add(RMAPIServiceException.class, exception -> Response
       .status(exception.getRMAPICode())
       .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
-      .entity(ErrorUtil.createErrorFromRMAPIResponse(exception))
+      .entity(createErrorFromRMAPIResponse(exception))
       .build());
     return this;
   }
