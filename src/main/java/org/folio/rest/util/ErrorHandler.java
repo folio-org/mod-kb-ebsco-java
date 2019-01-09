@@ -1,17 +1,19 @@
 package org.folio.rest.util;
 
+import static org.folio.http.HttpConsts.JSON_API_TYPE;
+import static org.folio.rest.util.ErrorUtil.createErrorFromRMAPIResponse;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import org.apache.http.HttpStatus;
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rmapi.exception.RMAPIServiceException;
-
-import javax.ws.rs.core.Response;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import javax.ws.rs.core.Response;
+import org.apache.http.HttpStatus;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
 
 /**
  * Utility class for mapping exceptions to response that is passed to io.vertx.core.Handler
@@ -26,7 +28,6 @@ import java.util.function.Function;
 public class ErrorHandler {
 
   private static final String CONTENT_TYPE_HEADER = "Content-Type";
-  private static final String CONTENT_TYPE_VALUE = "application/vnd.api+json";
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
 
   private Map<Class<? extends Throwable>, Function<? extends Throwable, Response>> errorMappers = new LinkedHashMap<>();
@@ -38,7 +39,7 @@ public class ErrorHandler {
    * @return this
    */
   public <T extends Throwable> ErrorHandler add(Class<T> exceptionClass, Function<T, Response> errorMapper) {
-    errorMappers.put(exceptionClass, errorMapper);
+    errorMappers.putIfAbsent(exceptionClass, errorMapper);
     return this;
   }
 
@@ -58,21 +59,26 @@ public class ErrorHandler {
   public ErrorHandler addInputValidationMapper() {
     add(InputValidationException.class, exception ->
       Response.status(HttpStatus.SC_BAD_REQUEST)
-        .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+        .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
         .entity(ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail()))
         .build());
     return this;
   }
 
   /**
-   * Register error mapper for RMAPIServiceException
+   * Register error mapping for RMAPIServiceException and RMAPIUnAuthorizedException
    * @return this
    */
-  public ErrorHandler addRmApiMapper() {
+  public ErrorHandler addRmApiMapping() {
+    add(RMAPIUnAuthorizedException.class, exception -> Response
+      .status(HttpStatus.SC_FORBIDDEN)
+      .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
+      .entity(createErrorFromRMAPIResponse(exception))
+      .build());
     add(RMAPIServiceException.class, exception -> Response
       .status(exception.getRMAPICode())
-      .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
-      .entity(ErrorUtil.createErrorFromRMAPIResponse(exception))
+      .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
+      .entity(createErrorFromRMAPIResponse(exception))
       .build());
     return this;
   }
@@ -103,7 +109,7 @@ public class ErrorHandler {
   private Function<Throwable, Response> getDefaultMapper() {
     return exception -> Response
       .status(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-      .header(CONTENT_TYPE_HEADER, CONTENT_TYPE_VALUE)
+      .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
       .entity(ErrorUtil.createError(INTERNAL_SERVER_ERROR)).build();
   }
 }
