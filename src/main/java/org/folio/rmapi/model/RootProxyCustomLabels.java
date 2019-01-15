@@ -14,8 +14,11 @@ public class RootProxyCustomLabels {
 
   @JsonProperty("proxy")
   private Proxy proxy;
-  
+
+  @JsonProperty("vendorId")
+  private String vendorId;
+
   @JsonProperty("labels")
   private List<CustomLabel> labelList;
-  
+
 }

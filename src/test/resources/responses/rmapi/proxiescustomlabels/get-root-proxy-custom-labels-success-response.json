@@ -2,6 +2,7 @@
   "proxy": {
     "id": "<n>"
   },
+  "vendorId": "111111",
   "labels": [
     {
       "id": 1,

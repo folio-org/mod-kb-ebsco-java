@@ -19,7 +19,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.mutable.MutableObject;
-
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -42,8 +41,8 @@ import org.folio.rmapi.model.Packages;
 import org.folio.rmapi.model.Proxies;
 import org.folio.rmapi.model.Proxy;
 import org.folio.rmapi.model.ResourceDeletePayload;
-import org.folio.rmapi.model.ResourceSelectedPayload;
 import org.folio.rmapi.model.ResourcePut;
+import org.folio.rmapi.model.ResourceSelectedPayload;
 import org.folio.rmapi.model.RootProxyCustomLabels;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.TitleCreated;
@@ -287,22 +286,15 @@ public class RMAPIService {
       .sort(sort)
       .build();
 
-    String packagesPath = providerId == null ? PACKAGES_PATH + "?" : VENDORS_PATH+ '/' + providerId + '/' + PACKAGES_PATH + "?";
+    String packagesPath = providerId == null ? PACKAGES_PATH + "?" : VENDORS_PATH + '/' + providerId + '/' + PACKAGES_PATH + "?";
 
     return this.getRequest(constructURL(packagesPath + path), Packages.class);
   }
 
-  public CompletableFuture<Vendors> getVendors(boolean filterCustom){
-    CompletableFuture<Vendors> vendorsList = completedFuture(Vendors.builder().build());
-    if (filterCustom) {
-      return retrieveProviders(customerId, 1, 25, Sort.RELEVANCE);
-    }
-    return vendorsList;
-  }
-
-  public Long getFirstProviderElement(Vendors vendors) {
-    List<Vendor> vendorList = vendors.getVendorList();
-    return (CollectionUtils.isEmpty(vendorList)) ? null : vendorList.get(0).getVendorId();
+  public CompletableFuture<Long> getVendorId(){
+    return retrieveRootProxyCustomLabels()
+      .thenCompose(rootProxyCustomLabels ->
+        CompletableFuture.completedFuture(Long.parseLong(rootProxyCustomLabels.getVendorId())));
   }
 
   public CompletableFuture<VendorResult> retrieveProvider(long id, String include) {
@@ -439,9 +431,7 @@ public class RMAPIService {
 
     MutableObject providerId = new MutableObject();
      return this
-      .retrieveProviders(customerId, 1, 25, Sort.RELEVANCE)
-      .thenCompose(
-        vendors -> completedFuture(this.getFirstProviderElement(vendors)))
+      .getVendorId()
       .thenCompose(vendorId -> {
         providerId.setValue(vendorId);
         return this.postPackage(entity, vendorId);
