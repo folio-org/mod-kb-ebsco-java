@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.folio.config.RMAPIConfiguration;
 import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.config.cache.RMAPIConfigurationCache;
+import org.folio.config.cache.VertxCache;
 import org.folio.config.model.ConfigurationError;
 import org.folio.rest.model.OkapiData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +22,12 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
 
   private RMAPIConfigurationService rmapiConfigurationService;
 
-  private RMAPIConfigurationCache rmapiConfigurationCache;
+  private VertxCache<RMAPIConfiguration> rmapiConfigurationCache;
 
   @Autowired
   public RMAPIConfigurationServiceCache(
     @Qualifier("rmAPIConfigurationServiceImpl") RMAPIConfigurationService rmapiConfigurationService,
-    RMAPIConfigurationCache rmapiConfigurationCache) {
+    @Qualifier("rmApiConfigurationCache") VertxCache<RMAPIConfiguration> rmapiConfigurationCache) {
     this.rmapiConfigurationService = rmapiConfigurationService;
     this.rmapiConfigurationCache = rmapiConfigurationCache;
   }
