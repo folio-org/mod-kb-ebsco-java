@@ -9,15 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.json.Json;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang.mutable.MutableObject;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -53,6 +44,15 @@ import org.folio.rmapi.model.Vendors;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class RMAPIService {
 
@@ -425,22 +425,10 @@ public class RMAPIService {
       .thenCompose(o -> this.retrieveResource(resourceId, Collections.emptyList()));
   }
 
-  public CompletableFuture<PackageByIdData> postPackage(PackagePost entity) {
-
-    MutableObject providerId = new MutableObject();
-     return this
-      .getVendorId()
-      .thenCompose(vendorId -> {
-        providerId.setValue(vendorId);
-        return this.postPackage(entity, vendorId);
-      })
-       .thenCompose(packageCreated -> retrievePackage(new PackageId((Long) providerId.getValue(), packageCreated.getPackageId())));
-
-  }
-
-  private CompletableFuture<PackageCreated> postPackage(PackagePost entity, Long id) {
-    String path = VENDORS_PATH + '/' + id + '/' + PACKAGES_PATH;
-    return this.postRequest(constructURL(path), entity, PackageCreated.class);
+  public CompletableFuture<PackageByIdData> postPackage(PackagePost entity, Long vendorId) {
+    String path = VENDORS_PATH + '/' + vendorId + '/' + PACKAGES_PATH;
+    return this.postRequest(constructURL(path), entity, PackageCreated.class)
+      .thenCompose(packageCreated -> retrievePackage(new PackageId(vendorId, packageCreated.getPackageId())));
   }
 
   private CompletableFuture<TitleCreated> createTitle(TitlePost entity, PackageId packageId) {

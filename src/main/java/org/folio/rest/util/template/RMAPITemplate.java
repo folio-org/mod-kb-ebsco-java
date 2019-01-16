@@ -2,12 +2,10 @@ package org.folio.rest.util.template;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.http.HttpStatus;
 import org.folio.config.api.RMAPIConfigurationService;
 import org.folio.http.HttpConsts;
@@ -54,7 +52,7 @@ public class RMAPITemplate {
   private Map<String, String> okapiHeaders;
   private Handler<AsyncResult<Response>> asyncResultHandler;
 
-  private BiFunction<RMAPIService, OkapiData, CompletableFuture<?>> requestAction;
+  private Function<RMAPITemplateContext, CompletableFuture<?>> requestAction;
 
   private ErrorHandler errorHandler = new ErrorHandler();
 
@@ -74,7 +72,7 @@ public class RMAPITemplate {
    *                      Return value of this function will be converted to response
    * @return this
    */
-  public RMAPITemplate requestAction(BiFunction<RMAPIService, OkapiData, CompletableFuture<?>> requestAction){
+  public RMAPITemplate requestAction(Function<RMAPITemplateContext, CompletableFuture<?>> requestAction){
     this.requestAction = requestAction;
     return this;
   }
@@ -118,17 +116,17 @@ public class RMAPITemplate {
 
   private void executeInternal(Function<Object, Response> successHandler) {
     headerValidator.validate(okapiHeaders);
-    MutableObject<OkapiData> okapiData = new MutableObject<>();
-    MutableObject<RMAPIService> service = new MutableObject<>();
+    RMAPITemplateContext.RMAPITemplateContextBuilder contextBuilder = RMAPITemplateContext.builder();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
-        okapiData.setValue(new OkapiData(okapiHeaders));
-        return configurationService.retrieveConfiguration(okapiData.getValue());
+        OkapiData okapiData = new OkapiData(okapiHeaders);
+        contextBuilder.okapiData(okapiData);
+        return configurationService.retrieveConfiguration(okapiData);
       })
       .thenAccept(rmapiConfiguration ->
-        service.setValue(new RMAPIService(rmapiConfiguration.getCustomerId(),
+        contextBuilder.service(new RMAPIService(rmapiConfiguration.getCustomerId(),
           rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertx)))
-      .thenCompose(o -> requestAction.apply(service.getValue(), okapiData.getValue()))
+      .thenCompose(o -> requestAction.apply(contextBuilder.build()))
       .thenAccept(result -> asyncResultHandler.handle(Future.succeededFuture(successHandler.apply(result))))
       .exceptionally(e -> {
         logger.error("Internal Server Error", e);

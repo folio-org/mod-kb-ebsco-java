@@ -3,6 +3,7 @@ package org.folio.spring.config;
 import java.util.List;
 
 import org.folio.config.RMAPIConfiguration;
+import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.config.cache.VertxCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,7 +41,12 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<RMAPIConfiguration> rmApiConfigurationCache(Vertx vertx, @Value("${configuration.cache.expire}") long expirationTime) {
+  public VertxCache<String, RMAPIConfiguration> rmApiConfigurationCache(Vertx vertx, @Value("${configuration.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache");
+  }
+
+  @Bean
+  public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx, @Value("${vendor.id.cache.expire}") long vendorId) {
+    return new VertxCache<>(vertx, vendorId, "vendorIdCache");
   }
 }

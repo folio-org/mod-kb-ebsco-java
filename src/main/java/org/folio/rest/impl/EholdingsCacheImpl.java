@@ -24,7 +24,7 @@ public class EholdingsCacheImpl implements EholdingsCache {
   private HeaderValidator headerValidator;
   @Autowired
   @Qualifier("rmApiConfigurationCache")
-  private VertxCache<RMAPIConfiguration> rmapiConfigurationCache;
+  private VertxCache<String, RMAPIConfiguration> rmapiConfigurationCache;
 
   public EholdingsCacheImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());

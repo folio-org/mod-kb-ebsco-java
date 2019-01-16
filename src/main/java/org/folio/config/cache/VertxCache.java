@@ -11,9 +11,10 @@ import io.vertx.core.shareddata.Shareable;
 
 /**
  * Cache that stores values in vertx LocalMap
- * @param <T> Type of cached value
+ * @param <K> Type of cache key
+ * @param <V> Type of cached value
  */
-public class VertxCache<T> {
+public class VertxCache<K, V> {
   private Vertx vertx;
   private long expirationTime;
   private String mapKey;
@@ -32,8 +33,8 @@ public class VertxCache<T> {
     this.mapKey = vertxMapKey;
   }
 
-  public T getValue(String key) {
-    CacheWrapper<T> configurationWrapper = getLocalMap().computeIfPresent(key, (cacheKey, configuration) -> {
+  public V getValue(K key) {
+    CacheWrapper<V> configurationWrapper = getLocalMap().computeIfPresent(key, (cacheKey, configuration) -> {
       if (LocalDateTime.now().isBefore(configuration.getExpireTime())) {
         return configuration;
       } else {
@@ -47,16 +48,20 @@ public class VertxCache<T> {
     }
   }
 
-  public void putValue(String key, T cacheValue){
+  public void putValue(K key, V cacheValue){
     LocalDateTime expireTime = LocalDateTime.now().plus(expirationTime, ChronoUnit.SECONDS);
     getLocalMap().put(key, new CacheWrapper<>(expireTime, cacheValue));
   }
 
-  public void invalidate(String key){
+  public void invalidate(K key){
     getLocalMap().remove(key);
   }
 
-  private LocalMap<String, CacheWrapper<T>> getLocalMap() {
+  public void invalidateAll(){
+    getLocalMap().clear();
+  }
+
+  private LocalMap<K, CacheWrapper<V>> getLocalMap() {
     return vertx.sharedData().getLocalMap(mapKey);
   }
 

@@ -66,8 +66,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveTitles(fq, nameSort, page, count)
+      .requestAction(context ->
+        context.getService().retrieveTitles(fq, nameSort, page, count)
       )
       .executeWithResult(TitleCollection.class);
   }
@@ -81,8 +81,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     PackageId packageId = idParser.parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.postTitle(titlePost, packageId)
+      .requestAction(context ->
+        context.getService().postTitle(titlePost, packageId)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
       )
       .executeWithResult(Title.class);
@@ -95,8 +95,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveTitle(titleIdLong)
+      .requestAction(context ->
+        context.getService().retrieveTitle(titleIdLong)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, includeResource)))
       )
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->

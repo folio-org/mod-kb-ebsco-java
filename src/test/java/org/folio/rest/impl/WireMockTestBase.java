@@ -19,6 +19,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfiguration;
+import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.config.cache.VertxCache;
 import org.folio.spring.SpringContextUtil;
 import org.junit.Before;
@@ -62,7 +63,10 @@ public abstract class WireMockTestBase {
   };
   @Autowired
   @Qualifier("rmApiConfigurationCache")
-  private VertxCache<RMAPIConfiguration> configurationCache;
+  private VertxCache<String, RMAPIConfiguration> configurationCache;
+  @Autowired
+  @Qualifier("vendorIdCache")
+  private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
 
   @Rule
   public WireMockRule userMockServer = new WireMockRule(
@@ -83,7 +87,8 @@ public abstract class WireMockTestBase {
   @Before
   public void setUp() throws Exception {
     SpringContextUtil.autowireDependenciesFromFirstContext(this, vertx);
-    configurationCache.invalidate(STUB_TENANT);
+    configurationCache.invalidateAll();
+    vendorIdCache.invalidateAll();
   }
 
   /**

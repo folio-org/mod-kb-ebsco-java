@@ -22,12 +22,12 @@ public class RMAPIConfigurationServiceCache implements RMAPIConfigurationService
 
   private RMAPIConfigurationService rmapiConfigurationService;
 
-  private VertxCache<RMAPIConfiguration> rmapiConfigurationCache;
+  private VertxCache<String, RMAPIConfiguration> rmapiConfigurationCache;
 
   @Autowired
   public RMAPIConfigurationServiceCache(
     @Qualifier("rmAPIConfigurationServiceImpl") RMAPIConfigurationService rmapiConfigurationService,
-    @Qualifier("rmApiConfigurationCache") VertxCache<RMAPIConfiguration> rmapiConfigurationCache) {
+    @Qualifier("rmApiConfigurationCache") VertxCache<String, RMAPIConfiguration> rmapiConfigurationCache) {
     this.rmapiConfigurationService = rmapiConfigurationService;
     this.rmapiConfigurationCache = rmapiConfigurationCache;
   }
