@@ -377,14 +377,9 @@ public class RMAPIService {
     RootProxyCustomLabels.RootProxyCustomLabelsBuilder clb = rootProxyCustomLabels.toBuilder().proxy(pb.build());
     /* In RM API - custom labels and root proxy are updated using the same PUT endpoint.
      * We are GETting the object containing both, updating the root proxy with the new one and making a PUT request to RM API.
-     * One gotcha here is that we have to prune custom labels in PUT request to not include any that have displayLabel = '' since RM API
-     * gives a 400 Bad Request if we send them along as part of the update. Hence, the step below.
+     * Custom Labels contain only values that have display labels up to a maximum of 5 with fewer possible
      */
-    List<CustomLabel> filteredCustomLabelList = rootProxyCustomLabels.getLabelList().stream()
-      .filter(item -> !item.getDisplayLabel().isEmpty())
-      .collect((Collectors.toList()));
-
-    clb.labelList(filteredCustomLabelList);
+    clb.labelList(rootProxyCustomLabels.getLabelList());
 
     return this.putRequest(constructURL(path), clb.build())
       .thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
