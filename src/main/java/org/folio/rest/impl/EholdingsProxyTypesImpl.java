@@ -25,8 +25,8 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes {
   @HandleValidationErrors
   public void getEholdingsProxyTypes(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     rmapiTemplateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveProxies()
+      .requestAction(context ->
+        context.getService().retrieveProxies()
       )
       .executeWithResult(ProxyTypes.class);
   }

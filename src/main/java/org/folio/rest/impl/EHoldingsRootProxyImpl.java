@@ -30,8 +30,8 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
   @HandleValidationErrors
   public void getEholdingsRootProxy(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveRootProxyCustomLabels()
+      .requestAction(context ->
+        context.getService().retrieveRootProxyCustomLabels()
       )
       .executeWithResult(RootProxy.class);
   }
@@ -42,9 +42,9 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     bodyValidator.validate(entity);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveRootProxyCustomLabels()
-          .thenCompose(rootProxyCustomLabels -> rmapiService.updateRootProxyCustomLabels(entity, rootProxyCustomLabels))
+      .requestAction(context ->
+        context.getService().retrieveRootProxyCustomLabels()
+          .thenCompose(rootProxyCustomLabels -> context.getService().updateRootProxyCustomLabels(entity, rootProxyCustomLabels))
       )
       .executeWithResult(RootProxy.class);
   }

@@ -18,6 +18,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import org.apache.http.HttpStatus;
+import org.folio.config.RMAPIConfiguration;
+import org.folio.config.cache.VendorIdCacheKey;
+import org.folio.config.cache.VertxCache;
+import org.folio.spring.SpringContextUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -25,12 +29,13 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import org.folio.config.cache.RMAPIConfigurationCache;
 import org.folio.http.HttpConsts;
 import org.folio.rest.RestVerticle;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.folio.rest.util.RestConstants;
 import org.folio.util.TestUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Base test class for tests that use wiremock and vertx http servers,
@@ -56,6 +61,12 @@ public abstract class WireMockTestBase {
     }
 
   };
+  @Autowired
+  @Qualifier("rmApiConfigurationCache")
+  private VertxCache<String, RMAPIConfiguration> configurationCache;
+  @Autowired
+  @Qualifier("vendorIdCache")
+  private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
 
   @Rule
   public WireMockRule userMockServer = new WireMockRule(
@@ -75,7 +86,9 @@ public abstract class WireMockTestBase {
 
   @Before
   public void setUp() throws Exception {
-    new RMAPIConfigurationCache(vertx, 100L).invalidate(STUB_TENANT);
+    SpringContextUtil.autowireDependenciesFromFirstContext(this, vertx);
+    configurationCache.invalidateAll();
+    vendorIdCache.invalidateAll();
   }
 
   /**
@@ -106,7 +119,7 @@ public abstract class WireMockTestBase {
   protected ExtractableResponse<Response> getOkResponse(String resourcePath) {
     return getResponseWithStatus(resourcePath, HttpStatus.SC_OK);
   }
-  
+
   protected ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
     return RestAssured.given()
       .spec(getRequestSpecification())

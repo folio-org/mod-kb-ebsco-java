@@ -75,14 +75,14 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     PackageId packageId = idParser.parsePackageId(attributes.getPackageId());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, rmapiService)
+      .requestAction(context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getService())
         .thenCompose(result -> {
           Title title = result.getTitle();
           postValidator.validateRelatedObjects(result.getPackageData(), title, result.getTitles());
           ResourceSelectedPayload postRequest =
             new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
           ResourceId resourceId = new ResourceId(packageId.getProviderIdPart(), packageId.getPackageIdPart(), titleId);
-          return rmapiService.postResource(postRequest, resourceId);
+          return context.getService().postResource(postRequest, resourceId);
         })
       )
       .addErrorMapper(InputValidationException.class, exception ->
@@ -99,8 +99,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     List<String> includedObjects = include != null ? Arrays.asList(include.split(",")) : Collections.emptyList();
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveResource(parsedResourceId, includedObjects)
+      .requestAction(context ->
+        context.getService().retrieveResource(parsedResourceId, includedObjects)
       )
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
         GetEholdingsResourcesByResourceIdResponse.respond404WithApplicationVndApiJson(
@@ -115,8 +115,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveResource(parsedResourceId, Collections.emptyList())
+      .requestAction(context ->
+        context.getService().retrieveResource(parsedResourceId, Collections.emptyList())
           .thenCompose(resourceData -> {
             ResourcePut resourcePutBody;
             boolean isTitleCustom = resourceData.getTitle().getIsTitleCustom();
@@ -126,9 +126,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             } else {
               resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity);
             }
-            return rmapiService.updateResource(parsedResourceId, resourcePutBody);
+            return context.getService().updateResource(parsedResourceId, resourcePutBody);
           })
-          .thenCompose(o -> rmapiService.retrieveResource(parsedResourceId, Collections.emptyList()))
+          .thenCompose(o -> context.getService().retrieveResource(parsedResourceId, Collections.emptyList()))
       )
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond422WithApplicationVndApiJson(
@@ -146,13 +146,13 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveResource(parsedResourceId, Collections.emptyList())
+      .requestAction(context ->
+        context.getService().retrieveResource(parsedResourceId, Collections.emptyList())
           .thenCompose(resourceData -> {
             if (!resourceData.getTitle().getCustomerResourcesList().get(0).getIsPackageCustom()) {
               throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
             }
-            return rmapiService.deleteResource(parsedResourceId);
+            return context.getService().deleteResource(parsedResourceId);
           })
       )
       .execute();

@@ -4,12 +4,14 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
-import org.folio.config.cache.RMAPIConfigurationCache;
+import org.folio.config.RMAPIConfiguration;
+import org.folio.config.cache.VertxCache;
 import org.folio.rest.jaxrs.resource.EholdingsCache;
 import org.folio.rest.util.RestConstants;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -21,7 +23,8 @@ public class EholdingsCacheImpl implements EholdingsCache {
   @Autowired
   private HeaderValidator headerValidator;
   @Autowired
-  private RMAPIConfigurationCache rmapiConfigurationCache;
+  @Qualifier("rmApiConfigurationCache")
+  private VertxCache<String, RMAPIConfiguration> rmapiConfigurationCache;
 
   public EholdingsCacheImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());

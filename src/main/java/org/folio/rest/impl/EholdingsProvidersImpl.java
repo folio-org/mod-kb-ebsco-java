@@ -56,8 +56,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     validateQuery(q);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
+      .requestAction(context ->
+        context.getService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
       )
       .executeWithResult(ProviderCollection.class);
   }
@@ -68,8 +68,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     long providerIdLong = idParser.parseProviderId(providerId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrieveProvider(providerIdLong, include)
+      .requestAction(context ->
+        context.getService().retrieveProvider(providerIdLong, include)
       )
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
         GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
@@ -88,8 +88,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     VendorPut rmapiVendor = putRequestConverter.convert(entity);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.updateProvider(providerIdLong, rmapiVendor)
+      .requestAction(context ->
+        context.getService().updateProvider(providerIdLong, rmapiVendor)
       )
       .executeWithResult(Provider.class);
   }
@@ -108,8 +108,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction((rmapiService, okapiData) ->
-        rmapiService.retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort)
+      .requestAction(context ->
+        context.getService().retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort)
       )
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
         GetEholdingsProvidersPackagesByProviderIdResponse.respond404WithApplicationVndApiJson(

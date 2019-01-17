@@ -81,11 +81,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnPackagesOnGetWithPackageId() throws IOException, URISyntaxException {
     String packagesStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
-    String providerByCustIdStubResponseFile = "responses/rmapi/packages/get-package-provider-by-id.json";
+    String providerIdByCustIdStubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-success-response.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
-    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), providerByCustIdStubResponseFile);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), providerIdByCustIdStubResponseFile);
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*")
       , packagesStubResponseFile);
 
@@ -496,7 +496,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/packages/get-package-resources-400-response.json";
 
     TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    
+
     stubFor(
       get(
         new UrlPathPattern(new RegexPattern(
