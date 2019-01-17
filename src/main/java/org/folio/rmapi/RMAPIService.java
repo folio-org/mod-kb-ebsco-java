@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
@@ -21,7 +20,6 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
-import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageCreated;
 import org.folio.rmapi.model.PackagePost;
