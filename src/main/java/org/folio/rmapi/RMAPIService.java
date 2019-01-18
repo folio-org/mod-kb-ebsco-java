@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.model.FilterQuery;
@@ -21,7 +20,6 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIResultsProcessingException;
 import org.folio.rmapi.exception.RMAPIServiceException;
 import org.folio.rmapi.exception.RMAPIUnAuthorizedException;
-import org.folio.rmapi.model.CustomLabel;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageCreated;
 import org.folio.rmapi.model.PackagePost;
@@ -377,14 +375,9 @@ public class RMAPIService {
     RootProxyCustomLabels.RootProxyCustomLabelsBuilder clb = rootProxyCustomLabels.toBuilder().proxy(pb.build());
     /* In RM API - custom labels and root proxy are updated using the same PUT endpoint.
      * We are GETting the object containing both, updating the root proxy with the new one and making a PUT request to RM API.
-     * One gotcha here is that we have to prune custom labels in PUT request to not include any that have displayLabel = '' since RM API
-     * gives a 400 Bad Request if we send them along as part of the update. Hence, the step below.
+     * Custom Labels contain only values that have display labels up to a maximum of 5 with fewer possible
      */
-    List<CustomLabel> filteredCustomLabelList = rootProxyCustomLabels.getLabelList().stream()
-      .filter(item -> !item.getDisplayLabel().isEmpty())
-      .collect((Collectors.toList()));
-
-    clb.labelList(filteredCustomLabelList);
+    clb.labelList(rootProxyCustomLabels.getLabelList());
 
     return this.putRequest(constructURL(path), clb.build())
       .thenCompose(updatedRootProxy -> this.retrieveRootProxyCustomLabels());
