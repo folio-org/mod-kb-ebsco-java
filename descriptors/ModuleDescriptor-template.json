@@ -9,92 +9,92 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
-          "permissionsRequired": ["kb-ebsco.packageCollection.get"]
+          "permissionsRequired": ["kb-ebsco.packages.collection.get"]
         },
         {
           "methods": ["POST"],
           "pathPattern": "/eholdings/packages",
-          "permissionsRequired": ["kb-ebsco.package.post"]
+          "permissionsRequired": ["kb-ebsco.packages.collection.post"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages/{packageId}",
-          "permissionsRequired": ["kb-ebsco.package.get"]
+          "permissionsRequired": ["kb-ebsco.packages.item.get"]
         },
         {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/packages/{packageId}",
-          "permissionsRequired" :["kb-ebsco.package.put"]
+          "permissionsRequired" :["kb-ebsco.packages.item.put"]
         },
         {
           "methods": ["DELETE"],
           "pathPattern": "/eholdings/packages/{packageId}",
-          "permissionsRequired": ["kb-ebsco.package.delete"]
+          "permissionsRequired": ["kb-ebsco.packages.item.delete"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages/{packageId}/resources",
-          "permissionsRequired": ["kb-ebsco.package.resourceCollection.get"]
+          "permissionsRequired": ["kb-ebsco.package-resources.collection.get"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/providers",
-          "permissionsRequired": ["kb-ebsco.providerCollection.get"]
+          "permissionsRequired": ["kb-ebsco.providers.collection.get"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/providers/{providerId}",
-          "permissionsRequired" :["kb-ebsco.provider.get"]
+          "permissionsRequired" :["kb-ebsco.providers.item.get"]
         },
         {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/providers/{providerId}",
-          "permissionsRequired" :["kb-ebsco.provider.put"]
+          "permissionsRequired" :["kb-ebsco.providers.item.put"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/providers/{providerId}/packages",
-          "permissionsRequired": ["kb-ebsco.provider.packageCollection.get"]
+          "permissionsRequired": ["kb-ebsco.provider-packages.collection.get"]
         },
         {
           "methods": ["POST"],
           "pathPattern": "/eholdings/resources",
-          "permissionsRequired": ["kb-ebsco.resource.post"]
+          "permissionsRequired": ["kb-ebsco.resources.collection.post"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/resources/{resourceId}",
-          "permissionsRequired": ["kb-ebsco.resource.get"]
+          "permissionsRequired": ["kb-ebsco.resources.item.get"]
         },
         {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/resources/{resourceId}",
-          "permissionsRequired": ["kb-ebsco.resource.put"]
+          "permissionsRequired": ["kb-ebsco.resources.item.put"]
         },
         {
           "methods": ["DELETE"],
           "pathPattern": "/eholdings/resources/{resourceId}",
-          "permissionsRequired": ["kb-ebsco.resource.delete"]
+          "permissionsRequired": ["kb-ebsco.resources.item.delete"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/titles",
-          "permissionsRequired": ["kb-ebsco.titleCollection.get"]
+          "permissionsRequired": ["kb-ebsco.titles.collection.get"]
         },
         {
           "methods": ["POST"],
           "pathPattern": "/eholdings/titles",
-          "permissionsRequired" :["kb-ebsco.title.post"]
+          "permissionsRequired" :["kb-ebsco.titles.collection.post"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/titles/{titleId}",
-          "permissionsRequired" :["kb-ebsco.title.get"]
+          "permissionsRequired" :["kb-ebsco.titles.item.get"]
         },
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/proxy-types",
-          "permissionsRequired": ["kb-ebsco.proxyTypes.get"]
+          "permissionsRequired": ["kb-ebsco.proxy-types.collection.get"]
         },
         {
           "methods": ["GET"],
@@ -173,91 +173,91 @@
       "description": "Delete RM API configuration cache"
     },
     {
-      "permissionName": "kb-ebsco.providerCollection.get",
+      "permissionName": "kb-ebsco.providers.collection.get",
       "displayName": "get providers",
       "description": "Get providers"
     },
     {
-      "permissionName": "kb-ebsco.provider.get",
+      "permissionName": "kb-ebsco.providers.item.get",
       "displayName": "get single provider",
       "description": "Get single provider"
     },
     {
-      "permissionName": "kb-ebsco.provider.put",
+      "permissionName": "kb-ebsco.providers.item.put",
       "displayName": "put single provider",
       "description": "Put single provider"
     },
     {
-      "permissionName": "kb-ebsco.provider.packageCollection.get",
+      "permissionName": "kb-ebsco.provider-packages.collection.get",
       "displayName": "get packages for a single provider",
       "description": "get packages for a single provider"
     },
     {
-      "permissionName": "kb-ebsco.title.get",
+      "permissionName": "kb-ebsco.titles.item.get",
       "displayName": "get single title",
       "description": "Get single title"
     },
     {
-      "permissionName": "kb-ebsco.titleCollection.get",
+      "permissionName": "kb-ebsco.titles.collection.get",
       "displayName": "get titles",
       "description": "Get titles"
     },
     {
-      "permissionName": "kb-ebsco.title.post",
+      "permissionName": "kb-ebsco.titles.collection.post",
       "displayName": "post title",
       "description": "Post title"
     },
     {
-      "permissionName": "kb-ebsco.resource.get",
+      "permissionName": "kb-ebsco.resources.item.get",
       "displayName": "get single resource",
       "description": "Get single resource"
     },
     {
-      "permissionName": "kb-ebsco.resource.post",
+      "permissionName": "kb-ebsco.resources.collection.post",
       "displayName": "post resource",
       "description": "Post resource"
     },
     {
-      "permissionName": "kb-ebsco.resource.put",
+      "permissionName": "kb-ebsco.resources.item.put",
       "displayName": "put single resource",
       "description": "Put single resource"
     },
     {
-      "permissionName": "kb-ebsco.resource.delete",
+      "permissionName": "kb-ebsco.resources.item.delete",
       "displayName": "delete single resource",
       "description": "Delete single resource"
     },
     {
-      "permissionName": "kb-ebsco.packageCollection.get",
+      "permissionName": "kb-ebsco.packages.collection.get",
       "displayName": "get packages",
       "description": "Get packages"
     },
     {
-      "permissionName": "kb-ebsco.package.get",
+      "permissionName": "kb-ebsco.packages.item.get",
       "displayName": "get package",
       "description": "Get package"
     },
     {
-      "permissionName": "kb-ebsco.package.post",
+      "permissionName": "kb-ebsco.packages.collection.post",
       "displayName": "post package",
       "description": "Post package"
     },
     {
-      "permissionName": "kb-ebsco.package.put",
+      "permissionName": "kb-ebsco.packages.item.put",
       "displayName": "put package",
       "description": "Put package"},
     {
-      "permissionName": "kb-ebsco.package.delete",
+      "permissionName": "kb-ebsco.packages.item.delete",
       "displayName": "delete custom package",
       "description": "Delete custom package"
     },
     {
-      "permissionName": "kb-ebsco.package.resourceCollection.get",
+      "permissionName": "kb-ebsco.package-resources.collection.get",
       "displayName": "get resources for a single package",
       "description": "get resources for a single package"
     },
     {
-      "permissionName": "kb-ebsco.proxyTypes.get",
+      "permissionName": "kb-ebsco.proxy-types.collection.get",
       "displayName": "get proxy types",
       "description": "Get proxy types"
     },
@@ -280,25 +280,25 @@
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
         "kb-ebsco.cache.delete",
-        "kb-ebsco.providerCollection.get",
-        "kb-ebsco.provider.get",
-        "kb-ebsco.provider.put",
-        "kb-ebsco.provider.packageCollection.get",
-        "kb-ebsco.titleCollection.get",
-        "kb-ebsco.title.post",
-        "kb-ebsco.packageCollection.get",
-        "kb-ebsco.package.post",
-        "kb-ebsco.package.delete",
-        "kb-ebsco.package.resourceCollection.get",
-        "kb-ebsco.title.get",
-        "kb-ebsco.titleCollection.get",
-        "kb-ebsco.package.get",
-        "kb-ebsco.package.put",
-        "kb-ebsco.resource.get",
-        "kb-ebsco.resource.post",
-        "kb-ebsco.resource.put",
-        "kb-ebsco.resource.delete",
-        "kb-ebsco.proxyTypes.get",
+        "kb-ebsco.providers.collection.get",
+        "kb-ebsco.providers.item.get",
+        "kb-ebsco.providers.item.put",
+        "kb-ebsco.provider-packages.collection.get",
+        "kb-ebsco.titles.collection.get",
+        "kb-ebsco.titles.collection.post",
+        "kb-ebsco.packages.collection.get",
+        "kb-ebsco.packages.collection.post",
+        "kb-ebsco.packages.item.delete",
+        "kb-ebsco.package-resources.collection.get",
+        "kb-ebsco.titles.item.get",
+        "kb-ebsco.titles.collection.get",
+        "kb-ebsco.packages.item.get",
+        "kb-ebsco.packages.item.put",
+        "kb-ebsco.resources.item.get",
+        "kb-ebsco.resources.collection.post",
+        "kb-ebsco.resources.item.put",
+        "kb-ebsco.resources.item.delete",
+        "kb-ebsco.proxy-types.collection.get",
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.root-proxy.put"
       ]
