@@ -1,5 +1,5 @@
 buildMvn {
-  publishModDescriptor = 'no'
+  publishModDescriptor = 'yes'
   mvnDeploy = 'yes'
   publishAPI = 'yes'
   runLintRamlCop = 'yes'
