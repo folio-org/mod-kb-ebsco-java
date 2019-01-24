@@ -38,6 +38,7 @@
     <vertx.version>3.5.4</vertx.version>
     <aspectj.version>1.9.1</aspectj.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
+    <jsonschema_paths>types/**</jsonschema_paths>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
     <spring.version>5.1.1.RELEASE</spring.version>
@@ -241,6 +242,10 @@
                 <systemProperty>
                   <key>raml_files</key>
                   <value>${ramlfiles_path}</value>
+                </systemProperty>
+                <systemProperty>
+                  <key>schema_paths</key>
+                  <value>${jsonschema_paths}</value>
                 </systemProperty>
               </systemProperties>
             </configuration>
