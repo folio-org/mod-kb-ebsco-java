@@ -5,9 +5,32 @@ import static org.folio.util.TestUtil.STUB_TOKEN;
 
 import java.io.IOException;
 
+import org.apache.http.HttpStatus;
+import org.folio.config.RMAPIConfiguration;
+import org.folio.config.cache.VendorIdCacheKey;
+import org.folio.config.cache.VertxCache;
+import org.folio.http.HttpConsts;
+import org.folio.rest.RestVerticle;
+import org.folio.rest.client.TenantClient;
+import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.tools.utils.NetworkUtils;
+import org.folio.rest.util.RestConstants;
+import org.folio.spring.SpringContextUtil;
+import org.folio.util.TestUtil;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.response.ExtractableResponse;
@@ -21,28 +44,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import org.apache.http.HttpStatus;
-import org.folio.config.RMAPIConfiguration;
-import org.folio.config.cache.VendorIdCacheKey;
-import org.folio.config.cache.VertxCache;
-import org.folio.rest.client.TenantClient;
-import org.folio.rest.jaxrs.model.TenantAttributes;
-import org.folio.rest.persist.PostgresClient;
-import org.folio.spring.SpringContextUtil;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-
-import org.folio.http.HttpConsts;
-import org.folio.rest.RestVerticle;
-import org.folio.rest.tools.utils.NetworkUtils;
-import org.folio.rest.util.RestConstants;
-import org.folio.util.TestUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Base test class for tests that use wiremock and vertx http servers,
@@ -98,6 +99,15 @@ public abstract class WireMockTestBase {
     PostgresClient.getInstance(vertx).startEmbeddedPostgres();
 
     postTenant(async);
+  }
+
+  @AfterClass
+  public static void tearDownClass(final TestContext context) {
+    Async async = context.async();
+    vertx.close(context.asyncAssertSuccess(res -> {
+      PostgresClient.stopEmbeddedPostgres();
+      async.complete();
+    }));
   }
 
   @Before

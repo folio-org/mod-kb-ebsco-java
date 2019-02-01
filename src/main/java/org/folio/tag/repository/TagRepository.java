@@ -1,5 +1,9 @@
 package org.folio.tag.repository;
 
+import static org.folio.tag.repository.TagTableConstants.SELECT_TAG_VALUES_BY_ID_AND_TYPE;
+import static org.folio.tag.repository.TagTableConstants.TABLE_NAME;
+import static org.folio.tag.repository.TagTableConstants.TAG_COLUMN;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -17,14 +21,6 @@ import io.vertx.ext.sql.ResultSet;
 
 @Component
 public class TagRepository {
-  public static final String TABLE_NAME = "tags";
-  public static final String TAG_COLUMN = "tag";
-  public static final String RECORD_ID_COLUMN = "record_id";
-  public static final String RECORD_TYPE_COLUMN = "record_type";
-
-  public static final String SELECT_TAG_VALUES_BY_ID_AND_TYPE =
-    "SELECT " + TAG_COLUMN + " FROM %s "
-    + "WHERE " + RECORD_ID_COLUMN + "=? AND " + RECORD_TYPE_COLUMN + "=?";
   private Vertx vertx;
 
   @Autowired
