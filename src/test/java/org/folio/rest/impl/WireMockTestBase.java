@@ -1,6 +1,9 @@
 package org.folio.rest.impl;
 
 import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TOKEN;
+
+import java.io.IOException;
 
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
@@ -16,11 +19,15 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfiguration;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.config.cache.VertxCache;
+import org.folio.rest.client.TenantClient;
+import org.folio.rest.jaxrs.model.TenantAttributes;
+import org.folio.rest.persist.PostgresClient;
 import org.folio.spring.SpringContextUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -48,6 +55,7 @@ public abstract class WireMockTestBase {
   protected static final Header CONTENT_TYPE_HEADER = new Header(HttpConsts.CONTENT_TYPE_HEADER, HttpConsts.JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
   protected static final String CONFIGURATION_STUB_FILE = "responses/kb-ebsco/configuration/get-configuration.json";
+  private static final String HTTP_PORT = "http.port";
   protected static int port;
   protected static String host;
   protected static final Vertx vertx = Vertx.vertx();
@@ -75,13 +83,21 @@ public abstract class WireMockTestBase {
       .notifier(new Slf4jNotifier(true)));
 
   @BeforeClass
-  public static void setUpClass(final TestContext context) {
+  public static void setUpClass(final TestContext context) throws IOException {
+    Async async = context.async();
+    PostgresClient.stopEmbeddedPostgres();
+    PostgresClient.closeAllClients();
     vertx.exceptionHandler(context.exceptionHandler());
     port = NetworkUtils.nextFreePort();
     host = "http://localhost";
 
-    DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions().setConfig(new JsonObject().put("http.port", port));
+    DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
     vertx.deployVerticle(RestVerticle.class.getName(), restVerticleDeploymentOptions, context.asyncAssertSuccess());
+
+    PostgresClient.setIsEmbedded(true);
+    PostgresClient.getInstance(vertx).startEmbeddedPostgres();
+
+    postTenant(async);
   }
 
   @Before
@@ -129,4 +145,17 @@ public abstract class WireMockTestBase {
       .statusCode(expectedStatus).extract();
   }
 
+
+  private static void postTenant(Async async) {
+    TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
+
+    final DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
+    vertx.deployVerticle(RestVerticle.class.getName(), options, res -> {
+      try {
+        tenantClient.postTenant(null, res2 -> async.complete());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
+  }
 }

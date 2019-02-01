@@ -24,6 +24,7 @@ import io.vertx.core.Vertx;
   "org.folio.rest.validator",
   "org.folio.http",
   "org.folio.config.impl",
+  "org.folio.tag.repository",
   "org.folio.rest.util.template"})
 public class ApplicationConfig {
   @Bean

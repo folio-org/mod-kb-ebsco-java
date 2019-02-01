@@ -54,6 +54,7 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
           .withProxy(new Proxy()
             .withId(vendor.getProxy().getId())
             .withInherited(vendor.getProxy().getInherited()))
+          .withTags(result.getTags())
         )
         .withRelationships(createEmptyProviderRelationships()))
       .withJsonapi(RestConstants.JSONAPI);
