@@ -1,4 +1,7 @@
-## v2.0.0-SNAPSHOT 2019-01-22
+## v2.0.2 2019-02-01
+ * MODKBEKBJ-155 - Refactor of Postman API tests
+ 
+## v2.0.1 2019-01-22
  * MODKBEKBJ-2 - Setting up the project
  * MODKBEKBJ-4 - Rewrite Configuration
  * MODKBEKBJ-6 - Rewrite Proxy related endpoints
