@@ -453,6 +453,13 @@
           <excludes>
             **/org/folio/rest/impl/*Test.java
           </excludes>
+          <includes>
+            <include>**/Test*.java</include>
+            <include>**/*Test.java</include>
+            <include>**/*Tests.java</include>
+            <include>**/*TestCase.java</include>
+            <include>org/folio/rest/impl/IntegrationTestSuite.java</include>
+          </includes>
         </configuration>
       </plugin>
 

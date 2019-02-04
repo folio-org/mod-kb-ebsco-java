@@ -9,6 +9,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
+import org.folio.tag.RecordType;
+import org.folio.tag.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -45,6 +48,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private TitlesPostBodyValidator titlesPostBodyValidator;
   @Autowired
   private RMAPITemplateFactory templateFactory;
+  @Autowired
+  private TagRepository tagRepository;
 
   public EholdingsTitlesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -98,11 +103,22 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .requestAction(context ->
         context.getService().retrieveTitle(titleIdLong)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, includeResource)))
+          .thenCompose(result ->
+            loadTags(result, context.getOkapiData().getTenant())
+          )
       )
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
         GetEholdingsTitlesByTitleIdResponse
           .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))
       )
       .executeWithResult(Title.class);
+  }
+
+  private CompletableFuture<TitleResult> loadTags(TitleResult result, String tenant) {
+    return tagRepository.getTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE)
+      .thenCompose(tag -> {
+        result.setTags(tag);
+        return CompletableFuture.completedFuture(result);
+      });
   }
 }

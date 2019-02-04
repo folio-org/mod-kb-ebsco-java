@@ -66,6 +66,11 @@
         "description": "The Contributors Schema",
         "$ref": "../contributor.json"
       }
+    },
+    "tags": {
+      "type": "object",
+      "description": "Title tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
     }
   },
   "required": [
