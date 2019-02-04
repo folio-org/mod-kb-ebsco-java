@@ -1,0 +1,12 @@
+{
+  "tables": [
+    {
+      "tableName": "tags",
+      "withMetadata": false,
+      "pkColumnName": "id",
+      "generateId": true,
+      "withAuditing": false,
+      "customSnippetPath": "create-table.sql"
+    }
+  ]
+}
