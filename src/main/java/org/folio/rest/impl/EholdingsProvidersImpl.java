@@ -1,16 +1,10 @@
 package org.folio.rest.impl;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -27,7 +21,17 @@ import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.model.VendorPut;
+import org.folio.rmapi.result.VendorResult;
 import org.folio.spring.SpringContextUtil;
+import org.folio.tag.RecordType;
+import org.folio.tag.repository.TagRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -43,6 +47,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private IdParser idParser;
   @Autowired
   private RMAPITemplateFactory templateFactory;
+  @Autowired
+  private TagRepository tagRepository;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -70,6 +76,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getService().retrieveProvider(providerIdLong, include)
+        .thenCompose(result ->
+          loadTags(result, context.getOkapiData().getTenant())
+        )
       )
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
         GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
@@ -128,5 +137,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     if ("".equals(query)) {
       throw new ValidationException("Search parameter cannot be empty");
     }
+  }
+
+  private CompletableFuture<VendorResult> loadTags(VendorResult result, String tenant) {
+    return tagRepository.getTags(tenant, String.valueOf(result.getVendor().getVendorId()), RecordType.PROVIDER)
+      .thenCompose(tag -> {
+        result.setTags(tag);
+        return CompletableFuture.completedFuture(result);
+      });
   }
 }

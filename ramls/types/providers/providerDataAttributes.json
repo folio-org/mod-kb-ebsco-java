@@ -28,13 +28,18 @@
     },
     "supportsCustomPackages": {
       "type": "boolean",
-      "description": "provider token",
+      "description": "Whether this provider supports custom packages",
       "example": false
     },
     "proxy": {
       "type": "object",
       "description": "Proxy",
       "$ref": "../proxy.json"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Provider tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
     }
   }
 }
