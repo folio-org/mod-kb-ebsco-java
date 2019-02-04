@@ -187,27 +187,31 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProviderWithTagWhenValidId() throws IOException, URISyntaxException {
-    insertTag(STUB_VENDOR_ID, "provider", STUB_TAG_VALUE);
+    try {
+      insertTag(STUB_VENDOR_ID, "provider", STUB_TAG_VALUE);
 
-    String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
+      String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
 
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile))));
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+      stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+          .willReturn(new ResponseDefinitionBuilder()
+            .withBody(readFile(stubResponseFile))));
 
-    String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
-    RequestSpecification requestSpecification = getRequestSpecification();
+      String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
+      RequestSpecification requestSpecification = getRequestSpecification();
 
-    Provider provider = RestAssured.given(requestSpecification)
-      .when()
-      .get(providerByIdEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
+      Provider provider = RestAssured.given(requestSpecification)
+        .when()
+        .get(providerByIdEndpoint)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
 
-    clearTags();
-    assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
+      assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
+    }
+    finally {
+      clearTags();
+    }
   }
 
   @Test

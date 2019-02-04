@@ -59,7 +59,7 @@ public abstract class WireMockTestBase {
   private static final String HTTP_PORT = "http.port";
   protected static int port;
   protected static String host;
-  protected static final Vertx vertx = Vertx.vertx();
+  protected static Vertx vertx;
 
   @Rule
   public TestRule watcher = new TestWatcher() {
@@ -85,9 +85,7 @@ public abstract class WireMockTestBase {
 
   @BeforeClass
   public static void setUpClass(final TestContext context) throws IOException {
-    Async async = context.async();
-    PostgresClient.stopEmbeddedPostgres();
-    PostgresClient.closeAllClients();
+    vertx = Vertx.vertx();
     vertx.exceptionHandler(context.exceptionHandler());
     port = NetworkUtils.nextFreePort();
     host = "http://localhost";
@@ -98,16 +96,7 @@ public abstract class WireMockTestBase {
     PostgresClient.setIsEmbedded(true);
     PostgresClient.getInstance(vertx).startEmbeddedPostgres();
 
-    postTenant(async);
-  }
-
-  @AfterClass
-  public static void tearDownClass(final TestContext context) {
-    Async async = context.async();
-    vertx.close(context.asyncAssertSuccess(res -> {
-      PostgresClient.stopEmbeddedPostgres();
-      async.complete();
-    }));
+    postTenant(context);
   }
 
   @Before
@@ -156,10 +145,11 @@ public abstract class WireMockTestBase {
   }
 
 
-  private static void postTenant(Async async) {
+  private static void postTenant(TestContext context) {
     TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
 
     final DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
+    Async async = context.async();
     vertx.deployVerticle(RestVerticle.class.getName(), options, res -> {
       try {
         tenantClient.postTenant(null, res2 -> async.complete());
