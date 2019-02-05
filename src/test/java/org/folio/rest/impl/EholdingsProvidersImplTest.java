@@ -1,12 +1,13 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
+import static org.folio.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TestUtil.getFile;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
@@ -15,18 +16,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -40,14 +36,26 @@ import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
+import org.folio.rest.persist.PostgresClient;
+import org.folio.tag.repository.TagTableConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
+import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsProvidersImplTest extends WireMockTestBase {
   private static final String STUB_VENDOR_ID = "19";
+  private static final String STUB_TAG_VALUE = "tag one";
 
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
@@ -175,6 +183,35 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     compareProviders(provider, expected);
 
+  }
+
+  @Test
+  public void shouldReturnProviderWithTagWhenValidId() throws IOException, URISyntaxException {
+    try {
+      insertTag(STUB_VENDOR_ID, "provider", STUB_TAG_VALUE);
+
+      String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
+
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+      stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+          .willReturn(new ResponseDefinitionBuilder()
+            .withBody(readFile(stubResponseFile))));
+
+      String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
+      RequestSpecification requestSpecification = getRequestSpecification();
+
+      Provider provider = RestAssured.given(requestSpecification)
+        .when()
+        .get(providerByIdEndpoint)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
+
+      assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
+    }
+    finally {
+      clearTags();
+    }
   }
 
   @Test
@@ -367,7 +404,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400IfQueryParamInvalid() throws IOException, URISyntaxException {
+  public void shouldReturn400IfQueryParamInvalid() {
     errorTitleIsNotEmptyWith400Status("/eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=");
   }
 
@@ -468,5 +505,24 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_BAD_REQUEST)
       .body("errors.first.title", notNullValue());
+  }
+
+  private void insertTag(String recordId, final String recordType, String value) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).execute(
+      "INSERT INTO " + PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TagTableConstants.TABLE_NAME +
+        "(" + TagTableConstants.RECORD_ID_COLUMN + ", " + TagTableConstants.RECORD_TYPE_COLUMN + ", " + TagTableConstants.TAG_COLUMN
+        + ") VALUES('" +
+        recordId + "', '" + recordType + "', '" + value + "')",
+      event -> future.complete(null));
+    future.join();
+  }
+
+  private void clearTags() {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).execute(
+      "DELETE FROM " + PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TagTableConstants.TABLE_NAME,
+      event -> future.complete(null));
+    future.join();
   }
 }
