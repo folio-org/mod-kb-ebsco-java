@@ -37,6 +37,7 @@ import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.tag.RecordType;
 import org.folio.tag.repository.TagTableConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -188,7 +189,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnProviderWithTagWhenValidId() throws IOException, URISyntaxException {
     try {
-      insertTag(STUB_VENDOR_ID, "provider", STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
 
       String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
 
@@ -210,7 +211,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
     }
     finally {
-      clearTags();
+      TagsTestUtil.clearTags(vertx);
     }
   }
 
@@ -505,24 +506,5 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_BAD_REQUEST)
       .body("errors.first.title", notNullValue());
-  }
-
-  private void insertTag(String recordId, final String recordType, String value) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "INSERT INTO " + PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TagTableConstants.TABLE_NAME +
-        "(" + TagTableConstants.RECORD_ID_COLUMN + ", " + TagTableConstants.RECORD_TYPE_COLUMN + ", " + TagTableConstants.TAG_COLUMN
-        + ") VALUES('" +
-        recordId + "', '" + recordType + "', '" + value + "')",
-      event -> future.complete(null));
-    future.join();
-  }
-
-  private void clearTags() {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "DELETE FROM " + PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TagTableConstants.TABLE_NAME,
-      event -> future.complete(null));
-    future.join();
   }
 }

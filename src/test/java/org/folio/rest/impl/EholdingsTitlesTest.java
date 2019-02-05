@@ -3,35 +3,45 @@ package org.folio.rest.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.junit.Assert.assertTrue;
+
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.readFile;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import java.io.IOException;
-import java.net.URISyntaxException;
+
 import org.apache.http.HttpStatus;
-import org.folio.rest.jaxrs.model.JsonapiError;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Title;
+import org.folio.tag.RecordType;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
   private static final String STUB_TITLE_ID = "985846";
   private static final int STUB_PACKAGE_ID = 3964;
   private static final int STUB_VENDOR_ID = 111111;
+  private static final String STUB_TAG_VALUE = "test tag";
 
   @Test
   public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
@@ -124,6 +134,34 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     JSONAssert.assertEquals(
       readFile("responses/kb-ebsco/titles/expected-title-by-id.json"), actualResponse, false);
+  }
+
+  @Test
+  public void shouldReturnTitleTagsWhenValidId() throws IOException, URISyntaxException {
+    try {
+      String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+      TagsTestUtil.insertTag(vertx, STUB_TITLE_ID, RecordType.TITLE, STUB_TAG_VALUE);
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+      stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+          .willReturn(new ResponseDefinitionBuilder()
+            .withBody(readFile(stubResponseFile))));
+
+      String titleByIdEndpoint = "eholdings/titles/" + STUB_TITLE_ID;
+
+      Title actualResponse = RestAssured.given()
+        .spec(getRequestSpecification())
+        .when()
+        .get(titleByIdEndpoint)
+        .then()
+        .statusCode(200)
+        .extract().as(Title.class);
+
+      assertTrue(actualResponse.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
+    }
+    finally {
+      TagsTestUtil.clearTags(vertx);
+    }
   }
 
   @Test

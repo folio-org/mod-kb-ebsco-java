@@ -1,5 +1,7 @@
 package org.folio.rest.impl;
 
+import java.io.IOException;
+
 import org.apache.http.HttpStatus;
 import org.folio.config.RMAPIConfiguration;
 import org.folio.config.cache.VendorIdCacheKey;
@@ -8,7 +10,9 @@ import org.folio.http.HttpConsts;
 import org.folio.rest.util.RestConstants;
 import org.folio.spring.SpringContextUtil;
 import org.folio.util.TestUtil;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
@@ -41,9 +45,11 @@ public abstract class WireMockTestBase {
   protected static final Header CONTENT_TYPE_HEADER = new Header(HttpConsts.CONTENT_TYPE_HEADER, HttpConsts.JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
   protected static final String CONFIGURATION_STUB_FILE = "responses/kb-ebsco/configuration/get-configuration.json";
-  protected int port = IntegrationTests.port;
-  protected String host = IntegrationTests.host;
-  protected Vertx vertx = IntegrationTests.vertx;
+  protected int port = TestSetUpHelper.getPort();
+  protected String host = TestSetUpHelper.getHost();
+  protected Vertx vertx = TestSetUpHelper.getVertx();
+
+  private static boolean needTeardown;
 
   @Rule
   public TestRule watcher = new TestWatcher() {
@@ -66,6 +72,24 @@ public abstract class WireMockTestBase {
     WireMockConfiguration.wireMockConfig()
       .dynamicPort()
       .notifier(new Slf4jNotifier(true)));
+
+  @BeforeClass
+  public static void setUpClass() throws IOException {
+    if(!TestSetUpHelper.isStarted()){
+      TestSetUpHelper.startVertxAndPostgres();
+      needTeardown = true;
+    }
+    else {
+      needTeardown = false;
+    }
+  }
+
+  @AfterClass
+  public static void tearDownClass() {
+    if(needTeardown){
+      TestSetUpHelper.stopVertxAndPostgres();
+    }
+  }
 
   @Before
   public void setUp() throws Exception {

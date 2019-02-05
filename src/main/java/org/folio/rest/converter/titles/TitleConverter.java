@@ -65,6 +65,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
           .withContributors(contributorsConverter.convert(rmapiTitle.getContributorsList()))
           .withDescription(rmapiTitle.getDescription())
           .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
+          .withTags(titleResult.getTags())
         )
         .withRelationships(createEmptyResourcesRelationships())
       )
