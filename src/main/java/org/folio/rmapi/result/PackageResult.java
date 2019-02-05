@@ -1,5 +1,6 @@
 package org.folio.rmapi.result;
 
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.Titles;
 import org.folio.rmapi.model.VendorById;
@@ -8,6 +9,7 @@ public class PackageResult {
   private PackageByIdData packageData;
   private VendorById vendor;
   private Titles titles;
+  private Tags tags;
 
   public PackageResult(PackageByIdData packageData, VendorById vendor, Titles titles) {
     this.packageData = packageData;
@@ -25,5 +27,13 @@ public class PackageResult {
 
   public Titles getTitles() {
     return titles;
+  }
+
+  public Tags getTags() {
+    return tags;
+  }
+
+  public void setTags(Tags tags) {
+    this.tags = tags;
   }
 }

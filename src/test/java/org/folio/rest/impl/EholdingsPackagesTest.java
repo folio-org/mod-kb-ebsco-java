@@ -13,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.util.TestUtil.getFile;
@@ -29,8 +30,10 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +48,7 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackageData;
+import org.folio.tag.RecordType;
 import org.folio.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
@@ -64,6 +68,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
   private static final String PACKAGED_UPDATED_STATE = "Packaged updated";
   private static final String GET_PACKAGE_SCENARIO = "Get package";
+  private static final String STUB_TAG = "test tag";
 
   @Test
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
@@ -104,6 +109,24 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packageData = getOkResponse("eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID).asString();
 
     JSONAssert.assertEquals(readFile(EXPECTED_PACKAGE_BY_ID_STUB_FILE), packageData, false);
+  }
+
+  @Test
+  public void shouldReturnPackageWithTagOnGetById() throws IOException, URISyntaxException {
+    try {
+      String packageId = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
+      TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, STUB_TAG);
+      mockConfiguration("responses/kb-ebsco/configuration/get-configuration.json", getWiremockUrl());
+
+      mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+
+      Package packageData = getOkResponse("eholdings/packages/" + packageId).as(Package.class);
+
+      assertTrue(packageData.getData().getAttributes().getTags().getTagList().contains(STUB_TAG));
+    }
+    finally {
+      TagsTestUtil.clearTags(vertx);
+    }
   }
 
   @Test

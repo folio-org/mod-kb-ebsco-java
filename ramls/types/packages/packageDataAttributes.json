@@ -81,6 +81,11 @@
       "type": "object",
       "description": "Proxy",
       "$ref": "../proxy.json"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Package tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
     }
   }
 }

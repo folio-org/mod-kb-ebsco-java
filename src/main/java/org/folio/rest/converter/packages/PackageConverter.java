@@ -37,14 +37,12 @@ public class PackageConverter implements Converter<PackageResult, Package> {
 
   @Autowired
   private Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
-
   @Autowired
   private Converter<VendorById, Provider> vendorConverter;
   @Autowired
   private Converter<Titles, ResourceCollection> resourcesConverter;
   @Autowired
   private Converter<TokenInfo, Token> tokenInfoConverter;
-
 
   @Override
   public Package convert(@NonNull PackageResult result) {
@@ -61,7 +59,8 @@ public class PackageConverter implements Converter<PackageResult, Package> {
       .withType(PACKAGES_TYPE)
       .getAttributes()
       .withProxy(convertToProxy(packageByIdData.getProxy()))
-      .withPackageToken(tokenInfoConverter.convert(packageByIdData.getPackageToken()));
+      .withPackageToken(tokenInfoConverter.convert(packageByIdData.getPackageToken()))
+      .withTags(result.getTags());
 
     if (titles != null) {
       packageData.getData()

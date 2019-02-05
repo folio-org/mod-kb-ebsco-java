@@ -8,6 +8,15 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.config.cache.VertxCache;
 import org.folio.rest.annotations.Validate;
@@ -34,17 +43,13 @@ import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.exception.RMAPIServiceException;
+import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.PackagePost;
 import org.folio.rmapi.model.PackagePut;
+import org.folio.rmapi.result.PackageResult;
 import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.converter.Converter;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import org.folio.tag.RecordType;
+import org.folio.tag.repository.TagRepository;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -74,6 +79,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   @Qualifier("vendorIdCache")
   private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
+  @Autowired
+  private TagRepository tagRepository;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -136,6 +143,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((context ->
         context.getService().retrievePackage(parsedPackageId, includedObjects)
+          .thenCompose(result ->
+            loadTags(result, context.getOkapiData().getTenant())
+          )
       ))
       .executeWithResult(Package.class);
   }
@@ -223,5 +233,15 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           return CompletableFuture.completedFuture(id);
         });
     }
+  }
+
+  private CompletableFuture<PackageResult> loadTags(PackageResult result, String tenant) {
+    PackageByIdData packageData = result.getPackageData();
+    String packageId = packageData.getVendorId() + "-" + packageData.getPackageId();
+    return tagRepository.getTags(tenant, packageId, RecordType.PACKAGE)
+      .thenCompose(tag -> {
+        result.setTags(tag);
+        return CompletableFuture.completedFuture(result);
+      });
   }
 }
