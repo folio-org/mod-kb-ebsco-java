@@ -10,37 +10,20 @@ import org.folio.rest.RestVerticle;
 import org.folio.rest.client.TenantClient;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.tools.utils.NetworkUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
-@Suite.SuiteClasses({
-  EholdingsCacheImplTest.class,
-  EholdingsConfigurationTest.class,
-  EholdingsPackagesTest.class,
-  EholdingsProvidersImplTest.class,
-  EHoldingsProxyTypesImplTest.class,
-  EholdingsResourcesImplTest.class,
-  EHoldingsRootProxyImplTest.class,
-  EholdingsStatusTest.class,
-  EholdingsTitlesTest.class
-})
-@RunWith(Suite.class)
-public class IntegrationTests {
-
+public class TestSetUpHelper {
   private static final String HTTP_PORT = "http.port";
 
   public static int port;
   public static String host;
   public static Vertx vertx;
+  public static boolean started;
 
-  @BeforeClass
-  public static void setUpClass() throws IOException {
+  public static void startVertxAndPostgres() throws IOException {
     vertx = Vertx.vertx();
     port = NetworkUtils.nextFreePort();
     host = "http://localhost";
@@ -54,16 +37,33 @@ public class IntegrationTests {
     PostgresClient.getInstance(vertx)
       .startEmbeddedPostgres();
     postTenant();
+    started = true;
   }
 
-  @AfterClass
-  public static void tearDownClass() {
+  public static void stopVertxAndPostgres() {
     CompletableFuture<Void> future = new CompletableFuture<>();
     vertx.close(res -> {
       PostgresClient.stopEmbeddedPostgres();
       future.complete(null);
     });
     future.join();
+    started = false;
+  }
+
+  public static boolean isStarted() {
+    return started;
+  }
+
+  public static int getPort() {
+    return port;
+  }
+
+  public static String getHost() {
+    return host;
+  }
+
+  public static Vertx getVertx() {
+    return vertx;
   }
 
   private static void postTenant() {
