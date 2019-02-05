@@ -186,7 +186,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private CompletableFuture<ResourceResult> loadTags(ResourceResult result, String tenant) {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
     String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
-    return tagRepository.getTags(tenant, String.valueOf(resourceId), RecordType.RESOURCE)
+    return tagRepository.getTags(tenant, resourceId, RecordType.RESOURCE)
       .thenCompose(tag -> {
         result.setTags(tag);
         return CompletableFuture.completedFuture(result);
