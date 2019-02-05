@@ -1,5 +1,6 @@
 package org.folio.rmapi.result;
 
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.model.VendorById;
@@ -9,6 +10,7 @@ public class ResourceResult {
   private VendorById vendor;
   private PackageByIdData packageData;
   private boolean includeTitle;
+  private Tags tags;
 
   public ResourceResult(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
     this.title = title;
@@ -31,5 +33,13 @@ public class ResourceResult {
 
   public boolean isIncludeTitle() {
     return includeTitle;
+  }
+
+  public Tags getTags() {
+    return tags;
+  }
+
+  public void setTags(Tags tags) {
+    this.tags = tags;
   }
 }

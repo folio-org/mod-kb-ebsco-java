@@ -9,6 +9,13 @@ import java.util.concurrent.CompletionStage;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
@@ -28,18 +35,16 @@ import org.folio.rest.validator.ResourcePostValidator;
 import org.folio.rest.validator.ResourcePutBodyValidator;
 import org.folio.rmapi.RMAPIService;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
+import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.ResourceSelectedPayload;
 import org.folio.rmapi.model.Title;
 import org.folio.rmapi.result.ObjectsForPostResourceResult;
+import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import org.folio.tag.RecordType;
+import org.folio.tag.repository.TagRepository;
 
 
 public class EholdingsResourcesImpl implements EholdingsResources {
@@ -58,6 +63,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private ResourcePutBodyValidator resourcePutBodyValidator;
   @Autowired
   private RMAPITemplateFactory templateFactory;
+  @Autowired
+  private TagRepository tagRepository;
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -101,6 +108,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getService().retrieveResource(parsedResourceId, includedObjects)
+          .thenCompose(result ->
+            loadTags(result, context.getOkapiData().getTenant())
+          )
       )
       .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
         GetEholdingsResourcesByResourceIdResponse.respond404WithApplicationVndApiJson(
@@ -171,5 +181,15 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       })
       .thenCompose(titles -> CompletableFuture.completedFuture(
         new ObjectsForPostResourceResult(titleFuture.join(), packageFuture.join(), titles)));
+  }
+
+  private CompletableFuture<ResourceResult> loadTags(ResourceResult result, String tenant) {
+    CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
+    String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
+    return tagRepository.getTags(tenant, String.valueOf(resourceId), RecordType.RESOURCE)
+      .thenCompose(tag -> {
+        result.setTags(tag);
+        return CompletableFuture.completedFuture(result);
+      });
   }
 }

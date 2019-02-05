@@ -170,6 +170,11 @@
       "type": "object",
       "description": "Proxy.  Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "$ref": "../proxy.json"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Resource tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
     }
   }
 }
