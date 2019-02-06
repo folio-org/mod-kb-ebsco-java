@@ -1,17 +1,16 @@
 package org.folio.rest.impl;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
@@ -20,6 +19,7 @@ import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
+import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.result.VendorResult;
 import org.folio.spring.SpringContextUtil;
@@ -27,11 +27,10 @@ import org.folio.tag.RecordType;
 import org.folio.tag.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -96,9 +95,11 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     VendorPut rmapiVendor = putRequestConverter.convert(entity);
 
+    final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getService().updateProvider(providerIdLong, rmapiVendor)
+      .requestAction(context -> context.getService().updateProvider(providerIdLong, rmapiVendor)
+        .thenCompose(result ->
+          updateTags(result, context.getOkapiData().getTenant(), tags))
       )
       .executeWithResult(Provider.class);
   }
@@ -145,5 +146,18 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         result.setTags(tag);
         return CompletableFuture.completedFuture(result);
       });
+  }
+
+  private CompletableFuture<VendorResult> updateTags(VendorById vendorById, String tenant, Tags tags) {
+    if (tags == null){
+      return CompletableFuture.completedFuture(new VendorResult(vendorById, null));
+    }else {
+      return tagRepository.updateTags(tenant, String.valueOf(vendorById.getVendorId()), RecordType.PROVIDER, tags.getTagList())
+        .thenCompose(updated -> {
+          VendorResult result = new VendorResult(vendorById, null);
+          result.setTags(new Tags().withTagList(tags.getTagList()));
+          return CompletableFuture.completedFuture(result);
+        });
+    }
   }
 }

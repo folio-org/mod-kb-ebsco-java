@@ -1,0 +1,12 @@
+{
+  "vendorToken" : {
+    "value" : "My Test Token"
+  },
+  "proxy" : {
+    "id" : "<n>",
+    "inherited" : false
+  },
+  "tags": {
+    "tagList": [ "test tag one", "test tag two"]
+  }
+}

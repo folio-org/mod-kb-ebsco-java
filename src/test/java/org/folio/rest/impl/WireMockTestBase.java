@@ -135,4 +135,17 @@ public abstract class WireMockTestBase {
       .then()
       .statusCode(expectedStatus).extract();
   }
+
+  protected <T> T sendPutRequestAndRetrieveResponse(String endpoint, String putBody, Class<T> clazz){
+    return RestAssured
+      .given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .body(putBody)
+      .when()
+      .put(endpoint)
+      .then()
+      .statusCode(HttpStatus.SC_OK)
+      .extract().as(clazz);
+  }
 }
