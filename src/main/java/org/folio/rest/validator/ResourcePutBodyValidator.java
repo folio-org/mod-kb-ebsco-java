@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
@@ -67,7 +68,10 @@ public class ResourcePutBodyValidator {
     Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
     EmbargoUnit embargoUnit = attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
     List<Coverage> customCoverages = attributes.getCustomCoverages();
-    if (!isTitleCustom && (!Objects.isNull(cvgStmt) || !Objects.isNull(embargoUnit) || (!Objects.isNull(isHidden) && isHidden) || (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()))) {
+    if (!isTitleCustom &&
+      (!Strings.isEmpty(cvgStmt) || !Objects.isNull(embargoUnit) ||
+      (!Objects.isNull(isHidden) && isHidden) ||
+      (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()))) {
       throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
     }
   }

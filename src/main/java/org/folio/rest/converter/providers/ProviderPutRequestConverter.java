@@ -1,14 +1,13 @@
 package org.folio.rest.converter.providers;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.model.VendorPutToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProviderPutRequestConverter implements Converter<ProviderPutRequest, VendorPut> {
@@ -24,7 +23,8 @@ public class ProviderPutRequestConverter implements Converter<ProviderPutRequest
     // value
     // Hard code it to false; it should not affect the state of inherited that RM
     // API maintains
-    if (provider.getData().getAttributes().getProxy() != null) {
+    if (provider.getData().getAttributes().getProxy() != null &&
+        provider.getData().getAttributes().getProxy().getId() != null) {
       vpb.proxy(org.folio.rmapi.model.Proxy.builder()
         .inherited(false)
         .id(provider.getData().getAttributes().getProxy().getId())
