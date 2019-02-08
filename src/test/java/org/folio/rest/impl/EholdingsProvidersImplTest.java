@@ -7,12 +7,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
-import static org.folio.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TestUtil.getFile;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -20,8 +21,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
@@ -35,10 +37,9 @@ import org.folio.rest.jaxrs.model.ProviderDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.Relationships;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Token;
-import org.folio.rest.persist.PostgresClient;
 import org.folio.tag.RecordType;
-import org.folio.tag.repository.TagTableConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -57,6 +58,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 public class EholdingsProvidersImplTest extends WireMockTestBase {
   private static final String STUB_VENDOR_ID = "19";
   private static final String STUB_TAG_VALUE = "tag one";
+  private static final String STUB_TAG_VALUE_2 = "tag 2";
 
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
@@ -253,7 +255,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateAndReturnProviderOnPut() throws IOException, URISyntaxException {
+  public void shouldUpdateAndReturnProviderOnPutWithNoTags() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
@@ -271,25 +273,104 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       ProviderPutRequest.class);
 
     Provider expected = getUpdatedProvider();
-    RequestSpecification requestSpecification = getRequestSpecification();
 
-    String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
-
-    Provider provider = RestAssured
-      .given()
-      .spec(requestSpecification)
-      .header(CONTENT_TYPE_HEADER)
-      .body(mapper.writeValueAsString(providerToBeUpdated))
-      .when()
-      .put(providerByIdEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_OK)
-      .extract().as(Provider.class);
+    Provider provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID, mapper.writeValueAsString(providerToBeUpdated), Provider.class);
 
     compareProviders(provider, expected);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
+  }
+
+  @Test
+  public void shouldUpdateAndReturnProviderOnPutWithTags() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
+
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
+
+    ObjectMapper mapper = new ObjectMapper();
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
+      ProviderPutRequest.class);
+    providerToBeUpdated.getData().getAttributes().setTags(new Tags()
+      .withTagList(Arrays.asList("test tag one", "test tag two")));
+
+    Provider expected = getUpdatedProvider();
+    expected.getData().getAttributes().setTags(new Tags()
+      .withTagList(Arrays.asList("test tag one", "test tag two")));
+
+    Provider provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID, mapper.writeValueAsString(providerToBeUpdated), Provider.class);
+
+    compareProviders(provider, expected);
+
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+      .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
+
+    TagsTestUtil.clearTags(vertx);
+  }
+
+  @Test
+  public void shouldAddProviderTagsOnPut() throws IOException, URISyntaxException {
+    try {
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldAddProviderTagsOnPutWhenProviderAlreadyHasTags() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldDeleteAndAddProviderTagsOnPut() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, "old tag value");
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldDeleteAllProviderTagsOnPutWhenRequestHasEmptyListOfTags() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, "old tag value");
+      sendPutWithTags(Collections.emptyList());
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      assertThat(tagsAfterRequest, empty());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldDoNothingOnPutWhenRequestHasNotTags() throws IOException, URISyntaxException {
+      sendPutWithTags(null);
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      assertThat(tagsAfterRequest, empty());
   }
 
   @Test
@@ -447,6 +528,11 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       equalTo(expected.getData().getAttributes().getProxy().getId()));
     assertThat(actual.getData().getAttributes().getProxy().getInherited(),
       equalTo(expected.getData().getAttributes().getProxy().getInherited()));
+
+    if(expected.getData().getAttributes().getTags() != null){
+      assertThat(actual.getData().getAttributes().getTags().getTagList(),
+        containsInAnyOrder(expected.getData().getAttributes().getTags().getTagList().toArray()));
+    }
   }
 
   private Provider getExpectedProvider(List<PackageCollectionItem> packages) {
@@ -506,5 +592,31 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_BAD_REQUEST)
       .body("errors.first.title", notNullValue());
+  }
+
+  private List<String> sendPutWithTags(List<String> newTags) throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
+
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
+
+    ObjectMapper mapper = new ObjectMapper();
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
+      ProviderPutRequest.class);
+
+    if(newTags != null) {
+      providerToBeUpdated.getData().getAttributes().setTags(new Tags()
+        .withTagList(newTags));
+    }
+    sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID, mapper.writeValueAsString(providerToBeUpdated), Provider.class);
+
+    return newTags;
   }
 }
