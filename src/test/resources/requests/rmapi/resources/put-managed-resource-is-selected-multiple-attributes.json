@@ -7,7 +7,7 @@
     "embargoValue": 10
   },
   "titleName": null,
-  "pubType": "Book",
+  "pubType": "book",
   "publisherName": null,
   "isPeerReviewed": false,
   "description": null,
@@ -19,5 +19,5 @@
   "url": null,
   "contributorsList": null,
   "identifiersList": null,
-  "customCoverageList": null
+  "customCoverageList": []
 }

@@ -2,6 +2,7 @@ package org.folio.rmapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -14,6 +15,6 @@ public class EmbargoPeriod {
   private String embargoUnit;
 
   @JsonProperty("embargoValue")
-  private Integer embargoValue;
+  private int embargoValue;
 
 }

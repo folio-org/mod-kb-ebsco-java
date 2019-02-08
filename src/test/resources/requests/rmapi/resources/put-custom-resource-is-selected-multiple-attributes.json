@@ -7,7 +7,7 @@
     "embargoValue": 30
   },
   "titleName": "sd-test-java-again",
-  "pubType": "Book",
+  "pubType": "book",
   "publisherName": "Not Empty",
   "isPeerReviewed": true,
   "description": "test description",
