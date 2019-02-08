@@ -3,6 +3,7 @@ package org.folio.rest.converter.resources;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.Proxy;
@@ -107,7 +108,7 @@ public class ResourceRequestConverter {
     // but below, we set the same values as we conduct a GET for pubType and isPeerReviewed because otherwise RM API gives
     // a bad request error if those values are set to null. All of the other fields are retained as is by RM API because they
     // cannot be updated.
-    builder.pubType(attributes.getPublicationType() != null ? attributes.getPublicationType().value() : null);
+    builder.pubType(attributes.getPublicationType() != null ? ConverterConsts.publicationTypes.inverseBidiMap().get(attributes.getPublicationType()) : null);
     builder.isPeerReviewed(attributes.getIsPeerReviewed());
 
     return builder;

@@ -165,7 +165,7 @@ public class ResourceRequestConverterTest {
       new ResourceDataAttributes()
         .withIsSelected(true)
         .withPublicationType(PublicationType.BOOK_SERIES)), resourceData);
-      assertEquals("Book Series", resourcePut.getPubType());
+      assertEquals("bookseries", resourcePut.getPubType());
   }
 
   @Test
