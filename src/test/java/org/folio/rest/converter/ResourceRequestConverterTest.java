@@ -24,6 +24,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ResourceRequestConverterTest {
+  private static final String OLD_PROXY_ID = "<n>";
+  public static final String OLD_COVERAGE_STATEMENT = "statement";
+  public static final String OLD_URL = "http://example.com";
+  public static final boolean OLD_VISIBILITY_DATA = true;
+  public static final String OLD_BEGIN_COVERAGE = "2002-10-10";
+  public static final String OLD_END_COVERAGE = "2003-10-10";
+  public static final String OLD_EMBARGO_UNIT = "Day";
+  public static final int OLD_EMBARGO_VALUE = 5;
   private ResourceRequestConverter resourcesConverter = new ResourceRequestConverter();
   private ResourceResult resourceData;
 
@@ -32,17 +40,17 @@ public class ResourceRequestConverterTest {
     Title title = Title.builder()
       .contributorsList(Collections.emptyList())
       .customerResourcesList(Collections.singletonList(CustomerResources.builder()
-        .coverageStatement("statement")
+        .coverageStatement(OLD_COVERAGE_STATEMENT)
         .isSelected(false)
         .visibilityData(VisibilityInfo.builder()
-          .isHidden(true).build())
+          .isHidden(OLD_VISIBILITY_DATA).build())
         .customCoverageList(Collections.singletonList(CoverageDates.builder()
-          .beginCoverage("2002-10-10").endCoverage("2003-10-10").build()))
+          .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
         .customEmbargoPeriod(org.folio.rmapi.model.EmbargoPeriod.builder()
-          .embargoUnit("Day").embargoValue(5).build())
+          .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
         .proxy(org.folio.rmapi.model.Proxy.builder()
-          .id("<n>").inherited(true).build())
-        .url("http://example.com")
+          .id(OLD_PROXY_ID).inherited(true).build())
+        .url(OLD_URL)
         .build()
       ))
       .identifiersList(Collections.emptyList())
@@ -212,5 +220,19 @@ public class ResourceRequestConverterTest {
         .withIsSelected(true)
         .withUrl("test url")), resourceData);
     assertEquals("test url", resourcePut.getUrl());
+  }
+
+  @Test
+  public void shouldCreateRequestWithOldDataWhenUpdateFieldsAreMissing() {
+    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+      new ResourceDataAttributes()), resourceData);
+    assertEquals(OLD_PROXY_ID, resourcePut.getProxy().getId());
+    assertEquals(OLD_COVERAGE_STATEMENT, resourcePut.getCoverageStatement());
+    assertEquals(OLD_URL, resourcePut.getUrl());
+    assertEquals(OLD_VISIBILITY_DATA, resourcePut.getIsHidden());
+    assertEquals(OLD_BEGIN_COVERAGE, resourcePut.getCustomCoverageList().get(0).getBeginCoverage());
+    assertEquals(OLD_END_COVERAGE, resourcePut.getCustomCoverageList().get(0).getEndCoverage());
+    assertEquals(OLD_EMBARGO_UNIT, resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
+    assertEquals(OLD_EMBARGO_VALUE, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
   }
 }

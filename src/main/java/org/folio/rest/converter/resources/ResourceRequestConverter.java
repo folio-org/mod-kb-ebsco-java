@@ -47,7 +47,8 @@ public class ResourceRequestConverter {
     builder.publisherName(attributes.getPublisherName());
     builder.edition(attributes.getEdition());
     builder.description(attributes.getDescription());
-    builder.url(attributes.getUrl());
+    String url = attributes.getUrl() != null ? attributes.getUrl() : oldResource.getUrl();
+    builder.url(url);
 
     List<Identifier> identifierList = attributes.getIdentifiers() != null && !attributes.getIdentifiers().isEmpty() ?
       toIdentifiersConverter.convert(attributes.getIdentifiers()) : oldTitle.getIdentifiersList();
