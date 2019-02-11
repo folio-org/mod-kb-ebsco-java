@@ -53,6 +53,11 @@
         "description": "The Custom Identifiers Schema",
         "$ref": "../identifier.json"
       }
+    },
+    "tags": {
+      "type": "object",
+      "description": "Title tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
     }
   },
   "required": [

@@ -3,19 +3,33 @@ package org.folio.rest.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.readFile;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import org.apache.http.HttpStatus;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.Title;
+import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.folio.tag.RecordType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -27,21 +41,13 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
-import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Title;
-import org.folio.tag.RecordType;
-
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
   private static final String STUB_TITLE_ID = "985846";
   private static final int STUB_PACKAGE_ID = 3964;
   private static final int STUB_VENDOR_ID = 111111;
   private static final String STUB_TAG_VALUE = "test tag";
+  private static final String STUB_TAG_VALUE2 = "test tag 2";
 
   @Test
   public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
@@ -256,32 +262,24 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitleWhenValidPostRequest() throws IOException, URISyntaxException {
-
-    String titleCreatedIdStubResponseFile = "responses/rmapi/titles/post-title-response.json";
-    String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
-    String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
-
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"Author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"Illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}", true, true);
-
-    stubFor(
-      post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
-        + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles"), false))
-        .withRequestBody(postBodyPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(titleCreatedIdStubResponseFile))
-          .withStatus(org.apache.http.HttpStatus.SC_OK)));
-
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_TITLE_ID), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(getTitleByTitleIdStubFile))
-          .withStatus(HttpStatus.SC_OK)));
-
-    String actual = postResponseWithStatus("eholdings/titles", org.apache.http.HttpStatus.SC_OK, titlePostStubRequestFile).asString();
+    String actual = postTitle(Collections.emptyList()).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-created-title-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldUpdateTagsWhenValidPostRequest() throws IOException, URISyntaxException {
+    try {
+      List<String> tagList = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE2);
+      Title actual = postTitle(tagList).as(Title.class);
+      List<String> tagsFromDB = TagsTestUtil.getTags(vertx);
+      assertThat(actual.getData().getAttributes().getTags().getTagList(), containsInAnyOrder(tagList.toArray()));
+      assertThat(tagsFromDB, containsInAnyOrder(tagList.toArray()));
+    }
+    finally {
+      TagsTestUtil.clearTags(vertx);
+    }
   }
 
   @Test
@@ -301,19 +299,48 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withBody(readFile(errorResponse))
           .withStatus(HttpStatus.SC_BAD_REQUEST)));
 
-    postResponseWithStatus("eholdings/titles", HttpStatus.SC_BAD_REQUEST, titlePostStubRequestFile);
+    postResponseWithStatus("eholdings/titles", HttpStatus.SC_BAD_REQUEST, readFile(titlePostStubRequestFile));
 
   }
 
-  private ExtractableResponse<Response> postResponseWithStatus(String resourcePath, int expectedStatus, String body)
-    throws IOException, URISyntaxException {
+  private ExtractableResponse<Response> postResponseWithStatus(String resourcePath, int expectedStatus, String requestBody) {
     return RestAssured.given()
       .spec(getRequestSpecification())
       .header("Content-type","application/vnd.api+json")
-      .body(readFile(body))
+      .body(requestBody)
       .when()
       .post(resourcePath)
       .then()
       .statusCode(expectedStatus).extract();
+  }
+
+  private ExtractableResponse<Response> postTitle(List<String> tags) throws IOException, URISyntaxException {
+    String titleCreatedIdStubResponseFile = "responses/rmapi/titles/post-title-response.json";
+    String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
+    String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"Author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"Illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}", true, true);
+
+    stubFor(
+      post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
+        + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles"), false))
+        .withRequestBody(postBodyPattern)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(titleCreatedIdStubResponseFile))
+          .withStatus(HttpStatus.SC_OK)));
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_TITLE_ID), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(getTitleByTitleIdStubFile))
+          .withStatus(HttpStatus.SC_OK)));
+
+    ObjectMapper mapper = new ObjectMapper();
+    TitlePostRequest request = mapper.readValue(readFile(titlePostStubRequestFile), TitlePostRequest.class);
+    request.getData().getAttributes().setTags(new Tags());
+    request.getData().getAttributes().getTags().setTagList(tags);
+
+    return postResponseWithStatus("eholdings/titles", HttpStatus.SC_OK, mapper.writeValueAsString(request));
   }
 }

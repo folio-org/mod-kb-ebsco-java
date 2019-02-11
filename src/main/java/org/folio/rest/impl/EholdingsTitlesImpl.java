@@ -5,18 +5,9 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.Response;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-
-import org.folio.tag.RecordType;
-import org.folio.tag.repository.TagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
@@ -33,6 +24,15 @@ import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
 import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
+import org.folio.tag.RecordType;
+import org.folio.tag.repository.TagRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
@@ -89,6 +89,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .requestAction(context ->
         context.getService().postTitle(titlePost, packageId)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
+          .thenCompose(titleResult ->
+            updateTags(titleResult, context.getOkapiData().getTenant(), entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
   }
@@ -116,9 +118,21 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result, String tenant) {
     return tagRepository.getTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE)
-      .thenCompose(tag -> {
+      .thenApply(tag -> {
         result.setTags(tag);
-        return CompletableFuture.completedFuture(result);
+        return result;
       });
+  }
+
+  private CompletableFuture<TitleResult> updateTags(TitleResult result, String tenant, Tags tags) {
+    if (tags == null){
+      return CompletableFuture.completedFuture(result);
+    }else {
+      return tagRepository.updateTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE, tags.getTagList())
+        .thenApply(updated -> {
+          result.setTags(new Tags().withTagList(tags.getTagList()));
+          return result;
+        });
+    }
   }
 }
