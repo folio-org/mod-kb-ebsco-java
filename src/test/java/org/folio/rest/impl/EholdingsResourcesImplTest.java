@@ -56,7 +56,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   private static final String MANAGED_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_MANAGED_VENDOR_ID + "/packages/" + STUB_MANAGED_PACKAGE_ID + "/titles/" + STUB_MANAGED_TITLE_ID;
   private static final String CUSTOM_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
   private static final String STUB_TAG = "test tag";
-  private static final String STUB_TAG2 = "test tag 2";
 
   @Test
   public void shouldReturnResourceWhenValidId() throws IOException, URISyntaxException {
@@ -396,50 +395,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       .header(CONTENT_TYPE_HEADER)
       .when()
       .body(readFile("requests/kb-ebsco/resource/put-custom-resource-invalid-url.json"))
-      .put(updateResourceEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
-  }
-
-  @Test
-  public void shouldReturn422WhenNameIsNotProvidedForCustomResource() throws URISyntaxException, IOException {
-    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), false))
-        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
-
-    String updateResourceEndpoint = "eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID;
-
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .when()
-      .body(readFile("requests/kb-ebsco/resource/put-custom-resource-null-name.json"))
-      .put(updateResourceEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
-  }
-
-  @Test
-  public void shouldReturn422WhenPublicationTypeIsNotProvidedForCustomResource() throws URISyntaxException, IOException {
-    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), false))
-        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
-
-    String updateResourceEndpoint = "eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID;
-
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .when()
-      .body(readFile("requests/kb-ebsco/resource/put-custom-resource-null-publication-type.json"))
       .put(updateResourceEndpoint)
       .then()
       .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);

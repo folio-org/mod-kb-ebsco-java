@@ -122,7 +122,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   public void putEholdingsResourcesByResourceId(String resourceId, String contentType, ResourcePutRequest entity,
                                                 Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
-
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getService().retrieveResource(parsedResourceId, Collections.emptyList())

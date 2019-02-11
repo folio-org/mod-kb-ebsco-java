@@ -2,8 +2,8 @@ package org.folio.rest.impl;
 
 import java.util.Collections;
 
-import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutData;
+import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rmapi.model.CoverageDates;
 import org.folio.rmapi.model.CustomerResources;
@@ -22,7 +22,7 @@ public class ResourcesTestData {
   public static final String OLD_EMBARGO_UNIT = "Day";
   public static final int OLD_EMBARGO_VALUE = 5;
 
-  public static ResourcePutRequest getResourcePutRequest(ResourceDataAttributes attributes) {
+  public static ResourcePutRequest getResourcePutRequest(ResourcePutDataAttributes attributes) {
     return new ResourcePutRequest()
       .withData(new ResourcePutData()
         .withType(ResourcePutData.Type.RESOURCES)

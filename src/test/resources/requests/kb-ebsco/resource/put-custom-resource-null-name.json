@@ -3,28 +3,8 @@
     "id": "123356-3157070-19412030",
     "type": "resources",
     "attributes": {
-      "description": "test description",
-      "edition": "test edition",
-      "isPeerReviewed": true,
       "isTitleCustom": true,
-      "publisherName": "Not Empty",
       "titleId": 19412030,
-      "contributors": [
-        {
-          "type": "Author",
-          "contributor": "Rappaport, Helen"
-        }
-      ],
-      "identifiers": [
-        {
-          "id": "978-1-280-71298-2",
-          "type": "ISBN",
-          "subtype": "Online"
-        }
-      ],
-      "name": null,
-      "publicationType": "Book",
-      "subjects": [],
       "coverageStatement": "My test statement",
       "customEmbargoPeriod": {
         "embargoValue": 30,
