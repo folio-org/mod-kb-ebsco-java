@@ -14,6 +14,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
+import org.folio.rest.jaxrs.model.Tags;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -138,6 +139,11 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             return context.getService().updateResource(parsedResourceId, resourcePutBody);
           })
           .thenCompose(o -> context.getService().retrieveResource(parsedResourceId, Collections.emptyList()))
+          .thenCompose(resourceResult ->
+            updateResourceTags(
+              resourceResult,
+              context.getOkapiData().getTenant(),
+              entity.getData().getAttributes().getTags()))
       )
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond422WithApplicationVndApiJson(
@@ -184,11 +190,29 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private CompletableFuture<ResourceResult> loadTags(ResourceResult result, String tenant) {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
-    String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
+    String resourceId = getResourceId(resource);
     return tagRepository.getTags(tenant, resourceId, RecordType.RESOURCE)
       .thenApply(tag -> {
         result.setTags(tag);
         return result;
       });
+  }
+
+  private CompletableFuture<ResourceResult> updateResourceTags(ResourceResult result, String tenant, Tags tags) {
+    if (tags == null) {
+      return CompletableFuture.completedFuture(result);
+    } else {
+      CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
+      String resourceId = getResourceId(resource);
+      return tagRepository.updateTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList())
+        .thenCompose(updated -> {
+          result.setTags(tags);
+          return CompletableFuture.completedFuture(result);
+        });
+    }
+  }
+
+  private String getResourceId(CustomerResources resource) {
+    return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 }
