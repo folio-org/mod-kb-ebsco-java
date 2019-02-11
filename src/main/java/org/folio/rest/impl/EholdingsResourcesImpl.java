@@ -14,7 +14,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import org.folio.rest.jaxrs.model.Tags;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -24,6 +23,7 @@ import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -169,6 +169,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             }
             return context.getService().deleteResource(parsedResourceId);
           })
+          .thenCompose(o -> tagRepository.deleteTags(context.getOkapiData().getTenant(), resourceId, RecordType.RESOURCE))
       )
       .execute();
   }
