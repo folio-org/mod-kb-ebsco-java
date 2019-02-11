@@ -186,9 +186,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
     String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
     return tagRepository.getTags(tenant, resourceId, RecordType.RESOURCE)
-      .thenCompose(tag -> {
+      .thenApply(tag -> {
         result.setTags(tag);
-        return CompletableFuture.completedFuture(result);
+        return result;
       });
   }
 }
