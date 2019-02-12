@@ -9,9 +9,7 @@
         "endCoverage": "2018-03-30"
       },
       "tags": {
-        "tagList": [
-          "test tag1"
-        ]
+        "tagList": []
       }
     }
   }

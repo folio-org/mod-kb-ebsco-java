@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 
 import static org.folio.util.TestUtil.getFile;
 import static org.folio.util.TestUtil.mockConfiguration;
@@ -40,6 +39,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -83,7 +83,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     String packages = getOkResponse("eholdings/packages?q=American&filter[type]=abstractandindex&count=5")
       .asString();
-    assertEquals(readFile("responses/kb-ebsco/packages/expected-package-collection-with-five-elements.json"),
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-package-collection-with-five-elements.json"),
       packages, false);
   }
 
@@ -101,7 +101,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packages = getOkResponse("eholdings/packages?q=a&count=5&page=1&filter[custom]=true")
       .asString();
 
-    assertEquals(readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element.json"),
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element.json"),
       packages, false);
 }
 
@@ -113,7 +113,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     String packageData = getOkResponse(PACKAGES_PATH).asString();
 
-    assertEquals(readFile(EXPECTED_PACKAGE_BY_ID_STUB_FILE), packageData, false);
+    JSONAssert.assertEquals(readFile(EXPECTED_PACKAGE_BY_ID_STUB_FILE), packageData, false);
   }
 
   @Test
@@ -141,7 +141,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, "test one");
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -155,7 +155,19 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, STUB_TAG_VALUE);
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldAddPackageTagsOnPostWhenPackageAlreadyHasTags() throws IOException, URISyntaxException {
+    try {
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -164,21 +176,17 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteAllPackageTagsOnPutWhenRequestHasEmptyListOfTags() throws IOException, URISyntaxException {
-    try {
       String packageId = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
       TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, "test one");
       sendPutWithTags(Collections.emptyList());
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, empty());
-    } finally {
-      TagsTestUtil.clearTags(vertx);
-    }
   }
 
   @Test
   public void shouldDoNothingOnPutWhenRequestHasNotTags() throws IOException, URISyntaxException {
     sendPutWithTags(null);
-    List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+    List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
     assertThat(tagsAfterRequest, empty());
   }
 
@@ -200,7 +208,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .then()
         .statusCode(HttpStatus.SC_NO_CONTENT);
 
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx);
+      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, empty());
   }
 
@@ -227,7 +235,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     ResourceCollection expectedResources = mapper.readValue(readFile(EXPECTED_RESOURCES_STUB_FILE), ResourceCollection.class);
     expectedPackage.getIncluded().addAll(expectedResources.getData());
 
-    assertEquals(mapper.writeValueAsString(expectedPackage), mapper.writeValueAsString(packageData), false);
+    JSONAssert.assertEquals(mapper.writeValueAsString(expectedPackage), mapper.writeValueAsString(packageData), false);
   }
 
   @Test
@@ -242,7 +250,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .asString();
 
     String expected = readFile("responses/kb-ebsco/packages/expected-package-by-id-with-provider.json");
-    assertEquals(expected, actual, false);
+    JSONAssert.assertEquals(expected, actual, false);
   }
 
   @Test
@@ -492,7 +500,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     String expected = readFile(packagePostStubResponseFile);
 
-    assertEquals(expected, actual, false);
+    JSONAssert.assertEquals(expected, actual, false);
     verify(1, postRequestedFor(postPackagePattern).withRequestBody(postBodyPattern));
   }
   @Test
@@ -606,7 +614,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String actual = getResponseWithStatus(getURL, 200).asString();
     String expected = readFile(EXPECTED_RESOURCES_STUB_FILE);
 
-    assertEquals(expected, actual, false);
+    JSONAssert.assertEquals(expected, actual, false);
 
     verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + rmAPIQuery)));
   }
