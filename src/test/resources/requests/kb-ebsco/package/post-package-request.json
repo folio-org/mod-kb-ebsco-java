@@ -7,6 +7,11 @@
       "customCoverage":{
         "beginCoverage": "2017-12-23",
         "endCoverage": "2018-03-30"
+      },
+      "tags": {
+        "tagList": [
+          "test tag1"
+        ]
       }
     }
   }

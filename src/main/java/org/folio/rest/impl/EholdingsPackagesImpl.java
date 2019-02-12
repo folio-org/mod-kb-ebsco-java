@@ -12,7 +12,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -28,6 +27,7 @@ import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -121,11 +121,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     packagesPostBodyValidator.validate(entity);
 
     PackagePost packagePost = packagePostRequestConverter.convert(entity);
+    final Tags tags = entity.getData().getAttributes().getTags();
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         getVendorId(context)
           .thenCompose(id -> context.getService().postPackage(packagePost, id))
+          .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags))
       )
       .addErrorMapper(RMAPIServiceException.class,
         exception ->
@@ -154,7 +156,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
-
+    final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getService().retrievePackage(parsedPackageId)
@@ -169,7 +171,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
             }
             return context.getService().updatePackage(parsedPackageId, packagePutBody);
           })
-          .thenCompose(o -> context.getService().retrievePackage(parsedPackageId)))
+          .thenCompose(o -> context.getService().retrievePackage(parsedPackageId))
+          .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags)))
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsPackages.PutEholdingsPackagesByPackageIdResponse.respond422WithApplicationVndApiJson(
           ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail())))
@@ -187,7 +190,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
             if (!packageData.getIsCustom()) {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
-            return context.getService().deletePackage(parsedPackageId);
+            return context.getService().deletePackage(parsedPackageId).thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
           }))
       .execute();
   }
@@ -243,5 +246,23 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         result.setTags(tag);
         return CompletableFuture.completedFuture(result);
       });
+  }
+
+  private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
+    return tagRepository.deleteTags(tenant, String.valueOf(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()), RecordType.PACKAGE)
+      .thenCompose(aBoolean ->  CompletableFuture.completedFuture(null));
+  }
+
+  private CompletableFuture<PackageResult> updateTags(PackageByIdData packageId, String tenant, Tags tags) {
+    if (tags == null){
+      return CompletableFuture.completedFuture(new PackageResult(packageId, null, null));
+    }else {
+      return tagRepository.updateTags(tenant, String.valueOf(packageId.getVendorId() + "-" + packageId.getPackageId()), RecordType.PACKAGE, tags.getTagList())
+        .thenCompose(updated -> {
+          PackageResult result = new PackageResult(packageId, null, null);
+          result.setTags(new Tags().withTagList(tags.getTagList()));
+          return CompletableFuture.completedFuture(result);
+        });
+    }
   }
 }
