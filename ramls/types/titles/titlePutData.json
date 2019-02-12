@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Title Put Data Schema",
+  "description": "Title Put Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.TitlePutData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "readonly": true,
+      "description": "Unique title id",
+      "example": "394579"
+    },
+    "type": {
+      "description": "Data type",
+      "type": "string",
+      "example": "titles"
+    },
+    "attributes": {
+      "description": "Data type attributes",
+      "type": "object",
+      "$ref": "titlePostDataAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

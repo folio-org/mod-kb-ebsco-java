@@ -1,8 +1,12 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
@@ -48,6 +52,12 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   private static final int STUB_VENDOR_ID = 111111;
   private static final String STUB_TAG_VALUE = "test tag";
   private static final String STUB_TAG_VALUE2 = "test tag 2";
+
+  private static final String STUB_CUSTOM_VENDOR_ID = "123356";
+  private static final String STUB_CUSTOM_PACKAGE_ID = "3157070";
+  private static final String STUB_CUSTOM_TITLE_ID = "19412030";
+  private static final String CUSTOM_TITLE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
+  private static final String CUSTOM_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
 
   @Test
   public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
@@ -301,6 +311,54 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     postResponseWithStatus("eholdings/titles", HttpStatus.SC_BAD_REQUEST, readFile(titlePostStubRequestFile));
 
+  }
+
+  @Test
+  public void shouldReturnUpdatedValuesCustomResourceOnSuccessfulPut() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+    String expectedResourceFile = "responses/kb-ebsco/titles/expected-updated-title.json";
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
+
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_NO_CONTENT)));
+
+    String updateTitleEndpoint = "eholdings/titles/" + STUB_CUSTOM_TITLE_ID;
+
+    String actualResponse = RestAssured
+      .given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .body(readFile("requests/kb-ebsco/title/put-title.json"))
+      .when()
+      .put(updateTitleEndpoint)
+      .then()
+      .statusCode(HttpStatus.SC_OK)
+      .extract().asString();
+
+    JSONAssert.assertEquals(
+      readFile(expectedResourceFile), actualResponse, false);
+
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), true))
+      .withRequestBody(equalToJson(readFile("requests/rmapi/resources/put-custom-resource-is-selected-multiple-attributes.json"))));
+  }
+
+  @Test
+  public void shouldReturn422WhenNameIsNotProvided() throws URISyntaxException, IOException {
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .when()
+      .body(readFile("requests/kb-ebsco/title/put-title-null-name.json"))
+      .put("eholdings/titles/" + STUB_TITLE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
   }
 
   private ExtractableResponse<Response> postResponseWithStatus(String resourcePath, int expectedStatus, String requestBody) {

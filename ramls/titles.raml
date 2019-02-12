@@ -14,6 +14,7 @@ types:
   title: !include types/titles/title.json
   titleCollection: !include types/titles/titleCollection.json
   titlePostRequest: !include types/titles/titlePostRequest.json
+  titlePutRequest: !include types/titles/titlePutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/titles:
@@ -70,7 +71,6 @@ types:
         body:
           application/vnd.api+json:
             example: !include examples/titles/titles_post_422_response.json
-
   /{titleId}:
     description: Entity representing a title
     get:
@@ -91,3 +91,30 @@ types:
           body:
             application/vnd.api+json:
               example: !include examples/titles/titles_titleId_get_404_response.json
+    put:
+      description: Update Custom Title.
+      headers:
+        Content-Type:
+          example: application/vnd.api+json
+      body:
+        application/vnd.api+json:
+          description: Update Custom Title.
+          type: titlePutRequest
+          example:
+            strict: false
+            value: !include examples/titles/titles_put_request.json
+      responses:
+        200:
+          description: OK
+          body:
+            application/vnd.api+json:
+              description: The server has successfully fulfilled the PUT request.
+              type: title
+              example:
+                strict: false
+                value: !include examples/titles/titles_put_200_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              example: !include examples/titles/titles_post_422_response.json
