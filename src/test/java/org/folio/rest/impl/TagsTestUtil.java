@@ -12,10 +12,10 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Vertx;
+
 import org.folio.rest.persist.PostgresClient;
 import org.folio.tag.RecordType;
-
-import io.vertx.core.Vertx;
 
 public class TagsTestUtil {
   private TagsTestUtil() {
