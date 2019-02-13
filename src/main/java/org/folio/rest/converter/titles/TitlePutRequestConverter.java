@@ -2,6 +2,10 @@ package org.folio.rest.converter.titles;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
+
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
@@ -9,10 +13,8 @@ import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rmapi.model.Contributor;
 import org.folio.rmapi.model.CustomerResources;
 import org.folio.rmapi.model.Identifier;
+import org.folio.rmapi.model.Proxy;
 import org.folio.rmapi.model.ResourcePut;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
 
 @Component
 public class TitlePutRequestConverter {
@@ -30,7 +32,14 @@ public class TitlePutRequestConverter {
     TitlePostDataAttributes attributes = entity.getData().getAttributes();
     ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
 
-    builder.proxy(oldResource.getProxy());
+    Proxy proxy = null;
+    if(oldResource.getProxy()!=null && oldResource.getProxy().getId()!=null){
+      proxy = Proxy.builder()
+        .inherited(false)
+        .id(oldResource.getProxy().getId())
+        .build();
+    }
+    builder.proxy(proxy);
     builder.isHidden(oldResource.getVisibilityData().getIsHidden());
     builder.coverageStatement(oldResource.getCoverageStatement());
     builder.customEmbargoPeriod(oldResource.getCustomEmbargoPeriod());

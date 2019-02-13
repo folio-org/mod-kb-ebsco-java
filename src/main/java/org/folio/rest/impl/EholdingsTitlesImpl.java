@@ -128,7 +128,10 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             return context.getService().updateResource(idParser.parseResourceId(resourceId), resourcePutRequest);
           })
           .thenCompose(o -> context.getService().retrieveTitle(parsedTitleId))
-          .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
+          .thenCompose(title ->
+            updateTags(new TitleResult(title, false),
+              context.getOkapiData().getTenant(),
+              entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
   }
