@@ -70,6 +70,11 @@ public class TagRepository {
     return assignTags(tenantId, recordId, recordType, tags);
   }
 
+  public CompletableFuture<Boolean> deleteTags(String tenantId, String recordId, RecordType recordType) {
+    return unAssignTags(null, tenantId, recordId, recordType);
+  }
+
+
   private CompletableFuture<Boolean> assignTags(String tenantId, String recordId, RecordType recordType, List<String> tags) {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     MutableObject<AsyncResult<SQLConnection>> mutableConnection = new MutableObject<>();

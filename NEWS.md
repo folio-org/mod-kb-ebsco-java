@@ -1,3 +1,11 @@
+## v2.0.3 2019-02-08
+ * MODKBEKBJ-168 - Error when removing managed titles from holdings
+ * MODKBEKBJ-161 - Tags: assign/unassign tags to Provider record
+ * MODKBEKBJ-158 - Tags: retrieve tags assigned to Provider record
+ * MODKBEKBJ-159 - Tags: retrieve tags assigned to Package record
+ * MODKBEKBJ-160 - Tags: retrieve tags assigned to Title record
+ * MODKBEKBJ-164 - Tags: retrieve tags assigned to Resource record
+
 ## v2.0.2 2019-02-01
  * MODKBEKBJ-155 - Refactor of Postman API tests
  

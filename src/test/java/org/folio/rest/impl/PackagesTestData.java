@@ -1,23 +1,17 @@
 package org.folio.rest.impl;
 
-import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutData;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rest.jaxrs.model.Proxy;
-import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rest.util.RestConstants;
 
 public class PackagesTestData {
 
@@ -46,34 +40,6 @@ public class PackagesTestData {
     collectionItems.add(collectionItem);
     return new PackageCollection().withData(collectionItems)
       .withMeta(new MetaTotalResults().withTotalResults(1));
-
-  }
-
-  public static PackageCollection getExpectedCollectionPackageItem() {
-    List<PackageCollectionItem> collectionItems = new ArrayList<>();
-    PackageCollectionItem collectionItem = new PackageCollectionItem()
-      .withId("392-3007")
-      .withAttributes(new PackageDataAttributes()
-        .withName("American Academy of Family Physicians")
-        .withPackageId(3007)
-        .withIsCustom(false)
-        .withProviderId(392)
-        .withProviderName("American Academy of Family Physicians")
-        .withTitleCount(3)
-        .withIsSelected(false)
-        .withSelectedCount(0)
-        .withPackageType("Variable")
-        .withContentType(ContentType.E_JOURNAL)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("")
-          .withEndCoverage(""))
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(false)
-          .withReason("")
-        ));
-    collectionItems.add(collectionItem);
-    return new PackageCollection().withData(collectionItems)
-      .withMeta(new MetaTotalResults().withTotalResults(414));
 
   }
 
