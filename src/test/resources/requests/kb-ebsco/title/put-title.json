@@ -1,0 +1,27 @@
+{
+  "data": {
+    "id": "19412030",
+    "type": "titles",
+    "attributes": {
+      "description": "test description",
+      "edition": "test edition",
+      "isPeerReviewed": true,
+      "publisherName": "Not Empty",
+      "contributors": [
+        {
+          "type": "Author",
+          "contributor": "Rappaport, Helen"
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "978-1-280-71298-2",
+          "type": "ISBN",
+          "subtype": "Online"
+        }
+      ],
+      "name": "sd-test-java-again",
+      "publicationType": "Book"
+    }
+  }
+}

@@ -141,7 +141,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, "test one");
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -155,7 +155,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, STUB_TAG_VALUE);
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -167,7 +167,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     try {
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -179,14 +179,14 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       String packageId = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
       TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, "test one");
       sendPutWithTags(Collections.emptyList());
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, empty());
   }
 
   @Test
   public void shouldDoNothingOnPutWhenRequestHasNotTags() throws IOException, URISyntaxException {
     sendPutWithTags(null);
-    List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
     assertThat(tagsAfterRequest, empty());
   }
 
@@ -208,7 +208,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .then()
         .statusCode(HttpStatus.SC_NO_CONTENT);
 
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PACKAGE);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, empty());
   }
 

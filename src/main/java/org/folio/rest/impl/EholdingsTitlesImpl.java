@@ -10,16 +10,18 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import org.folio.tag.RecordType;
-import org.folio.tag.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.converter.titles.TitlePutRequestConverter;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -28,24 +30,35 @@ import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitleParametersValidator;
+import org.folio.rest.validator.TitlesPostAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
+import org.folio.rmapi.model.CustomerResources;
+import org.folio.rmapi.model.ResourcePut;
 import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
+import org.folio.tag.RecordType;
+import org.folio.tag.repository.TagRepository;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
+  private static final String TITLE_CANNOT_BE_UPDATED = "Title cannot be updated";
+  private static final String TITLE_CANNOT_BE_UPDATED_DETAIL = "Title is not custom";
 
   @Autowired
   private Converter<TitlePostRequest, TitlePost> titlePostRequestConverter;
+  @Autowired
+  private TitlePutRequestConverter titlePutRequestConverter;
   @Autowired
   private TitleParametersValidator parametersValidator;
   @Autowired
   private IdParser idParser;
   @Autowired
   private TitlesPostBodyValidator titlesPostBodyValidator;
+  @Autowired
+  private TitlesPostAttributesValidator titlesPostAttributesValidator;
   @Autowired
   private RMAPITemplateFactory templateFactory;
   @Autowired
@@ -89,6 +102,33 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .requestAction(context ->
         context.getService().postTitle(titlePost, packageId)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
+          .thenCompose(titleResult ->
+            updateTags(titleResult, context.getOkapiData().getTenant(), entity.getData().getAttributes().getTags()))
+      )
+      .executeWithResult(Title.class);
+  }
+
+  @Override
+  @HandleValidationErrors
+  public void putEholdingsTitlesByTitleId(String titleId, String contentType, TitlePutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    titlesPostAttributesValidator.validate(entity.getData().getAttributes());
+
+    Long parsedTitleId = idParser.parseTitleId(titleId);
+    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+      .requestAction(context ->
+        context.getService().retrieveTitle(parsedTitleId)
+          .thenCompose(title -> {
+            if(!title.getIsTitleCustom()){
+              throw new InputValidationException(TITLE_CANNOT_BE_UPDATED, TITLE_CANNOT_BE_UPDATED_DETAIL);
+            }
+            CustomerResources resource = title.getCustomerResourcesList().get(0);
+            ResourcePut resourcePutRequest =
+              titlePutRequestConverter.convertToRMAPICustomResourcePutRequest(entity, resource);
+            String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
+            return context.getService().updateResource(idParser.parseResourceId(resourceId), resourcePutRequest);
+          })
+          .thenCompose(o -> context.getService().retrieveTitle(parsedTitleId))
+          .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
       )
       .executeWithResult(Title.class);
   }
@@ -116,9 +156,21 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result, String tenant) {
     return tagRepository.getTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE)
-      .thenCompose(tag -> {
+      .thenApply(tag -> {
         result.setTags(tag);
-        return CompletableFuture.completedFuture(result);
+        return result;
       });
+  }
+
+  private CompletableFuture<TitleResult> updateTags(TitleResult result, String tenant, Tags tags) {
+    if (tags == null){
+      return CompletableFuture.completedFuture(result);
+    }else {
+      return tagRepository.updateTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE, tags.getTagList())
+        .thenApply(updated -> {
+          result.setTags(new Tags().withTagList(tags.getTagList()));
+          return result;
+        });
+    }
   }
 }

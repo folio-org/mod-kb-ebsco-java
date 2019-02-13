@@ -1,8 +1,8 @@
 package org.folio.rmapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -13,10 +13,6 @@ public class Identifier {
 
   @JsonProperty("id")
   public String id;
-
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  @JsonProperty("source")
-  public String source;
 
   /**
    * Sub-type for the identifier. This is used by only some identifiers to

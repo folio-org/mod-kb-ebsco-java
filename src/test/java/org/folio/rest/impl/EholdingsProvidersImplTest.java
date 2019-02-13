@@ -321,7 +321,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     try {
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PROVIDER);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -334,7 +334,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PROVIDER);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -347,7 +347,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, "old tag value");
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PROVIDER);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -358,14 +358,14 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldDeleteAllProviderTagsOnPutWhenRequestHasEmptyListOfTags() throws IOException, URISyntaxException {
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, "old tag value");
       sendPutWithTags(Collections.emptyList());
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PROVIDER);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
       assertThat(tagsAfterRequest, empty());
   }
 
   @Test
   public void shouldDoNothingOnPutWhenRequestHasNotTags() throws IOException, URISyntaxException {
       sendPutWithTags(null);
-      List<String> tagsAfterRequest = TagsTestUtil.getTags(vertx, RecordType.PROVIDER);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
       assertThat(tagsAfterRequest, empty());
   }
 

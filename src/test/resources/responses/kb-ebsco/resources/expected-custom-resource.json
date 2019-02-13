@@ -1,0 +1,62 @@
+{
+  "data": {
+    "id": "123356-3157070-19412030",
+    "type": "resources",
+    "attributes": {
+      "description": "test description",
+      "edition": "test edition",
+      "isPeerReviewed": true,
+      "isTitleCustom": true,
+      "publisherName": "Not Empty",
+      "titleId": 19412030,
+      "contributors": [
+        {
+          "type": "Author",
+          "contributor": "Rappaport, Helen"
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "978-1-280-71298-2",
+          "subtype": "Online",
+          "type": "ISBN"
+        }
+      ],
+      "name": "sd-test-java-again",
+      "publicationType": "Book",
+      "subjects": [],
+      "coverageStatement": "My test statement",
+      "customEmbargoPeriod": {
+        "embargoUnit": "Weeks",
+        "embargoValue": 30
+      },
+      "isPackageCustom": true,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "locationId": 43006476,
+      "managedEmbargoPeriod": {},
+      "packageId": "123356-3157070",
+      "packageName": "Andrii custom package ",
+      "url": "https://hello",
+      "providerId": 123356,
+      "providerName": "API DEV GOVERNMENT CUSTOMER",
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverages": [],
+      "customCoverages": [{
+        "beginCoverage": "2018-01-10",
+        "endCoverage": "2018-01-11"
+      }],
+      "proxy": {
+        "id": "Proxy-ID-234",
+        "inherited": false
+      }
+    }
+  },
+  "included": [],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

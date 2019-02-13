@@ -40,11 +40,19 @@ public class TagsTestUtil {
     future.join();
   }
 
-  public static List<String> getTags(Vertx vertx, RecordType recordType) {
+  public static List<String> getTags(Vertx vertx) {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
-      "SELECT " + TAG_COLUMN + " FROM " + PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TABLE_NAME +
-        " WHERE " + RECORD_TYPE_COLUMN + "= '" + recordType.getValue()+"'",
+      "SELECT " + TAG_COLUMN + " FROM " + PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TABLE_NAME,
+      event -> future.complete(event.result().getRows().stream().map(row -> row.getString(TAG_COLUMN)).collect(Collectors.toList())));
+    return future.join();
+  }
+
+  public static List<String> getTagsForRecordType(Vertx vertx, RecordType recordType) {
+    CompletableFuture<List<String>> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).select(
+      "SELECT " + TAG_COLUMN + " FROM " + PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TABLE_NAME + " " +
+        "WHERE " + RECORD_TYPE_COLUMN + "= '" + recordType.getValue()+"'",
       event -> future.complete(event.result().getRows().stream().map(row -> row.getString(TAG_COLUMN)).collect(Collectors.toList())));
     return future.join();
   }

@@ -2,6 +2,7 @@ package org.folio.rest.validator;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
 import org.folio.rest.jaxrs.model.PublicationType;
@@ -45,7 +46,7 @@ public class TitlePostBodyValidatorTest {
       + ". Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis s"
       + "ed, nonummy id, metus. Nullam accumsan lorem in dui. Cras ultricies mi";
   private static final String TITLE_TEST_NAME = "Title Test Name";
-  private TitlesPostBodyValidator validator = new TitlesPostBodyValidator();
+  private TitlesPostBodyValidator validator = new TitlesPostBodyValidator(new TitlesPostAttributesValidator());
 
   @Test(expected = InputValidationException.class)
   public void shouldTrowExceptionWhenNoPostBody() {

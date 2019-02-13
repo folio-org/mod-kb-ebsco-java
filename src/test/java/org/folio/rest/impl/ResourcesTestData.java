@@ -2,112 +2,55 @@ package org.folio.rest.impl;
 
 import java.util.Collections;
 
-import org.folio.rest.jaxrs.model.EmbargoPeriod;
-import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
-import org.folio.rest.jaxrs.model.Proxy;
-import org.folio.rest.jaxrs.model.PublicationType;
-import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutData;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
-import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rest.jaxrs.model.Resource;
-import org.folio.rest.util.RestConstants;
+import org.folio.rmapi.model.CoverageDates;
+import org.folio.rmapi.model.CustomerResources;
+import org.folio.rmapi.model.Title;
+import org.folio.rmapi.model.VisibilityInfo;
+import org.folio.rmapi.result.ResourceResult;
 
 
 public class ResourcesTestData {
-  
+  public static final String OLD_PROXY_ID = "<n>";
+  public static final String OLD_COVERAGE_STATEMENT = "statement";
+  public static final String OLD_URL = "http://example.com";
+  public static final boolean OLD_VISIBILITY_DATA = true;
+  public static final String OLD_BEGIN_COVERAGE = "2002-10-10";
+  public static final String OLD_END_COVERAGE = "2003-10-10";
+  public static final String OLD_EMBARGO_UNIT = "Day";
+  public static final int OLD_EMBARGO_VALUE = 5;
+
   public static ResourcePutRequest getResourcePutRequest(ResourceDataAttributes attributes) {
     return new ResourcePutRequest()
       .withData(new ResourcePutData()
         .withType(ResourcePutData.Type.RESOURCES)
         .withAttributes(attributes));
   }
-  
-  public static Resource getExpectedManagedResource() {
-    return new Resource().withData(new ResourceCollectionItem()
-      .withId("583-4345-762169")
-      .withType(ResourceCollectionItem.Type.RESOURCES)
-      .withAttributes(new ResourceDataAttributes()
-          .withDescription(null)
-          .withEdition(null)
-          .withIsPeerReviewed(false)
-          .withIsTitleCustom(false)
-          .withPublisherName("Praeger")
-          .withTitleId(762169)
-          .withContributors(Collections.emptyList())
-          .withIdentifiers(Collections.emptyList())
-          .withName("\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other")
-          .withPublicationType(PublicationType.BOOK)
-          .withSubjects(Collections.emptyList())
-          .withCoverageStatement("test coverage statement")
-          .withCustomEmbargoPeriod(new EmbargoPeriod()
-              .withEmbargoUnit(EmbargoUnit.YEARS)
-              .withEmbargoValue(10))
-          .withIsPackageCustom(false)
-          .withIsSelected(true)
-          .withIsTokenNeeded(false)
-          .withLocationId(6926225)
-          .withManagedEmbargoPeriod(new EmbargoPeriod()
-              .withEmbargoValue(0))
-          .withPackageId("583-4345")
-          .withPackageName("OhioLINK Electronic Book Center: EBC")
-          .withUrl("https://publisher.abc-clio.com/9780313068003/")
-          .withProviderId(583)
-          .withProviderName("OhioLINK")
-          .withVisibilityData(new VisibilityData()
-              .withIsHidden(false)
-              .withReason(""))
-          .withManagedCoverages(Collections.emptyList())
-          .withCustomCoverages(Collections.emptyList())
-          .withProxy(new Proxy()
-              .withId("Test-proxy-id")
-              .withInherited(false))
-        ))
-      .withJsonapi(RestConstants.JSONAPI);
-  }
-  
-  public static Resource getExpectedCustomResource() {
-    return new Resource().withData(new ResourceCollectionItem()
-      .withId("123356-3157070-19412030")
-      .withType(ResourceCollectionItem.Type.RESOURCES)
-      .withAttributes(new ResourceDataAttributes()
-          .withDescription("test description")
-          .withEdition("test edition")
-          .withIsPeerReviewed(true)
-          .withIsTitleCustom(true)
-          .withPublisherName("Not Empty")
-          .withTitleId(19412030)
-          .withContributors(Collections.emptyList())
-          .withIdentifiers(Collections.emptyList())
-          .withName("sd-test-java-again")
-          .withPublicationType(PublicationType.BOOK)
-          .withSubjects(Collections.emptyList())
-          .withCoverageStatement("My test statement")
-          .withCustomEmbargoPeriod(new EmbargoPeriod()
-              .withEmbargoUnit(EmbargoUnit.WEEKS)
-              .withEmbargoValue(30))
-          .withIsPackageCustom(true)
-          .withIsSelected(true)
-          .withIsTokenNeeded(false)
-          .withLocationId(43006476)
-          .withManagedEmbargoPeriod(new EmbargoPeriod()
-              .withEmbargoUnit(EmbargoUnit.DAYS)
-              .withEmbargoValue(10))
-          .withPackageId("123356-3157070")
-          .withPackageName("Andrii custom packageC")
-          .withUrl("https://hello")
-          .withProviderId(123356)
-          .withProviderName("API DEV GOVERNMENT CUSTOMER")
-          .withVisibilityData(new VisibilityData()
-              .withIsHidden(false)
-              .withReason(""))
-          .withManagedCoverages(Collections.emptyList())
-          .withCustomCoverages(Collections.emptyList())
-          .withProxy(new Proxy()
-              .withId("Proxy-ID-234")
-              .withInherited(false))
-        ))
-      .withJsonapi(RestConstants.JSONAPI);
+
+  public static ResourceResult createResourceData() {
+    Title title = Title.builder()
+      .contributorsList(Collections.emptyList())
+      .customerResourcesList(Collections.singletonList(CustomerResources.builder()
+        .coverageStatement(OLD_COVERAGE_STATEMENT)
+        .isSelected(false)
+        .visibilityData(VisibilityInfo.builder()
+          .isHidden(OLD_VISIBILITY_DATA).build())
+        .customCoverageList(Collections.singletonList(CoverageDates.builder()
+          .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
+        .customEmbargoPeriod(org.folio.rmapi.model.EmbargoPeriod.builder()
+          .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
+        .proxy(org.folio.rmapi.model.Proxy.builder()
+          .id(OLD_PROXY_ID).inherited(true).build())
+        .url(OLD_URL)
+        .build()
+      ))
+      .identifiersList(Collections.emptyList())
+      .subjectsList(Collections.emptyList())
+      .titleId(1)
+      .build();
+    return new ResourceResult(
+      title, null, null, false);
   }
 }

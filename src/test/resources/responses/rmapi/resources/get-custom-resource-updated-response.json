@@ -5,7 +5,6 @@
   "identifiersList": [
     {
       "id": "978-1-280-71298-2",
-      "source": "ResourceIdentifier",
       "subtype": 2,
       "type": 1
     }
@@ -62,7 +61,7 @@
   "isPeerReviewed": true,
   "contributorsList": [
     {
-      "type": "author",
+      "type": "Author",
       "contributor": "Rappaport, Helen"
     }
   ]
