@@ -1,9 +1,18 @@
 package org.folio.util;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.ContentPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
@@ -11,10 +20,7 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import com.google.common.io.Files;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.util.RestConstants;
 
@@ -82,5 +88,25 @@ public final class TestUtil {
   public static void mockGet(StringValuePattern urlPattern, int status) {
     stubFor(get(new UrlPathPattern(urlPattern, (urlPattern instanceof RegexPattern)))
       .willReturn(new ResponseDefinitionBuilder().withStatus(status)));
+  }
+
+  public static void mockPost(StringValuePattern urlPattern, ContentPattern body, String response, int status) throws IOException, URISyntaxException {
+    stubFor(post(new UrlPathPattern(urlPattern, (urlPattern instanceof RegexPattern)))
+        .withRequestBody(body)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(response))
+          .withStatus(status)));
+  }
+
+  public static void mockPut(StringValuePattern urlPattern, ContentPattern content, int status) {
+    stubFor(put(new UrlPathPattern(urlPattern, (urlPattern instanceof RegexPattern)))
+      .withRequestBody(content)
+      .willReturn(new ResponseDefinitionBuilder()
+        .withStatus(status)));
+  }
+  public static void mockPut(StringValuePattern urlPattern, int status) {
+    stubFor(put(new UrlPathPattern(urlPattern, (urlPattern instanceof RegexPattern)))
+      .willReturn(new ResponseDefinitionBuilder()
+        .withStatus(status)));
   }
 }

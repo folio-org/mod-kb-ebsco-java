@@ -2,12 +2,13 @@ package org.folio.rest.converter.resources;
 
 import java.util.List;
 
-import org.folio.rest.jaxrs.model.Resource;
-import org.folio.rmapi.result.ResourceResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+
+import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rmapi.result.ResourceResult;
 
 @Component
 public class ResourceConverter implements Converter<ResourceResult, Resource> {

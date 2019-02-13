@@ -20,6 +20,11 @@
       "type": "object",
       "description": "Custom Coverage",
       "$ref": "../coverage.json"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Package tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
     }
   },
   "required": [

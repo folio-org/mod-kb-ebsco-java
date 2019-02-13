@@ -7,31 +7,22 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.folio.rest.util.RestConstants.TITLES_TYPE;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.readFile;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.http.HttpStatus;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rest.jaxrs.model.Title;
-import org.folio.rest.jaxrs.model.TitlePostRequest;
-import org.folio.tag.RecordType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -44,6 +35,17 @@ import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.Title;
+import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.folio.tag.RecordType;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {

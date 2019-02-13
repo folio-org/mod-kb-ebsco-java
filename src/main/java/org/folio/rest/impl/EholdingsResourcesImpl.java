@@ -9,6 +9,13 @@ import java.util.concurrent.CompletionStage;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
@@ -38,12 +45,6 @@ import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.repository.TagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 
 public class EholdingsResourcesImpl implements EholdingsResources {
