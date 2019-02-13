@@ -1,0 +1,129 @@
+{
+  "data" : [ {
+    "id" : "392-3007",
+    "type" : "packages",
+    "attributes" : {
+      "name" : "American Academy of Family Physicians",
+      "packageId" : 3007,
+      "isCustom" : false,
+      "providerId" : 392,
+      "providerName" : "American Academy of Family Physicians",
+      "titleCount" : 3,
+      "isSelected" : false,
+      "selectedCount" : 0,
+      "packageType" : "Variable",
+      "contentType" : "E-Journal",
+      "customCoverage" : {
+        "beginCoverage" : "",
+        "endCoverage" : ""
+      },
+      "visibilityData" : {
+        "isHidden" : false,
+        "reason" : ""
+      }
+    }
+  },
+    {
+      "id": "114569-1597443",
+      "type": "packages",
+      "attributes": {
+        "name": "American Academy of Orthopaedic Surgeons",
+        "packageId": 1597443,
+        "isCustom": false,
+        "providerId": 114569,
+        "providerName": "American Academy of Orthopaedic Surgeons",
+        "titleCount": 108,
+        "isSelected": false,
+        "selectedCount": 0,
+        "packageType": "Variable",
+        "contentType": "Aggregated Full Text",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      }
+    },
+    {
+      "id": "554-3943",
+      "type": "packages",
+      "attributes": {
+        "name": "American Academy of Pediatrics (AAP)",
+        "packageId": 3943,
+        "isCustom": false,
+        "providerId": 554,
+        "providerName": "American Academy of Pediatrics (AAP)",
+        "titleCount": 6,
+        "isSelected": false,
+        "selectedCount": 0,
+        "packageType": "Variable",
+        "contentType": "E-Journal",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      }
+    },
+    {
+      "id": "554-7566",
+      "type": "packages",
+      "attributes": {
+        "name": "American Academy of Pediatrics (AAP) eBooks",
+        "packageId": 7566,
+        "isCustom": false,
+        "providerId": 554,
+        "providerName": "American Academy of Pediatrics (AAP)",
+        "titleCount": 207,
+        "isSelected": false,
+        "selectedCount": 0,
+        "packageType": "Variable",
+        "contentType": "E-Book",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      }
+    },
+    {
+      "id": "554-19236",
+      "type": "packages",
+      "attributes": {
+        "name": "American Academy of Pediatrics (KMLA)",
+        "packageId": 19236,
+        "isCustom": false,
+        "providerId": 554,
+        "providerName": "American Academy of Pediatrics (AAP)",
+        "titleCount": 6,
+        "isSelected": false,
+        "selectedCount": 0,
+        "packageType": "Complete",
+        "contentType": "E-Journal",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
+      }
+    }
+    ],
+  "meta" : {
+    "totalResults" : 414
+  },
+  "jsonapi" : {
+    "version" : "1.0"
+  }
+}
