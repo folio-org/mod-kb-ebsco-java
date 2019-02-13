@@ -8,7 +8,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
-import org.folio.rest.jaxrs.model.ResourceDataAttributes;
+import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +28,7 @@ public class ResourcePutBodyValidator {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
 
-    ResourceDataAttributes attributes = request.getData().getAttributes();
+    ResourcePutDataAttributes attributes = request.getData().getAttributes();
 
     Boolean isSelected = attributes.getIsSelected();
     if (Objects.isNull(isSelected)) {
@@ -45,7 +45,11 @@ public class ResourcePutBodyValidator {
        * for both managed and custom resources
        */
       if (isTitleCustom) {
-        validateCustomResource(attributes);
+        String url = attributes.getUrl();
+        if (!StringUtils.isBlank(url)) {
+          ValidatorUtil.checkMaxLength("url", url, 600);
+          ValidatorUtil.checkUrlFormat("url", url);
+        }
       }
 
       /*
@@ -64,7 +68,7 @@ public class ResourcePutBodyValidator {
     }
   }
 
-  private void validateManagedResourceIfNotSelected(ResourceDataAttributes attributes, boolean isTitleCustom, String cvgStmt) {
+  private void validateManagedResourceIfNotSelected(ResourcePutDataAttributes attributes, boolean isTitleCustom, String cvgStmt) {
     Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
     EmbargoUnit embargoUnit = attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
     List<Coverage> customCoverages = attributes.getCustomCoverages();
@@ -76,31 +80,5 @@ public class ResourcePutBodyValidator {
     }
   }
 
-  private void validateCustomResource(ResourceDataAttributes attributes) {
-    String name = attributes.getName();
-    String pubType = attributes.getPublicationType() != null ? attributes.getPublicationType().value() : null;
-    String pubName = attributes.getPublisherName();
-    String edition = attributes.getEdition();
-    String description = attributes.getDescription();
-    String url = attributes.getUrl();
-
-    ValidatorUtil.checkIsBlank("name", name);
-    ValidatorUtil.checkMaxLength("name", name, 400);
-    ValidatorUtil.checkIsBlank("publicationType", pubType);
-    if (!StringUtils.isBlank(pubName)) {
-      ValidatorUtil.checkMaxLength("publisherName", pubName, 250);
-    }
-    if (!StringUtils.isBlank(edition)) {
-      ValidatorUtil.checkMaxLength("edition", edition, 250);
-    }
-    if (!StringUtils.isBlank(description)) {
-      ValidatorUtil.checkMaxLength("description", description, 400);
-    }
-    if (!StringUtils.isBlank(url)) {
-      ValidatorUtil.checkMaxLength("url", url, 600);
-      ValidatorUtil.checkUrlFormat("url", url);
-    }
-    attributes.getIdentifiers().forEach(identifier -> ValidatorUtil.checkIdentifierValid("identifier", identifier));
-  }
 }
 

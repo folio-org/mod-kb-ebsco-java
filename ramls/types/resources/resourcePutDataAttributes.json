@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Put Data Attributes Schema",
+  "description": "Resource Put Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ResourcePutDataAttributes",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "isTitleCustom": {
+      "type": "boolean",
+      "readonly": true,
+      "description": "Defines if title is custom",
+      "example": false
+    },
+    "titleId": {
+      "type": "integer",
+      "readonly": true,
+      "description": "Title Id",
+      "example": 2985519
+    },
+    "coverageStatement": {
+      "type": "string",
+      "description": "Coverage statement. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "example": "Only 2000s issues available."
+    },
+    "customEmbargoPeriod": {
+      "type": "object",
+      "description": "Custom Embargo Period information. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "$ref": "../embargo.json"
+    },
+    "isPackageCustom": {
+      "type": "boolean",
+      "readonly": true,
+      "description": "Defines if package is custom",
+      "example": false
+    },
+    "isSelected": {
+      "type": "boolean",
+      "description": "Defines if this item is selected. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "example": false
+    },
+    "isTokenNeeded": {
+      "type": "boolean",
+      "readonly": true,
+      "description": "Defines if token is needed",
+      "example": false
+    },
+    "locationId": {
+      "type": "integer",
+      "readonly": true,
+      "description": "Unique location id",
+      "example": 9091063
+    },
+    "managedEmbargoPeriod": {
+      "type": "object",
+      "readonly": true,
+      "description": "Managed Embargo Period information",
+      "$ref": "../embargo.json"
+    },
+    "packageId": {
+      "type": "string",
+      "readonly": true,
+      "description": "Unique package id",
+      "example": "19-2333046"
+    },
+    "packageName": {
+      "type": "string",
+      "readonly": true,
+      "description": "Package name",
+      "example": "Applied Science & Technology Source Ultimate"
+    },
+    "url": {
+      "type": "string",
+      "description": "URL. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
+      "example": "http://search.ebscohost.com/direct.asp?db=aps&jid=BDGR&scope=site"
+    },
+    "providerId": {
+      "type": "integer",
+      "readonly": true,
+      "description": "Provider Id",
+      "example": 19
+    },
+    "providerName": {
+      "type": "string",
+      "readonly": true,
+      "description": "Provider name",
+      "example": "EBSCO"
+    },
+    "visibilityData": {
+      "type": "object",
+      "description": "Visibility data. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "$ref": "../visibilityData.json"
+    },
+    "managedCoverages": {
+      "type": "array",
+      "readonly": true,
+      "description": "List of Managed Coverages information",
+      "items": {
+        "type": "object",
+        "description": "Managed Coverages information",
+        "$ref": "../coverage.json"
+      }
+    },
+    "customCoverages": {
+      "type": "array",
+      "description": "List of Custom Coverages information. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "items": {
+        "type": "object",
+        "description": "Custom Coverages information",
+        "$ref": "../coverage.json"
+      }
+    },
+    "proxy": {
+      "type": "object",
+      "description": "Proxy.  Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "$ref": "../proxy.json"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Resource tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
+    }
+  }
+}

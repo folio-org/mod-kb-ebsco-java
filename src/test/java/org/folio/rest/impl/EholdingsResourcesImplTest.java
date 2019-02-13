@@ -391,46 +391,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenNameIsNotProvidedForCustomResource() throws URISyntaxException, IOException {
-    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    mockGet(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), stubResponseFile);
-
-    String updateResourceEndpoint = "eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID;
-
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .when()
-      .body(readFile("requests/kb-ebsco/resource/put-custom-resource-null-name.json"))
-      .put(updateResourceEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
-  }
-
-  @Test
-  public void shouldReturn422WhenPublicationTypeIsNotProvidedForCustomResource() throws URISyntaxException, IOException {
-    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    mockGet(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), stubResponseFile);
-
-    String updateResourceEndpoint = "eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID;
-
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .when()
-      .body(readFile("requests/kb-ebsco/resource/put-custom-resource-null-publication-type.json"))
-      .put(updateResourceEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
-  }
-
-  @Test
   public void shouldPostResourceToRMAPI() throws IOException, URISyntaxException {
     String stubTitleResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
     String stubPackageResponseFile = "responses/rmapi/packages/get-custom-package-by-id-response.json";
