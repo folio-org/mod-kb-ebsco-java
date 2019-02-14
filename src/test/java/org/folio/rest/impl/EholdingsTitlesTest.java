@@ -45,6 +45,7 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.tag.RecordType;
 
 @RunWith(VertxUnitRunner.class)
@@ -316,38 +317,35 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUpdatedValuesCustomResourceOnSuccessfulPut() throws IOException, URISyntaxException {
+  public void shouldReturnUpdatedValuesForCustomTitleOnSuccessfulPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-    String expectedResourceFile = "responses/kb-ebsco/titles/expected-updated-title.json";
-
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
-        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
-
-    stubFor(
-      put(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_NO_CONTENT)));
-
-    String updateTitleEndpoint = "eholdings/titles/" + STUB_CUSTOM_TITLE_ID;
-
-    String actualResponse = RestAssured
-      .given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .body(readFile("requests/kb-ebsco/title/put-title.json"))
-      .when()
-      .put(updateTitleEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_OK)
-      .extract().asString();
+    String expectedTitleFile = "responses/kb-ebsco/titles/expected-updated-title.json";
+    String requestBody = readFile("requests/kb-ebsco/title/put-title.json");
+    String actualResponse = putTitle(stubResponseFile, requestBody);
 
     JSONAssert.assertEquals(
-      readFile(expectedResourceFile), actualResponse, false);
+      readFile(expectedTitleFile), actualResponse, false);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/resources/put-custom-resource-is-selected-multiple-attributes.json"))));
+  }
+
+  @Test
+  public void shouldUpdateTitleTagsOnSuccessfulPut() throws IOException, URISyntaxException {
+    try {
+      String udpatedResourceResponse = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+      ObjectMapper mapper = new ObjectMapper();
+      TitlePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/title/put-title.json"), TitlePutRequest.class);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE2);
+      request.getData().getAttributes().setTags(new Tags().withTagList(newTags));
+
+      putTitle(udpatedResourceResponse, mapper.writeValueAsString(request));
+
+      List<String> tags = TagsTestUtil.getTags(vertx);
+      assertThat(tags, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
   }
 
   @Test
@@ -361,6 +359,31 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .put("eholdings/titles/" + STUB_TITLE_ID)
       .then()
       .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
+  }
+
+  private String putTitle(String updatedResourceResponse, String requestBody) throws IOException, URISyntaxException {
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(updatedResourceResponse))));
+
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_NO_CONTENT)));
+
+    String updateTitleEndpoint = "eholdings/titles/" + STUB_CUSTOM_TITLE_ID;
+
+    return RestAssured
+      .given()
+      .spec(getRequestSpecification())
+      .header(CONTENT_TYPE_HEADER)
+      .body(requestBody)
+      .when()
+      .put(updateTitleEndpoint)
+      .then()
+      .statusCode(HttpStatus.SC_OK)
+      .extract().asString();
   }
 
   private ExtractableResponse<Response> postResponseWithStatus(String resourcePath, int expectedStatus, String requestBody) {
