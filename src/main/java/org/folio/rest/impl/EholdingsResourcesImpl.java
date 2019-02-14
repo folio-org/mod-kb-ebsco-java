@@ -23,6 +23,7 @@ import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
 import org.folio.rest.model.FilterQuery;
 import org.folio.rest.model.PackageId;
@@ -138,6 +139,11 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             return context.getService().updateResource(parsedResourceId, resourcePutBody);
           })
           .thenCompose(o -> context.getService().retrieveResource(parsedResourceId, Collections.emptyList()))
+          .thenCompose(resourceResult ->
+            updateResourceTags(
+              resourceResult,
+              context.getOkapiData().getTenant(),
+              entity.getData().getAttributes().getTags()))
       )
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond422WithApplicationVndApiJson(
@@ -163,6 +169,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             }
             return context.getService().deleteResource(parsedResourceId);
           })
+          .thenCompose(o -> tagRepository.deleteTags(context.getOkapiData().getTenant(), resourceId, RecordType.RESOURCE))
       )
       .execute();
   }
@@ -184,11 +191,29 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private CompletableFuture<ResourceResult> loadTags(ResourceResult result, String tenant) {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
-    String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
+    String resourceId = getResourceId(resource);
     return tagRepository.getTags(tenant, resourceId, RecordType.RESOURCE)
       .thenApply(tag -> {
         result.setTags(tag);
         return result;
       });
+  }
+
+  private CompletableFuture<ResourceResult> updateResourceTags(ResourceResult result, String tenant, Tags tags) {
+    if (tags == null) {
+      return CompletableFuture.completedFuture(result);
+    } else {
+      CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
+      String resourceId = getResourceId(resource);
+      return tagRepository.updateTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList())
+        .thenCompose(updated -> {
+          result.setTags(tags);
+          return CompletableFuture.completedFuture(result);
+        });
+    }
+  }
+
+  private String getResourceId(CustomerResources resource) {
+    return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 }

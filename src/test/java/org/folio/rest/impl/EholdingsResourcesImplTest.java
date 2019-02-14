@@ -7,6 +7,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 
@@ -23,6 +25,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -30,8 +33,10 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +46,8 @@ import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.tag.RecordType;
 
 @RunWith(VertxUnitRunner.class)
@@ -58,6 +65,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   private static final String MANAGED_RESOURCE_ENDPOINT = MANAGED_PACKAGE_ENDPOINT + "/titles/" + STUB_MANAGED_TITLE_ID;
   private static final String CUSTOM_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
   private static final String STUB_TAG = "test tag";
+  private static final String STUB_TAG2 = "test tag 2";
 
   @Test
   public void shouldReturnResourceWhenValidId() throws IOException, URISyntaxException {
@@ -351,6 +359,27 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldUpdateTagsOnSuccessfulPut() throws IOException, URISyntaxException {
+    try {
+      String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+      ObjectMapper mapper = new ObjectMapper();
+      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"),
+        ResourcePutRequest.class);
+      List<String> tags = Arrays.asList(STUB_TAG, STUB_TAG2);
+      request.getData().getAttributes().setTags(new Tags()
+        .withTagList(tags));
+      updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
+        mapper.writeValueAsString(request));
+
+      List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
+      assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
+    }
+    finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
   public void shouldReturn422WhenManagedResourceIsNotSelectedAndTryToUpdateOtherFields() throws URISyntaxException, IOException {
     String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
 
@@ -471,25 +500,24 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldSendDeleteRequestForResourceAssociatedWithCustomPackage() throws IOException, URISyntaxException {
-    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    final EqualToPattern resourcePath = new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID);
-    UrlPathPattern resourceUrlPattern = new UrlPathPattern(resourcePath, false);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
-
-    mockGet(resourcePath, stubResponseFile);
-    mockPut(resourcePath, putBodyPattern, HttpStatus.SC_NO_CONTENT);
-
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .delete("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID)
-      .then()
-      .statusCode(HttpStatus.SC_NO_CONTENT);
-
-    verify(1, putRequestedFor(resourceUrlPattern)
+    deleteResource(putBodyPattern, CUSTOM_RESOURCE_ENDPOINT);
+    verify(1, putRequestedFor(new UrlPathPattern(new EqualToPattern(CUSTOM_RESOURCE_ENDPOINT),false))
       .withRequestBody(putBodyPattern));
+  }
+
+  @Test
+  public void shouldDeleteTagsOnDeleteRequest() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG);
+      EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+      deleteResource(putBodyPattern, CUSTOM_RESOURCE_ENDPOINT);
+      List<String> actualTags = TagsTestUtil.getTags(vertx);
+      assertThat(actualTags, empty());
+    }
+    finally {
+      TagsTestUtil.clearTags(vertx);
+    }
   }
 
   @Test
@@ -560,5 +588,20 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_OK)
       .extract().asString();
+  }
+
+  private void deleteResource(EqualToJsonPattern putBodyPattern, String resourcePath) throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    mockGet(new EqualToPattern(resourcePath), stubResponseFile);
+    mockPut(new EqualToPattern(resourcePath), putBodyPattern, HttpStatus.SC_NO_CONTENT);
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID)
+      .then()
+      .statusCode(HttpStatus.SC_NO_CONTENT);
   }
 }
