@@ -6,8 +6,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rmapi.model.VisibilityInfo;
 
 @Component
 public class VisibilityInfoConverter implements Converter<VisibilityInfo, VisibilityData> {

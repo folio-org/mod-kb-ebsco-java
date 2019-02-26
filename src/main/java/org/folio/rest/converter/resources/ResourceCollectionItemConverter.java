@@ -7,9 +7,9 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Title;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.Title;
 
 @Component
 public class ResourceCollectionItemConverter implements Converter<Title, ResourceCollectionItem> {

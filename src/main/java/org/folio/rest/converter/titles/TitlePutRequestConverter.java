@@ -6,15 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Contributor;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Identifier;
+import org.folio.holdingsiq.model.Proxy;
+import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
-import org.folio.rmapi.model.Contributor;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.Identifier;
-import org.folio.rmapi.model.Proxy;
-import org.folio.rmapi.model.ResourcePut;
 
 @Component
 public class TitlePutRequestConverter {

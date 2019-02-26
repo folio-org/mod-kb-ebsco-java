@@ -1,16 +1,17 @@
 package org.folio.rest.util;
 
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
-import org.folio.rmapi.exception.RMAPIServiceException;
-import org.folio.rmapi.model.Errors;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.folio.holdingsiq.model.Errors;
+import org.folio.holdingsiq.service.exception.ServiceResponseException;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
 
 /**
  * Util class for creating errors
@@ -35,7 +36,7 @@ public class ErrorUtil {
     return error;
   }
 
-  public static JsonapiError createErrorFromRMAPIResponse(RMAPIServiceException rmApiException) {
+  public static JsonapiError createErrorFromRMAPIResponse(ServiceResponseException rmApiException) {
     try {
 
       ObjectMapper objectMapper = new ObjectMapper();
@@ -47,7 +48,7 @@ public class ErrorUtil {
 
       if (errorsObject.getErrorList() == null) {
         errorsObject = errorsObject.toBuilder()
-          .errorList(Collections.singletonList(objectMapper.readValue(rmApiException.getResponseBody(), org.folio.rmapi.model.Error.class)))
+          .errorList(Collections.singletonList(objectMapper.readValue(rmApiException.getResponseBody(), org.folio.holdingsiq.model.Error.class)))
           .build();
       }
 

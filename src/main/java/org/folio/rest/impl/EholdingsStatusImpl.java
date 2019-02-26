@@ -15,11 +15,11 @@ import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.folio.config.api.RMAPIConfigurationService;
+import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.configuration.StatusConverter;
 import org.folio.rest.jaxrs.resource.EholdingsStatus;
-import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.spring.SpringContextUtil;
@@ -29,7 +29,7 @@ public class EholdingsStatusImpl implements EholdingsStatus {
   private static final String INTERNAL_SERVER_ERROR = "Internal server error";
   private final Logger logger = LoggerFactory.getLogger(EholdingsStatusImpl.class);
   @Autowired
-  private RMAPIConfigurationService configurationService;
+  private ConfigurationService configurationService;
   @Autowired
   private HeaderValidator headerValidator;
   @Autowired

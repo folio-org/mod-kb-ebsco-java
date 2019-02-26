@@ -10,12 +10,12 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rmapi.model.PackageData;
 
 @Component
 public class PackageCollectionItemConverter implements Converter<PackageData, PackageCollectionItem> {

@@ -7,13 +7,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Contributor;
+import org.folio.holdingsiq.model.Identifier;
+import org.folio.holdingsiq.model.TitlePost;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
-import org.folio.rmapi.model.Contributor;
-import org.folio.rmapi.model.Identifier;
-import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.result.ResourceResult;
 
 @Component

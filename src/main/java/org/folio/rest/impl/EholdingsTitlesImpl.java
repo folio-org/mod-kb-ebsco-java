@@ -9,10 +9,16 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.ResourcePut;
+import org.folio.holdingsiq.model.Sort;
+import org.folio.holdingsiq.model.TitlePost;
+import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.titles.TitlePutRequestConverter;
@@ -23,19 +29,12 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
-import org.folio.rest.model.FilterQuery;
-import org.folio.rest.model.PackageId;
-import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rest.validator.TitlesPostAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
-import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.ResourcePut;
-import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
@@ -150,7 +149,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             loadTags(result, context.getOkapiData().getTenant())
           )
       )
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsTitlesByTitleIdResponse
           .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))
       )

@@ -4,20 +4,20 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
-import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.rest.validator.HeaderValidator;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import org.folio.holdingsiq.service.ConfigurationService;
+import org.folio.rest.validator.HeaderValidator;
 
 @Component
 public class RMAPITemplateFactory {
   @Autowired
-  private RMAPIConfigurationService configurationService;
+  private ConfigurationService configurationService;
   @Autowired
   private Vertx vertx;
   @Autowired

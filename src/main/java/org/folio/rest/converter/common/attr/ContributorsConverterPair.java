@@ -11,8 +11,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Contributor;
 import org.folio.rest.jaxrs.model.Contributors;
-import org.folio.rmapi.model.Contributor;
 
 public class ContributorsConverterPair {
 
@@ -42,7 +42,7 @@ public class ContributorsConverterPair {
     @Override
     public List<Contributor> convert(@NonNull List<Contributors> contributorList) {
       return contributorList.stream().map(contributor ->
-          org.folio.rmapi.model.Contributor.builder()
+          org.folio.holdingsiq.model.Contributor.builder()
             .titleContributor(contributor.getContributor())
             .type(StringUtils.capitalize(contributor.getType())).build()
         )

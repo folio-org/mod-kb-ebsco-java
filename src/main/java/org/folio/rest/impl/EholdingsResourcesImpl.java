@@ -13,9 +13,19 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.ResourceId;
+import org.folio.holdingsiq.model.ResourcePut;
+import org.folio.holdingsiq.model.ResourceSelectedPayload;
+import org.folio.holdingsiq.model.Sort;
+import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.service.HoldingsIQService;
+import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
@@ -25,22 +35,11 @@ import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
-import org.folio.rest.model.FilterQuery;
-import org.folio.rest.model.PackageId;
-import org.folio.rest.model.ResourceId;
-import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ResourcePostValidator;
 import org.folio.rest.validator.ResourcePutBodyValidator;
-import org.folio.rmapi.RMAPIService;
-import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.ResourcePut;
-import org.folio.rmapi.model.ResourceSelectedPayload;
-import org.folio.rmapi.model.Title;
 import org.folio.rmapi.result.ObjectsForPostResourceResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.SpringContextUtil;
@@ -89,9 +88,15 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           postValidator.validateRelatedObjects(result.getPackageData(), title, result.getTitles());
           ResourceSelectedPayload postRequest =
             new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
-          ResourceId resourceId = new ResourceId(packageId.getProviderIdPart(), packageId.getPackageIdPart(), titleId);
+          ResourceId resourceId = ResourceId.builder()
+            .providerIdPart(packageId.getProviderIdPart())
+            .packageIdPart(packageId.getPackageIdPart())
+            .titleIdPart(titleId)
+            .build();
           return context.getService().postResource(postRequest, resourceId);
         })
+        .thenCompose(title -> CompletableFuture.completedFuture(
+              new ResourceResult(title, null, null, false)))
       )
       .addErrorMapper(InputValidationException.class, exception ->
         PostEholdingsResourcesResponse.respond422WithApplicationVndApiJson(
@@ -113,7 +118,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             loadTags(result, context.getOkapiData().getTenant())
           )
       )
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsResourcesByResourceIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(RESOURCE_NOT_FOUND_MESSAGE)))
       .executeWithResult(Resource.class);
@@ -126,19 +131,19 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveResource(parsedResourceId, Collections.emptyList())
-          .thenCompose(resourceData -> {
+        context.getService().retrieveResource(parsedResourceId)
+          .thenCompose(title -> {
             ResourcePut resourcePutBody;
-            boolean isTitleCustom = resourceData.getTitle().getIsTitleCustom();
+            boolean isTitleCustom = title.getIsTitleCustom();
             resourcePutBodyValidator.validate(entity, isTitleCustom);
             if (isTitleCustom) {
-              resourcePutBody = converter.convertToRMAPICustomResourcePutRequest(entity, resourceData);
+              resourcePutBody = converter.convertToRMAPICustomResourcePutRequest(entity, title);
             } else {
-              resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity, resourceData);
+              resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity, title);
             }
             return context.getService().updateResource(parsedResourceId, resourcePutBody);
           })
-          .thenCompose(o -> context.getService().retrieveResource(parsedResourceId, Collections.emptyList()))
+          .thenCompose(o -> context.getService().retrieveResource(parsedResourceId))
           .thenCompose(resourceResult ->
             updateResourceTags(
               resourceResult,
@@ -148,7 +153,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond422WithApplicationVndApiJson(
           ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail())))
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(RESOURCE_NOT_FOUND_MESSAGE)))
       .executeWithResult(Resource.class);
@@ -162,9 +167,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveResource(parsedResourceId, Collections.emptyList())
-          .thenCompose(resourceData -> {
-            if (!resourceData.getTitle().getCustomerResourcesList().get(0).getIsPackageCustom()) {
+        context.getService().retrieveResource(parsedResourceId)
+          .thenCompose(title -> {
+            if (!title.getCustomerResourcesList().get(0).getIsPackageCustom()) {
               throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
             }
             return context.getService().deleteResource(parsedResourceId);
@@ -174,7 +179,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .execute();
   }
 
-  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, RMAPIService rmapiService) {
+  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, HoldingsIQService rmapiService) {
     CompletableFuture<Title> titleFuture = rmapiService.retrieveTitle(titleId);
     CompletableFuture<PackageByIdData> packageFuture = rmapiService.retrievePackage(packageId);
     return CompletableFuture.allOf(titleFuture, packageFuture)
@@ -199,11 +204,12 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       });
   }
 
-  private CompletableFuture<ResourceResult> updateResourceTags(ResourceResult result, String tenant, Tags tags) {
+  private CompletableFuture<ResourceResult> updateResourceTags(Title title, String tenant, Tags tags) {
+    ResourceResult result = new ResourceResult(title, null, null, false);
     if (tags == null) {
       return CompletableFuture.completedFuture(result);
     } else {
-      CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
+      CustomerResources resource = title.getCustomerResourcesList().get(0);
       String resourceId = getResourceId(resource);
       return tagRepository.updateTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList())
         .thenCompose(updated -> {

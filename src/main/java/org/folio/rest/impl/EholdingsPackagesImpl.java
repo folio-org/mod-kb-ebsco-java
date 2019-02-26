@@ -16,8 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
-import org.folio.config.cache.VertxCache;
+import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.PackagePost;
+import org.folio.holdingsiq.model.PackagePut;
+import org.folio.holdingsiq.model.Sort;
+import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.packages.PackageRequestConverter;
@@ -29,9 +37,6 @@ import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.model.FilterQuery;
-import org.folio.rest.model.PackageId;
-import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -41,11 +46,6 @@ import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.PackagePutBodyValidator;
 import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rest.validator.TitleParametersValidator;
-import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.exception.RMAPIServiceException;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.PackagePost;
-import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
@@ -108,7 +108,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           return context.getService().retrievePackages(filterSelected, filterType, null, q, page, count, nameSort);
         }
       })
-      .addErrorMapper(RMAPIServiceException.class,
+      .addErrorMapper(ServiceResponseException.class,
         exception ->
           GetEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
             ErrorUtil.createErrorFromRMAPIResponse(exception)))
@@ -129,7 +129,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           .thenCompose(id -> context.getService().postPackage(packagePost, id))
           .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags))
       )
-      .addErrorMapper(RMAPIServiceException.class,
+      .addErrorMapper(ServiceResponseException.class,
         exception ->
           PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
             ErrorUtil.createErrorFromRMAPIResponse(exception)))
@@ -214,7 +214,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .requestAction(context ->
         context.getService().retrieveTitles(parsedPackageId.getProviderIdPart(), parsedPackageId.getPackageIdPart(), fq, nameSort, page, count)
       )
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
       .executeWithResult(ResourceCollection.class);

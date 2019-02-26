@@ -8,12 +8,12 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.Titles;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.model.Titles;
 
 @Component
 public class ResourceCollectionConverter implements Converter<Titles, ResourceCollection> {

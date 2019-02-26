@@ -12,6 +12,10 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Contributor;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Identifier;
+import org.folio.holdingsiq.model.Subject;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Data;
@@ -23,10 +27,6 @@ import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.Contributor;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.Identifier;
-import org.folio.rmapi.model.Subject;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
 
@@ -46,7 +46,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
 
   @Override
   public org.folio.rest.jaxrs.model.Title convert(@NonNull TitleResult titleResult) {
-    org.folio.rmapi.model.Title rmapiTitle = titleResult.getTitle();
+    org.folio.holdingsiq.model.Title rmapiTitle = titleResult.getTitle();
     boolean include = titleResult.isIncludeResource();
 
     List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();

@@ -15,6 +15,9 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.Provider;
@@ -22,9 +25,6 @@ import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
 

@@ -7,10 +7,10 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Vendor;
 import org.folio.rest.jaxrs.model.ProviderListDataAttributes;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.jaxrs.model.Token;
-import org.folio.rmapi.model.Vendor;
 
 @Component
 public class ProvidersConverter implements Converter<Vendor, Providers> {

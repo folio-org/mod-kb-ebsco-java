@@ -6,14 +6,14 @@ import static org.folio.util.TestUtil.STUB_TOKEN;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+
 import org.folio.rest.RestVerticle;
 import org.folio.rest.client.TenantClient;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.tools.utils.NetworkUtils;
-
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 
 public class TestSetUpHelper {
   private static final String HTTP_PORT = "http.port";
@@ -26,7 +26,7 @@ public class TestSetUpHelper {
   public static void startVertxAndPostgres() throws IOException {
     vertx = Vertx.vertx();
     port = NetworkUtils.nextFreePort();
-    host = "http://localhost";
+    host = "http://127.0.0.1";
 
     DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
 

@@ -1,20 +1,12 @@
 package org.folio.rest.util.template;
 
+import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
-
-import org.apache.http.HttpStatus;
-import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.http.HttpConsts;
-import org.folio.rest.impl.EholdingsPackagesImpl;
-import org.folio.rest.model.OkapiData;
-import org.folio.rest.util.ErrorHandler;
-import org.folio.rest.validator.HeaderValidator;
-import org.folio.rmapi.RMAPIService;
-import org.springframework.core.convert.ConversionService;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -22,6 +14,16 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.http.HttpStatus;
+import org.apache.http.protocol.HTTP;
+import org.springframework.core.convert.ConversionService;
+
+import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.service.ConfigurationService;
+import org.folio.rest.impl.EholdingsPackagesImpl;
+import org.folio.rest.util.ErrorHandler;
+import org.folio.rest.validator.HeaderValidator;
+import org.folio.rmapi.RMAPIService;
 
 /**
  * Provides a common template for asynchronous interaction with RMAPIService,
@@ -44,7 +46,7 @@ public class RMAPITemplate {
 
   private final Logger logger = LoggerFactory.getLogger(EholdingsPackagesImpl.class);
 
-  private RMAPIConfigurationService configurationService;
+  private ConfigurationService configurationService;
   private Vertx vertx;
   private ConversionService conversionService;
   private HeaderValidator headerValidator;
@@ -57,7 +59,7 @@ public class RMAPITemplate {
   private ErrorHandler errorHandler = new ErrorHandler();
 
 
-  public RMAPITemplate(RMAPIConfigurationService configurationService, Vertx vertx, ConversionService conversionService,
+  public RMAPITemplate(ConfigurationService configurationService, Vertx vertx, ConversionService conversionService,
                        HeaderValidator headerValidator, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler) {
     this.configurationService = configurationService;
     this.vertx = vertx;
@@ -97,7 +99,7 @@ public class RMAPITemplate {
       result ->
         Response
         .status(HttpStatus.SC_OK)
-        .header(HttpConsts.CONTENT_TYPE_HEADER, HttpConsts.JSON_API_TYPE)
+        .header(HTTP.CONTENT_TYPE, JSON_API_TYPE)
         .entity(conversionService.convert(result, responseClass))
         .build()
     );
@@ -125,7 +127,7 @@ public class RMAPITemplate {
       })
       .thenAccept(rmapiConfiguration ->
         contextBuilder.service(new RMAPIService(rmapiConfiguration.getCustomerId(),
-          rmapiConfiguration.getAPIKey(), rmapiConfiguration.getUrl(), vertx)))
+          rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx)))
       .thenCompose(o -> requestAction.apply(contextBuilder.build()))
       .thenAccept(result -> asyncResultHandler.handle(Future.succeededFuture(successHandler.apply(result))))
       .exceptionally(e -> {

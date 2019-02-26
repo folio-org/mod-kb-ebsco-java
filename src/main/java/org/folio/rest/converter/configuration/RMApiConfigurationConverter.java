@@ -6,14 +6,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import org.folio.config.RMAPIConfiguration;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationAttributes;
 import org.folio.rest.jaxrs.model.ConfigurationData;
 import org.folio.rest.util.RestConstants;
 
 @Component
-public class RMApiConfigurationConverter implements Converter<RMAPIConfiguration, Configuration> {
+public class RMApiConfigurationConverter implements Converter<org.folio.holdingsiq.model.Configuration, Configuration> {
 
   private final String defaultUrl;
 
@@ -22,13 +21,13 @@ public class RMApiConfigurationConverter implements Converter<RMAPIConfiguration
   }
 
   @Override
-  public Configuration convert(@NonNull RMAPIConfiguration rmAPIConfig) {
+  public Configuration convert(@NonNull org.folio.holdingsiq.model.Configuration rmAPIConfig) {
     Configuration jsonConfig = new Configuration();
     jsonConfig.setData(new ConfigurationData());
     jsonConfig.getData().setId("configuration");
     jsonConfig.getData().setType("configurations");
     jsonConfig.getData().setAttributes(new ConfigurationAttributes());
-    if(rmAPIConfig.getAPIKey() != null){
+    if(rmAPIConfig.getApiKey() != null){
       jsonConfig.getData().getAttributes().setApiKey(StringUtils.repeat("*", 40));
     }
     jsonConfig.getData().getAttributes().setCustomerId(rmAPIConfig.getCustomerId());

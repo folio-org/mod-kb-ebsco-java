@@ -6,6 +6,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.ResourcePut;
+import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
@@ -13,14 +21,6 @@ import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.ResourcePut;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.model.VisibilityInfo;
-import org.folio.rmapi.result.ResourceResult;
-import org.junit.Before;
-import org.junit.Test;
 
 public class ResourceRequestConverterTest {
   private static final String OLD_PROXY_ID = "<n>";
@@ -32,11 +32,11 @@ public class ResourceRequestConverterTest {
   public static final String OLD_EMBARGO_UNIT = "Day";
   public static final int OLD_EMBARGO_VALUE = 5;
   private ResourceRequestConverter resourcesConverter = new ResourceRequestConverter();
-  private ResourceResult resourceData;
+  private Title resourceData;
 
   @Before
   public void setUp() {
-    Title title = Title.builder()
+     resourceData = Title.builder()
       .contributorsList(Collections.emptyList())
       .customerResourcesList(Collections.singletonList(CustomerResources.builder()
         .coverageStatement(OLD_COVERAGE_STATEMENT)
@@ -45,9 +45,9 @@ public class ResourceRequestConverterTest {
           .isHidden(OLD_VISIBILITY_DATA).build())
         .customCoverageList(Collections.singletonList(CoverageDates.builder()
           .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
-        .customEmbargoPeriod(org.folio.rmapi.model.EmbargoPeriod.builder()
+        .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
           .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(org.folio.rmapi.model.Proxy.builder()
+        .proxy(org.folio.holdingsiq.model.Proxy.builder()
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
         .build()
@@ -56,8 +56,6 @@ public class ResourceRequestConverterTest {
       .subjectsList(Collections.emptyList())
       .titleId(1)
       .build();
-    resourceData = new ResourceResult(
-      title, null, null, false);
   }
 
   @Test

@@ -4,11 +4,11 @@ import static org.folio.rest.converter.packages.PackageConverterUtils.contentTyp
 
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.PackagePut;
+import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.PackagePut;
-import org.folio.rmapi.model.TokenInfo;
 
 @Component
 public class PackageRequestConverter {
@@ -41,7 +41,7 @@ public class PackageRequestConverter {
     builder.isSelected(attributes.getIsSelected());
 
     if (attributes.getProxy() != null) {
-      org.folio.rmapi.model.Proxy proxy = org.folio.rmapi.model.Proxy.builder()
+      org.folio.holdingsiq.model.Proxy proxy = org.folio.holdingsiq.model.Proxy.builder()
         .id(attributes.getProxy().getId())
 //    RM API gives an error when we pass inherited as true along with updated proxy value
 //    Hard code it to false; it should not affect the state of inherited that RM API maintains

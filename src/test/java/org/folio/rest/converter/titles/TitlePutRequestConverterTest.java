@@ -1,8 +1,10 @@
 package org.folio.rest.converter.titles;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import org.junit.Test;
+
+import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.rest.converter.common.attr.ContributorsConverterPair;
 import org.folio.rest.converter.common.attr.IdentifiersConverterPair;
 import org.folio.rest.impl.ResourcesTestData;
@@ -10,8 +12,6 @@ import org.folio.rest.jaxrs.model.PublicationType;
 import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePutData;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
-import org.folio.rmapi.model.ResourcePut;
-import org.junit.Test;
 
 public class TitlePutRequestConverterTest {
   private TitlePutRequestConverter converter = new TitlePutRequestConverter(

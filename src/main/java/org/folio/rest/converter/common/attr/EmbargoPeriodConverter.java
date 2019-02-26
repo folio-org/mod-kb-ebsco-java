@@ -8,8 +8,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
-import org.folio.rmapi.model.EmbargoPeriod;
 
 @Component
 public class EmbargoPeriodConverter implements Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> {

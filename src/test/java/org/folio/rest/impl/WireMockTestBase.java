@@ -1,5 +1,7 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+
 import java.io.IOException;
 
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
@@ -15,6 +17,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.http.HttpStatus;
+import org.apache.http.protocol.HTTP;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -25,10 +28,9 @@ import org.junit.runner.Description;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import org.folio.config.RMAPIConfiguration;
+import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
-import org.folio.config.cache.VertxCache;
-import org.folio.http.HttpConsts;
+import org.folio.holdingsiq.model.Configuration;
 import org.folio.rest.util.RestConstants;
 import org.folio.spring.SpringContextUtil;
 import org.folio.util.TestUtil;
@@ -41,7 +43,7 @@ public abstract class WireMockTestBase {
 
   protected Logger log = LoggerFactory.getLogger(this.getClass());
 
-  protected static final Header CONTENT_TYPE_HEADER = new Header(HttpConsts.CONTENT_TYPE_HEADER, HttpConsts.JSON_API_TYPE);
+  protected static final Header CONTENT_TYPE_HEADER = new Header(HTTP.CONTENT_TYPE, JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
   protected static final String CONFIGURATION_STUB_FILE = "responses/kb-ebsco/configuration/get-configuration.json";
   protected int port = TestSetUpHelper.getPort();
@@ -61,7 +63,7 @@ public abstract class WireMockTestBase {
   };
   @Autowired
   @Qualifier("rmApiConfigurationCache")
-  private VertxCache<String, RMAPIConfiguration> configurationCache;
+  private VertxCache<String, Configuration> configurationCache;
   @Autowired
   @Qualifier("vendorIdCache")
   private VertxCache<VendorIdCacheKey, Long> vendorIdCache;

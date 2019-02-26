@@ -1,19 +1,20 @@
 package org.folio.rest.converter.providers;
 
-import org.folio.rest.jaxrs.model.PackageCollection;
-import org.folio.rest.jaxrs.model.ProviderPutRequest;
-import org.folio.rmapi.model.VendorPut;
-import org.folio.rmapi.model.VendorPutToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.VendorPut;
+import org.folio.holdingsiq.model.VendorPutToken;
+import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.ProviderPutRequest;
+
 @Component
 public class ProviderPutRequestConverter implements Converter<ProviderPutRequest, VendorPut> {
 
   @Autowired
-  private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
+  private Converter<org.folio.holdingsiq.model.Packages, PackageCollection> packagesConverter;
 
   @Override
   public VendorPut convert(@NonNull ProviderPutRequest provider) {
@@ -25,7 +26,7 @@ public class ProviderPutRequestConverter implements Converter<ProviderPutRequest
     // API maintains
     if (provider.getData().getAttributes().getProxy() != null &&
         provider.getData().getAttributes().getProxy().getId() != null) {
-      vpb.proxy(org.folio.rmapi.model.Proxy.builder()
+      vpb.proxy(org.folio.holdingsiq.model.Proxy.builder()
         .inherited(false)
         .id(provider.getData().getAttributes().getProxy().getId())
         .build());

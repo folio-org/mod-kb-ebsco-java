@@ -41,15 +41,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.PackageData;
 import org.folio.tag.RecordType;
 
 @RunWith(VertxUnitRunner.class)
