@@ -20,17 +20,23 @@ import org.springframework.core.convert.ConversionService;
 
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
+import org.folio.holdingsiq.service.HoldingsIQService;
+import org.folio.holdingsiq.service.TitlesHoldingsIQService;
+import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
+import org.folio.holdingsiq.service.impl.TitlesHoldingsIQServiceImpl;
 import org.folio.rest.impl.EholdingsPackagesImpl;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
-import org.folio.rmapi.RMAPIService;
+import org.folio.rmapi.PackageServiceImpl;
+import org.folio.rmapi.ProvidersServiceImpl;
+import org.folio.rmapi.ResourcesServiceImpl;
 
 /**
- * Provides a common template for asynchronous interaction with RMAPIService,
+ * Provides a common template for asynchronous interaction with ProvidersServiceImpl,
  *
  * RMAPITemplate executes following step:
- * 1) Creates and configures RMAPIService
- * 2) Calls requestAction with RMAPIService as a parameter
+ * 1) Creates and configures Holdings services
+ * 2) Calls requestAction with one of Holding services as a parameter
  * 3) Automatically converts return value of requestAction to the required response
  * 4) Optionally handles exception with custom error mappers or with default list of error mappers
  *
@@ -39,7 +45,7 @@ import org.folio.rmapi.RMAPIService;
  * RMAPITemplate requires following parameters:
  * 1) okapiHeaders to retrieve correct RMAPIConfiguration
  * 2) asyncResultHandler that will be called on success or failure
- * 3) requestAction function that defines main interaction with RMAPIService
+ * 3) requestAction function that defines main interaction with Holdings services
  * 4) optional error mappers
  */
 public class RMAPITemplate {
@@ -70,7 +76,7 @@ public class RMAPITemplate {
   }
 
   /**
-   * @param requestAction Defines function that will be executed after RMAPIService is configured
+   * @param requestAction Defines function that will be executed after ProvidersServiceImpl is configured
    *                      Return value of this function will be converted to response
    * @return this
    */
@@ -125,9 +131,21 @@ public class RMAPITemplate {
         contextBuilder.okapiData(okapiData);
         return configurationService.retrieveConfiguration(okapiData);
       })
-      .thenAccept(rmapiConfiguration ->
-        contextBuilder.service(new RMAPIService(rmapiConfiguration.getCustomerId(),
-          rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx)))
+      .thenAccept(rmapiConfiguration -> {
+
+        final HoldingsIQService holdingsService = new HoldingsIQServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx);
+        final TitlesHoldingsIQService titlesService = new TitlesHoldingsIQServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx);
+        final ProvidersServiceImpl providersService = new ProvidersServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx, holdingsService);
+        final PackageServiceImpl packagesService = new PackageServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx, providersService, titlesService);
+        final ResourcesServiceImpl resourcesService = new ResourcesServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx, providersService, packagesService);
+        contextBuilder.holdingsService(holdingsService);
+        contextBuilder.providersService(providersService);
+        contextBuilder.packagesService(packagesService);
+        contextBuilder.resourcesService(resourcesService);
+        contextBuilder.titlesService(titlesService);
+        providersService.setPackagesService(packagesService);
+
+      })
       .thenCompose(o -> requestAction.apply(contextBuilder.build()))
       .thenAccept(result -> asyncResultHandler.handle(Future.succeededFuture(successHandler.apply(result))))
       .exceptionally(e -> {

@@ -103,9 +103,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         if (isFilterCustom) {
           return getVendorId(context)
             .thenCompose(vendorId ->
-              context.getService().retrievePackages(filterSelected, filterType, vendorId, q, page, count, nameSort));
+              context.getPackagesService().retrievePackages(filterSelected, filterType, vendorId, q, page, count, nameSort));
         } else {
-          return context.getService().retrievePackages(filterSelected, filterType, null, q, page, count, nameSort);
+          return context.getPackagesService().retrievePackages(filterSelected, filterType, null, q, page, count, nameSort);
         }
       })
       .addErrorMapper(ServiceResponseException.class,
@@ -126,7 +126,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         getVendorId(context)
-          .thenCompose(id -> context.getService().postPackage(packagePost, id))
+          .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
           .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags))
       )
       .addErrorMapper(ServiceResponseException.class,
@@ -144,7 +144,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((context ->
-        context.getService().retrievePackage(parsedPackageId, includedObjects)
+        context.getPackagesService().retrievePackage(parsedPackageId, includedObjects)
           .thenCompose(result ->
             loadTags(result, context.getOkapiData().getTenant())
           )
@@ -159,7 +159,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrievePackage(parsedPackageId)
+        context.getPackagesService().retrievePackage(parsedPackageId)
           .thenCompose(packageData -> {
             PackagePut packagePutBody;
             if (packageData.getIsCustom()) {
@@ -169,9 +169,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
               packagePutBodyValidator.validate(entity);
               packagePutBody = converter.convertToRMAPIPackagePutRequest(entity);
             }
-            return context.getService().updatePackage(parsedPackageId, packagePutBody);
+            return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
           })
-          .thenCompose(o -> context.getService().retrievePackage(parsedPackageId))
+          .thenCompose(o -> context.getPackagesService().retrievePackage(parsedPackageId))
           .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags)))
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsPackages.PutEholdingsPackagesByPackageIdResponse.respond422WithApplicationVndApiJson(
@@ -185,12 +185,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrievePackage(parsedPackageId)
+        context.getPackagesService().retrievePackage(parsedPackageId)
           .thenCompose(packageData -> {
             if (!packageData.getIsCustom()) {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
-            return context.getService().deletePackage(parsedPackageId).thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
+            return context.getPackagesService().deletePackage(parsedPackageId).thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
           }))
       .execute();
   }
@@ -212,7 +212,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitles(parsedPackageId.getProviderIdPart(), parsedPackageId.getPackageIdPart(), fq, nameSort, page, count)
+        context.getTitlesService().retrieveTitles(parsedPackageId.getProviderIdPart(), parsedPackageId.getPackageIdPart(), fq, nameSort, page, count)
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
@@ -230,7 +230,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       return CompletableFuture.completedFuture(cachedId);
     }
     else{
-      return context.getService().getVendorId()
+      return context.getProvidersService().getVendorId()
         .thenCompose(id -> {
           vendorIdCache.putValue(cacheKey, id);
           return CompletableFuture.completedFuture(id);

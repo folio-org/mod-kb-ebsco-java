@@ -24,7 +24,8 @@ import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.ResourceSelectedPayload;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Title;
-import org.folio.holdingsiq.service.HoldingsIQService;
+import org.folio.holdingsiq.service.PackagesHoldingsIQService;
+import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
@@ -82,7 +83,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     PackageId packageId = idParser.parsePackageId(attributes.getPackageId());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getService())
+      .requestAction(context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getTitlesService(), context.getPackagesService())
         .thenCompose(result -> {
           Title title = result.getTitle();
           postValidator.validateRelatedObjects(result.getPackageData(), title, result.getTitles());
@@ -93,7 +94,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             .packageIdPart(packageId.getPackageIdPart())
             .titleIdPart(titleId)
             .build();
-          return context.getService().postResource(postRequest, resourceId);
+          return context.getResourcesService().postResource(postRequest, resourceId);
         })
         .thenCompose(title -> CompletableFuture.completedFuture(
               new ResourceResult(title, null, null, false)))
@@ -113,7 +114,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveResource(parsedResourceId, includedObjects)
+        context.getResourcesService().retrieveResource(parsedResourceId, includedObjects)
           .thenCompose(result ->
             loadTags(result, context.getOkapiData().getTenant())
           )
@@ -131,7 +132,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveResource(parsedResourceId)
+        context.getResourcesService().retrieveResource(parsedResourceId)
           .thenCompose(title -> {
             ResourcePut resourcePutBody;
             boolean isTitleCustom = title.getIsTitleCustom();
@@ -141,9 +142,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             } else {
               resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity, title);
             }
-            return context.getService().updateResource(parsedResourceId, resourcePutBody);
+            return context.getResourcesService().updateResource(parsedResourceId, resourcePutBody);
           })
-          .thenCompose(o -> context.getService().retrieveResource(parsedResourceId))
+          .thenCompose(o -> context.getResourcesService().retrieveResource(parsedResourceId))
           .thenCompose(resourceResult ->
             updateResourceTags(
               resourceResult,
@@ -167,27 +168,27 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveResource(parsedResourceId)
+        context.getResourcesService().retrieveResource(parsedResourceId)
           .thenCompose(title -> {
             if (!title.getCustomerResourcesList().get(0).getIsPackageCustom()) {
               throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
             }
-            return context.getService().deleteResource(parsedResourceId);
+            return context.getResourcesService().deleteResource(parsedResourceId);
           })
           .thenCompose(o -> tagRepository.deleteTags(context.getOkapiData().getTenant(), resourceId, RecordType.RESOURCE))
       )
       .execute();
   }
 
-  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, HoldingsIQService rmapiService) {
-    CompletableFuture<Title> titleFuture = rmapiService.retrieveTitle(titleId);
-    CompletableFuture<PackageByIdData> packageFuture = rmapiService.retrievePackage(packageId);
+  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, TitlesHoldingsIQService titlesService, PackagesHoldingsIQService packagesService) {
+    CompletableFuture<Title> titleFuture = titlesService.retrieveTitle(titleId);
+    CompletableFuture<PackageByIdData> packageFuture = packagesService.retrievePackage(packageId);
     return CompletableFuture.allOf(titleFuture, packageFuture)
       .thenCompose(o -> {
         FilterQuery filterByName = FilterQuery.builder()
           .name(titleFuture.join().getTitleName())
           .build();
-        return rmapiService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
+        return titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
           filterByName, Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
       })
       .thenCompose(titles -> CompletableFuture.completedFuture(

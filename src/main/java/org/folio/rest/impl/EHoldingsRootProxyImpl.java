@@ -11,6 +11,7 @@ import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.converter.proxy.RootProxyPutConverter;
 import org.folio.rest.jaxrs.model.RootProxy;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsRootProxy;
@@ -24,6 +25,8 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
   private RootProxyPutBodyValidator bodyValidator;
   @Autowired
   private RMAPITemplateFactory templateFactory;
+  @Autowired
+  private RootProxyPutConverter rootProxyPutRequestConverter;
 
   public EHoldingsRootProxyImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -34,7 +37,7 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
   public void getEholdingsRootProxy(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveRootProxyCustomLabels()
+        context.getHoldingsService().retrieveRootProxyCustomLabels()
       )
       .executeWithResult(RootProxy.class);
   }
@@ -46,8 +49,11 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy {
     bodyValidator.validate(entity);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveRootProxyCustomLabels()
-          .thenCompose(rootProxyCustomLabels -> context.getService().updateRootProxyCustomLabels(rootProxyCustomLabels))
+        context.getHoldingsService().retrieveRootProxyCustomLabels()
+          .thenCompose(rootProxyCustomLabels -> {
+            rootProxyCustomLabels = rootProxyPutRequestConverter.convertToRootProxyCustomLabels(entity, rootProxyCustomLabels);
+            return context.getHoldingsService().updateRootProxyCustomLabels(rootProxyCustomLabels);
+          })
       )
       .executeWithResult(RootProxy.class);
   }

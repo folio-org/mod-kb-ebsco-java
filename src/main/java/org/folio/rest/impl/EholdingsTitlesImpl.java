@@ -84,7 +84,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitles(fq, nameSort, page, count)
+        context.getTitlesService().retrieveTitles(fq, nameSort, page, count)
       )
       .executeWithResult(TitleCollection.class);
   }
@@ -99,7 +99,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().postTitle(titlePost, packageId)
+        context.getTitlesService().postTitle(titlePost, packageId)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
           .thenCompose(titleResult ->
             updateTags(titleResult, context.getOkapiData().getTenant(), entity.getData().getAttributes().getTags()))
@@ -115,7 +115,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     Long parsedTitleId = idParser.parseTitleId(titleId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitle(parsedTitleId)
+        context.getTitlesService().retrieveTitle(parsedTitleId)
           .thenCompose(title -> {
             if(!title.getIsTitleCustom()){
               throw new InputValidationException(TITLE_CANNOT_BE_UPDATED, TITLE_CANNOT_BE_UPDATED_DETAIL);
@@ -124,9 +124,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             ResourcePut resourcePutRequest =
               titlePutRequestConverter.convertToRMAPICustomResourcePutRequest(entity, resource);
             String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
-            return context.getService().updateResource(idParser.parseResourceId(resourceId), resourcePutRequest);
+            return context.getResourcesService().updateResource(idParser.parseResourceId(resourceId), resourcePutRequest);
           })
-          .thenCompose(o -> context.getService().retrieveTitle(parsedTitleId))
+          .thenCompose(o -> context.getTitlesService().retrieveTitle(parsedTitleId))
           .thenCompose(title ->
             updateTags(new TitleResult(title, false),
               context.getOkapiData().getTenant(),
@@ -143,7 +143,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitle(titleIdLong)
+        context.getTitlesService().retrieveTitle(titleIdLong)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, includeResource)))
           .thenCompose(result ->
             loadTags(result, context.getOkapiData().getTenant())

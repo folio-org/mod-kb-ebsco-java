@@ -65,7 +65,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
+        context.getProvidersService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
       )
       .executeWithResult(ProviderCollection.class);
   }
@@ -77,7 +77,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveProvider(providerIdLong, include)
+        context.getProvidersService().retrieveProvider(providerIdLong, include)
         .thenCompose(result ->
           loadTags(result, context.getOkapiData().getTenant())
         )
@@ -100,7 +100,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> context.getService().updateProvider(providerIdLong, rmapiVendor)
+      .requestAction(context -> context.getProvidersService().updateProvider(providerIdLong, rmapiVendor)
         .thenCompose(result ->
           updateTags(result, context.getOkapiData().getTenant(), tags))
       )
@@ -122,7 +122,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort)
+        context.getPackagesService().retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort)
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersPackagesByProviderIdResponse.respond404WithApplicationVndApiJson(
