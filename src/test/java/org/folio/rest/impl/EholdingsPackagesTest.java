@@ -10,6 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -186,6 +187,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldDoNothingOnPutWhenRequestHasNotTags() throws IOException, URISyntaxException {
     sendPutWithTags(null);
+    sendPutWithTags(null);
     List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
     assertThat(tagsAfterRequest, empty());
   }
@@ -255,8 +257,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenCountInvalid() {
-    getResponseWithStatus("eholdings/packages?q=American&filter[type]=abstractandindex&count=500",
-      HttpStatus.SC_BAD_REQUEST);
+    checkResponseNotEmptyWhenStatusIs400("eholdings/packages?q=American&filter[type]=abstractandindex&count=500");
   }
 
   @Test
@@ -593,6 +594,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getResponseWithStatus("/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources",
       HttpStatus.SC_FORBIDDEN).as(JsonapiError.class);
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
   }
 
   @Test
@@ -603,6 +605,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getResponseWithStatus("/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources",
       HttpStatus.SC_FORBIDDEN).as(JsonapiError.class);
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
   }
 
   private void shouldReturnResourcesOnGetWithResources(String getURL, String rmAPIQuery) throws IOException, URISyntaxException {

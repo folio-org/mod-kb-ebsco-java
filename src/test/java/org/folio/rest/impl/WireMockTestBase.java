@@ -1,5 +1,7 @@
 package org.folio.rest.impl;
 
+import static org.hamcrest.Matchers.notNullValue;
+
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 
 import java.io.IOException;
@@ -161,5 +163,15 @@ public abstract class WireMockTestBase {
       .then()
       .statusCode(HttpStatus.SC_OK)
       .extract().as(clazz);
+  }
+
+  protected void checkResponseNotEmptyWhenStatusIs400(String path) {
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(path)
+      .then()
+      .statusCode(HttpStatus.SC_BAD_REQUEST)
+      .body("errors.first.title", notNullValue());
   }
 }
