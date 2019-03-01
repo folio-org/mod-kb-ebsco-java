@@ -16,8 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
-import org.folio.config.cache.VertxCache;
+import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.PackagePost;
+import org.folio.holdingsiq.model.PackagePut;
+import org.folio.holdingsiq.model.Sort;
+import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.packages.PackageRequestConverter;
@@ -29,9 +37,6 @@ import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.model.FilterQuery;
-import org.folio.rest.model.PackageId;
-import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -41,11 +46,6 @@ import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.PackagePutBodyValidator;
 import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rest.validator.TitleParametersValidator;
-import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.exception.RMAPIServiceException;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.PackagePost;
-import org.folio.rmapi.model.PackagePut;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
@@ -103,12 +103,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         if (isFilterCustom) {
           return getVendorId(context)
             .thenCompose(vendorId ->
-              context.getService().retrievePackages(filterSelected, filterType, vendorId, q, page, count, nameSort));
+              context.getPackagesService().retrievePackages(filterSelected, filterType, vendorId, q, page, count, nameSort));
         } else {
-          return context.getService().retrievePackages(filterSelected, filterType, null, q, page, count, nameSort);
+          return context.getPackagesService().retrievePackages(filterSelected, filterType, null, q, page, count, nameSort);
         }
       })
-      .addErrorMapper(RMAPIServiceException.class,
+      .addErrorMapper(ServiceResponseException.class,
         exception ->
           GetEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
             ErrorUtil.createErrorFromRMAPIResponse(exception)))
@@ -126,10 +126,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         getVendorId(context)
-          .thenCompose(id -> context.getService().postPackage(packagePost, id))
+          .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
           .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags))
       )
-      .addErrorMapper(RMAPIServiceException.class,
+      .addErrorMapper(ServiceResponseException.class,
         exception ->
           PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
             ErrorUtil.createErrorFromRMAPIResponse(exception)))
@@ -144,7 +144,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((context ->
-        context.getService().retrievePackage(parsedPackageId, includedObjects)
+        context.getPackagesService().retrievePackage(parsedPackageId, includedObjects)
           .thenCompose(result ->
             loadTags(result, context.getOkapiData().getTenant())
           )
@@ -159,7 +159,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrievePackage(parsedPackageId)
+        context.getPackagesService().retrievePackage(parsedPackageId)
           .thenCompose(packageData -> {
             PackagePut packagePutBody;
             if (packageData.getIsCustom()) {
@@ -169,9 +169,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
               packagePutBodyValidator.validate(entity);
               packagePutBody = converter.convertToRMAPIPackagePutRequest(entity);
             }
-            return context.getService().updatePackage(parsedPackageId, packagePutBody);
+            return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
           })
-          .thenCompose(o -> context.getService().retrievePackage(parsedPackageId))
+          .thenCompose(o -> context.getPackagesService().retrievePackage(parsedPackageId))
           .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags)))
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsPackages.PutEholdingsPackagesByPackageIdResponse.respond422WithApplicationVndApiJson(
@@ -185,12 +185,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrievePackage(parsedPackageId)
+        context.getPackagesService().retrievePackage(parsedPackageId)
           .thenCompose(packageData -> {
             if (!packageData.getIsCustom()) {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
-            return context.getService().deletePackage(parsedPackageId).thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
+            return context.getPackagesService().deletePackage(parsedPackageId).thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
           }))
       .execute();
   }
@@ -212,9 +212,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitles(parsedPackageId.getProviderIdPart(), parsedPackageId.getPackageIdPart(), fq, nameSort, page, count)
+        context.getTitlesService().retrieveTitles(parsedPackageId.getProviderIdPart(), parsedPackageId.getPackageIdPart(), fq, nameSort, page, count)
       )
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
       .executeWithResult(ResourceCollection.class);
@@ -230,7 +230,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       return CompletableFuture.completedFuture(cachedId);
     }
     else{
-      return context.getService().getVendorId()
+      return context.getProvidersService().getVendorId()
         .thenCompose(id -> {
           vendorIdCache.putValue(cacheKey, id);
           return CompletableFuture.completedFuture(id);

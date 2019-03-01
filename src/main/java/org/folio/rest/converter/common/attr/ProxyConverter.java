@@ -6,7 +6,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import org.folio.rmapi.model.Proxy;
+import org.folio.holdingsiq.model.Proxy;
 
 @Component
 public class ProxyConverter implements Converter<Proxy, org.folio.rest.jaxrs.model.Proxy> {

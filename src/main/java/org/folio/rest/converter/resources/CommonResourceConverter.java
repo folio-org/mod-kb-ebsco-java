@@ -6,21 +6,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Contributor;
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.EmbargoPeriod;
+import org.folio.holdingsiq.model.Identifier;
+import org.folio.holdingsiq.model.Proxy;
+import org.folio.holdingsiq.model.Subject;
+import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.folio.rmapi.model.Contributor;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.EmbargoPeriod;
-import org.folio.rmapi.model.Identifier;
-import org.folio.rmapi.model.Proxy;
-import org.folio.rmapi.model.Subject;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.model.VisibilityInfo;
 
 @Component
 public class CommonResourceConverter {

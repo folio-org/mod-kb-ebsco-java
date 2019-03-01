@@ -9,8 +9,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.rest.jaxrs.model.Coverage;
-import org.folio.rmapi.model.CoverageDates;
 
 @Component
 public class CoverageDatesConverter implements Converter<List<CoverageDates>, List<Coverage>> {

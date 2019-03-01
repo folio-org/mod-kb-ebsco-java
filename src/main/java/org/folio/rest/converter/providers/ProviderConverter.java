@@ -12,6 +12,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.TokenInfo;
+import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Packages;
@@ -23,22 +25,20 @@ import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.TokenInfo;
-import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.result.VendorResult;
 
 @Component
 public class ProviderConverter implements Converter<VendorResult, Provider> {
 
   @Autowired
-  private Converter<org.folio.rmapi.model.Packages, PackageCollection> packagesConverter;
+  private Converter<org.folio.holdingsiq.model.Packages, PackageCollection> packagesConverter;
   @Autowired
   private Converter<TokenInfo, Token> tokenInfoConverter;
 
   @Override
   public Provider convert(@NonNull VendorResult result) {
     VendorById vendor = result.getVendor();
-    org.folio.rmapi.model.Packages packages = result.getPackages();
+    org.folio.holdingsiq.model.Packages packages = result.getPackages();
 
     TokenInfo vendorToken = vendor.getVendorByIdToken();
     Provider provider = new Provider()
@@ -71,7 +71,7 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
     return provider;
   }
 
-  private List<RelationshipData> convertPackagesRelationship(org.folio.rmapi.model.Packages packages) {
+  private List<RelationshipData> convertPackagesRelationship(org.folio.holdingsiq.model.Packages packages) {
     return packages.getPackagesList().stream()
       .map(packageData ->
         new RelationshipData()

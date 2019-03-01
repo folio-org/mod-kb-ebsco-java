@@ -8,12 +8,12 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.Packages;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.PackageData;
-import org.folio.rmapi.model.Packages;
 
 @Component
 public class PackageCollectionConverter implements Converter<Packages, PackageCollection> {

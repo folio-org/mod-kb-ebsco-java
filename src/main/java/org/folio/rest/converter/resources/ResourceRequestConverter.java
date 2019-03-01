@@ -3,33 +3,32 @@ package org.folio.rest.converter.resources;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.EmbargoPeriod;
+import org.folio.holdingsiq.model.ResourcePut;
+import org.folio.holdingsiq.model.Title;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.EmbargoPeriod;
-import org.folio.rmapi.model.ResourcePut;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.result.ResourceResult;
-import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceRequestConverter {
-  public org.folio.rmapi.model.ResourcePut convertToRMAPIResourcePutRequest(ResourcePutRequest entity, ResourceResult oldResourceResponse) {
+  public org.folio.holdingsiq.model.ResourcePut convertToRMAPIResourcePutRequest(ResourcePutRequest entity, Title oldTitle) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
-    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldResourceResponse);
+    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldTitle);
     return builder.build();
   }
 
-  public ResourcePut convertToRMAPICustomResourcePutRequest(ResourcePutRequest entity, ResourceResult oldResourceResponse) {
+  public ResourcePut convertToRMAPICustomResourcePutRequest(ResourcePutRequest entity, Title oldTitle) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
-    Title oldTitle = oldResourceResponse.getTitle();
     CustomerResources oldResource = oldTitle.getCustomerResourcesList().get(0);
-    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldResourceResponse);
+    ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldTitle);
     //Map attributes specific to custom resources to RM API fields
     builder.titleName(oldTitle.getTitleName());
     builder.publisherName(oldTitle.getPublisherName());
@@ -43,9 +42,8 @@ public class ResourceRequestConverter {
     return builder.build();
   }
 
-  private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(ResourcePutDataAttributes attributes, ResourceResult oldResourceResponse) {
+  private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(ResourcePutDataAttributes attributes, Title oldTitle) {
     ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
-    Title oldTitle = oldResourceResponse.getTitle();
     CustomerResources oldResource = oldTitle.getCustomerResourcesList().get(0);
     builder.isSelected((attributes.getIsSelected() != null ? attributes.getIsSelected() : oldResource.getIsSelected()));
 
@@ -53,7 +51,7 @@ public class ResourceRequestConverter {
     String proxyId = proxy != null && proxy.getId() != null ? proxy.getId() : oldResource.getProxy().getId();
     //RM API gives an error when we pass inherited as true along with updated proxy value
     //Hard code it to false; it should not affect the state of inherited that RM API maintains
-    org.folio.rmapi.model.Proxy rmApiProxy = org.folio.rmapi.model.Proxy.builder()
+    org.folio.holdingsiq.model.Proxy rmApiProxy = org.folio.holdingsiq.model.Proxy.builder()
       .id(proxyId)
       .inherited(false)
       .build();

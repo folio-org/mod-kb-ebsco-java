@@ -2,14 +2,16 @@ package org.folio.rest.validator;
 
 import static java.util.Objects.nonNull;
 
-import javax.validation.ValidationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.folio.rest.model.FilterQuery;
-import org.folio.rest.model.Sort;
+import javax.validation.ValidationException;
+
 import org.springframework.stereotype.Component;
+
+import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.Sort;
 
 @Component
 public class TitleParametersValidator {

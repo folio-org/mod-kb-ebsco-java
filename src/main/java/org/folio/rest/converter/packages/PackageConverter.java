@@ -13,6 +13,11 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.Titles;
+import org.folio.holdingsiq.model.TokenInfo;
+import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.HasManyRelationship;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -25,11 +30,6 @@ import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.PackageData;
-import org.folio.rmapi.model.Titles;
-import org.folio.rmapi.model.TokenInfo;
-import org.folio.rmapi.model.VendorById;
 import org.folio.rmapi.result.PackageResult;
 
 @Component
@@ -88,9 +88,8 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     return packageData;
   }
 
-  private Proxy convertToProxy(org.folio.rmapi.model.Proxy proxy) {
-    return proxy != null ? new Proxy().withId(proxy.getId())
-      .withInherited(proxy.getInherited()) : null;
+  private Proxy convertToProxy(org.folio.holdingsiq.model.Proxy proxy) {
+    return proxy != null ? new Proxy().withId(proxy.getId()).withInherited(proxy.getInherited()) : null;
   }
 
   private List<RelationshipData> convertResourcesRelationship(PackageByIdData packageByIdData, Titles titles) {

@@ -1,8 +1,8 @@
 package org.folio.rmapi.result;
 
+import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.model.Packages;
-import org.folio.rmapi.model.VendorById;
 
 public class VendorResult {
   private VendorById vendor;

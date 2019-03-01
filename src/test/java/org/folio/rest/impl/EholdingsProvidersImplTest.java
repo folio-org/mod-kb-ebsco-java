@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -31,6 +32,8 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang.RandomStringUtils;
@@ -449,41 +452,42 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400IfProviderIdInvalid() {
-    errorTitleIsNotEmptyWith400Status("eholdings/providers/invalid/packages");
+    checkResponseNotEmptyWhenStatusIs400("eholdings/providers/invalid/packages");
   }
 
   @Test
   public void shouldReturn400IfCountOutOfRange() {
-    errorTitleIsNotEmptyWith400Status("eholdings/providers/" + STUB_VENDOR_ID + "/packages?count=120");
+    checkResponseNotEmptyWhenStatusIs400("eholdings/providers/" + STUB_VENDOR_ID + "/packages?count=120");
   }
 
   @Test
   public void shouldReturn400IfFilterTypeInvalid() {
-    errorTitleIsNotEmptyWith400Status("eholdings/providers/" + STUB_VENDOR_ID +
+    checkResponseNotEmptyWhenStatusIs400("eholdings/providers/" + STUB_VENDOR_ID +
       "/packages?q=Search&filter[selected]=true&filter[type]=unsupported");
   }
 
   @Test
   public void shouldReturn400IfFilterSelectedInvalid() {
-    errorTitleIsNotEmptyWith400Status("eholdings/providers/" + STUB_VENDOR_ID +
+    checkResponseNotEmptyWhenStatusIs400("eholdings/providers/" + STUB_VENDOR_ID +
       "/packages?q=Search&filter[selected]=invalid");
   }
 
-  @Test
+  @Test()
   public void shouldReturn400IfPageOffsetInvalid() {
-    getResponseWithStatus("eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=Search&count=5&page=abc",
+    final ExtractableResponse<Response> response = getResponseWithStatus("eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=Search&count=5&page=abc",
       HttpStatus.SC_BAD_REQUEST);
+    assertThat(response.response().asString(), containsString("For input string: \"abc\""));
   }
 
   @Test
   public void shouldReturn400IfSortInvalid() {
-    errorTitleIsNotEmptyWith400Status("eholdings/providers/" +
+    checkResponseNotEmptyWhenStatusIs400("eholdings/providers/" +
       STUB_VENDOR_ID + "/packages?q=Search&sort=invalid");
   }
 
   @Test
   public void shouldReturn400IfQueryParamInvalid() {
-    errorTitleIsNotEmptyWith400Status("/eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=");
+    checkResponseNotEmptyWhenStatusIs400("/eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=");
   }
 
   @Test
@@ -577,17 +581,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withPackages(new Packages()
             .withMeta(new MetaDataIncluded()
               .withIncluded(false)))));
-  }
-
-  private void errorTitleIsNotEmptyWith400Status(String resourcePath) {
-    RequestSpecification requestSpecification = getRequestSpecification();
-    RestAssured.given()
-      .spec(requestSpecification)
-      .when()
-      .get(resourcePath)
-      .then()
-      .statusCode(HttpStatus.SC_BAD_REQUEST)
-      .body("errors.first.title", notNullValue());
   }
 
   private List<String> sendPutWithTags(List<String> newTags) throws IOException, URISyntaxException {

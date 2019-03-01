@@ -1,9 +1,9 @@
 package org.folio.rmapi.result;
 
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.Titles;
+import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.Titles;
-import org.folio.rmapi.model.VendorById;
 
 public class PackageResult {
   private PackageByIdData packageData;

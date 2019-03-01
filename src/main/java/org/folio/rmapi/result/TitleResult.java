@@ -1,7 +1,7 @@
 package org.folio.rmapi.result;
 
+import org.folio.holdingsiq.model.Title;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.model.Title;
 
 public class TitleResult {
   private Title title;

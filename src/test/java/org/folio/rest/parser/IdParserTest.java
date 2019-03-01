@@ -1,11 +1,12 @@
 package org.folio.rest.parser;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import javax.validation.ValidationException;
 
-import org.folio.rest.model.ResourceId;
 import org.junit.Test;
+
+import org.folio.holdingsiq.model.ResourceId;
 
 public class IdParserTest {
 

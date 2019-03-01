@@ -9,10 +9,16 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.ResourcePut;
+import org.folio.holdingsiq.model.Sort;
+import org.folio.holdingsiq.model.TitlePost;
+import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.titles.TitlePutRequestConverter;
@@ -23,19 +29,12 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
-import org.folio.rest.model.FilterQuery;
-import org.folio.rest.model.PackageId;
-import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rest.validator.TitlesPostAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
-import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.ResourcePut;
-import org.folio.rmapi.model.TitlePost;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
@@ -85,7 +84,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitles(fq, nameSort, page, count)
+        context.getTitlesService().retrieveTitles(fq, nameSort, page, count)
       )
       .executeWithResult(TitleCollection.class);
   }
@@ -100,7 +99,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().postTitle(titlePost, packageId)
+        context.getTitlesService().postTitle(titlePost, packageId)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
           .thenCompose(titleResult ->
             updateTags(titleResult, context.getOkapiData().getTenant(), entity.getData().getAttributes().getTags()))
@@ -116,7 +115,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     Long parsedTitleId = idParser.parseTitleId(titleId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitle(parsedTitleId)
+        context.getTitlesService().retrieveTitle(parsedTitleId)
           .thenCompose(title -> {
             if(!title.getIsTitleCustom()){
               throw new InputValidationException(TITLE_CANNOT_BE_UPDATED, TITLE_CANNOT_BE_UPDATED_DETAIL);
@@ -125,9 +124,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             ResourcePut resourcePutRequest =
               titlePutRequestConverter.convertToRMAPICustomResourcePutRequest(entity, resource);
             String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
-            return context.getService().updateResource(idParser.parseResourceId(resourceId), resourcePutRequest);
+            return context.getResourcesService().updateResource(idParser.parseResourceId(resourceId), resourcePutRequest);
           })
-          .thenCompose(o -> context.getService().retrieveTitle(parsedTitleId))
+          .thenCompose(o -> context.getTitlesService().retrieveTitle(parsedTitleId))
           .thenCompose(title ->
             updateTags(new TitleResult(title, false),
               context.getOkapiData().getTenant(),
@@ -144,13 +143,13 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveTitle(titleIdLong)
+        context.getTitlesService().retrieveTitle(titleIdLong)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, includeResource)))
           .thenCompose(result ->
             loadTags(result, context.getOkapiData().getTenant())
           )
       )
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsTitlesByTitleIdResponse
           .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))
       )

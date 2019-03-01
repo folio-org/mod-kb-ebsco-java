@@ -1,9 +1,22 @@
 package org.folio.rest.impl;
 
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
+import org.folio.holdingsiq.model.Sort;
+import org.folio.holdingsiq.model.VendorById;
+import org.folio.holdingsiq.model.VendorPut;
+import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -12,25 +25,15 @@ import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
-import org.folio.rest.model.Sort;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
-import org.folio.rmapi.exception.RMAPIResourceNotFoundException;
-import org.folio.rmapi.model.VendorById;
-import org.folio.rmapi.model.VendorPut;
 import org.folio.rmapi.result.VendorResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.repository.TagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -62,7 +65,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
+        context.getProvidersService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
       )
       .executeWithResult(ProviderCollection.class);
   }
@@ -74,12 +77,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrieveProvider(providerIdLong, include)
+        context.getProvidersService().retrieveProvider(providerIdLong, include)
         .thenCompose(result ->
           loadTags(result, context.getOkapiData().getTenant())
         )
       )
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)))
       .executeWithResult(Provider.class);
@@ -97,7 +100,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> context.getService().updateProvider(providerIdLong, rmapiVendor)
+      .requestAction(context -> context.getProvidersService().updateProvider(providerIdLong, rmapiVendor)
         .thenCompose(result ->
           updateTags(result, context.getOkapiData().getTenant(), tags))
       )
@@ -119,9 +122,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getService().retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort)
+        context.getPackagesService().retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort)
       )
-      .addErrorMapper(RMAPIResourceNotFoundException.class, exception ->
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersPackagesByProviderIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)
         ))

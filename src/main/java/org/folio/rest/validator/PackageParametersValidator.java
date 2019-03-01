@@ -3,9 +3,12 @@ package org.folio.rest.validator;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
 import javax.validation.ValidationException;
-import org.folio.rest.model.Sort;
+
 import org.springframework.stereotype.Component;
+
+import org.folio.holdingsiq.model.Sort;
 
 @Component
 public class PackageParametersValidator {

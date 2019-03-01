@@ -16,14 +16,13 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
-import org.folio.config.RMAPIConfiguration;
-import org.folio.config.api.RMAPIConfigurationService;
-import org.folio.config.exception.RMAPIConfigurationInvalidException;
+import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.service.ConfigurationService;
+import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.jaxrs.model.ConfigurationPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsConfiguration;
-import org.folio.rest.model.OkapiData;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.ConfigurationPutBodyValidator;
@@ -36,11 +35,11 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
   private final Logger logger = LoggerFactory.getLogger(EholdingsConfigurationImpl.class);
 
   @Autowired
-  private RMAPIConfigurationService configurationService;
+  private ConfigurationService configurationService;
   @Autowired
-  private Converter<RMAPIConfiguration, Configuration> rmapiConfigurationConverter;
+  private Converter<org.folio.holdingsiq.model.Configuration, Configuration> rmapiConfigurationConverter;
   @Autowired
-  private Converter<ConfigurationPutRequest, RMAPIConfiguration> putRequestConverter;
+  private Converter<ConfigurationPutRequest, org.folio.holdingsiq.model.Configuration> putRequestConverter;
   @Autowired
   private HeaderValidator headerValidator;
   @Autowired
@@ -75,7 +74,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
     headerValidator.validate(okapiHeaders);
     bodyValidator.validate(entity);
     MutableObject<OkapiData> okapiData = new MutableObject<>();
-    RMAPIConfiguration rmapiConfiguration = putRequestConverter.convert(entity);
+    org.folio.holdingsiq.model.Configuration rmapiConfiguration = putRequestConverter.convert(entity);
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
         okapiData.setValue(new OkapiData(okapiHeaders));
@@ -84,7 +83,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
       .thenCompose(errors -> {
         if (!errors.isEmpty()) {
           CompletableFuture<Object> future = new CompletableFuture<>();
-          future.completeExceptionally(new RMAPIConfigurationInvalidException(errors));
+          future.completeExceptionally(new ConfigurationInvalidException(errors));
           return future;
         }
         return CompletableFuture.completedFuture(null);
@@ -95,7 +94,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
           .respond200WithApplicationVndApiJson(rmapiConfigurationConverter.convert(rmapiConfiguration)))))
       .exceptionally(e -> {
         new ErrorHandler()
-          .add(RMAPIConfigurationInvalidException.class, exception ->
+          .add(ConfigurationInvalidException.class, exception ->
             EholdingsConfiguration.PutEholdingsConfigurationResponse
               .respond422WithApplicationVndApiJson(ErrorUtil.createError(exception.getErrors().get(0).getMessage())))
           .addDefaultMapper()

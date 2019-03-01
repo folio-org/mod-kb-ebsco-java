@@ -6,9 +6,9 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.PackagePost;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
-import org.folio.rmapi.model.PackagePost;
 
 @Component
 public class PackagePostRequestConverter implements Converter<PackagePostRequest, PackagePost> {
@@ -22,7 +22,7 @@ public class PackagePostRequestConverter implements Converter<PackagePostRequest
     Coverage customCoverage = postPackageBody.getData().getAttributes().getCustomCoverage();
     if (customCoverage != null) {
       postRequest.coverage(
-        org.folio.rmapi.model.CoverageDates.builder()
+        org.folio.holdingsiq.model.CoverageDates.builder()
           .beginCoverage(customCoverage.getBeginCoverage())
           .endCoverage(customCoverage.getEndCoverage())
           .build());

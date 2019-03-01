@@ -13,9 +13,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Identifier;
 import org.folio.rest.jaxrs.model.Identifier.Subtype;
 import org.folio.rest.jaxrs.model.Identifier.Type;
-import org.folio.rmapi.model.Identifier;
 
 public class IdentifiersConverterPair {
 

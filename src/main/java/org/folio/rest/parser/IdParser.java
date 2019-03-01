@@ -5,9 +5,10 @@ import java.util.List;
 
 import javax.validation.ValidationException;
 
-import org.folio.rest.model.PackageId;
-import org.folio.rest.model.ResourceId;
 import org.springframework.stereotype.Component;
+
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.ResourceId;
 
 @Component
 public class IdParser {
@@ -19,12 +20,15 @@ public class IdParser {
 
   public ResourceId parseResourceId(String id){
     List<Long> parts = parseId(id, 3, RESOURCE_ID_INVALID_ERROR, RESOURCE_ID_INVALID_ERROR);
-    return new ResourceId(parts.get(0), parts.get(1),parts.get(2));
+    return ResourceId.builder()
+      .providerIdPart(parts.get(0))
+      .packageIdPart(parts.get(1))
+      .titleIdPart(parts.get(2)).build();
   }
 
   public PackageId parsePackageId(String id){
     List<Long> parts = parseId(id, 2, PACKAGE_ID_MISSING_ERROR, PACKAGE_ID_INVALID_ERROR);
-    return new PackageId(parts.get(0), parts.get(1));
+    return PackageId.builder().providerIdPart(parts.get(0)).packageIdPart(parts.get(1)).build();
   }
 
   public Long parseTitleId(String id){

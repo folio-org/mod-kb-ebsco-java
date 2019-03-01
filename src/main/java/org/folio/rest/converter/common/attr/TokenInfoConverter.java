@@ -6,8 +6,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.rest.jaxrs.model.Token;
-import org.folio.rmapi.model.TokenInfo;
 
 @Component
 public class TokenInfoConverter implements Converter<TokenInfo, Token> {

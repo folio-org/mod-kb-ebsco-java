@@ -10,13 +10,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Identifier;
+import org.folio.holdingsiq.model.Subject;
+import org.folio.holdingsiq.model.Title;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.TitleListDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.jaxrs.model.Titles;
-import org.folio.rmapi.model.Identifier;
-import org.folio.rmapi.model.Subject;
-import org.folio.rmapi.model.Title;
 
 @Component
 public class TitlesConverter implements Converter<Title, org.folio.rest.jaxrs.model.Titles> {

@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.rest.jaxrs.model.Package;
-import org.folio.rmapi.model.PackageByIdData;
 import org.folio.rmapi.result.PackageResult;
 
 @Component

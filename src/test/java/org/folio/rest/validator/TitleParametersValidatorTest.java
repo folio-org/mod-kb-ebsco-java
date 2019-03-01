@@ -2,9 +2,10 @@ package org.folio.rest.validator;
 
 import javax.validation.ValidationException;
 
-import org.folio.rest.model.FilterQuery;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.folio.holdingsiq.model.FilterQuery;
 
 public class TitleParametersValidatorTest {
 

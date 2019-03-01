@@ -1,8 +1,8 @@
 package org.folio.rmapi.result;
 
-import org.folio.rmapi.model.PackageByIdData;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.model.Titles;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.Titles;
 
 public class ObjectsForPostResourceResult {
   private Title title;

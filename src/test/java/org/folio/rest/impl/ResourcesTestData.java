@@ -2,13 +2,13 @@ package org.folio.rest.impl;
 
 import java.util.Collections;
 
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.jaxrs.model.ResourcePutData;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
-import org.folio.rmapi.model.CoverageDates;
-import org.folio.rmapi.model.CustomerResources;
-import org.folio.rmapi.model.Title;
-import org.folio.rmapi.model.VisibilityInfo;
 import org.folio.rmapi.result.ResourceResult;
 
 
@@ -39,9 +39,9 @@ public class ResourcesTestData {
           .isHidden(OLD_VISIBILITY_DATA).build())
         .customCoverageList(Collections.singletonList(CoverageDates.builder()
           .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
-        .customEmbargoPeriod(org.folio.rmapi.model.EmbargoPeriod.builder()
+        .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
           .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(org.folio.rmapi.model.Proxy.builder()
+        .proxy(org.folio.holdingsiq.model.Proxy.builder()
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
         .build()
