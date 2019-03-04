@@ -1,6 +1,7 @@
 package org.folio.rest.impl;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.ValidationException;
@@ -10,6 +11,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
+import org.folio.holdingsiq.service.validator.PackageParametersValidator;
+import org.folio.rest.util.RestConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -28,7 +32,6 @@ import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateFactory;
-import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.result.VendorResult;
 import org.folio.spring.SpringContextUtil;
@@ -116,13 +119,14 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
     long providerIdLong = idParser.parseProviderId(providerId);
-    parametersValidator.validate("true", filterSelected, filterType, sort, q);
+    String selected = RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected);
+    parametersValidator.validate(selected, filterType, sort, q);
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getPackagesService().retrievePackages(filterSelected, filterType, providerIdLong, q, page, count, nameSort)
+        context.getPackagesService().retrievePackages(selected, filterType, providerIdLong, q, page, count, nameSort)
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersPackagesByProviderIdResponse.respond404WithApplicationVndApiJson(

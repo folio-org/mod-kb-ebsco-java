@@ -3,6 +3,9 @@ package org.folio.spring.config;
 import java.util.List;
 
 import io.vertx.core.Vertx;
+
+import org.folio.holdingsiq.service.validator.PackageParametersValidator;
+import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -57,5 +60,15 @@ public class ApplicationConfig {
     return new ConfigurationServiceCache(
       new ConfigurationServiceImpl(
         new ConfigurationClientProvider()), new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache"));
+  }
+
+  @Bean
+  public TitleParametersValidator titleParametersValidator(){
+    return new TitleParametersValidator();
+  }
+
+  @Bean
+  public PackageParametersValidator packageParametersValidator(){
+    return new PackageParametersValidator();
   }
 }
