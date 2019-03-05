@@ -1,7 +1,6 @@
 package org.folio.rest.impl;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.ValidationException;
@@ -12,8 +11,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import org.folio.holdingsiq.service.validator.PackageParametersValidator;
-import org.folio.rest.util.RestConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -21,6 +18,7 @@ import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -31,6 +29,7 @@ import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.result.VendorResult;
@@ -119,7 +118,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
     long providerIdLong = idParser.parseProviderId(providerId);
-    String selected = RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected);
+    String selected = convertToHoldingsSelected(filterSelected);
     parametersValidator.validate(selected, filterType, sort, q);
 
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
@@ -133,6 +132,17 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)
         ))
       .executeWithResult(PackageCollection.class);
+  }
+
+  private String convertToHoldingsSelected(String filterSelected) {
+    if (filterSelected == null) {
+      return null;
+    }
+    if (RestConstants.FILTER_SELECTED_MAPPING.containsKey(filterSelected)) {
+      return RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected);
+    } else {
+      throw new ValidationException("Invalid Query Parameter for filter[selected]");
+    }
   }
 
   private void validateSort(String sort) {

@@ -15,8 +15,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import org.folio.holdingsiq.service.validator.PackageParametersValidator;
-import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -31,6 +29,8 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
+import org.folio.holdingsiq.service.validator.PackageParametersValidator;
+import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.packages.PackageRequestConverter;

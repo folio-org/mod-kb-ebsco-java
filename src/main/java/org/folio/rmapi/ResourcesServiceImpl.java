@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
 
+import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
@@ -24,9 +25,9 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
   private ProvidersServiceImpl providerService;
   private PackagesHoldingsIQService packagesService;
 
-  public ResourcesServiceImpl(String customerId, String apiKey, String baseURI, Vertx vertx,
+  public ResourcesServiceImpl(Configuration config, Vertx vertx,
                               ProvidersServiceImpl providerService, PackagesHoldingsIQService packagesService) {
-    super(customerId, apiKey, baseURI, vertx);
+    super(config, vertx);
     this.providerService = providerService;
     this.packagesService = packagesService;
   }

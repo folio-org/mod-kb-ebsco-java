@@ -14,6 +14,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.springframework.core.convert.ConversionService;
@@ -133,11 +134,11 @@ public class RMAPITemplate {
       })
       .thenAccept(rmapiConfiguration -> {
 
-        final HoldingsIQService holdingsService = new HoldingsIQServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx);
-        final TitlesHoldingsIQService titlesService = new TitlesHoldingsIQServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx);
-        final ProvidersServiceImpl providersService = new ProvidersServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx, holdingsService);
-        final PackageServiceImpl packagesService = new PackageServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx, providersService, titlesService);
-        final ResourcesServiceImpl resourcesService = new ResourcesServiceImpl(rmapiConfiguration.getCustomerId(), rmapiConfiguration.getApiKey(), rmapiConfiguration.getUrl(), vertx, providersService, packagesService);
+        final HoldingsIQService holdingsService = new HoldingsIQServiceImpl(rmapiConfiguration, vertx);
+        final TitlesHoldingsIQService titlesService = new TitlesHoldingsIQServiceImpl(rmapiConfiguration, vertx);
+        final ProvidersServiceImpl providersService = new ProvidersServiceImpl(rmapiConfiguration, vertx, holdingsService);
+        final PackageServiceImpl packagesService = new PackageServiceImpl(rmapiConfiguration, vertx, providersService, titlesService);
+        final ResourcesServiceImpl resourcesService = new ResourcesServiceImpl(rmapiConfiguration, vertx, providersService, packagesService);
         contextBuilder.holdingsService(holdingsService);
         contextBuilder.providersService(providersService);
         contextBuilder.packagesService(packagesService);

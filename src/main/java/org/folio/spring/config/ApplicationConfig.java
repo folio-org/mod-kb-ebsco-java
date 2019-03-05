@@ -4,8 +4,6 @@ import java.util.List;
 
 import io.vertx.core.Vertx;
 
-import org.folio.holdingsiq.service.validator.PackageParametersValidator;
-import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -22,6 +20,8 @@ import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceImpl;
+import org.folio.holdingsiq.service.validator.PackageParametersValidator;
+import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -63,12 +63,12 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public TitleParametersValidator titleParametersValidator(){
+  public TitleParametersValidator titleParametersValidator() {
     return new TitleParametersValidator();
   }
 
   @Bean
-  public PackageParametersValidator packageParametersValidator(){
+  public PackageParametersValidator packageParametersValidator() {
     return new PackageParametersValidator();
   }
 }
