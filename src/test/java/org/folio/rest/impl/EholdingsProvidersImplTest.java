@@ -31,11 +31,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
@@ -43,15 +45,8 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.MetaDataIncluded;
-import org.folio.rest.jaxrs.model.PackageCollectionItem;
-import org.folio.rest.jaxrs.model.Packages;
 import org.folio.rest.jaxrs.model.Provider;
-import org.folio.rest.jaxrs.model.ProviderData;
-import org.folio.rest.jaxrs.model.ProviderDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
-import org.folio.rest.jaxrs.model.Proxy;
-import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.tag.RecordType;
@@ -100,6 +95,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldReturnProvidersOnGetWithPackages() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
     String stubPackagesResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
+    String expectedProviderFile = "responses/kb-ebsco/providers/expected-provider-with-packages.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
     stubFor(
@@ -112,15 +108,15 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubPackagesResponseFile))));
 
-    Provider expectedProvider = getExpectedProvider(PackagesTestData.getExpectedPackageCollection().getData());
     RequestSpecification requestSpecification = getRequestSpecification();
     String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID + "?include=packages";
-    Provider actualProvider = RestAssured.given(requestSpecification)
+    String actualProvider = RestAssured.given(requestSpecification)
       .when()
       .get(providerByIdEndpoint)
       .then()
-      .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
-    compareProviders(actualProvider, expectedProvider);
+      .statusCode(HttpStatus.SC_OK).extract().asString();
+
+    JSONAssert.assertEquals(readFile(expectedProviderFile), actualProvider, false);
   }
 
   @Test
@@ -137,8 +133,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn500IfRMApiReturnsError() throws IOException, URISyntaxException {
-
-
     String wiremockUrl = getWiremockUrl();
     mockConfiguration(CONFIGURATION_STUB_FILE, wiremockUrl);
     stubFor(
@@ -170,6 +164,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnProviderWhenValidId() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
+    String expectedProviderFile = "responses/kb-ebsco/providers/expected-provider.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
     stubFor(
@@ -177,18 +172,16 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
 
-    Provider expected = getExpectedProvider();
     String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
     RequestSpecification requestSpecification = getRequestSpecification();
 
-    Provider provider = RestAssured.given(requestSpecification)
+    String provider = RestAssured.given(requestSpecification)
       .when()
       .get(providerByIdEndpoint)
       .then()
-      .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
+      .statusCode(HttpStatus.SC_OK).extract().asString();
 
-    compareProviders(provider, expected);
-
+    JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
   }
 
   @Test
@@ -260,7 +253,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldUpdateAndReturnProviderOnPutWithNoTags() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
-
+    String expectedProviderFile = "responses/kb-ebsco/providers/expected-updated-provider.json";
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
     stubFor(
@@ -275,19 +268,51 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
       ProviderPutRequest.class);
 
-    Provider expected = getUpdatedProvider();
 
-    Provider provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID, mapper.writeValueAsString(providerToBeUpdated), Provider.class);
+    String provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID,
+      mapper.writeValueAsString(providerToBeUpdated)).asString();
 
-    compareProviders(provider, expected);
+    JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
   }
 
   @Test
+  public void shouldUpdateOnlyProviderTagsWhenNoPackagesAreSelected() throws IOException, URISyntaxException {
+    try {
+      String stubResponseFile = "responses/rmapi/vendors/get-vendor-without-selected-packages-response.json";
+      String expectedProviderFile = "responses/kb-ebsco/providers/expected-provider-with-updated-tags.json";
+
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+      stubFor(
+        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+          .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
+
+      ObjectMapper mapper = new ObjectMapper();
+      ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
+        ProviderPutRequest.class);
+
+      providerToBeUpdated.getData().getAttributes().setPackagesSelected(0);
+      providerToBeUpdated.getData().getAttributes().setTags(new Tags().withTagList(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2)));
+
+      String provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID,
+        mapper.writeValueAsString(providerToBeUpdated))
+        .asString();
+
+      JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
+      List<String> tags = TagsTestUtil.getTags(vertx);
+      assertThat(tags, containsInAnyOrder(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
   public void shouldUpdateAndReturnProviderOnPutWithTags() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
+    String expectedProviderFile = "responses/kb-ebsco/providers/expected-updated-provider.json";
 
     mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
 
@@ -305,13 +330,14 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     providerToBeUpdated.getData().getAttributes().setTags(new Tags()
       .withTagList(Arrays.asList("test tag one", "test tag two")));
 
-    Provider expected = getUpdatedProvider();
+    Provider expected = mapper.readValue(readFile(expectedProviderFile), Provider.class);
     expected.getData().getAttributes().setTags(new Tags()
       .withTagList(Arrays.asList("test tag one", "test tag two")));
 
-    Provider provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID, mapper.writeValueAsString(providerToBeUpdated), Provider.class);
+    Provider provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID,
+      mapper.writeValueAsString(providerToBeUpdated), Provider.class);
 
-    compareProviders(provider, expected);
+    JSONAssert.assertEquals(mapper.writeValueAsString(expected), mapper.writeValueAsString(provider), false);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
@@ -502,85 +528,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       HttpStatus.SC_NOT_FOUND).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
-  }
-
-  private void compareProviders(Provider actual, Provider expected) {
-    assertThat(actual.getData().getType(), equalTo(expected.getData().getType()));
-    assertThat(actual.getData().getId(), equalTo(expected.getData().getId()));
-    assertThat(actual.getData().getAttributes().getName(), equalTo(expected.getData().getAttributes().getName()));
-    assertThat(actual.getData().getAttributes().getPackagesTotal(),
-      equalTo(expected.getData().getAttributes().getPackagesTotal()));
-    assertThat(actual.getData().getAttributes().getPackagesSelected(),
-      equalTo(expected.getData().getAttributes().getPackagesSelected()));
-    assertThat(actual.getData().getAttributes().getSupportsCustomPackages(),
-      equalTo(expected.getData().getAttributes().getSupportsCustomPackages()));
-    if (expected.getData().getAttributes().getProviderToken() != null) {
-      assertThat(actual.getData().getAttributes().getProviderToken().getFactName(),
-        equalTo(expected.getData().getAttributes().getProviderToken().getFactName()));
-      assertThat(actual.getData().getAttributes().getProviderToken().getHelpText(),
-        equalTo(expected.getData().getAttributes().getProviderToken().getHelpText()));
-      assertThat(actual.getData().getAttributes().getProviderToken().getPrompt(),
-        equalTo(expected.getData().getAttributes().getProviderToken().getPrompt()));
-      assertThat(actual.getData().getAttributes().getProviderToken().getValue(),
-        equalTo(expected.getData().getAttributes().getProviderToken().getValue()));
-    }
-    assertThat(actual.getData().getAttributes().getProxy().getId(),
-      equalTo(expected.getData().getAttributes().getProxy().getId()));
-    assertThat(actual.getData().getAttributes().getProxy().getInherited(),
-      equalTo(expected.getData().getAttributes().getProxy().getInherited()));
-
-    if(expected.getData().getAttributes().getTags() != null){
-      assertThat(actual.getData().getAttributes().getTags().getTagList(),
-        containsInAnyOrder(expected.getData().getAttributes().getTags().getTagList().toArray()));
-    }
-  }
-
-  private Provider getExpectedProvider(List<PackageCollectionItem> packages) {
-    return getExpectedProvider()
-      .withIncluded(packages);
-  }
-
-  private Provider getExpectedProvider() {
-
-    return new Provider()
-      .withData(new ProviderData()
-        .withType(PROVIDERS_TYPE)
-        .withId(STUB_VENDOR_ID)
-        .withAttributes(new ProviderDataAttributes()
-          .withName("EBSCO")
-          .withPackagesTotal(625)
-          .withPackagesSelected(11)
-          .withSupportsCustomPackages(false)
-          .withProviderToken(new Token()
-            .withValue("sampleToken"))
-          .withProxy(new Proxy().withId("<n>").withInherited(true)))
-        .withRelationships(new Relationships()
-          .withPackages(new Packages()
-            .withMeta(new MetaDataIncluded()
-              .withIncluded(false)))));
-  }
-
-  private Provider getUpdatedProvider() {
-
-    return new Provider()
-      .withData(new ProviderData()
-        .withType(PROVIDERS_TYPE)
-        .withId(STUB_VENDOR_ID)
-        .withAttributes(new ProviderDataAttributes()
-          .withName("EBSCO")
-          .withPackagesTotal(625)
-          .withPackagesSelected(11)
-          .withSupportsCustomPackages(false)
-          .withProviderToken(new Token()
-            .withFactName("[[galesiteid]]")
-            .withHelpText("<ul><li>Enter site id</li></ul>")
-            .withPrompt("/itweb/")
-            .withValue("My Test Token"))
-          .withProxy(new Proxy().withId("<n>").withInherited(false)))
-        .withRelationships(new Relationships()
-          .withPackages(new Packages()
-            .withMeta(new MetaDataIncluded()
-              .withIncluded(false)))));
   }
 
   private List<String> sendPutWithTags(List<String> newTags) throws IOException, URISyntaxException {

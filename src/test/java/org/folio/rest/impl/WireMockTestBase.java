@@ -9,6 +9,7 @@ import java.io.IOException;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.response.ExtractableResponse;
@@ -18,6 +19,7 @@ import io.restassured.specification.RequestSpecification;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.junit.AfterClass;
@@ -140,6 +142,10 @@ public abstract class WireMockTestBase {
   }
 
   protected <T> T sendPutRequestAndRetrieveResponse(String endpoint, String putBody, Class<T> clazz){
+    return sendPutRequestAndRetrieveResponse(endpoint, putBody).as(clazz);
+  }
+
+  protected <T> ExtractableResponse<Response> sendPutRequestAndRetrieveResponse(String endpoint, String putBody){
     return RestAssured
       .given()
       .spec(getRequestSpecification())
@@ -149,7 +155,7 @@ public abstract class WireMockTestBase {
       .put(endpoint)
       .then()
       .statusCode(HttpStatus.SC_OK)
-      .extract().as(clazz);
+      .extract();
   }
 
   protected <T> T sendPostRequestAndRetrieveResponse(String endpoint, String postBody, Class<T> clazz){

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "id": "19",
+    "type": "providers",
+    "attributes": {
+      "name": "EBSCO",
+      "packagesTotal": 625,
+      "packagesSelected": 11,
+      "providerToken": {
+        "value": "sampleToken"
+      },
+      "supportsCustomPackages": false,
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      }
+    },
+    "relationships": {
+      "packages": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "included": []
+}

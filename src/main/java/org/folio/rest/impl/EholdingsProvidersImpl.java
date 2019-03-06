@@ -30,6 +30,7 @@ import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
+import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.result.VendorResult;
@@ -98,13 +99,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     bodyValidator.validate(entity);
 
-    VendorPut rmapiVendor = putRequestConverter.convert(entity);
-
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> context.getProvidersService().updateProvider(providerIdLong, rmapiVendor)
-        .thenCompose(result ->
-          updateTags(result, context.getOkapiData().getTenant(), tags))
+      .requestAction(context ->
+        processUpdateRequest(entity, providerIdLong, context)
+          .thenCompose(result ->
+            updateTags(result, context.getOkapiData().getTenant(), tags))
       )
       .executeWithResult(Provider.class);
   }
@@ -176,5 +176,17 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           return CompletableFuture.completedFuture(result);
         });
     }
+  }
+
+  private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, long providerIdLong, RMAPITemplateContext context) {
+    if(!providerCanBeUpdated(request)){
+      //Return current state of provider without updating it
+      return context.getProvidersService().retrieveProvider(providerIdLong);
+    }
+    return context.getProvidersService().updateProvider(providerIdLong, putRequestConverter.convert(request));
+  }
+
+  private boolean providerCanBeUpdated(ProviderPutRequest request) {
+    return request.getData().getAttributes().getPackagesSelected() != 0;
   }
 }
