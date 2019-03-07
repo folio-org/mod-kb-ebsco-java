@@ -9,6 +9,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -19,6 +20,7 @@ import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.TitlePost;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.titles.TitlePutRequestConverter;
@@ -31,8 +33,8 @@ import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplateFactory;
-import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rest.validator.TitlesPostAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleResult;
@@ -74,8 +76,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                  String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     FilterQuery fq = FilterQuery.builder()
-      .selected(filterSelected).type(filterType)
-      .name(filterName).isxn(filterIsxn).subject(filterSubject)
+      .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
+      .type(filterType).name(filterName).isxn(filterIsxn).subject(filterSubject)
       .publisher(filterPublisher).build();
 
     parametersValidator.validate(fq, sort);

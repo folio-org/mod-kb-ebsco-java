@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
 
+import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
@@ -25,8 +26,8 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
   private ProvidersServiceImpl providerService;
   private TitlesHoldingsIQService titlesService;
 
-  public PackageServiceImpl(String customerId, String apiKey, String baseURI, Vertx vertx, ProvidersServiceImpl providerService, TitlesHoldingsIQService titlesService) {
-    super(customerId, apiKey, baseURI, vertx);
+  public PackageServiceImpl(Configuration config, Vertx vertx, ProvidersServiceImpl providerService, TitlesHoldingsIQService titlesService) {
+    super(config, vertx);
     this.providerService = providerService;
     this.titlesService = titlesService;
   }

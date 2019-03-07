@@ -1,5 +1,9 @@
 package org.folio.rest.util;
 
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+
 import org.folio.rest.jaxrs.model.JsonAPI;
 
 public final class RestConstants {
@@ -12,6 +16,13 @@ public final class RestConstants {
   public static final String TITLES_TYPE = "titles";
   public static final String RESOURCES_TYPE = "resources";
   public static final String JSON_API_TYPE = "application/vnd.api+json";
+
+  public static final Map<String, String> FILTER_SELECTED_MAPPING =
+    ImmutableMap.of(
+      "true", "selected",
+      "false", "notselected",
+      "ebsco", "orderedthroughebsco"
+    );
 
   private RestConstants(){ }
 }

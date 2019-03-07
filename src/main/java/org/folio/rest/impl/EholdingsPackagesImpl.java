@@ -4,14 +4,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
+import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -26,6 +29,8 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
+import org.folio.holdingsiq.service.validator.PackageParametersValidator;
+import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.packages.PackageRequestConverter;
@@ -39,13 +44,12 @@ import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.CustomPackagePutBodyValidator;
-import org.folio.rest.validator.PackageParametersValidator;
 import org.folio.rest.validator.PackagePutBodyValidator;
 import org.folio.rest.validator.PackagesPostBodyValidator;
-import org.folio.rest.validator.TitleParametersValidator;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
@@ -92,7 +96,11 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void getEholdingsPackages(String filterCustom, String q, String filterSelected,
                                    String filterType, String sort, int page, int count, Map<String, String> okapiHeaders,
                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    packageParametersValidator.validate(filterCustom, filterSelected, filterType, sort, q);
+    if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
+      throw new ValidationException("Invalid Query Parameter for filter[custom]");
+    }
+    String selected = RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected);
+    packageParametersValidator.validate(selected, filterType, sort, q);
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
     Sort nameSort = Sort.valueOf(sort.toUpperCase());
@@ -103,9 +111,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         if (isFilterCustom) {
           return getVendorId(context)
             .thenCompose(vendorId ->
-              context.getPackagesService().retrievePackages(filterSelected, filterType, vendorId, q, page, count, nameSort));
+              context.getPackagesService().retrievePackages(selected, filterType, vendorId, q, page, count, nameSort));
         } else {
-          return context.getPackagesService().retrievePackages(filterSelected, filterType, null, q, page, count, nameSort);
+          return context.getPackagesService().retrievePackages(selected, filterType, null, q, page, count, nameSort);
         }
       })
       .addErrorMapper(ServiceResponseException.class,
@@ -202,7 +210,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
 
     FilterQuery fq = FilterQuery.builder()
-      .selected(filterSelected).type(filterType)
+      .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
+      .type(filterType)
       .name(filterName).isxn(filterIsxn).subject(filterSubject)
       .publisher(filterPublisher).build();
 
