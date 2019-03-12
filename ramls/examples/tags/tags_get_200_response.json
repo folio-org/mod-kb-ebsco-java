@@ -1,0 +1,12 @@
+{
+  "data": [
+    "academic",
+    "journal"
+  ],
+  "meta": {
+    "totalResults": 2
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
