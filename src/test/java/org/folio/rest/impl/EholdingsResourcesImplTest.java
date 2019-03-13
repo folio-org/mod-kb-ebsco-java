@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -29,6 +30,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -380,23 +382,26 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenManagedResourceIsNotSelectedAndTryToUpdateOtherFields() throws URISyntaxException, IOException {
-    String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
+  public void shouldUpdateOnlyTagsOnPutWhenResourceIsNotSelected() throws IOException, URISyntaxException {
+    try {
+      String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+      ObjectMapper mapper = new ObjectMapper();
+      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"),
+        ResourcePutRequest.class);
+      List<String> tags = Arrays.asList(STUB_TAG, STUB_TAG2);
+      request.getData().getAttributes().setTags(new Tags()
+        .withTagList(tags));
+      request.getData().getAttributes().setIsSelected(false);
+      updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
+        mapper.writeValueAsString(request));
 
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
-
-    mockGet(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), stubResponseFile);
-
-    String updateResourceEndpoint = "eholdings/resources/" + STUB_MANAGED_RESOURCE_ID;
-
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .when()
-      .body(readFile("requests/kb-ebsco/resource/put-managed-resource-not-selected-update-fields.json"))
-      .put(updateResourceEndpoint)
-      .then()
-      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
+      WireMock.verify(0, putRequestedFor(anyUrl()));
+      List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
+      assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
+    }
+    finally {
+      TagsTestUtil.clearTags(vertx);
+    }
   }
 
   @Test
