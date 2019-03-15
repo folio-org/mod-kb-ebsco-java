@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.resources;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -14,7 +14,6 @@ import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VisibilityInfo;
-import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
