@@ -13,6 +13,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.holdingsiq.model.CustomerResources;
@@ -38,6 +39,7 @@ import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ResourcePostValidator;
 import org.folio.rest.validator.ResourcePutBodyValidator;
@@ -132,19 +134,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getResourcesService().retrieveResource(parsedResourceId)
-          .thenCompose(title -> {
-            ResourcePut resourcePutBody;
-            boolean isTitleCustom = title.getIsTitleCustom();
-            resourcePutBodyValidator.validate(entity, isTitleCustom);
-            if (isTitleCustom) {
-              resourcePutBody = converter.convertToRMAPICustomResourcePutRequest(entity, title);
-            } else {
-              resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity, title);
-            }
-            return context.getResourcesService().updateResource(parsedResourceId, resourcePutBody);
-          })
-          .thenCompose(o -> context.getResourcesService().retrieveResource(parsedResourceId))
+        processResourceUpdate(entity, parsedResourceId, context)
           .thenCompose(resourceResult ->
             updateResourceTags(
               resourceResult,
@@ -222,5 +212,29 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private String getResourceId(CustomerResources resource) {
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
+  }
+
+  private CompletableFuture<Title> processResourceUpdate(ResourcePutRequest entity, ResourceId parsedResourceId, RMAPITemplateContext context) {
+    if(!resourceCanBeUpdated(entity)){
+      //Return current state of resource without updating it
+      return context.getResourcesService().retrieveResource(parsedResourceId);
+    }
+    return context.getResourcesService().retrieveResource(parsedResourceId)
+      .thenCompose(title -> {
+        ResourcePut resourcePutBody;
+        boolean isTitleCustom = title.getIsTitleCustom();
+        resourcePutBodyValidator.validate(entity, isTitleCustom);
+        if (isTitleCustom) {
+          resourcePutBody = converter.convertToRMAPICustomResourcePutRequest(entity, title);
+        } else {
+          resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity, title);
+        }
+        return context.getResourcesService().updateResource(parsedResourceId, resourcePutBody);
+      })
+      .thenCompose(o -> context.getResourcesService().retrieveResource(parsedResourceId));
+  }
+
+  private boolean resourceCanBeUpdated(ResourcePutRequest entity) {
+    return entity.getData().getAttributes().getIsSelected();
   }
 }
