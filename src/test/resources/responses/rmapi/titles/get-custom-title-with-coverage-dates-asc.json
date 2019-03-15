@@ -1,0 +1,69 @@
+{
+  "titleId": 1111111111,
+  "titleName": "test-custom-title-132a648d",
+  "publisherName": "test publisher",
+  "identifiersList": [
+
+  ],
+  "subjectsList": [
+
+  ],
+  "isTitleCustom": true,
+  "pubType": "Database",
+  "customerResourcesList": [
+    {
+      "titleId": 1111111111,
+      "packageId": 222222,
+      "packageName": "test-custom-title-132a648d",
+      "packageType": "Custom",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "isPackageCustom": true,
+      "vendorId": 1111111,
+      "vendorName": "TEST CUSTOMER",
+      "locationId": 0,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+
+      ],
+      "customCoverageList": [
+        {
+          "beginCoverage": "2001-01-01",
+          "endCoverage": "2004-02-01"
+        },
+        {
+          "beginCoverage": "2004-03-01",
+          "endCoverage": "2004-03-04"
+        }
+      ],
+      "coverageStatement": "Test Coverage Statement",
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": "Months",
+        "embargoValue": 5
+      },
+      "url": null,
+      "userDefinedField1": null,
+      "userDefinedField2": null,
+      "userDefinedField3": null,
+      "userDefinedField4": null,
+      "userDefinedField5": null
+    }
+  ],
+  "description": "This is the sample description for test",
+  "edition": "test edition",
+  "isPeerReviewed": true,
+  "contributorsList": [
+
+  ]
+}

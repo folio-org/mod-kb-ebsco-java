@@ -1,7 +1,9 @@
 package org.folio.rest.converter.resources;
 
+import java.util.Comparator;
 import java.util.List;
 
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -68,7 +70,10 @@ public class CommonResourceConverter {
       .withProviderName(resource.getVendorName())
       .withVisibilityData(visibilityInfoConverter.convert(resource.getVisibilityData()))
       .withManagedCoverages(coverageDatesConverter.convert(resource.getManagedCoverageList()))
-      .withCustomCoverages(coverageDatesConverter.convert(resource.getCustomCoverageList()))
+      .withCustomCoverages(coverageDatesConverter.convert(
+        resource.getCustomCoverageList().stream()
+        .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
+        .collect(Collectors.toList())))
       .withProxy(proxyConverter.convert(resource.getProxy()));
   }
 
