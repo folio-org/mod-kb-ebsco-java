@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -31,12 +32,15 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -433,19 +437,32 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenPackageIsNotSelectedAndIsHiddenIsTrue() throws URISyntaxException, IOException {
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+  public void shouldUpdateOnlyTagsWhenPackageIsNotSelected() throws URISyntaxException, IOException {
+    try {
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+      ObjectMapper mapper = new ObjectMapper();
+      PackagePutRequest request = mapper.readValue(
+        readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json"), PackagePutRequest.class);
+      List<String> addedTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      request.getData().getAttributes().withTags(new Tags().withTagList(addedTags));
 
-    mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
+      mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
 
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .when()
-      .body(readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json"))
-      .put(PACKAGES_PATH)
-      .then()
-      .statusCode(HttpStatus.SC_UNPROCESSABLE_ENTITY);
+      RestAssured.given()
+        .spec(getRequestSpecification())
+        .header(CONTENT_TYPE_HEADER)
+        .when()
+        .body(mapper.writeValueAsString(request))
+        .put(PACKAGES_PATH)
+        .then()
+        .statusCode(HttpStatus.SC_OK);
+
+      List<String> tags = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
+      assertThat(tags, containsInAnyOrder(addedTags.toArray()));
+      WireMock.verify(0, putRequestedFor(anyUrl()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
   }
 
   @Test
