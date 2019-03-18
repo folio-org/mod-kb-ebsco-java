@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -34,6 +35,7 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
+import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
@@ -235,6 +237,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private boolean resourceCanBeUpdated(ResourcePutRequest entity) {
-    return entity.getData().getAttributes().getIsSelected();
+    ResourcePutDataAttributes attributes = entity.getData().getAttributes();
+    return !Objects.isNull(attributes.getIsSelected()) && attributes.getIsSelected();
   }
 }

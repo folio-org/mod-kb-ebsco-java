@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -26,6 +27,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -343,6 +345,40 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
       List<String> tags = TagsTestUtil.getTags(vertx);
       assertThat(tags, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldUpdateOnlyTagsOnPutForNonCustomTitle() throws IOException, URISyntaxException {
+    try {
+      String resourceResponse = "responses/rmapi/resources/get-managed-resource-updated-response.json";
+      ObjectMapper mapper = new ObjectMapper();
+      TitlePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/title/put-title.json"), TitlePutRequest.class);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE2);
+      request.getData().getAttributes().setTags(new Tags().withTagList(newTags));
+
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+      stubFor(
+        get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
+          .willReturn(new ResponseDefinitionBuilder().withBody(readFile(resourceResponse))));
+
+      RestAssured
+        .given()
+        .spec(getRequestSpecification())
+        .header(CONTENT_TYPE_HEADER)
+        .body(mapper.writeValueAsString(request))
+        .when()
+        .put("eholdings/titles/" + STUB_CUSTOM_TITLE_ID)
+        .then()
+        .statusCode(HttpStatus.SC_OK)
+        .extract().asString();
+
+      List<String> tags = TagsTestUtil.getTags(vertx);
+      assertThat(tags, containsInAnyOrder(newTags.toArray()));
+      WireMock.verify(0, putRequestedFor(anyUrl()));
     } finally {
       TagsTestUtil.clearTags(vertx);
     }

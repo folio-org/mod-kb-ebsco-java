@@ -24,7 +24,6 @@ import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.titles.TitlePutRequestConverter;
-import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleCollection;
@@ -45,8 +44,6 @@ import org.folio.tag.repository.TagRepository;
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
-  private static final String TITLE_CANNOT_BE_UPDATED = "Title cannot be updated";
-  private static final String TITLE_CANNOT_BE_UPDATED_DETAIL = "Title is not custom";
 
   @Autowired
   private Converter<TitlePostRequest, TitlePost> titlePostRequestConverter;
@@ -120,7 +117,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         context.getTitlesService().retrieveTitle(parsedTitleId)
           .thenCompose(title -> {
             if(!title.getIsTitleCustom()){
-              throw new InputValidationException(TITLE_CANNOT_BE_UPDATED, TITLE_CANNOT_BE_UPDATED_DETAIL);
+              return CompletableFuture.completedFuture(null);
             }
             CustomerResources resource = title.getCustomerResourcesList().get(0);
             ResourcePut resourcePutRequest =
