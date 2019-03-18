@@ -1,0 +1,36 @@
+{
+  "data": {
+    "id": "19",
+    "type": "providers",
+    "attributes": {
+      "name": "EBSCO",
+      "packagesTotal": 625,
+      "packagesSelected": 0,
+      "providerToken": {
+        "factName": "[[galesiteid]]",
+        "prompt": "/itweb/",
+        "helpText": "<ul><li>Enter site id</li></ul>",
+        "value": "My Test Token"
+      },
+      "supportsCustomPackages": false,
+      "proxy": {
+        "id": "<n>",
+        "inherited": false
+      },
+      "tags" : {
+        "tagList" : [
+          "tag one",
+          "tag 2"
+        ]
+      }
+    },
+    "relationships": {
+      "packages": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "included": []
+}

@@ -1,6 +1,7 @@
 package org.folio.rest.impl;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.ValidationException;
@@ -24,12 +25,14 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
+import org.folio.rest.jaxrs.model.ProviderDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
+import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rmapi.result.VendorResult;
@@ -98,13 +101,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     bodyValidator.validate(entity);
 
-    VendorPut rmapiVendor = putRequestConverter.convert(entity);
-
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> context.getProvidersService().updateProvider(providerIdLong, rmapiVendor)
-        .thenCompose(result ->
-          updateTags(result, context.getOkapiData().getTenant(), tags))
+      .requestAction(context ->
+        processUpdateRequest(entity, providerIdLong, context)
+          .thenCompose(result ->
+            updateTags(result, context.getOkapiData().getTenant(), tags))
       )
       .executeWithResult(Provider.class);
   }
@@ -176,5 +178,18 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           return CompletableFuture.completedFuture(result);
         });
     }
+  }
+
+  private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, long providerIdLong, RMAPITemplateContext context) {
+    if(!providerCanBeUpdated(request)){
+      //Return current state of provider without updating it
+      return context.getProvidersService().retrieveProvider(providerIdLong);
+    }
+    return context.getProvidersService().updateProvider(providerIdLong, putRequestConverter.convert(request));
+  }
+
+  private boolean providerCanBeUpdated(ProviderPutRequest request) {
+    ProviderDataAttributes attributes = request.getData().getAttributes();
+    return !Objects.isNull(attributes.getPackagesSelected()) && attributes.getPackagesSelected() != 0;
   }
 }
