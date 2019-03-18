@@ -1,4 +1,4 @@
-package org.folio.rest.converter;
+package org.folio.rest.converter.packages;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -10,7 +10,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import org.folio.holdingsiq.model.PackagePut;
-import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
