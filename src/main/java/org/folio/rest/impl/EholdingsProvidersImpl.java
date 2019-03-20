@@ -1,6 +1,7 @@
 package org.folio.rest.impl;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.ValidationException;
@@ -24,6 +25,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
+import org.folio.rest.jaxrs.model.ProviderDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
@@ -187,6 +189,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private boolean providerCanBeUpdated(ProviderPutRequest request) {
-    return request.getData().getAttributes().getPackagesSelected() != 0;
+    ProviderDataAttributes attributes = request.getData().getAttributes();
+    return !Objects.isNull(attributes.getPackagesSelected()) && attributes.getPackagesSelected() != 0;
   }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -37,6 +38,7 @@ import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
@@ -99,7 +101,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
       throw new ValidationException("Invalid Query Parameter for filter[custom]");
     }
-    String selected = RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected);
+    String selected = RestConstants.FILTER_SELECTED_MAPPING.getOrDefault(filterSelected, filterSelected);
     packageParametersValidator.validate(selected, filterType, sort, q);
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
@@ -168,17 +170,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getPackagesService().retrievePackage(parsedPackageId)
-          .thenCompose(packageData -> {
-            PackagePut packagePutBody;
-            if (packageData.getIsCustom()) {
-              customPackagePutBodyValidator.validate(entity);
-              packagePutBody = converter.convertToRMAPICustomPackagePutRequest(entity);
-            } else {
-              packagePutBodyValidator.validate(entity);
-              packagePutBody = converter.convertToRMAPIPackagePutRequest(entity);
-            }
-            return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
-          })
+          .thenCompose(packageData -> processUpdateRequest(entity, parsedPackageId, context, packageData))
           .thenCompose(o -> context.getPackagesService().retrievePackage(parsedPackageId))
           .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags)))
       .addErrorMapper(InputValidationException.class, exception ->
@@ -273,5 +265,26 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           return CompletableFuture.completedFuture(result);
         });
     }
+  }
+
+  private CompletionStage<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId, RMAPITemplateContext context, PackageByIdData packageData) {
+    if(!isPackageUpdateable(entity)){
+      //proceed to next stage without updating
+      return CompletableFuture.completedFuture(null);
+    }
+    PackagePut packagePutBody;
+    if (packageData.getIsCustom()) {
+      customPackagePutBodyValidator.validate(entity);
+      packagePutBody = converter.convertToRMAPICustomPackagePutRequest(entity);
+    } else {
+      packagePutBodyValidator.validate(entity);
+      packagePutBody = converter.convertToRMAPIPackagePutRequest(entity);
+    }
+    return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
+  }
+
+  private boolean isPackageUpdateable(PackagePutRequest entity) {
+    PackageDataAttributes attributes = entity.getData().getAttributes();
+    return !Objects.isNull(attributes.getIsSelected()) && attributes.getIsSelected();
   }
 }
