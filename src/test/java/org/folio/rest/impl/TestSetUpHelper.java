@@ -17,6 +17,7 @@ import org.folio.rest.tools.utils.NetworkUtils;
 
 public class TestSetUpHelper {
   private static final String HTTP_PORT = "http.port";
+  private static final String SPRING_CONFIGURATION_KEY = "spring.configuration";
 
   public static int port;
   public static String host;
@@ -28,15 +29,26 @@ public class TestSetUpHelper {
     port = NetworkUtils.nextFreePort();
     host = "http://127.0.0.1";
 
-    DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
-
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    vertx.deployVerticle(RestVerticle.class.getName(), restVerticleDeploymentOptions, event -> future.complete(null));
-    future.join();
-
     PostgresClient.getInstance(vertx)
       .startEmbeddedPostgres();
-    postTenant();
+
+    DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions().setConfig(
+      new JsonObject()
+        .put(HTTP_PORT, port)
+        .put(SPRING_CONFIGURATION_KEY, "org.folio.spring.config.VertxTestConfig")
+    );
+
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    vertx.deployVerticle(RestVerticle.class.getName(), restVerticleDeploymentOptions, event -> {
+      try {
+        TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
+        tenantClient.postTenant(null, res2 -> future.complete(null));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
+    future.join();
+
     started = true;
   }
 
@@ -64,20 +76,5 @@ public class TestSetUpHelper {
 
   public static Vertx getVertx() {
     return vertx;
-  }
-
-  private static void postTenant() {
-    TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
-
-    final DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    vertx.deployVerticle(RestVerticle.class.getName(), options, res -> {
-      try {
-        tenantClient.postTenant(null, res2 -> future.complete(null));
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    });
-    future.join();
   }
 }

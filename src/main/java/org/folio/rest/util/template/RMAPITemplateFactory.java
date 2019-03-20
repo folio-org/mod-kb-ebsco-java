@@ -7,6 +7,7 @@ import javax.ws.rs.core.Response;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
@@ -24,8 +25,10 @@ public class RMAPITemplateFactory {
   private ConversionService conversionService;
   @Autowired
   private HeaderValidator headerValidator;
+  @Autowired
+  private RMAPIServicesFactory servicesFactory;
 
   public RMAPITemplate createTemplate(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler){
-    return new RMAPITemplate(configurationService, vertx, conversionService, headerValidator, okapiHeaders, asyncResultHandler);
+    return new RMAPITemplate(servicesFactory, configurationService, vertx, conversionService, headerValidator, okapiHeaders, asyncResultHandler);
   }
 }

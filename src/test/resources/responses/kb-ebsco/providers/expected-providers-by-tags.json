@@ -1,0 +1,27 @@
+{
+  "data": [
+    {
+      "id": "19",
+      "type": "providers",
+      "attributes": {
+        "name": "vendor name",
+        "providerToken": {
+          "value": "vendor token"
+        }
+      }
+    },
+    {
+      "id": "18",
+      "type": "providers",
+      "attributes": {
+        "name": "vendor name 2",
+        "providerToken": {
+          "value": "vendor token 2"
+        }
+      }
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

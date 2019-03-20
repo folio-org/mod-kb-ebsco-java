@@ -1,8 +1,12 @@
 package org.folio.rest.impl;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
@@ -12,12 +16,15 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.Sort;
+import org.folio.holdingsiq.model.Vendor;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
+import org.folio.holdingsiq.model.Vendors;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.rest.annotations.Validate;
@@ -32,6 +39,7 @@ import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
+import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ProviderPutBodyValidator;
@@ -64,15 +72,37 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    validateSort(sort);
-    validateQuery(q);
+  public void getEholdingsProviders(String q, String sortString, String filterTags, int page, int count,
+                                    Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+                                    Context vertxContext) {
+    validateSort(sortString);
+    Sort sort = Sort.valueOf(sortString.toUpperCase());
 
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getProvidersService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
-      )
-      .executeWithResult(ProviderCollection.class);
+    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+
+    if(isTagOnlySearch(q, sort, filterTags)){
+      List<String> tags = Arrays.asList(filterTags.split("\\s*,\\s*"));
+      template
+        .requestAction(context ->
+          tagRepository.getRecordIdsByTagName(context.getOkapiData().getTenant(), tags, RecordType.PROVIDER)
+            .thenCompose(providerIds ->
+              context.getProvidersService().retrieveProviders(convertToLong(providerIds)))
+            .thenApply(vendors ->
+              Vendors.builder()
+                .vendorList(applyPagination(page, count, vendors))
+                .totalResults(vendors.getVendorList().size())
+                .build()
+            )
+        );
+    }
+    else{
+      template
+        .requestAction(context ->
+          context.getProvidersService().retrieveProviders(q, page, count, sort)
+        );
+    }
+
+    template.executeWithResult(ProviderCollection.class);
   }
 
   @Override
@@ -153,12 +183,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     }
   }
 
-  private void validateQuery(String query) {
-    if ("".equals(query)) {
-      throw new ValidationException("Search parameter cannot be empty");
-    }
-  }
-
   private CompletableFuture<VendorResult> loadTags(VendorResult result, String tenant) {
     return tagRepository.getTags(tenant, String.valueOf(result.getVendor().getVendorId()), RecordType.PROVIDER)
       .thenCompose(tag -> {
@@ -191,5 +215,24 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private boolean providerCanBeUpdated(ProviderPutRequest request) {
     ProviderDataAttributes attributes = request.getData().getAttributes();
     return !Objects.isNull(attributes.getPackagesSelected()) && attributes.getPackagesSelected() != 0;
+  }
+
+  private boolean isTagOnlySearch(String q, Sort sort, String filterTags) {
+    return Strings.isEmpty(q) && sort.equals(Sort.RELEVANCE) &&
+      !Strings.isEmpty(filterTags);
+  }
+
+  private List<Long> convertToLong(List<String> strings) {
+    return strings.stream()
+      .map(Long::valueOf)
+      .collect(Collectors.toList());
+  }
+
+  private List<Vendor> applyPagination(int page, int count, Vendors vendors) {
+    return vendors.getVendorList().stream()
+      .sorted(Comparator.comparing(Vendor::getVendorName))
+      .skip((long)(page - 1) * count)
+      .limit(count)
+      .collect(Collectors.toList());
   }
 }

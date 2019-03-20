@@ -1,6 +1,8 @@
 package org.folio.tag.repository;
 
 import static org.folio.tag.repository.TagTableConstants.DELETE_TAG_RECORD;
+import static org.folio.tag.repository.TagTableConstants.RECORD_ID_COLUMN;
+import static org.folio.tag.repository.TagTableConstants.SELECT_RECORD_IDS_BY_TAG_VALUES_AND_TYPE;
 import static org.folio.tag.repository.TagTableConstants.SELECT_TAG_VALUES_BY_ID_AND_TYPE;
 import static org.folio.tag.repository.TagTableConstants.TABLE_NAME;
 import static org.folio.tag.repository.TagTableConstants.TAG_COLUMN;
@@ -19,6 +21,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -51,12 +54,42 @@ public class TagRepository {
     return future;
   }
 
+  public CompletableFuture<List<String>> getRecordIdsByTagName(String tenantId, List<String> tagValues, RecordType recordType){
+    CompletableFuture<List<String>> future = new CompletableFuture<>();
+
+    JsonArray parameters = createParameters(tagValues.toArray(new String[0]));
+    parameters.add(recordType.getValue());
+
+    String valuesList = String.join(",", Collections.nCopies(tagValues.size(), "?"));
+
+    PostgresClient.getInstance(vertx, tenantId)
+      .select(
+        String.format(SELECT_RECORD_IDS_BY_TAG_VALUES_AND_TYPE, getTableName(tenantId), valuesList),
+        parameters,
+        result -> readIds(result, future)
+      );
+    return future;
+  }
+
   private void readTags(AsyncResult<ResultSet> result, CompletableFuture<Tags> future) {
     ResultSet resultSet = result.result();
     List<String> tagValues = resultSet.getRows().stream()
       .map(row -> row.getString(TAG_COLUMN))
       .collect(Collectors.toList());
     future.complete(new Tags().withTagList(tagValues));
+  }
+
+  private void readIds(AsyncResult<ResultSet> result, CompletableFuture<List<String>> future) {
+    if(result.failed()){
+      future.completeExceptionally(result.cause());
+    }
+    else {
+      ResultSet resultSet = result.result();
+      List<String> ids = resultSet.getRows().stream()
+        .map(row -> row.getString(RECORD_ID_COLUMN))
+        .collect(Collectors.toList());
+      future.complete(ids);
+    }
   }
 
   private String getTableName(String tenantId) {
@@ -125,7 +158,7 @@ public class TagRepository {
   private CompletableFuture<Boolean> unAssignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,
       RecordType recordType) {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
-    final String deleteQuery = String.format(DELETE_TAG_RECORD, getTableName(tenantId), recordId, recordType);
+    final String deleteQuery = String.format(DELETE_TAG_RECORD, getTableName(tenantId));
     LOG.info("Do delete query = " + deleteQuery);
 
     JsonArray parameters = createParameters(recordId, recordType.getValue());

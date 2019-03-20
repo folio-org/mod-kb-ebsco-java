@@ -13,6 +13,10 @@ public class TagTableConstants {
     "SELECT " + TAG_COLUMN + " FROM %s "
       + "WHERE " + RECORD_ID_COLUMN + "=? AND " + RECORD_TYPE_COLUMN + "=?";
 
+  public static final String SELECT_RECORD_IDS_BY_TAG_VALUES_AND_TYPE =
+    "SELECT DISTINCT " + RECORD_ID_COLUMN + " FROM %s "
+      + "WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "=?";
+
   public static  final String UPDATE_INSERT_STATEMENT_FOR_PROVIDER =
     "INSERT INTO %s (id, record_id, record_type, tag) VALUES " +
       "%s;";

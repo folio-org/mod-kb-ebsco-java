@@ -14,6 +14,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.util.TestUtil.getFile;
@@ -26,6 +30,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -42,21 +47,51 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.folio.holdingsiq.model.Vendor;
+import org.folio.holdingsiq.model.Vendors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Token;
+import org.folio.rest.util.template.RMAPIServicesFactory;
+import org.folio.rmapi.ProvidersServiceImpl;
 import org.folio.tag.RecordType;
 
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsProvidersImplTest extends WireMockTestBase {
+
+  private static final String STUB_VENDOR_NAME = "vendor name";
+  private static final String STUB_VENDOR_NAME_2 = "vendor name 2";
+
+  private static final String STUB_VENDOR_TOKEN = "vendor token";
+  private static final String STUB_VENDOR_TOKEN_2 = "vendor token 2";
+
   private static final String STUB_VENDOR_ID = "19";
+  private static final Vendor STUB_VENDOR = Vendor.builder()
+    .vendorId(Long.parseLong(STUB_VENDOR_ID))
+    .vendorName(STUB_VENDOR_NAME)
+    .vendorToken(STUB_VENDOR_TOKEN)
+    .build();
+  private static final String STUB_VENDOR_ID_2 = "18";
+  private static final Vendor STUB_VENDOR_2 = Vendor.builder()
+    .vendorId(Long.parseLong(STUB_VENDOR_ID_2))
+    .vendorName(STUB_VENDOR_NAME_2)
+    .vendorToken(STUB_VENDOR_TOKEN_2)
+    .build();
+  private static final String STUB_VENDOR_ID_3 = "17";
   private static final String STUB_TAG_VALUE = "tag one";
   private static final String STUB_TAG_VALUE_2 = "tag 2";
+  private static final String STUB_TAG_VALUE_3 = "tag 3";
+  @Autowired
+  @Qualifier("spyRmApiServicesFactory")
+  private RMAPIServicesFactory servicesFactory;
 
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
@@ -89,6 +124,43 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .body("data[0].attributes.packagesSelected", equalTo(packagesSelected))
       .body("data[0].attributes.supportsCustomPackages", equalTo(supportsCustomPackages))
       .body("data[0].attributes.providerToken.value", equalTo(token));
+  }
+
+  @Test
+  public void shouldReturnProvidersWithTagsOnSearchByTagsOnly() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, RecordType.PROVIDER, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, RecordType.PROVIDER, STUB_TAG_VALUE_2);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, RecordType.PROVIDER, STUB_TAG_VALUE_3);
+
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+      String expectedProviderFile = "responses/kb-ebsco/providers/expected-providers-by-tags.json";
+      Vendors stubVendors = Vendors.builder()
+        .vendorList(Arrays.asList(STUB_VENDOR, STUB_VENDOR_2))
+        .totalResults(2)
+        .build();
+      ProvidersServiceImpl mockProviderService = mock(ProvidersServiceImpl.class);
+
+      ArgumentCaptor<List<Long>> providerIdsCaptor = ArgumentCaptor.forClass(List.class);
+      doReturn(mockProviderService).when(servicesFactory).createProvidersServiceImpl(any(), any());
+      doReturn(CompletableFuture.completedFuture(stubVendors))
+        .when(mockProviderService).retrieveProviders(providerIdsCaptor.capture());
+
+      String provider = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/providers?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().asString();
+
+      JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
+      assertThat(providerIdsCaptor.getValue(),
+        containsInAnyOrder(Long.parseLong(STUB_VENDOR_ID), Long.parseLong(STUB_VENDOR_ID_2)));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      reset(servicesFactory);
+    }
   }
 
   @Test

@@ -1,11 +1,11 @@
 package org.folio.spring.config;
 
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import io.vertx.core.Context;
-import io.vertx.core.Vertx;
 
 @Configuration
 @Import(ApplicationConfig.class)
