@@ -101,7 +101,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
       throw new ValidationException("Invalid Query Parameter for filter[custom]");
     }
-    String selected = RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected);
+    String selected = RestConstants.FILTER_SELECTED_MAPPING.getOrDefault(filterSelected, filterSelected);
     packageParametersValidator.validate(selected, filterType, sort, q);
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
