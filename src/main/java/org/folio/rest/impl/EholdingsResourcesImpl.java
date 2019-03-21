@@ -238,6 +238,16 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private boolean resourceCanBeUpdated(ResourcePutRequest entity) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
-    return !Objects.isNull(attributes.getIsSelected()) && attributes.getIsSelected();
+    boolean isTitleCustom = !Objects.isNull(attributes.getIsTitleCustom()) && attributes.getIsTitleCustom();
+    boolean isSelected = !Objects.isNull(attributes.getIsSelected()) && attributes.getIsSelected();
+    if(!isSelected && !isTitleCustom){
+      try{
+        resourcePutBodyValidator.validate(entity, isTitleCustom);
+      }
+      catch (InputValidationException ex){
+        return false;
+      }
+    }
+    return true;
   }
 }
