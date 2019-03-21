@@ -284,7 +284,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private boolean isPackageUpdateable(PackagePutRequest entity) {
-    PackageDataAttributes attributes = entity.getData().getAttributes();
-    return !Objects.isNull(attributes.getIsSelected()) && attributes.getIsSelected();
+    PackageDataAttributes packageData = entity.getData().getAttributes();
+    if (!Objects.isNull(packageData.getIsCustom()) && !packageData.getIsCustom() &&
+        !Objects.isNull(packageData.getIsSelected()) && !packageData.getIsSelected()) {
+      try {
+        packagePutBodyValidator.validate(entity);
+      }
+      catch (InputValidationException ex){
+        return false;
+      }
+    }
+    return true;
   }
 }
