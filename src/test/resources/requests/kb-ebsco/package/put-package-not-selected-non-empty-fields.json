@@ -7,6 +7,7 @@
         "endCoverage": "2004-01-01"
       },
       "isSelected": false,
+      "isCustom":false,
       "allowKbToAddTitles": true,
       "visibilityData": {
         "isHidden": true,
