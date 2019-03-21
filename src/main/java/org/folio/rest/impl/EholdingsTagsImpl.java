@@ -71,7 +71,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
   }
 
   private CompletableFuture<List<Tag>> findTags(List<String> filterRectypes, String tenantId) {
-    log.info("Retrieving tags: tenantId = %s, recordTypes = %s", tenantId, filterRectypes);
+    log.info("Retrieving tags: tenantId = {}, recordTypes = {}", tenantId, filterRectypes);
 
     if (CollectionUtils.isEmpty(filterRectypes)) {
       return tagRepository.findAll(tenantId);
