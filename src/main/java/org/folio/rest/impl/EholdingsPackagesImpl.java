@@ -101,7 +101,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
       throw new ValidationException("Invalid Query Parameter for filter[custom]");
     }
-    String selected = RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected);
+    String selected = RestConstants.FILTER_SELECTED_MAPPING.getOrDefault(filterSelected, filterSelected);
     packageParametersValidator.validate(selected, filterType, sort, q);
 
     boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
@@ -284,7 +284,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private boolean isPackageUpdateable(PackagePutRequest entity) {
-    PackageDataAttributes attributes = entity.getData().getAttributes();
-    return !Objects.isNull(attributes.getIsSelected()) && attributes.getIsSelected();
+    PackageDataAttributes packageData = entity.getData().getAttributes();
+    if (!Objects.isNull(packageData.getIsCustom()) && !packageData.getIsCustom() &&
+        !Objects.isNull(packageData.getIsSelected()) && !packageData.getIsSelected()) {
+      try {
+        packagePutBodyValidator.validate(entity);
+      }
+      catch (InputValidationException ex){
+        return false;
+      }
+    }
+    return true;
   }
 }
