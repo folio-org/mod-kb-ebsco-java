@@ -15,6 +15,7 @@ public final class RestConstants {
   public static final String PROVIDERS_TYPE = "providers";
   public static final String TITLES_TYPE = "titles";
   public static final String RESOURCES_TYPE = "resources";
+  public static final String TAGS_TYPE = "tags";
   public static final String JSON_API_TYPE = "application/vnd.api+json";
 
   public static final String PROVIDER_RECTYPE = "provider";

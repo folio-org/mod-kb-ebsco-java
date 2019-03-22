@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Tag Data Attributes Schema",
+  "description": "Tag Data Attributes",
+  "javaType": "org.folio.rest.jaxrs.model.TagDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Tag value/label",
+      "example": "very-important"
+    }
+  }
+}
