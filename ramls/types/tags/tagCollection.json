@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Package Collection Schema",
+  "title": "Tag Collection Schema",
   "description": "Tag Collection Schema",
   "javaType": "org.folio.rest.jaxrs.model.TagCollection",
   "type": "object",
