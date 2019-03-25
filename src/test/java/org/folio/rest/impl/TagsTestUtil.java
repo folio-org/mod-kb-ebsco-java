@@ -11,6 +11,7 @@ import static org.folio.tag.repository.TagTableConstants.TAG_COLUMN;
 import static org.folio.tag.repository.TagTableConstants.TAG_FIELD_LIST;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +19,8 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.sql.ResultSet;
 
 import org.folio.rest.persist.PostgresClient;
 import org.folio.tag.RecordType;
@@ -39,16 +42,35 @@ public class TagsTestUtil {
     future.join();
   }
 
-  public static void insertTags(List<Tag> tags, Vertx vertx) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
+  public static List<Tag> insertTags(List<Tag> tags, Vertx vertx) {
+    CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = "INSERT INTO " + tagTestTable() +
-            "(" + TAG_FIELD_LIST + ") VALUES " + join(Collections.nCopies(tags.size(), "(?,?,?,?)"), ",");
+            "(" + TAG_FIELD_LIST + ") VALUES " + join(Collections.nCopies(tags.size(), "(?,?,?,?)"), ",") +
+            " RETURNING " + ID_COLUMN;
     JsonArray params = createParams(tags);
 
-    PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx).select(insertStatement, params, ar -> {
+      if (ar.succeeded()) {
+        future.complete(ar.result());
+      } else {
+        future.completeExceptionally(ar.cause());
+      }
+    });
 
-    future.join();
+    return populateTagIds(tags, future.join().getRows());
+  }
+
+  private static List<Tag> populateTagIds(List<Tag> tags, List<JsonObject> keys) {
+    List<Tag> result = new ArrayList<>(tags.size());
+
+    for (int i = 0; i < tags.size(); i++) {
+      result.add(tags.get(i).toBuilder()
+        .id(keys.get(i).getString(ID_COLUMN))
+        .build());
+    }
+
+    return result;
   }
 
   public static void clearTags(Vertx vertx) {
