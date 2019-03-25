@@ -2,6 +2,7 @@ package org.folio.rest.impl;
 
 import static org.apache.commons.lang3.StringUtils.join;
 
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.tag.repository.TagTableConstants.ID_COLUMN;
 import static org.folio.tag.repository.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.tag.repository.TagTableConstants.RECORD_TYPE_COLUMN;
@@ -14,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -63,7 +63,7 @@ public class TagsTestUtil {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
       "SELECT " + TAG_COLUMN + " FROM " + tagTestTable(),
-      event -> future.complete(event.result().getRows().stream().map(row -> row.getString(TAG_COLUMN)).collect(Collectors.toList())));
+      event -> future.complete(mapItems(event.result().getRows(), row -> row.getString(TAG_COLUMN))));
     return future.join();
   }
 
@@ -72,7 +72,7 @@ public class TagsTestUtil {
     PostgresClient.getInstance(vertx).select(
       "SELECT " + TAG_COLUMN + " FROM " + tagTestTable() + " " +
         "WHERE " + RECORD_TYPE_COLUMN + "= '" + recordType.getValue()+"'",
-      event -> future.complete(event.result().getRows().stream().map(row -> row.getString(TAG_COLUMN)).collect(Collectors.toList())));
+      event -> future.complete(mapItems(event.result().getRows(), row -> row.getString(TAG_COLUMN))));
     return future.join();
   }
 

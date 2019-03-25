@@ -1,12 +1,12 @@
 package org.folio.rest.converter.packages;
 
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.packages.PackageConverterUtils.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -93,11 +93,9 @@ public class PackageConverter implements Converter<PackageResult, Package> {
   }
 
   private List<RelationshipData> convertResourcesRelationship(PackageByIdData packageByIdData, Titles titles) {
-    return titles.getTitleList().stream()
-      .map(title ->
-        new RelationshipData()
+    return mapItems(titles.getTitleList(),
+      title ->new RelationshipData()
           .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId() + "-" + title.getTitleId())
-          .withType(RESOURCES_TYPE))
-      .collect(Collectors.toList());
+          .withType(RESOURCES_TYPE));
   }
 }

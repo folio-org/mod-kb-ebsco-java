@@ -2,6 +2,7 @@ package org.folio.tag.repository;
 
 import static java.util.Arrays.asList;
 
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.tag.repository.TagTableConstants.DELETE_TAG_RECORD;
 import static org.folio.tag.repository.TagTableConstants.ID_COLUMN;
 import static org.folio.tag.repository.TagTableConstants.RECORD_ID_COLUMN;
@@ -121,9 +122,7 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   private List<Tag> readTags(ResultSet resultSet) {
-    return resultSet.getRows().stream()
-              .map(this::populateTag)
-              .collect(Collectors.toList());
+    return mapItems(resultSet.getRows(), this::populateTag);
   }
 
   private Tag populateTag(JsonObject row) {

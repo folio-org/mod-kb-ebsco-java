@@ -1,9 +1,10 @@
 package org.folio.rest.converter.common.attr;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.core.convert.converter.Converter;
@@ -27,12 +28,10 @@ public class ContributorsConverterPair {
       if (Objects.isNull(contributorList)) {
         return Collections.emptyList();
       }
-      return contributorList.stream().map(contributor ->
-        new Contributors()
-          .withContributor(contributor.getTitleContributor())
-          .withType(StringUtils.capitalize(contributor.getType()))
-      )
-        .collect(Collectors.toList());
+      return mapItems(contributorList,
+        contributor -> new Contributors()
+            .withContributor(contributor.getTitleContributor())
+            .withType(StringUtils.capitalize(contributor.getType())));
     }
   }
 
@@ -41,12 +40,10 @@ public class ContributorsConverterPair {
 
     @Override
     public List<Contributor> convert(@NonNull List<Contributors> contributorList) {
-      return contributorList.stream().map(contributor ->
-          org.folio.holdingsiq.model.Contributor.builder()
+      return mapItems(contributorList,
+          contributor ->org.folio.holdingsiq.model.Contributor.builder()
             .titleContributor(contributor.getContributor())
-            .type(StringUtils.capitalize(contributor.getType())).build()
-        )
-        .collect(Collectors.toList());
+            .type(StringUtils.capitalize(contributor.getType())).build());
     }
   }
   

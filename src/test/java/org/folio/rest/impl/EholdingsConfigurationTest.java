@@ -11,18 +11,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.Matchers.equalTo;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import org.folio.rest.jaxrs.model.Config;
-import org.folio.rest.jaxrs.model.Configs;
-import org.folio.rest.jaxrs.model.Configuration;
-import org.folio.rest.util.RestConstants;
-import org.folio.util.TestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -30,10 +23,17 @@ import com.github.tomakehurst.wiremock.matching.AnythingPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.folio.rest.jaxrs.model.Config;
+import org.folio.rest.jaxrs.model.Configs;
+import org.folio.rest.jaxrs.model.Configuration;
+import org.folio.rest.util.RestConstants;
+import org.folio.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsConfigurationTest extends WireMockTestBase {
@@ -101,9 +101,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
 
     String configsString = TestUtil.readFile("responses/kb-ebsco/configuration/get-configuration.json");
     Configs configs = mapper.readValue(configsString, Configs.class);
-    List<String> existingIds = configs.getConfigs().stream()
-      .map(Config::getId)
-      .collect(Collectors.toList());
+    List<String> existingIds = mapItems(configs.getConfigs(), Config::getId);
 
     mockConfigurationUpdate(configsString);
 

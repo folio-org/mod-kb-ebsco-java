@@ -1,7 +1,8 @@
 package org.folio.rest.converter.resources;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -97,10 +98,10 @@ public class ResourceRequestConverter {
   }
 
   private List<CoverageDates> convertToRMAPICustomCoverageList(List<Coverage> customCoverages) {
-    return customCoverages.stream().map(coverage -> CoverageDates.builder()
-      .beginCoverage(coverage.getBeginCoverage())
-      .endCoverage(coverage.getEndCoverage())
-      .build())
-      .collect(Collectors.toList());
+    return mapItems(customCoverages,
+      coverage -> CoverageDates.builder()
+        .beginCoverage(coverage.getBeginCoverage())
+        .endCoverage(coverage.getEndCoverage())
+        .build());
   }
 }

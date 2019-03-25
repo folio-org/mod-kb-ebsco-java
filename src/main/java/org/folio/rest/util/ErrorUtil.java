@@ -1,9 +1,10 @@
 package org.folio.rest.util;
 
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,10 +53,9 @@ public class ErrorUtil {
           .build();
       }
 
-      List<JsonapiErrorResponse> jsonApiErrors = errorsObject.getErrorList().stream()
-        .map(error -> new JsonapiErrorResponse()
-          .withTitle(error.getMessage()))
-        .collect(Collectors.toList());
+      List<JsonapiErrorResponse> jsonApiErrors = mapItems(errorsObject.getErrorList(),
+        error -> new JsonapiErrorResponse()
+          .withTitle(error.getMessage()));
       configurationError.setErrors(jsonApiErrors);
       configurationError.setJsonapi(RestConstants.JSONAPI);
       return configurationError;
