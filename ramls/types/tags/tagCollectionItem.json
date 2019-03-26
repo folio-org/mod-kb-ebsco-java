@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Tag object schema for a collection",
+  "description": "Tag object schema for a collection",
+  "javaType": "org.folio.rest.jaxrs.model.TagCollectionItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "UUID of tag assigned to the record",
+      "example": "eab7a945-9d0c-487a-a4d8-a6df4dd8d0fd"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "tags"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Tag object data attributes",
+      "$ref": "tagDataAttributes.json"
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Displays if any record is included in relationships",
+      "$ref": "tagRelationships.json"
+    }
+  }
+}

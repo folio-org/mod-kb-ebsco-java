@@ -1,0 +1,58 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+traits:
+  pageable: !include traits/pageable.raml
+
+types:
+  tagCollection: !include types/tags/tagCollection.json
+  jsonapiError: !include types/jsonapiError.json
+  recordType:
+    type: string
+    description: Eholdings record type. Possible values are provider, package, title, resource.
+  recordTypes:
+    type: recordType[]
+
+/eholdings/tags:
+  displayName: Tags
+  get:
+    description: Retrieve a collection of tags associated with eholding records.
+    queryParameters:
+      filter[rectype]?:
+        displayName: Query by Record type(s)
+        type: recordTypes
+        uniqueItems: true
+        minItems: 1
+        description: Filter tags by one or more record types.
+            Several types can be specified in form of `filter[rectype]=provider&filter[rectype]=package`
+            Possible values are `provider`, `package`, `title`, `resource`
+        example:
+          - provider
+          - package
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: |
+              An array of tags comprising the results of the query sorted in alpahbetical order.
+            type: tagCollection
+            example:
+              strict: false
+              value: !include examples/tags/tags_get_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/tags/tags_get_400_response.json

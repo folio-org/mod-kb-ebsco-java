@@ -15,7 +15,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -55,6 +54,7 @@ import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
+import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
@@ -87,6 +87,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
   @Autowired
   private TagRepository tagRepository;
+  @Autowired
+  private Converter<List<Tag>, Tags> tagsConverter;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -242,15 +244,15 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private CompletableFuture<PackageResult> loadTags(PackageResult result, String tenant) {
     PackageByIdData packageData = result.getPackageData();
     String packageId = packageData.getVendorId() + "-" + packageData.getPackageId();
-    return tagRepository.getTags(tenant, packageId, RecordType.PACKAGE)
-      .thenCompose(tag -> {
-        result.setTags(tag);
+    return tagRepository.findByRecord(tenant, packageId, RecordType.PACKAGE)
+      .thenCompose(tags -> {
+        result.setTags(tagsConverter.convert(tags));
         return CompletableFuture.completedFuture(result);
       });
   }
 
   private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
-    return tagRepository.deleteTags(tenant, String.valueOf(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()), RecordType.PACKAGE)
+    return tagRepository.deleteRecordTags(tenant, packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart(), RecordType.PACKAGE)
       .thenCompose(aBoolean ->  CompletableFuture.completedFuture(null));
   }
 
@@ -258,7 +260,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (tags == null){
       return CompletableFuture.completedFuture(new PackageResult(packageId, null, null));
     }else {
-      return tagRepository.updateTags(tenant, String.valueOf(packageId.getVendorId() + "-" + packageId.getPackageId()), RecordType.PACKAGE, tags.getTagList())
+      return tagRepository.updateRecordTags(tenant, packageId.getVendorId() + "-" + packageId.getPackageId(), RecordType.PACKAGE, tags.getTagList())
         .thenCompose(updated -> {
           PackageResult result = new PackageResult(packageId, null, null);
           result.setTags(new Tags().withTagList(tags.getTagList()));

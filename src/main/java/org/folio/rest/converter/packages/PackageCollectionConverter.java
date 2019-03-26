@@ -1,7 +1,8 @@
 package org.folio.rest.converter.packages;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -23,9 +24,9 @@ public class PackageCollectionConverter implements Converter<Packages, PackageCo
 
   @Override
   public PackageCollection convert(@NonNull Packages packages) {
-    List<PackageCollectionItem> packageList = packages.getPackagesList().stream()
-      .map(packageData -> packageCollectionItemConverter.convert(packageData))
-      .collect(Collectors.toList());
+    List<PackageCollectionItem> packageList = mapItems(packages.getPackagesList(),
+      packageData -> packageCollectionItemConverter.convert(packageData));
+    
     return new PackageCollection()
       .withJsonapi(RestConstants.JSONAPI)
       .withMeta(new MetaTotalResults().withTotalResults(packages.getTotalResults()))

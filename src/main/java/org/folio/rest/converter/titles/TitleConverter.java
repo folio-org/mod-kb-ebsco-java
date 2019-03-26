@@ -1,5 +1,6 @@
 package org.folio.rest.converter.titles;
 
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
@@ -84,11 +85,9 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   }
 
   private List<RelationshipData> convertResourcesRelationship(List<CustomerResources> customerResources) {
-    return customerResources.stream()
-      .map(resourceData ->
-        new RelationshipData()
+    return mapItems(customerResources,
+      resourceData -> new RelationshipData()
           .withId(resourceData.getVendorId() + "-" + resourceData.getPackageId() + "-" + resourceData.getTitleId())
-          .withType(RESOURCES_TYPE))
-      .collect(Collectors.toList());
+          .withType(RESOURCES_TYPE));
   }
 }

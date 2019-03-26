@@ -1,7 +1,8 @@
 package org.folio.rest.converter.resources;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -23,9 +24,8 @@ public class ResourceCollectionConverter implements Converter<Titles, ResourceCo
 
   @Override
   public ResourceCollection convert(@NonNull Titles titles) {
-    List<ResourceCollectionItem> titleList = titles.getTitleList().stream()
-      .map(converter::convert)
-      .collect(Collectors.toList());
+    List<ResourceCollectionItem> titleList = mapItems(titles.getTitleList(), converter::convert);
+    
     return new ResourceCollection()
       .withJsonapi(RestConstants.JSONAPI)
       .withMeta(new MetaTotalResults().withTotalResults(titles.getTotalResults()))

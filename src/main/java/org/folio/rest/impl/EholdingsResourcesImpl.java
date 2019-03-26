@@ -16,6 +16,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -49,6 +50,7 @@ import org.folio.rmapi.result.ObjectsForPostResourceResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
+import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
 
 
@@ -70,6 +72,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private RMAPITemplateFactory templateFactory;
   @Autowired
   private TagRepository tagRepository;
+  @Autowired
+  private Converter<List<Tag>, Tags> tagsConverter;
+  
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -167,7 +172,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             }
             return context.getResourcesService().deleteResource(parsedResourceId);
           })
-          .thenCompose(o -> tagRepository.deleteTags(context.getOkapiData().getTenant(), resourceId, RecordType.RESOURCE))
+          .thenCompose(o -> tagRepository.deleteRecordTags(context.getOkapiData().getTenant(), resourceId, RecordType.RESOURCE))
       )
       .execute();
   }
@@ -190,9 +195,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private CompletableFuture<ResourceResult> loadTags(ResourceResult result, String tenant) {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
     String resourceId = getResourceId(resource);
-    return tagRepository.getTags(tenant, resourceId, RecordType.RESOURCE)
-      .thenApply(tag -> {
-        result.setTags(tag);
+    return tagRepository.findByRecord(tenant, resourceId, RecordType.RESOURCE)
+      .thenApply(tags -> {
+        result.setTags(tagsConverter.convert(tags));
         return result;
       });
   }
@@ -204,7 +209,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     } else {
       CustomerResources resource = title.getCustomerResourcesList().get(0);
       String resourceId = getResourceId(resource);
-      return tagRepository.updateTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList())
+      return tagRepository.updateRecordTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList())
         .thenCompose(updated -> {
           result.setTags(tags);
           return CompletableFuture.completedFuture(result);

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Tag relationships object schema in tag collection item",
+  "description": "Tag relationships object schema in tag collection item",
+  "javaType": "org.folio.rest.jaxrs.model.TagRelationship",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "record": {
+      "type": "object",
+      "description": "Displays relationship to record",
+      "$ref": "../hasOneRelationship.json"
+    }
+  }
+}
