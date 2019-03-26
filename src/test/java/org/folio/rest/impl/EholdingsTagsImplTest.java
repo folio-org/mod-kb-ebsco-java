@@ -80,7 +80,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     try {
       TagCollection col = getOkResponse("eholdings/tags?filter[rectype]=provider").as(TagCollection.class);
 
-      TagCollection expected = buildTagCollection(filter(tags, byContent(PROVIDER_TAG)));
+      TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG)));
       assertEquals(expected, col);
     } finally {
       clearTags(vertx);
@@ -95,7 +95,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       TagCollection col = getOkResponse("eholdings/tags?filter[rectype]=provider&filter[rectype]=title")
           .as(TagCollection.class);
 
-      TagCollection expected = buildTagCollection(filter(tags, byContent(PROVIDER_TAG).or(byContent(TITLE_TAG))));
+      TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG).or(similarTo(TITLE_TAG))));
       assertEquals(expected, col);
     } finally {
       clearTags(vertx);
@@ -159,7 +159,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     }
   }
 
-  private Predicate<Tag> byContent(Tag expected) {
+  private Predicate<Tag> similarTo(Tag expected) {
     return tag -> expected.getValue().equals(tag.getValue()) &&
       expected.getRecordId().equals(tag.getRecordId()) &&
       expected.getRecordType().equals(tag.getRecordType());
