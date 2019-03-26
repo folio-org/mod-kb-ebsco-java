@@ -1,10 +1,53 @@
 {
   "data": [
-    "academic",
-    "journal"
+    {
+      "id": "2cf21797-d25b-46dc-8427-1759d1db2057",
+      "type": "tags",
+      "attributes": {
+        "value": "package-tag1"
+      },
+      "relationships": {
+        "record": {
+          "data": {
+            "type": "packages",
+            "id": "11111-23456"
+          }
+        }
+      }
+    },
+    {
+      "id": "8c415595-ec6b-4dec-a1a7-91711e093d05",
+      "type": "tags",
+      "attributes": {
+        "value": "provider-tag1"
+      },
+      "relationships": {
+        "record": {
+          "data": {
+            "type": "providers",
+            "id": "11111"
+          }
+        }
+      }
+    },
+    {
+      "id": "07a4dd13-c749-459e-84a7-8db208c3059e",
+      "type": "tags",
+      "attributes": {
+        "value": "provider-tag2"
+      },
+      "relationships": {
+        "record": {
+          "data": {
+            "type": "providers",
+            "id": "11111"
+          }
+        }
+      }
+    }
   ],
   "meta": {
-    "totalResults": 2
+    "totalResults": 3
   },
   "jsonapi": {
     "version": "1.0"
