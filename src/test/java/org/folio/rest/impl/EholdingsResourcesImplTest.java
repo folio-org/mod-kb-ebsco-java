@@ -382,16 +382,17 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateOnlyTagsOnPutWhenResourceIsNotSelected() throws IOException, URISyntaxException {
+  public void shouldUpdateOnlyTagsOnPutWhenResourceIsNotSelectedAndUpdatedFieldsAreNotEmpty() throws IOException, URISyntaxException {
     try {
       String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
       ObjectMapper mapper = new ObjectMapper();
-      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"),
+      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-managed-resource.json"),
         ResourcePutRequest.class);
       List<String> tags = Arrays.asList(STUB_TAG, STUB_TAG2);
       request.getData().getAttributes().setTags(new Tags()
         .withTagList(tags));
       request.getData().getAttributes().setIsSelected(false);
+      request.getData().getAttributes().setCoverageStatement("coverage statement");
       updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
         mapper.writeValueAsString(request));
 
