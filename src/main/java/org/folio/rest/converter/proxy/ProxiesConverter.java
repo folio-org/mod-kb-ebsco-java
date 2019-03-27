@@ -1,7 +1,8 @@
 package org.folio.rest.converter.proxy;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
@@ -19,9 +20,7 @@ public class ProxiesConverter implements Converter<Proxies, ProxyTypes> {
 
   @Override
   public ProxyTypes convert(@NonNull Proxies proxies) {
-    List<ProxyTypesData> providerList = proxies.getProxyList().stream()
-      .map(this::convertProxy)
-      .collect(Collectors.toList());
+    List<ProxyTypesData> providerList = mapItems(proxies.getProxyList(), this::convertProxy);
 
     return new ProxyTypes().withJsonapi(RestConstants.JSONAPI).withData(providerList);
   }

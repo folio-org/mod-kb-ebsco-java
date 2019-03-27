@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -9,7 +10,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -39,6 +39,7 @@ import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
+import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
@@ -61,6 +62,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private RMAPITemplateFactory templateFactory;
   @Autowired
   private TagRepository tagRepository;
+  @Autowired
+  private Converter<List<Tag>, Tags> tagsConverter;
 
   public EholdingsTitlesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -156,9 +159,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result, String tenant) {
-    return tagRepository.getTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE)
-      .thenApply(tag -> {
-        result.setTags(tag);
+    return tagRepository.findByRecord(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE)
+      .thenApply(tags -> {
+        result.setTags(tagsConverter.convert(tags));
         return result;
       });
   }
@@ -167,7 +170,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     if (tags == null){
       return CompletableFuture.completedFuture(result);
     }else {
-      return tagRepository.updateTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE, tags.getTagList())
+      return tagRepository.updateRecordTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE, tags.getTagList())
         .thenApply(updated -> {
           result.setTags(new Tags().withTagList(tags.getTagList()));
           return result;

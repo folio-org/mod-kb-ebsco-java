@@ -1,7 +1,8 @@
 package org.folio.rest.converter.titles;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -22,9 +23,8 @@ public class TitleCollectionConverter implements Converter<Titles, TitleCollecti
 
   @Override
   public TitleCollection convert(@NonNull Titles titles) {
-    List<org.folio.rest.jaxrs.model.Titles> titleList = titles.getTitleList().stream()
-      .map(titleConverter::convert)
-      .collect(Collectors.toList());
+    List<org.folio.rest.jaxrs.model.Titles> titleList = mapItems(titles.getTitleList(), titleConverter::convert);
+
     return new TitleCollection()
       .withJsonapi(RestConstants.JSONAPI)
       .withMeta(new MetaTotalResults().withTotalResults(titles.getTotalResults()))

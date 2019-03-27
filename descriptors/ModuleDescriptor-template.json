@@ -130,6 +130,11 @@
           "methods": ["DELETE"],
           "pathPattern": "/eholdings/cache",
           "permissionsRequired" :["kb-ebsco.cache.delete"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/tags",
+          "permissionsRequired": ["kb-ebsco.tags.collection.get"]
         }
       ]
     },
@@ -297,6 +302,11 @@
       "description": "Put root proxy"
     },
     {
+      "permissionName": "kb-ebsco.tags.collection.get",
+      "displayName": "get record tags",
+      "description": "Get record tags"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
@@ -325,7 +335,8 @@
         "kb-ebsco.resources.item.delete",
         "kb-ebsco.proxy-types.collection.get",
         "kb-ebsco.root-proxy.get",
-        "kb-ebsco.root-proxy.put"
+        "kb-ebsco.root-proxy.put",
+        "kb-ebsco.tags.collection.get"
       ]
     }
   ],

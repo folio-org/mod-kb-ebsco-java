@@ -1,11 +1,11 @@
 package org.folio.rest.converter.providers;
 
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.providers.ProviderConverterUtils.createEmptyProviderRelationships;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -72,11 +72,9 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
   }
 
   private List<RelationshipData> convertPackagesRelationship(org.folio.holdingsiq.model.Packages packages) {
-    return packages.getPackagesList().stream()
-      .map(packageData ->
-        new RelationshipData()
+    return mapItems(packages.getPackagesList(),
+      packageData -> new RelationshipData()
           .withId(packageData.getVendorId() + "-" + packageData.getPackageId())
-          .withType(PACKAGES_TYPE))
-      .collect(Collectors.toList());
+          .withType(PACKAGES_TYPE));
   }
 }

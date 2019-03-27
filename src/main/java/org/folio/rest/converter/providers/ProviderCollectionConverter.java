@@ -1,7 +1,8 @@
 package org.folio.rest.converter.providers;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -22,9 +23,8 @@ public class ProviderCollectionConverter implements Converter<Vendors, ProviderC
 
   @Override
   public ProviderCollection convert(@NonNull Vendors vendors) {
-    List<Providers> providerList = vendors.getVendorList().stream()
-      .map(providersConverter::convert)
-      .collect(Collectors.toList());
+    List<Providers> providerList = mapItems(vendors.getVendorList(), providersConverter::convert);
+    
     return new ProviderCollection()
       .withJsonapi(RestConstants.JSONAPI)
       .withMeta(new MetaTotalResults().withTotalResults(vendors.getTotalResults()))

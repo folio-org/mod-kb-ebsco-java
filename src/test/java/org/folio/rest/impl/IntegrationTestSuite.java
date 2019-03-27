@@ -16,7 +16,8 @@ import org.junit.runners.Suite;
   EholdingsResourcesImplTest.class,
   EHoldingsRootProxyImplTest.class,
   EholdingsStatusTest.class,
-  EholdingsTitlesTest.class
+  EholdingsTitlesTest.class,
+  EholdingsTagsImplTest.class
 })
 @RunWith(Suite.class)
 public class IntegrationTestSuite {

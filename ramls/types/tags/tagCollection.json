@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Tag Collection Schema",
+  "description": "Tag Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.TagCollection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of tags",
+      "items": {
+        "type": "object",
+        "$ref": "tagCollectionItem.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in packages collection",
+      "$ref": "../metaTotalResults.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "jsonapi"
+  ]
+}
