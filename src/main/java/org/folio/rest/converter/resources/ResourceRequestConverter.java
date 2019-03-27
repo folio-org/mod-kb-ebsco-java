@@ -1,19 +1,15 @@
 package org.folio.rest.converter.resources;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Component;
-
-import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.EmbargoPeriod;
-import org.folio.holdingsiq.model.ResourcePut;
-import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.*;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ResourceRequestConverter {
@@ -82,7 +78,7 @@ public class ResourceRequestConverter {
       .build();
     builder.customEmbargoPeriod(customEmbargo);
 
-    List<CoverageDates> coverageDates = attributes.getCustomCoverages() != null && !attributes.getCustomCoverages().isEmpty() ?
+    List<CoverageDates> coverageDates = attributes.getCustomCoverages() != null ?
       convertToRMAPICustomCoverageList(attributes.getCustomCoverages()) : oldResource.getCustomCoverageList();
     builder.customCoverageList(coverageDates);
 
@@ -97,6 +93,9 @@ public class ResourceRequestConverter {
   }
 
   private List<CoverageDates> convertToRMAPICustomCoverageList(List<Coverage> customCoverages) {
+    if (customCoverages.isEmpty()) {
+      return Collections.emptyList();
+    }
     return customCoverages.stream().map(coverage -> CoverageDates.builder()
       .beginCoverage(coverage.getBeginCoverage())
       .endCoverage(coverage.getEndCoverage())

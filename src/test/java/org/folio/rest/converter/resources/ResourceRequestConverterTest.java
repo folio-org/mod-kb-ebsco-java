@@ -1,25 +1,18 @@
 package org.folio.rest.converter.resources;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collections;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.ResourcePut;
-import org.folio.holdingsiq.model.Title;
-import org.folio.holdingsiq.model.VisibilityInfo;
+import org.folio.holdingsiq.model.*;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Collections;
+
+import static org.junit.Assert.*;
 
 public class ResourceRequestConverterTest {
   private static final String OLD_PROXY_ID = "<n>";
@@ -172,8 +165,6 @@ public class ResourceRequestConverterTest {
     assertEquals(OLD_COVERAGE_STATEMENT, resourcePut.getCoverageStatement());
     assertEquals(OLD_URL, resourcePut.getUrl());
     assertEquals(OLD_VISIBILITY_DATA, resourcePut.getIsHidden());
-    assertEquals(OLD_BEGIN_COVERAGE, resourcePut.getCustomCoverageList().get(0).getBeginCoverage());
-    assertEquals(OLD_END_COVERAGE, resourcePut.getCustomCoverageList().get(0).getEndCoverage());
     assertEquals(OLD_EMBARGO_UNIT, resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
     assertEquals(OLD_EMBARGO_VALUE, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
   }
