@@ -83,7 +83,7 @@ public class ResourceRequestConverter {
       .build();
     builder.customEmbargoPeriod(customEmbargo);
 
-    List<CoverageDates> coverageDates = attributes.getCustomCoverages() != null && !attributes.getCustomCoverages().isEmpty() ?
+    List<CoverageDates> coverageDates = attributes.getCustomCoverages() != null ?
       convertToRMAPICustomCoverageList(attributes.getCustomCoverages()) : oldResource.getCustomCoverageList();
     builder.customCoverageList(coverageDates);
 

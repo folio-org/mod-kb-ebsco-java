@@ -172,8 +172,6 @@ public class ResourceRequestConverterTest {
     assertEquals(OLD_COVERAGE_STATEMENT, resourcePut.getCoverageStatement());
     assertEquals(OLD_URL, resourcePut.getUrl());
     assertEquals(OLD_VISIBILITY_DATA, resourcePut.getIsHidden());
-    assertEquals(OLD_BEGIN_COVERAGE, resourcePut.getCustomCoverageList().get(0).getBeginCoverage());
-    assertEquals(OLD_END_COVERAGE, resourcePut.getCustomCoverageList().get(0).getEndCoverage());
     assertEquals(OLD_EMBARGO_UNIT, resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
     assertEquals(OLD_EMBARGO_VALUE, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
   }
