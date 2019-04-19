@@ -5,7 +5,7 @@
     "attributes": {
       "contributors": [
         {
-          "type": "Author",
+          "type": "author",
           "contributor": "Bloom, Harold"
         }
       ],

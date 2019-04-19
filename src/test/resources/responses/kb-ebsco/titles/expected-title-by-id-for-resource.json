@@ -32,7 +32,7 @@
     "isPeerReviewed": false,
     "contributors": [
       {
-        "type": "Author",
+        "type": "author",
         "contributor": "Beeman, William O."
       }
     ]
