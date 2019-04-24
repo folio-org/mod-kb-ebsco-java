@@ -31,6 +31,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -44,7 +45,7 @@ import org.folio.tag.Tag;
 
 @Component
 class TagRepositoryImpl implements TagRepository {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(TagRepositoryImpl.class);
   private Vertx vertx;
 
@@ -84,7 +85,7 @@ class TagRepositoryImpl implements TagRepository {
     if (CollectionUtils.isEmpty(recordTypes)) {
       return FutureUtils.failedFuture(new IllegalArgumentException("At least one record type required"));
     }
-    
+
     JsonArray parameters = createParameters(toValues(recordTypes));
     String placeholders = createPlaceholders(parameters);
 
@@ -103,7 +104,7 @@ class TagRepositoryImpl implements TagRepository {
     if(tags.isEmpty()){
       return unAssignTags(null, tenantId, recordId, recordType);
     }
-    return assignTags(tenantId, recordId, recordType, tags);
+    return updateTags(tenantId, recordId, recordType, tags);
   }
 
   @Override
@@ -141,7 +142,7 @@ class TagRepositoryImpl implements TagRepository {
     return PostgresClient.convertToPsqlStandard(tenantId) + "." + TABLE_NAME;
   }
 
-  private CompletableFuture<Boolean> assignTags(String tenantId, String recordId, RecordType recordType, List<String> tags) {
+  private CompletableFuture<Boolean> updateTags(String tenantId, String recordId, RecordType recordType, List<String> tags) {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     MutableObject<AsyncResult<SQLConnection>> mutableConnection = new MutableObject<>();
     CompletableFuture<Boolean> future = CompletableFuture.completedFuture(null);
@@ -189,7 +190,7 @@ class TagRepositoryImpl implements TagRepository {
   private CompletableFuture<Boolean> unAssignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,
       RecordType recordType) {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
-    final String deleteQuery = String.format(DELETE_TAG_RECORD, getTableName(tenantId), recordId, recordType);
+    final String deleteQuery = String.format(DELETE_TAG_RECORD, getTableName(tenantId));
     LOG.info("Do delete query = " + deleteQuery);
 
     JsonArray parameters = createParameters(asList(recordId, recordType.getValue()));
@@ -240,5 +241,4 @@ class TagRepositoryImpl implements TagRepository {
     });
     return String.join(",", Collections.nCopies(tags.size(),"(?,?,?,?)"));
   }
-
 }

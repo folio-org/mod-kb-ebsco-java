@@ -15,6 +15,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -56,6 +57,7 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.packages.PackageRepository;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -89,6 +91,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private TagRepository tagRepository;
   @Autowired
   private Converter<List<Tag>, Tags> tagsConverter;
+  @Autowired
+  private PackageRepository packageRepository;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -260,7 +264,11 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (tags == null){
       return CompletableFuture.completedFuture(new PackageResult(packageId, null, null));
     }else {
-      return tagRepository.updateRecordTags(tenant, packageId.getVendorId() + "-" + packageId.getPackageId(), RecordType.PACKAGE, tags.getTagList())
+      return
+        packageRepository.savePackage(packageId, tenant)
+        .thenCompose(o ->
+          tagRepository.updateRecordTags(
+            tenant, packageId.getVendorId() + "-" + packageId.getPackageId(), RecordType.PACKAGE, tags.getTagList()))
         .thenCompose(updated -> {
           PackageResult result = new PackageResult(packageId, null, null);
           result.setTags(new Tags().withTagList(tags.getTagList()));
