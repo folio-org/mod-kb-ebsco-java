@@ -6,7 +6,15 @@
       "pkColumnName": "id",
       "generateId": false,
       "withAuditing": false,
-      "customSnippetPath": "create-table.sql"
+      "customSnippetPath": "create-tags-table.sql"
+    },
+    {
+      "tableName": "packages",
+      "withMetadata": false,
+      "pkColumnName": "id",
+      "generateId": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-packages-table.sql"
     }
   ]
 }
