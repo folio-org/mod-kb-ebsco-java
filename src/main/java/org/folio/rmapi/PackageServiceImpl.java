@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
 
+import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -15,6 +16,7 @@ import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.impl.PackagesHoldingsIQServiceImpl;
+import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.VendorResult;
 
@@ -25,15 +27,31 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private ProvidersServiceImpl providerService;
   private TitlesHoldingsIQService titlesService;
+  private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private Configuration configuration;
+  private String tenantId;
 
-  public PackageServiceImpl(Configuration config, Vertx vertx, ProvidersServiceImpl providerService, TitlesHoldingsIQService titlesService) {
+  public PackageServiceImpl(Configuration config, Vertx vertx, String tenantId, ProvidersServiceImpl providerService,
+                            TitlesHoldingsIQService titlesService, VertxCache<PackageCacheKey, PackageByIdData> packageCache) {
     super(config, vertx);
     this.providerService = providerService;
     this.titlesService = titlesService;
+    this.packageCache = packageCache;
+    this.tenantId = tenantId;
+    this.configuration = config;
   }
 
   public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects) {
-    CompletableFuture<PackageByIdData> packageFuture = retrievePackage(packageId);
+    return retrievePackage(packageId, includedObjects, false);
+  }
+
+  public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects, boolean useCache) {
+    CompletableFuture<PackageByIdData> packageFuture;
+    if(useCache){
+      packageFuture = retrievePackageWithCache(packageId);
+    }else{
+      packageFuture = retrievePackage(packageId);
+    }
 
     CompletableFuture<Titles> titlesFuture;
     if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
@@ -55,4 +73,21 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
         completedFuture(new PackageResult(packageFuture.join(), vendorFuture.join().getVendor(), titlesFuture.join())));
   }
 
+  private CompletableFuture<PackageByIdData> retrievePackageWithCache(PackageId packageId) {
+    PackageCacheKey cacheKey = PackageCacheKey.builder()
+      .packageId(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart())
+      .rmapiConfiguration(configuration)
+      .tenant(tenantId)
+      .build();
+    PackageByIdData cachedPackage = packageCache.getValue(cacheKey);
+    if (cachedPackage != null) {
+      return CompletableFuture.completedFuture(cachedPackage);
+    } else {
+      return retrievePackage(packageId)
+        .thenCompose(packageByIdData -> {
+          packageCache.putValue(cacheKey, packageByIdData);
+          return CompletableFuture.completedFuture(packageByIdData);
+        });
+    }
+  }
 }

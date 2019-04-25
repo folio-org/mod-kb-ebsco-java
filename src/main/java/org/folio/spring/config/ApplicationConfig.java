@@ -16,12 +16,14 @@ import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
+import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceImpl;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.rmapi.cache.PackageCacheKey;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -51,8 +53,13 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx, @Value("${vendor.id.cache.expire}") long vendorId) {
-    return new VertxCache<>(vertx, vendorId, "vendorIdCache");
+  public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx, @Value("${vendor.id.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "vendorIdCache");
+  }
+
+  @Bean
+  public VertxCache<PackageCacheKey, PackageByIdData> packageCache(Vertx vertx, @Value("${package.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "packageCache");
   }
 
   @Bean
