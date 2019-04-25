@@ -260,17 +260,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenCompose(aBoolean ->  CompletableFuture.completedFuture(null));
   }
 
-  private CompletableFuture<PackageResult> updateTags(PackageByIdData packageId, String tenant, Tags tags) {
+  private CompletableFuture<PackageResult> updateTags(PackageByIdData packageData, String tenant, Tags tags) {
     if (tags == null){
-      return CompletableFuture.completedFuture(new PackageResult(packageId, null, null));
+      return CompletableFuture.completedFuture(new PackageResult(packageData, null, null));
     }else {
       return
-        packageRepository.savePackage(packageId, tenant)
+        packageRepository.savePackage(packageData, tenant)
         .thenCompose(o ->
           tagRepository.updateRecordTags(
-            tenant, packageId.getVendorId() + "-" + packageId.getPackageId(), RecordType.PACKAGE, tags.getTagList()))
+            tenant, packageData.getVendorId() + "-" + packageData.getPackageId(), RecordType.PACKAGE, tags.getTagList()))
         .thenCompose(updated -> {
-          PackageResult result = new PackageResult(packageId, null, null);
+          PackageResult result = new PackageResult(packageData, null, null);
           result.setTags(new Tags().withTagList(tags.getTagList()));
           return CompletableFuture.completedFuture(result);
         });
