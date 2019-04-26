@@ -9,6 +9,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.folio.util.TestUtil.getFile;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.mockPost;
+import static org.folio.util.TestUtil.mockPut;
+import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -17,18 +23,27 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockPost;
-import static org.folio.util.TestUtil.mockPut;
-import static org.folio.util.TestUtil.readFile;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.http.HttpStatus;
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
+import org.folio.rest.jaxrs.model.ContentType;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Package;
+import org.folio.rest.jaxrs.model.PackagePostRequest;
+import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.jaxrs.model.ResourceCollection;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.tag.RecordType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -42,23 +57,6 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.PackageByIdData;
-import org.folio.holdingsiq.model.PackageData;
-import org.folio.rest.jaxrs.model.ContentType;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Package;
-import org.folio.rest.jaxrs.model.PackagePostRequest;
-import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rest.jaxrs.model.ResourceCollection;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.tag.RecordType;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
@@ -230,6 +228,16 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldDeletePackageDataOnPutWithEmptyTagList() throws IOException, URISyntaxException {
+    List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
+    sendPutWithTags(tags);
+    sendPutWithTags(Collections.emptyList());
+
+    List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+    assertThat(packages, is(empty()));
+  }
+
+  @Test
   public void shouldAddPackageDataOnPost() throws URISyntaxException, IOException {
     try {
       String packagePostStubRequestFile = "requests/kb-ebsco/package/post-package-request.json";
@@ -281,6 +289,24 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
       assertThat(tagsAfterRequest, empty());
+  }
+
+  @Test
+  public void shouldDeletePackageOnDeleteRequest() throws IOException, URISyntaxException {
+    sendPostWithTags(readFile("requests/kb-ebsco/package/post-package-request.json"), Collections.singletonList(STUB_TAG_VALUE));
+
+    mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+    mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), new AnythingPattern(), HttpStatus.SC_NO_CONTENT);
+
+    RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete(PACKAGES_PATH)
+      .then()
+      .statusCode(HttpStatus.SC_NO_CONTENT);
+
+    List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+    assertThat(packages, is(empty()));
   }
 
   @Test

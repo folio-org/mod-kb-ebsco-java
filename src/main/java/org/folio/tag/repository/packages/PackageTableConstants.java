@@ -14,4 +14,8 @@ public class PackageTableConstants {
     "INSERT INTO %s(" + PACKAGE_FIELD_LIST + ") VALUES (?, ?, ?) " +
       "ON CONFLICT (" + ID_COLUMN + ") DO UPDATE " +
       "SET " + NAME_COLUMN + " = ?, " + CONTENT_TYPE_COLUMN + " = ?";
+
+  public static final String DELETE_STATEMENT =
+    "DELETE FROM %s " +
+      "WHERE " + ID_COLUMN + "=?";
 }
