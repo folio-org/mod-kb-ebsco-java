@@ -18,7 +18,7 @@
   },
   "url": "https://hello",
   "contributorsList": [{
-    "type": "Author",
+    "type": "author",
     "contributor": "Rappaport, Helen"
   }],
   "identifiersList": [{
