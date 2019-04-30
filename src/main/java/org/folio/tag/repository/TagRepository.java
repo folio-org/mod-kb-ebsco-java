@@ -18,5 +18,6 @@ public interface TagRepository {
   CompletableFuture<Boolean> updateRecordTags(String tenantId, String recordId, RecordType recordType, List<String> tags);
 
   CompletableFuture<Boolean> deleteRecordTags(String tenantId, String recordId, RecordType recordType);
-  
+
+  CompletableFuture<Integer> countRecordsByTags(List<String> tags, String tenantId, RecordType recordType);
 }

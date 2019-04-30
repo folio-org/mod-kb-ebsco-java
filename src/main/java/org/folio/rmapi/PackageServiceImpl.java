@@ -2,8 +2,12 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 
@@ -11,7 +15,9 @@ import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
@@ -43,6 +49,25 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects) {
     return retrievePackage(packageId, includedObjects, false);
+  }
+
+  public CompletableFuture<Packages> retrievePackages(List<PackageId> packageIds) {
+    Set<CompletableFuture<PackageResult>> futures = packageIds.stream()
+      .map(id -> retrievePackage(id, Collections.emptyList(), true))
+      .collect(Collectors.toSet());
+
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+      .thenApply(o -> mapToPackages(futures));
+  }
+
+  private Packages mapToPackages(Set<CompletableFuture<PackageResult>> packageFutures) {
+    List<PackageData> packages = packageFutures.stream()
+      .map(future -> future.join().getPackageData())
+      .sorted(Comparator.comparing(PackageData::getPackageName))
+      .collect(Collectors.toList());
+    return Packages.builder()
+      .packagesList(packages)
+      .build();
   }
 
   public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects, boolean useCache) {
