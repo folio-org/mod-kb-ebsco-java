@@ -3,7 +3,7 @@
     "attributes": {
       "contributors": [
         {
-          "type": "Author",
+          "type": "author",
           "contributor": "Bloom, Harold"
         }
       ],
@@ -55,7 +55,7 @@
         "titleId": 985846,
         "contributors": [
           {
-            "type": "Author",
+            "type": "author",
             "contributor": "Bloom, Harold"
           }
         ],

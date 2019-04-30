@@ -61,7 +61,7 @@
   "isPeerReviewed": true,
   "contributorsList": [
     {
-      "type": "Author",
+      "type": "author",
       "contributor": "Rappaport, Helen"
     }
   ]
