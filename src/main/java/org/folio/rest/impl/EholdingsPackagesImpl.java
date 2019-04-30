@@ -11,14 +11,6 @@ import java.util.concurrent.CompletionStage;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -56,6 +48,15 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.packages.PackageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.converter.Converter;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -89,6 +90,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private TagRepository tagRepository;
   @Autowired
   private Converter<List<Tag>, Tags> tagsConverter;
+  @Autowired
+  private PackageRepository packageRepository;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -252,21 +255,37 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
-    return tagRepository.deleteRecordTags(tenant, packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart(), RecordType.PACKAGE)
+    return
+    packageRepository.deletePackage(packageId, tenant)
+    .thenCompose(o -> tagRepository.deleteRecordTags(tenant, packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart(), RecordType.PACKAGE))
       .thenCompose(aBoolean ->  CompletableFuture.completedFuture(null));
   }
 
-  private CompletableFuture<PackageResult> updateTags(PackageByIdData packageId, String tenant, Tags tags) {
-    if (tags == null){
-      return CompletableFuture.completedFuture(new PackageResult(packageId, null, null));
-    }else {
-      return tagRepository.updateRecordTags(tenant, packageId.getVendorId() + "-" + packageId.getPackageId(), RecordType.PACKAGE, tags.getTagList())
-        .thenCompose(updated -> {
-          PackageResult result = new PackageResult(packageId, null, null);
-          result.setTags(new Tags().withTagList(tags.getTagList()));
-          return CompletableFuture.completedFuture(result);
-        });
+  private CompletableFuture<PackageResult> updateTags(PackageByIdData packageData, String tenant, Tags tags) {
+    if (tags == null) {
+      return CompletableFuture.completedFuture(new PackageResult(packageData, null, null));
+    } else {
+      return
+        updateStoredPackage(packageData, tags, tenant)
+          .thenCompose(o -> tagRepository.updateRecordTags(
+            tenant, packageData.getVendorId() + "-" + packageData.getPackageId(), RecordType.PACKAGE, tags.getTagList()))
+          .thenCompose(updated -> {
+            PackageResult result = new PackageResult(packageData, null, null);
+            result.setTags(new Tags().withTagList(tags.getTagList()));
+            return CompletableFuture.completedFuture(result);
+          });
     }
+  }
+
+  private CompletableFuture<Void> updateStoredPackage(PackageByIdData packageData, Tags tags, String tenant) {
+    if(!tags.getTagList().isEmpty()){
+      return packageRepository.savePackage(packageData, tenant);
+    }
+    PackageId packageId = PackageId.builder()
+      .providerIdPart(packageData.getVendorId())
+      .packageIdPart(packageData.getPackageId())
+      .build();
+    return packageRepository.deletePackage(packageId, tenant);
   }
 
   private CompletionStage<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId, RMAPITemplateContext context, PackageByIdData packageData) {
