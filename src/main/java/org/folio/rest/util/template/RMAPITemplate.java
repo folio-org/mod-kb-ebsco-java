@@ -19,7 +19,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.springframework.core.convert.ConversionService;
 
+import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.HoldingsIQService;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
@@ -31,6 +33,7 @@ import org.folio.rest.validator.HeaderValidator;
 import org.folio.rmapi.PackageServiceImpl;
 import org.folio.rmapi.ProvidersServiceImpl;
 import org.folio.rmapi.ResourcesServiceImpl;
+import org.folio.rmapi.cache.PackageCacheKey;
 
 /**
  * Provides a common template for asynchronous interaction with ProvidersServiceImpl,
@@ -57,6 +60,7 @@ public class RMAPITemplate {
   private Vertx vertx;
   private ConversionService conversionService;
   private HeaderValidator headerValidator;
+  private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
 
   private Map<String, String> okapiHeaders;
   private Handler<AsyncResult<Response>> asyncResultHandler;
@@ -67,13 +71,15 @@ public class RMAPITemplate {
 
 
   public RMAPITemplate(ConfigurationService configurationService, Vertx vertx, ConversionService conversionService,
-                       HeaderValidator headerValidator, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler) {
+                       HeaderValidator headerValidator, VertxCache<PackageCacheKey, PackageByIdData> packageCache, Map<String, String> okapiHeaders,
+                       Handler<AsyncResult<Response>> asyncResultHandler) {
     this.configurationService = configurationService;
     this.vertx = vertx;
     this.conversionService = conversionService;
     this.headerValidator = headerValidator;
     this.okapiHeaders = okapiHeaders;
     this.asyncResultHandler = asyncResultHandler;
+    this.packageCache = packageCache;
   }
 
   /**
@@ -137,7 +143,8 @@ public class RMAPITemplate {
         final HoldingsIQService holdingsService = new HoldingsIQServiceImpl(rmapiConfiguration, vertx);
         final TitlesHoldingsIQService titlesService = new TitlesHoldingsIQServiceImpl(rmapiConfiguration, vertx);
         final ProvidersServiceImpl providersService = new ProvidersServiceImpl(rmapiConfiguration, vertx, holdingsService);
-        final PackageServiceImpl packagesService = new PackageServiceImpl(rmapiConfiguration, vertx, providersService, titlesService);
+        final PackageServiceImpl packagesService = new PackageServiceImpl(rmapiConfiguration,vertx, new OkapiData(okapiHeaders).getTenant(),
+          providersService, titlesService, packageCache);
         final ResourcesServiceImpl resourcesService = new ResourcesServiceImpl(rmapiConfiguration, vertx, providersService, packagesService);
         contextBuilder.holdingsService(holdingsService);
         contextBuilder.providersService(providersService);
@@ -158,6 +165,5 @@ public class RMAPITemplate {
           .handle(asyncResultHandler, e);
         return null;
       });
-
   }
 }
