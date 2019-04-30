@@ -19,11 +19,11 @@
       "isPeerReviewed": true,
       "contributors": [
         {
-          "type": "Author",
+          "type": "author",
           "contributor": "smith, john"
         },
         {
-          "type": "Illustrator",
+          "type": "illustrator",
           "contributor": "smith, ralph"
         }
       ]

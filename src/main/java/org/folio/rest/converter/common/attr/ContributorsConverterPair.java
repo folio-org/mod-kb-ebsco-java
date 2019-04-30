@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -31,7 +30,7 @@ public class ContributorsConverterPair {
       return mapItems(contributorList,
         contributor -> new Contributors()
             .withContributor(contributor.getTitleContributor())
-            .withType(StringUtils.capitalize(contributor.getType())));
+            .withType(contributor.getType()));
     }
   }
 
@@ -43,7 +42,7 @@ public class ContributorsConverterPair {
       return mapItems(contributorList,
           contributor ->org.folio.holdingsiq.model.Contributor.builder()
             .titleContributor(contributor.getContributor())
-            .type(StringUtils.capitalize(contributor.getType())).build());
+            .type(contributor.getType()).build());
     }
   }
   
