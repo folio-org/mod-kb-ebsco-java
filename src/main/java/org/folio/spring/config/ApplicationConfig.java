@@ -3,7 +3,8 @@ package org.folio.spring.config;
 import java.util.List;
 
 import io.vertx.core.Vertx;
-
+import org.folio.holdingsiq.model.Title;
+import org.folio.rmapi.cache.TitleCacheKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -69,6 +70,11 @@ public class ApplicationConfig {
   @Bean
   public VertxCache<VendorCacheKey, VendorById> vendorCache(Vertx vertx, @Value("${vendor.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorCache");
+   }
+
+   @Bean
+   public VertxCache<TitleCacheKey, Title> titleCache(Vertx vertx, @Value("${title.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "titleCache");
   }
 
   @Bean
