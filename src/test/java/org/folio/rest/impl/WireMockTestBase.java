@@ -36,8 +36,10 @@ import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.cache.PackageCacheKey;
+import org.folio.rmapi.cache.VendorCacheKey;
 import org.folio.spring.SpringContextUtil;
 import org.folio.util.TestUtil;
 
@@ -75,6 +77,8 @@ public abstract class WireMockTestBase {
   private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
   @Autowired
   private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  @Autowired
+  private VertxCache<VendorCacheKey, VendorById> vendorCache;
 
   @Rule
   public WireMockRule userMockServer = new WireMockRule(
@@ -106,6 +110,7 @@ public abstract class WireMockTestBase {
     configurationCache.invalidateAll();
     vendorIdCache.invalidateAll();
     packageCache.invalidateAll();
+    vendorCache.invalidateAll();
   }
 
   /**
