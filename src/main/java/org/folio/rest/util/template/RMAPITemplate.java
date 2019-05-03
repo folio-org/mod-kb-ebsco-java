@@ -11,7 +11,6 @@ import javax.ws.rs.core.Response;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -19,21 +18,11 @@ import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.springframework.core.convert.ConversionService;
 
-import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.service.ConfigurationService;
-import org.folio.holdingsiq.service.HoldingsIQService;
-import org.folio.holdingsiq.service.TitlesHoldingsIQService;
-import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
-import org.folio.holdingsiq.service.impl.TitlesHoldingsIQServiceImpl;
 import org.folio.rest.impl.EholdingsPackagesImpl;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
-import org.folio.rmapi.PackageServiceImpl;
-import org.folio.rmapi.ProvidersServiceImpl;
-import org.folio.rmapi.ResourcesServiceImpl;
-import org.folio.rmapi.cache.PackageCacheKey;
 
 /**
  * Provides a common template for asynchronous interaction with Holdings services,
@@ -57,10 +46,9 @@ public class RMAPITemplate {
   private final Logger logger = LoggerFactory.getLogger(EholdingsPackagesImpl.class);
 
   private ConfigurationService configurationService;
-  private Vertx vertx;
   private ConversionService conversionService;
   private HeaderValidator headerValidator;
-  private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private RMAPITemplateContextBuilder contextBuilder;
 
   private Map<String, String> okapiHeaders;
   private Handler<AsyncResult<Response>> asyncResultHandler;
@@ -70,16 +58,15 @@ public class RMAPITemplate {
   private ErrorHandler errorHandler = new ErrorHandler();
 
 
-  public RMAPITemplate(ConfigurationService configurationService, Vertx vertx, ConversionService conversionService,
-                       HeaderValidator headerValidator, VertxCache<PackageCacheKey, PackageByIdData> packageCache, Map<String, String> okapiHeaders,
+  public RMAPITemplate(ConfigurationService configurationService, ConversionService conversionService,
+                       HeaderValidator headerValidator, RMAPITemplateContextBuilder contextBuilder, Map<String, String> okapiHeaders,
                        Handler<AsyncResult<Response>> asyncResultHandler) {
     this.configurationService = configurationService;
-    this.vertx = vertx;
     this.conversionService = conversionService;
     this.headerValidator = headerValidator;
     this.okapiHeaders = okapiHeaders;
     this.asyncResultHandler = asyncResultHandler;
-    this.packageCache = packageCache;
+    this.contextBuilder = contextBuilder;
   }
 
   /**
@@ -131,29 +118,13 @@ public class RMAPITemplate {
 
   private void executeInternal(Function<Object, Response> successHandler) {
     headerValidator.validate(okapiHeaders);
-    RMAPITemplateContext.RMAPITemplateContextBuilder contextBuilder = RMAPITemplateContext.builder();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
         OkapiData okapiData = new OkapiData(okapiHeaders);
         contextBuilder.okapiData(okapiData);
         return configurationService.retrieveConfiguration(okapiData);
       })
-      .thenAccept(rmapiConfiguration -> {
-
-        final HoldingsIQService holdingsService = new HoldingsIQServiceImpl(rmapiConfiguration, vertx);
-        final TitlesHoldingsIQService titlesService = new TitlesHoldingsIQServiceImpl(rmapiConfiguration, vertx);
-        final ProvidersServiceImpl providersService = new ProvidersServiceImpl(rmapiConfiguration, vertx, holdingsService);
-        final PackageServiceImpl packagesService = new PackageServiceImpl(rmapiConfiguration,vertx, new OkapiData(okapiHeaders).getTenant(),
-          providersService, titlesService, packageCache);
-        final ResourcesServiceImpl resourcesService = new ResourcesServiceImpl(rmapiConfiguration, vertx, providersService, packagesService);
-        contextBuilder.holdingsService(holdingsService);
-        contextBuilder.providersService(providersService);
-        contextBuilder.packagesService(packagesService);
-        contextBuilder.resourcesService(resourcesService);
-        contextBuilder.titlesService(titlesService);
-        providersService.setPackagesService(packagesService);
-
-      })
+      .thenAccept(contextBuilder::configuration)
       .thenCompose(o -> requestAction.apply(contextBuilder.build()))
       .thenAccept(result -> asyncResultHandler.handle(Future.succeededFuture(successHandler.apply(result))))
       .exceptionally(e -> {

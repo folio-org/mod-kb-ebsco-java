@@ -1,6 +1,5 @@
 package org.folio.rest.util.template;
 
-import lombok.Builder;
 import lombok.Value;
 
 import org.folio.holdingsiq.model.Configuration;
@@ -12,7 +11,6 @@ import org.folio.rmapi.ProvidersServiceImpl;
 import org.folio.rmapi.ResourcesServiceImpl;
 
 @Value
-@Builder(toBuilder = true)
 public class RMAPITemplateContext {
   private HoldingsIQService holdingsService;
   private PackageServiceImpl packagesService;
