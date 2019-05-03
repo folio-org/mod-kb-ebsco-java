@@ -35,6 +35,16 @@ public class PackagesTestUtil {
     return future.join();
   }
 
+  public static void addPackage(Vertx vertx, DbPackage dbPackage) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).execute(
+      "INSERT INTO " + packageTestTable() +
+        "(" + ID_COLUMN + ", " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ") VALUES('" +
+        dbPackage.getId() + "', '" + dbPackage.getName() + "', '" + dbPackage.getContentType() + "')",
+      event -> future.complete(null));
+    future.join();
+  }
+
   public static void clearPackages(Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(

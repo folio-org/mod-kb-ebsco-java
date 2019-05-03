@@ -18,4 +18,14 @@ public class PackageTableConstants {
   public static final String DELETE_STATEMENT =
     "DELETE FROM %s " +
       "WHERE " + ID_COLUMN + "=?";
+
+  public static final String SELECT_TAGGED_PACKAGES =
+    "SELECT DISTINCT packages.id as id, packages.name FROM %s " +
+      "LEFT JOIN tags ON " +
+      "tags.record_id = packages.id " +
+      "AND tags.record_type = 'package' " +
+      "WHERE tags.tag IN (%s) " +
+      "ORDER BY packages.name " +
+      "OFFSET ? " +
+      "LIMIT ?";
 }
