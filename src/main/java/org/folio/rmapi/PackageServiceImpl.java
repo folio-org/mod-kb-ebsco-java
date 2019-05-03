@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
@@ -30,6 +32,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
+  private static final Logger LOG = LoggerFactory.getLogger(PackageServiceImpl.class);
 
   private ProvidersServiceImpl providerService;
   private TitlesHoldingsIQService titlesService;
@@ -53,7 +56,11 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   public CompletableFuture<Packages> retrievePackages(List<PackageId> packageIds) {
     Set<CompletableFuture<PackageResult>> futures = packageIds.stream()
-      .map(id -> retrievePackage(id, Collections.emptyList(), true))
+      .map(id -> retrievePackage(id, Collections.emptyList(), true)
+      .exceptionally(throwable -> {
+        LOG.warn(throwable.getMessage(), throwable);
+        return null;
+      }))
       .collect(Collectors.toSet());
 
     return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
@@ -62,6 +69,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private Packages mapToPackages(Set<CompletableFuture<PackageResult>> packageFutures) {
     List<PackageData> packages = packageFutures.stream()
+      .filter(future -> !future.isCompletedExceptionally())
       .map(future -> future.join().getPackageData())
       .sorted(Comparator.comparing(PackageData::getPackageName))
       .collect(Collectors.toList());
