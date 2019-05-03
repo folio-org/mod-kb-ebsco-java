@@ -3,6 +3,8 @@ package org.folio.tag.repository;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.tag.repository.DbUtil.mapResultSet;
+import static org.folio.tag.repository.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE;
 import static org.folio.tag.repository.TagTableConstants.DELETE_TAG_RECORD;
 import static org.folio.tag.repository.TagTableConstants.ID_COLUMN;
 import static org.folio.tag.repository.TagTableConstants.RECORD_ID_COLUMN;
@@ -19,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import io.vertx.core.AsyncResult;
@@ -100,6 +101,24 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   @Override
+  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, String tenantId, RecordType recordType) {
+    JsonArray parameters = createParameters(tags);
+    parameters.add(recordType.getValue());
+
+    String valuesList = String.join(",", Collections.nCopies(tags.size(), "?"));
+
+    Future<ResultSet> future = Future.future();
+    PostgresClient.getInstance(vertx, tenantId)
+      .select(
+        String.format(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE, getTableName(tenantId), valuesList),
+        parameters,
+        future.completer()
+      );
+
+    return mapResultSet(future, this::readTagCount);
+  }
+
+  @Override
   public CompletableFuture<Boolean> updateRecordTags(String tenantId, String recordId, RecordType recordType, List<String> tags) {
     if(tags.isEmpty()){
       return unAssignTags(null, tenantId, recordId, recordType);
@@ -112,18 +131,12 @@ class TagRepositoryImpl implements TagRepository {
     return unAssignTags(null, tenantId, recordId, recordType);
   }
 
-  private <T> CompletableFuture<T> mapResultSet(Future<ResultSet> future, Function<ResultSet, T> mapper) {
-    CompletableFuture<T> result = new CompletableFuture<>();
-
-    future.map(mapper)
-      .map(result::complete)
-      .otherwise(result::completeExceptionally);
-
-    return result;
-  }
-
   private List<Tag> readTags(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), this::populateTag);
+  }
+
+  private Integer readTagCount(ResultSet resultSet) {
+    return resultSet.getRows().get(0).getInteger("count");
   }
 
   private Tag populateTag(JsonObject row) {

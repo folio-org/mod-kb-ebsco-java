@@ -25,7 +25,7 @@ import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
 
 /**
- * Provides a common template for asynchronous interaction with ProvidersServiceImpl,
+ * Provides a common template for asynchronous interaction with Holdings services,
  *
  * RMAPITemplate executes following step:
  * 1) Creates and configures Holdings services
@@ -70,7 +70,7 @@ public class RMAPITemplate {
   }
 
   /**
-   * @param requestAction Defines function that will be executed after ProvidersServiceImpl is configured
+   * @param requestAction Defines function that will be executed after Holdings services are configured
    *                      Return value of this function will be converted to response
    * @return this
    */

@@ -14,6 +14,7 @@ traits:
   sortable: !include traits/sortable.raml
   pageable: !include traits/pageable.raml
   filterable: !include traits/filterable.raml
+  taggable: !include traits/taggable.raml
   titleFilterable: !include traits/titlesFilterable.raml
 
 types:
@@ -28,7 +29,7 @@ types:
   displayName: Packages
   get:
     description: Retrieve a collection of packages based on the search query.
-    is: [queriable, filterable, sortable, pageable]
+    is: [queriable, filterable, taggable, sortable, pageable]
     queryParameters:
       filter[custom]:
         displayName: Custom Packages List

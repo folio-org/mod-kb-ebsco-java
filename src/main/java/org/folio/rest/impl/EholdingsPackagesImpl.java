@@ -11,6 +11,17 @@ import java.util.concurrent.CompletionStage;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -18,6 +29,7 @@ import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
+import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
@@ -38,6 +50,7 @@ import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
+import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.CustomPackagePutBodyValidator;
@@ -49,14 +62,6 @@ import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
 import org.folio.tag.repository.packages.PackageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.converter.Converter;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -101,28 +106,36 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackages(String filterCustom, String q, String filterSelected,
-                                   String filterType, String sort, int page, int count, Map<String, String> okapiHeaders,
+                                   String filterType, String filterTags, String sort, int page, int count, Map<String, String> okapiHeaders,
                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
-      throw new ValidationException("Invalid Query Parameter for filter[custom]");
+    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+    if(isTagOnlySearch(q, filterTags)){
+      List<String> tags = Arrays.asList(filterTags.split("\\s*,\\s*"));
+      template.requestAction(context -> getPackagesByTags(tags, page, count, context));
     }
-    String selected = RestConstants.FILTER_SELECTED_MAPPING.getOrDefault(filterSelected, filterSelected);
-    packageParametersValidator.validate(selected, filterType, sort, q);
+    else{
+      if(Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)){
+        throw new ValidationException("Invalid Query Parameter for filter[custom]");
+      }
+      String selected = RestConstants.FILTER_SELECTED_MAPPING.getOrDefault(filterSelected, filterSelected);
+      packageParametersValidator.validate(selected, filterType, sort, q);
 
-    boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
-    Sort nameSort = Sort.valueOf(sort.toUpperCase());
+      boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
+      Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-      {
-        if (isFilterCustom) {
-          return getVendorId(context)
-            .thenCompose(vendorId ->
-              context.getPackagesService().retrievePackages(selected, filterType, vendorId, q, page, count, nameSort));
-        } else {
-          return context.getPackagesService().retrievePackages(selected, filterType, null, q, page, count, nameSort);
-        }
-      })
+      template
+        .requestAction(context -> {
+          if (isFilterCustom) {
+            return getVendorId(context)
+              .thenCompose(vendorId ->
+                context.getPackagesService().retrievePackages(selected, filterType, vendorId, q, page, count, nameSort));
+          } else {
+            return context.getPackagesService().retrievePackages(selected, filterType, null, q, page, count, nameSort);
+          }
+        });
+    }
+
+    template
       .addErrorMapper(ServiceResponseException.class,
         exception ->
           GetEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
@@ -226,6 +239,24 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .executeWithResult(ResourceCollection.class);
   }
 
+  private CompletableFuture<Packages> getPackagesByTags(List<String> tags, int page, int count, RMAPITemplateContext context) {
+    MutableObject<Integer> totalResults = new MutableObject<>();
+    String tenant = context.getOkapiData().getTenant();
+    return tagRepository
+      .countRecordsByTags(tags, tenant, RecordType.PACKAGE)
+      .thenCompose(packageCount -> {
+        totalResults.setValue(packageCount);
+        return packageRepository.getPackageIdsByTagName(tags, page, count, tenant);
+      })
+      .thenCompose(packageIds ->
+        context.getPackagesService().retrievePackages(packageIds))
+      .thenApply(packages ->
+        packages.toBuilder()
+          .totalResults(totalResults.getValue())
+          .build()
+      );
+  }
+
   private CompletableFuture<Long> getVendorId(RMAPITemplateContext context) {
     VendorIdCacheKey cacheKey = VendorIdCacheKey.builder()
       .tenant(context.getOkapiData().getTenant())
@@ -316,5 +347,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       }
     }
     return true;
+  }
+
+  private boolean isTagOnlySearch(String q, String filterTags) {
+    return Strings.isEmpty(q) && !Strings.isEmpty(filterTags);
   }
 }

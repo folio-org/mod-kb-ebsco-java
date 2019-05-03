@@ -18,6 +18,7 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import com.google.common.io.Files;
+
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 
@@ -80,9 +81,13 @@ public final class TestUtil {
   }
 
   public static void mockGet(StringValuePattern urlPattern, String responseFile) throws IOException, URISyntaxException {
+    mockGetWithBody(urlPattern, readFile(responseFile));
+  }
+
+  public static void mockGetWithBody(StringValuePattern urlPattern, String body) {
     stubFor(get(new UrlPathPattern(urlPattern, (urlPattern instanceof RegexPattern)))
       .willReturn(new ResponseDefinitionBuilder()
-        .withBody(readFile(responseFile))));
+        .withBody(body)));
   }
 
   public static void mockGet(StringValuePattern urlPattern, int status) {

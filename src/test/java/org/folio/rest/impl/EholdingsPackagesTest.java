@@ -9,12 +9,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockPost;
-import static org.folio.util.TestUtil.mockPut;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -23,27 +17,19 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.util.TestUtil.getFile;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.mockGetWithBody;
+import static org.folio.util.TestUtil.mockPost;
+import static org.folio.util.TestUtil.mockPut;
+import static org.folio.util.TestUtil.readFile;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.http.HttpStatus;
-import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.PackageByIdData;
-import org.folio.holdingsiq.model.PackageData;
-import org.folio.rest.jaxrs.model.ContentType;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Package;
-import org.folio.rest.jaxrs.model.PackagePostRequest;
-import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rest.jaxrs.model.ResourceCollection;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.tag.RecordType;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -58,6 +44,25 @@ import io.restassured.RestAssured;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
+import org.folio.rest.jaxrs.model.ContentType;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Package;
+import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackagePostRequest;
+import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.jaxrs.model.ResourceCollection;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.tag.RecordType;
+
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
 
@@ -70,11 +75,19 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String VENDOR_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/vendors/get-vendor-by-id-for-package.json";
 
   private static final int STUB_PACKAGE_ID = 3964;
+  private static final int STUB_PACKAGE_ID_2 = 13964;
+  private static final int STUB_PACKAGE_ID_3 = 23964;
+
   private static final String STUB_PACKAGE_NAME = "EBSCO Biotechnology Collection: India";
+  private static final String STUB_PACKAGE_NAME_2 = "package 2";
+  private static final String STUB_PACKAGE_NAME_3 = "package 3";
   private static final String STUB_PACKAGE_CONTENT_TYPE = "AggregatedFullText";
   private static final int STUB_VENDOR_ID = 111111;
   public static final String PACKAGES_STUB_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages";
   public static final String FULL_PACKAGE_ID = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
+  public static final String FULL_PACKAGE_ID_2 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID_2;
+  public static final String FULL_PACKAGE_ID_3 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID_3;
+
   private static final String PACKAGES_PATH = "eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
   private static final String PACKAGE_BY_ID_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
   private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
@@ -83,6 +96,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String STUB_TAG = "test tag";
   private static final String STUB_TAG_VALUE = "tag one";
   private static final String STUB_TAG_VALUE_2 = "tag 2";
+  private static final String STUB_TAG_VALUE_3 = "tag 3";
 
   @Test
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
@@ -95,6 +109,86 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-package-collection-with-five-elements.json"),
       packages, false);
+  }
+
+
+  @Test
+  public void shouldReturnPackagesOnSearchByTagsOnly() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, RecordType.PACKAGE, STUB_TAG_VALUE_2);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, RecordType.PACKAGE, STUB_TAG_VALUE_3);
+
+      setUpTaggedPackages();
+
+      PackageCollection packageCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/packages?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(2, packages.size());
+      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+      assertEquals(STUB_PACKAGE_NAME_2, packages.get(1).getAttributes().getName());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      PackagesTestUtil.clearPackages(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByTags() throws IOException, URISyntaxException {
+    try {
+      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, STUB_PACKAGE_NAME));
+      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, STUB_PACKAGE_NAME_2));
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, RecordType.PACKAGE, STUB_TAG_VALUE);
+
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+      mockGet(new RegexPattern(".*vendors/"+STUB_VENDOR_ID+"/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+
+      PackageCollection packageCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/packages?filter[tags]=" + STUB_TAG_VALUE)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(0, packages.size());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      PackagesTestUtil.clearPackages(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnPackagesOnSearchWithPagination() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, RecordType.PACKAGE, STUB_TAG_VALUE);
+
+      setUpTaggedPackages();
+
+      PackageCollection packageCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/packages?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(1, packages.size());
+      assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      PackagesTestUtil.clearPackages(vertx);
+    }
   }
 
   @Test
@@ -786,5 +880,38 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .post("eholdings/packages")
       .then()
       .statusCode(HttpStatus.SC_OK).extract().body().asString();
+  }
+
+  private void mockPackageWithName(int stubPackageId, String stubPackageName) throws IOException, URISyntaxException {
+    mockGetWithBody(new RegexPattern(".*vendors/"+STUB_VENDOR_ID+"/packages/" + stubPackageId),
+      getPackageResponse(stubPackageName, stubPackageId));
+  }
+
+  private String getPackageResponse(String packageName, int packageId) throws IOException, URISyntaxException {
+    PackageByIdData packageData = Json.decodeValue(readFile("responses/rmapi/packages/get-package-by-id-response.json"), PackageByIdData.class);
+    return Json.encode(packageData.toByIdBuilder()
+      .packageName(packageName)
+      .packageId(packageId)
+      .vendorId(STUB_VENDOR_ID)
+      .build());
+  }
+
+  private PackagesTestUtil.DbPackage buildDbPackage(String id, String name) {
+    return PackagesTestUtil.DbPackage.builder()
+      .id(String.valueOf(id))
+      .name(name)
+      .contentType(STUB_PACKAGE_CONTENT_TYPE).build();
+  }
+
+  private void setUpTaggedPackages() throws IOException, URISyntaxException {
+    PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, STUB_PACKAGE_NAME));
+    PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, STUB_PACKAGE_NAME_2));
+    PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_3, STUB_PACKAGE_NAME_3));
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    mockPackageWithName(STUB_PACKAGE_ID, STUB_PACKAGE_NAME);
+    mockPackageWithName(STUB_PACKAGE_ID_2, STUB_PACKAGE_NAME_2);
+    mockPackageWithName(STUB_PACKAGE_ID_3, STUB_PACKAGE_NAME_3);
   }
 }
