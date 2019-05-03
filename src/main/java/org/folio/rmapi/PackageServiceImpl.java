@@ -57,14 +57,15 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
   public CompletableFuture<Packages> retrievePackages(List<PackageId> packageIds) {
     Set<CompletableFuture<PackageResult>> futures = packageIds.stream()
       .map(id -> retrievePackage(id, Collections.emptyList(), true)
-      .exceptionally(throwable -> {
-        LOG.warn(throwable.getMessage(), throwable);
-        return null;
+      .whenComplete((result,throwable) -> {
+        if(throwable != null) {
+          LOG.warn(throwable.getMessage(), throwable);
+        }
       }))
       .collect(Collectors.toSet());
 
     return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-      .thenApply(o -> mapToPackages(futures));
+      .handle((o,e) -> mapToPackages(futures));
   }
 
   private Packages mapToPackages(Set<CompletableFuture<PackageResult>> packageFutures) {

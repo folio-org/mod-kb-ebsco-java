@@ -140,6 +140,33 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByTags() throws IOException, URISyntaxException {
+    try {
+      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, STUB_PACKAGE_NAME));
+      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, STUB_PACKAGE_NAME_2));
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, RecordType.PACKAGE, STUB_TAG_VALUE);
+
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+      mockGet(new RegexPattern(".*vendors/"+STUB_VENDOR_ID+"/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+
+      PackageCollection packageCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/packages?filter[tags]=" + STUB_TAG_VALUE)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(0, packages.size());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      PackagesTestUtil.clearPackages(vertx);
+    }
+  }
+
+  @Test
   public void shouldReturnPackagesOnSearchWithPagination() throws IOException, URISyntaxException {
     try {
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);

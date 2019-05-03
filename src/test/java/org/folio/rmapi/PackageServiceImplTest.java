@@ -61,6 +61,4 @@ public class PackageServiceImplTest {
 
     verify(1, getRequestedFor(new UrlPattern(getPackagePattern, true)));
   }
-
-
 }
