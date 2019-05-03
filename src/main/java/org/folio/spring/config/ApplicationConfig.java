@@ -3,8 +3,6 @@ package org.folio.spring.config;
 import java.util.List;
 
 import io.vertx.core.Vertx;
-import org.folio.holdingsiq.model.Title;
-import org.folio.rmapi.cache.TitleCacheKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -28,6 +26,7 @@ import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
+import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.rmapi.cache.VendorCacheKey;
 
 @Configuration
