@@ -1,15 +1,5 @@
 package org.folio.util;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.put;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.ContentPattern;
@@ -18,12 +8,23 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import com.google.common.io.Files;
-
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
-
+import io.vertx.core.Vertx;
 import org.folio.rest.jaxrs.model.Configs;
+import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.RestConstants;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 public final class TestUtil {
 
@@ -51,8 +52,9 @@ public final class TestUtil {
   /**
    * Mocks wiremock server to return RM API configuration from specified file,
    * RM API url will be changed to wiremockUrl so that following requests to RM API will be sent to wiremock instead
+   *
    * @param configurationsFile configuration file, first config object must contain url config
-   * @param wiremockUrl wiremock url with port
+   * @param wiremockUrl        wiremock url with port
    */
   public static void mockConfiguration(String configurationsFile, String wiremockUrl) throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
@@ -62,8 +64,8 @@ public final class TestUtil {
     }
 
     stubFor(get(new UrlPathPattern(new EqualToPattern("/configurations/entries"), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(mapper.writeValueAsString(configurations))));
+      .willReturn(new ResponseDefinitionBuilder()
+        .withBody(mapper.writeValueAsString(configurations))));
   }
 
   /**
@@ -97,10 +99,10 @@ public final class TestUtil {
 
   public static void mockPost(StringValuePattern urlPattern, ContentPattern body, String response, int status) throws IOException, URISyntaxException {
     stubFor(post(new UrlPathPattern(urlPattern, (urlPattern instanceof RegexPattern)))
-        .withRequestBody(body)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(response))
-          .withStatus(status)));
+      .withRequestBody(body)
+      .willReturn(new ResponseDefinitionBuilder()
+        .withBody(readFile(response))
+        .withStatus(status)));
   }
 
   public static void mockPut(StringValuePattern urlPattern, ContentPattern content, int status) {
@@ -109,9 +111,18 @@ public final class TestUtil {
       .willReturn(new ResponseDefinitionBuilder()
         .withStatus(status)));
   }
+
   public static void mockPut(StringValuePattern urlPattern, int status) {
     stubFor(put(new UrlPathPattern(urlPattern, (urlPattern instanceof RegexPattern)))
       .willReturn(new ResponseDefinitionBuilder()
         .withStatus(status)));
+  }
+
+  public static void clearDataFromTable(Vertx vertx, String tableName) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).execute(
+      "DELETE FROM " + (PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + tableName),
+      event -> future.complete(null));
+    future.join();
   }
 }

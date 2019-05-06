@@ -1,36 +1,5 @@
 package org.folio.rest.impl;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.put;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockGetWithBody;
-import static org.folio.util.TestUtil.mockPost;
-import static org.folio.util.TestUtil.mockPut;
-import static org.folio.util.TestUtil.readFile;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -39,16 +8,10 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
@@ -62,6 +25,43 @@ import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.tag.RecordType;
+import org.folio.util.PackagesTestUtil;
+import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
+import static org.folio.util.TestUtil.getFile;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.mockGetWithBody;
+import static org.folio.util.TestUtil.mockPost;
+import static org.folio.util.TestUtil.mockPut;
+import static org.folio.util.TestUtil.readFile;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
@@ -135,7 +135,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(1).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -162,7 +162,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(0, packages.size());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -187,7 +187,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -235,7 +235,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     }
     finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -249,7 +249,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -263,7 +263,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -276,7 +276,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -292,7 +292,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_CONTENT_TYPE, packages.get(0).getContentType());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -317,7 +317,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(newType, packages.get(0).getContentType());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -343,7 +343,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_CONTENT_TYPE, packages.get(0).getContentType());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -647,7 +647,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       WireMock.verify(0, putRequestedFor(anyUrl()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      PackagesTestUtil.clearPackages(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 

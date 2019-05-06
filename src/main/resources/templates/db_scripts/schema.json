@@ -15,6 +15,14 @@
       "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-packages-table.sql"
+    },
+    {
+      "tableName": "providers",
+      "withMetadata": false,
+      "pkColumnName": "id",
+      "generateId": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-providers-table.sql"
     }
   ]
 }
