@@ -18,6 +18,7 @@ import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.tag.RecordType;
 import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -38,6 +39,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.util.TagsTestUtil.insertTag;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
@@ -374,6 +376,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
     }
     finally {
+      TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
       TagsTestUtil.clearTags(vertx);
     }
   }
@@ -398,6 +401,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
     }
     finally {
+      TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
       TagsTestUtil.clearTags(vertx);
     }
   }
