@@ -17,6 +17,7 @@ import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.tag.RecordType;
+import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TestUtil;
 import org.junit.Test;
@@ -49,6 +50,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(VertxUnitRunner.class)
@@ -371,7 +373,9 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
         .withTagList(tags));
       updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
         mapper.writeValueAsString(request));
+      List<ResourcesTestUtil.DbResources> providers = ResourcesTestUtil.getResources(vertx);
 
+      assertEquals(1, providers.size());
       List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
     }
@@ -395,7 +399,9 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       request.getData().getAttributes().setCoverageStatement("coverage statement");
       updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
         mapper.writeValueAsString(request));
+      List<ResourcesTestUtil.DbResources> providers = ResourcesTestUtil.getResources(vertx);
 
+      assertEquals(1, providers.size());
       WireMock.verify(0, putRequestedFor(anyUrl()));
       List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
