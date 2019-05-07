@@ -1,25 +1,28 @@
 package org.folio.rest.impl;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.put;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertTrue;
-
-import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.readFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+import io.restassured.RestAssured;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.http.HttpStatus;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Provider;
+import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.Token;
+import org.folio.tag.RecordType;
+import org.folio.util.ProvidersTestUtil;
+import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -27,29 +30,27 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
-import io.restassured.RestAssured;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Provider;
-import org.folio.rest.jaxrs.model.ProviderPutRequest;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rest.jaxrs.model.Token;
-import org.folio.tag.RecordType;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
+import static org.folio.tag.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
+import static org.folio.util.TestUtil.getFile;
+import static org.folio.util.TestUtil.mockConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.readFile;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 @RunWith(VertxUnitRunner.class)
@@ -104,7 +105,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withBody(readFile(stubResponseFile))));
 
     stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
+      get(new UrlPathPattern(
+        new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubPackagesResponseFile))));
 
@@ -120,7 +122,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnErrorIfParameterInvalid(){
+  public void shouldReturnErrorIfParameterInvalid() {
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -207,8 +209,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .statusCode(HttpStatus.SC_OK).extract().as(Provider.class);
 
       assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
-    }
-    finally {
+    } finally {
       TagsTestUtil.clearTags(vertx);
     }
   }
@@ -274,8 +275,9 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
 
-    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
-      .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
+    verify(1,
+      putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
   }
 
   @Test
@@ -295,7 +297,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         ProviderPutRequest.class);
 
       providerToBeUpdated.getData().getAttributes().setPackagesSelected(0);
-      providerToBeUpdated.getData().getAttributes().setTags(new Tags().withTagList(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2)));
+      providerToBeUpdated.getData().getAttributes().setTags(
+        new Tags().withTagList(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2)));
 
       String provider = sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID,
         mapper.writeValueAsString(providerToBeUpdated))
@@ -339,8 +342,9 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     JSONAssert.assertEquals(mapper.writeValueAsString(expected), mapper.writeValueAsString(provider), false);
 
-    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
-      .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
+    verify(1,
+      putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), true))
+        .withRequestBody(equalToJson(readFile("requests/rmapi/vendors/put-vendor-token-proxy.json"))));
 
     TagsTestUtil.clearTags(vertx);
   }
@@ -350,10 +354,15 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     try {
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+      List<ProvidersTestUtil.DbProviders> providers = ProvidersTestUtil.getProviders(vertx);
       List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+
+      assertEquals(1, providers.size());
+      assertEquals(STUB_VENDOR_ID, providers.get(0).getId());
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -364,9 +373,14 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
       List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+      List<ProvidersTestUtil.DbProviders> providers = ProvidersTestUtil.getProviders(vertx);
+
+      assertEquals(1, providers.size());
+      assertEquals(STUB_VENDOR_ID, providers.get(0).getId());
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -377,6 +391,10 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       sendPutWithTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
       List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+      List<ProvidersTestUtil.DbProviders> providers = ProvidersTestUtil.getProviders(vertx);
+
+      assertEquals(1, providers.size());
+      assertEquals(STUB_VENDOR_ID, providers.get(0).getId());
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -385,17 +403,23 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteAllProviderTagsOnPutWhenRequestHasEmptyListOfTags() throws IOException, URISyntaxException {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, "old tag value");
-      sendPutWithTags(Collections.emptyList());
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
-      assertThat(tagsAfterRequest, empty());
+    TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, "old tag value");
+    sendPutWithTags(Collections.emptyList());
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+    List<ProvidersTestUtil.DbProviders> providers = ProvidersTestUtil.getProviders(vertx);
+
+    assertThat(providers,is(empty()));
+    assertThat(tagsAfterRequest, empty());
   }
 
   @Test
   public void shouldDoNothingOnPutWhenRequestHasNotTags() throws IOException, URISyntaxException {
-      sendPutWithTags(null);
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
-      assertThat(tagsAfterRequest, empty());
+    sendPutWithTags(null);
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+    List<ProvidersTestUtil.DbProviders> providers = ProvidersTestUtil.getProviders(vertx);
+
+    assertThat(providers,is(empty()));
+    assertThat(tagsAfterRequest, empty());
   }
 
   @Test
@@ -500,7 +524,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test()
   public void shouldReturn400IfPageOffsetInvalid() {
-    final ExtractableResponse<Response> response = getResponseWithStatus("eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=Search&count=5&page=abc",
+    final ExtractableResponse<Response> response = getResponseWithStatus(
+      "eholdings/providers/" + STUB_VENDOR_ID + "/packages?q=Search&count=5&page=abc",
       HttpStatus.SC_BAD_REQUEST);
     assertThat(response.response().asString(), containsString("For input string: \"abc\""));
   }
@@ -547,11 +572,12 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
       ProviderPutRequest.class);
 
-    if(newTags != null) {
+    if (newTags != null) {
       providerToBeUpdated.getData().getAttributes().setTags(new Tags()
         .withTagList(newTags));
     }
-    sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID, mapper.writeValueAsString(providerToBeUpdated), Provider.class);
+    sendPutRequestAndRetrieveResponse("eholdings/providers/" + STUB_VENDOR_ID,
+      mapper.writeValueAsString(providerToBeUpdated), Provider.class);
 
     return newTags;
   }

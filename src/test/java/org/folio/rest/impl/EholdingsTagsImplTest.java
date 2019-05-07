@@ -1,13 +1,19 @@
 package org.folio.rest.impl;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import static org.folio.common.ListUtils.mapItems;
-import static org.folio.rest.impl.TagsTestUtil.clearTags;
-import static org.folio.rest.impl.TagsTestUtil.insertTags;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.http.HttpStatus;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.TagCollection;
+import org.folio.rest.jaxrs.model.TagCollectionItem;
+import org.folio.rest.util.RestConstants;
+import org.folio.tag.RecordType;
+import org.folio.tag.Tag;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,21 +22,13 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.jaxrs.model.TagCollection;
-import org.folio.rest.jaxrs.model.TagCollectionItem;
-import org.folio.rest.util.RestConstants;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
+import static java.util.Arrays.asList;
+import static org.folio.common.ListUtils.mapItems;
+import static org.folio.util.TagsTestUtil.clearTags;
+import static org.folio.util.TagsTestUtil.insertTags;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTagsImplTest extends WireMockTestBase {

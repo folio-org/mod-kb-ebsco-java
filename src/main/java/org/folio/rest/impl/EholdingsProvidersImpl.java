@@ -1,20 +1,9 @@
 package org.folio.rest.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
@@ -40,6 +29,16 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.providers.ProviderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -59,7 +58,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private TagRepository tagRepository;
   @Autowired
   private Converter<List<Tag>, Tags> tagsConverter;
-  
+  @Autowired
+  private ProviderRepository providerRepository;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -87,9 +87,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getProvidersService().retrieveProvider(providerIdLong, include)
-        .thenCompose(result ->
-          loadTags(result, context.getOkapiData().getTenant())
-        )
+          .thenCompose(result ->
+            loadTags(result, context.getOkapiData().getTenant())
+          )
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
@@ -172,10 +172,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private CompletableFuture<VendorResult> updateTags(VendorById vendorById, String tenant, Tags tags) {
-    if (tags == null){
+    if (Objects.isNull(tags)) {
       return CompletableFuture.completedFuture(new VendorResult(vendorById, null));
-    }else {
-      return tagRepository.updateRecordTags(tenant, String.valueOf(vendorById.getVendorId()), RecordType.PROVIDER, tags.getTagList())
+    } else {
+      return updateStoredProvider(vendorById, tags, tenant)
+        .thenCompose(o -> tagRepository.updateRecordTags(tenant, String.valueOf(vendorById.getVendorId()),
+          RecordType.PROVIDER, tags.getTagList()))
         .thenCompose(updated -> {
           VendorResult result = new VendorResult(vendorById, null);
           result.setTags(new Tags().withTagList(tags.getTagList()));
@@ -184,8 +186,15 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     }
   }
 
+  private CompletableFuture<Void> updateStoredProvider(VendorById vendorById, Tags tags, String tenant) {
+    if (!tags.getTagList().isEmpty()) {
+      return providerRepository.saveProvider(vendorById, tenant);
+    }
+    return providerRepository.deleteProvider(String.valueOf(vendorById.getVendorId()), tenant);
+  }
+
   private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, long providerIdLong, RMAPITemplateContext context) {
-    if(!providerCanBeUpdated(request)){
+    if (!providerCanBeUpdated(request)) {
       //Return current state of provider without updating it
       return context.getProvidersService().retrieveProvider(providerIdLong);
     }

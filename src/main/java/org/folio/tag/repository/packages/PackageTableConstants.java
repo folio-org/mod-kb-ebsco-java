@@ -3,7 +3,7 @@ package org.folio.tag.repository.packages;
 public class PackageTableConstants {
   private PackageTableConstants() {}
 
-  public static final String TABLE_NAME = "packages";
+  public static final String PACKAGES_TABLE_NAME = "packages";
   public static final String ID_COLUMN = "id";
   public static final String NAME_COLUMN = "name";
   public static final String CONTENT_TYPE_COLUMN = "content_type";
