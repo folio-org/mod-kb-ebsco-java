@@ -82,6 +82,7 @@ public abstract class WireMockTestBase {
   private VertxCache<VendorCacheKey, VendorById> vendorCache;
   @Autowired
   private VertxCache<ResourceCacheKey, Title> resourceCache;
+  @Autowired
   private VertxCache<TitleCacheKey, Title> titleCache;
 
   @Rule
