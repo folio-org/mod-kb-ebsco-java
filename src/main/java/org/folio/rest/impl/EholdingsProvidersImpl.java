@@ -1,9 +1,23 @@
 package org.folio.rest.impl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
@@ -27,15 +41,6 @@ import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
 import org.folio.tag.repository.providers.ProviderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -155,8 +160,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .countRecordsByTags(tags, tenant, RecordType.PROVIDER)
       .thenCompose(providerCount -> {
         totalResults.setValue(providerCount);
-        //return providerRepository.getProviderIdsByTagName(tags, page, count, tenant);
-        return getProviderIdsByTagName(tags, page, count, tenant);
+        return providerRepository.getProviderIdsByTagName(tags, page, count, tenant);
       })
       .thenCompose(providerIds ->
         context.getProvidersService().retrieveProviders(providerIds))
@@ -235,12 +239,5 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private boolean isTagOnlySearch(String q, String filterTags) {
     return Strings.isEmpty(q) && !Strings.isEmpty(filterTags);
-  }
-
-  // Method is temporarily here until we add real method  to ProviderRepositoryImpl after merge
-  public CompletableFuture<List<Long>> getProviderIdsByTagName(List<String> tags, int page, int count, String tenantId) {
-    CompletableFuture<List<Long>> result = new CompletableFuture<>();
-
-    return result;
   }
 }

@@ -13,4 +13,14 @@ public class ProviderTableConstants {
       + "ON CONFLICT (" + ID_COLUMN + ") DO UPDATE " + "SET " + NAME_COLUMN + " = ?;";
 
   public static final String DELETE_PROVIDER_STATEMENT = "DELETE FROM %s " + "WHERE " + ID_COLUMN + "=?";
+
+  public static final String SELECT_TAGGED_PROVIDERS =
+    "SELECT DISTINCT providers.id as id, providers.name FROM %s " +
+      "LEFT JOIN tags ON " +
+      "tags.record_id = providers.id " +
+      "AND tags.record_type = 'provider' " +
+      "WHERE tags.tag IN (%s) " +
+      "ORDER BY providers.name " +
+      "OFFSET ? " +
+      "LIMIT ?";
 }
