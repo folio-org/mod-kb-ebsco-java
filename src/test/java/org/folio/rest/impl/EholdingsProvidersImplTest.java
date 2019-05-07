@@ -60,8 +60,17 @@ import org.folio.util.TestUtil;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsProvidersImplTest extends WireMockTestBase {
   private static final String STUB_VENDOR_ID = "19";
+  private static final String STUB_VENDOR_ID_2 = "153";
+  private static final String STUB_VENDOR_ID_3 = "167";
+
+  private static final String STUB_VENDOR_NAME = "Vendor Name1";
+  private static final String STUB_VENDOR_NAME_2 = "Vendor Name2";
+  private static final String STUB_VENDOR_NAME_3 = "Vendor Name3";
+
+  private static final String STUB_TAG = "test tag";
   private static final String STUB_TAG_VALUE = "tag one";
   private static final String STUB_TAG_VALUE_2 = "tag 2";
+  private static final String STUB_TAG_VALUE_3 = "tag 3";
 
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
@@ -94,6 +103,34 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .body("data[0].attributes.packagesSelected", equalTo(packagesSelected))
       .body("data[0].attributes.supportsCustomPackages", equalTo(supportsCustomPackages))
       .body("data[0].attributes.providerToken.value", equalTo(token));
+  }
+  @Test
+  public void shouldReturnProvidersOnSearchByTagsOnly() throws IOException, URISyntaxException {
+    try {
+      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE);
+      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE_2);
+      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, RecordType.PROVIDER, STUB_TAG_VALUE_3);
+
+      //setUpTaggedProviders();
+      /*
+
+      ProviderCollection providerCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/providers?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(ProviderCollection.class);
+      List<Providers> providers = providerCollection.getData();
+
+      assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
+      assertEquals(2, providers.size());
+      assertEquals(STUB_VENDOR_NAME, providers.get(0).getAttributes().getName());
+      assertEquals(STUB_VENDOR_NAME_2, providers.get(1).getAttributes().getName());
+      */
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
+    }
   }
 
   @Test
@@ -502,5 +539,36 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     putWithOk("eholdings/providers/" + STUB_VENDOR_ID, mapper.writeValueAsString(providerToBeUpdated));
 
     return newTags;
+  }
+
+  private void mockProviderWithName(String stubProviderId, String stubProviderName) throws IOException, URISyntaxException {
+    mockGetWithBody(new RegexPattern(".*vendors/"+stubProviderId),
+      getProviderResponse(stubProviderName, stubProviderId));
+  }
+
+  private String getProviderResponse(String providerName, String providerId) throws IOException, URISyntaxException {
+    VendorById vendor = Json.decodeValue(readFile("responses/rmapi/vendors/get-vendor-by-id-response.json"), VendorById.class);
+    return Json.encode(vendor.byIdBuilder()
+      .vendorName(providerName)
+      .vendorId(Integer.valueOf(providerId))
+      .build());
+  }
+
+  private ProvidersTestUtil.DbProviders buildDbProvider(String id, String name) {
+    return ProvidersTestUtil.DbProviders.builder()
+      .id(String.valueOf(id))
+      .name(name).build();
+  }
+
+  private void setUpTaggedProviders() throws IOException, URISyntaxException {
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, STUB_VENDOR_NAME_3));
+
+    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+    mockProviderWithName(STUB_VENDOR_ID, STUB_VENDOR_NAME);
+    mockProviderWithName(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2);
+    mockProviderWithName(STUB_VENDOR_ID_3, STUB_VENDOR_NAME_3);
   }
 }
