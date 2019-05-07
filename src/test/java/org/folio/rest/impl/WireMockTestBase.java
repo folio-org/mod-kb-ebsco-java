@@ -9,7 +9,6 @@ import java.io.IOException;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.response.ExtractableResponse;
@@ -19,7 +18,6 @@ import io.restassured.specification.RequestSpecification;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.junit.AfterClass;
@@ -41,6 +39,7 @@ import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
+import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.rmapi.cache.VendorCacheKey;
 import org.folio.spring.SpringContextUtil;
 import org.folio.util.TestUtil;
@@ -83,6 +82,8 @@ public abstract class WireMockTestBase {
   private VertxCache<VendorCacheKey, VendorById> vendorCache;
   @Autowired
   private VertxCache<ResourceCacheKey, Title> resourceCache;
+  @Autowired
+  private VertxCache<TitleCacheKey, Title> titleCache;
 
   @Rule
   public WireMockRule userMockServer = new WireMockRule(
@@ -116,6 +117,7 @@ public abstract class WireMockTestBase {
     packageCache.invalidateAll();
     vendorCache.invalidateAll();
     resourceCache.invalidateAll();
+    titleCache.invalidateAll();
   }
 
   /**
