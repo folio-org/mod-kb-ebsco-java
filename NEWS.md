@@ -1,3 +1,19 @@
+## v2.3.0 2019-05-08
+* MODKBEKBJ-186	- Tags: add endpoint to return all tags assigned to records of particular type(s)
+* MODKBEKBJ-188 - Tags: search packages by tag filter only
+* MODKBEKBJ-201 - Spike: Define technical approach for using RM API to filter results by tags
+* MODKBEKBJ-205 - Switching to managed coverage dates does not work
+* MODKBEKBJ-208 - Contributor Type: Filter out any contributor type that is not Author, Editor,Illustrator
+* MODKBEKBJ-209 - Do not capitalize contributor type
+* MODKBEKBJ-210 - Tags: add package table to database
+* MODKBEKBJ-211 - Tags: Cache packages that are retrieved by id
+* MODKBEKBJ-214 - Add provider table to database
+* MODKBEKBJ-215 - Add cache for providers 
+* MODKBEKBJ-219 - Add cache for titles
+* MODKBEKBJ-218 - Add title table to database
+* MODKBEKBJ-221 - Add resource table to database
+* MODKBEKBJ-222 - Add cache for resources 
+
 ## v2.2.0 2019-03-22
  * MODKBEKBJ-162- Tags: assign/unassign tags to Package record
  * MODKBEKBJ-163 - Tags: assign/unassign tags to Title record
