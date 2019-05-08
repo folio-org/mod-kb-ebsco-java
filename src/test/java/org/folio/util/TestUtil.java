@@ -1,5 +1,16 @@
 package org.folio.util;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.ContentPattern;
@@ -11,20 +22,10 @@ import com.google.common.io.Files;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.vertx.core.Vertx;
+
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.RestConstants;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.put;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 public final class TestUtil {
 
@@ -66,6 +67,26 @@ public final class TestUtil {
     stubFor(get(new UrlPathPattern(new EqualToPattern("/configurations/entries"), false))
       .willReturn(new ResponseDefinitionBuilder()
         .withBody(mapper.writeValueAsString(configurations))));
+  }
+
+  /**
+   * Mocks wiremock server to return empty test RM API configuration from specified file,
+   * RM API url will be changed to wiremockUrl so that following requests to RM API will be sent to wiremock instead
+   * @param wiremockUrl wiremock url with port
+   */
+  public static void mockEmptyConfiguration(String wiremockUrl) throws IOException, URISyntaxException {
+    String emptyConfiguration = "responses/kb-ebsco/configuration/get-configuration-empty.json";
+    mockConfiguration(emptyConfiguration, wiremockUrl);
+  }
+
+  /**
+   * Mocks wiremock server to return default test RM API configuration from specified file,
+   * RM API url will be changed to wiremockUrl so that following requests to RM API will be sent to wiremock instead
+   * @param wiremockUrl wiremock url with port
+   */
+  public static void mockDefaultConfiguration(String wiremockUrl) throws IOException, URISyntaxException {
+    String configurationsFile = "responses/kb-ebsco/configuration/get-configuration.json";
+    mockConfiguration(configurationsFile, wiremockUrl);
   }
 
   /**

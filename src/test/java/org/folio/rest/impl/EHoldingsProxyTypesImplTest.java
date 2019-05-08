@@ -1,13 +1,18 @@
 package org.folio.rest.impl;
 
-import static org.folio.util.TestUtil.mockConfiguration;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+
+import static org.folio.util.TestUtil.mockDefaultConfiguration;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.readFile;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
-import org.apache.http.HttpStatus;
+
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,15 +29,14 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    String configurationStubFile = "responses/kb-ebsco/configuration/get-configuration.json";
-    mockConfiguration(configurationStubFile, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
   }
 
   @Test
   public void shouldReturnProxyTypesFromValidRMApiResponse() throws IOException, URISyntaxException {
     mockGet(new RegexPattern(RMI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
-    String actual = getResponseWithStatus(EHOLDINGS_PROXY_TYPES_URL, HttpStatus.SC_OK).asString();
+    String actual = getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_OK).asString();
 
     String expected = readFile("responses/kb-ebsco/proxytypes/get-proxy-types-response.json");
     JSONAssert.assertEquals(expected, actual, false);
@@ -42,7 +46,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   public void shouldReturnEmptyProxyTypesFromEmptyRMApiResponse() throws IOException, URISyntaxException {
     mockGet(new RegexPattern(RMI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-empty-response.json");
 
-    String actual = getResponseWithStatus(EHOLDINGS_PROXY_TYPES_URL, HttpStatus.SC_OK).asString();
+    String actual = getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_OK).asString();
 
     String expected = readFile("responses/kb-ebsco/proxytypes/get-proxy-types-empty-response.json");
     JSONAssert.assertEquals(expected, actual, false);
@@ -50,16 +54,16 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnForbiddenWhenRMAPIRequestCompletesWith401ErrorStatus() {
-    mockGet(new RegexPattern(RMI_PROXIES_URL), HttpStatus.SC_UNAUTHORIZED);
+    mockGet(new RegexPattern(RMI_PROXIES_URL), SC_UNAUTHORIZED);
 
-    getResponse(EHOLDINGS_PROXY_TYPES_URL).statusCode(HttpStatus.SC_FORBIDDEN);
+    getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_FORBIDDEN);
   }
 
   @Test
   public void shouldReturnForbiddenWhenRMAPIRequestCompletesWith403ErrorStatus() {
-    mockGet(new RegexPattern(RMI_PROXIES_URL), HttpStatus.SC_FORBIDDEN);
+    mockGet(new RegexPattern(RMI_PROXIES_URL), SC_FORBIDDEN);
 
-    getResponse(EHOLDINGS_PROXY_TYPES_URL).statusCode(HttpStatus.SC_FORBIDDEN);
+    getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_FORBIDDEN);
   }
 
 }

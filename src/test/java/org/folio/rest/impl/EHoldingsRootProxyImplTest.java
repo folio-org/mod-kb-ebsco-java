@@ -1,33 +1,38 @@
 package org.folio.rest.impl;
 
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import io.restassured.RestAssured;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import org.apache.http.HttpStatus;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.RootProxy;
-import org.folio.rest.jaxrs.model.RootProxyData;
-import org.folio.rest.jaxrs.model.RootProxyDataAttributes;
-import org.folio.rest.util.RestConstants;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.folio.util.TestUtil.mockConfiguration;
-import static org.folio.util.TestUtil.readFile;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+
+import static org.folio.util.TestUtil.mockDefaultConfiguration;
+import static org.folio.util.TestUtil.readFile;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+import io.restassured.RestAssured;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.RootProxy;
+import org.folio.rest.jaxrs.model.RootProxyData;
+import org.folio.rest.jaxrs.model.RootProxyDataAttributes;
+import org.folio.rest.util.RestConstants;
 
 @RunWith(VertxUnitRunner.class)
 public class EHoldingsRootProxyImplTest extends WireMockTestBase {
@@ -41,7 +46,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
     String expectedRootProxyID = "<n>";
 
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
         .willReturn(new ResponseDefinitionBuilder()
@@ -52,7 +57,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
       .when()
       .get(UPDATEROOT_PROXY_ENDPOINT)
       .then()
-      .statusCode(HttpStatus.SC_OK)
+      .statusCode(SC_OK)
       .body("data.id", equalTo(ROOT_PROXY_ID))
       .body("data.type", equalTo(ROOT_PROXY_TYPE))
       .body("data.attributes.id", equalTo(ROOT_PROXY_ID))
@@ -61,39 +66,29 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   
   @Test
   public void shouldReturnUnauthorizedWhenRMAPIRequestCompletesWith401ErrorStatus() throws IOException, URISyntaxException {
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_UNAUTHORIZED)));
-    
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(UPDATEROOT_PROXY_ENDPOINT)
-      .then()
-      .statusCode(HttpStatus.SC_FORBIDDEN);
+        .willReturn(new ResponseDefinitionBuilder().withStatus(SC_UNAUTHORIZED)));
+
+    getWithStatus(UPDATEROOT_PROXY_ENDPOINT, SC_FORBIDDEN);
   }
   
   @Test
   public void shouldReturnUnauthorizedWhenRMAPIRequestCompletesWith403ErrorStatus() throws IOException, URISyntaxException {
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_FORBIDDEN)));
+        .willReturn(new ResponseDefinitionBuilder().withStatus(SC_FORBIDDEN)));
     
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(UPDATEROOT_PROXY_ENDPOINT)
-      .then()
-      .statusCode(HttpStatus.SC_FORBIDDEN);
+    getWithStatus(UPDATEROOT_PROXY_ENDPOINT, SC_FORBIDDEN);
   }
   
   @Test
   public void shouldReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-updated-response.json";
 
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
@@ -105,17 +100,9 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
     RootProxy expected = getUpdatedRootProxy();
 
-    RootProxy rootProxy = RestAssured
-      .given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .body(readFile("requests/kb-ebsco/put-root-proxy.json"))
-      .when()
-      .put(UPDATEROOT_PROXY_ENDPOINT)
-      .then()
-      .statusCode(HttpStatus.SC_OK)
-      .extract().as(RootProxy.class);
-    
+    RootProxy rootProxy = putWithOk(UPDATEROOT_PROXY_ENDPOINT, readFile("requests/kb-ebsco/put-root-proxy.json"))
+      .as(RootProxy.class);
+
     assertThat(rootProxy.getData().getId(), equalTo(expected.getData().getId()));
     assertThat(rootProxy.getData().getType(), equalTo(expected.getData().getType()));
     assertThat(rootProxy.getData().getAttributes().getId(), equalTo(expected.getData().getAttributes().getId()));
@@ -130,7 +117,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     String stubGetResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-updated-response.json";
     String stubPutResponseFile = "responses/rmapi/proxiescustomlabels/put-root-proxy-custom-labels-400-error-response.json";
 
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
     
     stubFor(
         get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
@@ -138,18 +125,10 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
     stubFor(
       put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubPutResponseFile)).withStatus(HttpStatus.SC_BAD_REQUEST)));
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubPutResponseFile)).withStatus(SC_BAD_REQUEST)));
 
-    JsonapiError error = RestAssured
-      .given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .body(readFile("requests/kb-ebsco/put-root-proxy.json"))
-      .when()
-      .put(UPDATEROOT_PROXY_ENDPOINT)
-      .then()
-      .statusCode(HttpStatus.SC_BAD_REQUEST)
-      .extract().as(JsonapiError.class);
+    JsonapiError error = putWithStatus(UPDATEROOT_PROXY_ENDPOINT,
+      readFile("requests/kb-ebsco/put-root-proxy.json"), SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Invalid Proxy ID"));
   }

@@ -31,6 +31,14 @@
       "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-resources-table.sql"
+    },
+    {
+      "tableName": "titles",
+      "withMetadata": false,
+      "pkColumnName": "id",
+      "generateId": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-titles-table.sql"
     }
   ]
 }

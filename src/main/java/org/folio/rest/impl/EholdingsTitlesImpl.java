@@ -2,6 +2,7 @@ package org.folio.rest.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.Response;
@@ -41,6 +42,7 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.titles.TitlesRepository;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
@@ -64,6 +66,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private TagRepository tagRepository;
   @Autowired
   private Converter<List<Tag>, Tags> tagsConverter;
+  @Autowired
+  private TitlesRepository titlesRepository;
 
   public EholdingsTitlesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -167,14 +171,24 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   }
 
   private CompletableFuture<TitleResult> updateTags(TitleResult result, String tenant, Tags tags) {
-    if (tags == null){
+    if (Objects.isNull(tags)) {
       return CompletableFuture.completedFuture(result);
-    }else {
-      return tagRepository.updateRecordTags(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE, tags.getTagList())
+    } else {
+      return updateStoredTitles(result, tags, tenant)
+        .thenCompose(o -> tagRepository.updateRecordTags(tenant, String.valueOf(
+          result.getTitle().getTitleId()), RecordType.TITLE, tags.getTagList()))
         .thenApply(updated -> {
           result.setTags(new Tags().withTagList(tags.getTagList()));
           return result;
         });
     }
+  }
+
+  private CompletableFuture<Void> updateStoredTitles(TitleResult result, Tags tags, String tenant) {
+
+    if (!tags.getTagList().isEmpty()) {
+      return titlesRepository.saveTitle(result.getTitle(), tenant);
+    }
+    return titlesRepository.deleteTitle(String.valueOf(result.getTitle().getTitleId()), tenant);
   }
 }

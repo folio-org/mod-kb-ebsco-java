@@ -3,18 +3,17 @@ package org.folio.rest.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
+import static org.folio.util.TestUtil.mockDefaultConfiguration;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import org.apache.http.HttpStatus;
-import org.folio.util.TestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
-
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsCacheImplTest extends WireMockTestBase {
@@ -22,7 +21,7 @@ public class EholdingsCacheImplTest extends WireMockTestBase {
   @Test
   public void shouldHaveCacheMissWhenDeleteCacheRequestIsSent() throws IOException, URISyntaxException {
     int cacheMissCount = 0;
-    TestUtil.mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
 
     sendGetConfigurationRequest();
     sendGetConfigurationRequest();
@@ -43,11 +42,6 @@ public class EholdingsCacheImplTest extends WireMockTestBase {
   }
 
   private void sendGetConfigurationRequest() {
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get("eholdings/configuration")
-      .then()
-      .statusCode(200);
+    getWithOk("eholdings/configuration");
   }
 }
