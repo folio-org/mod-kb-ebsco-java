@@ -373,9 +373,9 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
         .withTagList(tags));
       updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
         mapper.writeValueAsString(request));
-      List<ResourcesTestUtil.DbResources> providers = ResourcesTestUtil.getResources(vertx);
+      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
 
-      assertEquals(1, providers.size());
+      assertEquals(1, resources.size());
       List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
     }
@@ -383,6 +383,24 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
       TagsTestUtil.clearTags(vertx);
     }
+  }
+
+  @Test
+  public void shouldUpdateWithoutTagsOnSuccessfulPut() throws IOException, URISyntaxException {
+      String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+      ObjectMapper mapper = new ObjectMapper();
+      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"),
+        ResourcePutRequest.class);
+      List<String> tags = Collections.emptyList();
+      request.getData().getAttributes().setTags(new Tags()
+        .withTagList(tags));
+      updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
+        mapper.writeValueAsString(request));
+      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
+
+      assertEquals(0, resources.size());
+      List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
+      assertEquals(resourceTagsFromDB.size(),request.getData().getAttributes().getTags().getTagList().size());
   }
 
   @Test
@@ -399,9 +417,9 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       request.getData().getAttributes().setCoverageStatement("coverage statement");
       updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
         mapper.writeValueAsString(request));
-      List<ResourcesTestUtil.DbResources> providers = ResourcesTestUtil.getResources(vertx);
+      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
 
-      assertEquals(1, providers.size());
+      assertEquals(1, resources.size());
       WireMock.verify(0, putRequestedFor(anyUrl()));
       List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));

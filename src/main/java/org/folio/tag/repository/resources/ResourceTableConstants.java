@@ -1,8 +1,7 @@
 package org.folio.tag.repository.resources;
 
 public class ResourceTableConstants {
-
-  public ResourceTableConstants() {}
+  private ResourceTableConstants() {}
 
   public static final String RESOURCES_TABLE_NAME = "resources";
   public static final String ID_COLUMN = "id";

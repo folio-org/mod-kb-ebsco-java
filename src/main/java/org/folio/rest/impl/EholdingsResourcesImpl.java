@@ -174,9 +174,16 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             }
             return context.getResourcesService().deleteResource(parsedResourceId);
           })
-          .thenCompose(o -> tagRepository.deleteRecordTags(context.getOkapiData().getTenant(), resourceId, RecordType.RESOURCE))
+          .thenCompose(o -> deleteTags(resourceId, context.getOkapiData().getTenant()))
       )
       .execute();
+  }
+
+  private CompletableFuture<Void> deleteTags(String resourceId, String tenant) {
+    return
+      resourceRepository.deleteResource(resourceId, tenant)
+        .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
+        .thenCompose(aBoolean ->  CompletableFuture.completedFuture(null));
   }
 
   private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, TitlesHoldingsIQService titlesService, PackagesHoldingsIQService packagesService) {
