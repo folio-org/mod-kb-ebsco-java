@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.notNullValue;
 
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
@@ -13,12 +16,10 @@ import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,7 +55,6 @@ public abstract class WireMockTestBase {
 
   protected static final Header CONTENT_TYPE_HEADER = new Header(HTTP.CONTENT_TYPE, JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
-  protected static final String CONFIGURATION_STUB_FILE = "responses/kb-ebsco/configuration/get-configuration.json";
   protected int port = TestSetUpHelper.getPort();
   protected String host = TestSetUpHelper.getHost();
   protected Vertx vertx = TestSetUpHelper.getVertx();
@@ -137,32 +137,25 @@ public abstract class WireMockTestBase {
     return host + ":" + userMockServer.port();
   }
 
-  protected ValidatableResponse getResponse(String resourcePath) {
-    return RestAssured.given()
-      .spec(getRequestSpecification())
-      .when()
-      .get(resourcePath)
-      .then();
+  protected ExtractableResponse<Response> getWithOk(String resourcePath) {
+    return getWithStatus(resourcePath, SC_OK);
   }
 
-  protected ExtractableResponse<Response> getOkResponse(String resourcePath) {
-    return getResponseWithStatus(resourcePath, HttpStatus.SC_OK);
-  }
-
-  protected ExtractableResponse<Response> getResponseWithStatus(String resourcePath, int expectedStatus) {
+  protected ExtractableResponse<Response> getWithStatus(String resourcePath, int expectedStatus) {
     return RestAssured.given()
       .spec(getRequestSpecification())
       .when()
       .get(resourcePath)
       .then()
+      .log().ifValidationFails()
       .statusCode(expectedStatus).extract();
   }
 
-  protected <T> T sendPutRequestAndRetrieveResponse(String endpoint, String putBody, Class<T> clazz){
-    return sendPutRequestAndRetrieveResponse(endpoint, putBody).as(clazz);
+  protected <T> ExtractableResponse<Response> putWithOk(String endpoint, String putBody){
+    return putWithStatus(endpoint, putBody, SC_OK);
   }
 
-  protected <T> ExtractableResponse<Response> sendPutRequestAndRetrieveResponse(String endpoint, String putBody){
+  protected <T> ExtractableResponse<Response> putWithStatus(String endpoint, String putBody, int expectedStatus){
     return RestAssured
       .given()
       .spec(getRequestSpecification())
@@ -171,11 +164,16 @@ public abstract class WireMockTestBase {
       .when()
       .put(endpoint)
       .then()
-      .statusCode(HttpStatus.SC_OK)
+      .log().ifValidationFails()
+      .statusCode(expectedStatus)
       .extract();
   }
 
-  protected <T> T sendPostRequestAndRetrieveResponse(String endpoint, String postBody, Class<T> clazz){
+  protected <T> ExtractableResponse<Response> postWithOk(String endpoint, String postBody){
+    return postWithStatus(endpoint, postBody, SC_OK);
+  }
+
+  protected <T> ExtractableResponse<Response> postWithStatus(String endpoint, String postBody, int expectedStatus){
     return RestAssured
       .given()
       .spec(getRequestSpecification())
@@ -184,9 +182,27 @@ public abstract class WireMockTestBase {
       .when()
       .post(endpoint)
       .then()
-      .statusCode(HttpStatus.SC_OK)
-      .extract().as(clazz);
+      .log().ifValidationFails()
+      .statusCode(expectedStatus)
+      .extract();
   }
+
+  protected <T> ExtractableResponse<Response> deleteWithOk(String endpoint){
+    return deleteWithStatus(endpoint, SC_NO_CONTENT);
+  }
+
+  protected <T> ExtractableResponse<Response> deleteWithStatus(String endpoint, int expectedStatus){
+    return RestAssured
+      .given()
+      .spec(getRequestSpecification())
+      .when()
+      .delete(endpoint)
+      .then()
+      .log().ifValidationFails()
+      .statusCode(expectedStatus)
+      .extract();
+  }
+
 
   protected void checkResponseNotEmptyWhenStatusIs400(String path) {
     RestAssured.given()
@@ -194,7 +210,7 @@ public abstract class WireMockTestBase {
       .when()
       .get(path)
       .then()
-      .statusCode(HttpStatus.SC_BAD_REQUEST)
+      .statusCode(SC_BAD_REQUEST)
       .body("errors.first.title", notNullValue());
   }
 }

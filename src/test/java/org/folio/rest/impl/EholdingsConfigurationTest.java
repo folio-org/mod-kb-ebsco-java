@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.Matchers.equalTo;
 
 import static org.folio.common.ListUtils.mapItems;
@@ -39,7 +40,6 @@ import org.folio.util.TestUtil;
 public class EholdingsConfigurationTest extends WireMockTestBase {
   private static final Header TENANT_HEADER = new Header(RestConstants.OKAPI_TENANT_HEADER, "fs");
   private static final Header TOKEN_HEADER = new Header(RestConstants.OKAPI_TOKEN_HEADER, "TEST_OKAPI_TOKEN");
-  private static final Header CONTENT_TYPE_HEADER = new Header("Content-Type", "application/vnd.api+json");
 
   @Test
   public void shouldReturnConfigurationOnGet() throws IOException, URISyntaxException {
@@ -108,14 +108,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
     Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(getWiremockUrl());
 
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .body(mapper.writeValueAsString(configuration))
-      .when()
-      .put("eholdings/configuration")
-      .then()
-      .statusCode(200);
+    putWithOk("eholdings/configuration", mapper.writeValueAsString(configuration));
 
     for (String id : existingIds) {
       verify(1, deleteRequestedFor(urlEqualTo("/configurations/entries/" + id)));
@@ -132,14 +125,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
     Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(getWiremockUrl());
 
-    RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(CONTENT_TYPE_HEADER)
-      .body(mapper.writeValueAsString(configuration))
-      .when()
-      .put("eholdings/configuration")
-      .then()
-      .statusCode(422);
+    putWithStatus("eholdings/configuration", mapper.writeValueAsString(configuration), SC_UNPROCESSABLE_ENTITY);
   }
 
   @Test
