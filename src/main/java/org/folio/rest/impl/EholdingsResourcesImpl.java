@@ -14,7 +14,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -52,6 +51,7 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.resources.ResourceRepository;
 
 
 public class EholdingsResourcesImpl implements EholdingsResources {
@@ -74,6 +74,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private TagRepository tagRepository;
   @Autowired
   private Converter<List<Tag>, Tags> tagsConverter;
+  @Autowired
+  private ResourceRepository resourceRepository;
   
 
   public EholdingsResourcesImpl() {
@@ -172,9 +174,16 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             }
             return context.getResourcesService().deleteResource(parsedResourceId);
           })
-          .thenCompose(o -> tagRepository.deleteRecordTags(context.getOkapiData().getTenant(), resourceId, RecordType.RESOURCE))
+          .thenCompose(o -> deleteTags(resourceId, context.getOkapiData().getTenant()))
       )
       .execute();
+  }
+
+  private CompletableFuture<Void> deleteTags(String resourceId, String tenant) {
+    return
+      resourceRepository.deleteResource(resourceId, tenant)
+        .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
+        .thenCompose(aBoolean ->  CompletableFuture.completedFuture(null));
   }
 
   private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, TitlesHoldingsIQService titlesService, PackagesHoldingsIQService packagesService) {
@@ -202,6 +211,13 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       });
   }
 
+  private CompletableFuture<Void> updateStoredResource(String resourceId, Title title,String tenant, Tags tags) {
+    if (!tags.getTagList().isEmpty()) {
+      return resourceRepository.saveResource(resourceId, title,tenant);
+    }
+    return resourceRepository.deleteResource(resourceId, tenant);
+  }
+
   private CompletableFuture<ResourceResult> updateResourceTags(Title title, String tenant, Tags tags) {
     ResourceResult result = new ResourceResult(title, null, null, false);
     if (tags == null) {
@@ -209,7 +225,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     } else {
       CustomerResources resource = title.getCustomerResourcesList().get(0);
       String resourceId = getResourceId(resource);
-      return tagRepository.updateRecordTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList())
+      return
+        updateStoredResource(resourceId,title,tenant,tags)
+        .thenCompose(resourceUpdate -> tagRepository.updateRecordTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList()))
         .thenCompose(updated -> {
           result.setTags(tags);
           return CompletableFuture.completedFuture(result);

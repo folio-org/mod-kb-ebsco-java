@@ -1,10 +1,11 @@
-package org.folio.tag.repository.providers;
+package org.folio.tag.repository.resources;
 
+import static org.folio.tag.repository.DbUtil.createInsertOrUpdateParameters;
 import static org.folio.tag.repository.DbUtil.getTableName;
 import static org.folio.tag.repository.DbUtil.mapVertxFuture;
-import static org.folio.tag.repository.providers.ProviderTableConstants.DELETE_PROVIDER_STATEMENT;
-import static org.folio.tag.repository.providers.ProviderTableConstants.INSERT_OR_UPDATE_PROVIDER_STATEMENT;
-import static org.folio.tag.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
+import static org.folio.tag.repository.resources.ResourceTableConstants.DELETE_RESOURCE_STATEMENT;
+import static org.folio.tag.repository.resources.ResourceTableConstants.INSERT_OR_UPDATE_RESOURCE_STATEMENT;
+import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -18,29 +19,29 @@ import io.vertx.ext.sql.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.holdingsiq.model.VendorById;
+import org.folio.holdingsiq.model.Title;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.tag.repository.DbUtil;
 
 @Component
-public class ProviderRepositoryImpl implements ProviderRepository {
+public class ResourceRepositoryImpl implements ResourceRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ProviderRepositoryImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ResourceRepositoryImpl.class);
 
   private Vertx vertx;
 
   @Autowired
-  public ProviderRepositoryImpl(Vertx vertx) {
+  public ResourceRepositoryImpl(Vertx vertx) {
     this.vertx = vertx;
   }
 
   @Override
-  public CompletableFuture<Void> saveProvider(VendorById vendorData, String tenantId) {
-    JsonArray parameters = DbUtil.createInsertOrUpdateParameters(String.valueOf(vendorData.getVendorId()),
-      vendorData.getVendorName());
+  public CompletableFuture<Void> saveResource(String resourceId, Title title, String tenantId) {
 
-    final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT,
-      getTableName(tenantId, PROVIDERS_TABLE_NAME));
+    JsonArray parameters = createInsertOrUpdateParameters(resourceId, title.getTitleName());
+
+    final String query = String.format(INSERT_OR_UPDATE_RESOURCE_STATEMENT,
+      getTableName(tenantId, RESOURCES_TABLE_NAME));
+
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Do insert query = " + query);
@@ -50,10 +51,10 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<Void> deleteProvider(String vendorId, String tenantId) {
-    JsonArray parameter = new JsonArray(Collections.singletonList(vendorId));
+  public CompletableFuture<Void> deleteResource(String resourceId, String tenantId) {
+    JsonArray parameter = new JsonArray(Collections.singletonList(resourceId));
 
-    final String query = String.format(DELETE_PROVIDER_STATEMENT, getTableName(tenantId, PROVIDERS_TABLE_NAME));
+    final String query = String.format(DELETE_RESOURCE_STATEMENT, getTableName(tenantId, RESOURCES_TABLE_NAME));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 

@@ -23,6 +23,14 @@
       "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-providers-table.sql"
+    },
+    {
+      "tableName": "resources",
+      "withMetadata": false,
+      "pkColumnName": "id",
+      "generateId": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-resources-table.sql"
     }
   ]
 }

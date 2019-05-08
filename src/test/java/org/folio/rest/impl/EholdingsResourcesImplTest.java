@@ -17,7 +17,9 @@ import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.tag.RecordType;
+import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -38,6 +40,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.util.TagsTestUtil.insertTag;
 import static org.folio.util.TestUtil.mockConfiguration;
 import static org.folio.util.TestUtil.mockGet;
@@ -47,6 +50,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(VertxUnitRunner.class)
@@ -369,13 +373,34 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
         .withTagList(tags));
       updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
         mapper.writeValueAsString(request));
+      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
 
+      assertEquals(1, resources.size());
       List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
     }
     finally {
+      TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
       TagsTestUtil.clearTags(vertx);
     }
+  }
+
+  @Test
+  public void shouldUpdateWithoutTagsOnSuccessfulPut() throws IOException, URISyntaxException {
+      String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+      ObjectMapper mapper = new ObjectMapper();
+      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"),
+        ResourcePutRequest.class);
+      List<String> tags = Collections.emptyList();
+      request.getData().getAttributes().setTags(new Tags()
+        .withTagList(tags));
+      updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
+        mapper.writeValueAsString(request));
+      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
+
+      assertEquals(0, resources.size());
+      List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
+      assertEquals(resourceTagsFromDB.size(),request.getData().getAttributes().getTags().getTagList().size());
   }
 
   @Test
@@ -392,12 +417,15 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       request.getData().getAttributes().setCoverageStatement("coverage statement");
       updateResource(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
         mapper.writeValueAsString(request));
+      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
 
+      assertEquals(1, resources.size());
       WireMock.verify(0, putRequestedFor(anyUrl()));
       List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
       assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
     }
     finally {
+      TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
       TagsTestUtil.clearTags(vertx);
     }
   }
