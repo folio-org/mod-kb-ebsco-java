@@ -134,6 +134,35 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnEmptyResponseWhenProvidersReturnedWithErrorOnSearchByTags() throws IOException, URISyntaxException {
+    try {
+
+      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
+      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
+
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE);
+
+      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+
+      mockGet(new RegexPattern(".*vendors/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+
+      ProviderCollection providerCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/providers?filter[tags]=" + STUB_TAG_VALUE)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(ProviderCollection.class);
+      List<Providers> providers = providerCollection.getData();
+
+      assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
+      assertEquals(0, providers.size());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
+    }
+  }
+
+  @Test
   public void shouldReturnProvidersOnSearchWithTagsAndPagination() throws IOException, URISyntaxException {
     try {
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
