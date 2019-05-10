@@ -134,6 +134,31 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnProvidersOnSearchWithTagsAndPagination() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, RecordType.PROVIDER, STUB_TAG_VALUE);
+
+      setUpTaggedProviders();
+
+      ProviderCollection providerCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/providers?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(ProviderCollection.class);
+      List<Providers> providers = providerCollection.getData();
+
+      assertEquals(3, (int) providerCollection.getMeta().getTotalResults());
+      assertEquals(1, providers.size());
+      assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
+    }
+  }
+
+  @Test
   public void shouldReturnProvidersOnGetWithPackages() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
     String stubPackagesResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
