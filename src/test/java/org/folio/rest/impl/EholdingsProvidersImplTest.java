@@ -107,13 +107,13 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnProvidersOnSearchByTagsOnly() throws IOException, URISyntaxException {
     try {
-      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
-      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE);
-      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE_2);
-      //TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, RecordType.PROVIDER, STUB_TAG_VALUE_3);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE_2);
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, RecordType.PROVIDER, STUB_TAG_VALUE_3);
 
-      //setUpTaggedProviders();
-      /*
+      setUpTaggedProviders();
+
 
       ProviderCollection providerCollection = RestAssured.given(getRequestSpecification())
         .when()
@@ -126,7 +126,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(2, providers.size());
       assertEquals(STUB_VENDOR_NAME, providers.get(0).getAttributes().getName());
       assertEquals(STUB_VENDOR_NAME_2, providers.get(1).getAttributes().getName());
-      */
+
     } finally {
       TagsTestUtil.clearTags(vertx);
       TestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);

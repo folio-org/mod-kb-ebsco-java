@@ -86,10 +86,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       template
         .requestAction(context ->
           context.getProvidersService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
-        )
-        .executeWithResult(ProviderCollection.class);
+        );
     }
-
+    template
+      .executeWithResult(ProviderCollection.class);
   }
 
   @Override
