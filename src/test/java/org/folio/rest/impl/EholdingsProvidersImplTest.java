@@ -1,31 +1,16 @@
 package org.folio.rest.impl;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.put;
-import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.tag.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.readFile;
+import static org.folio.util.TestUtil.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -40,17 +25,16 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Provider;
-import org.folio.rest.jaxrs.model.ProviderPutRequest;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rest.jaxrs.model.Token;
+import org.folio.holdingsiq.model.VendorById;
+import org.folio.rest.jaxrs.model.*;
 import org.folio.tag.RecordType;
 import org.folio.util.ProvidersTestUtil;
 import org.folio.util.TagsTestUtil;
@@ -143,7 +127,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2 , RecordType.PROVIDER, STUB_TAG_VALUE);
 
-      mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+      mockDefaultConfiguration(getWiremockUrl());
 
       mockGet(new RegexPattern(".*vendors/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
@@ -619,7 +603,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
     ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, STUB_VENDOR_NAME_3));
 
-    mockConfiguration(CONFIGURATION_STUB_FILE, getWiremockUrl());
+    mockDefaultConfiguration(getWiremockUrl());
 
     mockProviderWithName(STUB_VENDOR_ID, STUB_VENDOR_NAME);
     mockProviderWithName(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2);
