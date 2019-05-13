@@ -340,7 +340,12 @@
       ]
     }
   ],
-  "requires": [],
+  "requires": [
+    {
+      "id": "configuration",
+      "version": "2.0"
+    }
+  ],
   "launchDescriptor": {
     "dockerImage": "${artifactId}:${version}",
     "dockerArgs": {
