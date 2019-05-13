@@ -21,6 +21,7 @@ traits:
   sortable: !include traits/sortable.raml
   pageable: !include traits/pageable.raml
   filterable: !include traits/filterable.raml
+  taggable: !include traits/taggable.raml
   includable: !include traits/includePackages.raml
 
 /eholdings/providers:
@@ -28,7 +29,7 @@ traits:
   description: Collection of available providers in eholdings.
   get:
     description: Get a list of providers based on the search query.
-    is: [queriable, sortable, pageable]
+    is: [queriable, taggable, sortable, pageable]
     responses:
       200:
         description: OK

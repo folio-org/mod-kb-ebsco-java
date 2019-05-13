@@ -1,26 +1,37 @@
 package org.folio.rest.impl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
+import javax.validation.ValidationException;
+import javax.ws.rs.core.Response;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
+import org.folio.holdingsiq.model.Vendors;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.jaxrs.model.PackageCollection;
-import org.folio.rest.jaxrs.model.Provider;
-import org.folio.rest.jaxrs.model.ProviderCollection;
-import org.folio.rest.jaxrs.model.ProviderDataAttributes;
-import org.folio.rest.jaxrs.model.ProviderPutRequest;
-import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.*;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
+import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ProviderPutBodyValidator;
@@ -30,15 +41,6 @@ import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
 import org.folio.tag.repository.providers.ProviderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
-import javax.validation.ValidationException;
-import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -65,17 +67,28 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
+
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProviders(String q, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    validateSort(sort);
-    validateQuery(q);
+  public void getEholdingsProviders(String q, String filterTags, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getProvidersService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
-      )
+    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+
+    if(isTagOnlySearch(q, filterTags)){
+      List<String> tags = Arrays.asList(filterTags.split("\\s*,\\s*"));
+      template.requestAction(context -> getProvidersByTags(tags, page, count, context));
+    }
+    else {
+      validateSort(sort);
+      validateQuery(q);
+
+      template
+        .requestAction(context ->
+          context.getProvidersService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
+        );
+    }
+    template
       .executeWithResult(ProviderCollection.class);
   }
 
@@ -138,6 +151,24 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)
         ))
       .executeWithResult(PackageCollection.class);
+  }
+
+  private CompletableFuture<Vendors> getProvidersByTags(List<String> tags, int page, int count, RMAPITemplateContext context) {
+    MutableObject<Integer> totalResults = new MutableObject<>();
+    String tenant = context.getOkapiData().getTenant();
+    return tagRepository
+      .countRecordsByTags(tags, tenant, RecordType.PROVIDER)
+      .thenCompose(providerCount -> {
+        totalResults.setValue(providerCount);
+        return providerRepository.getProviderIdsByTagName(tags, page, count, tenant);
+      })
+      .thenCompose(providerIds ->
+        context.getProvidersService().retrieveProviders(providerIds))
+      .thenApply(providers ->
+        providers.toBuilder()
+          .totalResults(totalResults.getValue())
+          .build()
+      );
   }
 
   private String convertToHoldingsSelected(String filterSelected) {
@@ -204,5 +235,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private boolean providerCanBeUpdated(ProviderPutRequest request) {
     ProviderDataAttributes attributes = request.getData().getAttributes();
     return !Objects.isNull(attributes.getPackagesSelected()) && attributes.getPackagesSelected() != 0;
+  }
+
+  private boolean isTagOnlySearch(String q, String filterTags) {
+    return Strings.isEmpty(q) && !Strings.isEmpty(filterTags);
   }
 }

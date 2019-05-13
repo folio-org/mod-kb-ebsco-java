@@ -1,19 +1,20 @@
 package org.folio.tag.repository.providers;
 
-import static org.folio.tag.repository.DbUtil.getTableName;
-import static org.folio.tag.repository.DbUtil.mapVertxFuture;
-import static org.folio.tag.repository.providers.ProviderTableConstants.DELETE_PROVIDER_STATEMENT;
-import static org.folio.tag.repository.providers.ProviderTableConstants.INSERT_OR_UPDATE_PROVIDER_STATEMENT;
-import static org.folio.tag.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
+import static org.folio.common.ListUtils.mapItems;
+import static org.folio.tag.repository.DbUtil.*;
+import static org.folio.tag.repository.providers.ProviderTableConstants.*;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -61,5 +62,38 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     Future<UpdateResult> future = Future.future();
     postgresClient.execute(query, parameter, future.completer());
     return mapVertxFuture(future).thenApply(result -> null);
+  }
+
+  @Override
+  public CompletableFuture<List<Long>> getProviderIdsByTagName(List<String> tags, int page, int count, String tenantId) {
+    int offset = (page - 1) * count;
+
+    JsonArray parameters = new JsonArray();
+    tags.forEach(parameters::add);
+    parameters
+      .add(offset)
+      .add(count);
+
+    final String query = String.format(SELECT_TAGGED_PROVIDERS, getTableName(tenantId, PROVIDERS_TABLE_NAME), createPlaceholders(tags.size()));
+
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+
+    LOG.info("Select providers by tags = " + query);
+    Future<ResultSet> future = Future.future();
+    postgresClient.select(query, parameters, future.completer());
+
+    return mapResultSet(future, this::mapProviderIds);
+  }
+
+  private String createPlaceholders(int size) {
+    return String.join(",", Collections.nCopies(size, "?"));
+  }
+
+  private List<Long> mapProviderIds(ResultSet resultSet) {
+    return mapItems(resultSet.getRows(), this::readProviderId);
+  }
+
+  private Long readProviderId(JsonObject row) {
+    return Long.parseLong(row.getString("id"));
   }
 }
