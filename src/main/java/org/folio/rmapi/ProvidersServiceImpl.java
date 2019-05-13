@@ -2,14 +2,18 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import org.folio.cache.VertxCache;
-import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.Packages;
-import org.folio.holdingsiq.model.VendorById;
+import org.folio.holdingsiq.model.*;
 import org.folio.holdingsiq.service.HoldingsIQService;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
 import org.folio.holdingsiq.service.impl.ProviderHoldingsIQServiceImpl;
@@ -19,6 +23,8 @@ import org.folio.rmapi.result.VendorResult;
 public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
 
   private static final String INCLUDE_PACKAGES_VALUE = "packages";
+  private static final Logger LOG = LoggerFactory.getLogger(ProvidersServiceImpl.class);
+
 
   private PackagesHoldingsIQService packagesService;
   private VertxCache<VendorCacheKey, VendorById> vendorCache;
@@ -57,6 +63,31 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
     return CompletableFuture.allOf(vendorFuture, packagesFuture)
       .thenCompose(o ->
         completedFuture(new VendorResult(vendorFuture.join(), packagesFuture.join())));
+  }
+
+  public CompletableFuture<Vendors> retrieveProviders(List<Long> providerIds) {
+    Set<CompletableFuture<VendorResult>> futures = providerIds.stream()
+      .map(id -> retrieveProvider(id, "", true)
+      .whenComplete((result,throwable) -> {
+        if(throwable != null) {
+          LOG.warn(throwable.getMessage(), throwable);
+        }
+      }))
+      .collect(Collectors.toSet());
+
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+      .handle((o,e) -> mapToProviders(futures));
+  }
+
+  private Vendors mapToProviders(Set<CompletableFuture<VendorResult>> providerFutures) {
+    List<Vendor> providers = providerFutures.stream()
+      .filter(future -> !future.isCompletedExceptionally())
+      .map(future -> future.join().getVendor())
+      .sorted(Comparator.comparing(Vendor::getVendorName))
+      .collect(Collectors.toList());
+    return Vendors.builder()
+      .vendorList(providers)
+      .build();
   }
 
   private CompletableFuture<VendorById> retrieveProviderWithCache(long id) {

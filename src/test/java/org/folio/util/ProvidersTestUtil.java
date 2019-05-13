@@ -1,18 +1,19 @@
 package org.folio.util;
 
-import io.vertx.core.Vertx;
-import lombok.Builder;
-import lombok.Value;
-import org.folio.rest.persist.PostgresClient;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.tag.repository.packages.PackageTableConstants.ID_COLUMN;
 import static org.folio.tag.repository.packages.PackageTableConstants.NAME_COLUMN;
 import static org.folio.tag.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.util.TestUtil.STUB_TENANT;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import io.vertx.core.Vertx;
+import lombok.Builder;
+import lombok.Value;
+
+import org.folio.rest.persist.PostgresClient;
 
 public class ProvidersTestUtil {
 
@@ -31,6 +32,16 @@ public class ProvidersTestUtil {
             .build()
       )));
     return future.join();
+  }
+
+   public static void addProvider(Vertx vertx, DbProviders DbProvider) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).execute(
+      "INSERT INTO " + providerTestTable() +
+        "(" + ID_COLUMN + ", " + NAME_COLUMN + ") VALUES('" +
+        DbProvider.getId() + "', '" + DbProvider.getName() + "')",
+      event -> future.complete(null));
+    future.join();
   }
 
   private static String providerTestTable() {
