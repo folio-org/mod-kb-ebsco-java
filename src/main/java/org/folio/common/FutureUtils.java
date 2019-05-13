@@ -11,7 +11,7 @@ public class FutureUtils {
     CompletableFuture<T> f = new CompletableFuture<>();
 
     f.completeExceptionally(ex);
-    
+
     return f;
   }
 }
