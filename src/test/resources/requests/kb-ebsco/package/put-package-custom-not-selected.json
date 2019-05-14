@@ -1,0 +1,19 @@
+{
+  "data": {
+    "type": "packages",
+    "attributes": {
+      "isSelected": false,
+      "name": "name of the ages forever and ever",
+      "contentType": "Aggregated Full Text",
+      "allowKbToAddTitles":  true,
+      "visibilityData": {
+        "isHidden": true,
+        "reason": ""
+      },
+      "customCoverage": {
+        "beginCoverage": "2003-01-01",
+        "endCoverage": "2004-01-01"
+      }
+    }
+  }
+}

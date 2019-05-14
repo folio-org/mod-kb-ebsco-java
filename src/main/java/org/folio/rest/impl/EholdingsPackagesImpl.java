@@ -188,9 +188,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getPackagesService().retrievePackage(parsedPackageId)
-          .thenCompose(packageData -> processUpdateRequest(entity, parsedPackageId, context, packageData))
-          .thenCompose(o -> context.getPackagesService().retrievePackage(parsedPackageId))
-          .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags)))
+        .thenCompose(packageData -> processUpdateRequest(entity, parsedPackageId, context, packageData))
+        .thenCompose(o -> {
+          CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
+          return handleDeletedPackage(future, parsedPackageId, context.getOkapiData().getTenant());
+        })
+        .thenCompose(packageById -> updateTags(packageById, context.getOkapiData().getTenant(), tags))
+      )
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsPackages.PutEholdingsPackagesByPackageIdResponse.respond422WithApplicationVndApiJson(
           ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail())))
@@ -347,6 +351,24 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       }
     }
     return true;
+  }
+
+  /**
+   * Delete local package and tags if package was deleted on update (normally this can only happen in case of custom package),
+   * @return future with initial result, or exceptionally completed future if deletion of tags failed
+   */
+  private CompletableFuture<PackageByIdData> handleDeletedPackage(CompletableFuture<PackageByIdData> future, PackageId packageId, String tenant) {
+    CompletableFuture<Void> deleteTagsFuture = new CompletableFuture<>();
+    return future.whenComplete((packageById, e) ->
+      {
+        if (e instanceof ResourceNotFoundException) {
+          deleteTags(packageId, tenant)
+            .thenAccept(o -> deleteTagsFuture.complete(null));
+        } else {
+          deleteTagsFuture.complete(null);
+        }
+      })
+      .thenCombine(deleteTagsFuture, (o, aBoolean) -> future.join());
   }
 
   private boolean isTagOnlySearch(String q, String filterTags) {
