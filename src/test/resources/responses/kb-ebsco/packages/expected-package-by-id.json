@@ -1,12 +1,12 @@
 {
   "data": {
-    "id": "111111-3964",
+    "id": "19-3964",
     "type": "packages",
     "attributes": {
       "name": "carole and sams test",
       "packageId": 3964,
       "isCustom": true,
-      "providerId": 111111,
+      "providerId": 19,
       "providerName": "APIDEV CORPORATE CUSTOMER",
       "titleCount": 6,
       "isSelected": true,

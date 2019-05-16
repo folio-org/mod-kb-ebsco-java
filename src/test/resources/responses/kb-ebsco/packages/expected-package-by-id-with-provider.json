@@ -1,6 +1,6 @@
 {
   "data" : {
-    "id" : "111111-3964",
+    "id" : "19-3964",
     "type" : "packages",
     "attributes" : {
       "contentType" : "Aggregated Full Text",
@@ -13,7 +13,7 @@
       "name" : "carole and sams test",
       "packageId" : 3964,
       "packageType" : "Custom",
-      "providerId" : 111111,
+      "providerId" : 19,
       "providerName" : "APIDEV CORPORATE CUSTOMER",
       "selectedCount" : 6,
       "titleCount" : 6,
@@ -43,13 +43,13 @@
       "provider" : {
         "data" : {
           "type" : "providers",
-          "id" : "111111"
+          "id" : "19"
         }
       }
     }
   },
   "included" : [ {
-    "id" : "111111",
+    "id" : "19",
     "type" : "providers",
     "attributes" : {
       "name" : "APIDEV CORPORATE CUSTOMER",

@@ -1,6 +1,6 @@
 {
   "data" : {
-    "id" : "111111-3964",
+    "id" : "19-3964",
     "type" : "packages",
     "attributes" : {
       "contentType" : "Aggregated Full Text",
@@ -13,7 +13,7 @@
       "name" : "EBSCO Biotechnology Collection: India",
       "packageId" : 3964,
       "packageType" : "Complete",
-      "providerId" : 111111,
+      "providerId" : 19,
       "providerName" : "EBSCO",
       "selectedCount" : 0,
       "titleCount" : 156,
