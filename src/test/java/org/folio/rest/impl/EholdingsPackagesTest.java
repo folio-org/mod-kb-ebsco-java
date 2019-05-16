@@ -44,9 +44,11 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -95,6 +97,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   private static final String PACKAGES_PATH = "eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
   private static final String PACKAGE_BY_ID_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
+  private static final UrlPathPattern PACKAGE_URL_PATTERN = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
   private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
   private static final String PACKAGED_UPDATED_STATE = "Packaged updated";
   private static final String GET_PACKAGE_SCENARIO = "Get package";
@@ -325,6 +328,31 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
     assertThat(packages, is(empty()));
+  }
+
+  @Test
+  public void shouldDeletePackageDataAndTagsOnPutWithCustomPackageAndSelectedFalse() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, STUB_PACKAGE_NAME));
+      ObjectMapper mapper = new ObjectMapper();
+
+      UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
+      mockDefaultConfiguration(getWiremockUrl());
+      mockUpdateWithDeleteScenario(urlPattern, readFile(CUSTOM_PACKAGE_STUB_FILE));
+
+      PackagePutRequest packageToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/package/put-package-custom-not-selected.json"), PackagePutRequest.class);
+
+      putWithStatus(PACKAGES_PATH, mapper.writeValueAsString(packageToBeUpdated), SC_NOT_FOUND);
+
+      List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+      List<String> packageTags = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
+      assertThat(packages, is(empty()));
+      assertThat(packageTags, is(empty()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+    }
   }
 
   @Test
@@ -560,7 +588,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockDefaultConfiguration(getWiremockUrl());
 
-    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
 
     ObjectMapper mapper = new ObjectMapper();
@@ -577,13 +604,13 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .contentType("AggregatedFullText").build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
-    mockUpdateScenario(urlPattern, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+    mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
     Package aPackage = putWithOk(
       PACKAGES_PATH,
       readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes")).as(Package.class);
 
-    verify(putRequestedFor(urlPattern)
+    verify(putRequestedFor(PACKAGE_URL_PATTERN)
       .withRequestBody(putBodyPattern));
 
     assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
@@ -769,7 +796,29 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGet(new RegexPattern(RESOURCES_BY_PACKAGE_ID_URL + ".*" ), stubFile);
   }
 
+  private void mockUpdateWithDeleteScenario(UrlPathPattern urlPattern, String initialPackage){
+    mockUpdateScenario(urlPattern, initialPackage);
+
+    stubFor(
+      get(urlPattern)
+        .inScenario(GET_PACKAGE_SCENARIO)
+        .whenScenarioStateIs(PACKAGED_UPDATED_STATE)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(SC_NOT_FOUND)));
+  }
+
   private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage, String updatedPackage){
+    mockUpdateScenario(urlPattern, initialPackage);
+
+    stubFor(
+      get(urlPattern)
+        .inScenario(GET_PACKAGE_SCENARIO)
+        .whenScenarioStateIs(PACKAGED_UPDATED_STATE)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(updatedPackage)));
+  }
+
+  private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage) {
     stubFor(
       get(urlPattern)
         .inScenario(GET_PACKAGE_SCENARIO)
@@ -782,13 +831,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(SC_NO_CONTENT))
         .willSetStateTo(PACKAGED_UPDATED_STATE));
-
-    stubFor(
-      get(urlPattern)
-        .inScenario(GET_PACKAGE_SCENARIO)
-        .whenScenarioStateIs(PACKAGED_UPDATED_STATE)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(updatedPackage)));
   }
 
   private void sendPutWithTags(List<String> newTags) throws IOException, URISyntaxException {
