@@ -24,7 +24,8 @@ public class PackageTableConstants {
       "LEFT JOIN tags ON " +
       "tags.record_id = packages.id " +
       "AND tags.record_type = 'package' " +
-      "WHERE tags.tag IN (%s) " +
+      "WHERE tags.tag IN (%s)" +
+      "AND packages.id LIKE ? " +
       "ORDER BY packages.name " +
       "OFFSET ? " +
       "LIMIT ?";

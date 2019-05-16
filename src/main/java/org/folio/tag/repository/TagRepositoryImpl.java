@@ -1,10 +1,9 @@
 package org.folio.tag.repository;
 
 import static java.util.Arrays.asList;
-
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.tag.repository.DbUtil.mapResultSet;
-import static org.folio.tag.repository.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE;
+import static org.folio.tag.repository.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX;
 import static org.folio.tag.repository.TagTableConstants.DELETE_TAG_RECORD;
 import static org.folio.tag.repository.TagTableConstants.ID_COLUMN;
 import static org.folio.tag.repository.TagTableConstants.RECORD_ID_COLUMN;
@@ -23,6 +22,16 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.folio.common.FutureUtils;
+import org.folio.rest.persist.PostgresClient;
+import org.folio.tag.RecordType;
+import org.folio.tag.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -32,17 +41,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import org.folio.common.FutureUtils;
-import org.folio.rest.persist.PostgresClient;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
 
 @Component
 class TagRepositoryImpl implements TagRepository {
@@ -88,7 +86,7 @@ class TagRepositoryImpl implements TagRepository {
     }
 
     JsonArray parameters = createParameters(toValues(recordTypes));
-    String placeholders = createPlaceholders(parameters);
+    String placeholders = createPlaceholders(parameters.size());
 
     Future<ResultSet> resultSetFuture = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
@@ -102,15 +100,21 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<Integer> countRecordsByTags(List<String> tags, String tenantId, RecordType recordType) {
+    return countRecordsByTagsAndPrefix(tags, "", tenantId, recordType);
+  }
+
+  @Override
+  public CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix, String tenantId, RecordType recordType) {
     JsonArray parameters = createParameters(tags);
     parameters.add(recordType.getValue());
+    parameters.add(recordIdPrefix + "%");
 
-    String valuesList = String.join(",", Collections.nCopies(tags.size(), "?"));
+    String valuesList = createPlaceholders(tags.size());
 
     Future<ResultSet> future = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
       .select(
-        String.format(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE, getTableName(tenantId), valuesList),
+        String.format(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX, getTableName(tenantId), valuesList),
         parameters,
         future.completer()
       );
@@ -240,8 +244,8 @@ class TagRepositoryImpl implements TagRepository {
     return parameters;
   }
 
-  private String createPlaceholders(JsonArray parameters) {
-    return StringUtils.join(Collections.nCopies(parameters.size(), "?"), ", ");
+  private String createPlaceholders(int size) {
+    return StringUtils.join(Collections.nCopies(size, "?"), ", ");
   }
 
   private String createInsertStatement(String recordId, RecordType recordType, List<String> tags, JsonArray params) {
