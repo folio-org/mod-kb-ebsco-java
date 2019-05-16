@@ -39,6 +39,14 @@
       "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-titles-table.sql"
+    },
+    {
+      "tableName": "holdings",
+      "pkColumnName": "id",
+      "generateId": false,
+      "withMetadata": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-holdings-table.sql"
     }
   ]
 }
