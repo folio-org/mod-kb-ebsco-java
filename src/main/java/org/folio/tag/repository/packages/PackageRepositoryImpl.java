@@ -81,15 +81,15 @@ public class PackageRepositoryImpl implements PackageRepository {
 
   @Override
   public CompletableFuture<List<PackageId>> getPackageIdsByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenant) {
-    return getPackageIdsByTagAndIdPrefix(tags, providerId, page, count, tenant);
+    return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, tenant);
   }
 
-  private CompletableFuture<List<PackageId>> getPackageIdsByTagAndIdPrefix(List<String> tags, String providerId, int page, int count, String tenantId) {
+  private CompletableFuture<List<PackageId>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix, int page, int count, String tenantId) {
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();
     tags.forEach(parameters::add);
-    String likeExpression = providerId + "%";
+    String likeExpression = prefix + "%";
     parameters
       .add(likeExpression)
       .add(offset)

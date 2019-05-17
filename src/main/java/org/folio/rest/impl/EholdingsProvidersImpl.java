@@ -192,7 +192,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     return tagRepository
-      .countRecordsByTagsAndPrefix(tags, providerId, tenant, RecordType.PACKAGE)
+      .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
         return packageRepository.getPackageIdsByTagNameAndProvider(tags, providerId, page, count, tenant);
