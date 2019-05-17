@@ -2,10 +2,10 @@
   "totalResults": 1,
   "packagesList": [
     {
-      "packageId": 2222222,
+      "packageId": 3964,
       "packageName": "TEST_PACKAGE_NAME",
       "isCustom": true,
-      "vendorId": 1111111,
+      "vendorId": 19,
       "vendorName": "TEST_VENDOR_NAME",
       "titleCount": 5,
       "isSelected": true,

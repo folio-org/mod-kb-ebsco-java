@@ -7,21 +7,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -61,7 +53,16 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.packages.DbPackage;
 import org.folio.tag.repository.packages.PackageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.converter.Converter;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
@@ -250,10 +251,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .countRecordsByTags(tags, tenant, RecordType.PACKAGE)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.getPackageIdsByTagName(tags, page, count, tenant);
+        return packageRepository.getPackagesByTagName(tags, page, count, tenant);
       })
-      .thenCompose(packageIds ->
-        context.getPackagesService().retrievePackages(packageIds))
+      .thenCompose(dbPackages ->
+        context.getPackagesService().retrievePackages(getPackageIds(dbPackages)))
       .thenApply(packages ->
         packages.toBuilder()
           .totalResults(totalResults.getValue())
@@ -373,5 +374,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private boolean isTagOnlySearch(String q, String filterTags) {
     return Strings.isEmpty(q) && !Strings.isEmpty(filterTags);
+  }
+
+  private List<PackageId> getPackageIds(List<DbPackage> packageIds) {
+    return packageIds.stream().map(DbPackage::getId).collect(Collectors.toList());
   }
 }

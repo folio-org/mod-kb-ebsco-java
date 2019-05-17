@@ -20,6 +20,12 @@
       "visibilityData" : {
         "isHidden" : false,
         "reason" : ""
+      },
+      "tags" : {
+        "tagList":[
+          "tag one",
+          "tag 2"
+        ]
       }
     },
     "relationships" : {

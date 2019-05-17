@@ -19,14 +19,21 @@ public class PackageTableConstants {
     "DELETE FROM %s " +
       "WHERE " + ID_COLUMN + "=?";
 
-  public static final String SELECT_TAGGED_PACKAGES =
-    "SELECT DISTINCT packages.id as id, packages.name FROM %s " +
+  public static final String SELECT_PACKAGES_WITH_TAGS =
+    "SELECT packages.id as id, packages.name as name, packages.content_type as content_type, tags.tag as tag FROM %s " +
       "LEFT JOIN tags ON " +
       "tags.record_id = packages.id " +
       "AND tags.record_type = 'package' " +
-      "WHERE tags.tag IN (%s)" +
+      "WHERE tags.tag IN (%s) " +
       "AND packages.id LIKE ? " +
       "ORDER BY packages.name " +
       "OFFSET ? " +
       "LIMIT ?";
+
+  public static final String SELECT_PACKAGES_WITH_TAGS_BY_IDS =
+    "SELECT packages.id as id, packages.name as name, packages.content_type as content_type, tags.tag as tag FROM %s " +
+      "LEFT JOIN tags ON " +
+      "tags.record_id = packages.id " +
+      "AND tags.record_type = 'package' " +
+      "WHERE packages.id IN (%s)";
 }

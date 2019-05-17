@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
+import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.VendorById;
@@ -34,11 +36,13 @@ import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ProviderPutBodyValidator;
+import org.folio.rmapi.result.PackageCollectionResult;
 import org.folio.rmapi.result.VendorResult;
 import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.packages.DbPackage;
 import org.folio.tag.repository.packages.PackageRepository;
 import org.folio.tag.repository.providers.ProviderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,6 +164,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       template
         .requestAction(context ->
           context.getPackagesService().retrievePackages(selected, filterType, providerIdLong, q, page, count, nameSort)
+            .thenCompose(packages -> loadTags(packages, context.getOkapiData().getTenant()))
         );
     }
     template
@@ -188,21 +193,26 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       );
   }
 
-  private CompletableFuture<Packages> getPackagesByTagsAndProvider(List<String> tags, String providerId, int page, int count, RMAPITemplateContext context) {
+  private CompletableFuture<PackageCollectionResult> getPackagesByTagsAndProvider(List<String> tags, String providerId, int page, int count, RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
+    MutableObject<List<DbPackage>> mutableDbPackages = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     return tagRepository
       .countRecordsByTagsAndPrefix(tags, providerId, tenant, RecordType.PACKAGE)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.getPackageIdsByTagNameAndProvider(tags, providerId, page, count, tenant);
+        return packageRepository.getPackagesByTagNameAndProvider(tags, providerId, page, count, tenant);
       })
-      .thenCompose(packageIds ->
-        context.getPackagesService().retrievePackages(packageIds))
+      .thenCompose(dbPackages -> {
+        mutableDbPackages.setValue(dbPackages);
+        return context.getPackagesService().retrievePackages(getPackageIds(dbPackages));
+      })
       .thenApply(packages ->
-        packages.toBuilder()
+        new PackageCollectionResult(
+          packages.toBuilder()
           .totalResults(totalResults.getValue())
-          .build()
+          .build(),
+          mutableDbPackages.getValue())
       );
   }
 
@@ -235,6 +245,11 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         result.setTags(tagsConverter.convert(tags));
         return CompletableFuture.completedFuture(result);
       });
+  }
+
+  private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, String tenant) {
+    return packageRepository.getPackagesByIds(getPackageIds(packages), tenant)
+      .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 
   private CompletableFuture<VendorResult> updateTags(VendorById vendorById, String tenant, Tags tags) {
@@ -278,5 +293,21 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private List<String> parseTags(String filterTags) {
     return Arrays.asList(filterTags.split("\\s*,\\s*"));
+  }
+
+  private List<PackageId> getPackageIds(Packages packages) {
+    return packages.getPackagesList()
+      .stream()
+      .map(packageData ->
+        PackageId.builder()
+          .packageIdPart(packageData.getPackageId())
+          .providerIdPart(packageData.getVendorId())
+          .build()
+      )
+      .collect(Collectors.toList());
+  }
+
+  private List<PackageId> getPackageIds(List<DbPackage> packageIds) {
+    return packageIds.stream().map(DbPackage::getId).collect(Collectors.toList());
   }
 }
