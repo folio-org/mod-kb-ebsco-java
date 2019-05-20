@@ -1,16 +1,53 @@
 package org.folio.rest.impl;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.apache.http.HttpStatus.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
+import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_2;
+import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_3;
+import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_4;
+import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_5;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_2;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_3;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_3;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME_2;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME_3;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
+import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
+import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
+import static org.folio.tag.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
+import static org.folio.util.PackagesTestUtil.setUpPackage;
+import static org.folio.util.TestUtil.getFile;
+import static org.folio.util.TestUtil.mockDefaultConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.mockGetWithBody;
+import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
-import static org.folio.tag.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
-import static org.folio.util.TestUtil.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,43 +55,41 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.http.HttpStatus;
+import org.folio.holdingsiq.model.VendorById;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.Provider;
+import org.folio.rest.jaxrs.model.ProviderCollection;
+import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.folio.rest.jaxrs.model.Providers;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.Token;
+import org.folio.tag.RecordType;
+import org.folio.util.PackagesTestUtil;
+import org.folio.util.ProvidersTestUtil;
+import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import org.folio.holdingsiq.model.VendorById;
-import org.folio.rest.jaxrs.model.*;
-import org.folio.tag.RecordType;
-import org.folio.util.ProvidersTestUtil;
-import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
 
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsProvidersImplTest extends WireMockTestBase {
-  private static final String STUB_VENDOR_ID = "19";
-  private static final String STUB_VENDOR_ID_2 = "153";
-  private static final String STUB_VENDOR_ID_3 = "167";
-
-  private static final String STUB_VENDOR_NAME = "Vendor Name1";
-  private static final String STUB_VENDOR_NAME_2 = "Vendor Name2";
-  private static final String STUB_VENDOR_NAME_3 = "Vendor Name3";
-
-  private static final String STUB_TAG = "test tag";
-  private static final String STUB_TAG_VALUE = "tag one";
-  private static final String STUB_TAG_VALUE_2 = "tag 2";
-  private static final String STUB_TAG_VALUE_3 = "tag 3";
 
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
@@ -114,6 +149,59 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     } finally {
       TagsTestUtil.clearTags(vertx);
       TestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnPackagesOnSearchByProviderIdAndTagsOnly() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2 , RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3 , RecordType.PACKAGE, STUB_TAG_VALUE_2);
+
+      PackagesTestUtil.setUpPackages(vertx, getWiremockUrl());
+
+      PackageCollection packageCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/providers/" + STUB_VENDOR_ID + "/packages?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(1, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(1, packages.size());
+      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnPackagesOnSearchByProviderIdAndTagsWithPagination() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_4 , RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_5 , RecordType.PACKAGE, STUB_TAG_VALUE_2);
+
+      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+      setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
+      setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
+      mockDefaultConfiguration(getWiremockUrl());
+
+      PackageCollection packageCollection = RestAssured.given(getRequestSpecification())
+        .when()
+        .get("eholdings/providers/" + STUB_VENDOR_ID + "/packages?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+        .then()
+        .statusCode(HttpStatus.SC_OK).extract().as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(1, packages.size());
+      assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -579,14 +667,13 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     return newTags;
   }
 
-  private void mockProviderWithName(String stubProviderId, String stubProviderName) throws IOException, URISyntaxException {
+  private void mockProviderWithName(String stubProviderId, String stubProviderName) {
     mockGetWithBody(new RegexPattern(".*vendors/"+stubProviderId),
       getProviderResponse(stubProviderName, stubProviderId));
   }
 
-  private String getProviderResponse(String providerName, String providerId) throws IOException, URISyntaxException {
-    VendorById vendor = Json.decodeValue(readFile("responses/rmapi/vendors/get-vendor-by-id-response.json"), VendorById.class);
-    return Json.encode(vendor.byIdBuilder()
+  private String getProviderResponse(String providerName, String providerId) {
+    return Json.encode(VendorById.byIdBuilder()
       .vendorName(providerName)
       .vendorId(Integer.valueOf(providerId))
       .build());

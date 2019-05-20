@@ -23,9 +23,9 @@ public class TagTableConstants {
     "SELECT " + TAG_FIELD_LIST + " FROM %s "
       + "WHERE " + RECORD_TYPE_COLUMN + " IN (%s) ORDER BY " + TAG_COLUMN;
 
-  public static final String COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE =
+  public static final String COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX =
     "SELECT COUNT(DISTINCT " + RECORD_ID_COLUMN + ") AS count FROM %s "
-      + "WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "=?";
+      + "WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "=? AND " + RECORD_ID_COLUMN + " LIKE ?";
 
 
   static  final String UPDATE_INSERT_STATEMENT_FOR_PROVIDER =

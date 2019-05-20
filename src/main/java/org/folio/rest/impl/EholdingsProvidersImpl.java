@@ -9,15 +9,9 @@ import java.util.concurrent.CompletableFuture;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
+import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
@@ -26,7 +20,12 @@ import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.jaxrs.model.*;
+import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.Provider;
+import org.folio.rest.jaxrs.model.ProviderCollection;
+import org.folio.rest.jaxrs.model.ProviderDataAttributes;
+import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
@@ -40,7 +39,15 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.packages.PackageRepository;
 import org.folio.tag.repository.providers.ProviderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
@@ -62,6 +69,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private Converter<List<Tag>, Tags> tagsConverter;
   @Autowired
   private ProviderRepository providerRepository;
+  @Autowired
+  private PackageRepository packageRepository;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -131,21 +140,29 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, String filterSelected,
+  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, String filterTags, String filterSelected,
                                                         String filterType, String sort, int page, int count,
                                                         Map<String, String> okapiHeaders,
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
-    long providerIdLong = idParser.parseProviderId(providerId);
-    String selected = convertToHoldingsSelected(filterSelected);
-    parametersValidator.validate(selected, filterType, sort, q);
+    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
-    Sort nameSort = Sort.valueOf(sort.toUpperCase());
+    if (isTagOnlySearch(q, filterTags)) {
+      List<String> tags = parseTags(filterTags);
+      template.requestAction(context -> getPackagesByTagsAndProvider(tags, providerId, page, count, context));
+    } else {
+      long providerIdLong = idParser.parseProviderId(providerId);
+      String selected = convertToHoldingsSelected(filterSelected);
+      parametersValidator.validate(selected, filterType, sort, q);
 
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getPackagesService().retrievePackages(selected, filterType, providerIdLong, q, page, count, nameSort)
-      )
+      Sort nameSort = Sort.valueOf(sort.toUpperCase());
+
+      template
+        .requestAction(context ->
+          context.getPackagesService().retrievePackages(selected, filterType, providerIdLong, q, page, count, nameSort)
+        );
+    }
+    template
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersPackagesByProviderIdResponse.respond404WithApplicationVndApiJson(
           ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)
@@ -166,6 +183,24 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         context.getProvidersService().retrieveProviders(providerIds))
       .thenApply(providers ->
         providers.toBuilder()
+          .totalResults(totalResults.getValue())
+          .build()
+      );
+  }
+
+  private CompletableFuture<Packages> getPackagesByTagsAndProvider(List<String> tags, String providerId, int page, int count, RMAPITemplateContext context) {
+    MutableObject<Integer> totalResults = new MutableObject<>();
+    String tenant = context.getOkapiData().getTenant();
+    return tagRepository
+      .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
+      .thenCompose(packageCount -> {
+        totalResults.setValue(packageCount);
+        return packageRepository.getPackageIdsByTagNameAndProvider(tags, providerId, page, count, tenant);
+      })
+      .thenCompose(packageIds ->
+        context.getPackagesService().retrievePackages(packageIds))
+      .thenApply(packages ->
+        packages.toBuilder()
           .totalResults(totalResults.getValue())
           .build()
       );
@@ -239,5 +274,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private boolean isTagOnlySearch(String q, String filterTags) {
     return Strings.isEmpty(q) && !Strings.isEmpty(filterTags);
+  }
+
+  private List<String> parseTags(String filterTags) {
+    return Arrays.asList(filterTags.split("\\s*,\\s*"));
   }
 }

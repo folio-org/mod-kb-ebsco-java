@@ -1,5 +1,24 @@
 package org.folio.tag.repository.packages;
 
+import static org.folio.common.ListUtils.mapItems;
+import static org.folio.tag.repository.DbUtil.mapResultSet;
+import static org.folio.tag.repository.DbUtil.mapVertxFuture;
+import static org.folio.tag.repository.packages.PackageTableConstants.DELETE_STATEMENT;
+import static org.folio.tag.repository.packages.PackageTableConstants.INSERT_OR_UPDATE_STATEMENT;
+import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
+import static org.folio.tag.repository.packages.PackageTableConstants.SELECT_TAGGED_PACKAGES;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.rest.parser.IdParser;
+import org.folio.rest.persist.PostgresClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -8,24 +27,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-import org.folio.holdingsiq.model.PackageByIdData;
-import org.folio.holdingsiq.model.PackageId;
-import org.folio.rest.parser.IdParser;
-import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import static org.folio.common.ListUtils.mapItems;
-import static org.folio.tag.repository.DbUtil.mapResultSet;
-import static org.folio.tag.repository.DbUtil.mapVertxFuture;
-import static org.folio.tag.repository.packages.PackageTableConstants.DELETE_STATEMENT;
-import static org.folio.tag.repository.packages.PackageTableConstants.INSERT_OR_UPDATE_STATEMENT;
-import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
-import static org.folio.tag.repository.packages.PackageTableConstants.SELECT_TAGGED_PACKAGES;
 
 @Component
 public class PackageRepositoryImpl implements PackageRepository {
@@ -75,11 +76,22 @@ public class PackageRepositoryImpl implements PackageRepository {
 
   @Override
   public CompletableFuture<List<PackageId>> getPackageIdsByTagName(List<String> tags, int page, int count, String tenantId) {
+    return getPackageIdsByTagAndIdPrefix(tags, "", page, count, tenantId);
+  }
+
+  @Override
+  public CompletableFuture<List<PackageId>> getPackageIdsByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenant) {
+    return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, tenant);
+  }
+
+  private CompletableFuture<List<PackageId>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix, int page, int count, String tenantId) {
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();
     tags.forEach(parameters::add);
+    String likeExpression = prefix + "%";
     parameters
+      .add(likeExpression)
       .add(offset)
       .add(count);
 

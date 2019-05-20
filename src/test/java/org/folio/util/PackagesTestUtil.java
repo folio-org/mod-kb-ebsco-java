@@ -1,19 +1,39 @@
 package org.folio.util;
 
-import io.vertx.core.Vertx;
-import lombok.Builder;
-import lombok.Value;
-import org.folio.rest.persist.PostgresClient;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_CONTENT_TYPE;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_2;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_3;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_3;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
 import static org.folio.tag.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.tag.repository.packages.PackageTableConstants.ID_COLUMN;
 import static org.folio.tag.repository.packages.PackageTableConstants.NAME_COLUMN;
 import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.mockDefaultConfiguration;
+import static org.folio.util.TestUtil.mockGetWithBody;
+import static org.folio.util.TestUtil.readFile;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.rest.persist.PostgresClient;
+
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
+import lombok.Builder;
+import lombok.Value;
 
 public class PackagesTestUtil {
 
@@ -46,6 +66,39 @@ public class PackagesTestUtil {
 
   private static String packageTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + PACKAGES_TABLE_NAME;
+  }
+
+  public static String getPackageResponse(String packageName, String packageId, String stubProviderId) throws IOException, URISyntaxException {
+    PackageByIdData packageData = Json.decodeValue(readFile("responses/rmapi/packages/get-package-by-id-response.json"), PackageByIdData.class);
+    return Json.encode(packageData.toByIdBuilder()
+      .packageName(packageName)
+      .packageId(Integer.parseInt(packageId))
+      .vendorId(Integer.parseInt(stubProviderId))
+      .build());
+  }
+
+  public static PackagesTestUtil.DbPackage buildDbPackage(String id, String name) {
+    return PackagesTestUtil.DbPackage.builder()
+      .id(String.valueOf(id))
+      .name(name)
+      .contentType(STUB_PACKAGE_CONTENT_TYPE).build();
+  }
+
+  public static void setUpPackages(Vertx vertx, String wiremockUrl) throws IOException, URISyntaxException {
+    setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID_2, STUB_PACKAGE_NAME_2);
+    setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
+    mockDefaultConfiguration(wiremockUrl);
+  }
+
+  public static void setUpPackage(Vertx vertx, String stubPackageId, String stubVendorId, String stubPackageName) throws IOException, URISyntaxException {
+    PackagesTestUtil.addPackage(vertx, buildDbPackage(stubVendorId + "-" + stubPackageId, stubPackageName));
+    mockPackageWithName(stubPackageId, stubVendorId, stubPackageName);
+  }
+
+  public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName) throws IOException, URISyntaxException {
+    mockGetWithBody(new RegexPattern(".*vendors/" + stubProviderId + "/packages/" + stubPackageId),
+      getPackageResponse(stubPackageName, stubPackageId, stubProviderId));
   }
 
   @Value
