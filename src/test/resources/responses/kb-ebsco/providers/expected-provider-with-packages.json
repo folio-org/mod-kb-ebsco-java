@@ -23,7 +23,7 @@
         "data": [
           {
             "type": "packages",
-            "id": "1111111-2222222"
+            "id": "19-3964"
           }
         ],
         "meta": {
@@ -34,7 +34,7 @@
   },
   "included": [
     {
-      "id": "1111111-2222222",
+      "id": "19-3964",
       "type": "packages",
       "attributes": {
         "contentType": "Online Reference",
@@ -45,9 +45,9 @@
         "isCustom": true,
         "isSelected": true,
         "name": "TEST_PACKAGE_NAME",
-        "packageId": 2222222,
+        "packageId": 3964,
         "packageType": "Custom",
-        "providerId": 1111111,
+        "providerId": 19,
         "providerName": "TEST_VENDOR_NAME",
         "selectedCount": 5,
         "titleCount": 5,

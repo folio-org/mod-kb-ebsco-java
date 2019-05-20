@@ -156,6 +156,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldReturnPackagesOnSearchByProviderIdAndTagsOnly() throws IOException, URISyntaxException {
     try {
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE_2);
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2 , RecordType.PACKAGE, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3 , RecordType.PACKAGE, STUB_TAG_VALUE_2);
 
@@ -170,6 +171,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
       assertEquals(1, (int) packageCollection.getMeta().getTotalResults());
       assertEquals(1, packages.size());
+      assertThat(packages.get(0).getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
       assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -585,6 +587,31 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String expected = readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element.json");
 
     JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldReturnProviderPackagesWithTags() throws IOException, URISyntaxException {
+    try {
+      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE_2);
+
+      String rmapiProviderPackagesUrl = "/rm/rmaccounts.*" + STUB_CUSTOMER_ID + "/vendors/"
+        + STUB_VENDOR_ID + "/packages.*";
+      String providerPackagesUrl = "eholdings/providers/" + STUB_VENDOR_ID + "/packages";
+      String packageStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
+
+      mockDefaultConfiguration(getWiremockUrl());
+      mockGet(new RegexPattern(rmapiProviderPackagesUrl), packageStubResponseFile);
+
+      String actual = getWithOk(providerPackagesUrl).asString();
+      String expected = readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element-with-tags.json");
+
+      JSONAssert.assertEquals(expected, actual, false);
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    }
   }
 
   @Test
