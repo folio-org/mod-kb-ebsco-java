@@ -26,18 +26,22 @@ public class HoldingsServiceImpl implements HoldingsService {
   private static final Logger logger = LoggerFactory.getLogger(HoldingsServiceImpl.class);
   private Vertx vertx;
   private long delay;
+  private int retryCount;
   private HoldingsRepository holdingsRepository;
 
   @Autowired
-  public HoldingsServiceImpl(Vertx vertx, HoldingsRepository holdingsRepository, @Value("${holdings.status.check.delay}") long delay) {
+  public HoldingsServiceImpl(Vertx vertx, HoldingsRepository holdingsRepository,
+                             @Value("${holdings.status.check.delay}") long delay,
+                             @Value("${holdings.status.retry.count}") int retryCount) {
     this.vertx = vertx;
     this.holdingsRepository = holdingsRepository;
     this.delay = delay;
+    this.retryCount = retryCount;
   }
 
   public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, String tenantId) {
     return populateHoldings(context)
-      .thenCompose(isSuccessful -> waitForCompleteStatus(context, 5, tenantId))
+      .thenCompose(isSuccessful -> waitForCompleteStatus(context, retryCount))
       .thenCompose(loadStatus -> loadHoldings(context, loadStatus.getTotalCount(), tenantId));
   }
 
@@ -53,13 +57,13 @@ public class HoldingsServiceImpl implements HoldingsService {
     });
   }
 
-  public CompletableFuture<HoldingsLoadStatus> waitForCompleteStatus(RMAPITemplateContext context, int retries, String tenantId) {
+  public CompletableFuture<HoldingsLoadStatus> waitForCompleteStatus(RMAPITemplateContext context,  int retryCount) {
     CompletableFuture<HoldingsLoadStatus> future = new CompletableFuture<>();
-    waitForCompleteStatus(context, retries, future, tenantId);
+    waitForCompleteStatus(context, retryCount, future);
     return future;
   }
 
-  public void waitForCompleteStatus(RMAPITemplateContext context, int retries, CompletableFuture<HoldingsLoadStatus> future, String tenantId) {
+  public void waitForCompleteStatus(RMAPITemplateContext context, int retries, CompletableFuture<HoldingsLoadStatus> future) {
     vertx.setTimer(delay, timerId -> {
       getLoadingStatus(context)
         .thenAccept(loadStatus -> {
@@ -71,7 +75,7 @@ public class HoldingsServiceImpl implements HoldingsService {
             if (retries <= 0) {
               throw new IllegalStateException("Failed to get status with status response:" + loadStatus);
             }
-            waitForCompleteStatus(context, retries - 1, future, tenantId);
+            waitForCompleteStatus(context, retries - 1, future);
           } else {
             future.completeExceptionally(new IllegalStateException("Failed to get status with status response:" + loadStatus));
           }
