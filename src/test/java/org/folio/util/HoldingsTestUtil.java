@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.vertx.core.Vertx;
 
 import org.folio.holdingsiq.model.Holding;

@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -64,26 +65,24 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   public void waitForCompleteStatus(RMAPITemplateContext context, int retries, CompletableFuture<HoldingsLoadStatus> future) {
-    vertx.setTimer(delay, timerId -> {
-      getLoadingStatus(context)
-        .thenAccept(loadStatus -> {
-          final LoadStatus status = LoadStatus.fromValue(loadStatus.getStatus());
-          logger.info("Getting status of stage snapshot: {}.", status);
-          if (COMPLETED.equals(status)) {
-            future.complete(loadStatus);
-          } else if (IN_PROGRESS.equals(status)) {
-            if (retries <= 0) {
-              throw new IllegalStateException("Failed to get status with status response:" + loadStatus);
-            }
-            waitForCompleteStatus(context, retries - 1, future);
-          } else {
-            future.completeExceptionally(new IllegalStateException("Failed to get status with status response:" + loadStatus));
+    vertx.setTimer(delay, timerId -> getLoadingStatus(context)
+      .thenAccept(loadStatus -> {
+        final LoadStatus status = LoadStatus.fromValue(loadStatus.getStatus());
+        logger.info("Getting status of stage snapshot: {}.", status);
+        if (COMPLETED.equals(status)) {
+          future.complete(loadStatus);
+        } else if (IN_PROGRESS.equals(status)) {
+          if (retries <= 0) {
+            throw new IllegalStateException("Failed to get status with status response:" + loadStatus);
           }
-      }).exceptionally(throwable -> {
-        future.completeExceptionally(throwable);
-        return null;
-      });
-    });
+          waitForCompleteStatus(context, retries - 1, future);
+        } else {
+          future.completeExceptionally(new IllegalStateException("Failed to get status with status response:" + loadStatus));
+        }
+    }).exceptionally(throwable -> {
+      future.completeExceptionally(throwable);
+      return null;
+    }));
   }
 
   public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, Integer totalCount, String tenantId) {
@@ -93,12 +92,13 @@ public class HoldingsServiceImpl implements HoldingsService {
     for (int iteration = 1; iteration < totalRequestCount + 1; iteration++) {
       int count = calculateCount(iteration, totalCount);
       int finalIteration = iteration;
-      future = future.thenCompose(o -> context.getLoadingService()
-        .loadHoldings(count, finalIteration))
-        .thenAccept(holding -> saveHolding(holding.getHoldingsList(), tenantId));
+      future = future
+        .thenCompose(o -> context.getLoadingService().loadHoldings(count, finalIteration))
+        .thenCompose(holding -> saveHolding(holding.getHoldingsList(), tenantId));
     }
     return future;
   }
+
 
   /**
    * Defines an amount of request needed to load all holdings from the staged area
@@ -123,7 +123,7 @@ public class HoldingsServiceImpl implements HoldingsService {
    */
   private int calculateCount(Integer iteration, Integer totalCount) {
     if (totalCount <= MAX_COUNT) return totalCount;
-    final int firedCount = (iteration  - 1) * MAX_COUNT;
+    final int firedCount = (iteration - 1) * MAX_COUNT;
     final int difference = totalCount - firedCount;
     return difference <= MAX_COUNT ? difference : MAX_COUNT;
   }
@@ -134,11 +134,6 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   private CompletableFuture<Void> saveHolding(List<Holding> holdings, String tenantId) {
     logger.info("Saving holdings to database.");
-
-    CompletableFuture[] futures = holdings.stream()
-      .map(holding -> holdingsRepository.saveHolding(holding, tenantId))
-      .toArray(CompletableFuture[]::new);
-    return CompletableFuture.allOf(futures);
+    return holdingsRepository.saveHolding(holdings, tenantId);
   }
-
 }
