@@ -34,7 +34,7 @@
   </licenses>
 
   <properties>
-    <raml-module-builder.version>23.11.1</raml-module-builder.version>
+    <raml-module-builder.version>24.0.0</raml-module-builder.version>
     <vertx.version>3.5.4</vertx.version>
     <aspectj.version>1.9.1</aspectj.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
@@ -42,6 +42,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
     <spring.version>5.1.1.RELEASE</spring.version>
+    <jackson.version>2.9.9</jackson.version>
   </properties>
 
   <profiles>
@@ -81,7 +82,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.8.11</version>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.jaxrs</groupId>
+      <artifactId>jackson-jaxrs-json-provider</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
