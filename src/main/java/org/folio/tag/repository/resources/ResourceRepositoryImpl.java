@@ -10,17 +10,17 @@ import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCE
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
+import org.folio.holdingsiq.model.Title;
+import org.folio.rest.persist.PostgresClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.UpdateResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import org.folio.holdingsiq.model.Title;
-import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class ResourceRepositoryImpl implements ResourceRepository {

@@ -1,25 +1,25 @@
 package org.folio.rest.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.TitlePost;
+import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.rest.annotations.Validate;
@@ -34,6 +34,8 @@ import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
+import org.folio.rest.util.template.RMAPITemplate;
+import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitlesPostAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
@@ -42,7 +44,15 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.tag.RecordType;
 import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
+import org.folio.tag.repository.titles.DbTitle;
 import org.folio.tag.repository.titles.TitlesRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
@@ -76,23 +86,30 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsTitles(String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
+  public void getEholdingsTitles(String filterTags, String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
                                  String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    FilterQuery fq = FilterQuery.builder()
-      .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
-      .type(filterType).name(filterName).isxn(filterIsxn).subject(filterSubject)
-      .publisher(filterPublisher).build();
+    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+    if(!StringUtils.isEmpty(filterTags)){
+      List<String> tags = Arrays.asList(filterTags.split("\\s*,\\s*"));
+      template.requestAction(context -> getResourcesByTags(tags, page, count, context));
+    }
+    else {
+      FilterQuery fq = FilterQuery.builder()
+        .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
+        .type(filterType).name(filterName).isxn(filterIsxn).subject(filterSubject)
+        .publisher(filterPublisher).build();
 
-    parametersValidator.validate(fq, sort);
+      parametersValidator.validate(fq, sort);
 
-    Sort nameSort = Sort.valueOf(sort.toUpperCase());
+      Sort nameSort = Sort.valueOf(sort.toUpperCase());
 
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getTitlesService().retrieveTitles(fq, nameSort, page, count)
-      )
-      .executeWithResult(TitleCollection.class);
+      template
+        .requestAction(context ->
+          context.getTitlesService().retrieveTitles(fq, nameSort, page, count)
+        );
+    }
+    template.executeWithResult(TitleCollection.class);
   }
 
   @Override
@@ -160,6 +177,46 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))
       )
       .executeWithResult(Title.class);
+  }
+
+  private CompletableFuture<Titles> getResourcesByTags(List<String> tags, int page, int count, RMAPITemplateContext context) {
+    MutableObject<Integer> totalResults = new MutableObject<>();
+    MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
+
+    String tenant = context.getOkapiData().getTenant();
+
+    return titlesRepository.countTitlesByResourceTags(tags, tenant)
+      .thenCompose(resultsCount -> {
+        totalResults.setValue(resultsCount);
+        return titlesRepository.getTitleIdsByResourceTags(tags, page, count, tenant);
+      })
+      .thenCompose(dbTitles -> {
+        mutableDbTitles.setValue(dbTitles);
+        List<Long> missingTitleIds = dbTitles.stream()
+          .filter(title -> Objects.isNull(title.getTitle()))
+          .map(DbTitle::getId)
+          .collect(Collectors.toList());
+        return context.getTitlesService().retrieveTitles(missingTitleIds);
+      })
+      .thenApply(titles ->
+        titles.toBuilder()
+          .titleList(combineTitles(mutableDbTitles.getValue(), titles.getTitleList()))
+          .totalResults(totalResults.getValue())
+          .build()
+      );
+  }
+
+  private List<org.folio.holdingsiq.model.Title> combineTitles(List<DbTitle> dbTitles, List<org.folio.holdingsiq.model.Title> titleList) {
+    List<org.folio.holdingsiq.model.Title> resultList = new ArrayList<>(titleList);
+    resultList.addAll(
+      dbTitles.stream()
+        .filter(title -> Objects.nonNull(title.getTitle()))
+        .map(DbTitle::getTitle)
+        .collect(Collectors.toList())
+    );
+    resultList.sort(Comparator.comparing(org.folio.holdingsiq.model.Title::getTitleName));
+
+    return resultList;
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result, String tenant) {
