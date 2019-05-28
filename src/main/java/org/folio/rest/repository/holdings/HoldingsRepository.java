@@ -8,4 +8,6 @@ import org.folio.holdingsiq.model.Holding;
 public interface HoldingsRepository {
 
   CompletableFuture<Void> saveHolding(List<Holding> holding, String tenantId);
+
+  CompletableFuture<Void> removeHoldings(String tenantId);
 }

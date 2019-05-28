@@ -9,7 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -43,7 +42,9 @@ public class HoldingsServiceImpl implements HoldingsService {
   public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, String tenantId) {
     return populateHoldings(context)
       .thenCompose(isSuccessful -> waitForCompleteStatus(context, retryCount))
-      .thenCompose(loadStatus -> loadHoldings(context, loadStatus.getTotalCount(), tenantId));
+      .thenCompose(loadStatus -> holdingsRepository.removeHoldings(tenantId)
+        .thenCompose(o -> loadHoldings(context, loadStatus.getTotalCount(), tenantId))
+      );
   }
 
   private CompletableFuture<Void> populateHoldings(RMAPITemplateContext context) {
@@ -89,7 +90,7 @@ public class HoldingsServiceImpl implements HoldingsService {
 
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
     final int totalRequestCount = getRequestCount(totalCount);
-    for (int iteration = 1; iteration < totalRequestCount + 1; iteration++) {
+    for (int iteration = totalRequestCount - 1; iteration < totalRequestCount + 1; iteration++) {
       int count = calculateCount(iteration, totalCount);
       int finalIteration = iteration;
       future = future

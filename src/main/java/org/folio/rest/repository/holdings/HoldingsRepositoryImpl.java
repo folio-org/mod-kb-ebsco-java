@@ -8,15 +8,15 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +26,7 @@ import org.folio.tag.repository.DbUtil;
 
 @Component
 public class HoldingsRepositoryImpl implements HoldingsRepository {
+  private static final Logger LOG = LoggerFactory.getLogger(HoldingsRepositoryImpl.class);
 
   public static final String HOLDINGS_TABLE = "holdings";
   private static final String ID_COLUMN = "id";
@@ -34,6 +35,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   private static final String INSERT_OR_UPDATE_HOLDINGS_STATEMENT =
     "INSERT INTO %s(" + HOLDINGS_FIELD_LIST + ") VALUES %s" +
       "ON CONFLICT (" + ID_COLUMN + ") DO NOTHING";
+  private static final String REMOVE_FROM_HOLDINGS = "DELETE FROM %s;";
   private static final int MAX_BATCH_SIZE = 200;
   private Vertx vertx;
 
@@ -55,12 +57,23 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     });
   }
 
-  private CompletableFuture<Void> saveHoldings(List<Holding> holdings, String tenantId, AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
+  private CompletableFuture<Void> saveHoldings(List<Holding> holdings, String tenantId,
+                                               AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
     String placeholders = createInsertPlaceholders(holdings);
     JsonArray parameters = createParameters(holdings);
     final String query = String.format(INSERT_OR_UPDATE_HOLDINGS_STATEMENT, getTableName(tenantId, HOLDINGS_TABLE), placeholders);
     Future<UpdateResult> future = Future.future();
     postgresClient.execute(connection, query, parameters, future.completer());
+    return mapVertxFuture(future).thenApply(result -> null);
+  }
+
+  @Override
+  public CompletableFuture<Void> removeHoldings(String tenantId){
+    final String query = String.format(REMOVE_FROM_HOLDINGS, getTableName(tenantId, HOLDINGS_TABLE));
+    LOG.info("Do delete query = " + query);
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+    Future<UpdateResult> future = Future.future();
+    postgresClient.execute(query, future.completer());
     return mapVertxFuture(future).thenApply(result -> null);
   }
 
