@@ -13,6 +13,15 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_2;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_3;
@@ -25,7 +34,6 @@ import static org.folio.rest.impl.TagsTestData.STUB_TAG;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
-import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
 import static org.folio.util.TestUtil.getFile;
@@ -34,40 +42,12 @@ import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.mockPost;
 import static org.folio.util.TestUtil.mockPut;
 import static org.folio.util.TestUtil.readFile;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.http.HttpStatus;
-import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.PackageByIdData;
-import org.folio.holdingsiq.model.PackageData;
-import org.folio.rest.jaxrs.model.ContentType;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Package;
-import org.folio.rest.jaxrs.model.PackageCollection;
-import org.folio.rest.jaxrs.model.PackageCollectionItem;
-import org.folio.rest.jaxrs.model.PackagePostRequest;
-import org.folio.rest.jaxrs.model.PackagePutRequest;
-import org.folio.rest.jaxrs.model.ResourceCollection;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.tag.RecordType;
-import org.folio.util.PackagesTestUtil;
-import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -77,9 +57,29 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
+import org.folio.repository.RecordType;
+import org.folio.rest.jaxrs.model.ContentType;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Package;
+import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackagePostRequest;
+import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.jaxrs.model.ResourceCollection;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.util.PackagesTestUtil;
+import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {

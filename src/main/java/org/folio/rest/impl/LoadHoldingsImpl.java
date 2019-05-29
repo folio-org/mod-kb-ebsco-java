@@ -12,14 +12,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.jaxrs.resource.LoadHoldings;
-import org.folio.rest.service.holdings.HoldingsService;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateFactory;
+import org.folio.service.holdings.HoldingsService;
 import org.folio.spring.SpringContextUtil;
 
 public class LoadHoldingsImpl implements LoadHoldings {

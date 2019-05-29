@@ -21,6 +21,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.TagCollection;
@@ -30,8 +32,6 @@ import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.validator.RectypeParameterValidator;
 import org.folio.spring.SpringContextUtil;
-import org.folio.tag.Tag;
-import org.folio.tag.repository.TagRepository;
 
 public class EholdingsTagsImpl implements EholdingsTags {
 
@@ -42,7 +42,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
   @Autowired
   private TagRepository tagRepository;
   @Autowired
-  private Converter<List<String>, Set<org.folio.tag.RecordType>> recordTypesConverter;
+  private Converter<List<String>, Set<org.folio.repository.RecordType>> recordTypesConverter;
   @Autowired
   private Converter<List<Tag>, TagCollection> tagsConverter;
 

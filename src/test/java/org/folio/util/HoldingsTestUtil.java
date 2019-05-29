@@ -1,6 +1,6 @@
 package org.folio.util;
 
-import static org.folio.rest.repository.holdings.HoldingsRepositoryImpl.HOLDINGS_TABLE;
+import static org.folio.repository.holdings.HoldingsRepositoryImpl.HOLDINGS_TABLE;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;
@@ -9,7 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.Vertx;
 
 import org.folio.holdingsiq.model.Holding;

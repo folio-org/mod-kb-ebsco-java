@@ -10,13 +10,13 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RectypesConverter implements Converter<List<String>, Set<org.folio.tag.RecordType>> {
+public class RectypesConverter implements Converter<List<String>, Set<org.folio.repository.RecordType>> {
 
   @Autowired
-  private Converter<String, org.folio.tag.RecordType> recordTypeConverter;
+  private Converter<String, org.folio.repository.RecordType> recordTypeConverter;
 
   @Override
-  public Set<org.folio.tag.RecordType> convert(@NonNull List<String> source) {
+  public Set<org.folio.repository.RecordType> convert(@NonNull List<String> source) {
     return source.stream()
               .map(recType -> recordTypeConverter.convert(recType))
               .collect(Collectors.toSet());
