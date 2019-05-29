@@ -6,10 +6,12 @@ import static org.folio.tag.repository.packages.PackageTableConstants.NAME_COLUM
 import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import lombok.Builder;
 import lombok.Value;
 
@@ -32,6 +34,16 @@ public class ResourcesTestUtil {
             .build()
       )));
     return future.join();
+  }
+
+  public static void addResource(Vertx vertx, DbResources dbResource) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).execute(
+      "INSERT INTO " + resourceTestTable() +
+        "(" + ID_COLUMN + ", " + NAME_COLUMN + ") VALUES(?,?)",
+      new JsonArray(Arrays.asList(dbResource.getId(), dbResource.getName() )),
+      event -> future.complete(null));
+    future.join();
   }
 
   private static String resourceTestTable() {

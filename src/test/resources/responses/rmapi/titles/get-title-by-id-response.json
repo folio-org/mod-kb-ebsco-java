@@ -45,7 +45,7 @@
   "customerResourcesList": [
     {
       "titleId": 985846,
-      "packageId": 5207,
+      "packageId": 3964,
       "packageName": "EBSCO eBooks",
       "packageType": "Selectable",
       "proxy": {
@@ -69,7 +69,7 @@
         }
       ],
       "customCoverageList": [
-        
+
       ],
       "coverageStatement": null,
       "managedEmbargoPeriod": {

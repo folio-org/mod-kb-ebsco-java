@@ -11,7 +11,7 @@ public interface TitlesRepository {
 
   CompletableFuture<Void> deleteTitle(String titleId, String tenantId);
 
-  CompletableFuture<List<DbTitle>> getTitleIdsByResourceTags(List<String> tags, int page, int count, String tenant);
+  CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenant);
 
   CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String tenant);
 }

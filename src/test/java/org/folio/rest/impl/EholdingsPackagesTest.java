@@ -13,6 +13,14 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_2;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_3;
@@ -21,7 +29,6 @@ import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
-import static org.folio.rest.impl.TagsTestData.STUB_TAG;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
@@ -34,13 +41,6 @@ import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.mockPost;
 import static org.folio.util.TestUtil.mockPut;
 import static org.folio.util.TestUtil.readFile;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -48,7 +48,23 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.AnythingPattern;
+import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
+import io.restassured.RestAssured;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
@@ -65,21 +81,6 @@ import org.folio.tag.RecordType;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.matching.AnythingPattern;
-import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
-import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
-import io.restassured.RestAssured;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
@@ -217,14 +218,14 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturnPackageWithTagOnGetById() throws IOException, URISyntaxException {
     try {
       String packageId = FULL_PACKAGE_ID;
-      TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, STUB_TAG);
+      TagsTestUtil.insertTag(vertx, packageId, RecordType.PACKAGE, STUB_TAG_VALUE);
       mockDefaultConfiguration(getWiremockUrl());
 
       mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
       Package packageData = getWithOk("eholdings/packages/" + packageId).as(Package.class);
 
-      assertTrue(packageData.getData().getAttributes().getTags().getTagList().contains(STUB_TAG));
+      assertTrue(packageData.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
     }
     finally {
       TagsTestUtil.clearTags(vertx);

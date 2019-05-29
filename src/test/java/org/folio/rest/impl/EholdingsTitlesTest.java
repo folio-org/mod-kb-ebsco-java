@@ -14,42 +14,36 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
-import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
-import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
-import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
-import static org.folio.rest.util.RestConstants.TITLES_TYPE;
-import static org.folio.tag.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
+import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
+import static org.folio.rest.impl.TitlesTestData.CUSTOM_RESOURCE_ENDPOINT;
+import static org.folio.rest.impl.TitlesTestData.CUSTOM_TITLE_ENDPOINT;
+import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_NAME;
+import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
+import static org.folio.tag.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.util.TestUtil.mockDefaultConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rest.jaxrs.model.Title;
-import org.folio.rest.jaxrs.model.TitlePostRequest;
-import org.folio.rest.jaxrs.model.TitlePutRequest;
-import org.folio.tag.RecordType;
-import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
-import org.folio.util.TitlesTestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -62,18 +56,29 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import org.folio.holdingsiq.model.Holding;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.Title;
+import org.folio.rest.jaxrs.model.TitleCollection;
+import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.folio.rest.jaxrs.model.TitlePutRequest;
+import org.folio.tag.RecordType;
+import org.folio.util.HoldingsTestUtil;
+import org.folio.util.ResourcesTestUtil;
+import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
+import org.folio.util.TitlesTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
-  private static final String STUB_TITLE_ID = "985846";
-  private static final String STUB_TITLE_NAME = "Test Title";
-
-  private static final String STUB_CUSTOM_VENDOR_ID = "123356";
-  private static final String STUB_CUSTOM_PACKAGE_ID = "3157070";
-  private static final String STUB_CUSTOM_TITLE_ID = "19412030";
-  private static final String CUSTOM_TITLE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
-  private static final String CUSTOM_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
   public static final String EHOLDINGS_TITLES_PATH = "eholdings/titles";
 
   @Test
@@ -86,37 +91,56 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
 
-    RestAssured.given()
+    String actualResponse = RestAssured.given()
       .spec(getRequestSpecification())
       .when()
       .get(EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name")
       .then()
       .statusCode(200)
+      .extract().asString();
+    JSONAssert.assertEquals(
+      readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, false);
+  }
 
-      .body("meta.totalResults", equalTo(8766))
-      .body("data[0].type", equalTo(TITLES_TYPE))
-      .body("data[0].id", equalTo("1175655"))
-      .body("data[0].attributes.name", equalTo("The $1 Million Reason to Change Your Mind"))
-      .body("data[0].attributes.publisherName", isEmptyOrNullString())
-      .body("data[0].attributes.isTitleCustom", equalTo(false))
-      .body("data[0].attributes.subjects[0].type", equalTo("BISAC"))
-      .body("data[0].attributes.subjects[0].subject", equalTo("BUSINESS & ECONOMICS / Small Business"))
+  @Test
+  public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException {
+    mockGetManagedTitleById();
+    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), Holding.class));
 
-      .body("data[0].attributes.identifiers[0].id", equalTo("7209484"))
-      .body("data[0].attributes.identifiers[1].id", equalTo("978-1-74216-894-4"))
-      .body("data[0].attributes.identifiers[2].id", equalTo("978-0-7303-7792-4"))
-      /* List of identifiers returned below from RM API get filtered and sorted to only support types ISSN/ISBN and subtypes Print/Online */
-      .body("data[0].attributes.identifiers[0].type", equalTo("ISSN"))
-      .body("data[0].attributes.identifiers[1].type", equalTo("ISBN"))
-      .body("data[0].attributes.identifiers[2].type", equalTo("ISBN"))
+    ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
+    ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());
+    TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
-      .body("data[0].attributes.identifiers[0].subtype", equalTo("Print"))
-      .body("data[0].attributes.identifiers[1].subtype", equalTo("Print"))
-      .body("data[0].attributes.identifiers[2].subtype", equalTo("Online"))
+    String actualResponse = RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(EHOLDINGS_TITLES_PATH + "?filter[tags]="  + STUB_TAG_VALUE+","+STUB_TAG_VALUE_2)
+      .then()
+      .statusCode(200)
+      .extract().asString();
+    JSONAssert.assertEquals(
+      readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, false);
+  }
 
-      .body("data[0].attributes.publicationType", equalTo("Book"))
+  @Test
+  public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
+    mockGetManagedTitleById();
+    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), Holding.class));
 
-      .body("data[0].relationships.resources.meta.included", equalTo(false));
+    ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
+    ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());
+    TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+
+    TitleCollection response = RestAssured.given()
+      .spec(getRequestSpecification())
+      .when()
+      .get(EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]="  + STUB_TAG_VALUE+","+STUB_TAG_VALUE_2)
+      .then()
+      .statusCode(200)
+      .extract().as(TitleCollection.class);
+    assertEquals(STUB_CUSTOM_TITLE_NAME, response.getData().get(0).getAttributes().getName());
   }
 
   @Test
@@ -137,16 +161,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException {
-    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
-
-    mockDefaultConfiguration(getWiremockUrl());
-    stubFor(
-        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-            .withBody(readFile(stubResponseFile))));
-
+    mockGetManagedTitleById();
     String actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID).asString();
-
     JSONAssert.assertEquals(
       readFile("responses/kb-ebsco/titles/expected-title-by-id.json"), actualResponse, false);
   }
@@ -268,7 +284,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
       assertEquals(1, titles.size());
       assertEquals(STUB_TITLE_ID, titles.get(0).getId());
-      assertEquals(STUB_TITLE_NAME, titles.get(0).getName());
+      assertEquals("Test Title", titles.get(0).getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
       TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
@@ -467,4 +483,14 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     return postWithOk(EHOLDINGS_TITLES_PATH, mapper.writeValueAsString(request));
   }
+
+  private void mockGetManagedTitleById() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+    mockDefaultConfiguration(getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile))));
+  }
+
 }

@@ -45,7 +45,7 @@
   "customerResourcesList": [
     {
       "titleId": 762169,
-      "packageId": 4345,
+      "packageId": 3964,
       "packageName": "ABC-CLIO eBook Collection",
       "packageType": "Variable",
       "proxy": {
@@ -53,7 +53,7 @@
         "inherited": false
       },
       "isPackageCustom": false,
-      "vendorId": 583,
+      "vendorId": 19,
       "vendorName": "ABC-CLIO",
       "locationId": 2863717,
       "isSelected": true,

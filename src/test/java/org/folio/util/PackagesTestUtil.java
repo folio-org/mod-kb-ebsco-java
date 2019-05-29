@@ -22,18 +22,20 @@ import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import org.folio.holdingsiq.model.PackageByIdData;
-import org.folio.rest.persist.PostgresClient;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import lombok.Builder;
 import lombok.Value;
+
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.rest.persist.PostgresClient;
 
 public class PackagesTestUtil {
 
@@ -58,8 +60,8 @@ public class PackagesTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + packageTestTable() +
-        "(" + ID_COLUMN + ", " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ") VALUES('" +
-        dbPackage.getId() + "', '" + dbPackage.getName() + "', '" + dbPackage.getContentType() + "')",
+        "(" + ID_COLUMN + ", " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ") VALUES(?,?,?)",
+      new JsonArray(Arrays.asList(dbPackage.getId(), dbPackage.getName(), dbPackage.getContentType())),
       event -> future.complete(null));
     future.join();
   }

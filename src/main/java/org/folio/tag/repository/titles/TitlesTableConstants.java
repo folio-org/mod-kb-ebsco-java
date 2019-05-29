@@ -16,7 +16,7 @@ public class TitlesTableConstants {
 
   public static final String COUNT_TITLES_BY_RESOURCE_TAGS =
     "SELECT COUNT(DISTINCT (regexp_split_to_array(" + RECORD_ID_COLUMN + ", '-'))[3]) AS count " +
-    "FROM %s WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "='resource' AND " + RECORD_ID_COLUMN + " LIKE ?";
+    "FROM %s WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "='resource'";
 
   public static final String SELECT_TITLES_BY_RESOURCE_TAGS =
     "SELECT DISTINCT (regexp_split_to_array(resources.id, '-'))[3] as id, resources.name as name, holdings.jsonb as holding " +

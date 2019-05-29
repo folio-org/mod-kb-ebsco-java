@@ -11,8 +11,16 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageId;
@@ -46,13 +54,6 @@ import org.folio.tag.Tag;
 import org.folio.tag.repository.TagRepository;
 import org.folio.tag.repository.titles.DbTitle;
 import org.folio.tag.repository.titles.TitlesRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
@@ -188,7 +189,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     return titlesRepository.countTitlesByResourceTags(tags, tenant)
       .thenCompose(resultsCount -> {
         totalResults.setValue(resultsCount);
-        return titlesRepository.getTitleIdsByResourceTags(tags, page, count, tenant);
+        return titlesRepository.getTitlesByResourceTags(tags, page, count, tenant);
       })
       .thenCompose(dbTitles -> {
         mutableDbTitles.setValue(dbTitles);

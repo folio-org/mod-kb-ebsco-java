@@ -4,6 +4,7 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.tag.repository.DbUtil.mapResultSet;
 import static org.folio.tag.repository.DbUtil.mapVertxFuture;
 import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE_NAME;
+import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.tag.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
 import static org.folio.tag.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
 import static org.folio.tag.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
@@ -16,16 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import org.folio.holdingsiq.model.Holding;
-import org.folio.holdingsiq.model.Title;
-import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.ObjectMapperTool;
-import org.folio.tag.repository.DbUtil;
-import org.folio.tag.repository.TagTableConstants;
-import org.folio.tag.repository.resources.ResourceTableConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -34,6 +25,17 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import org.folio.holdingsiq.model.Holding;
+import org.folio.holdingsiq.model.Title;
+import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.tools.utils.ObjectMapperTool;
+import org.folio.tag.repository.DbUtil;
+import org.folio.tag.repository.TagTableConstants;
+import org.folio.tag.repository.resources.ResourceTableConstants;
 
 @Component
 public class TitlesRepositoryImpl implements TitlesRepository {
@@ -76,7 +78,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbTitle>> getTitleIdsByResourceTags(List<String> tags, int page, int count, String tenant) {
+  public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenant) {
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();
@@ -86,7 +88,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .add(count);
 
     final String query = String.format(SELECT_TITLES_BY_RESOURCE_TAGS,
-      getTableName(tenant), getTagsTableName(tenant), getHoldingsTableName(tenant), createPlaceholders(tags.size()));
+      getResourcesTableName(tenant), getTagsTableName(tenant), getHoldingsTableName(tenant), createPlaceholders(tags.size()));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenant);
 
@@ -137,7 +139,12 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
   private Optional<Holding> readHolding(JsonObject row){
     try {
-      return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString("holding"), Holding.class));
+      if(row.getString("holding") != null) {
+        return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString("holding"), Holding.class));
+      }
+      else{
+        return Optional.empty();
+      }
     } catch (IOException e) {
       return Optional.empty();
     }
@@ -147,13 +154,17 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     return Title.builder()
       .titleName(holding.getPublicationTitle())
       .titleId(Integer.parseInt(holding.getTitleId()))
-      .pubType(holding.getPublicationType())
+      .pubType(holding.getResourceType())
       .publisherName(holding.getPublisherName())
       .build();
   }
 
   private String getTableName(String tenantId) {
     return PostgresClient.convertToPsqlStandard(tenantId) + "." + TITLES_TABLE_NAME;
+  }
+
+  private String getResourcesTableName(String tenantId) {
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + RESOURCES_TABLE_NAME;
   }
 
   private String getTagsTableName(String tenantId) {
