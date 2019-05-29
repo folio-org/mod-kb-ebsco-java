@@ -22,6 +22,10 @@ import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.TitlePost;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.repository.RecordType;
+import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.TagRepository;
+import org.folio.repository.titles.TitlesRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.titles.TitlePutRequestConverter;
@@ -39,10 +43,6 @@ import org.folio.rest.validator.TitlesPostAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
-import org.folio.tag.repository.TagRepository;
-import org.folio.tag.repository.titles.TitlesRepository;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";

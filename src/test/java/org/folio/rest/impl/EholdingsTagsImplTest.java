@@ -24,13 +24,13 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.repository.RecordType;
+import org.folio.repository.tag.Tag;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.TagCollection;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
 import org.folio.rest.util.RestConstants;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTagsImplTest extends WireMockTestBase {

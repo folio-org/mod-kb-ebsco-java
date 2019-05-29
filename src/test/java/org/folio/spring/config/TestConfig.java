@@ -1,11 +1,12 @@
 package org.folio.spring.config;
 
+import io.vertx.core.Context;
+import io.vertx.core.Vertx;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import io.vertx.core.Context;
-import io.vertx.core.Vertx;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
 
 @Configuration
 @Import(ApplicationConfig.class)
@@ -21,5 +22,12 @@ public class TestConfig {
   public Context context(){
     //Initialize empty context
     return Vertx.vertx().getOrCreateContext();
+  }
+
+  @Bean
+  public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
+    PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
+    configurer.setLocation(new ClassPathResource("test-application.properties"));
+    return configurer;
   }
 }

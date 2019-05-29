@@ -7,14 +7,14 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.repository.RecordType;
+import org.folio.repository.tag.Tag;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
 import org.folio.rest.jaxrs.model.TagDataAttributes;
 import org.folio.rest.jaxrs.model.TagRelationship;
 import org.folio.rest.util.RestConstants;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
 
 @Component
 public class TagConverter implements Converter<Tag, TagCollectionItem> {

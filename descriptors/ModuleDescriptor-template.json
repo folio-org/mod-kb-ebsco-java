@@ -135,6 +135,11 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/tags",
           "permissionsRequired": ["kb-ebsco.tags.collection.get"]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/loadHoldings",
+          "permissionsRequired": ["kb-ebsco.holdings.load.post"]
         }
       ]
     },
@@ -172,6 +177,20 @@
         {
           "methods": ["DELETE"],
           "pathPattern": "/_/tenant"
+        }
+      ]
+    },
+    {
+      "id": "_timer",
+      "version": "1.0",
+      "interfaceType": "system",
+      "handlers": [
+        {
+          "methods": [ "POST" ],
+          "pathPattern": "/loadHoldings",
+          "modulePermissions": ["configuration.entries.collection.get"],
+          "unit": "day",
+          "delay": "2"
         }
       ]
     }

@@ -3,12 +3,12 @@ package org.folio.util;
 import static org.apache.commons.lang3.StringUtils.join;
 
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.tag.repository.TagTableConstants.ID_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.RECORD_ID_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.TABLE_NAME;
-import static org.folio.tag.repository.TagTableConstants.TAG_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.TAG_FIELD_LIST;
+import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.TABLE_NAME;
+import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.TAG_FIELD_LIST;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
 import java.util.ArrayList;
@@ -22,9 +22,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 
+import org.folio.repository.RecordType;
+import org.folio.repository.tag.Tag;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
 
 public class TagsTestUtil {
 

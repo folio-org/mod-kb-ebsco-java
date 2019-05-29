@@ -12,8 +12,16 @@ import java.util.stream.Collectors;
 import javax.validation.ValidationException;
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.converter.Converter;
+
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -27,6 +35,11 @@ import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.repository.RecordType;
+import org.folio.repository.packages.DbPackage;
+import org.folio.repository.packages.PackageRepository;
+import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.packages.PackageRequestConverter;
@@ -50,19 +63,6 @@ import org.folio.rest.validator.PackagePutBodyValidator;
 import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.spring.SpringContextUtil;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
-import org.folio.tag.repository.TagRepository;
-import org.folio.tag.repository.packages.DbPackage;
-import org.folio.tag.repository.packages.PackageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.converter.Converter;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
