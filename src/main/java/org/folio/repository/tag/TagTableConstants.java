@@ -1,4 +1,4 @@
-package org.folio.tag.repository;
+package org.folio.repository.tag;
 
 @SuppressWarnings("squid:S1192")
 public class TagTableConstants {

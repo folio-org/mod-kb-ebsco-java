@@ -1,4 +1,4 @@
-package org.folio.tag.repository.providers;
+package org.folio.repository.providers;
 
 public class ProviderTableConstants {
 

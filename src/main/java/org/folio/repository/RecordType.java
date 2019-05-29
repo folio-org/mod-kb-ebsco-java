@@ -1,4 +1,4 @@
-package org.folio.tag;
+package org.folio.repository;
 
 public enum RecordType {
 

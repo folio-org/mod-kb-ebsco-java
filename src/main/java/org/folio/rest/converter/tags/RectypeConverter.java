@@ -11,20 +11,20 @@ import org.folio.rest.util.RestConstants;
 
 
 @Component
-public class RectypeConverter implements Converter<String, org.folio.tag.RecordType> {
+public class RectypeConverter implements Converter<String, org.folio.repository.RecordType> {
 
-  private static final Map<String, org.folio.tag.RecordType> MAPPING = new HashMap<>();
+  private static final Map<String, org.folio.repository.RecordType> MAPPING = new HashMap<>();
 
   static {
-    MAPPING.put(RestConstants.PROVIDER_RECTYPE, org.folio.tag.RecordType.PROVIDER);
-    MAPPING.put(RestConstants.PACKAGE_RECTYPE, org.folio.tag.RecordType.PACKAGE);
-    MAPPING.put(RestConstants.TITLE_RECTYPE, org.folio.tag.RecordType.TITLE);
-    MAPPING.put(RestConstants.RESOURCE_RECTYPE, org.folio.tag.RecordType.RESOURCE);
+    MAPPING.put(RestConstants.PROVIDER_RECTYPE, org.folio.repository.RecordType.PROVIDER);
+    MAPPING.put(RestConstants.PACKAGE_RECTYPE, org.folio.repository.RecordType.PACKAGE);
+    MAPPING.put(RestConstants.TITLE_RECTYPE, org.folio.repository.RecordType.TITLE);
+    MAPPING.put(RestConstants.RESOURCE_RECTYPE, org.folio.repository.RecordType.RESOURCE);
   }
 
   @Override
-  public org.folio.tag.RecordType convert(@NonNull String source) {
-    org.folio.tag.RecordType result = MAPPING.get(source);
+  public org.folio.repository.RecordType convert(@NonNull String source) {
+    org.folio.repository.RecordType result = MAPPING.get(source);
 
     if (result == null) {
       throw new IllegalArgumentException("Invalid record type: " + source);

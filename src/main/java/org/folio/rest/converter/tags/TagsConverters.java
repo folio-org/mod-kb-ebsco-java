@@ -9,12 +9,12 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.repository.tag.Tag;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.TagCollection;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
-import org.folio.tag.Tag;
 
 public class TagsConverters  {
 

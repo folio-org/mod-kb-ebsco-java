@@ -1,7 +1,7 @@
 package org.folio.util;
 
-import static org.folio.tag.repository.packages.PackageTableConstants.ID_COLUMN;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE_NAME;
+import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
+import static org.folio.tag.repository.resources.HoldingsTableConstants.ID_COLUMN;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class HoldingsTestUtil {
   }
 
   private static String holdingsTestTable() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + HOLDINGS_TABLE_NAME;
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + HOLDINGS_TABLE;
   }
 
   private static Holding parseHolding(ObjectMapper mapper, String json) {
@@ -64,5 +64,4 @@ public class HoldingsTestUtil {
   private static String getHoldingsId(Holding holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
-
 }

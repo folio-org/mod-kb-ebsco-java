@@ -1,15 +1,15 @@
-package org.folio.tag.repository.titles;
+package org.folio.repository.titles;
 
+import static org.folio.common.FutureUtils.mapResult;
+import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.tag.repository.DbUtil.mapResultSet;
-import static org.folio.tag.repository.DbUtil.mapVertxFuture;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE_NAME;
-import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
-import static org.folio.tag.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
-import static org.folio.tag.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
-import static org.folio.tag.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
-import static org.folio.tag.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
-import static org.folio.tag.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
+import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
+import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
+import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
+import static org.folio.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
+import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -31,11 +31,11 @@ import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Holding;
 import org.folio.holdingsiq.model.Title;
+import org.folio.repository.resources.ResourceTableConstants;
+import org.folio.repository.tag.TagTableConstants;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.tools.utils.ObjectMapperTool;
-import org.folio.tag.repository.DbUtil;
-import org.folio.tag.repository.TagTableConstants;
-import org.folio.tag.repository.resources.ResourceTableConstants;
+import org.folio.tag.repository.titles.DbTitle;
 
 @Component
 public class TitlesRepositoryImpl implements TitlesRepository {
@@ -51,7 +51,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
   @Override
   public CompletableFuture<Void> saveTitle(Title title, String tenantId) {
-    JsonArray parameters = DbUtil.createInsertOrUpdateParameters(String.valueOf(title.getTitleId()), title.getTitleName());
+    JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(title.getTitleId()), title.getTitleName());
 
     final String query = String.format(INSERT_OR_UPDATE_TITLE_STATEMENT, getTableName(tenantId));
 
@@ -77,6 +77,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     return mapVertxFuture(future).thenApply(result -> null);
   }
 
+
   @Override
   public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenant) {
     int offset = (page - 1) * count;
@@ -96,7 +97,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     Future<ResultSet> future = Future.future();
     postgresClient.select(query, parameters, future.completer());
 
-    return mapResultSet(future, this::mapTitles);
+    return mapResult(future, this::mapTitles);
   }
 
   @Override
@@ -111,7 +112,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     Future<ResultSet> future = Future.future();
     postgresClient.select(query, parameters, future.completer());
 
-    return mapResultSet(future, this::readTagCount);
+    return mapResult(future, this::readTagCount);
   }
 
   private String createPlaceholders(int size) {
@@ -160,7 +161,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   private String getTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TITLES_TABLE_NAME;
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TitlesTableConstants.TITLES_TABLE_NAME;
   }
 
   private String getResourcesTableName(String tenantId) {
@@ -172,6 +173,6 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   private String getHoldingsTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + HOLDINGS_TABLE_NAME;
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + HOLDINGS_TABLE;
   }
 }

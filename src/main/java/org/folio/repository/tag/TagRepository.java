@@ -1,11 +1,10 @@
-package org.folio.tag.repository;
+package org.folio.repository.tag;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
+import org.folio.repository.RecordType;
 
 public interface TagRepository {
 

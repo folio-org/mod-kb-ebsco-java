@@ -5,20 +5,21 @@ import static org.folio.common.ListUtils.mapItems;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.repository.packages.DbPackage;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageCollectionResult;
-import org.folio.tag.repository.packages.DbPackage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 
 @Component
 public class PackageCollectionResultConverter implements Converter<PackageCollectionResult, PackageCollection> {

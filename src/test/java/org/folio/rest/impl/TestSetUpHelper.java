@@ -28,10 +28,8 @@ public class TestSetUpHelper {
     port = NetworkUtils.nextFreePort();
     host = "http://127.0.0.1";
 
-    DeploymentOptions restVerticleDeploymentOptions = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
-
     CompletableFuture<Void> future = new CompletableFuture<>();
-    vertx.deployVerticle(RestVerticle.class.getName(), restVerticleDeploymentOptions, event -> future.complete(null));
+    vertx.deployVerticle(RestVerticle.class.getName(), getDeploymentOptions(), event -> future.complete(null));
     future.join();
 
     PostgresClient.getInstance(vertx)
@@ -69,9 +67,8 @@ public class TestSetUpHelper {
   private static void postTenant() {
     TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
 
-    final DeploymentOptions options = new DeploymentOptions().setConfig(new JsonObject().put(HTTP_PORT, port));
     CompletableFuture<Void> future = new CompletableFuture<>();
-    vertx.deployVerticle(RestVerticle.class.getName(), options, res -> {
+    vertx.deployVerticle(RestVerticle.class.getName(), getDeploymentOptions(), res -> {
       try {
         tenantClient.postTenant(null, res2 -> future.complete(null));
       } catch (Exception e) {
@@ -79,5 +76,12 @@ public class TestSetUpHelper {
       }
     });
     future.join();
+  }
+
+  private static DeploymentOptions getDeploymentOptions() {
+    return new DeploymentOptions().setConfig(new JsonObject()
+      .put(HTTP_PORT, port)
+      .put("spring.configuration", "org.folio.spring.config.TestConfig")
+    );
   }
 }

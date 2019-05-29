@@ -1,7 +1,9 @@
-package org.folio.tag;
+package org.folio.repository.tag;
 
 import lombok.Builder;
 import lombok.Value;
+
+import org.folio.repository.RecordType;
 
 @Value
 @Builder(toBuilder = true)

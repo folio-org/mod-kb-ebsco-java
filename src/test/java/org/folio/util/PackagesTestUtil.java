@@ -1,6 +1,10 @@
 package org.folio.util;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_CONTENT_TYPE;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_2;
@@ -11,10 +15,6 @@ import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_3;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
-import static org.folio.tag.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.ID_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.NAME_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TestUtil.mockDefaultConfiguration;
 import static org.folio.util.TestUtil.mockGetWithBody;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;

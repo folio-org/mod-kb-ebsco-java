@@ -13,7 +13,9 @@ import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.HoldingsIQService;
+import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
+import org.folio.holdingsiq.service.impl.LoadServiceImpl;
 import org.folio.rmapi.PackageServiceImpl;
 import org.folio.rmapi.ProvidersServiceImpl;
 import org.folio.rmapi.ResourcesServiceImpl;
@@ -59,8 +61,9 @@ public class RMAPITemplateContextBuilder {
       new PackageServiceImpl(configuration, vertx, tenant, providersService, titlesService, packageCache);
     final ResourcesServiceImpl resourcesService =
       new ResourcesServiceImpl(configuration, vertx, tenant, providersService, packagesService, resourceCache);
+    final LoadService loadService = new LoadServiceImpl(configuration, vertx);
     providersService.setPackagesService(packagesService);
     return new RMAPITemplateContext(holdingsService, packagesService, providersService,
-      resourcesService, titlesService, okapiData, configuration);
+      resourcesService, titlesService, loadService, okapiData, configuration);
   }
 }

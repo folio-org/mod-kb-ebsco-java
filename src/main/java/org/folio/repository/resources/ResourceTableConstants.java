@@ -1,4 +1,4 @@
-package org.folio.tag.repository.resources;
+package org.folio.repository.resources;
 
 public class ResourceTableConstants {
   private ResourceTableConstants() {}

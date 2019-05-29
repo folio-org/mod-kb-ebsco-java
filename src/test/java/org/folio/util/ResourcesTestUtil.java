@@ -1,9 +1,9 @@
 package org.folio.util;
 
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.tag.repository.packages.PackageTableConstants.ID_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.NAME_COLUMN;
-import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
+import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
+import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
 import java.util.Arrays;

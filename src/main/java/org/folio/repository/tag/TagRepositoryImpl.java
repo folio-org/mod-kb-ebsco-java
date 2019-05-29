@@ -1,19 +1,22 @@
-package org.folio.tag.repository;
+package org.folio.repository.tag;
 
 import static java.util.Arrays.asList;
+
+import static org.folio.common.FutureUtils.mapResult;
+import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.tag.repository.DbUtil.mapResultSet;
-import static org.folio.tag.repository.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX;
-import static org.folio.tag.repository.TagTableConstants.DELETE_TAG_RECORD;
-import static org.folio.tag.repository.TagTableConstants.ID_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.RECORD_ID_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.SELECT_ALL_TAGS;
-import static org.folio.tag.repository.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
-import static org.folio.tag.repository.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
-import static org.folio.tag.repository.TagTableConstants.TABLE_NAME;
-import static org.folio.tag.repository.TagTableConstants.TAG_COLUMN;
-import static org.folio.tag.repository.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
+import static org.folio.repository.DbUtil.executeInTransaction;
+import static org.folio.repository.tag.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX;
+import static org.folio.repository.tag.TagTableConstants.DELETE_TAG_RECORD;
+import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_TAGS;
+import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
+import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
+import static org.folio.repository.tag.TagTableConstants.TABLE_NAME;
+import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
+import static org.folio.repository.tag.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,16 +24,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableObject;
-import org.folio.common.FutureUtils;
-import org.folio.rest.persist.PostgresClient;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -41,6 +34,15 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
+import io.vertx.ext.sql.UpdateResult;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import org.folio.common.FutureUtils;
+import org.folio.repository.RecordType;
+import org.folio.rest.persist.PostgresClient;
 
 @Component
 class TagRepositoryImpl implements TagRepository {
@@ -62,7 +64,7 @@ class TagRepositoryImpl implements TagRepository {
         resultSetFuture.completer()
       );
 
-    return mapResultSet(resultSetFuture, this::readTags);
+    return mapResult(resultSetFuture, this::readTags);
   }
 
   @Override
@@ -76,7 +78,7 @@ class TagRepositoryImpl implements TagRepository {
         parameters, resultSetFuture.completer()
       );
 
-    return mapResultSet(resultSetFuture, this::readTags);
+    return mapResult(resultSetFuture, this::readTags);
   }
 
   @Override
@@ -95,7 +97,7 @@ class TagRepositoryImpl implements TagRepository {
         parameters, resultSetFuture.completer()
       );
 
-    return mapResultSet(resultSetFuture, this::readTags);
+    return mapResult(resultSetFuture, this::readTags);
   }
 
   @Override
@@ -119,7 +121,7 @@ class TagRepositoryImpl implements TagRepository {
         future.completer()
       );
 
-    return mapResultSet(future, this::readTagCount);
+    return mapResult(future, this::readTagCount);
   }
 
   @Override
@@ -160,48 +162,23 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   private CompletableFuture<Boolean> updateTags(String tenantId, String recordId, RecordType recordType, List<String> tags) {
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    MutableObject<AsyncResult<SQLConnection>> mutableConnection = new MutableObject<>();
-    CompletableFuture<Boolean> future = CompletableFuture.completedFuture(null);
-    CompletableFuture<Boolean> rollbackFuture = new CompletableFuture<>();
-    return future
-      .thenCompose(o -> {
-        CompletableFuture<Boolean> startTxFuture = new CompletableFuture<>();
-        postgresClient.startTx(connection -> {
-          mutableConnection.setValue(connection);
-          startTxFuture.complete(null);
-        });
-        return startTxFuture;
-      })
-      .thenCompose(aBoolean -> unAssignTags(mutableConnection.getValue(), tenantId, recordId, recordType))
-      .thenCompose(aBoolean -> assignTags(mutableConnection.getValue(), tenantId, recordId, recordType, tags, postgresClient))
-      .whenComplete((result, ex) -> {
-        if(ex != null) {
-          LOG.info("Transaction was not successful. Roll back changes.");
-          postgresClient.rollbackTx(mutableConnection.getValue(), rollback -> rollbackFuture.completeExceptionally(ex));
-        } else {
-          rollbackFuture.complete(result);
-        }
-      })
-      .thenCombine(rollbackFuture, (o, aBoolean) -> true);
+    return executeInTransaction(tenantId, vertx,
+      (postgresClient, connection) ->
+        unAssignTags(connection, tenantId, recordId, recordType)
+          .thenCompose(aBoolean -> assignTags(connection, tenantId, recordId, recordType, tags, postgresClient)))
+      .thenApply(o -> true);
   }
 
-  private CompletableFuture<Boolean> assignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId, RecordType recordType, List<String> tags, PostgresClient postgresClient) {
-    CompletableFuture<Boolean> future = new CompletableFuture<>();
+  private CompletableFuture<Void> assignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId, RecordType recordType, List<String> tags, PostgresClient postgresClient) {
     JsonArray parameters = new JsonArray();
     String updatedValues = createInsertStatement(recordId, recordType, tags, parameters);
     final String query = String.format(UPDATE_INSERT_STATEMENT_FOR_PROVIDER, getTableName(tenantId), updatedValues);
     LOG.info("Do insert query = " + query);
-    postgresClient.execute(connection, query, parameters, reply -> {
-      if (reply.succeeded()) {
-        LOG.info("Successfully inserted entries.");
-        postgresClient.endTx(connection, done -> future.complete(Boolean.TRUE));
-      } else {
-        LOG.info("Failed to insert entries");
-        future.completeExceptionally(reply.cause());
-      }
-    });
-    return future;
+
+    Future<UpdateResult> future = Future.future();
+    postgresClient.execute(connection, query, parameters, future.completer());
+    return mapVertxFuture(future)
+      .thenAccept(updateResult -> {});
   }
 
   private CompletableFuture<Boolean> unAssignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,

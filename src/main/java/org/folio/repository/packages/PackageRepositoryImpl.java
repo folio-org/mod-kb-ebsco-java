@@ -1,31 +1,25 @@
-package org.folio.tag.repository.packages;
+package org.folio.repository.packages;
 
 import static java.util.stream.Collectors.groupingBy;
+
+import static org.folio.common.FutureUtils.mapResult;
+import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.tag.repository.DbUtil.mapResultSet;
-import static org.folio.tag.repository.DbUtil.mapVertxFuture;
-import static org.folio.tag.repository.TagTableConstants.TAG_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.DELETE_STATEMENT;
-import static org.folio.tag.repository.packages.PackageTableConstants.ID_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.INSERT_OR_UPDATE_STATEMENT;
-import static org.folio.tag.repository.packages.PackageTableConstants.NAME_COLUMN;
-import static org.folio.tag.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
-import static org.folio.tag.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS;
-import static org.folio.tag.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS_BY_IDS;
+import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.DELETE_STATEMENT;
+import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.INSERT_OR_UPDATE_STATEMENT;
+import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
+import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS;
+import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS_BY_IDS;
+import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import org.folio.holdingsiq.model.PackageByIdData;
-import org.folio.holdingsiq.model.PackageId;
-import org.folio.rest.parser.IdParser;
-import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -35,6 +29,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageId;
+import org.folio.rest.parser.IdParser;
+import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class PackageRepositoryImpl implements PackageRepository {
@@ -105,7 +106,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     Future<ResultSet> future = Future.future();
     postgresClient.select(query, parameters, future.completer());
 
-    return mapResultSet(future, this::mapPackages);
+    return mapResult(future, this::mapPackages);
   }
 
   private CompletableFuture<List<DbPackage>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix, int page, int count, String tenantId) {
@@ -127,7 +128,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     Future<ResultSet> future = Future.future();
     postgresClient.select(query, parameters, future.completer());
 
-    return mapResultSet(future, this::mapPackages);
+    return mapResult(future, this::mapPackages);
   }
 
   private JsonArray createInsertOrUpdateParameters(String id, String name, String contentType) {

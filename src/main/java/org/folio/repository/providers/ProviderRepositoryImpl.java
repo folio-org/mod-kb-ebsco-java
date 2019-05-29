@@ -1,8 +1,14 @@
-package org.folio.tag.repository.providers;
+package org.folio.repository.providers;
 
+import static org.folio.common.FutureUtils.mapResult;
+import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.tag.repository.DbUtil.*;
-import static org.folio.tag.repository.providers.ProviderTableConstants.*;
+import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
+import static org.folio.repository.DbUtil.getTableName;
+import static org.folio.repository.providers.ProviderTableConstants.DELETE_PROVIDER_STATEMENT;
+import static org.folio.repository.providers.ProviderTableConstants.INSERT_OR_UPDATE_PROVIDER_STATEMENT;
+import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
+import static org.folio.repository.providers.ProviderTableConstants.SELECT_TAGGED_PROVIDERS;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +27,6 @@ import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.tag.repository.DbUtil;
 
 @Component
 public class ProviderRepositoryImpl implements ProviderRepository {
@@ -37,7 +42,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
   @Override
   public CompletableFuture<Void> saveProvider(VendorById vendorData, String tenantId) {
-    JsonArray parameters = DbUtil.createInsertOrUpdateParameters(String.valueOf(vendorData.getVendorId()),
+    JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(vendorData.getVendorId()),
       vendorData.getVendorName());
 
     final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT,
@@ -82,7 +87,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     Future<ResultSet> future = Future.future();
     postgresClient.select(query, parameters, future.completer());
 
-    return mapResultSet(future, this::mapProviderIds);
+    return mapResult(future, this::mapProviderIds);
   }
 
   private String createPlaceholders(int size) {

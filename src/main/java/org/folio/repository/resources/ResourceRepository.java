@@ -1,4 +1,4 @@
-package org.folio.tag.repository.resources;
+package org.folio.repository.resources;
 
 import java.util.concurrent.CompletableFuture;
 

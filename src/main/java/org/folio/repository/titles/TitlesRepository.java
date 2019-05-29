@@ -1,9 +1,10 @@
-package org.folio.tag.repository.titles;
+package org.folio.repository.titles;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.holdingsiq.model.Title;
+import org.folio.tag.repository.titles.DbTitle;
 
 public interface TitlesRepository {
 
