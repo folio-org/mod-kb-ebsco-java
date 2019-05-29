@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
@@ -187,9 +186,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getPackagesService().retrievePackage(parsedPackageId)
-        .thenCompose(packageData -> processUpdateRequest(entity, parsedPackageId, context, packageData))
+      .requestAction(context -> processUpdateRequest(entity, parsedPackageId, context)
+        //context.getPackagesService().retrievePackage(parsedPackageId)
+        //.thenCompose(packageData -> )
         .thenCompose(o -> {
           CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
           return handleDeletedPackage(future, parsedPackageId, context.getOkapiData().getTenant());
@@ -324,13 +323,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return packageRepository.deletePackage(packageId, tenant);
   }
 
-  private CompletionStage<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId, RMAPITemplateContext context, PackageByIdData packageData) {
+  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId, RMAPITemplateContext context) {
     if(!isPackageUpdateable(entity)){
       //proceed to next stage without updating
       return CompletableFuture.completedFuture(null);
     }
     PackagePut packagePutBody;
-    if (packageData.getIsCustom()) {
+    if (entity.getData().getAttributes().getIsCustom()) {
       customPackagePutBodyValidator.validate(entity);
       packagePutBody = converter.convertToRMAPICustomPackagePutRequest(entity);
     } else {
