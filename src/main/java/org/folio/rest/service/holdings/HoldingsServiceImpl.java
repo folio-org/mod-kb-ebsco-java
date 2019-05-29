@@ -90,7 +90,7 @@ public class HoldingsServiceImpl implements HoldingsService {
 
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
     final int totalRequestCount = getRequestCount(totalCount);
-    for (int iteration = totalRequestCount - 1; iteration < totalRequestCount + 1; iteration++) {
+    for (int iteration = 1; iteration < totalRequestCount + 1; iteration++) {
       int count = calculateCount(iteration, totalCount);
       int finalIteration = iteration;
       future = future
