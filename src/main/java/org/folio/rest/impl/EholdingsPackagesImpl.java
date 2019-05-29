@@ -187,8 +187,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context -> processUpdateRequest(entity, parsedPackageId, context)
-        //context.getPackagesService().retrievePackage(parsedPackageId)
-        //.thenCompose(packageData -> )
         .thenCompose(o -> {
           CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
           return handleDeletedPackage(future, parsedPackageId, context.getOkapiData().getTenant());
