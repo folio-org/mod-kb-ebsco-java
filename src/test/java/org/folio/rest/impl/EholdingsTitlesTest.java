@@ -14,15 +14,6 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
-import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
-import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
-import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
-import static org.folio.rest.util.RestConstants.TITLES_TYPE;
-import static org.folio.tag.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -32,24 +23,21 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
+import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import static org.folio.util.TestUtil.mockDefaultConfiguration;
+import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.readFile;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rest.jaxrs.model.Title;
-import org.folio.rest.jaxrs.model.TitlePostRequest;
-import org.folio.rest.jaxrs.model.TitlePutRequest;
-import org.folio.tag.RecordType;
-import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
-import org.folio.util.TitlesTestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -58,11 +46,23 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import org.folio.repository.RecordType;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rest.jaxrs.model.Title;
+import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.folio.rest.jaxrs.model.TitlePutRequest;
+import org.folio.util.TagsTestUtil;
+import org.folio.util.TestUtil;
+import org.folio.util.TitlesTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {

@@ -29,6 +29,10 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.repository.RecordType;
+import org.folio.repository.resources.ResourceRepository;
+import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.TagRepository;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
@@ -48,10 +52,6 @@ import org.folio.rest.validator.ResourcePutBodyValidator;
 import org.folio.rmapi.result.ObjectsForPostResourceResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.SpringContextUtil;
-import org.folio.tag.RecordType;
-import org.folio.tag.Tag;
-import org.folio.tag.repository.TagRepository;
-import org.folio.tag.repository.resources.ResourceRepository;
 
 
 public class EholdingsResourcesImpl implements EholdingsResources {

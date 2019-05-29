@@ -34,8 +34,9 @@ import org.folio.rmapi.cache.VendorCacheKey;
   "org.folio.rest.converter",
   "org.folio.rest.parser",
   "org.folio.rest.validator",
-  "org.folio.tag.repository",
-  "org.folio.rest.util.template"})
+  "org.folio.rest.util.template",
+  "org.folio.repository",
+  "org.folio.service"})
 public class ApplicationConfig {
   @Bean
   public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {

@@ -19,10 +19,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
-import static org.folio.tag.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.util.TagsTestUtil.insertTag;
 import static org.folio.util.TestUtil.mockDefaultConfiguration;
 import static org.folio.util.TestUtil.mockGet;
@@ -47,13 +47,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import org.folio.repository.RecordType;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.tag.RecordType;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TestUtil;
