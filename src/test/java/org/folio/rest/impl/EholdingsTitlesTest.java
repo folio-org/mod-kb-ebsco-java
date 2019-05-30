@@ -63,8 +63,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import org.folio.holdingsiq.model.Holding;
 import org.folio.repository.RecordType;
+import org.folio.repository.holdings.DbHolding;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
@@ -105,7 +105,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
-    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), Holding.class));
+    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHolding.class));
 
     ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
     ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());
@@ -126,7 +126,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
-    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), Holding.class));
+    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHolding.class));
 
     ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
     ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());

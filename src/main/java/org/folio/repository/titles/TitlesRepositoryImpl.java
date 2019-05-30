@@ -29,8 +29,8 @@ import io.vertx.ext.sql.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.holdingsiq.model.Holding;
 import org.folio.holdingsiq.model.Title;
+import org.folio.repository.holdings.DbHolding;
 import org.folio.repository.resources.ResourceTableConstants;
 import org.folio.repository.tag.TagTableConstants;
 import org.folio.rest.persist.PostgresClient;
@@ -138,10 +138,10 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .build();
   }
 
-  private Optional<Holding> readHolding(JsonObject row){
+  private Optional<DbHolding> readHolding(JsonObject row){
     try {
       if(row.getString("holding") != null) {
-        return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString("holding"), Holding.class));
+        return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString("holding"), DbHolding.class));
       }
       else{
         return Optional.empty();
@@ -151,7 +151,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     }
   }
 
-  private Title mapHoldingToTitle(Holding holding) {
+  private Title mapHoldingToTitle(DbHolding holding) {
     return Title.builder()
       .titleName(holding.getPublicationTitle())
       .titleId(Integer.parseInt(holding.getTitleId()))

@@ -26,7 +26,6 @@ import io.vertx.ext.sql.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.holdingsiq.model.Holding;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -42,11 +41,11 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveHolding(List<Holding> holdings, String tenantId) {
+  public CompletableFuture<Void> saveHoldings(List<DbHolding> holdings, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
-      List<List<Holding>> batches = Lists.partition(holdings, MAX_BATCH_SIZE);
+      List<List<DbHolding>> batches = Lists.partition(holdings, MAX_BATCH_SIZE);
       CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-      for (List<Holding> batch : batches) {
+      for (List<DbHolding> batch : batches) {
         future = future.thenCompose(o ->
           saveHoldings(batch, tenantId, connection, postgresClient));
       }
@@ -54,7 +53,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     });
   }
 
-  private CompletableFuture<Void> saveHoldings(List<Holding> holdings, String tenantId,
+  private CompletableFuture<Void> saveHoldings(List<DbHolding> holdings, String tenantId,
                                                AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
     String placeholders = createInsertPlaceholders(holdings);
     JsonArray parameters = createParameters(holdings);
@@ -74,15 +73,15 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     return mapVertxFuture(future).thenApply(result -> null);
   }
 
-  private String getHoldingsId(Holding holding) {
+  private String getHoldingsId(DbHolding holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 
-  private String createInsertPlaceholders(List<Holding> holdings) {
+  private String createInsertPlaceholders(List<DbHolding> holdings) {
     return String.join(",", Collections.nCopies(holdings.size(),"(?,?)"));
   }
 
-  private JsonArray createParameters(List<Holding> holdings) {
+  private JsonArray createParameters(List<DbHolding> holdings) {
     JsonArray params = new JsonArray();
     holdings.forEach(holding -> {
       params.add(getHoldingsId(holding));

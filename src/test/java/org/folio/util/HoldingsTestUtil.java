@@ -16,7 +16,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 
-import org.folio.holdingsiq.model.Holding;
+import org.folio.repository.holdings.DbHolding;
 import org.folio.rest.persist.PostgresClient;
 
 public class HoldingsTestUtil {
@@ -25,9 +25,9 @@ public class HoldingsTestUtil {
 
   public HoldingsTestUtil() {}
 
-  public static List<Holding> getHoldings(Vertx vertx) {
+  public static List<DbHolding> getHoldings(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
-    CompletableFuture<List<Holding>> future = new CompletableFuture<>();
+    CompletableFuture<List<DbHolding>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx)
       .select("SELECT * FROM " + holdingsTestTable(),
         event -> future.complete(event.result().getRows().stream()
@@ -38,7 +38,7 @@ public class HoldingsTestUtil {
     return future.join();
   }
 
-  public static void addHolding(Vertx vertx, Holding holding) {
+  public static void addHolding(Vertx vertx, DbHolding holding) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + holdingsTestTable() +
@@ -52,16 +52,16 @@ public class HoldingsTestUtil {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + HOLDINGS_TABLE;
   }
 
-  private static Holding parseHolding(ObjectMapper mapper, String json) {
+  private static DbHolding parseHolding(ObjectMapper mapper, String json) {
     try {
-      return mapper.readValue(json, Holding.class);
+      return mapper.readValue(json, DbHolding.class);
     } catch (IOException e) {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse holding", e);
     }
   }
 
-  private static String getHoldingsId(Holding holding) {
+  private static String getHoldingsId(DbHolding holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 }
