@@ -3,6 +3,7 @@
     "type": "packages",
     "attributes": {
       "isSelected": true,
+      "isCustom": true,
       "name": "name of the ages forever and ever",
       "contentType": "Aggregated Full Text",
       "allowKbToAddTitles": true,
