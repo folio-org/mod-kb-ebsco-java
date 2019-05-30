@@ -79,7 +79,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
 
   @Override
-  public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenant) {
+  public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenantId) {
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();
@@ -89,9 +89,9 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .add(count);
 
     final String query = String.format(SELECT_TITLES_BY_RESOURCE_TAGS,
-      getResourcesTableName(tenant), getTagsTableName(tenant), getHoldingsTableName(tenant), createPlaceholders(tags.size()));
+      getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId), createPlaceholders(tags.size()));
 
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenant);
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Select titles by resource tags = " + query);
     Future<ResultSet> future = Future.future();
@@ -101,12 +101,12 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String tenant) {
+  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String tenantId) {
     JsonArray parameters = new JsonArray();
     tags.forEach(parameters::add);
-    final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS, getTagsTableName(tenant), createPlaceholders(tags.size()));
+    final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS, getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenant);
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Select packages by tags = " + query);
     Future<ResultSet> future = Future.future();
