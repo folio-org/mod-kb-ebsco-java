@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.folio.repository.tag.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
@@ -31,7 +32,6 @@ import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
-import org.folio.tag.Tag;
 
 @Component
 public class TitleConverter implements Converter<TitleResult, Title> {
