@@ -4,14 +4,16 @@ import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
-import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.repository.DbUtil.getHoldingsTableName;
+import static org.folio.repository.DbUtil.getResourcesTableName;
+import static org.folio.repository.DbUtil.getTagsTableName;
+import static org.folio.repository.DbUtil.getTitlesTableName;
+import static org.folio.repository.DbUtil.mapColumn;
 import static org.folio.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
 import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,16 +27,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Title;
 import org.folio.repository.holdings.DbHolding;
 import org.folio.repository.resources.ResourceTableConstants;
-import org.folio.repository.tag.TagTableConstants;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.ObjectMapperTool;
 import org.folio.tag.repository.titles.DbTitle;
 
 @Component
@@ -53,7 +52,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   public CompletableFuture<Void> saveTitle(Title title, String tenantId) {
     JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(title.getTitleId()), title.getTitleName());
 
-    final String query = String.format(INSERT_OR_UPDATE_TITLE_STATEMENT, getTableName(tenantId));
+    final String query = String.format(INSERT_OR_UPDATE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -67,7 +66,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   public CompletableFuture<Void> deleteTitle(String titleId, String tenantId) {
     JsonArray parameter = new JsonArray(Collections.singletonList(titleId));
 
-    final String query = String.format(DELETE_TITLE_STATEMENT, getTableName(tenantId));
+    final String query = String.format(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -139,16 +138,12 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   private Optional<DbHolding> readHolding(JsonObject row){
-    try {
       if(row.getString("holding") != null) {
-        return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString("holding"), DbHolding.class));
+        return mapColumn(row, "holding", DbHolding.class);
       }
       else{
         return Optional.empty();
       }
-    } catch (IOException e) {
-      return Optional.empty();
-    }
   }
 
   private Title mapHoldingToTitle(DbHolding holding) {
@@ -160,19 +155,5 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .build();
   }
 
-  private String getTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TitlesTableConstants.TITLES_TABLE_NAME;
-  }
 
-  private String getResourcesTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + RESOURCES_TABLE_NAME;
-  }
-
-  private String getTagsTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TagTableConstants.TABLE_NAME;
-  }
-
-  private String getHoldingsTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + HOLDINGS_TABLE;
-  }
 }

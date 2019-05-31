@@ -4,15 +4,18 @@ import static java.util.stream.Collectors.groupingBy;
 
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.repository.DbUtil.getPackagesTableName;
+import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.DELETE_STATEMENT;
 import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.INSERT_OR_UPDATE_STATEMENT;
 import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
-import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS;
 import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS_BY_IDS;
+import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGE_IDS_BY_TAG;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 
 import java.util.Collections;
@@ -29,7 +32,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,7 +59,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     JsonArray parameters = createInsertOrUpdateParameters(
       fullPackageId, packageData.getPackageName(), packageData.getContentType());
 
-    final String query = String.format(INSERT_OR_UPDATE_STATEMENT, getTableName(tenantId));
+    final String query = String.format(INSERT_OR_UPDATE_STATEMENT, getPackagesTableName(tenantId));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -72,7 +74,7 @@ public class PackageRepositoryImpl implements PackageRepository {
   public CompletableFuture<Void> deletePackage(PackageId packageId, String tenantId) {
     JsonArray parameter = new JsonArray(Collections.singletonList(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()));
 
-    final String query = String.format(DELETE_STATEMENT, getTableName(tenantId));
+    final String query = String.format(DELETE_STATEMENT, getPackagesTableName(tenantId));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -99,7 +101,8 @@ public class PackageRepositoryImpl implements PackageRepository {
     JsonArray parameters = new JsonArray();
     packageIds.forEach(packageId -> parameters.add(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()));
 
-    final String query = String.format(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getTableName(tenantId), createPlaceholders(packageIds.size()));
+    final String query = String.format(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getPackagesTableName(tenantId),
+      getTagsTableName(tenantId), createPlaceholders(packageIds.size()));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -121,7 +124,11 @@ public class PackageRepositoryImpl implements PackageRepository {
       .add(offset)
       .add(count);
 
-    final String query = String.format(SELECT_PACKAGES_WITH_TAGS, getTableName(tenantId), createPlaceholders(tags.size()));
+    final String resourceIdsQuery = String.format(SELECT_PACKAGE_IDS_BY_TAG, getPackagesTableName(tenantId),
+      getTagsTableName(tenantId), createPlaceholders(tags.size()));
+
+    final String query = String.format(SELECT_PACKAGES_WITH_TAGS, getPackagesTableName(tenantId),
+      getTagsTableName(tenantId), resourceIdsQuery);
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -141,14 +148,6 @@ public class PackageRepositoryImpl implements PackageRepository {
       .add(name)
       .add(contentType);
     return parameters;
-  }
-
-  private String getTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + PACKAGES_TABLE_NAME;
-  }
-
-  private String createPlaceholders(int size) {
-    return String.join(",", Collections.nCopies(size, "?"));
   }
 
   private List<DbPackage> mapPackages(ResultSet resultSet) {

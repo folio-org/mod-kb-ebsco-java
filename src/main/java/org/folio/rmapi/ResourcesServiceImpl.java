@@ -2,25 +2,33 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import org.folio.cache.VertxCache;
+import org.folio.common.FutureUtils;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
 import org.folio.holdingsiq.service.impl.ResourcesHoldingsIQServiceImpl;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
 
-import io.vertx.core.Vertx;
-
 public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ResourcesServiceImpl.class);
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
 
@@ -83,5 +91,24 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .rmapiConfiguration(configuration)
       .build();
     return resourceCache.getValueOrLoad(cacheKey, () -> retrieveResource(resourceId));
+  }
+
+  public CompletableFuture<Titles> retrieveResources(List<ResourceId> resourceIds, List<String> includes) {
+    Set<CompletableFuture<ResourceResult>> futures = resourceIds.stream()
+      .map(id -> retrieveResource(id, includes, true))
+      .collect(Collectors.toSet());
+
+    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+      .thenApply(this::mapToResources);
+  }
+
+  private Titles mapToResources(List<ResourceResult> resourceFutures) {
+    List<Title> titlesList = resourceFutures.stream()
+      .map(ResourceResult::getTitle)
+      .sorted(Comparator.comparing(Title::getTitleName))
+      .collect(Collectors.toList());
+    return Titles.builder()
+      .titleList(titlesList)
+      .build();
   }
 }

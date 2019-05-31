@@ -2,12 +2,13 @@ package org.folio.repository.providers;
 
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
-import static org.folio.repository.DbUtil.getTableName;
+import static org.folio.repository.DbUtil.getProviderTableName;
+import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.providers.ProviderTableConstants.DELETE_PROVIDER_STATEMENT;
 import static org.folio.repository.providers.ProviderTableConstants.INSERT_OR_UPDATE_PROVIDER_STATEMENT;
-import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.repository.providers.ProviderTableConstants.SELECT_TAGGED_PROVIDERS;
 
 import java.util.Collections;
@@ -45,8 +46,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(vendorData.getVendorId()),
       vendorData.getVendorName());
 
-    final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT,
-      getTableName(tenantId, PROVIDERS_TABLE_NAME));
+    final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Do insert query = " + query);
@@ -59,7 +59,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   public CompletableFuture<Void> deleteProvider(String vendorId, String tenantId) {
     JsonArray parameter = new JsonArray(Collections.singletonList(vendorId));
 
-    final String query = String.format(DELETE_PROVIDER_STATEMENT, getTableName(tenantId, PROVIDERS_TABLE_NAME));
+    final String query = String.format(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -79,7 +79,8 @@ public class ProviderRepositoryImpl implements ProviderRepository {
       .add(offset)
       .add(count);
 
-    final String query = String.format(SELECT_TAGGED_PROVIDERS, getTableName(tenantId, PROVIDERS_TABLE_NAME), createPlaceholders(tags.size()));
+    final String query = String.format(SELECT_TAGGED_PROVIDERS, getProviderTableName(tenantId),
+      getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
@@ -88,10 +89,6 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     postgresClient.select(query, parameters, future.completer());
 
     return mapResult(future, this::mapProviderIds);
-  }
-
-  private String createPlaceholders(int size) {
-    return String.join(",", Collections.nCopies(size, "?"));
   }
 
   private List<Long> mapProviderIds(ResultSet resultSet) {
