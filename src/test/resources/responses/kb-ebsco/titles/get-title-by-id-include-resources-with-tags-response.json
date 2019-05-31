@@ -1,0 +1,140 @@
+{
+  "data": {
+    "attributes": {
+      "contributors": [
+        {
+          "type": "author",
+          "contributor": "Bloom, Harold"
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "978-0-7910-3651-8",
+          "subtype": "Print",
+          "type": "ISBN"
+        },
+        {
+          "id": "978-0-585-24731-1",
+          "subtype": "Online",
+          "type": "ISBN"
+        }
+      ],
+      "isPeerReviewed": false,
+      "isTitleCustom": false,
+      "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+      "publicationType": "Book",
+      "publisherName": "Chelsea House Publishers",
+      "subjects": [
+        {
+          "subject": "LITERARY CRITICISM / American / General",
+          "type": "BISAC"
+        }
+      ]
+    },
+    "id": "985846",
+    "relationships": {
+      "resources": {
+        "data": [
+          {
+            "type": "resources",
+            "id": "19-5207-985846"
+          }
+        ]
+      }
+    },
+    "type": "titles"
+  },
+  "included": [
+    {
+      "id": "19-5207-985846",
+      "type": "resources",
+      "attributes": {
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 985846,
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Bloom, Harold"
+          }
+        ],
+        "identifiers": [
+          {
+            "id": "978-0-7910-3651-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "LITERARY CRITICISM / American / General",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 3464602,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "19-5207",
+        "packageName": "EBSCO eBooks",
+        "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "1996-01-01",
+            "endCoverage": "1996-12-31"
+          }
+        ],
+        "customCoverages": [],
+        "proxy": {
+          "id": "EZProxy",
+          "inherited": true
+        },
+        "tags": {
+          "tagList": [
+            "tag one"
+          ]
+        }
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

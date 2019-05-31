@@ -1,10 +1,10 @@
 package org.folio.rmapi.result;
 
-import org.folio.holdingsiq.model.Title;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.tag.Tag;
-
 import java.util.List;
+
+import org.folio.holdingsiq.model.Title;
+import org.folio.repository.tag.Tag;
+import org.folio.rest.jaxrs.model.Tags;
 
 public class TitleResult {
   private Title title;
