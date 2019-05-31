@@ -1,25 +1,41 @@
 package org.folio.repository.titles;
 
+import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
+import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
 import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
-import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
+import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
 
+import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Title;
+import org.folio.repository.holdings.DbHolding;
+import org.folio.repository.resources.ResourceTableConstants;
+import org.folio.repository.tag.TagTableConstants;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.tools.utils.ObjectMapperTool;
+import org.folio.tag.repository.titles.DbTitle;
 
 @Component
 public class TitlesRepositoryImpl implements TitlesRepository {
@@ -61,7 +77,102 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     return mapVertxFuture(future).thenApply(result -> null);
   }
 
+
+  @Override
+  public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenantId) {
+    int offset = (page - 1) * count;
+
+    JsonArray parameters = new JsonArray();
+    tags.forEach(parameters::add);
+    parameters
+      .add(offset)
+      .add(count);
+
+    final String query = String.format(SELECT_TITLES_BY_RESOURCE_TAGS,
+      getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId), createPlaceholders(tags.size()));
+
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+
+    LOG.info("Select titles by resource tags = " + query);
+    Future<ResultSet> future = Future.future();
+    postgresClient.select(query, parameters, future.completer());
+
+    return mapResult(future, this::mapTitles);
+  }
+
+  @Override
+  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String tenantId) {
+    JsonArray parameters = new JsonArray();
+    tags.forEach(parameters::add);
+    final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS, getTagsTableName(tenantId), createPlaceholders(tags.size()));
+
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+
+    LOG.info("Select packages by tags = " + query);
+    Future<ResultSet> future = Future.future();
+    postgresClient.select(query, parameters, future.completer());
+
+    return mapResult(future, this::readTagCount);
+  }
+
+  private String createPlaceholders(int size) {
+    return String.join(",", Collections.nCopies(size, "?"));
+  }
+
+  private Integer readTagCount(ResultSet resultSet) {
+    return resultSet.getRows().get(0).getInteger("count");
+  }
+
+  private List<DbTitle> mapTitles(ResultSet resultSet) {
+    return mapItems(resultSet.getRows(), this::mapTitle);
+  }
+
+  private DbTitle mapTitle(JsonObject row) {
+    Title title = readHolding(row)
+      .map(this::mapHoldingToTitle)
+      .orElse(null);
+    return DbTitle.builder()
+      .id(Long.parseLong(row.getString("id")))
+      .name(row.getString(ResourceTableConstants.NAME_COLUMN))
+      .title(title)
+      .build();
+  }
+
+  private Optional<DbHolding> readHolding(JsonObject row){
+    try {
+      if(row.getString("holding") != null) {
+        return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString("holding"), DbHolding.class));
+      }
+      else{
+        return Optional.empty();
+      }
+    } catch (IOException e) {
+      return Optional.empty();
+    }
+  }
+
+  private Title mapHoldingToTitle(DbHolding holding) {
+    return Title.builder()
+      .titleName(holding.getPublicationTitle())
+      .titleId(Integer.parseInt(holding.getTitleId()))
+      .pubType(holding.getResourceType())
+      .publisherName(holding.getPublisherName())
+      .build();
+  }
+
   private String getTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TITLES_TABLE_NAME;
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TitlesTableConstants.TITLES_TABLE_NAME;
+  }
+
+  private String getResourcesTableName(String tenantId) {
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + RESOURCES_TABLE_NAME;
+  }
+
+  private String getTagsTableName(String tenantId) {
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TagTableConstants.TABLE_NAME;
+  }
+
+  private String getHoldingsTableName(String tenantId) {
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + HOLDINGS_TABLE;
   }
 }

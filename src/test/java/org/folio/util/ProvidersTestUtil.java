@@ -6,10 +6,12 @@ import static org.folio.repository.providers.ProviderTableConstants.NAME_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import lombok.Builder;
 import lombok.Value;
 
@@ -38,8 +40,8 @@ public class ProvidersTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + providerTestTable() +
-        "(" + ID_COLUMN + ", " + NAME_COLUMN + ") VALUES('" +
-        DbProvider.getId() + "', '" + DbProvider.getName() + "')",
+        "(" + ID_COLUMN + ", " + NAME_COLUMN + ") VALUES(?,?)",
+      new JsonArray(Arrays.asList(DbProvider.getId(), DbProvider.getName())),
       event -> future.complete(null));
     future.join();
   }

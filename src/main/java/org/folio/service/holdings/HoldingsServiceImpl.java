@@ -5,16 +5,19 @@ import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Holding;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
+import org.folio.repository.holdings.DbHolding;
 import org.folio.repository.holdings.HoldingsRepository;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -118,7 +121,17 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private CompletableFuture<Void> saveHolding(List<Holding> holdings, String tenantId) {
+    List<DbHolding> dbHoldings = holdings.stream()
+      .map(holding -> new DbHolding(
+        holding.getTitleId(),
+        holding.getPackageId(),
+        holding.getVendorId(),
+        holding.getPublicationTitle(),
+        holding.getPublisherName(),
+        holding.getResourceType()
+      ))
+      .collect(Collectors.toList());
     logger.info("Saving holdings to database.");
-    return holdingsRepository.saveHolding(holdings, tenantId);
+    return holdingsRepository.saveHoldings(dbHoldings, tenantId);
   }
 }

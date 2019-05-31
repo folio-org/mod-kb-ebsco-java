@@ -1,6 +1,7 @@
 package org.folio.rest.util.template;
 
 import io.vertx.core.Vertx;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,7 @@ public class RMAPITemplateContextBuilder {
   private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
   @Autowired
   private VertxCache<ResourceCacheKey, Title> resourceCache;
+  @Autowired
   private VertxCache<TitleCacheKey, Title> titleCache;
 
   @Autowired

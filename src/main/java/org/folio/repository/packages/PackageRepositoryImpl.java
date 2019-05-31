@@ -29,6 +29,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -89,8 +90,8 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> getPackagesByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenant) {
-    return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, tenant);
+  public CompletableFuture<List<DbPackage>> getPackagesByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId) {
+    return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, tenantId);
   }
 
   @Override

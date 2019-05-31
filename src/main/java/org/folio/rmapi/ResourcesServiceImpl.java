@@ -5,8 +5,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import io.vertx.core.Vertx;
-
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -18,6 +16,8 @@ import org.folio.holdingsiq.service.impl.ResourcesHoldingsIQServiceImpl;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
+
+import io.vertx.core.Vertx;
 
 public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
 
@@ -82,15 +82,6 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .tenant(tenantId)
       .rmapiConfiguration(configuration)
       .build();
-    Title cachedResource = resourceCache.getValue(cacheKey);
-    if (cachedResource != null) {
-      return CompletableFuture.completedFuture(cachedResource);
-    } else {
-      return retrieveResource(resourceId)
-        .thenCompose(title -> {
-          resourceCache.putValue(cacheKey, title);
-          return CompletableFuture.completedFuture(title);
-        });
-    }
+    return resourceCache.getValueOrLoad(cacheKey, () -> retrieveResource(resourceId));
   }
 }

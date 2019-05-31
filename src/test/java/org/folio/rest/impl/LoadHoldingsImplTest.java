@@ -20,12 +20,14 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.folio.holdingsiq.model.Holding;
+import org.folio.repository.holdings.DbHolding;
 import org.folio.util.HoldingsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
@@ -55,7 +57,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
-    final List<Holding> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    final List<DbHolding> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
 
   }
@@ -81,7 +83,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
-    final List<Holding> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    final List<DbHolding> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), equalTo(2));
   }
 }

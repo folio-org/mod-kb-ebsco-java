@@ -12,6 +12,7 @@ import static org.folio.repository.tag.TagTableConstants.TAG_FIELD_LIST;
 import static org.folio.util.TestUtil.STUB_TENANT;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -36,8 +37,8 @@ public class TagsTestUtil {
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + tagTestTable() +
         "(" + ID_COLUMN + ", " + RECORD_ID_COLUMN + ", " + RECORD_TYPE_COLUMN + ", " + TAG_COLUMN
-        + ") VALUES('" +
-        UUID.randomUUID().toString() + "', '" + recordId + "', '" + recordType.getValue() + "', '" + value + "')",
+        + ") VALUES(?,?,?,?)",
+      new JsonArray(Arrays.asList(UUID.randomUUID().toString(), recordId, recordType.getValue(), value)),
       event -> future.complete(null));
     future.join();
   }
@@ -93,7 +94,8 @@ public class TagsTestUtil {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
       "SELECT " + TAG_COLUMN + " FROM " + tagTestTable() + " " +
-        "WHERE " + RECORD_TYPE_COLUMN + "= '" + recordType.getValue()+"'",
+        "WHERE " + RECORD_TYPE_COLUMN + "= ?",
+      new JsonArray(Collections.singletonList(recordType.getValue())),
       event -> future.complete(mapItems(event.result().getRows(), row -> row.getString(TAG_COLUMN))));
     return future.join();
   }

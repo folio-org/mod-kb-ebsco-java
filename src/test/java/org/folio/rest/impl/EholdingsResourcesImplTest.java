@@ -20,6 +20,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
+import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
+import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
+import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_PACKAGE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_VENDOR_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
@@ -42,7 +52,9 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -60,20 +72,9 @@ import org.folio.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsResourcesImplTest extends WireMockTestBase {
-
-  private static final String STUB_MANAGED_RESOURCE_ID = "583-4345-762169";
-  private static final String STUB_MANAGED_VENDOR_ID = "583";
-  private static final String STUB_MANAGED_PACKAGE_ID = "4345";
-  private static final String STUB_MANAGED_TITLE_ID = "762169";
-  private static final String STUB_CUSTOM_RESOURCE_ID = "123356-3157070-19412030";
-  private static final String STUB_CUSTOM_VENDOR_ID = "123356";
-  private static final String STUB_CUSTOM_PACKAGE_ID = "3157070";
-  private static final String STUB_CUSTOM_TITLE_ID = "19412030";
-  private static final String MANAGED_PACKAGE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_MANAGED_VENDOR_ID + "/packages/" + STUB_MANAGED_PACKAGE_ID;
+  private static final String MANAGED_PACKAGE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
   private static final String MANAGED_RESOURCE_ENDPOINT = MANAGED_PACKAGE_ENDPOINT + "/titles/" + STUB_MANAGED_TITLE_ID;
   private static final String CUSTOM_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
-  private static final String STUB_TAG = "test tag";
-  private static final String STUB_TAG2 = "test tag 2";
 
   @Test
   public void shouldReturnResourceWhenValidId() throws IOException, URISyntaxException {
@@ -91,7 +92,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourceWithTags() throws IOException, URISyntaxException {
     try {
-      insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG);
+      insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
       String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
 
       mockDefaultConfiguration(getWiremockUrl());
@@ -99,7 +100,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
       Resource resource = getWithOk("eholdings/resources/" + STUB_MANAGED_RESOURCE_ID).as(Resource.class);
 
-      assertTrue(resource.getData().getAttributes().getTags().getTagList().contains(STUB_TAG));
+      assertTrue(resource.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
     }
     finally {
       TagsTestUtil.clearTags(vertx);
@@ -159,7 +160,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       .withProvider(new HasOneRelationship()
         .withData(new RelationshipData()
           .withType(PROVIDERS_TYPE)
-          .withId(STUB_MANAGED_VENDOR_ID)));
+          .withId(STUB_VENDOR_ID)));
     JSONAssert.assertEquals(
       mapper.writeValueAsString(resource), actualResponse, false);
   }
@@ -190,7 +191,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       .withPackage(new HasOneRelationship()
         .withData(new RelationshipData()
           .withType(PACKAGES_TYPE)
-          .withId(STUB_MANAGED_VENDOR_ID + "-" + STUB_MANAGED_PACKAGE_ID)));
+          .withId(STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)));
     JSONAssert.assertEquals(
       mapper.writeValueAsString(resource), actualResponse, false);
   }
@@ -228,11 +229,11 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       .withPackage(new HasOneRelationship()
         .withData(new RelationshipData()
           .withType(PACKAGES_TYPE)
-          .withId(STUB_MANAGED_VENDOR_ID + "-" + STUB_MANAGED_PACKAGE_ID)))
+          .withId(STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID)))
       .withProvider(new HasOneRelationship()
         .withData(new RelationshipData()
           .withType(PROVIDERS_TYPE)
-          .withId(String.valueOf(STUB_MANAGED_VENDOR_ID))))
+          .withId(String.valueOf(STUB_VENDOR_ID))))
       .withTitle(new HasOneRelationship()
         .withData(new RelationshipData()
           .withType(TITLES_TYPE)
@@ -311,7 +312,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
       ObjectMapper mapper = new ObjectMapper();
       ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"), ResourcePutRequest.class);
-      List<String> tags = Arrays.asList(STUB_TAG, STUB_TAG2);
+      List<String> tags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       request.getData().getAttributes().setTags(new Tags().withTagList(tags));
 
       mockUpdateResourceScenario(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID, mapper.writeValueAsString(request));
@@ -353,7 +354,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-managed-resource.json"),
         ResourcePutRequest.class);
 
-      List<String> tags = Arrays.asList(STUB_TAG, STUB_TAG2);
+      List<String> tags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       request.getData().getAttributes().setTags(new Tags().withTagList(tags));
       request.getData().getAttributes().setIsSelected(false);
       request.getData().getAttributes().setCoverageStatement("coverage statement");
@@ -453,7 +454,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   @Test
   public void shouldDeleteTagsOnDeleteRequest() throws IOException, URISyntaxException {
     try {
-      TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG);
+      TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
       EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
       deleteResource(putBodyPattern, CUSTOM_RESOURCE_ENDPOINT);
       List<String> actualTags = TagsTestUtil.getTags(vertx);
@@ -495,7 +496,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   private void mockVendor(String responseFile) throws IOException, URISyntaxException {
-    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_MANAGED_VENDOR_ID), responseFile);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID), responseFile);
   }
 
   private String mockUpdateResourceScenario(String updatedResourceResponseFile, String resourceEndpoint, String resourceId, String requestBody) throws IOException, URISyntaxException {

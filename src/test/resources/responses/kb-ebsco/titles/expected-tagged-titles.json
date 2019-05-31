@@ -1,0 +1,47 @@
+{
+  "data": [
+    {
+      "type": "titles",
+      "id": "985846",
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "978-0-7910-3651-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+        "publicationType": "Book",
+        "publisherName": "Chelsea House Publishers",
+        "subjects": [
+          {
+            "subject": "LITERARY CRITICISM / American / General",
+            "type": "BISAC"
+          }
+        ]
+      }
+    },
+    {
+      "type": "titles",
+      "id": "19412030",
+      "attributes": {
+        "name": "Test Title",
+        "publicationType": "Book",
+        "publisherName": "Test one Press"
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 2
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

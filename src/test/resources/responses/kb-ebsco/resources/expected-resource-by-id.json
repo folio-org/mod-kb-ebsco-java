@@ -1,6 +1,6 @@
 {
   "data": {
-    "id": "583-4345-762169",
+    "id": "19-3964-762169",
     "type": "resources",
     "attributes": {
       "isPeerReviewed": false,
@@ -48,10 +48,10 @@
       "managedEmbargoPeriod": {
         "embargoValue": 0
       },
-      "packageId": "583-4345",
+      "packageId": "19-3964",
       "packageName": "ABC-CLIO eBook Collection",
       "url": "https://publisher.abc-clio.com/9780313068003/",
-      "providerId": 583,
+      "providerId": 19,
       "providerName": "ABC-CLIO",
       "visibilityData": {
         "isHidden": true,

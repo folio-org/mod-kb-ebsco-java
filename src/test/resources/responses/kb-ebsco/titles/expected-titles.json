@@ -1,0 +1,49 @@
+{
+  "data": [
+    {
+      "id": "1175655",
+      "type": "titles",
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "7209484",
+            "subtype": "Print",
+            "type": "ISSN"
+          },
+          {
+            "id": "978-1-74216-894-4",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-7303-7792-4",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "The $1 Million Reason to Change Your Mind",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "BUSINESS & ECONOMICS / Small Business",
+            "type": "BISAC"
+          }
+        ]
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 8766
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

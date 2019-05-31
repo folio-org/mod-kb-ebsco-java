@@ -13,7 +13,7 @@ public interface PackageRepository {
 
   CompletableFuture<List<DbPackage>> getPackagesByTagName(List<String> tags, int page, int count, String tenantId);
 
-  CompletableFuture<List<DbPackage>> getPackagesByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenant);
+  CompletableFuture<List<DbPackage>> getPackagesByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId);
 
   CompletableFuture<List<DbPackage>> getPackagesByIds(List<PackageId> packageIds, String tenantId);
 }

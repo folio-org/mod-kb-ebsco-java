@@ -9,11 +9,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import org.folio.cache.VertxCache;
+import org.folio.common.FutureUtils;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -27,6 +24,10 @@ import org.folio.holdingsiq.service.impl.PackagesHoldingsIQServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.VendorResult;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
@@ -56,22 +57,15 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   public CompletableFuture<Packages> retrievePackages(List<PackageId> packageIds) {
     Set<CompletableFuture<PackageResult>> futures = packageIds.stream()
-      .map(id -> retrievePackage(id, Collections.emptyList(), true)
-      .whenComplete((result,throwable) -> {
-        if(throwable != null) {
-          LOG.warn(throwable.getMessage(), throwable);
-        }
-      }))
+      .map(id -> retrievePackage(id, Collections.emptyList(), true))
       .collect(Collectors.toSet());
-
-    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-      .handle((o,e) -> mapToPackages(futures));
+    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+      .thenApply(this::mapToPackages);
   }
 
-  private Packages mapToPackages(Set<CompletableFuture<PackageResult>> packageFutures) {
-    List<PackageData> packages = packageFutures.stream()
-      .filter(future -> !future.isCompletedExceptionally())
-      .map(future -> future.join().getPackageData())
+  private Packages mapToPackages(List<PackageResult> results) {
+    List<PackageData> packages = results.stream()
+      .map(PackageResult::getPackageData)
       .sorted(Comparator.comparing(PackageData::getPackageName))
       .collect(Collectors.toList());
     return Packages.builder()
@@ -113,15 +107,6 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
       .rmapiConfiguration(configuration)
       .tenant(tenantId)
       .build();
-    PackageByIdData cachedPackage = packageCache.getValue(cacheKey);
-    if (cachedPackage != null) {
-      return CompletableFuture.completedFuture(cachedPackage);
-    } else {
-      return retrievePackage(packageId)
-        .thenCompose(packageByIdData -> {
-          packageCache.putValue(cacheKey, packageByIdData);
-          return CompletableFuture.completedFuture(packageByIdData);
-        });
-    }
+    return packageCache.getValueOrLoad(cacheKey, () -> retrievePackage(packageId));
   }
 }
