@@ -14,6 +14,7 @@ import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_TAGS;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
+import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RESOURCE_IDS;
 import static org.folio.repository.tag.TagTableConstants.TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
@@ -97,6 +98,22 @@ class TagRepositoryImpl implements TagRepository {
         parameters, resultSetFuture.completer()
       );
 
+    return mapResult(resultSetFuture, this::readTags);
+  }
+
+  @Override
+  public CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType) {
+
+    String placeholders = createPlaceholders(recordIds.size());
+    recordIds.add(recordType.getValue());
+    JsonArray parameters = createParameters(recordIds);
+
+    Future<ResultSet> resultSetFuture = Future.future();
+    PostgresClient.getInstance(vertx, tenantId)
+      .select(
+        String.format(SELECT_TAGS_BY_RESOURCE_IDS, getTableName(tenantId), placeholders),
+        parameters, resultSetFuture.completer()
+      );
     return mapResult(resultSetFuture, this::readTags);
   }
 

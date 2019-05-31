@@ -2,11 +2,15 @@ package org.folio.rmapi.result;
 
 import org.folio.holdingsiq.model.Title;
 import org.folio.rest.jaxrs.model.Tags;
+import org.folio.tag.Tag;
+
+import java.util.List;
 
 public class TitleResult {
   private Title title;
   private boolean includeResource;
   private Tags tags;
+  private List<Tag> resourceTagList;
 
   public TitleResult(Title title, boolean includeResource) {
     this.title = title;
@@ -27,5 +31,13 @@ public class TitleResult {
 
   public void setTags(Tags tags) {
     this.tags = tags;
+  }
+
+  public List<Tag> getResourceTagList() {
+    return resourceTagList;
+  }
+
+  public void setResourceTagList(List<Tag> resourceTagList) {
+    this.resourceTagList = resourceTagList;
   }
 }

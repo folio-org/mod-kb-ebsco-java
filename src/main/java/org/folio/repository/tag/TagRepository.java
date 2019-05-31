@@ -1,6 +1,7 @@
 package org.folio.repository.tag;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -21,4 +22,6 @@ public interface TagRepository {
   CompletableFuture<Integer> countRecordsByTags(List<String> tags, String tenantId, RecordType recordType);
 
   CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix, String tenantId, RecordType recordType);
+
+  CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType);
 }

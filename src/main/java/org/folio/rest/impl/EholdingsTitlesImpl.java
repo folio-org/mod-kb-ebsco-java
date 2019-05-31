@@ -221,11 +221,28 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result, String tenant) {
+    if (result.isIncludeResource()) {
+      List<String> resourceIds = result.getTitle()
+        .getCustomerResourcesList()
+        .stream()
+        .map(this::buildResourceId)
+        .collect(Collectors.toList());
+      tagRepository.findByRecordByIds(tenant, resourceIds, RecordType.RESOURCE)
+        .thenApply(tags -> {
+          result.setResourceTagList(tags);
+          return result;
+        });
+    }
     return tagRepository.findByRecord(tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE)
       .thenApply(tags -> {
         result.setTags(tagsConverter.convert(tags));
         return result;
       });
+  }
+
+  private String buildResourceId(CustomerResources customerResources) {
+    return customerResources.getVendorId() + "-" + customerResources.getPackageId() + "-"
+      + customerResources.getTitleId();
   }
 
   private CompletableFuture<TitleResult> updateTags(TitleResult result, String tenant, Tags tags) {
