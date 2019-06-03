@@ -105,8 +105,7 @@ class TagRepositoryImpl implements TagRepository {
   public CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType) {
 
     String placeholders = createPlaceholders(recordIds.size());
-    recordIds.add(recordType.getValue());
-    JsonArray parameters = createParameters(recordIds);
+    JsonArray parameters = createParametersWithRecordType(recordIds,recordType);
 
     Future<ResultSet> resultSetFuture = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
@@ -228,6 +227,15 @@ class TagRepositoryImpl implements TagRepository {
           });
         }
       return future;
+  }
+
+  private JsonArray createParametersWithRecordType(List<String> queryParameters, RecordType recordType) {
+    JsonArray parameters = new JsonArray();
+
+    queryParameters.forEach(parameters::add);
+    parameters.add(recordType);
+
+    return parameters;
   }
 
   private JsonArray createParameters(Iterable<?> queryParameters) {
