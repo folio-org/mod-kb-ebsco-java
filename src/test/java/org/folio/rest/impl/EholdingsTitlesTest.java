@@ -14,6 +14,7 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.rest.impl.TitlesTestData.RESOURCE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -238,6 +239,28 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldReturnTitleWithResourcesWhenIncludeResourcesWithTags() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+
+      String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+      String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
+
+      mockDefaultConfiguration(getWiremockUrl());
+      mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
+
+      String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources",
+        SC_OK).asString();
+      String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
+
+      JSONAssert.assertEquals(expected, actual, false);
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+    }
   }
 
   @Test
