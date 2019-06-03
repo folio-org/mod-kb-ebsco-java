@@ -14,6 +14,7 @@ import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_TAGS;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
+import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RESOURCE_IDS;
 import static org.folio.repository.tag.TagTableConstants.TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
@@ -35,6 +36,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +99,21 @@ class TagRepositoryImpl implements TagRepository {
         parameters, resultSetFuture.completer()
       );
 
+    return mapResult(resultSetFuture, this::readTags);
+  }
+
+  @Override
+  public CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType) {
+
+    String placeholders = createPlaceholders(recordIds.size());
+    JsonArray parameters = createParametersWithRecordType(recordIds,recordType);
+
+    Future<ResultSet> resultSetFuture = Future.future();
+    PostgresClient.getInstance(vertx, tenantId)
+      .select(
+        String.format(SELECT_TAGS_BY_RESOURCE_IDS, getTableName(tenantId), placeholders),
+        parameters, resultSetFuture.completer()
+      );
     return mapResult(resultSetFuture, this::readTags);
   }
 
@@ -211,6 +228,15 @@ class TagRepositoryImpl implements TagRepository {
           });
         }
       return future;
+  }
+
+  private JsonArray createParametersWithRecordType(List<String> queryParameters, RecordType recordType) {
+    JsonArray parameters = new JsonArray();
+
+    queryParameters.forEach(parameters::add);
+    parameters.add(recordType.getValue());
+
+    return parameters;
   }
 
   private JsonArray createParameters(Iterable<?> queryParameters) {

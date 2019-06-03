@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.folio.repository.tag.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
@@ -24,6 +25,7 @@ import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.Resources;
+import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
@@ -44,6 +46,8 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   private Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
   @Autowired
   private Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
+  @Autowired
+  private Converter<List<Tag>, Tags> tagsConverter;
 
   @Override
   public org.folio.rest.jaxrs.model.Title convert(@NonNull TitleResult titleResult) {
@@ -80,6 +84,18 @@ public class TitleConverter implements Converter<TitleResult, Title> {
           .collect(Collectors.toList())).getData()
         .withRelationships(new Relationships().withResources(new Resources()
           .withData(convertResourcesRelationship(customerResourcesList))));
+      if (!Objects.isNull(titleResult.getResourceTagList())) {
+        title.getIncluded()
+            .forEach(resourceCollectionItem -> {
+
+            List<Tag> tags = titleResult.getResourceTagList()
+              .stream().filter(tag ->
+                resourceCollectionItem.getId().equals(tag.getRecordId()))
+              .collect(Collectors.toList());
+
+            resourceCollectionItem.getAttributes().withTags(tagsConverter.convert(tags));
+          });
+      }
     }
     return title;
   }
