@@ -10,7 +10,6 @@ public class TitlesTestData {
   public static final String STUB_CUSTOM_PACKAGE_ID = "3157070";
   public static final String STUB_CUSTOM_TITLE_ID = "19412030";
   public static final String STUB_CUSTOM_TITLE_NAME = "Test Title";
-  public static final String RESOURCE_ID = "19-5207-985846";
 
   public static final String STUB_MANAGED_TITLE_ID = "762169";
 

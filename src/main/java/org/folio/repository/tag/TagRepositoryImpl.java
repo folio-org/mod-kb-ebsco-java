@@ -36,6 +36,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,7 +234,7 @@ class TagRepositoryImpl implements TagRepository {
     JsonArray parameters = new JsonArray();
 
     queryParameters.forEach(parameters::add);
-    parameters.add(recordType);
+    parameters.add(recordType.getValue());
 
     return parameters;
   }
