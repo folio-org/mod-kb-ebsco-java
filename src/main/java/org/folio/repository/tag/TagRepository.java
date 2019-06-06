@@ -15,6 +15,10 @@ public interface TagRepository {
 
   CompletableFuture<List<Tag>> findByRecordTypes(String tenantId, Set<RecordType> recordTypes);
 
+  CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType);
+
+  CompletableFuture<Map<String, List<Tag>>> findPerRecord(String tenantId, List<String> recordIds, RecordType recordType);
+
   CompletableFuture<Boolean> updateRecordTags(String tenantId, String recordId, RecordType recordType, List<String> tags);
 
   CompletableFuture<Boolean> deleteRecordTags(String tenantId, String recordId, RecordType recordType);
@@ -22,6 +26,4 @@ public interface TagRepository {
   CompletableFuture<Integer> countRecordsByTags(List<String> tags, String tenantId, RecordType recordType);
 
   CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix, String tenantId, RecordType recordType);
-
-  CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType);
 }

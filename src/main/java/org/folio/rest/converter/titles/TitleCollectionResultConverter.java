@@ -1,0 +1,27 @@
+package org.folio.rest.converter.titles;
+
+import static org.folio.common.ListUtils.mapItems;
+
+import java.util.List;
+
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
+import org.folio.holdingsiq.model.Titles;
+import org.folio.rmapi.result.TitleCollectionResult;
+import org.folio.rmapi.result.TitleResult;
+
+@Component
+public class TitleCollectionResultConverter implements Converter<Titles, TitleCollectionResult> {
+
+  @Override
+  public TitleCollectionResult convert(@NonNull Titles titles) {
+    List<TitleResult> titleResults = mapItems(titles.getTitleList(), title -> new TitleResult(title, false));
+
+    return TitleCollectionResult.builder()
+      .titleResults(titleResults)
+      .totalResults(titles.getTotalResults()).build();
+  }
+
+}

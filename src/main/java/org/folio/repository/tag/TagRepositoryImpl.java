@@ -1,6 +1,9 @@
 package org.folio.repository.tag;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
@@ -20,7 +23,9 @@ import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -36,13 +41,13 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.common.FutureUtils;
+import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.rest.persist.PostgresClient;
 
@@ -104,17 +109,18 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType) {
+    Future<ResultSet> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
 
-    String placeholders = createPlaceholders(recordIds.size());
-    JsonArray parameters = createParametersWithRecordType(recordIds,recordType);
-
-    Future<ResultSet> resultSetFuture = Future.future();
-    PostgresClient.getInstance(vertx, tenantId)
-      .select(
-        String.format(SELECT_TAGS_BY_RESOURCE_IDS, getTableName(tenantId), placeholders),
-        parameters, resultSetFuture.completer()
-      );
     return mapResult(resultSetFuture, this::readTags);
+  }
+
+  @Override
+  public CompletableFuture<Map<String, List<Tag>>> findPerRecord(String tenantId, List<String> recordIds,
+                                                                 RecordType recordType) {
+    Future<ResultSet> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
+    
+    return mapResult(resultSetFuture, this::readTagsPerRecord)
+            .thenApply(this::remapToRecordIds);
   }
 
   @Override
@@ -154,12 +160,43 @@ class TagRepositoryImpl implements TagRepository {
     return unAssignTags(null, tenantId, recordId, recordType);
   }
 
+  private Future<ResultSet> findByRecordIdsOfType(String tenantId, List<String> recordIds, RecordType recordType) {
+    String placeholders = createPlaceholders(recordIds.size());
+    JsonArray parameters = createParametersWithRecordType(recordIds, recordType);
+
+    Future<ResultSet> resultSetFuture = Future.future();
+    PostgresClient.getInstance(vertx, tenantId)
+      .select(
+        String.format(SELECT_TAGS_BY_RESOURCE_IDS, getTableName(tenantId), placeholders),
+        parameters, resultSetFuture.completer()
+      );
+    return resultSetFuture;
+  }
+
   private List<Tag> readTags(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), this::populateTag);
   }
 
+  private Map<RecordKey, List<Tag>> readTagsPerRecord(ResultSet resultSet) {
+    return resultSet.getRows().stream().collect(
+            groupingBy(this::readRecordKey, mapping(this::populateTag, toList())));
+  }
+
+  private RecordKey readRecordKey(JsonObject row) {
+    return RecordKey.builder()
+            .recordId(row.getString(RECORD_ID_COLUMN))
+            .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN))).build();
+  }
+
   private Integer readTagCount(ResultSet resultSet) {
     return resultSet.getRows().get(0).getInteger("count");
+  }
+
+  private Map<String, List<Tag>> remapToRecordIds(Map<RecordKey, List<Tag>> tagsPerRecord) {
+    // method DOES NOT check that all records are of the same type, so be conscious
+    Map<String, List<Tag>> result = new HashMap<>();
+    tagsPerRecord.forEach((recordKey, tags) -> result.put(recordKey.getRecordId(), tags));
+    return result;
   }
 
   private Tag populateTag(JsonObject row) {
