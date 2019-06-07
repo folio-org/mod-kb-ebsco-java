@@ -90,7 +90,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String CUSTOM_PACKAGE_STUB_FILE = "responses/rmapi/packages/get-custom-package-by-id-response.json";
   private static final String RESOURCES_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response.json";
   private static final String EXPECTED_PACKAGE_BY_ID_STUB_FILE = "responses/kb-ebsco/packages/expected-package-by-id.json";
-  private static final String EXPECTED_RESOURCES_STUB_FILE = "responses/kb-ebsco/resources/get-resources-by-package-id-response.json";
+  private static final String EXPECTED_RESOURCES_STUB_FILE = "responses/kb-ebsco/resources/expected-resources-by-package-id.json";
+  private static final String EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE = "responses/kb-ebsco/resources/expected-resources-by-package-id-with-tags.json";
   private static final String VENDOR_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/vendors/get-vendor-by-id-for-package.json";
 
   public static final String PACKAGES_STUB_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages";
@@ -711,24 +712,49 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnResourcesWithTagsOnGetWithResources() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, "295-2545963-2099944", RecordType.RESOURCE, STUB_TAG_VALUE);
+      TagsTestUtil.insertTag(vertx, "295-2545963-2172685", RecordType.RESOURCE, STUB_TAG_VALUE_2);
+      TagsTestUtil.insertTag(vertx, "295-2545963-2172685", RecordType.RESOURCE, STUB_TAG_VALUE_3);
+
+      String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources";
+      String query = "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
+
+      String actual = getWithStatus(packageResourcesUrl, 200).asString();
+      String expected = readFile(EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE);
+
+      JSONAssert.assertEquals(expected, actual, false);
+
+      verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + query)));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+    }
+  }
+
+  @Test
   public void shouldReturnResourcesWithOnSearchByTags() throws IOException, URISyntaxException {
     try {
       mockDefaultConfiguration(getWiremockUrl());
       mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
 
       ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(
-          STUB_TITLE_NAME).build());
+        STUB_TITLE_NAME).build());
 
       TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
 
       String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID
-          + "/resources?filter[tags]=" + STUB_TAG_VALUE;
+        + "/resources?filter[tags]=" + STUB_TAG_VALUE;
 
       String actualResponse = RestAssured.given().spec(getRequestSpecification()).when().get(packageResourcesUrl).then()
-          .statusCode(200).extract().asString();
+        .statusCode(200).extract().asString();
 
       JSONAssert.assertEquals(readFile("responses/kb-ebsco/resources/expected-tagged-resources.json"), actualResponse,
-          false);
+        false);
     } finally {
       TagsTestUtil.clearTags(vertx);
       TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
