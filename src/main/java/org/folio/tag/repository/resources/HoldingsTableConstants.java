@@ -10,5 +10,7 @@ public class HoldingsTableConstants {
       "ON CONFLICT (" + ID_COLUMN + ") DO NOTHING";
   public static final String REMOVE_FROM_HOLDINGS = "DELETE FROM %s;";
 
+  public static final String GET_HOLDINGS_BY_IDS = "SELECT * from %s WHERE id IN (%s);";
+
   private HoldingsTableConstants() { }
 }

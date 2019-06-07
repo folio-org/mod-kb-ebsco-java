@@ -4,7 +4,7 @@ package org.folio.repository.tag;
 public class TagTableConstants {
   private TagTableConstants() {}
 
-  public static final String TABLE_NAME = "tags";
+  public static final String TAGS_TABLE_NAME = "tags";
   public static final String TAG_COLUMN = "tag";
   public static final String ID_COLUMN = "id";
   public static final String RECORD_ID_COLUMN = "record_id";

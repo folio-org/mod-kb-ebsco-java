@@ -3,15 +3,16 @@ package org.folio.util;
 import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.tag.repository.resources.HoldingsTableConstants.ID_COLUMN;
 import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -23,7 +24,8 @@ public class HoldingsTestUtil {
 
   private static final String JSONB_COLUMN = "jsonb";
 
-  public HoldingsTestUtil() {}
+  public HoldingsTestUtil() {
+  }
 
   public static List<DbHolding> getHoldings(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
@@ -43,7 +45,7 @@ public class HoldingsTestUtil {
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + holdingsTestTable() +
         "(" + ID_COLUMN + ", " + JSONB_COLUMN + ") VALUES(?,?)",
-      new JsonArray(Arrays.asList(getHoldingsId(holding),Json.encode(holding))),
+      new JsonArray(Arrays.asList(getHoldingsId(holding), Json.encode(holding))),
       event -> future.complete(null));
     future.join();
   }
@@ -63,5 +65,9 @@ public class HoldingsTestUtil {
 
   private static String getHoldingsId(DbHolding holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
+  }
+
+  public static DbHolding getHolding() throws IOException, URISyntaxException {
+    return Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHolding.class);
   }
 }

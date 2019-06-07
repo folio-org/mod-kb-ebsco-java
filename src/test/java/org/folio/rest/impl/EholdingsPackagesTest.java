@@ -21,15 +21,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
+import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_2;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_3;
@@ -38,6 +31,7 @@ import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
@@ -64,10 +58,8 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,6 +79,7 @@ import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.util.PackagesTestUtil;
+import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TestUtil;
 
@@ -108,6 +101,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
   private static final String PACKAGED_UPDATED_STATE = "Packaged updated";
   private static final String GET_PACKAGE_SCENARIO = "Get package";
+  private static final String STUB_TITLE_NAME = "Activity Theory Perspectives on Technology in Higher Education";
 
   @Test
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
@@ -714,6 +708,31 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?page=2";
     String query = "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=2&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnResourcesWithOnSearchByTags() throws IOException, URISyntaxException {
+    try {
+      mockDefaultConfiguration(getWiremockUrl());
+      mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
+
+      ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(
+          STUB_TITLE_NAME).build());
+
+      TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+
+      String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID
+          + "/resources?filter[tags]=" + STUB_TAG_VALUE;
+
+      String actualResponse = RestAssured.given().spec(getRequestSpecification()).when().get(packageResourcesUrl).then()
+          .statusCode(200).extract().asString();
+
+      JSONAssert.assertEquals(readFile("responses/kb-ebsco/resources/expected-tagged-resources.json"), actualResponse,
+          false);
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+    }
   }
 
   @Test

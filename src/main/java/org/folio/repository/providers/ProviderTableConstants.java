@@ -16,7 +16,7 @@ public class ProviderTableConstants {
 
   public static final String SELECT_TAGGED_PROVIDERS =
     "SELECT DISTINCT providers.id as id, providers.name FROM %s " +
-      "LEFT JOIN tags ON " +
+      "LEFT JOIN %s as tags ON " +
       "tags.record_id = providers.id " +
       "AND tags.record_type = 'provider' " +
       "WHERE tags.tag IN (%s) " +

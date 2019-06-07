@@ -6,7 +6,7 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.TABLE_NAME;
+import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.TAG_FIELD_LIST;
 import static org.folio.util.TestUtil.STUB_TENANT;
@@ -101,7 +101,7 @@ public class TagsTestUtil {
   }
 
   private static String tagTestTable() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TABLE_NAME;
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TAGS_TABLE_NAME;
   }
 
   private static JsonArray createParams(List<Tag> tags) {
