@@ -1,5 +1,14 @@
 package org.folio.repository;
 
+import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
+import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
+import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
+import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
+
+import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
@@ -8,6 +17,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
@@ -15,6 +25,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 
 import org.folio.common.FutureUtils;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class DbUtil {
   private DbUtil() {}
@@ -26,10 +37,6 @@ public class DbUtil {
       .add(id)
       .add(name)
       .add(name);
-  }
-
-  public static String getTableName(String tenantId, String tableName) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + tableName;
   }
 
   public static CompletableFuture<Void> executeInTransaction(String tenantId, Vertx vertx,
@@ -64,5 +71,41 @@ public class DbUtil {
     Future<Void> vertxFuture = Future.future();
     postgresClient.endTx(mutableConnection.getValue(), vertxFuture.completer());
     return FutureUtils.mapVertxFuture(vertxFuture);
+  }
+
+  private static String getTableName(String tenantId, String tableName) {
+    return PostgresClient.convertToPsqlStandard(tenantId) + "." + tableName;
+  }
+
+  public static String getTitlesTableName(String tenantId) {
+    return getTableName(tenantId, TITLES_TABLE_NAME);
+  }
+
+  public static String getResourcesTableName(String tenantId) {
+    return getTableName(tenantId, RESOURCES_TABLE_NAME);
+  }
+
+  public static String getProviderTableName(String tenantId) {
+    return getTableName(tenantId, PROVIDERS_TABLE_NAME);
+  }
+
+  public static String getPackagesTableName(String tenantId) {
+    return getTableName(tenantId, PACKAGES_TABLE_NAME);
+  }
+
+  public static String getTagsTableName(String tenantId) {
+    return getTableName(tenantId, TAGS_TABLE_NAME);
+  }
+
+  public static String getHoldingsTableName(String tenantId) {
+    return getTableName(tenantId, HOLDINGS_TABLE);
+  }
+
+  public static <T> Optional<T> mapColumn(JsonObject row, String columnName, Class<T> tClass){
+    try {
+      return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString(columnName), tClass));
+    } catch (IOException e) {
+      return Optional.empty();
+    }
   }
 }

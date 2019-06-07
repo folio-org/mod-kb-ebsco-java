@@ -326,6 +326,11 @@
       "description": "Get record tags"
     },
     {
+      "permissionName": "kb-ebsco.holdings.load.post",
+      "displayName": "permission to run load of holdings",
+      "description": "one-time run load of holdings"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",

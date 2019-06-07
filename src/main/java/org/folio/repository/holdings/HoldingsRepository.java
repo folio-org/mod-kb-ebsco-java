@@ -8,4 +8,6 @@ public interface HoldingsRepository {
   CompletableFuture<Void> saveHoldings(List<DbHolding> holding, String tenantId);
 
   CompletableFuture<Void> removeHoldings(String tenantId);
+
+  CompletableFuture<List<DbHolding>> getHoldingsByIds(String tenantId, List<String> resourceIds);
 }

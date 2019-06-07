@@ -9,6 +9,7 @@ import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.executeInTransaction;
+import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.tag.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX;
 import static org.folio.repository.tag.TagTableConstants.DELETE_TAG_RECORD;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
@@ -18,7 +19,6 @@ import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_TAGS;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RESOURCE_IDS;
-import static org.folio.repository.tag.TagTableConstants.TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
 
@@ -67,7 +67,7 @@ class TagRepositoryImpl implements TagRepository {
     Future<ResultSet> resultSetFuture = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
       .select(
-        String.format(SELECT_ALL_TAGS, getTableName(tenantId)),
+        String.format(SELECT_ALL_TAGS, getTagsTableName(tenantId)),
         resultSetFuture.completer()
       );
 
@@ -81,7 +81,7 @@ class TagRepositoryImpl implements TagRepository {
     Future<ResultSet> resultSetFuture = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
       .select(
-        String.format(SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE, getTableName(tenantId)),
+        String.format(SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE, getTagsTableName(tenantId)),
         parameters, resultSetFuture.completer()
       );
 
@@ -100,7 +100,7 @@ class TagRepositoryImpl implements TagRepository {
     Future<ResultSet> resultSetFuture = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
       .select(
-        String.format(SELECT_TAGS_BY_RECORD_TYPES, getTableName(tenantId), placeholders),
+        String.format(SELECT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders),
         parameters, resultSetFuture.completer()
       );
 
@@ -118,7 +118,7 @@ class TagRepositoryImpl implements TagRepository {
   public CompletableFuture<Map<String, List<Tag>>> findPerRecord(String tenantId, List<String> recordIds,
                                                                  RecordType recordType) {
     Future<ResultSet> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
-    
+
     return mapResult(resultSetFuture, this::readTagsPerRecord)
             .thenApply(this::remapToRecordIds);
   }
@@ -139,7 +139,7 @@ class TagRepositoryImpl implements TagRepository {
     Future<ResultSet> future = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
       .select(
-        String.format(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX, getTableName(tenantId), valuesList),
+        String.format(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX, getTagsTableName(tenantId), valuesList),
         parameters,
         future.completer()
       );
@@ -167,7 +167,7 @@ class TagRepositoryImpl implements TagRepository {
     Future<ResultSet> resultSetFuture = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
       .select(
-        String.format(SELECT_TAGS_BY_RESOURCE_IDS, getTableName(tenantId), placeholders),
+        String.format(SELECT_TAGS_BY_RESOURCE_IDS, getTagsTableName(tenantId), placeholders),
         parameters, resultSetFuture.completer()
       );
     return resultSetFuture;
@@ -211,10 +211,6 @@ class TagRepositoryImpl implements TagRepository {
     return recordTypes.stream().map(RecordType::getValue).collect(Collectors.toSet());
   }
 
-  private String getTableName(String tenantId) {
-    return PostgresClient.convertToPsqlStandard(tenantId) + "." + TABLE_NAME;
-  }
-
   private CompletableFuture<Boolean> updateTags(String tenantId, String recordId, RecordType recordType, List<String> tags) {
     return executeInTransaction(tenantId, vertx,
       (postgresClient, connection) ->
@@ -226,7 +222,7 @@ class TagRepositoryImpl implements TagRepository {
   private CompletableFuture<Void> assignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId, RecordType recordType, List<String> tags, PostgresClient postgresClient) {
     JsonArray parameters = new JsonArray();
     String updatedValues = createInsertStatement(recordId, recordType, tags, parameters);
-    final String query = String.format(UPDATE_INSERT_STATEMENT_FOR_PROVIDER, getTableName(tenantId), updatedValues);
+    final String query = String.format(UPDATE_INSERT_STATEMENT_FOR_PROVIDER, getTagsTableName(tenantId), updatedValues);
     LOG.info("Do insert query = " + query);
 
     Future<UpdateResult> future = Future.future();
@@ -238,7 +234,7 @@ class TagRepositoryImpl implements TagRepository {
   private CompletableFuture<Boolean> unAssignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,
       RecordType recordType) {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
-    final String deleteQuery = String.format(DELETE_TAG_RECORD, getTableName(tenantId));
+    final String deleteQuery = String.format(DELETE_TAG_RECORD, getTagsTableName(tenantId));
     LOG.info("Do delete query = " + deleteQuery);
 
     JsonArray parameters = createParameters(asList(recordId, recordType.getValue()));

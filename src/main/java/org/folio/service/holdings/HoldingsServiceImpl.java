@@ -1,5 +1,6 @@
 package org.folio.service.holdings;
 
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
 
@@ -10,7 +11,6 @@ import java.util.stream.Collectors;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,6 +20,7 @@ import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.repository.holdings.DbHolding;
 import org.folio.repository.holdings.HoldingsRepository;
 import org.folio.repository.holdings.LoadStatus;
+import org.folio.repository.resources.DbResource;
 import org.folio.rest.util.template.RMAPITemplateContext;
 
 @Component
@@ -48,6 +49,16 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(loadStatus -> holdingsRepository.removeHoldings(tenantId)
         .thenCompose(o -> loadHoldings(context, loadStatus.getTotalCount(), tenantId))
       );
+  }
+
+  @Override
+  public CompletableFuture<List<DbHolding>> getHoldingsByIds(String tenant, List<DbResource> resourcesResult) {
+    return holdingsRepository.getHoldingsByIds(tenant, getTitleIdsAsList(resourcesResult));
+  }
+
+  private List<String> getTitleIdsAsList(List<DbResource> resources){
+    return mapItems(resources, dbResource -> dbResource.getId().getProviderIdPart() + "-"
+      + dbResource.getId().getPackageIdPart() + "-" + dbResource.getId().getTitleIdPart());
   }
 
   private CompletableFuture<Void> populateHoldings(RMAPITemplateContext context) {
