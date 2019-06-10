@@ -1,3 +1,22 @@
+## v2.4.0 2019-06-10
+* MODKBEKBJ-187	- Tags: Update mod-kb-ebsco-java to search providers by tag filter only
+* MODKBEKBJ-214	- Tags: add provider table to database
+* MODKBEKBJ-215	- Tags: Cache providers that are retrieved by id
+* MODKBEKBJ-218	- Tags: add title table to database
+* MODKBEKBJ-219	- Tags: Cache titles that are retrieved by id
+* MODKBEKBJ-220	- Create holdings table
+* MODKBEKBJ-221	- Tags: add resources table to database
+* MODKBEKBJ-222	- Tags: Cache resources that are retrieved by id
+* MODKBEKBJ-227	- Modify ModuleDescriptor 
+* MODKBEKBJ-230	- Filter by tags only - Resources
+* MODKBEKBJ-236	- Tags: Update providers (search within packages ) to filter by tags only
+* MODKBEKBJ-237	- Tags: Update packages (search within titles ) to filter by tags only
+* MODKBEKBJ-238	- Create periodic task to populate holdings table
+* MODKBEKBJ-240	- Provider | List of Packages | Display assigned package tags
+* MODKBEKBJ-241	- Package | List of Titles | Display assigned resource tags
+* MODKBEKBJ-242	- Title | List of Packages | Display assigned resource tags
+* MODKBEKBJ-250	- Fix security vulnerabilities reported in jackson-databind >= 2.0.0, < 2.9.9
+
 ## v2.3.0 2019-05-08
 * MODKBEKBJ-186	- Tags: add endpoint to return all tags assigned to records of particular type(s)
 * MODKBEKBJ-188 - Tags: search packages by tag filter only
