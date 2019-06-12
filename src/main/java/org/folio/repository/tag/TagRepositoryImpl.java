@@ -41,6 +41,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +110,9 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<List<Tag>> findByRecordByIds(String tenantId, List<String> recordIds, RecordType recordType) {
+    if(CollectionUtils.isEmpty(recordIds)){
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     Future<ResultSet> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
 
     return mapResult(resultSetFuture, this::readTags);
@@ -117,6 +121,9 @@ class TagRepositoryImpl implements TagRepository {
   @Override
   public CompletableFuture<Map<String, List<Tag>>> findPerRecord(String tenantId, List<String> recordIds,
                                                                  RecordType recordType) {
+    if(CollectionUtils.isEmpty(recordIds)){
+      return CompletableFuture.completedFuture(Collections.emptyMap());
+    }
     Future<ResultSet> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
 
     return mapResult(resultSetFuture, this::readTagsPerRecord)
@@ -130,6 +137,9 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix, String tenantId, RecordType recordType) {
+    if(CollectionUtils.isEmpty(tags)){
+      return CompletableFuture.completedFuture(0);
+    }
     JsonArray parameters = createParameters(tags);
     parameters.add(recordType.getValue());
     parameters.add(recordIdPrefix + "%");

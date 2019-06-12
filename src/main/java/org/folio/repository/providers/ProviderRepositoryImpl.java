@@ -23,6 +23,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -71,6 +73,9 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
   @Override
   public CompletableFuture<List<Long>> getProviderIdsByTagName(List<String> tags, int page, int count, String tenantId) {
+    if(CollectionUtils.isEmpty(tags)){
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();

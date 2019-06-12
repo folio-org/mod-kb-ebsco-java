@@ -31,6 +31,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -83,6 +85,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
   @Override
   public CompletableFuture<List<DbResource>> getResourcesByTagNameAndPackageId(List<String> tags, String resourceId, int page, int count, String tenantId) {
+    if(CollectionUtils.isEmpty(tags)){
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();

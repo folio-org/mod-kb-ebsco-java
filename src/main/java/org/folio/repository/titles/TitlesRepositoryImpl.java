@@ -27,6 +27,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -79,6 +81,9 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
   @Override
   public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenantId) {
+    if(CollectionUtils.isEmpty(tags)){
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();
@@ -101,6 +106,9 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
   @Override
   public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String tenantId) {
+    if(CollectionUtils.isEmpty(tags)){
+      return CompletableFuture.completedFuture(0);
+    }
     JsonArray parameters = new JsonArray();
     tags.forEach(parameters::add);
     final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS, getTagsTableName(tenantId), createPlaceholders(tags.size()));
