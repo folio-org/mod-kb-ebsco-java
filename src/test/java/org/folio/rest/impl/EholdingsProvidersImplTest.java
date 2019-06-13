@@ -60,11 +60,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
@@ -587,6 +589,21 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String expected = readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element.json");
 
     JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @Test
+  public void shouldReturnEmptyPackageListWhenNoProviderPackagesAreFound() throws IOException, URISyntaxException {
+    String rmapiProviderPackagesUrl = "/rm/rmaccounts.*" + STUB_CUSTOMER_ID + "/vendors/"
+      + STUB_VENDOR_ID + "/packages.*";
+    String providerPackagesUrl = "eholdings/providers/" + STUB_VENDOR_ID + "/packages";
+    String packageStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id-empty.json";
+
+    mockDefaultConfiguration(getWiremockUrl());
+    mockGet(new RegexPattern(rmapiProviderPackagesUrl), packageStubResponseFile);
+
+    PackageCollection packages = getWithOk(providerPackagesUrl).as(PackageCollection.class);
+    assertThat(packages.getData(), empty());
+    assertEquals(0, (int) packages.getMeta().getTotalResults());
   }
 
   @Test
