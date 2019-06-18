@@ -32,6 +32,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -98,6 +100,9 @@ public class PackageRepositoryImpl implements PackageRepository {
 
   @Override
   public CompletableFuture<List<DbPackage>> getPackagesByIds(List<PackageId> packageIds, String tenantId) {
+    if(CollectionUtils.isEmpty(packageIds)){
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     JsonArray parameters = new JsonArray();
     packageIds.forEach(packageId -> parameters.add(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()));
 
@@ -114,6 +119,9 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   private CompletableFuture<List<DbPackage>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix, int page, int count, String tenantId) {
+    if(CollectionUtils.isEmpty(tags)){
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();

@@ -58,8 +58,10 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,6 +91,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String PACKAGE_STUB_FILE = "responses/rmapi/packages/get-package-by-id-response.json";
   private static final String CUSTOM_PACKAGE_STUB_FILE = "responses/rmapi/packages/get-custom-package-by-id-response.json";
   private static final String RESOURCES_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response.json";
+  private static final String RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response-empty.json";
   private static final String EXPECTED_PACKAGE_BY_ID_STUB_FILE = "responses/kb-ebsco/packages/expected-package-by-id.json";
   private static final String EXPECTED_RESOURCES_STUB_FILE = "responses/kb-ebsco/resources/expected-resources-by-package-id.json";
   private static final String EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE = "responses/kb-ebsco/resources/expected-resources-by-package-id-with-tags.json";
@@ -709,6 +712,19 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources?page=2";
     String query = "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=2&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
+  }
+
+  @Test
+  public void shouldReturnEmptyListWhenResourcesAreNotFound() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources";
+
+    mockDefaultConfiguration(getWiremockUrl());
+
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE);
+
+    ResourceCollection actual = getWithStatus(packageResourcesUrl, 200).as(ResourceCollection.class);
+    assertThat(actual.getData(), empty());
+    assertEquals(0, (int) actual.getMeta().getTotalResults());
   }
 
   @Test
