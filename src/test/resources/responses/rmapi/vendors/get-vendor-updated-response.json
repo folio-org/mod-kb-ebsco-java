@@ -1,6 +1,6 @@
 {
   "isCustomer": false,
-  "packagesSelected": 11,
+  "packagesSelected": 19,
   "packagesTotal": 625,
   "vendorId": 19,
   "vendorName": "EBSCO",
@@ -13,5 +13,5 @@
     "prompt": "/itweb/",
     "helpText": "<ul><li>Enter site id</li></ul>",
     "value": "My Test Token"
-    }
+  }
 }
