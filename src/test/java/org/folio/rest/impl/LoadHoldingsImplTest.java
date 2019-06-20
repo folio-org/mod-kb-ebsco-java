@@ -14,15 +14,16 @@ import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,4 +87,26 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     final List<DbHolding> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), equalTo(2));
   }
+
+  @Test
+  public void shouldSaveHoldingsAndClearOldEntries() throws IOException, URISyntaxException {
+      mockDefaultConfiguration(getWiremockUrl());
+      HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
+          DbHolding.class), Instant.now().minus(Duration.ofDays(2)));
+
+      mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
+
+      stubFor(post(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody("")
+          .withStatus(202)));
+
+      mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
+
+      postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+
+      final List<DbHolding> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+      assertThat(holdingsList.size(), equalTo(2));
+  }
+
 }

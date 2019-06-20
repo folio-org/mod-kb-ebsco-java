@@ -7,13 +7,13 @@ import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 
 public interface PackageRepository {
-  CompletableFuture<Void> savePackage(PackageByIdData packageData, String tenantId);
+  CompletableFuture<Void> save(PackageByIdData packageData, String tenantId);
 
-  CompletableFuture<Void> deletePackage(PackageId packageId, String tenantId);
+  CompletableFuture<Void> delete(PackageId packageId, String tenantId);
 
-  CompletableFuture<List<DbPackage>> getPackagesByTagName(List<String> tags, int page, int count, String tenantId);
+  CompletableFuture<List<DbPackage>> findByTagName(List<String> tags, int page, int count, String tenantId);
 
-  CompletableFuture<List<DbPackage>> getPackagesByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId);
+  CompletableFuture<List<DbPackage>> findByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId);
 
-  CompletableFuture<List<DbPackage>> getPackagesByIds(List<PackageId> packageIds, String tenantId);
+  CompletableFuture<List<DbPackage>> findAllById(List<PackageId> packageIds, String tenantId);
 }

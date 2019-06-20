@@ -11,7 +11,9 @@ import static org.folio.tag.repository.resources.HoldingsTableConstants.GET_HOLD
 import static org.folio.tag.repository.resources.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS_STATEMENT;
 import static org.folio.tag.repository.resources.HoldingsTableConstants.REMOVE_FROM_HOLDINGS;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -44,47 +46,47 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveHoldings(List<DbHolding> holdings, String tenantId) {
+  public CompletableFuture<Void> saveAll(Set<DbHolding> holdings, Instant updatedAt, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
-      List<List<DbHolding>> batches = Lists.partition(holdings, MAX_BATCH_SIZE);
+      List<List<DbHolding>> batches = Lists.partition(Lists.newArrayList(holdings), MAX_BATCH_SIZE);
       CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
       for (List<DbHolding> batch : batches) {
         future = future.thenCompose(o ->
-          saveHoldings(batch, tenantId, connection, postgresClient));
+          saveHoldings(batch, updatedAt, tenantId, connection, postgresClient));
       }
       return future;
     });
   }
 
-  private CompletableFuture<Void> saveHoldings(List<DbHolding> holdings, String tenantId,
+  private CompletableFuture<Void> saveHoldings(List<DbHolding> holdings, Instant updatedAt, String tenantId,
                                                AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
-    JsonArray parameters = createParameters(holdings);
+    JsonArray parameters = createParameters(holdings, updatedAt);
     final String query = String.format(INSERT_OR_UPDATE_HOLDINGS_STATEMENT, getHoldingsTableName(tenantId),
-      createInsertPlaceholders(holdings.size()));
+      createInsertPlaceholders(3, holdings.size()));
     Future<UpdateResult> future = Future.future();
-    postgresClient.execute(connection, query, parameters, future.completer());
+    postgresClient.execute(connection, query, parameters, future);
     return mapVertxFuture(future).thenApply(result -> null);
   }
 
   @Override
-  public CompletableFuture<Void> removeHoldings(String tenantId){
-    final String query = String.format(REMOVE_FROM_HOLDINGS, getHoldingsTableName(tenantId));
+  public CompletableFuture<Void> deleteByTimeStamp(Instant timeStamp, String tenantId){
+    final String query = String.format(REMOVE_FROM_HOLDINGS, getHoldingsTableName(tenantId), timeStamp.toString());
     LOG.info("Do delete query = " + query);
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, future.completer());
+    postgresClient.execute(query, future);
     return mapVertxFuture(future).thenApply(result -> null);
   }
 
   @Override
-  public CompletableFuture<List<DbHolding>> getHoldingsByIds(String tenantId, List<String> resourceIds) {
+  public CompletableFuture<List<DbHolding>> findAllById(List<String> resourceIds, String tenantId) {
     final String resourceIdString = resourceIds.isEmpty() ? "''" :
       resourceIds.stream().map(id -> "'" + id.concat("'")).collect(Collectors.joining(","));
     final String query = String.format(GET_HOLDINGS_BY_IDS, getHoldingsTableName(tenantId), resourceIdString);
     LOG.info("Do select query = " + query);
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     Future<ResultSet> future = Future.future();
-    postgresClient.select(query, future.completer());
+    postgresClient.select(query, future);
     return mapResult(future, this::mapHoldings);
   }
 
@@ -96,11 +98,12 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 
-  private JsonArray createParameters(List<DbHolding> holdings) {
+  private JsonArray createParameters(List<DbHolding> holdings, Instant updatedAt) {
     JsonArray params = new JsonArray();
     holdings.forEach(holding -> {
       params.add(getHoldingsId(holding));
       params.add(Json.encode(holding));
+      params.add(updatedAt);
     });
     return params;
   }
