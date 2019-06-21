@@ -2,11 +2,14 @@ package org.folio.util;
 
 import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.tag.repository.resources.HoldingsTableConstants.ID_COLUMN;
+import static org.folio.tag.repository.resources.HoldingsTableConstants.JSONB_COLUMN;
+import static org.folio.tag.repository.resources.HoldingsTableConstants.UPDATED_AT_COLUMN;
 import static org.folio.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -21,8 +24,6 @@ import org.folio.repository.holdings.DbHolding;
 import org.folio.rest.persist.PostgresClient;
 
 public class HoldingsTestUtil {
-
-  private static final String JSONB_COLUMN = "jsonb";
 
   public HoldingsTestUtil() {
   }
@@ -40,12 +41,12 @@ public class HoldingsTestUtil {
     return future.join();
   }
 
-  public static void addHolding(Vertx vertx, DbHolding holding) {
+  public static void addHolding(Vertx vertx, DbHolding holding, Instant updatedAt) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + holdingsTestTable() +
-        "(" + ID_COLUMN + ", " + JSONB_COLUMN + ") VALUES(?,?)",
-      new JsonArray(Arrays.asList(getHoldingsId(holding), Json.encode(holding))),
+        "(" + ID_COLUMN + ", " + JSONB_COLUMN + ", " + UPDATED_AT_COLUMN + ") VALUES(?,?,?)",
+      new JsonArray(Arrays.asList(getHoldingsId(holding), Json.encode(holding), updatedAt)),
       event -> future.complete(null));
     future.join();
   }
