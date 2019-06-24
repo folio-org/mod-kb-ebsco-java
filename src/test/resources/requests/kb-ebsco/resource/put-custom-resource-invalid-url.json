@@ -5,6 +5,7 @@
     "attributes": {
       "isTitleCustom": true,
       "titleId": 19412030,
+      "name" : "Test Title",
       "coverageStatement": "My test statement",
       "customEmbargoPeriod": {
         "embargoValue": 30,
@@ -34,7 +35,30 @@
       "proxy": {
         "id": "Proxy-ID-234",
         "inherited": false
-      }
+      },
+      "publisherName": "Test publisher",
+      "edition": "Test edition",
+      "publicationType": "Thesis & Dissertation",
+      "subjects": [],
+      "contributors": [
+        {
+          "type":"author",
+          "contributor":"smith, john"
+        },
+        {
+          "type":"illustrator",
+          "contributor":"smith, ralph"
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "1111-2222-3333",
+          "type":"ISSN",
+          "subtype":"Online"
+        }
+      ],
+      "isPeerReviewed": true,
+      "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
     }
   }
 }
