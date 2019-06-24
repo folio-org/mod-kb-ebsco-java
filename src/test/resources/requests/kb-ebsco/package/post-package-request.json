@@ -1,10 +1,10 @@
 {
-  "data":{
-    "type":"packages",
-    "attributes":{
+  "data": {
+    "type": "packages",
+    "attributes": {
       "name": "TEST_NAME",
       "contentType": "Aggregated Full Text",
-      "customCoverage":{
+      "customCoverage": {
         "beginCoverage": "2017-12-23",
         "endCoverage": "2018-03-30"
       },
