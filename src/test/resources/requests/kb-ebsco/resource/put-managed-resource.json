@@ -5,6 +5,7 @@
     "attributes" : {
       "isTitleCustom" : false,
       "titleId" : 762169,
+      "name" : "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
       "coverageStatement" : "test coverage statement",
       "customEmbargoPeriod" : {
         "embargoValue" : 10,
@@ -12,6 +13,13 @@
       },
       "isPackageCustom" : false,
       "isSelected" : true,
+      "managedCoverages": [
+        {
+          "beginCoverage": "2016-01-01",
+          "endCoverage": "2016-12-31"
+        }
+      ],
+      "customCoverages": [],
       "isTokenNeeded" : false,
       "locationId" : 2863717,
       "managedEmbargoPeriod" : {
@@ -29,7 +37,57 @@
       "proxy" : {
         "id" : "Test-proxy-id",
         "inherited" : true
-      }
+      },
+      "publisherName": "Praeger",
+      "edition": "",
+      "publicationType": "Book",
+      "subjects": [
+        {
+          "type": "BISAC",
+          "subject": "SOCIAL SCIENCE / Ethnic Studies / General"
+        }
+      ],
+      "contributors": [
+        {
+          "type": "author",
+          "contributor": "Beeman, William O."
+        }
+      ]
+    ,
+      "identifiers": [
+        {
+          "id": "300079",
+          "source": "ResourceIdentifier",
+          "subtype": 0,
+          "type": 7
+        },
+        {
+          "id": "762169",
+          "source": "AtoZ",
+          "subtype": 0,
+          "type": 9
+        },
+        {
+          "id": "978-0-275-98214-0",
+          "source": "ResourceIdentifier",
+          "subtype": 1,
+          "type": 1
+        },
+        {
+          "id": "978-0-313-06800-3",
+          "source": "ResourceIdentifier",
+          "subtype": 2,
+          "type": 1
+        },
+        {
+          "id": "978-1-282-40979-8",
+          "source": "ResourceIdentifier",
+          "subtype": 2,
+          "type": 1
+        }
+      ],
+      "isPeerReviewed": false,
+      "description": ""
     }
   }
 }
