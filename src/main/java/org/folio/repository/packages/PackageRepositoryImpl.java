@@ -32,7 +32,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,7 +55,7 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<Void> savePackage(PackageByIdData packageData, String tenantId){
+  public CompletableFuture<Void> save(PackageByIdData packageData, String tenantId){
     String fullPackageId = packageData.getVendorId() + "-" + packageData.getPackageId();
     JsonArray parameters = createInsertOrUpdateParameters(
       fullPackageId, packageData.getPackageName(), packageData.getContentType());
@@ -73,7 +72,7 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<Void> deletePackage(PackageId packageId, String tenantId) {
+  public CompletableFuture<Void> delete(PackageId packageId, String tenantId) {
     JsonArray parameter = new JsonArray(Collections.singletonList(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()));
 
     final String query = String.format(DELETE_STATEMENT, getPackagesTableName(tenantId));
@@ -89,17 +88,17 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> getPackagesByTagName(List<String> tags, int page, int count, String tenantId) {
+  public CompletableFuture<List<DbPackage>> findByTagName(List<String> tags, int page, int count, String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, "", page, count, tenantId);
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> getPackagesByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId) {
+  public CompletableFuture<List<DbPackage>> findByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, tenantId);
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> getPackagesByIds(List<PackageId> packageIds, String tenantId) {
+  public CompletableFuture<List<DbPackage>> findAllById(List<PackageId> packageIds, String tenantId) {
     if(CollectionUtils.isEmpty(packageIds)){
       return CompletableFuture.completedFuture(Collections.emptyList());
     }

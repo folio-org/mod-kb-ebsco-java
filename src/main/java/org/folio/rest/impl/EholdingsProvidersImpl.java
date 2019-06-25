@@ -201,7 +201,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.getPackagesByTagNameAndProvider(tags, providerId, page, count, tenant);
+        return packageRepository.findByTagNameAndProvider(tags, providerId, page, count, tenant);
       })
       .thenCompose(dbPackages -> {
         mutableDbPackages.setValue(dbPackages);
@@ -248,7 +248,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, String tenant) {
-    return packageRepository.getPackagesByIds(getPackageIds(packages), tenant)
+    return packageRepository.findAllById(getPackageIds(packages), tenant)
       .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 
