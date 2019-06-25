@@ -2,16 +2,27 @@
   "data": {
     "type": "packages",
     "attributes": {
+      "contentType": "Aggregated Full Text",
       "customCoverage": {
-        "beginCoverage": null,
-        "endCoverage": null
+        "beginCoverage": "2003-01-01",
+        "endCoverage": "2004-01-01"
       },
-      "isCustom": false,
+      "isCustom": true,
       "isSelected": true,
-      "allowKbToAddTitles": true,
+      "name": "name of the ages forever and ever",
+      "packageType": "Custom",
+      "providerId": 123356,
+      "providerName": "API DEV GOVERNMENT CUSTOMER",
+      "selectedCount": 0,
+      "titleCount": 0,
       "visibilityData": {
         "isHidden": false,
         "reason": ""
+      },
+      "allowKbToAddTitles": false,
+      "proxy": {
+        "id": "<n>",
+        "inherited": false
       }
     }
   }
