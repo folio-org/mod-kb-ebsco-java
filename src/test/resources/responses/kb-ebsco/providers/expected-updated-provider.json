@@ -5,7 +5,7 @@
     "attributes": {
       "name": "EBSCO",
       "packagesTotal": 625,
-      "packagesSelected": 11,
+      "packagesSelected": 19,
       "providerToken": {
         "factName": "[[galesiteid]]",
         "prompt": "/itweb/",

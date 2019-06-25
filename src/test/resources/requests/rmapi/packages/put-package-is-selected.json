@@ -1,10 +1,16 @@
 {
-  "isSelected": true,
+  "packageName": "name of the ages forever and ever",
+  "contentType": 1,
   "customCoverage": {
-    "beginCoverage": null,
-    "endCoverage": null
+    "beginCoverage": "2003-01-01",
+    "endCoverage": "2004-01-01"
   },
-  "allowEbscoToAddTitles": true,
+  "isSelected": true,
+  "allowEbscoToAddTitles": null,
+  "isHidden": false,
   "packageToken": null,
-  "isHidden": false
+  "proxy": {
+    "id": "<n>",
+    "inherited": false
+  }
 }

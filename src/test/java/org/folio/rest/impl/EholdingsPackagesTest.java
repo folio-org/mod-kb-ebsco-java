@@ -547,7 +547,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockDefaultConfiguration(getWiremockUrl());
 
     UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
-    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected-multiple-attributes.json"), true, true);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
     ObjectMapper mapper = new ObjectMapper();
     PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
@@ -567,7 +567,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     Package aPackage = putWithOk(
       PACKAGES_PATH,
-      readFile("requests/kb-ebsco/package/put-package-selected-multiple-attributes")).as(Package.class);
+      readFile("requests/kb-ebsco/package/put-package-selected.json")).as(Package.class);
 
     verify(putRequestedFor(urlPattern)
       .withRequestBody(putBodyPattern));
