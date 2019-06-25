@@ -1,22 +1,22 @@
 {
-    "data": {
-        "id": "18",
-        "type": "providers",
-        "attributes": {
-            "name": "Gale | Cengage",
-            "packagesTotal": 244,
-            "packagesSelected": 10,
-            "providerToken": {
-                "factName": "[[galesiteid]]",
-                "prompt": "/itweb/",
-                "helpText": "<ul><li>Enter site id</li></ul>",
-                 "value": "My Test Token"
-                },
-            "supportsCustomPackages": false,
-            "proxy": {
-                "id": "<n>",
-                "inherited": false
-            }
-        }
+  "data": {
+    "id": "19",
+    "type": "providers",
+    "attributes": {
+      "name": "EBSCO",
+      "packagesTotal": 625,
+      "packagesSelected": 19,
+      "providerToken": {
+        "factName": "[[galesiteid]]",
+        "prompt": "/itweb/",
+        "helpText": "<ul><li>Enter site id</li></ul>",
+        "value": "My Test Token"
+      },
+      "supportsCustomPackages": false,
+      "proxy": {
+        "id": "<n>",
+        "inherited": false
+      }
     }
+  }
 }
