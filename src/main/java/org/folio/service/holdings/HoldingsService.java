@@ -10,5 +10,5 @@ import org.folio.rest.util.template.RMAPITemplateContext;
 public interface HoldingsService {
   CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, String tenantId);
 
-  CompletableFuture<List<DbHolding>> getHoldingsByIds(String tenant, List<DbResource> resourcesResult);
+  CompletableFuture<List<DbHolding>> getHoldingsByIds(List<DbResource> resourcesResult, String tenant);
 }

@@ -27,18 +27,18 @@ public class PackageRepositoryImplTest {
 
   @Test
   public void shouldReturnEmptyListWhenIdListIsEmpty() {
-    List<DbPackage> packages = repository.getPackagesByIds(Collections.emptyList(), null).join();
+    List<DbPackage> packages = repository.findAllById(Collections.emptyList(), null).join();
     assertThat(packages, empty());
   }
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<DbPackage> packages = repository.getPackagesByTagName(Collections.emptyList(), 1, 25, STUB_TENANT).join();
+    List<DbPackage> packages = repository.findByTagName(Collections.emptyList(), 1, 25, STUB_TENANT).join();
     assertThat(packages, empty());
   }
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmptyAndProviderIdIsPresent() {
-    List<DbPackage> packages = repository.getPackagesByTagNameAndProvider(Collections.emptyList(),STUB_VENDOR_ID,1, 25, null).join();
+    List<DbPackage> packages = repository.findByTagNameAndProvider(Collections.emptyList(),STUB_VENDOR_ID,1, 25, null).join();
     assertThat(packages, empty());
   }
 }

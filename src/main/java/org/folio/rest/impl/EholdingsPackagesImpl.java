@@ -327,7 +327,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       })
       .thenCompose(resourcesResult -> {
         mutableDbTitles.setValue(resourcesResult);
-        return holdingsService.getHoldingsByIds(tenant, resourcesResult);
+        return holdingsService.getHoldingsByIds(resourcesResult, tenant);
       }).thenCompose(dbHoldings -> {
         mutableDbHoldings.setValue(dbHoldings);
         return context.getResourcesService()
@@ -356,7 +356,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .countRecordsByTags(tags, tenant, RecordType.PACKAGE)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.getPackagesByTagName(tags, page, count, tenant);
+        return packageRepository.findByTagName(tags, page, count, tenant);
       })
       .thenCompose(dbPackages ->
         context.getPackagesService().retrievePackages(getPackageIds(dbPackages)))
@@ -397,7 +397,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
     return
-    packageRepository.deletePackage(packageId, tenant)
+    packageRepository.delete(packageId, tenant)
     .thenCompose(o -> tagRepository.deleteRecordTags(tenant, packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart(), RecordType.PACKAGE))
       .thenCompose(aBoolean ->  completedFuture(null));
   }
@@ -420,13 +420,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> updateStoredPackage(PackageByIdData packageData, Tags tags, String tenant) {
     if(!tags.getTagList().isEmpty()){
-      return packageRepository.savePackage(packageData, tenant);
+      return packageRepository.save(packageData, tenant);
     }
     PackageId packageId = PackageId.builder()
       .providerIdPart(packageData.getVendorId())
       .packageIdPart(packageData.getPackageId())
       .build();
-    return packageRepository.deletePackage(packageId, tenant);
+    return packageRepository.delete(packageId, tenant);
   }
 
   private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId,

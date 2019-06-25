@@ -1,13 +1,15 @@
 package org.folio.repository.holdings;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public interface HoldingsRepository {
 
-  CompletableFuture<Void> saveHoldings(List<DbHolding> holding, String tenantId);
+  CompletableFuture<Void> saveAll(Set<DbHolding> holding, Instant updatedAt, String tenantId);
 
-  CompletableFuture<Void> removeHoldings(String tenantId);
+  CompletableFuture<Void> deleteByTimeStamp(Instant timeStamp, String tenantId);
 
-  CompletableFuture<List<DbHolding>> getHoldingsByIds(String tenantId, List<String> resourceIds);
+  CompletableFuture<List<DbHolding>> findAllById(List<String> resourceIds, String tenantId);
 }

@@ -21,7 +21,8 @@ public class ListUtils {
     return String.join(",", Collections.nCopies(size, "?"));
   }
 
-  public static  String createInsertPlaceholders(int size) {
-    return String.join(",", Collections.nCopies(size,"(?,?)"));
+  public static  String createInsertPlaceholders(int placeholderSize, int copiesSize) {
+    final String pattern = String.format("(%s)", createPlaceholders(placeholderSize));
+    return String.join(",", Collections.nCopies(copiesSize, pattern));
   }
 }

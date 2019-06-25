@@ -4,8 +4,13 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
@@ -46,14 +51,12 @@ public class HoldingsServiceImpl implements HoldingsService {
   public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, String tenantId) {
     return populateHoldings(context)
       .thenCompose(isSuccessful -> waitForCompleteStatus(context, retryCount))
-      .thenCompose(loadStatus -> holdingsRepository.removeHoldings(tenantId)
-        .thenCompose(o -> loadHoldings(context, loadStatus.getTotalCount(), tenantId))
-      );
+      .thenCompose(loadStatus -> loadHoldings(context, loadStatus.getTotalCount(), tenantId));
   }
 
   @Override
-  public CompletableFuture<List<DbHolding>> getHoldingsByIds(String tenant, List<DbResource> resourcesResult) {
-    return holdingsRepository.getHoldingsByIds(tenant, getTitleIdsAsList(resourcesResult));
+  public CompletableFuture<List<DbHolding>> getHoldingsByIds(List<DbResource> resourcesResult, String tenant) {
+    return holdingsRepository.findAllById(getTitleIdsAsList(resourcesResult), tenant);
   }
 
   private List<String> getTitleIdsAsList(List<DbResource> resources){
@@ -103,13 +106,15 @@ public class HoldingsServiceImpl implements HoldingsService {
   public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, Integer totalCount, String tenantId) {
 
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+    final Instant updatedAt = Instant.now();
     final int totalRequestCount = getRequestCount(totalCount);
     for (int iteration = 1; iteration < totalRequestCount + 1; iteration++) {
       int finalIteration = iteration;
       future = future
         .thenCompose(o -> context.getLoadingService().loadHoldings(MAX_COUNT, finalIteration))
-        .thenCompose(holding -> saveHolding(holding.getHoldingsList(), tenantId));
+        .thenCompose(holding -> saveHoldings(holding.getHoldingsList(), updatedAt, tenantId));
     }
+    future = future.thenCompose(o -> holdingsRepository.deleteByTimeStamp(updatedAt, tenantId));
     return future;
   }
 
@@ -131,8 +136,9 @@ public class HoldingsServiceImpl implements HoldingsService {
     return context.getLoadingService().getLoadingStatus();
   }
 
-  private CompletableFuture<Void> saveHolding(List<Holding> holdings, String tenantId) {
-    List<DbHolding> dbHoldings = holdings.stream()
+  private CompletableFuture<Void> saveHoldings(List<Holding> holdings, Instant updatedAt, String tenantId) {
+    Set<DbHolding> dbHoldings = holdings.stream()
+      .filter(distinctByKey(this::getHoldingsId))
       .map(holding -> new DbHolding(
         holding.getTitleId(),
         holding.getPackageId(),
@@ -141,8 +147,17 @@ public class HoldingsServiceImpl implements HoldingsService {
         holding.getPublisherName(),
         holding.getResourceType()
       ))
-      .collect(Collectors.toList());
+      .collect(Collectors.toSet());
     logger.info("Saving holdings to database.");
-    return holdingsRepository.saveHoldings(dbHoldings, tenantId);
+    return holdingsRepository.saveAll(dbHoldings, updatedAt, tenantId);
+  }
+
+  private  <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+    Set<Object> seen = ConcurrentHashMap.newKeySet();
+    return t -> seen.add(keyExtractor.apply(t));
+  }
+
+  private String getHoldingsId(Holding holding) {
+    return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 }
