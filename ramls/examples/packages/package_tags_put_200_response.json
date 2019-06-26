@@ -1,0 +1,17 @@
+{
+  "data": {
+    "type": "tags",
+    "attributes": {
+      "name": "test package for documentation",
+      "contentType": "Unknown",
+      "tags": {
+        "tagList": [
+          "folio"
+        ]
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

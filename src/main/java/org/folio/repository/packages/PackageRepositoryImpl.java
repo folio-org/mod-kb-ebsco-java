@@ -33,10 +33,10 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
 import org.apache.commons.collections4.CollectionUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.persist.PostgresClient;
@@ -55,10 +55,9 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<Void> save(PackageByIdData packageData, String tenantId){
-    String fullPackageId = packageData.getVendorId() + "-" + packageData.getPackageId();
+  public CompletableFuture<Void> save(DbPackage packageData, String tenantId){
     JsonArray parameters = createInsertOrUpdateParameters(
-      fullPackageId, packageData.getPackageName(), packageData.getContentType());
+      packageIdToString(packageData.getId()) , packageData.getName(), packageData.getContentType());
 
     final String query = String.format(INSERT_OR_UPDATE_STATEMENT, getPackagesTableName(tenantId));
 
@@ -73,7 +72,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
   @Override
   public CompletableFuture<Void> delete(PackageId packageId, String tenantId) {
-    JsonArray parameter = new JsonArray(Collections.singletonList(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()));
+    JsonArray parameter = new JsonArray(Collections.singletonList(packageIdToString(packageId)));
 
     final String query = String.format(DELETE_STATEMENT, getPackagesTableName(tenantId));
 
@@ -103,7 +102,7 @@ public class PackageRepositoryImpl implements PackageRepository {
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
     JsonArray parameters = new JsonArray();
-    packageIds.forEach(packageId -> parameters.add(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart()));
+    packageIds.forEach(packageId -> parameters.add(packageIdToString(packageId)));
 
     final String query = String.format(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getPackagesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(packageIds.size()));
@@ -181,5 +180,9 @@ public class PackageRepositoryImpl implements PackageRepository {
       .name(firstRow.getString(NAME_COLUMN))
       .tags(tags)
       .build();
+  }
+
+  private String packageIdToString(PackageId packageId) {
+    return packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart();
   }
 }

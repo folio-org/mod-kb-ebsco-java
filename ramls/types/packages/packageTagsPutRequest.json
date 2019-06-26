@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Tags PUT Request Schema",
+  "description": "Package Tags PUT Request Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.PackageTagsPutRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of package tags put request",
+      "type": "object",
+      "$ref": "packageTagsPutData.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

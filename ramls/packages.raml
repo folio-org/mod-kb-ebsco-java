@@ -21,7 +21,9 @@ types:
   packageCollection: !include types/packages/packageCollection.json
   packagePostRequest: !include types/packages/packagePostRequest.json
   packagePutRequest: !include types/packages/packagePutRequest.json
+  packageTagsPutRequest: !include types/packages/packageTagsPutRequest.json
   package: !include types/packages/package.json
+  packageTags: !include types/packages/packageTags.json
   resourceCollection: !include types/resources/resourceCollection.json
   jsonapiError: !include types/jsonapiError.json
 
@@ -240,3 +242,33 @@ types:
                 example:
                   strict: false
                   value: !include examples/packages/packages_packageId_resources_get_404_response.json
+    /tags:
+      put:
+        description: Update tags assigned to package
+        headers:
+          Content-Type:
+            example: application/vnd.api+json
+        body:
+          application/vnd.api+json:
+            type: packageTagsPutRequest
+            example:
+              strict: false
+              value: !include examples/packages/package_tags_put_request.json
+        responses:
+          200:
+            description: OK
+            body:
+              application/vnd.api+json:
+                description: Updated list of tags
+                type: packageTags
+                example:
+                  strict: false
+                  value: !include examples/packages/package_tags_put_200_response.json
+          422:
+            description: Unprocessable Entity
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/packages/packages_post_422_response.json

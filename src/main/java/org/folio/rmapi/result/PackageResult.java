@@ -11,10 +11,21 @@ public class PackageResult {
   private Titles titles;
   private Tags tags;
 
+  public PackageResult(PackageByIdData packageData) {
+    this.packageData = packageData;
+  }
+
   public PackageResult(PackageByIdData packageData, VendorById vendor, Titles titles) {
     this.packageData = packageData;
     this.vendor = vendor;
     this.titles = titles;
+  }
+
+  public PackageResult(PackageByIdData packageData, VendorById vendor, Titles titles, Tags tags) {
+    this.packageData = packageData;
+    this.vendor = vendor;
+    this.titles = titles;
+    this.tags = tags;
   }
 
   public PackageByIdData getPackageData() {
