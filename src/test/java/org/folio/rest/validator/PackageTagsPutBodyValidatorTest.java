@@ -12,7 +12,7 @@ public class PackageTagsPutBodyValidatorTest {
   private PackageTagsPutBodyValidator validator = new PackageTagsPutBodyValidator();
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenNameIsEmpty(){
+  public void shouldThrowExceptionWhenNameIsEmpty(){
     PackageTagsPutRequest request = new PackageTagsPutRequest()
       .withData(new PackageTagsPutData()
         .withAttributes(new PackageTagsDataAttributes()
@@ -23,7 +23,7 @@ public class PackageTagsPutBodyValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenContentTypeIsNull(){
+  public void shouldThrowExceptionWhenContentTypeIsNull(){
     PackageTagsPutRequest request = new PackageTagsPutRequest()
       .withData(new PackageTagsPutData()
         .withAttributes(new PackageTagsDataAttributes()

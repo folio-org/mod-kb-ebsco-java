@@ -1,45 +1,46 @@
 package org.folio.rest.validator;
 
+import org.junit.Test;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePostData;
 import org.folio.rest.jaxrs.model.PackagePostDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
-import org.junit.Test;
 
 public class PackagePostValidatorTest {
 
   private PackagesPostBodyValidator validator = new PackagesPostBodyValidator();
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenNoPostBody(){
+  public void shouldThrowExceptionWhenNoPostBody(){
     PackagePostRequest postRequest = null;
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenEmptyBody(){
+  public void shouldThrowExceptionWhenEmptyBody(){
     PackagePostRequest postRequest = new PackagePostRequest();
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenNoPostData(){
+  public void shouldThrowExceptionWhenNoPostData(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(null);
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenEmptyPostData(){
+  public void shouldThrowExceptionWhenEmptyPostData(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData());
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenEmptyPostDataAttributes(){
+  public void shouldThrowExceptionWhenEmptyPostDataAttributes(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()));
@@ -47,7 +48,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenPostDataAttributesNameIsEmpty(){
+  public void shouldThrowExceptionWhenPostDataAttributesNameIsEmpty(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
@@ -56,7 +57,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenPostDataAttributesTypeIsNull(){
+  public void shouldThrowExceptionWhenPostDataAttributesTypeIsNull(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
@@ -65,7 +66,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsNull(){
+  public void shouldThrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsNull(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
@@ -75,7 +76,7 @@ public class PackagePostValidatorTest {
   }
   @Test(expected = InputValidationException.class)
 
-  public void shouldTrowExceptionWhenPostDataAttributeCustomCoverageWithEmptyBeginDate(){
+  public void shouldThrowExceptionWhenPostDataAttributeCustomCoverageWithEmptyBeginDate(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
@@ -88,7 +89,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsInvalidFormat(){
+  public void shouldThrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsInvalidFormat(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
@@ -100,7 +101,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenPostDataAttributeCustomCoverageEndDateIsInvalidFormat(){
+  public void shouldThrowExceptionWhenPostDataAttributeCustomCoverageEndDateIsInvalidFormat(){
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
@@ -113,7 +114,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsBeforeEndDate(){
+  public void shouldThrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsBeforeEndDate(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
@@ -126,7 +127,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test
-  public void shouldNotTrowExceptionWhenPostDataAttributeCustomCoverageIsNull(){
+  public void shouldNotThrowExceptionWhenPostDataAttributeCustomCoverageIsNull(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
@@ -136,7 +137,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test
-  public void shouldNotTrowExceptionWhenPostDataAttributeCustomCoverageWithValidDates(){
+  public void shouldNotThrowExceptionWhenPostDataAttributeCustomCoverageWithValidDates(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
@@ -149,7 +150,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test
-  public void shouldNotTrowExceptionWhenPostDataAttributeCustomCoverageWithEmptyDates(){
+  public void shouldNotThrowExceptionWhenPostDataAttributeCustomCoverageWithEmptyDates(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
@@ -162,7 +163,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test
-  public void shouldNotTrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsEmpty() {
+  public void shouldNotThrowExceptionWhenPostDataAttributeCustomCoverageBeginDateIsEmpty() {
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
@@ -174,7 +175,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test
-  public void shouldNotTrowExceptionWhenPostDataAttributeCustomCoverageWithValidBeginDateAndEndDateIsEmpty(){
+  public void shouldNotThrowExceptionWhenPostDataAttributeCustomCoverageWithValidBeginDateAndEndDateIsEmpty(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
@@ -187,7 +188,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test
-  public void shouldNotTrowExceptionWhenPostDataAttributeCustomCoverageWithValidBeginDateAndEndDateIsNull(){
+  public void shouldNotThrowExceptionWhenPostDataAttributeCustomCoverageWithValidBeginDateAndEndDateIsNull(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
@@ -200,7 +201,7 @@ public class PackagePostValidatorTest {
   }
 
   @Test
-  public void shouldNotTrowExceptionWhenPostDataAttributeCustomCoverageWithValidBeginDateAndEndDateIsNullw(){
+  public void shouldNotThrowExceptionWhenPostDataAttributeCustomCoverageWithValidBeginDateAndEndDateIsNullw(){
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
