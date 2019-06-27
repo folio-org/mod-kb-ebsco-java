@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "name": {
+        "value": "package-tag1"
+      }
+    },
+    {
+      "name": {
+        "value": "provider-tag1"
+      }
+    },
+    {
+      "name": {
+        "value": "provider-tag2"
+      }
+    },
+    {
+      "name": {
+        "value": "package-tag2"
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 4
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

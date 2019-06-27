@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
 import javax.xml.bind.ValidationException;
@@ -26,6 +27,7 @@ import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.TagCollection;
+import org.folio.rest.jaxrs.model.TagUniqueCollection;
 import org.folio.rest.jaxrs.resource.EholdingsTags;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
@@ -45,6 +47,8 @@ public class EholdingsTagsImpl implements EholdingsTags {
   private Converter<List<String>, Set<org.folio.repository.RecordType>> recordTypesConverter;
   @Autowired
   private Converter<List<Tag>, TagCollection> tagsConverter;
+  @Autowired
+  private Converter<List<String>, TagUniqueCollection> uniqueTagsConverter;
 
 
   public EholdingsTagsImpl() {
@@ -55,13 +59,25 @@ public class EholdingsTagsImpl implements EholdingsTags {
   @HandleValidationErrors
   @Override
   public void getEholdingsTags(List<String> filterRectypes, Map<String, String> okapiHeaders,
-      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     validateRecordTypes(filterRectypes);
 
     completedFuture(null)
       .thenCompose(o -> findTags(filterRectypes, TenantTool.tenantId(okapiHeaders)))
       .thenAccept(tags -> successfulGetTags(tags, asyncResultHandler))
-      .exceptionally(throwable -> failedGetTags(throwable, asyncResultHandler));
+      .exceptionally(throwable -> failedGetTags(throwable, asyncResultHandler,
+        e -> GetEholdingsTagsResponse.respond400WithApplicationVndApiJson(ErrorUtil.createError(e.getMessage()))));
+  }
+
+  @Override
+  public void getEholdingsTagsSummary(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    completedFuture(null)
+      .thenCompose(o -> tagRepository.findDistinctRecordTags(TenantTool.tenantId(okapiHeaders)))
+      .thenAccept(tags -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsTagsSummaryResponse.respond200WithApplicationVndApiJson(
+          uniqueTagsConverter.convert(tags)))))
+      .exceptionally(throwable -> failedGetTags(throwable, asyncResultHandler,
+        e -> GetEholdingsTagsSummaryResponse.respond400WithApplicationVndApiJson(ErrorUtil.createError(e.getMessage()))));
   }
 
   private void validateRecordTypes(List<String> filterRectypes) {
@@ -85,14 +101,13 @@ public class EholdingsTagsImpl implements EholdingsTags {
       tagsConverter.convert(tags))));
   }
 
-  private Void failedGetTags(Throwable th, Handler<AsyncResult<Response>> handler) {
+  private Void failedGetTags(Throwable th, Handler<AsyncResult<Response>> handler, Function<ValidationException, Response> exceptionHandler) {
     log.error("Tag retrieval failed: " + th.getMessage(), th);
 
     ErrorHandler errHandler = new ErrorHandler()
-        .add(ValidationException.class,
-          e -> GetEholdingsTagsResponse.respond400WithApplicationVndApiJson(ErrorUtil.createError(e.getMessage())))
-        .addInputValidationMapper()
-        .addDefaultMapper();
+      .add(ValidationException.class, exceptionHandler)
+      .addInputValidationMapper()
+      .addDefaultMapper();
 
     errHandler.handle(handler, th);
 

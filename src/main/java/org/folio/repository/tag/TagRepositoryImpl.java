@@ -16,6 +16,7 @@ import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_TAGS;
+import static org.folio.repository.tag.TagTableConstants.SELECT_DISTINCT_TAGS;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RESOURCE_IDS;
@@ -41,7 +42,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,6 +170,18 @@ class TagRepositoryImpl implements TagRepository {
     return unAssignTags(null, tenantId, recordId, recordType);
   }
 
+  @Override
+  public CompletableFuture<List<String>> findDistinctRecordTags(String tenantId) {
+    Future<ResultSet> resultSetFuture = Future.future();
+    PostgresClient.getInstance(vertx, tenantId)
+      .select(
+        String.format(SELECT_DISTINCT_TAGS, getTagsTableName(tenantId)),
+        resultSetFuture.completer()
+      );
+
+    return mapResult(resultSetFuture,this::readTagValues);
+  }
+
   private Future<ResultSet> findByRecordIdsOfType(String tenantId, List<String> recordIds, RecordType recordType) {
     String placeholders = createPlaceholders(recordIds.size());
     JsonArray parameters = createParametersWithRecordType(recordIds, recordType);
@@ -181,6 +193,13 @@ class TagRepositoryImpl implements TagRepository {
         parameters, resultSetFuture.completer()
       );
     return resultSetFuture;
+  }
+
+  private List<String> readTagValues(ResultSet resultSet) {
+    return resultSet.getRows()
+      .stream()
+      .map(object -> object.getString(TAG_COLUMN))
+      .collect(Collectors.toList());
   }
 
   private List<Tag> readTags(ResultSet resultSet) {

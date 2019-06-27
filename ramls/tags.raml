@@ -14,6 +14,7 @@ traits:
 
 types:
   tagCollection: !include types/tags/tagCollection.json
+  tagUniqueCollection: !include types/tags/tagUniqueCollection.json
   jsonapiError: !include types/jsonapiError.json
   recordType:
     type: string
@@ -56,3 +57,26 @@ types:
             example:
               strict: false
               value: !include examples/tags/tags_get_400_response.json
+  /summary:
+    displayName: Tags
+    get:
+      description: Retrieve a collection of unique tags associated with eholding records.
+      responses:
+        200:
+          description: OK
+          body:
+            application/vnd.api+json:
+              description: |
+                An array of tags comprising the results of the query sorted in alpahbetical order.
+              type: tagUniqueCollection
+              example:
+                strict: false
+                value: !include examples/tags/unique_tags_get_200_response.json
+        400:
+          description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/tags/unique_tags_get_400_response.json

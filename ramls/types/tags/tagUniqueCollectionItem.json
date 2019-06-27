@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Tag object schema for a collection",
+  "description": "Tag object schema for a collection of unique tags",
+  "javaType": "org.folio.rest.jaxrs.model.TagUniqueCollectionItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "attributes": {
+      "type": "object",
+      "description": "Tag object data attributes",
+      "$ref": "tagDataAttributes.json"
+    }
+  }
+}

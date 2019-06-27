@@ -30,6 +30,8 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.TagCollection;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
+import org.folio.rest.jaxrs.model.TagUniqueCollection;
+import org.folio.rest.jaxrs.model.TagUniqueCollectionItem;
 import org.folio.rest.util.RestConstants;
 
 @RunWith(VertxUnitRunner.class)
@@ -46,9 +48,13 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   private static final Tag RESOURCE_TAG = tag(RESOURCE_ID, RecordType.RESOURCE, "resource-tag");
 
   private static final List<Tag> ALL_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG);
+  private static final List<Tag> UNIQUE_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG,
+    RESOURCE_TAG);
 
   @Autowired
   private Converter<Tag, TagCollectionItem> tagConverter;
+  @Autowired
+  private Converter<String, TagUniqueCollectionItem> tagUniqueConverter;
 
 
   @Test
@@ -123,6 +129,63 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
         SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
+  }
+
+  @Test
+  public void shouldReturnAllUniqueTags() {
+    insertTags(UNIQUE_TAGS, vertx);
+
+    try {
+      TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
+
+      assertEquals(col.getData().size(), 4);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(4));
+    } finally {
+      clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnEmptyUniqueTagsCollection() {
+    try {
+      TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
+
+      assertEquals(col.getData().size(), 0);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(0));
+    } finally {
+      clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnListOfUniqueTagsWithParams() {
+    List<Tag> tags = insertTags(UNIQUE_TAGS, vertx);
+
+    try {
+      TagUniqueCollection col = getWithOk("eholdings/tags/summary?asdsaf").as(TagUniqueCollection.class);
+
+      TagUniqueCollection expected = toUniqueTagCollection(toUniqueTagCollectionItems(tags));
+
+      assertEquals(expected, col);
+      assertEquals(col.getData().size(), 4);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(4));
+    } finally {
+      clearTags(vertx);
+    }
+  }
+
+  private List<TagUniqueCollectionItem> toUniqueTagCollectionItems(List<Tag> tags) {
+    List<String> newTags = tags.stream()
+      .map(Tag::getValue)
+      .collect(Collectors.toList());
+    return mapItems(newTags, tagUniqueConverter::convert);
+  }
+
+  private TagUniqueCollection toUniqueTagCollection(List<TagUniqueCollectionItem> tags){
+    return new TagUniqueCollection()
+      .withData(tags)
+      .withMeta(new MetaTotalResults().withTotalResults(tags.size()))
+      .withJsonapi(RestConstants.JSONAPI);
   }
 
   private static Tag tag(String recordId, RecordType recordType, String value) {
