@@ -32,8 +32,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-import org.apache.commons.collections4.CollectionUtils;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +55,7 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<Void> save(DbPackage packageData, String tenantId){
+  public CompletableFuture<Void> save(PackageInfoInDB packageData, String tenantId){
     JsonArray parameters = createInsertOrUpdateParameters(
       packageIdToString(packageData.getId()) , packageData.getName(), packageData.getContentType());
 
@@ -87,17 +87,17 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> findByTagName(List<String> tags, int page, int count, String tenantId) {
+  public CompletableFuture<List<PackageInfoInDB>> findByTagName(List<String> tags, int page, int count, String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, "", page, count, tenantId);
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> findByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId) {
+  public CompletableFuture<List<PackageInfoInDB>> findByTagNameAndProvider(List<String> tags, String providerId, int page, int count, String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, tenantId);
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> findAllById(List<PackageId> packageIds, String tenantId) {
+  public CompletableFuture<List<PackageInfoInDB>> findAllById(List<PackageId> packageIds, String tenantId) {
     if(CollectionUtils.isEmpty(packageIds)){
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
@@ -116,7 +116,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     return mapResult(future, this::mapPackages);
   }
 
-  private CompletableFuture<List<DbPackage>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix, int page, int count, String tenantId) {
+  private CompletableFuture<List<PackageInfoInDB>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix, int page, int count, String tenantId) {
     if(CollectionUtils.isEmpty(tags)){
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
@@ -156,7 +156,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     return parameters;
   }
 
-  private List<DbPackage> mapPackages(ResultSet resultSet) {
+  private List<PackageInfoInDB> mapPackages(ResultSet resultSet) {
     Map<PackageId, List<JsonObject>> rowsById = resultSet.getRows().stream()
       .collect(groupingBy(this::readPackageId));
     return mapItems(rowsById.entrySet(), this::readPackage);
@@ -166,7 +166,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     return idParser.parsePackageId(row.getString(ID_COLUMN));
   }
 
-  private DbPackage readPackage(Map.Entry<PackageId, List<JsonObject>> entry) {
+  private PackageInfoInDB readPackage(Map.Entry<PackageId, List<JsonObject>> entry) {
     PackageId packageId = entry.getKey();
     List<JsonObject> rows = entry.getValue();
 
@@ -174,7 +174,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     List<String> tags = rows.stream()
       .map(row -> row.getString(TAG_COLUMN))
       .collect(Collectors.toList());
-    return new DbPackage.DbPackageBuilder()
+    return new PackageInfoInDB.PackageInfoInDBBuilder()
       .id(packageId)
       .contentType(firstRow.getString(CONTENT_TYPE_COLUMN))
       .name(firstRow.getString(NAME_COLUMN))

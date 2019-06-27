@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Title;
-import org.folio.repository.holdings.DbHolding;
+import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.resources.ResourceTableConstants;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.tag.repository.titles.DbTitle;
@@ -145,16 +145,16 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .build();
   }
 
-  private Optional<DbHolding> readHolding(JsonObject row){
+  private Optional<HoldingInfoInDB> readHolding(JsonObject row){
       if(row.getString("holding") != null) {
-        return mapColumn(row, "holding", DbHolding.class);
+        return mapColumn(row, "holding", HoldingInfoInDB.class);
       }
       else{
         return Optional.empty();
       }
   }
 
-  private Title mapHoldingToTitle(DbHolding holding) {
+  private Title mapHoldingToTitle(HoldingInfoInDB holding) {
     return Title.builder()
       .titleName(holding.getPublicationTitle())
       .titleId(Integer.parseInt(holding.getTitleId()))

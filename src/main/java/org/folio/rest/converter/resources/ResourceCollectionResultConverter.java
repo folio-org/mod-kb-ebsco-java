@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
-import org.folio.repository.holdings.DbHolding;
-import org.folio.repository.resources.DbResource;
+import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
@@ -29,12 +29,12 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   @Autowired
   private Converter<Title, ResourceCollectionItem> resourceCollectionItemConverter;
   @Autowired
-  private Converter<DbHolding, ResourceCollectionItem> holdingCollectionItemConverter;
+  private Converter<HoldingInfoInDB, ResourceCollectionItem> holdingCollectionItemConverter;
 
-  private List<String> getTagsById(List<DbResource> dbResources, ResourceId resourceId) {
-    return dbResources.stream()
+  private List<String> getTagsById(List<ResourceInfoInDB> resources, ResourceId resourceId) {
+    return resources.stream()
       .filter(dbResource -> dbResource.getId().equals(resourceId))
-      .map(DbResource::getTags)
+      .map(ResourceInfoInDB::getTags)
       .findFirst()
       .orElse(Collections.emptyList());
   }
@@ -43,13 +43,13 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   public ResourceCollection convert(@NonNull ResourceCollectionResult resourceCollectionResult) {
 
     final Titles titles = resourceCollectionResult.getTitles();
-    final List<DbResource> dbResources = resourceCollectionResult.getTitlesList();
-    final List<DbHolding> dbHoldings = resourceCollectionResult.getHoldings();
+    final List<ResourceInfoInDB> resources = resourceCollectionResult.getTitlesList();
+    final List<HoldingInfoInDB> holdings = resourceCollectionResult.getHoldings();
     final List<ResourceCollectionItem> resourceCollectionItems = mapItems(titles.getTitleList(),
-      title -> mapResourceCollectionItem(dbResources, resourceCollectionItemConverter.convert(title), createResourceId(title)));
+      title -> mapResourceCollectionItem(resources, resourceCollectionItemConverter.convert(title), createResourceId(title)));
 
-    final List<ResourceCollectionItem> holdingCollectionItems = mapItems(dbHoldings,
-      dbHolding -> mapResourceCollectionItem(dbResources, holdingCollectionItemConverter.convert(dbHolding), createResourceId(dbHolding)));
+    final List<ResourceCollectionItem> holdingCollectionItems = mapItems(holdings,
+      dbHolding -> mapResourceCollectionItem(resources, holdingCollectionItemConverter.convert(dbHolding), createResourceId(dbHolding)));
 
     resourceCollectionItems.addAll(holdingCollectionItems);
     resourceCollectionItems.sort(Comparator.comparing(o -> o.getAttributes().getName()));
@@ -60,9 +60,9 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
       .withData(resourceCollectionItems);
   }
 
-  private ResourceCollectionItem mapResourceCollectionItem(List<DbResource> dbResources, ResourceCollectionItem item,
+  private ResourceCollectionItem mapResourceCollectionItem(List<ResourceInfoInDB> resources, ResourceCollectionItem item,
                                                            ResourceId resourceId) {
-    item.getAttributes().withTags(new Tags().withTagList(getTagsById(dbResources, resourceId)));
+    item.getAttributes().withTags(new Tags().withTagList(getTagsById(resources, resourceId)));
     return item;
   }
 
@@ -73,10 +73,10 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
       .titleIdPart(title.getTitleId()).build();
   }
 
-  private ResourceId createResourceId(DbHolding dbHolding) {
+  private ResourceId createResourceId(HoldingInfoInDB holding) {
     return ResourceId.builder()
-      .providerIdPart(dbHolding.getVendorId())
-      .packageIdPart(Integer.parseInt(dbHolding.getPackageId()))
-      .titleIdPart(Integer.parseInt(dbHolding.getTitleId())).build();
+      .providerIdPart(holding.getVendorId())
+      .packageIdPart(Integer.parseInt(holding.getPackageId()))
+      .titleIdPart(Integer.parseInt(holding.getTitleId())).build();
   }
 }

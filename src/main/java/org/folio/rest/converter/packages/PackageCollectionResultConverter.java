@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
-import org.folio.repository.packages.DbPackage;
+import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
@@ -30,7 +30,7 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
   @Override
   public PackageCollection convert(@NonNull PackageCollectionResult packagesResult) {
     Packages packages = packagesResult.getPackages();
-    List<DbPackage> dbPackages = packagesResult.getDbPackages();
+    List<PackageInfoInDB> dbPackages = packagesResult.getDbPackages();
     List<PackageCollectionItem> packageList = mapItems(packages.getPackagesList(),
       packageData -> {
         PackageCollectionItem item = packageCollectionItemConverter.convert(packageData);
@@ -46,10 +46,10 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
       .withData(packageList);
   }
 
-  private List<String> getTagsById(List<DbPackage> packages, PackageId packageId) {
+  private List<String> getTagsById(List<PackageInfoInDB> packages, PackageId packageId) {
     return packages.stream()
       .filter(dbPackage -> dbPackage.getId().equals(packageId))
-      .map(DbPackage::getTags)
+      .map(PackageInfoInDB::getTags)
       .findFirst()
       .orElse(Collections.emptyList());
   }

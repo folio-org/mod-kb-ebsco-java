@@ -51,10 +51,10 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordType;
-import org.folio.repository.holdings.DbHolding;
-import org.folio.repository.packages.DbPackage;
+import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
-import org.folio.repository.resources.DbResource;
+import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.repository.resources.ResourceRepository;
 import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
@@ -318,8 +318,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       });
   }
 
-  private DbPackage createDbPackage(String packageId, PackageTagsDataAttributes attributes) {
-    return DbPackage.builder()
+  private PackageInfoInDB createDbPackage(String packageId, PackageTagsDataAttributes attributes) {
+    return PackageInfoInDB.builder()
           .contentType(ConverterConsts.contentTypes.inverseBidiMap().get(attributes.getContentType()))
           .name(attributes.getName())
           .id(idParser.parsePackageId(packageId))
@@ -368,8 +368,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                                                   int page, int count, RMAPITemplateContext context) {
 
     MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<DbResource>> mutableDbTitles = new MutableObject<>();
-    MutableObject<List<DbHolding>> mutableDbHoldings = new MutableObject<>();
+    MutableObject<List<ResourceInfoInDB>> mutableDbTitles = new MutableObject<>();
+    MutableObject<List<HoldingInfoInDB>> mutableDbHoldings = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
 
     return tagRepository
@@ -392,9 +392,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       );
   }
 
-  private List<ResourceId> getRemainingResourceIds(List<DbHolding> dbHoldings, List<DbResource> resourcesResult) {
+  private List<ResourceId> getRemainingResourceIds(List<HoldingInfoInDB> holdings, List<ResourceInfoInDB> resourcesResult) {
     final List<ResourceId> resourceIds = getTitleIds(resourcesResult);
-    resourceIds.removeIf(dbResource -> getResourceIdsFromHoldings(dbHoldings).contains(dbResource));
+    resourceIds.removeIf(dbResource -> getResourceIdsFromHoldings(holdings).contains(dbResource));
     return resourceIds;
   }
 
@@ -454,28 +454,28 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         .thenCompose(aBoolean -> completedFuture(null));
   }
 
-  private CompletableFuture<Void> updateTags(Tags tags, DbPackage dbPackage, String tenant) {
+  private CompletableFuture<Void> updateTags(Tags tags, PackageInfoInDB packages, String tenant) {
     if (tags == null) {
       return completedFuture(null);
     } else {
-      PackageId id = dbPackage.getId();
+      PackageId id = packages.getId();
       return
-        updateStoredPackage(tags, dbPackage, tenant)
+        updateStoredPackage(tags, packages, tenant)
           .thenCompose(o -> tagRepository.updateRecordTags(
             tenant, id.getProviderIdPart() + "-" + id.getPackageIdPart(), RecordType.PACKAGE, tags.getTagList()))
           .thenApply(updated -> null);
     }
   }
 
-  private CompletableFuture<Void> updateStoredPackage(Tags tags, DbPackage dbPackage, String tenant) {
+  private CompletableFuture<Void> updateStoredPackage(Tags tags, PackageInfoInDB packages, String tenant) {
     if (!tags.getTagList().isEmpty()) {
-      return packageRepository.save(dbPackage, tenant);
+      return packageRepository.save(packages, tenant);
     }
-    return packageRepository.delete(dbPackage.getId(), tenant);
+    return packageRepository.delete(packages.getId(), tenant);
   }
 
-  private DbPackage createDbPackage(PackageByIdData packageData) {
-    return DbPackage.builder()
+  private PackageInfoInDB createDbPackage(PackageByIdData packageData) {
+    return PackageInfoInDB.builder()
       .id(createPackageId(packageData))
       .name(packageData.getPackageName())
       .contentType(packageData.getContentType())
@@ -542,16 +542,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return !Strings.isEmpty(filterTags) && Arrays.stream(q).allMatch(Strings::isEmpty);
   }
 
-  private List<PackageId> getPackageIds(List<DbPackage> packageIds) {
-    return mapItems(packageIds, DbPackage::getId);
+  private List<PackageId> getPackageIds(List<PackageInfoInDB> packageIds) {
+    return mapItems(packageIds, PackageInfoInDB::getId);
   }
 
-  private List<ResourceId> getTitleIds(List<DbResource> resources) {
-    return mapItems(resources, DbResource::getId);
+  private List<ResourceId> getTitleIds(List<ResourceInfoInDB> resources) {
+    return mapItems(resources, ResourceInfoInDB::getId);
   }
 
-  private List<ResourceId> getResourceIdsFromHoldings(List<DbHolding> dbHoldings) {
-    return mapItems(dbHoldings, resource ->
+  private List<ResourceId> getResourceIdsFromHoldings(List<HoldingInfoInDB> holdings) {
+    return mapItems(holdings, resource ->
       ResourceId.builder()
         .providerIdPart(resource.getVendorId())
         .packageIdPart(Long.valueOf(resource.getPackageId()))

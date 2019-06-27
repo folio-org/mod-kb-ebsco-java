@@ -14,6 +14,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import org.folio.holdingsiq.model.Vendors;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.repository.RecordType;
-import org.folio.repository.packages.DbPackage;
+import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
 import org.folio.repository.providers.ProviderRepository;
 import org.folio.repository.tag.Tag;
@@ -195,7 +196,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private CompletableFuture<PackageCollectionResult> getPackagesByTagsAndProvider(List<String> tags, String providerId, int page, int count, RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<DbPackage>> mutableDbPackages = new MutableObject<>();
+    MutableObject<List<PackageInfoInDB>> mutableDbPackages = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     return tagRepository
       .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
@@ -307,7 +308,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .collect(Collectors.toList());
   }
 
-  private List<PackageId> getPackageIds(List<DbPackage> packageIds) {
-    return packageIds.stream().map(DbPackage::getId).collect(Collectors.toList());
+  private List<PackageId> getPackageIds(List<PackageInfoInDB> packageIds) {
+    return packageIds.stream().map(PackageInfoInDB::getId).collect(Collectors.toList());
   }
 }
