@@ -3,6 +3,7 @@ package org.folio.rest.converter.tags;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -56,6 +57,8 @@ public class TagsConverters  {
     @Override
     public TagUniqueCollectionItem convert(@NonNull String source) {
       return new TagUniqueCollectionItem()
+        .withId(UUID.randomUUID().toString())
+        .withType(RestConstants.TAGS_TYPE)
         .withAttributes(new TagDataAttributes().withValue(source));
     }
   }

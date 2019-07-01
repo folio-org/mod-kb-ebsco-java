@@ -69,10 +69,14 @@ public class EholdingsTagsImpl implements EholdingsTags {
         e -> GetEholdingsTagsResponse.respond400WithApplicationVndApiJson(ErrorUtil.createError(e.getMessage()))));
   }
 
+  @Validate
+  @HandleValidationErrors
   @Override
-  public void getEholdingsTagsSummary(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsTagsSummary(List<String> filterRectype, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    validateRecordTypes(filterRectype);
+
     completedFuture(null)
-      .thenCompose(o -> tagRepository.findDistinctRecordTags(TenantTool.tenantId(okapiHeaders)))
+      .thenCompose(o -> findUniqueTags(filterRectype, TenantTool.tenantId(okapiHeaders)))
       .thenAccept(tags -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsTagsSummaryResponse.respond200WithApplicationVndApiJson(
           uniqueTagsConverter.convert(tags)))))
@@ -83,6 +87,16 @@ public class EholdingsTagsImpl implements EholdingsTags {
   private void validateRecordTypes(List<String> filterRectypes) {
     if (CollectionUtils.isNotEmpty(filterRectypes)) {
       filterRectypes.forEach(recordTypeValidator::validate);
+    }
+  }
+
+  private CompletableFuture<List<String>> findUniqueTags(List<String> filterRectypes, String tenantId) {
+    log.info("Retrieving tags: tenantId = {}, recordTypes = {}", tenantId, filterRectypes);
+
+    if (CollectionUtils.isEmpty(filterRectypes)) {
+      return tagRepository.findDistinctRecordTags(tenantId);
+    } else {
+      return tagRepository.findDistinctByRecordTypes(tenantId, recordTypesConverter.convert(filterRectypes));
     }
   }
 

@@ -28,4 +28,6 @@ public interface TagRepository {
   CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix, String tenantId, RecordType recordType);
 
   CompletableFuture<List<String>> findDistinctRecordTags(String tenantId);
+
+  CompletableFuture<List<String>> findDistinctByRecordTypes(String tenantId, Set<RecordType> recordTypes);
 }

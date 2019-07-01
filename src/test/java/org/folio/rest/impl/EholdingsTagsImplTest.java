@@ -56,7 +56,6 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   @Autowired
   private Converter<String, TagUniqueCollectionItem> tagUniqueConverter;
 
-
   @Test
   public void shouldReturnAllTagsSortedIfNotFilteredOnGet() {
     List<Tag> tags = insertTags(ALL_TAGS, vertx);
@@ -158,34 +157,41 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnListOfUniqueTagsWithParams() {
-    List<Tag> tags = insertTags(UNIQUE_TAGS, vertx);
+  public void shouldReturnListOfUniqueTagsWithParamsResources() {
+    insertTags(UNIQUE_TAGS, vertx);
 
     try {
-      TagUniqueCollection col = getWithOk("eholdings/tags/summary?asdsaf").as(TagUniqueCollection.class);
+      TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
+        TagUniqueCollection.class);
 
-      TagUniqueCollection expected = toUniqueTagCollection(toUniqueTagCollectionItems(tags));
-
-      assertEquals(expected, col);
-      assertEquals(col.getData().size(), 4);
-      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(4));
+      assertEquals(col.getData().size(), 1);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(1));
     } finally {
       clearTags(vertx);
     }
   }
 
-  private List<TagUniqueCollectionItem> toUniqueTagCollectionItems(List<Tag> tags) {
-    List<String> newTags = tags.stream()
-      .map(Tag::getValue)
-      .collect(Collectors.toList());
-    return mapItems(newTags, tagUniqueConverter::convert);
+  @Test
+  public void shouldReturnListOfUniqueTagsWithMultipleParams() {
+    insertTags(UNIQUE_TAGS, vertx);
+
+    try {
+      TagUniqueCollection col = getWithOk(
+        "eholdings/tags/summary?filter[rectype]=resource&filter[rectype]=provider").as(TagUniqueCollection.class);
+
+      assertEquals(col.getData().size(), 2);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(2));
+    } finally {
+      clearTags(vertx);
+    }
   }
 
-  private TagUniqueCollection toUniqueTagCollection(List<TagUniqueCollectionItem> tags){
-    return new TagUniqueCollection()
-      .withData(tags)
-      .withMeta(new MetaTotalResults().withTotalResults(tags.size()))
-      .withJsonapi(RestConstants.JSONAPI);
+  @Test
+  public void shouldReturnListOfUniqueTagsWithInvalidParams() {
+    JsonapiError error = getWithStatus("eholdings/tags/summary?filter[rectype]=INVALID&filter[rectype]=title",
+      SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
   }
 
   private static Tag tag(String recordId, RecordType recordType, String value) {

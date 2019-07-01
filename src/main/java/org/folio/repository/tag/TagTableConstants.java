@@ -38,5 +38,8 @@ public class TagTableConstants {
   static final String SELECT_TAGS_BY_RESOURCE_IDS = "SELECT " + TAG_FIELD_LIST + " FROM %s WHERE "
     + RECORD_ID_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "=?";
 
-  static final String SELECT_DISTINCT_TAGS = "SELECT DISTINCT tag FROM %s";
+  static final String SELECT_ALL_DISTINCT_TAGS = "SELECT DISTINCT tag FROM %s";
+
+  static final String SELECT_DISTINCT_TAGS_BY_RECORD_TYPES = "SELECT DISTINCT tag FROM %s WHERE "
+    + RECORD_TYPE_COLUMN + " IN (%s) ORDER BY " + TAG_COLUMN;
 }

@@ -16,7 +16,8 @@ import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_TAGS;
-import static org.folio.repository.tag.TagTableConstants.SELECT_DISTINCT_TAGS;
+import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_DISTINCT_TAGS;
+import static org.folio.repository.tag.TagTableConstants.SELECT_DISTINCT_TAGS_BY_RECORD_TYPES;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RESOURCE_IDS;
@@ -175,11 +176,30 @@ class TagRepositoryImpl implements TagRepository {
     Future<ResultSet> resultSetFuture = Future.future();
     PostgresClient.getInstance(vertx, tenantId)
       .select(
-        String.format(SELECT_DISTINCT_TAGS, getTagsTableName(tenantId)),
+        String.format(SELECT_ALL_DISTINCT_TAGS, getTagsTableName(tenantId)),
         resultSetFuture.completer()
       );
 
     return mapResult(resultSetFuture,this::readTagValues);
+  }
+
+  @Override
+  public CompletableFuture<List<String>> findDistinctByRecordTypes(String tenantId, Set<RecordType> recordTypes) {
+    if (CollectionUtils.isEmpty(recordTypes)) {
+      return FutureUtils.failedFuture(new IllegalArgumentException("At least one record type required"));
+    }
+
+    JsonArray parameters = createParameters(toValues(recordTypes));
+    String placeholders = createPlaceholders(parameters.size());
+
+    Future<ResultSet> resultSetFuture = Future.future();
+    PostgresClient.getInstance(vertx, tenantId)
+      .select(
+        String.format(SELECT_DISTINCT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders),
+        parameters, resultSetFuture.completer()
+      );
+
+    return mapResult(resultSetFuture, this::readTagValues);
   }
 
   private Future<ResultSet> findByRecordIdsOfType(String tenantId, List<String> recordIds, RecordType recordType) {
