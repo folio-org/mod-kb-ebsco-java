@@ -1,6 +1,6 @@
 {
   "errors": [{
-    "title": "Invalid data"
+    "title": "Invalid filter parameter"
   }],
   "jsonapi": {
     "version": "1.0"

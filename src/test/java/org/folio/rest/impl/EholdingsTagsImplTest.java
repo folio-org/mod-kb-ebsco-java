@@ -187,7 +187,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnListOfUniqueTagsWithInvalidParams() {
+  public void shouldReturnBadRequestWithInvalidParams() {
     JsonapiError error = getWithStatus("eholdings/tags/summary?filter[rectype]=INVALID&filter[rectype]=title",
       SC_BAD_REQUEST).as(JsonapiError.class);
 

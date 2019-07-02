@@ -2,21 +2,21 @@
   "data": [
     {
       "id": "01276405-a07b-47d5-b224-742af3fe0387",
-      "type": "provider",
+      "type": "tags",
       "attributes": {
         "value": "title-tag"
       }
     },
     {
       "id": "52687cb3-ecd6-4570-a2e2-3e212f26bef8",
-      "type": "package",
+      "type": "tags",
       "attributes": {
         "value": "package-tag"
       }
     },
     {
       "id": "ed0fdcac-1292-4354-adc2-7b80b58638e3",
-      "type": "package",
+      "type": "tags",
       "attributes": {
         "value": "provider-tag2"
       }
