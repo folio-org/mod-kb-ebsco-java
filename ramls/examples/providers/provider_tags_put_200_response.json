@@ -1,0 +1,16 @@
+{
+  "data": {
+    "type": "tags",
+    "attributes": {
+      "name": "test provider name",
+      "tags": {
+        "tagList": [
+          "folio"
+        ]
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

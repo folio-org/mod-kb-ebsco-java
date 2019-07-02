@@ -12,6 +12,8 @@ documentation:
 types:
   providerCollection: !include types/providers/providerCollection.json
   providerPutRequest: !include types/providers/providerPutRequest.json
+  providerTags: !include types/providers/providerTags.json
+  providerTagsPutRequest: !include types/providers/providerTagsPutRequest.json
   provider: !include types/providers/provider.json
   packageCollection: !include types/packages/packageCollection.json
   jsonapiError: !include types/jsonapiError.json
@@ -90,6 +92,28 @@ traits:
               example:
                 strict: false
                 value: !include examples/providers/providers_providerId_put_200_response.json
+    /tags:
+      put:
+        description: Update tags assigned to provider
+        headers:
+          Content-Type:
+            example: application/vnd.api+json
+        body:
+          application/vnd.api+json:
+            type: providerTagsPutRequest
+            example:
+              strict: false
+              value: !include examples/providers/provider_tags_put_request.json
+        responses:
+          200:
+            description: OK
+            body:
+              application/vnd.api+json:
+                description: Updated list of tags
+                type: providerTags
+                example:
+                  strict: false
+                  value: !include examples/providers/provider_tags_put_200_response.json
     /packages:
         get:
           description: Search within a list of packages associated with a given provider.
