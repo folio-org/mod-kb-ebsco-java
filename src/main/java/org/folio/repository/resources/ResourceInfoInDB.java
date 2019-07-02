@@ -9,7 +9,7 @@ import org.folio.holdingsiq.model.ResourceId;
 
 @Value
 @Builder
-public class DbResource {
+public class ResourceInfoInDB {
   private ResourceId id;
   private String name;
   private List<String> tags;

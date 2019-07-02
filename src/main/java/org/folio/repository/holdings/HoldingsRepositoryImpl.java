@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -28,6 +29,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,11 +48,11 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveAll(Set<DbHolding> holdings, Instant updatedAt, String tenantId) {
+  public CompletableFuture<Void> saveAll(Set<HoldingInfoInDB> holdings, Instant updatedAt, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
-      List<List<DbHolding>> batches = Lists.partition(Lists.newArrayList(holdings), MAX_BATCH_SIZE);
+      List<List<HoldingInfoInDB>> batches = Lists.partition(Lists.newArrayList(holdings), MAX_BATCH_SIZE);
       CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-      for (List<DbHolding> batch : batches) {
+      for (List<HoldingInfoInDB> batch : batches) {
         future = future.thenCompose(o ->
           saveHoldings(batch, updatedAt, tenantId, connection, postgresClient));
       }
@@ -58,7 +60,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     });
   }
 
-  private CompletableFuture<Void> saveHoldings(List<DbHolding> holdings, Instant updatedAt, String tenantId,
+  private CompletableFuture<Void> saveHoldings(List<HoldingInfoInDB> holdings, Instant updatedAt, String tenantId,
                                                AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
     JsonArray parameters = createParameters(holdings, updatedAt);
     final String query = String.format(INSERT_OR_UPDATE_HOLDINGS_STATEMENT, getHoldingsTableName(tenantId),
@@ -79,7 +81,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbHolding>> findAllById(List<String> resourceIds, String tenantId) {
+  public CompletableFuture<List<HoldingInfoInDB>> findAllById(List<String> resourceIds, String tenantId) {
     final String resourceIdString = resourceIds.isEmpty() ? "''" :
       resourceIds.stream().map(id -> "'" + id.concat("'")).collect(Collectors.joining(","));
     final String query = String.format(GET_HOLDINGS_BY_IDS, getHoldingsTableName(tenantId), resourceIdString);
@@ -90,15 +92,15 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     return mapResult(future, this::mapHoldings);
   }
 
-  private List<DbHolding> mapHoldings(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), row -> mapColumn(row, "jsonb", DbHolding.class).orElse(null));
+  private List<HoldingInfoInDB> mapHoldings(ResultSet resultSet) {
+    return mapItems(resultSet.getRows(), row -> mapColumn(row, "jsonb", HoldingInfoInDB.class).orElse(null));
   }
 
-  private String getHoldingsId(DbHolding holding) {
+  private String getHoldingsId(HoldingInfoInDB holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 
-  private JsonArray createParameters(List<DbHolding> holdings, Instant updatedAt) {
+  private JsonArray createParameters(List<HoldingInfoInDB> holdings, Instant updatedAt) {
     JsonArray params = new JsonArray();
     holdings.forEach(holding -> {
       params.add(getHoldingsId(holding));

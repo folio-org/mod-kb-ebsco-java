@@ -13,10 +13,12 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -78,6 +80,8 @@ import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.jaxrs.model.PackageTags;
+import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.util.PackagesTestUtil;
@@ -100,6 +104,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public static final String PACKAGES_STUB_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages";
 
   private static final String PACKAGES_PATH = "eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
+  private static final String PACKAGE_TAGS_PATH = "eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/tags";
   private static final String PACKAGE_BY_ID_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
   private static final UrlPathPattern PACKAGE_URL_PATTERN = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
   private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
@@ -268,6 +273,20 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldAddPackageTagsOnPutTagsWhenPackageAlreadyHasTags() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, STUB_TAG_VALUE);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
   public void shouldAddPackageTagsOnPostWhenPackageAlreadyHasTags() throws IOException, URISyntaxException {
     try {
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
@@ -290,6 +309,22 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(FULL_PACKAGE_ID, packages.get(0).getId());
       assertEquals(STUB_PACKAGE_NAME, packages.get(0).getName());
       assertEquals(STUB_PACKAGE_CONTENT_TYPE, packages.get(0).getContentType());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldAddPackageDataOnPutTags() throws IOException, URISyntaxException {
+    try {
+      List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
+      sendPutTags(tags);
+      List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+      assertEquals(1, packages.size());
+      assertEquals(FULL_PACKAGE_ID, packages.get(0).getId());
+      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getName());
+      assertThat(packages.get(0).getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
     } finally {
       TagsTestUtil.clearTags(vertx);
       TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
@@ -325,6 +360,16 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldDeletePackageDataOnPutWithEmptyTagList() throws IOException, URISyntaxException {
     List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
     sendPutWithTags(tags);
+    sendPutWithTags(Collections.emptyList());
+
+    List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+    assertThat(packages, is(empty()));
+  }
+
+  @Test
+  public void shouldDeletePackageDataOnPutTagsWithEmptyTagList() throws IOException, URISyntaxException {
+    List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
+    sendPutTags(tags);
     sendPutWithTags(Collections.emptyList());
 
     List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
@@ -382,11 +427,27 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldDeleteAllPackageTagsOnPutTagsWhenRequestHasEmptyListOfTags() throws IOException, URISyntaxException {
+    TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, RecordType.PACKAGE, "test one");
+    sendPutTags(Collections.emptyList());
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
+    assertThat(tagsAfterRequest, empty());
+  }
+
+  @Test
   public void shouldDoNothingOnPutWhenRequestHasNotTags() throws IOException, URISyntaxException {
     sendPutWithTags(null);
     sendPutWithTags(null);
     List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PACKAGE);
     assertThat(tagsAfterRequest, empty());
+  }
+
+  @Test
+  public void shouldReturn422OnPutTagsWhenRequestBodyIsInvalid() throws IOException, URISyntaxException {
+    ObjectMapper mapper = new ObjectMapper();
+    PackageTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/package/put-package-tags.json"), PackageTagsPutRequest.class);
+    tags.getData().getAttributes().setName("");
+    putWithStatus(PACKAGE_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY);
   }
 
   @Test
@@ -917,6 +978,19 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     }
 
     putWithOk(PACKAGES_PATH, mapper.writeValueAsString(packageToBeUpdated)).as(Package.class);
+  }
+
+  private void sendPutTags(List<String> newTags) throws IOException, URISyntaxException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    PackageTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/package/put-package-tags.json"), PackageTagsPutRequest.class);
+
+    if(newTags != null) {
+      tags.getData().getAttributes().setTags(new Tags()
+        .withTagList(newTags));
+    }
+
+    putWithOk(PACKAGE_TAGS_PATH, mapper.writeValueAsString(tags)).as(PackageTags.class);
   }
 
   private String sendPostWithTags(String requestBody, List<String> tags) throws IOException, URISyntaxException {

@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Tags Object Data Attributes Schema",
+  "description": "Package Tags Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageTagsDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contentType": {
+      "type": "string",
+      "description": "Content Type of Package",
+      "$ref" : "contentTypeEnum.json",
+      "example": "Online Reference"
+    },
+    "name": {
+      "type": "string",
+      "description": "Package name",
+      "example": "Shenbao"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Package tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
+    }
+  },
+  "required": [
+    "tags"
+  ]
+}
