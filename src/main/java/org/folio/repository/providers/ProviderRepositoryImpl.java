@@ -23,12 +23,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -44,9 +42,8 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveProvider(VendorById vendorData, String tenantId) {
-    JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(vendorData.getVendorId()),
-      vendorData.getVendorName());
+  public CompletableFuture<Void> saveProvider(ProviderInfoInDb provider, String tenantId) {
+    JsonArray parameters = createInsertOrUpdateParameters(provider.getId(), provider.getName());
 
     final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);

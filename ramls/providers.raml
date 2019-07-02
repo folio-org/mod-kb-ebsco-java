@@ -103,7 +103,7 @@ traits:
             type: providerTagsPutRequest
             example:
               strict: false
-              value: !include examples/providers/provider_tags_put_request.json
+              value: !include examples/providers/providers_tags_put_request.json
         responses:
           200:
             description: OK
@@ -113,7 +113,15 @@ traits:
                 type: providerTags
                 example:
                   strict: false
-                  value: !include examples/providers/provider_tags_put_200_response.json
+                  value: !include examples/providers/providers_tags_put_200_response.json
+          422:
+            description: Unprocessable Entity
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/providers/providers_tags_put_422_response.json
     /packages:
         get:
           description: Search within a list of packages associated with a given provider.
