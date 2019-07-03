@@ -8,7 +8,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "UUID of tag assigned to the record",
+      "description": "Randomly generated UUID of tag assigned to the record",
       "example": "eab7a945-9d0c-487a-a4d8-a6df4dd8d0fd"
     },
     "type": {

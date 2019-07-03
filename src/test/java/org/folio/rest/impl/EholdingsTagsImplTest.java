@@ -5,6 +5,7 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.util.TagsTestUtil.clearTags;
@@ -125,20 +126,21 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   @Test
   public void shouldFailOnInvalidRecordTypeOnGet() {
     JsonapiError error = getWithStatus("eholdings/tags?filter[rectype]=INVALID&filter[rectype]=title",
-        SC_BAD_REQUEST).as(JsonapiError.class);
+      SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
   }
 
   @Test
   public void shouldReturnAllUniqueTags() {
-    insertTags(UNIQUE_TAGS, vertx);
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
 
     try {
       TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
 
       assertEquals(col.getData().size(), 4);
       assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(4));
+      assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
       clearTags(vertx);
     }
@@ -158,7 +160,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnListOfUniqueTagsWithParamsResources() {
-    insertTags(UNIQUE_TAGS, vertx);
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
 
     try {
       TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
@@ -166,6 +168,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
       assertEquals(col.getData().size(), 1);
       assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(1));
+      assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
       clearTags(vertx);
     }
@@ -173,7 +176,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnListOfUniqueTagsWithMultipleParams() {
-    insertTags(UNIQUE_TAGS, vertx);
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
 
     try {
       TagUniqueCollection col = getWithOk(
@@ -181,6 +184,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
       assertEquals(col.getData().size(), 2);
       assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(2));
+      assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
       clearTags(vertx);
     }
@@ -192,6 +196,11 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
+  }
+  
+  private boolean checkContainingOfUniqueTags(List<String> source, TagUniqueCollection collection){
+    return source.containsAll(mapItems(collection.getData(),
+      tagUniqueCollectionItem -> tagUniqueCollectionItem.getAttributes().getValue()));
   }
 
   private static Tag tag(String recordId, RecordType recordType, String value) {
