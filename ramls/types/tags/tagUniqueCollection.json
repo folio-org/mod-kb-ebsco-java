@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Tag Collection Schema of Unique Items",
+  "description": "Tag Collection Schema of Unique Items",
+  "javaType": "org.folio.rest.jaxrs.model.TagUniqueCollection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of unique tags",
+      "items": {
+        "type": "object",
+        "$ref": "tagUniqueCollectionItem.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in packages collection",
+      "$ref": "../metaTotalResults.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "jsonapi"
+  ]
+}

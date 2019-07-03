@@ -5,6 +5,7 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.util.TagsTestUtil.clearTags;
@@ -30,6 +31,8 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.TagCollection;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
+import org.folio.rest.jaxrs.model.TagUniqueCollection;
+import org.folio.rest.jaxrs.model.TagUniqueCollectionItem;
 import org.folio.rest.util.RestConstants;
 
 @RunWith(VertxUnitRunner.class)
@@ -46,10 +49,13 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   private static final Tag RESOURCE_TAG = tag(RESOURCE_ID, RecordType.RESOURCE, "resource-tag");
 
   private static final List<Tag> ALL_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG);
+  private static final List<Tag> UNIQUE_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG,
+    RESOURCE_TAG);
 
   @Autowired
   private Converter<Tag, TagCollectionItem> tagConverter;
-
+  @Autowired
+  private Converter<String, TagUniqueCollectionItem> tagUniqueConverter;
 
   @Test
   public void shouldReturnAllTagsSortedIfNotFilteredOnGet() {
@@ -120,9 +126,81 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   @Test
   public void shouldFailOnInvalidRecordTypeOnGet() {
     JsonapiError error = getWithStatus("eholdings/tags?filter[rectype]=INVALID&filter[rectype]=title",
-        SC_BAD_REQUEST).as(JsonapiError.class);
+      SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
+  }
+
+  @Test
+  public void shouldReturnAllUniqueTags() {
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
+
+    try {
+      TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
+
+      assertEquals(col.getData().size(), 4);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(4));
+      assertTrue(checkContainingOfUniqueTags(tags, col));
+    } finally {
+      clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnEmptyUniqueTagsCollection() {
+    try {
+      TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
+
+      assertEquals(col.getData().size(), 0);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(0));
+    } finally {
+      clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnListOfUniqueTagsWithParamsResources() {
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
+
+    try {
+      TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
+        TagUniqueCollection.class);
+
+      assertEquals(col.getData().size(), 1);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(1));
+      assertTrue(checkContainingOfUniqueTags(tags, col));
+    } finally {
+      clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnListOfUniqueTagsWithMultipleParams() {
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
+
+    try {
+      TagUniqueCollection col = getWithOk(
+        "eholdings/tags/summary?filter[rectype]=resource&filter[rectype]=provider").as(TagUniqueCollection.class);
+
+      assertEquals(col.getData().size(), 2);
+      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(2));
+      assertTrue(checkContainingOfUniqueTags(tags, col));
+    } finally {
+      clearTags(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturnBadRequestWithInvalidParams() {
+    JsonapiError error = getWithStatus("eholdings/tags/summary?filter[rectype]=INVALID&filter[rectype]=title",
+      SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
+  }
+  
+  private boolean checkContainingOfUniqueTags(List<String> source, TagUniqueCollection collection){
+    return source.containsAll(mapItems(collection.getData(),
+      tagUniqueCollectionItem -> tagUniqueCollectionItem.getAttributes().getValue()));
   }
 
   private static Tag tag(String recordId, RecordType recordType, String value) {
