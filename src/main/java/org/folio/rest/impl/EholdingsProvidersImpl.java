@@ -156,7 +156,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         processUpdateRequest(entity, providerIdLong, context)
           .thenCompose(result ->
             updateTags(createDbProvider(result), tags, context.getOkapiData().getTenant())
-              .thenApply(vendorResult -> new VendorResult(result, null))))
+              .thenApply(vendorResult -> new VendorResult(result,null, tags))))
       .addErrorMapper(InputValidationException.class, error422Mapper())
       .executeWithResult(Provider.class);
   }

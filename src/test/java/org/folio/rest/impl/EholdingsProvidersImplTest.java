@@ -33,6 +33,7 @@ import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_3;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_3;
+import static org.folio.rest.impl.ProvidersTestData.PROVIDER_TAGS_PATH;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
@@ -60,13 +61,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
@@ -78,9 +77,12 @@ import org.folio.repository.RecordType;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackageTags;
+import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Token;
@@ -382,7 +384,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
 
     String provider = putWithOk("eholdings/providers/" + STUB_VENDOR_ID,
-      readFile("requests/kb-ebsco/put-provider.json")).asString();
+      readFile("requests/kb-ebsco/provider/put-provider.json")).asString();
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
 
@@ -404,7 +406,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
       ObjectMapper mapper = new ObjectMapper();
-      ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
+      ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/provider/put-provider.json"),
         ProviderPutRequest.class);
 
       providerToBeUpdated.getData().getAttributes().setPackagesSelected(0);
@@ -424,6 +426,68 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldUpdateTagsOnPutTags() throws IOException, URISyntaxException {
+    try {
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2), PROVIDER_TAGS_PATH);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldUpdateTagsOnPutTagsWithAlreadyExistingTags() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2), PROVIDER_TAGS_PATH);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldUpdateTagsOnPutTagsAndParams() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2), PROVIDER_TAGS_PATH + "?param");
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldDeleteProviderDataOnPutTagsWithEmptyTagList() throws IOException, URISyntaxException {
+    List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
+    sendPutTags(tags, PROVIDER_TAGS_PATH);
+    sendPutWithTags(Collections.emptyList());
+
+    List<ProvidersTestUtil.DbProviders> providers = ProvidersTestUtil.getProviders(vertx);
+    assertThat(providers, is(empty()));
+  }
+
+  @Test
+  public void shouldReturn422OnPutTagsWhenRequestBodyIsInvalid() throws IOException, URISyntaxException {
+    ObjectMapper mapper = new ObjectMapper();
+    PackageTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/provider/put-provider-tags.json"), PackageTagsPutRequest.class);
+    tags.getData().getAttributes().setName("");
+    JsonapiError response = putWithStatus(PROVIDER_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+
+    assertEquals(response.getErrors().get(0).getTitle(), "Invalid name");
+    assertEquals(response.getErrors().get(0).getDetail(), "name must not be empty");
+  }
+
+  @Test
   public void shouldUpdateAndReturnProviderOnPutWithTags() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
     String expectedProviderFile = "responses/kb-ebsco/providers/expected-updated-provider.json";
@@ -439,7 +503,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
 
     ObjectMapper mapper = new ObjectMapper();
-    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/provider/put-provider.json"),
       ProviderPutRequest.class);
     providerToBeUpdated.getData().getAttributes().setTags(new Tags()
       .withTagList(Arrays.asList("test tag one", "test tag two")));
@@ -545,7 +609,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     String providerByIdEndpoint = "eholdings/providers/" + STUB_VENDOR_ID;
 
-    JsonapiError error = putWithStatus(providerByIdEndpoint, readFile("requests/kb-ebsco/put-provider.json"),
+    JsonapiError error = putWithStatus(providerByIdEndpoint, readFile("requests/kb-ebsco/provider/put-provider.json"),
       SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Provider does not allow token"));
@@ -557,7 +621,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     mockDefaultConfiguration(getWiremockUrl());
 
     ObjectMapper mapper = new ObjectMapper();
-    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/provider/put-provider.json"),
       ProviderPutRequest.class);
 
     Token providerToken = new Token();
@@ -685,6 +749,19 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
   }
 
+  private void sendPutTags(List<String> newTags, String url) throws IOException, URISyntaxException {
+    ObjectMapper mapper = new ObjectMapper();
+
+    ProviderTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/provider/put-provider-tags.json"), ProviderTagsPutRequest.class);
+
+    if(newTags != null) {
+      tags.getData().getAttributes().setTags(new Tags()
+        .withTagList(newTags));
+    }
+
+    putWithOk(url, mapper.writeValueAsString(tags)).as(PackageTags.class);
+  }
+
   private List<String> sendPutWithTags(List<String> newTags) throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
 
@@ -699,7 +776,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder().withStatus(204)));
 
     ObjectMapper mapper = new ObjectMapper();
-    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/put-provider.json"),
+    ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile("requests/kb-ebsco/provider/put-provider.json"),
       ProviderPutRequest.class);
 
     if (newTags != null) {

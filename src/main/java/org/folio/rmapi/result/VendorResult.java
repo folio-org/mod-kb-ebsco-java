@@ -14,6 +14,12 @@ public class VendorResult {
     this.packages = packages;
   }
 
+  public VendorResult(VendorById vendor,Packages packages, Tags tags) {
+    this.vendor = vendor;
+    this.packages = packages;
+    this.tags = tags;
+  }
+
   public VendorById getVendor() {
     return vendor;
   }
