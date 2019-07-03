@@ -2,6 +2,7 @@ package org.folio.rest.converter.packages;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -14,7 +15,7 @@ public class PackageByIdConverter implements Converter<PackageByIdData, Package>
   private Converter<PackageResult, Package> packageConverter;
 
   @Override
-  public Package convert(PackageByIdData packageByIdData) {
-    return packageConverter.convert(new PackageResult(packageByIdData, null, null));
+  public Package convert(@NonNull PackageByIdData packageByIdData) {
+    return packageConverter.convert(new PackageResult(packageByIdData));
   }
 }

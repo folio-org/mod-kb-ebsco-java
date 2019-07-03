@@ -3,6 +3,8 @@ package org.folio.rest.validator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
 import org.folio.rest.jaxrs.model.PublicationType;
@@ -11,7 +13,6 @@ import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePostIncluded;
 import org.folio.rest.jaxrs.model.TitlePostIncludedPackageId;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
-import org.junit.Test;
 
 public class TitlePostBodyValidatorTest {
 
@@ -49,26 +50,26 @@ public class TitlePostBodyValidatorTest {
   private TitlesPostBodyValidator validator = new TitlesPostBodyValidator(new TitlesPostAttributesValidator());
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenNoPostBody() {
+  public void shouldThrowExceptionWhenNoPostBody() {
     TitlePostRequest postRequest = null;
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenEmptyBody() {
+  public void shouldThrowExceptionWhenEmptyBody() {
     TitlePostRequest postRequest = new TitlePostRequest();
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenNoPostData() {
+  public void shouldThrowExceptionWhenNoPostData() {
     TitlePostRequest postRequest = new TitlePostRequest()
       .withData(null);
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldTrowExceptionWhenEmptyPostData() {
+  public void shouldThrowExceptionWhenEmptyPostData() {
     TitlePostRequest postRequest = new TitlePostRequest()
       .withData(new TitlePostData());
     validator.validate(postRequest);

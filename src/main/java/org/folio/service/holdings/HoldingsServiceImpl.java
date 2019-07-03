@@ -16,16 +16,17 @@ import java.util.stream.Collectors;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Holding;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
-import org.folio.repository.holdings.DbHolding;
+import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.HoldingsRepository;
 import org.folio.repository.holdings.LoadStatus;
-import org.folio.repository.resources.DbResource;
+import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.rest.util.template.RMAPITemplateContext;
 
 @Component
@@ -55,11 +56,11 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public CompletableFuture<List<DbHolding>> getHoldingsByIds(List<DbResource> resourcesResult, String tenant) {
+  public CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<ResourceInfoInDB> resourcesResult, String tenant) {
     return holdingsRepository.findAllById(getTitleIdsAsList(resourcesResult), tenant);
   }
 
-  private List<String> getTitleIdsAsList(List<DbResource> resources){
+  private List<String> getTitleIdsAsList(List<ResourceInfoInDB> resources){
     return mapItems(resources, dbResource -> dbResource.getId().getProviderIdPart() + "-"
       + dbResource.getId().getPackageIdPart() + "-" + dbResource.getId().getTitleIdPart());
   }
@@ -137,9 +138,9 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private CompletableFuture<Void> saveHoldings(List<Holding> holdings, Instant updatedAt, String tenantId) {
-    Set<DbHolding> dbHoldings = holdings.stream()
+    Set<HoldingInfoInDB> dbHoldings = holdings.stream()
       .filter(distinctByKey(this::getHoldingsId))
-      .map(holding -> new DbHolding(
+      .map(holding -> new HoldingInfoInDB(
         holding.getTitleId(),
         holding.getPackageId(),
         holding.getVendorId(),

@@ -11,5 +11,5 @@ public interface ResourceRepository {
 
   CompletableFuture<Void> deleteResource(String resourceId, String tenantId);
 
-  CompletableFuture<List<DbResource>> getResourcesByTagNameAndPackageId(List<String> tags, String packageId, int page, int count, String tenantId);
+  CompletableFuture<List<ResourceInfoInDB>> getResourcesByTagNameAndPackageId(List<String> tags, String packageId, int page, int count, String tenantId);
 }

@@ -84,7 +84,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbResource>> getResourcesByTagNameAndPackageId(List<String> tags, String resourceId, int page, int count, String tenantId) {
+  public CompletableFuture<List<ResourceInfoInDB>> getResourcesByTagNameAndPackageId(List<String> tags, String resourceId, int page, int count, String tenantId) {
     if(CollectionUtils.isEmpty(tags)){
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
@@ -113,7 +113,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     return mapResult(future, this::mapResources);
   }
 
-  private List<DbResource> mapResources(ResultSet resultSet) {
+  private List<ResourceInfoInDB> mapResources(ResultSet resultSet) {
     final Map<ResourceId, List<JsonObject>> rowsById = resultSet.getRows().stream()
       .collect(groupingBy(this::readResourceId));
     return mapItems(rowsById.entrySet(), this::readResource);
@@ -122,7 +122,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     return idParser.parseResourceId(row.getString(ID_COLUMN));
   }
 
-  private DbResource readResource(Map.Entry<ResourceId, List<JsonObject>> entry) {
+  private ResourceInfoInDB readResource(Map.Entry<ResourceId, List<JsonObject>> entry) {
     ResourceId resourceId = entry.getKey();
     List<JsonObject> rows = entry.getValue();
 
@@ -131,7 +131,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
       .map(row -> row.getString(TAG_COLUMN))
       .collect(Collectors.toList());
 
-    return DbResource.builder()
+    return ResourceInfoInDB.builder()
       .id(resourceId)
       .name(firstRow.getString(NAME_COLUMN))
       .tags(tags)

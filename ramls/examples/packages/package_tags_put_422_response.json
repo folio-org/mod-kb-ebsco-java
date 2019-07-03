@@ -1,0 +1,12 @@
+{
+  "errors": [
+    {
+      "title": "Invalid name",
+      "detail": "Name can't be blank",
+      "source": {}
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

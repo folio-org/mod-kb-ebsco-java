@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+
 import org.apache.http.HttpStatus;
 
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
@@ -67,6 +68,19 @@ public class ErrorHandler {
         .entity(ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail()))
         .build());
     return this;
+  }
+
+  public ErrorHandler addInputValidation422Mapper() {
+    add(InputValidationException.class, error422Mapper());
+    return this;
+  }
+
+  public static Function<InputValidationException, Response> error422Mapper() {
+    return exception ->
+      Response.status(HttpStatus.SC_UNPROCESSABLE_ENTITY)
+        .header(CONTENT_TYPE_HEADER, JSON_API_TYPE)
+        .entity(ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail()))
+        .build();
   }
 
   /**

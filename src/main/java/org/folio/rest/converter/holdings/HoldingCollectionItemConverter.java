@@ -6,26 +6,26 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import org.folio.repository.holdings.DbHolding;
+import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 
 @Component
-public class HoldingCollectionItemConverter implements Converter<DbHolding, ResourceCollectionItem> {
+public class HoldingCollectionItemConverter implements Converter<HoldingInfoInDB, ResourceCollectionItem> {
 
   @Override
-  public ResourceCollectionItem convert(@NonNull DbHolding dbHolding) {
+  public ResourceCollectionItem convert(@NonNull HoldingInfoInDB holding) {
 
     return new ResourceCollectionItem()
-      .withId(dbHolding.getVendorId() + "-" + dbHolding.getPackageId() + "-" + dbHolding.getTitleId())
+      .withId(holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId())
       .withType(ResourceCollectionItem.Type.RESOURCES)
       .withRelationships(createEmptyRelationship())
       .withAttributes(new ResourceDataAttributes()
-        .withTitleId(Integer.parseInt(dbHolding.getTitleId()))
-        .withName(dbHolding.getPublicationTitle())
-        .withPublisherName(dbHolding.getPublisherName())
-        .withPublicationType(ConverterConsts.publicationTypes.get(dbHolding.getResourceType().toLowerCase()))
+        .withTitleId(Integer.parseInt(holding.getTitleId()))
+        .withName(holding.getPublicationTitle())
+        .withPublisherName(holding.getPublisherName())
+        .withPublicationType(ConverterConsts.publicationTypes.get(holding.getResourceType().toLowerCase()))
       );
   }
 }

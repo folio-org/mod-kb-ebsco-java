@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Tags object schema",
+  "description": "Package Tags object schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageTagsItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "tags"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Package tags object data attributes",
+      "$ref": "packageTagsDataAttributes.json"
+    }
+  }
+}
