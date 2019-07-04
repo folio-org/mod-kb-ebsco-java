@@ -1,0 +1,11 @@
+{
+  "data": {
+    "type": "tags",
+    "attributes": {
+      "name": "Vendor Name1",
+      "tags": {
+        "tagList": []
+      }
+    }
+  }
+}

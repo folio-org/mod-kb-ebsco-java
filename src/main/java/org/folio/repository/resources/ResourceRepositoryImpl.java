@@ -55,9 +55,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveResource(String resourceId, Title title, String tenantId) {
+  public CompletableFuture<Void> saveResource(String resourceId, String name, String tenantId) {
 
-    JsonArray parameters = createInsertOrUpdateParameters(resourceId, title.getTitleName());
+    JsonArray parameters = createInsertOrUpdateParameters(resourceId, name);
 
     final String query = String.format(INSERT_OR_UPDATE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
 
