@@ -18,6 +18,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import org.folio.rest.validator.ResourceTagsPutBodyValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -86,6 +87,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private Converter<List<Tag>, Tags> tagsConverter;
   @Autowired
   private ResourceRepository resourceRepository;
+  @Autowired
+  private ResourceTagsPutBodyValidator resourceTagsPutBodyValidator;
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -194,6 +197,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
         ResourceTagsDataAttributes attributes = entity.getData().getAttributes();
+        resourceTagsPutBodyValidator.validate(entity,attributes);
         return updateResourceTags(resourceId, entity.getData().getAttributes().getName(), attributes.getTags(),
           new OkapiData(okapiHeaders).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(

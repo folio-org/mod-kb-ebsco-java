@@ -12,24 +12,17 @@ import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
-import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_CONTENT_TYPE;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
-import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME;
-import static org.folio.rest.impl.ResourcesTestData.STUB_RESOURCE_ID;
-import static org.folio.util.TestUtil.getFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME;
 import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
@@ -42,6 +35,7 @@ import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import static org.folio.util.TagsTestUtil.insertTag;
+import static org.folio.util.TestUtil.getFile;
 import static org.folio.util.TestUtil.mockDefaultConfiguration;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.mockPut;
@@ -60,14 +54,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import org.folio.rest.jaxrs.model.PackageTags;
-import org.folio.rest.jaxrs.model.ResourceTags;
-import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
-import org.folio.util.PackagesTestUtil;
-import org.folio.util.ProvidersTestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -78,6 +65,8 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.folio.rest.jaxrs.model.ResourceTags;
+import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
@@ -88,7 +77,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   private static final String MANAGED_PACKAGE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
   private static final String MANAGED_RESOURCE_ENDPOINT = MANAGED_PACKAGE_ENDPOINT + "/titles/" + STUB_MANAGED_TITLE_ID;
   private static final String CUSTOM_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
-  private static final String RESOURCE_TAGS_PATH = "eholdings/resource/" + STUB_RESOURCE_ID + "/tags";
+  private static final String RESOURCE_TAGS_PATH = "eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID + "/tags";
 
   @Test
   public void shouldReturnResourceWhenValidId() throws IOException, URISyntaxException {
@@ -364,11 +353,39 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   public void shouldUpdateTagsOnSuccessfulTagsPut() throws IOException, URISyntaxException {
     try {
       List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
-      sendPutTags(tags);
+      sendPutTags(tags, RESOURCE_TAGS_PATH);
       List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
       assertEquals(1, resources.size());
-      assertEquals(STUB_RESOURCE_ID, resources.get(0).getId());
+      assertEquals(STUB_CUSTOM_RESOURCE_ID, resources.get(0).getId());
       assertEquals(STUB_VENDOR_NAME, resources.get(0).getName());
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldUpdateTagsOnSuccessfulTagsPutWithAlreadyExistingTags() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutTags(newTags,RESOURCE_TAGS_PATH);
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.RESOURCE);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldUpdateTagsOnSuccessfulTagsPutWithParams() throws IOException, URISyntaxException {
+    try {
+      TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+      sendPutTags(newTags,RESOURCE_TAGS_PATH + "?params");
+      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.RESOURCE);
+      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
       TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
@@ -400,6 +417,14 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
       TagsTestUtil.clearTags(vertx);
     }
+  }
+
+  @Test
+  public void shouldReturn422OnPutTagsWhenRequestBodyIsInvalid() throws IOException, URISyntaxException {
+    ObjectMapper mapper = new ObjectMapper();
+    ResourceTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/resource/put-resource-tags.json"), ResourceTagsPutRequest.class);
+    tags.getData().getAttributes().setName("");
+    putWithStatus(RESOURCE_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY);
   }
 
   @Test
@@ -543,7 +568,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   }
 
-  private void sendPutTags(List<String> newTags) throws IOException, URISyntaxException {
+  private void sendPutTags(List<String> newTags, String url) throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
 
     ResourceTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/resource/put-resource-tags.json"), ResourceTagsPutRequest.class);
@@ -553,7 +578,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
         .withTagList(newTags));
     }
 
-    putWithOk(RESOURCE_TAGS_PATH, mapper.writeValueAsString(tags)).as(ResourceTags.class);
+    putWithOk(url, mapper.writeValueAsString(tags)).as(ResourceTags.class);
   }
 
   private void deleteResource(EqualToJsonPattern putBodyPattern, String resourcePath) throws IOException, URISyntaxException {
