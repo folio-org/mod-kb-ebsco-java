@@ -3,6 +3,9 @@ package org.folio.service.holdings;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusPopulatingStagingArea;
 
 import java.time.Instant;
 import java.util.List;
@@ -16,7 +19,6 @@ import java.util.stream.Collectors;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,7 +28,9 @@ import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.HoldingsRepository;
 import org.folio.repository.holdings.LoadStatus;
+import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.repository.resources.ResourceInfoInDB;
+import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.util.template.RMAPITemplateContext;
 
 @Component
@@ -38,21 +42,28 @@ public class HoldingsServiceImpl implements HoldingsService {
   private long delay;
   private int retryCount;
   private HoldingsRepository holdingsRepository;
+  private HoldingsStatusRepository holdingsStatusRepository;
 
   @Autowired
   public HoldingsServiceImpl(Vertx vertx, HoldingsRepository holdingsRepository,
+                             HoldingsStatusRepository holdingsStatusRepository,
                              @Value("${holdings.status.check.delay}") long delay,
                              @Value("${holdings.status.retry.count}") int retryCount) {
     this.vertx = vertx;
     this.holdingsRepository = holdingsRepository;
+    this.holdingsStatusRepository = holdingsStatusRepository;
     this.delay = delay;
     this.retryCount = retryCount;
   }
 
-  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, String tenantId) {
+  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context) {
     return populateHoldings(context)
       .thenCompose(isSuccessful -> waitForCompleteStatus(context, retryCount))
-      .thenCompose(loadStatus -> loadHoldings(context, loadStatus.getTotalCount(), tenantId));
+      .thenCompose(loadStatus -> loadHoldings(context, loadStatus.getTotalCount()));
+  }
+
+  private CompletableFuture<Void> updateStatus(HoldingsLoadingStatus status, String tenantId) {
+    return holdingsStatusRepository.update(status, tenantId);
   }
 
   @Override
@@ -74,7 +85,7 @@ public class HoldingsServiceImpl implements HoldingsService {
         logger.info("Start populating holdings to stage environment.");
         return context.getLoadingService().populateHoldings();
       }
-    });
+    }).thenAccept(o -> updateStatus(getStatusPopulatingStagingArea(), context.getOkapiData().getTenant()));
   }
 
   public CompletableFuture<HoldingsLoadStatus> waitForCompleteStatus(RMAPITemplateContext context,  int retryCount) {
@@ -104,21 +115,28 @@ public class HoldingsServiceImpl implements HoldingsService {
       }));
   }
 
-  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, Integer totalCount, String tenantId) {
-
+  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, Integer totalCount) {
+    final String tenantId = context.getOkapiData().getTenant();
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
     final Instant updatedAt = Instant.now();
-    final int totalRequestCount = getRequestCount(totalCount);
-    for (int iteration = 1; iteration < totalRequestCount + 1; iteration++) {
+    for (int iteration = 1; iteration < getRequestCount(totalCount) + 1; iteration++) {
       int finalIteration = iteration;
       future = future
         .thenCompose(o -> context.getLoadingService().loadHoldings(MAX_COUNT, finalIteration))
-        .thenCompose(holding -> saveHoldings(holding.getHoldingsList(), updatedAt, tenantId));
+        .thenCompose(holding -> saveHoldings(holding.getHoldingsList(), updatedAt, tenantId))
+        .thenCompose(o -> updateStatus(getStatusLoadingHoldings(totalCount,
+          calculateImportedCount(finalIteration, totalCount)), tenantId));
     }
-    future = future.thenCompose(o -> holdingsRepository.deleteByTimeStamp(updatedAt, tenantId));
+    future = future
+      .thenCompose(o -> holdingsRepository.deleteByTimeStamp(updatedAt, tenantId))
+      .thenCompose(o -> updateStatus(getStatusCompleted(totalCount), tenantId));
     return future;
   }
 
+  private int calculateImportedCount(int iteration, int totalCount) {
+    final int amount = iteration * MAX_COUNT;
+    return amount >= totalCount ? totalCount : amount;
+  }
 
   /**
    * Defines an amount of request needed to load all holdings from the staged area

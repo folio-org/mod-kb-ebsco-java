@@ -27,7 +27,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,6 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.resources.ResourceTableConstants;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.tag.repository.titles.DbTitle;
 
 @Component
 public class TitlesRepositoryImpl implements TitlesRepository {

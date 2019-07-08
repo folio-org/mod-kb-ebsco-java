@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Load Status Details Schema",
+  "description": "Load Status Schema",
+  "javaType": "org.folio.rest.jaxrs.model.LoadStatusInformation",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "$ref" : "statusNameEnum.json",
+      "description": "Current Status of holdings loading"
+    },
+    "detail": {
+      "type": "string",
+      "$ref" : "statusNameDetailEnum.json",
+      "description": "Current Status detail name of holdings loading"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

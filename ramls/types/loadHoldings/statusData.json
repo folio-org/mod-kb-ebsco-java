@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Load Status Data Schema",
+  "description": "Load Status Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.LoadStatusData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type information"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Status Attributes",
+      "$ref": "statusAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

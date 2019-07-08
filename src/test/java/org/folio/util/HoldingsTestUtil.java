@@ -1,9 +1,9 @@
 package org.folio.util;
 
-import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.ID_COLUMN;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.JSONB_COLUMN;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.UPDATED_AT_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
+import static org.folio.repository.holdings.HoldingsTableConstants.ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.JSONB_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.UPDATED_AT_COLUMN;
 import static org.folio.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TestUtil.readFile;
 
@@ -16,7 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;

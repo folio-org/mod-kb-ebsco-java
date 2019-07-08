@@ -1,0 +1,15 @@
+{
+  "data": {
+    "type": "status",
+    "attributes": {
+      "started": "1999-12-31 14:59:59",
+      "status": {
+        "name": "In Progress",
+        "detail": "Populating staging area"
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

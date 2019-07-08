@@ -22,6 +22,7 @@ public final class RestConstants {
   public static final String PACKAGE_RECTYPE = "package";
   public static final String TITLE_RECTYPE = "title";
   public static final String RESOURCE_RECTYPE = "resource";
+  public static final String STATUS_RECTYPE = "status";
 
   public static final Map<String, String> FILTER_SELECTED_MAPPING =
     ImmutableMap.of(

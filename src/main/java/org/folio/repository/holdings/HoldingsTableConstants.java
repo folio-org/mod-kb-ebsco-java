@@ -1,4 +1,4 @@
-package org.folio.tag.repository.resources;
+package org.folio.repository.holdings;
 
 public class HoldingsTableConstants {
   public static final String HOLDINGS_TABLE = "holdings";
@@ -13,6 +13,8 @@ public class HoldingsTableConstants {
   public static final String REMOVE_FROM_HOLDINGS = "DELETE FROM %s WHERE " + UPDATED_AT_COLUMN + " != timestamp with time zone '%s';";
 
   public static final String GET_HOLDINGS_BY_IDS = "SELECT * from %s WHERE id IN (%s);";
+
+  public static final String GET_HOLDINGS_COUNT = "SELECT COUNT(*) from %s";
 
   private HoldingsTableConstants() { }
 }

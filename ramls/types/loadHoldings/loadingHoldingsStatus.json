@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Holdings Loading Status Schema",
+  "description": "Holdings Loading Status Schema",
+  "javaType": "org.folio.rest.jaxrs.model.HoldingsLoadingStatus",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Status data",
+      "$ref": "statusData.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "jsonapi"
+  ]
+}

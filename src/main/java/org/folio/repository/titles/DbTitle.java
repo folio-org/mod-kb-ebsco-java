@@ -1,11 +1,11 @@
-package org.folio.tag.repository.titles;
-
-import org.folio.holdingsiq.model.Title;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+package org.folio.repository.titles;
 
 import lombok.Builder;
 import lombok.Value;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
+import org.folio.holdingsiq.model.Title;
 
 @Value
 @Builder

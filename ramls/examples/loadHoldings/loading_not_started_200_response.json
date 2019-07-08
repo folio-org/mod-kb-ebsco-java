@@ -1,0 +1,13 @@
+{
+  "data": {
+    "type": "status",
+    "attributes": {
+      "status": {
+        "name": "Not Started"
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
