@@ -453,20 +453,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateTagsOnPutTagsAndParams() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, RecordType.PROVIDER, STUB_TAG_VALUE);
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2), PROVIDER_TAGS_PATH + "?param");
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.PROVIDER);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
-  }
-
-  @Test
   public void shouldDeleteProviderDataOnPutTagsWithEmptyTagList() throws IOException, URISyntaxException {
     List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
     sendPutTags(tags, PROVIDER_TAGS_PATH);

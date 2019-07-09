@@ -228,7 +228,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .countRecordsByTags(tags, tenant, RecordType.PROVIDER)
       .thenCompose(providerCount -> {
         totalResults.setValue(providerCount);
-        return providerRepository.getProviderIdsByTagName(tags, page, count, tenant);
+        return providerRepository.findIdsByTagName(tags, page, count, tenant);
       })
       .thenCompose(providerIds ->
         context.getProvidersService().retrieveProviders(providerIds))
@@ -334,9 +334,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private CompletableFuture<Void> updateStoredProvider(ProviderInfoInDb provider, Tags tags, String tenant) {
     if (!tags.getTagList().isEmpty()) {
-      return providerRepository.saveProvider(provider, tenant);
+      return providerRepository.save(provider, tenant);
     }
-    return providerRepository.deleteProvider(provider.getId(), tenant);
+    return providerRepository.delete(provider.getId(), tenant);
   }
 
   private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, long providerIdLong, RMAPITemplateContext context) {

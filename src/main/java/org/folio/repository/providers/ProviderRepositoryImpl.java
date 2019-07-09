@@ -42,7 +42,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveProvider(ProviderInfoInDb provider, String tenantId) {
+  public CompletableFuture<Void> save(ProviderInfoInDb provider, String tenantId) {
     JsonArray parameters = createInsertOrUpdateParameters(provider.getId(), provider.getName());
 
     final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
@@ -55,7 +55,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<Void> deleteProvider(String vendorId, String tenantId) {
+  public CompletableFuture<Void> delete(String vendorId, String tenantId) {
     JsonArray parameter = new JsonArray(Collections.singletonList(vendorId));
 
     final String query = String.format(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
@@ -69,7 +69,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<List<Long>> getProviderIdsByTagName(List<String> tags, int page, int count, String tenantId) {
+  public CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count, String tenantId) {
     if(CollectionUtils.isEmpty(tags)){
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
