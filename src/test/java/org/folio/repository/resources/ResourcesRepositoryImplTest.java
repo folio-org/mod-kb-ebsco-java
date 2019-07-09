@@ -26,7 +26,7 @@ public class ResourcesRepositoryImplTest {
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<ResourceInfoInDB> resources = repository.getResourcesByTagNameAndPackageId(Collections.emptyList(), STUB_PACKAGE_ID, 1, 25, STUB_TENANT).join();
+    List<ResourceInfoInDB> resources = repository.findByTagNameAndPackageId(Collections.emptyList(), STUB_PACKAGE_ID, 1, 25, STUB_TENANT).join();
     assertThat(resources, empty());
   }
 }

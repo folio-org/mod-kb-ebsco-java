@@ -55,7 +55,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveResource(String resourceId, String name, String tenantId) {
+  public CompletableFuture<Void> save(String resourceId, String name, String tenantId) {
 
     JsonArray parameters = createInsertOrUpdateParameters(resourceId, name);
 
@@ -70,7 +70,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   }
 
   @Override
-  public CompletableFuture<Void> deleteResource(String resourceId, String tenantId) {
+  public CompletableFuture<Void> delete(String resourceId, String tenantId) {
     JsonArray parameter = new JsonArray(Collections.singletonList(resourceId));
 
     final String query = String.format(DELETE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
@@ -84,7 +84,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   }
 
   @Override
-  public CompletableFuture<List<ResourceInfoInDB>> getResourcesByTagNameAndPackageId(List<String> tags, String resourceId, int page, int count, String tenantId) {
+  public CompletableFuture<List<ResourceInfoInDB>> findByTagNameAndPackageId(List<String> tags, String resourceId, int page, int count, String tenantId) {
     if(CollectionUtils.isEmpty(tags)){
       return CompletableFuture.completedFuture(Collections.emptyList());
     }

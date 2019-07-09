@@ -379,20 +379,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateTagsOnSuccessfulTagsPutWithParams() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(newTags,RESOURCE_TAGS_PATH + "?params");
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.RESOURCE);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
-    }
-  }
-
-  @Test
   public void shouldUpdateOnlyTagsOnPutWhenResourceIsNotSelectedAndUpdatedFieldsAreNotEmpty() throws IOException, URISyntaxException {
     try {
       String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";

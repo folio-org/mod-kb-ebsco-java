@@ -7,9 +7,9 @@ import org.folio.holdingsiq.model.Title;
 
 public interface ResourceRepository {
 
-  CompletableFuture<Void> saveResource(String resourceId, String name, String tenantId);
+  CompletableFuture<Void> save(String resourceId, String name, String tenantId);
 
-  CompletableFuture<Void> deleteResource(String resourceId, String tenantId);
+  CompletableFuture<Void> delete(String resourceId, String tenantId);
 
-  CompletableFuture<List<ResourceInfoInDB>> getResourcesByTagNameAndPackageId(List<String> tags, String packageId, int page, int count, String tenantId);
+  CompletableFuture<List<ResourceInfoInDB>> findByTagNameAndPackageId(List<String> tags, String packageId, int page, int count, String tenantId);
 }

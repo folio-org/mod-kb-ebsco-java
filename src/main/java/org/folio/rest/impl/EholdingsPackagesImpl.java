@@ -376,7 +376,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .countRecordsByTagsAndPrefix(tags, packageId + "-", tenant, RecordType.RESOURCE)
       .thenCompose(resourceCount -> {
         totalResults.setValue(resourceCount);
-        return resourceRepository.getResourcesByTagNameAndPackageId(tags, packageId, page, count, tenant);
+        return resourceRepository.findByTagNameAndPackageId(tags, packageId, page, count, tenant);
       })
       .thenCompose(resourcesResult -> {
         mutableDbTitles.setValue(resourcesResult);

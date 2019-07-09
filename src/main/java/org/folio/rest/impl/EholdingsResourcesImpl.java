@@ -222,7 +222,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
   private CompletableFuture<Void> deleteTags(String resourceId, String tenant) {
     return
-      resourceRepository.deleteResource(resourceId, tenant)
+      resourceRepository.delete(resourceId, tenant)
         .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
         .thenCompose(aBoolean -> CompletableFuture.completedFuture(null));
   }
@@ -255,9 +255,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private CompletableFuture<Void> updateStoredResource(String resourceId, String name, String tenant, Tags tags) {
     if (!tags.getTagList().isEmpty()) {
-      return resourceRepository.saveResource(resourceId, name, tenant);
+      return resourceRepository.save(resourceId, name, tenant);
     }
-    return resourceRepository.deleteResource(resourceId, tenant);
+    return resourceRepository.delete(resourceId, tenant);
   }
 
   private CompletableFuture<Void> updateResourceTags(String resourceId, String name, Tags tags, String tenant) {
