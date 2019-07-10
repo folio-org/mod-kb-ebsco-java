@@ -1,0 +1,16 @@
+{
+  "data": {
+    "type": "tags",
+    "attributes": {
+      "name": "test resource for documentation",
+      "tags": {
+        "tagList": [
+          "folio"
+        ]
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

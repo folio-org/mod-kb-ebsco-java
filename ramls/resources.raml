@@ -14,6 +14,8 @@ types:
   resource: !include types/resources/resource.json
   jsonapiError: !include types/jsonapiError.json
   resourcePutRequest: !include types/resources/resourcePutRequest.json
+  resourceTagsPutRequest: !include types/resources/resourceTagsPutRequest.json
+  resourceTags: !include types/resources/resourceTags.json
 
 /eholdings/resources:
   displayName: Resources
@@ -185,3 +187,33 @@ types:
               example:
                 strict: false
                 value: !include examples/resources/resources_resourceId_delete_404_response.json
+    /tags:
+      put:
+        description: Update tags assigned to resource
+        headers:
+          Content-Type:
+            example: application/vnd.api+json
+        body:
+          application/vnd.api+json:
+            type: resourceTagsPutRequest
+            example:
+              strict: false
+              value: !include examples/resources/resource_tags_put_request.json
+        responses:
+          200:
+            description: OK
+            body:
+              application/vnd.api+json:
+                description: Updated list of tags
+                type: resourceTags
+                example:
+                  strict: false
+                  value: !include examples/resources/resource_tags_put_200_response.json
+          422:
+             description: Unprocessable Entity
+             body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/resources/resource_tags_put_422_response.json

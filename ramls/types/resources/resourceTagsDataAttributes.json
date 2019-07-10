@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Tags Object Data Attributes Schema",
+  "description": "Resource Tags Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceTagsDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name",
+      "example": "American Journal of Undergraduate Research"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Resource tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
+    }
+  },
+  "required": [
+    "tags"
+  ]
+}

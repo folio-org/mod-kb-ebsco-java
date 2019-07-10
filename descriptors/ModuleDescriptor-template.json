@@ -82,6 +82,11 @@
           "permissionsRequired": ["kb-ebsco.resources.item.put"]
         },
         {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/resources/{resourceId}/tags",
+          "permissionsRequired": ["kb-ebsco.resource-tags.put"]
+        },
+        {
           "methods": ["DELETE"],
           "pathPattern": "/eholdings/resources/{resourceId}",
           "permissionsRequired": ["kb-ebsco.resources.item.delete"]
@@ -297,6 +302,11 @@
       "description": "Delete single resource"
     },
     {
+      "permissionName": "kb-ebsco.resource-tags.put",
+      "displayName": "put tags to a single resource",
+      "description": "Put tags to a single resource"
+    },
+    {
       "permissionName": "kb-ebsco.packages.collection.get",
       "displayName": "get packages",
       "description": "Get packages"
@@ -389,6 +399,7 @@
         "kb-ebsco.resources.collection.post",
         "kb-ebsco.resources.item.put",
         "kb-ebsco.resources.item.delete",
+        "kb-ebsco.resource-tags.put",
         "kb-ebsco.proxy-types.collection.get",
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.root-proxy.put",

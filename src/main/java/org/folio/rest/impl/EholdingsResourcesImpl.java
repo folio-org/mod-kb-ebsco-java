@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.util.RestConstants.JSONAPI;
+import static org.folio.rest.util.RestConstants.TAGS_TYPE;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -12,13 +15,16 @@ import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import org.folio.rest.validator.ResourceTagsPutBodyValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
+import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
@@ -41,9 +47,14 @@ import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.folio.rest.jaxrs.model.ResourceTags;
+import org.folio.rest.jaxrs.model.ResourceTagsDataAttributes;
+import org.folio.rest.jaxrs.model.ResourceTagsItem;
+import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
 import org.folio.rest.parser.IdParser;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
@@ -76,7 +87,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private Converter<List<Tag>, Tags> tagsConverter;
   @Autowired
   private ResourceRepository resourceRepository;
-  
+  @Autowired
+  private ResourceTagsPutBodyValidator resourceTagsPutBodyValidator;
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -145,10 +157,10 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .requestAction(context ->
         processResourceUpdate(entity, parsedResourceId, context)
           .thenCompose(resourceResult ->
-            updateResourceTags(
-              resourceResult,
-              context.getOkapiData().getTenant(),
-              entity.getData().getAttributes().getTags()))
+            updateResourceTags(resourceId, resourceResult.getTitleName(), entity.getData().getAttributes().getTags(),
+              context.getOkapiData().getTenant())
+          .thenApply(o -> new ResourceResult(resourceResult,null,null,false,
+            entity.getData().getAttributes().getTags())))
       )
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond422WithApplicationVndApiJson(
@@ -179,14 +191,44 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .execute();
   }
 
-  private CompletableFuture<Void> deleteTags(String resourceId, String tenant) {
-    return
-      resourceRepository.deleteResource(resourceId, tenant)
-        .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
-        .thenCompose(aBoolean ->  CompletableFuture.completedFuture(null));
+  @Override
+  public void putEholdingsResourcesTagsByResourceId(String resourceId, String contentType, ResourceTagsPutRequest entity,
+                                                    Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> {
+        ResourceTagsDataAttributes attributes = entity.getData().getAttributes();
+        resourceTagsPutBodyValidator.validate(entity,attributes);
+        return updateResourceTags(resourceId, entity.getData().getAttributes().getName(), attributes.getTags(),
+          new OkapiData(okapiHeaders).getTenant())
+          .thenAccept(ob -> asyncResultHandler.handle(
+            Future.succeededFuture(PutEholdingsResourcesTagsByResourceIdResponse.respond200WithApplicationVndApiJson(
+              convertToResourceTags(attributes)))));
+      })
+      .exceptionally(e -> {
+      new ErrorHandler()
+        .addInputValidation422Mapper()
+        .addDefaultMapper()
+        .handle(asyncResultHandler, e);
+      return null;
+    });
   }
 
-  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId, TitlesHoldingsIQService titlesService, PackagesHoldingsIQService packagesService) {
+  private ResourceTags convertToResourceTags(ResourceTagsDataAttributes attributes) {
+    return new ResourceTags()
+      .withData(new ResourceTagsItem()
+        .withType(TAGS_TYPE)
+        .withAttributes(attributes))
+      .withJsonapi(JSONAPI);
+  }
+  private CompletableFuture<Void> deleteTags(String resourceId, String tenant) {
+    return
+      resourceRepository.delete(resourceId, tenant)
+        .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
+        .thenCompose(aBoolean -> CompletableFuture.completedFuture(null));
+  }
+
+  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId,
+                                                                                  TitlesHoldingsIQService titlesService, PackagesHoldingsIQService packagesService) {
     CompletableFuture<Title> titleFuture = titlesService.retrieveTitle(titleId);
     CompletableFuture<PackageByIdData> packageFuture = packagesService.retrievePackage(packageId);
     return CompletableFuture.allOf(titleFuture, packageFuture)
@@ -211,27 +253,21 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       });
   }
 
-  private CompletableFuture<Void> updateStoredResource(String resourceId, Title title,String tenant, Tags tags) {
+  private CompletableFuture<Void> updateStoredResource(String resourceId, String name, String tenant, Tags tags) {
     if (!tags.getTagList().isEmpty()) {
-      return resourceRepository.saveResource(resourceId, title,tenant);
+      return resourceRepository.save(resourceId, name, tenant);
     }
-    return resourceRepository.deleteResource(resourceId, tenant);
+    return resourceRepository.delete(resourceId, tenant);
   }
 
-  private CompletableFuture<ResourceResult> updateResourceTags(Title title, String tenant, Tags tags) {
-    ResourceResult result = new ResourceResult(title, null, null, false);
-    if (tags == null) {
-      return CompletableFuture.completedFuture(result);
+  private CompletableFuture<Void> updateResourceTags(String resourceId, String name, Tags tags, String tenant) {
+    if (Objects.isNull(tags)) {
+      return CompletableFuture.completedFuture(null);
     } else {
-      CustomerResources resource = title.getCustomerResourcesList().get(0);
-      String resourceId = getResourceId(resource);
-      return
-        updateStoredResource(resourceId,title,tenant,tags)
-        .thenCompose(resourceUpdate -> tagRepository.updateRecordTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList()))
-        .thenCompose(updated -> {
-          result.setTags(tags);
-          return CompletableFuture.completedFuture(result);
-        });
+      return updateStoredResource(resourceId, name, tenant, tags)
+        .thenCompose(resourceUpdate -> tagRepository
+          .updateRecordTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList()))
+        .thenApply(updated -> null);
     }
   }
 
