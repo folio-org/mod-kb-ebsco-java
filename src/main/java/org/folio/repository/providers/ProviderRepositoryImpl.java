@@ -23,12 +23,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -44,9 +42,8 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveProvider(VendorById vendorData, String tenantId) {
-    JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(vendorData.getVendorId()),
-      vendorData.getVendorName());
+  public CompletableFuture<Void> save(ProviderInfoInDb provider, String tenantId) {
+    JsonArray parameters = createInsertOrUpdateParameters(provider.getId(), provider.getName());
 
     final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
@@ -58,7 +55,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<Void> deleteProvider(String vendorId, String tenantId) {
+  public CompletableFuture<Void> delete(String vendorId, String tenantId) {
     JsonArray parameter = new JsonArray(Collections.singletonList(vendorId));
 
     final String query = String.format(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
@@ -72,7 +69,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<List<Long>> getProviderIdsByTagName(List<String> tags, int page, int count, String tenantId) {
+  public CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count, String tenantId) {
     if(CollectionUtils.isEmpty(tags)){
       return CompletableFuture.completedFuture(Collections.emptyList());
     }

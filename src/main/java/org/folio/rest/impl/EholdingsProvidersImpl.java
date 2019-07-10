@@ -1,5 +1,11 @@
 package org.folio.rest.impl;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
+import static org.folio.rest.util.ErrorHandler.error422Mapper;
+import static org.folio.rest.util.RestConstants.JSONAPI;
+import static org.folio.rest.util.RestConstants.TAGS_TYPE;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -12,14 +18,15 @@ import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Sort;
@@ -31,25 +38,33 @@ import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.repository.RecordType;
 import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
+import org.folio.repository.providers.ProviderInfoInDb;
 import org.folio.repository.providers.ProviderRepository;
 import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.ProviderDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
+import org.folio.rest.jaxrs.model.ProviderTags;
+import org.folio.rest.jaxrs.model.ProviderTagsDataAttributes;
+import org.folio.rest.jaxrs.model.ProviderTagsItem;
+import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.parser.IdParser;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ProviderPutBodyValidator;
+import org.folio.rest.validator.ProviderTagsPutBodyValidator;
 import org.folio.rmapi.result.PackageCollectionResult;
 import org.folio.rmapi.result.VendorResult;
 import org.folio.spring.SpringContextUtil;
@@ -64,6 +79,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private ProviderPutBodyValidator bodyValidator;
   @Autowired
   private PackageParametersValidator parametersValidator;
+  @Autowired
+  private ProviderTagsPutBodyValidator providerTagsPutBodyValidator;
   @Autowired
   private IdParser idParser;
   @Autowired
@@ -85,15 +102,15 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProviders(String q, String filterTags, String sort, int page, int count, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProviders(String q, String filterTags, String sort, int page, int count, Map<String, String> okapiHeaders,
+                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
-    if(isTagOnlySearch(q, filterTags)){
+    if (isTagOnlySearch(q, filterTags)) {
       List<String> tags = Arrays.asList(filterTags.split("\\s*,\\s*"));
       template.requestAction(context -> getProvidersByTags(tags, page, count, context));
-    }
-    else {
+    } else {
       validateSort(sort);
       validateQuery(q);
 
@@ -108,7 +125,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   @Override
   @HandleValidationErrors
-  public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders,
+                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     long providerIdLong = idParser.parseProviderId(providerId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
@@ -137,9 +155,36 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .requestAction(context ->
         processUpdateRequest(entity, providerIdLong, context)
           .thenCompose(result ->
-            updateTags(result, context.getOkapiData().getTenant(), tags))
-      )
+            updateTags(createDbProvider(result), tags, context.getOkapiData().getTenant())
+              .thenApply(vendorResult -> new VendorResult(result,null, tags))))
+      .addErrorMapper(InputValidationException.class, error422Mapper())
       .executeWithResult(Provider.class);
+  }
+
+
+  @Override
+  public void putEholdingsProvidersTagsByProviderId(String providerId, String contentType, ProviderTagsPutRequest entity,
+                                                    Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    final Tags tags = entity.getData().getAttributes().getTags();
+
+    completedFuture(null)
+      .thenCompose(o -> {
+        ProviderTagsDataAttributes attributes = entity.getData().getAttributes();
+        providerTagsPutBodyValidator.validate(entity, attributes);
+        return updateTags(createDbProvider(providerId, entity.getData().getAttributes()), tags,
+          new OkapiData(okapiHeaders).getTenant())
+          .thenAccept(ob -> asyncResultHandler.handle(
+            Future.succeededFuture(PutEholdingsProvidersTagsByProviderIdResponse.respond200WithApplicationVndApiJson(
+              convertToProviderTags(attributes)
+            ))));
+      })
+      .exceptionally(e -> {
+        new ErrorHandler()
+          .addInputValidation422Mapper()
+          .addDefaultMapper()
+          .handle(asyncResultHandler, e);
+        return null;
+      });
   }
 
   @Override
@@ -183,7 +228,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .countRecordsByTags(tags, tenant, RecordType.PROVIDER)
       .thenCompose(providerCount -> {
         totalResults.setValue(providerCount);
-        return providerRepository.getProviderIdsByTagName(tags, page, count, tenant);
+        return providerRepository.findIdsByTagName(tags, page, count, tenant);
       })
       .thenCompose(providerIds ->
         context.getProvidersService().retrieveProviders(providerIds))
@@ -194,7 +239,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       );
   }
 
-  private CompletableFuture<PackageCollectionResult> getPackagesByTagsAndProvider(List<String> tags, String providerId, int page, int count, RMAPITemplateContext context) {
+  private CompletableFuture<PackageCollectionResult> getPackagesByTagsAndProvider(List<String> tags, String providerId,
+                                                                                  int page, int count, RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<PackageInfoInDB>> mutableDbPackages = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
@@ -211,8 +257,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .thenApply(packages ->
         new PackageCollectionResult(
           packages.toBuilder()
-          .totalResults(totalResults.getValue())
-          .build(),
+            .totalResults(totalResults.getValue())
+            .build(),
           mutableDbPackages.getValue())
       );
   }
@@ -244,7 +290,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     return tagRepository.findByRecord(tenant, String.valueOf(result.getVendor().getVendorId()), RecordType.PROVIDER)
       .thenCompose(tags -> {
         result.setTags(tagsConverter.convert(tags));
-        return CompletableFuture.completedFuture(result);
+        return completedFuture(result);
       });
   }
 
@@ -253,26 +299,44 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 
-  private CompletableFuture<VendorResult> updateTags(VendorById vendorById, String tenant, Tags tags) {
+  private CompletableFuture<Void> updateTags(ProviderInfoInDb provider, Tags tags, String tenant) {
     if (Objects.isNull(tags)) {
-      return CompletableFuture.completedFuture(new VendorResult(vendorById, null));
+      return completedFuture(null);
     } else {
-      return updateStoredProvider(vendorById, tags, tenant)
-        .thenCompose(o -> tagRepository.updateRecordTags(tenant, String.valueOf(vendorById.getVendorId()),
-          RecordType.PROVIDER, tags.getTagList()))
-        .thenCompose(updated -> {
-          VendorResult result = new VendorResult(vendorById, null);
-          result.setTags(new Tags().withTagList(tags.getTagList()));
-          return CompletableFuture.completedFuture(result);
-        });
+      return updateStoredProvider(provider, tags, tenant)
+        .thenCompose(
+          o -> tagRepository.updateRecordTags(tenant, provider.getId(), RecordType.PROVIDER, tags.getTagList()))
+        .thenApply(updated -> null);
     }
   }
 
-  private CompletableFuture<Void> updateStoredProvider(VendorById vendorById, Tags tags, String tenant) {
+  private ProviderTags convertToProviderTags(ProviderTagsDataAttributes attributes) {
+    return new ProviderTags()
+      .withData(new ProviderTagsItem()
+        .withType(TAGS_TYPE)
+        .withAttributes(attributes))
+      .withJsonapi(JSONAPI);
+  }
+
+  private ProviderInfoInDb createDbProvider(VendorById vendorById) {
+    return ProviderInfoInDb
+      .builder().id(String.valueOf(vendorById.getVendorId()))
+      .name(vendorById.getVendorName())
+      .build();
+  }
+
+  private ProviderInfoInDb createDbProvider(String providerId, ProviderTagsDataAttributes attributes) {
+    return ProviderInfoInDb.builder()
+      .id(providerId)
+      .name(attributes.getName())
+      .build();
+  }
+
+  private CompletableFuture<Void> updateStoredProvider(ProviderInfoInDb provider, Tags tags, String tenant) {
     if (!tags.getTagList().isEmpty()) {
-      return providerRepository.saveProvider(vendorById, tenant);
+      return providerRepository.save(provider, tenant);
     }
-    return providerRepository.deleteProvider(String.valueOf(vendorById.getVendorId()), tenant);
+    return providerRepository.delete(provider.getId(), tenant);
   }
 
   private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, long providerIdLong, RMAPITemplateContext context) {

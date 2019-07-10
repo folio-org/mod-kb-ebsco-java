@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Tags PUT Request Schema",
+  "description": "Provider Tags PUT Request Schema using JSON API",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderTagsPutRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of provider tags put request",
+      "type": "object",
+      "$ref": "providerTagsPutData.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}
