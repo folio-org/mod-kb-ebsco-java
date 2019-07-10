@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Tags object schema",
+  "description": "Provider Tags object schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderTagsItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "tags"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Provider tags object data attributes",
+      "$ref": "providerTagsDataAttributes.json"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Tags Put Data Schema",
+  "description": "Provider Tags Put Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderTagsPutData",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "description": "Data type",
+      "type": "string",
+      "enum": ["tags"],
+      "example": "tags"
+    },
+    "attributes": {
+      "description": "Data type attributes",
+      "type": "object",
+      "$ref": "providerTagsDataAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

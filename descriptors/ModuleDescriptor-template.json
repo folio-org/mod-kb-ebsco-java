@@ -62,6 +62,11 @@
           "permissionsRequired": ["kb-ebsco.provider-packages.collection.get"]
         },
         {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/providers/{providerId}/tags",
+          "permissionsRequired": ["kb-ebsco.provider-tags.put"]
+        },
+        {
           "methods": ["POST"],
           "pathPattern": "/eholdings/resources",
           "permissionsRequired": ["kb-ebsco.resources.collection.post"]
@@ -247,6 +252,11 @@
       "description": "Put single provider"
     },
     {
+      "permissionName": "kb-ebsco.provider-tags.put",
+      "displayName": "update tags for a single provider",
+      "description": "Update tags for a single provider"
+    },
+    {
       "permissionName": "kb-ebsco.provider-packages.collection.get",
       "displayName": "get packages for a single provider",
       "description": "get packages for a single provider"
@@ -373,6 +383,7 @@
         "kb-ebsco.providers.item.get",
         "kb-ebsco.providers.item.put",
         "kb-ebsco.provider-packages.collection.get",
+        "kb-ebsco.provider-tags.put",
         "kb-ebsco.titles.collection.get",
         "kb-ebsco.titles.collection.post",
         "kb-ebsco.titles.item.put",

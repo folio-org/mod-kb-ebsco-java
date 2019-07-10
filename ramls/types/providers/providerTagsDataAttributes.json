@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Provider Tags Object Data Attributes Schema",
+  "description": "Provider Tags Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProviderTagsDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Provider name",
+      "example": "Gale | Cengage"
+    },
+    "tags": {
+      "type": "object",
+      "description": "Provider tags",
+      "$ref": "../../raml-util/schemas/tags.schema"
+    }
+  },
+  "required": [
+    "tags"
+  ]
+}

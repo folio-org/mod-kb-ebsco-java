@@ -3,13 +3,11 @@ package org.folio.repository.providers;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.folio.holdingsiq.model.VendorById;
-
 public interface ProviderRepository {
 
-  CompletableFuture<Void> saveProvider(VendorById vendorById, String tenantId);
+  CompletableFuture<Void> save(ProviderInfoInDb provider, String tenantId);
 
-  CompletableFuture<Void> deleteProvider(String vendorId, String tenantId);
+  CompletableFuture<Void> delete(String vendorId, String tenantId);
 
-   CompletableFuture<List<Long>> getProviderIdsByTagName(List<String> tags, int page, int count, String tenantId);
+   CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count, String tenantId);
 }
