@@ -7,9 +7,9 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.mapColumn;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.GET_HOLDINGS_BY_IDS;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS_STATEMENT;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.REMOVE_FROM_HOLDINGS;
+import static org.folio.repository.holdings.HoldingsTableConstants.GET_HOLDINGS_BY_IDS;
+import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS_STATEMENT;
+import static org.folio.repository.holdings.HoldingsTableConstants.REMOVE_FROM_HOLDINGS;
 
 import java.time.Instant;
 import java.util.List;
@@ -18,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -29,7 +28,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

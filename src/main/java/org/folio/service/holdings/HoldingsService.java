@@ -8,7 +8,8 @@ import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.rest.util.template.RMAPITemplateContext;
 
 public interface HoldingsService {
-  CompletableFuture<Void> loadHoldings(RMAPITemplateContext context, String tenantId);
+
+  CompletableFuture<Void> loadHoldings(RMAPITemplateContext context);
 
   CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<ResourceInfoInDB> resourcesResult, String tenant);
 }

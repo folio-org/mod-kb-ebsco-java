@@ -14,6 +14,7 @@ types:
   configurationPutRequest: !include types/configuration/configurationPutRequest.json
   jsonapiError: !include types/jsonapiError.json
   configurationStatus: !include types/status/status.json
+  holdingsLoadingStatus: !include types/loadHoldings/loadingHoldingsStatus.json
 
 /eholdings/configuration:
   displayName: Configuration
@@ -105,3 +106,29 @@ types:
     responses:
       204:
         description: No Content
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"
+  /status:
+    displayName: Get current status of load holdings job.
+    get:
+      description: Get current status of load holdings job.
+      headers:
+        Content-Type:
+          example: application/json
+      responses:
+        200:
+          body:
+            application/json:
+              description: Get current status of load holdings job.
+              type: holdingsLoadingStatus
+              example:
+                strict: false
+                value: !include examples/loadHoldings/loading_completed_200_response.json
+        500:
+          description: "Internal server error"
+          body:
+            text/plain:
+              example: "Internal server error, contact administrator"

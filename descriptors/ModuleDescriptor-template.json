@@ -152,14 +152,19 @@
           "permissionsRequired": ["kb-ebsco.tags.collection.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/tags/summary",
+          "permissionsRequired": ["kb-ebsco.unique.tags.collection.get"]
+        },
+        {
           "methods": ["POST"],
           "pathPattern": "/loadHoldings",
           "permissionsRequired": ["kb-ebsco.holdings.load.post"]
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/tags/summary",
-          "permissionsRequired": ["kb-ebsco.unique.tags.collection.get"]
+          "pathPattern": "/loadHoldings/status",
+          "permissionsRequired": ["kb-ebsco.holdings.load.status.get"]
         }
       ]
     },
@@ -368,7 +373,12 @@
     {
       "permissionName": "kb-ebsco.holdings.load.post",
       "displayName": "permission to run load of holdings",
-      "description": "one-time run load of holdings"
+      "description": "One-time run load of holdings"
+    },
+    {
+      "permissionName": "kb-ebsco.holdings.load.status.get",
+      "displayName": "get current status of holdings loading",
+      "description": "Get current status of holdings loading"
     },
     {
       "permissionName": "kb-ebsco.all",
@@ -404,7 +414,8 @@
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.root-proxy.put",
         "kb-ebsco.tags.collection.get",
-        "kb-ebsco.unique.tags.collection.get"
+        "kb-ebsco.unique.tags.collection.get",
+        "kb-ebsco.holdings.load.status.get"
       ]
     }
   ],

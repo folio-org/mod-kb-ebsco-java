@@ -16,7 +16,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import org.folio.spring.config.TestConfig;
-import org.folio.tag.repository.titles.DbTitle;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)

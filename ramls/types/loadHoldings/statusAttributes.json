@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Load Status Attributes Schema",
+  "description": "Load Status Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.LoadStatusAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "started": {
+      "type": "string",
+      "description": "Holdings loading started time",
+      "example": "1999-12-31 14:59:59"
+    },
+    "finished": {
+      "type": "string",
+      "description": "Holdings loading finished time",
+      "example": "1999-12-31 16:30:47"
+    },
+    "totalCount": {
+      "type": "integer",
+      "description": "Total number of holdings",
+      "example": 1234
+    },
+    "importedCount": {
+      "type": "integer",
+      "description": "Imported number of holdings",
+      "example": 1000
+    },
+    "status": {
+      "type": "object",
+      "$ref" : "statusInformation.json",
+      "description": "Current Status Information"
+    },
+    "errors": {
+      "type": "array",
+      "description": "Error Response List",
+      "items": {
+        "type": "object",
+        "$ref": "../jsonapiErrorResponse.json"
+      }
+    }
+  },
+  "required": [
+    "status"
+  ]
+}

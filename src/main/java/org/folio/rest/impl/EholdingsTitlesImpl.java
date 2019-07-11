@@ -15,7 +15,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +32,7 @@ import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
+import org.folio.repository.titles.DbTitle;
 import org.folio.repository.titles.TitlesRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -53,7 +53,6 @@ import org.folio.rest.validator.TitlesPostAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
-import org.folio.tag.repository.titles.DbTitle;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";

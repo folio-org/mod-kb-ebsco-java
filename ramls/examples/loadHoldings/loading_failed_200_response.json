@@ -1,0 +1,19 @@
+{
+  "data": {
+    "type" : "status",
+    "attributes": {
+      "status": {
+        "name": "Failed"
+      },
+      "errors": [
+        {
+          "title": "Invalid APIKEY",
+          "detail": "Kb api credentials are invalid"
+        }
+      ]
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

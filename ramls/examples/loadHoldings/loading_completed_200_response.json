@@ -1,0 +1,16 @@
+{
+  "data": {
+    "type": "status",
+    "attributes": {
+      "started": "1999-12-31 14:59:59",
+      "finished": "1999-12-31 16:30:47",
+      "totalCount": 1234,
+      "status": {
+        "name": "Completed"
+      }
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

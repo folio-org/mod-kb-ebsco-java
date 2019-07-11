@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Load Status Name Schema",
+  "description": "Load Status Name Schema",
+  "javaType": "org.folio.rest.jaxrs.model.LoadStatusNameEnum",
+  "type": "string",
+  "additionalProperties": false,
+  "enum": [
+    "Not Started",
+    "Started",
+    "In Progress",
+    "Completed",
+    "Failed"
+  ]
+}

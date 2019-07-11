@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
@@ -36,7 +37,6 @@ import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_NAME;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
-import static org.folio.tag.repository.resources.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.util.TestUtil.mockDefaultConfiguration;
 import static org.folio.util.TestUtil.mockGet;
 import static org.folio.util.TestUtil.readFile;
@@ -55,13 +55,11 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
