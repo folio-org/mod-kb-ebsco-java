@@ -53,7 +53,8 @@
       "pkColumnName": "id",
       "generateId": false,
       "withMetadata": false,
-      "withAuditing": false
+      "withAuditing": false,
+      "customSnippetPath": "create-holdings-status-table.sql"
     }
   ],
   "scripts": [

@@ -3,34 +3,12 @@ package org.folio.rest.impl;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.notNullValue;
-
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
 
-import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.restassured.RestAssured;
-import io.restassured.http.Header;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.http.protocol.HTTP;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.Configuration;
@@ -44,6 +22,28 @@ import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.rmapi.cache.VendorCacheKey;
 import org.folio.spring.SpringContextUtil;
 import org.folio.util.TestUtil;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
+import io.restassured.RestAssured;
+import io.restassured.http.Header;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Base test class for tests that use wiremock and vertx http servers,
@@ -55,6 +55,7 @@ public abstract class WireMockTestBase {
 
   protected static final Header CONTENT_TYPE_HEADER = new Header(HTTP.CONTENT_TYPE, JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
+  protected static final String STUB_API_KEY = "TEST_API_KEY";
   protected int port = TestSetUpHelper.getPort();
   protected String host = TestSetUpHelper.getHost();
   protected Vertx vertx = TestSetUpHelper.getVertx();

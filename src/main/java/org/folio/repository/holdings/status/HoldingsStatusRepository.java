@@ -13,4 +13,6 @@ public interface HoldingsStatusRepository {
   CompletableFuture<Void> update(HoldingsLoadingStatus status, String tenantId);
 
   CompletableFuture<Void> delete(String tenantId);
+
+  CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount, String tenantId);
 }

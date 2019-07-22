@@ -26,6 +26,16 @@
       "description": "Imported number of holdings",
       "example": 1000
     },
+    "totalPages": {
+      "type": "integer",
+      "description": "Total number of holding pages",
+      "example": 20
+    },
+    "importedPages": {
+      "type": "integer",
+      "description": "Imported number of holding pages",
+      "example": 15
+    },
     "status": {
       "type": "object",
       "$ref" : "statusInformation.json",
