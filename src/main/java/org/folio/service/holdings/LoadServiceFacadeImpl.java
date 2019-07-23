@@ -32,14 +32,10 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
   private final int loadPageDelay;
   private long statusRetryDelay;
   private int statusRetryCount;
-  private long snapshotRetryDelay;
-  private int snapshotRetryCount;
   private Vertx vertx;
 
   public LoadServiceFacadeImpl(@Value("${holdings.status.check.delay}") long statusRetryDelay,
                                @Value("${holdings.status.retry.count}") int statusRetryCount,
-                               @Value("${holdings.snapshot.retry.delay}") long snapshotRetryDelay,
-                               @Value("${holdings.snapshot.retry.count}") int snapshotRetryCount,
                                @Value("${holdings.page.retry.delay}") int loadPageRetryDelay,
                                @Value("${holdings.page.retry.count}") int loadPageRetryCount,
                                Vertx vertx) {
@@ -47,8 +43,6 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
     this.loadPageRetries = loadPageRetryCount;
     this.statusRetryDelay = statusRetryDelay;
     this.statusRetryCount = statusRetryCount;
-    this.snapshotRetryDelay = snapshotRetryDelay;
-    this.snapshotRetryCount = snapshotRetryCount;
     this.vertx = vertx;
     this.holdingsService = HoldingsService.createProxy(vertx, HOLDINGS_SERVICE_ADDRESS);
   }
@@ -57,27 +51,29 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
   public void createSnapshot(ConfigurationMessage message) {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
     populateHoldings(loadingService)
-      .thenCompose(isSuccessful -> waitForCompleteStatus(statusRetryCount, loadingService))
-      .thenAccept(status -> holdingsService.snapshotCreated(new SnapshotCreatedMessage(message.getConfiguration(),
-        status.getTotalCount(), getRequestCount(status.getTotalCount()), message.getTenantId())))
-      .exceptionally(throwable -> {
-        logger.error("Failed to create snapshot", throwable);
-        holdingsService.snapshotFailed(new LoadFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
-        return null;
-      });
+        .thenCompose(isSuccessful -> waitForCompleteStatus(statusRetryCount, loadingService))
+        .thenAccept(status -> holdingsService.snapshotCreated(new SnapshotCreatedMessage(message.getConfiguration(),
+          status.getTotalCount(), getRequestCount(status.getTotalCount()), message.getTenantId())))
+        .whenComplete((o, throwable) -> {
+          if(throwable != null) {
+            logger.error("Failed to create snapshot", throwable);
+            holdingsService.snapshotFailed(
+              new LoadFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
+          }
+        });
   }
 
   @Override
   public void loadHoldings(ConfigurationMessage message) {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
-
-    getLoadingStatus(loadingService)
-      .thenCompose(status -> loadHoldings(status.getTotalCount(), message.getTenantId(), loadingService))
-      .exceptionally(throwable -> {
-        logger.error("Failed to load holdings", throwable);
-        holdingsService.loadingFailed(new LoadFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
-        return null;
-      });
+      getLoadingStatus(loadingService)
+        .thenCompose(status -> loadHoldings(status.getTotalCount(), message.getTenantId(), loadingService))
+        .whenComplete((result, throwable) -> {
+          if (throwable != null) {
+            logger.error("Failed to load holdings", throwable);
+            holdingsService.loadingFailed(new LoadFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
+          }
+        });
   }
 
   private CompletableFuture<Void> populateHoldings(LoadService loadingService) {

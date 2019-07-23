@@ -53,8 +53,15 @@
       "pkColumnName": "id",
       "generateId": false,
       "withMetadata": false,
+      "withAuditing": false
+    },
+    {
+      "tableName": "retry_status",
+      "pkColumnName": "id",
+      "generateId": false,
+      "withMetadata": false,
       "withAuditing": false,
-      "customSnippetPath": "create-holdings-status-table.sql"
+      "customSnippetPath": "create-retry-status-table.sql"
     }
   ],
   "scripts": [

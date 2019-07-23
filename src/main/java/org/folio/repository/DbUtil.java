@@ -2,6 +2,7 @@ package org.folio.repository;
 
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.holdings.status.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
@@ -108,6 +109,10 @@ public class DbUtil {
 
   public static String getHoldingsStatusTableName(String tenantId) {
     return getTableName(tenantId, HOLDINGS_STATUS_TABLE);
+  }
+
+  public static String getRetryStatusTableName(String tenantId) {
+    return getTableName(tenantId, RETRY_STATUS_TABLE);
   }
 
   public static <T> Optional<T> mapColumn(JsonObject row, String columnName, Class<T> tClass){
