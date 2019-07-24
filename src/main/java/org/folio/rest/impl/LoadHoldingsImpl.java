@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusStarted;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -43,8 +42,6 @@ public class LoadHoldingsImpl implements LoadHoldings {
   public void postLoadHoldings(String contentType, Map<String, String> okapiHeaders,
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Received signal to start scheduled loading of holdings");
-    String tenantId = TenantTool.tenantId(okapiHeaders);
-    holdingsStatusRepository.update(getStatusStarted(), tenantId);
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template.requestAction(context -> {
       holdingsService.loadHoldings(context);

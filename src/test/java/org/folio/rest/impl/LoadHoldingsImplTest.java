@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
 import static org.folio.util.TestUtil.STUB_TENANT;
@@ -25,10 +26,12 @@ import java.util.function.Consumer;
 
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.repository.holdings.HoldingInfoInDB;
-import org.folio.service.holdings.ConfigurationMessage;
 import org.folio.service.holdings.HoldingsMessage;
 import org.folio.service.holdings.LoadServiceFacade;
+import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.HoldingsTestUtil;
+import org.folio.util.TestUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -56,8 +59,10 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
   public static final String SAVE_HOLDINGS_ACTION = "saveHolding";
   public static final String SNAPSHOT_CREATED_ACTION = "snapshotCreated";
+  public static final String SNAPSHOT_FAILED_ACTION = "snapshotFailed";
+  public static final String CREATE_SNAPSHOT_ACTION = "createSnapshot";
 
-  private static final int TIMEOUT = 500;
+  private static final int TIMEOUT = 180000;
   private static final int EXPECTED_LOADED_PAGES = 2;
   private static final int TEST_SNAPSHOT_RETRY_COUNT = 2;
   private static final String STUB_HOLDINGS_TITLE = "java-test-one";
@@ -80,6 +85,8 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
+    TestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    HoldingsStatusUtil.insertStatusNotStarted(vertx);
   }
 
   @After
@@ -126,7 +133,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     );
 
     Async async = context.async();
-    interceptor = intercept(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
+    interceptor = interceptAndBlock(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
     vertx.eventBus().addInterceptor(interceptor);
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
@@ -177,7 +184,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     int firstTryPages = 1;
     int secondTryPages = 2;
     Async async = context.async(firstTryPages + secondTryPages);
-    interceptor = intercept(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
+    interceptor = interceptAndBlock(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
     vertx.eventBus().addInterceptor(interceptor);
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
@@ -192,7 +199,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
     List<HoldingsMessage> messages = new ArrayList<>();
     Async async = context.async(EXPECTED_LOADED_PAGES);
-    interceptor = intercept(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION,
+    interceptor = interceptAndBlock(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION,
       message -> {
         messages.add(((JsonObject) message.body()).getJsonObject("holdings").mapTo(HoldingsMessage.class));
         async.countDown();
@@ -200,7 +207,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     vertx.eventBus().addInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    proxy.loadHoldings(new ConfigurationMessage(stubConfiguration, STUB_TENANT));
+    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 5001, 2));
 
     async.await(TIMEOUT);
     assertEquals(2, messages.size());
@@ -218,12 +225,12 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     );
 
     Async async = context.async();
-    interceptor = intercept(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION,
+    interceptor = interceptAndBlock(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION,
       message -> async.complete());
     vertx.eventBus().addInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    proxy.loadHoldings(new ConfigurationMessage(stubConfiguration, STUB_TENANT));
+    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 2, 1));
     async.await(TIMEOUT);
   }
 
@@ -254,7 +261,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     assertThat(holdingsList.size(), equalTo(2));
   }
 
-  private void mockResponseList(UrlPathPattern urlPattern, ResponseDefinitionBuilder... responses) {
+  public static void mockResponseList(UrlPathPattern urlPattern, ResponseDefinitionBuilder... responses) {
     int scenarioStep = 0;
     for (ResponseDefinitionBuilder response : responses) {
       if(scenarioStep == 0){
@@ -279,13 +286,29 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
                                                Consumer<Message> messageConsumer) {
     return messageContext -> {
       Message message = messageContext.message();
-      if (serviceAddress.equals(message.address())
-        && serviceMethodName.equals(message.headers().get("action"))) {
+      if (messageMatches(serviceAddress, serviceMethodName, message)) {
         messageConsumer.accept(message);
         messageContext.next();
       } else {
         messageContext.next();
       }
     };
+  }
+
+  public static Handler<SendContext> interceptAndBlock(String serviceAddress, String serviceMethodName,
+                                                       Consumer<Message> messageConsumer) {
+    return messageContext -> {
+      Message message = messageContext.message();
+      if (messageMatches(serviceAddress, serviceMethodName, message)) {
+        messageConsumer.accept(message);
+      } else {
+        messageContext.next();
+      }
+    };
+  }
+
+  private static boolean messageMatches(String serviceAddress, String serviceMethodName, Message message) {
+    return serviceAddress.equals(message.address())
+      && serviceMethodName.equals(message.headers().get("action"));
   }
 }

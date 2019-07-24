@@ -1,5 +1,6 @@
 package org.folio.service.holdings.message;
 
+
 import static io.vertx.core.json.JsonObject.mapFrom;
 
 import org.folio.holdingsiq.model.Configuration;
@@ -12,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @JsonIgnoreProperties(
   ignoreUnknown = true
 )
@@ -20,19 +20,17 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @DataObject
-public class LoadFailedMessage {
+public class LoadHoldingsMessage {
   private Configuration configuration;
-  private String errorMessage;
   private String tenantId;
   private Integer totalCount;
   private Integer totalPages;
 
-  public LoadFailedMessage() {
+  public LoadHoldingsMessage() {
   }
 
-  public LoadFailedMessage(JsonObject jsonObject) {
-    LoadFailedMessage message = jsonObject.mapTo(LoadFailedMessage.class);
-    this.errorMessage = message.getErrorMessage();
+  public LoadHoldingsMessage(JsonObject jsonObject) {
+    LoadHoldingsMessage message = jsonObject.mapTo(LoadHoldingsMessage.class);
     this.tenantId = message.getTenantId();
     this.totalCount = message.getTotalCount();
     this.totalPages = message.getTotalPages();

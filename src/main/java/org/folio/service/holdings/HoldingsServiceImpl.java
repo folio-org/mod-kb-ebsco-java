@@ -1,5 +1,6 @@
 package org.folio.service.holdings;
 
+import static org.folio.common.FutureUtils.failedFuture;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getLoadStatusFailed;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
@@ -26,18 +27,25 @@ import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.repository.holdings.status.RetryStatus;
 import org.folio.repository.holdings.status.RetryStatusRepository;
 import org.folio.repository.resources.ResourceInfoInDB;
+import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
+import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.message.LoadFailedMessage;
+import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
+import org.folio.service.holdings.message.SnapshotFailedMessage;
+import org.glassfish.jersey.internal.util.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.Lock;
 
 @Component
 public class HoldingsServiceImpl implements HoldingsService {
@@ -50,6 +58,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     .toFormatter();
 
   private static final Logger logger = LoggerFactory.getLogger(HoldingsServiceImpl.class);
+  private static final String START_LOADING_LOCK = "getStatus";
   private HoldingsRepository holdingsRepository;
   private HoldingsStatusRepository holdingsStatusRepository;
   private RetryStatusRepository retryStatusRepository;
@@ -82,9 +91,17 @@ public class HoldingsServiceImpl implements HoldingsService {
   @Override
   public void loadHoldings(RMAPITemplateContext context) {
     String tenantId = context.getOkapiData().getTenant();
-    holdingsStatusRepository.update(getStatusPopulatingStagingArea(), tenantId)
-      .thenCompose(o -> retryStatusRepository.update(new RetryStatus(snapshotRetryCount, null), tenantId))
-      .thenAccept(o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId)));
+    executeWithLock(START_LOADING_LOCK, () ->
+        tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
+          .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount))
+          .thenAccept(o -> {
+            logger.error("Starting loading holdings");
+            loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId));
+          })
+          .exceptionally(e -> {
+            logger.error("Failed to start loading holdings", e);
+            return null;
+          }));
   }
 
   @Override
@@ -99,7 +116,8 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(), 1, tenantId))
       .thenCompose(status -> {
           LoadStatusAttributes attributes = status.getData().getAttributes();
-          if (attributes.getImportedPages().equals(attributes.getTotalPages())) {
+          if (status.getData().getAttributes().getStatus().getName() == LoadStatusNameEnum.IN_PROGRESS &&
+            attributes.getImportedPages().equals(attributes.getTotalPages())) {
             return
               holdingsRepository.deleteBeforeTimestamp(ZonedDateTime.parse(status.getData().getAttributes().getStarted(), POSTGRES_TIMESTAMP_FORMATTER).toInstant(), tenantId)
                 .thenCompose(o -> holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), tenantId));
@@ -109,7 +127,6 @@ public class HoldingsServiceImpl implements HoldingsService {
       )
       .exceptionally(e -> {
         logger.error("Failed to save holdings", e);
-        setStatusToFailed(tenantId, e.getMessage());
         return null;
       });
   }
@@ -119,30 +136,72 @@ public class HoldingsServiceImpl implements HoldingsService {
     String tenantId = message.getTenantId();
     holdingsStatusRepository.update(getStatusLoadingHoldings(
       message.getTotalCount(), 0, message.getTotalPages(), 0), tenantId)
-      .thenCompose(o -> retryStatusRepository.update(new RetryStatus(loadHoldingsRetryCount, null), tenantId))
+      .thenCompose(o -> resetRetries(tenantId, loadHoldingsRetryCount))
       .thenAccept(o ->
-        loadServiceFacade.loadHoldings(new ConfigurationMessage(message.getConfiguration(), tenantId)))
+        loadServiceFacade.loadHoldings(new LoadHoldingsMessage(message.getConfiguration(), tenantId, message.getTotalCount(), message.getTotalPages())))
       .exceptionally(e -> {
         logger.error("Failed to create snapshot", e);
-        setStatusToFailed(tenantId, e.getMessage());
         return null;
       });
   }
 
   @Override
-  public void snapshotFailed(LoadFailedMessage message) {
-    setStatusToFailed(message.getTenantId(), message.getErrorMessage());
-    retryIfAttemptsLeft(message.getTenantId(), snapshotRetryDelay, o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(message.getConfiguration(), message.getTenantId())));
+  public void snapshotFailed(SnapshotFailedMessage message) {
+    String tenantId = message.getTenantId();
+    setStatusToFailed(tenantId, message.getErrorMessage())
+      .thenAccept(o ->
+        retryAfterDelayIfAttemptsLeft(tenantId, snapshotRetryDelay, o2 ->
+          executeWithLock(START_LOADING_LOCK, () ->
+            tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
+              .thenAccept(o3 -> loadServiceFacade.createSnapshot(new ConfigurationMessage(message.getConfiguration(), tenantId)))
+              .exceptionally(e -> {
+                logger.error("Failed to retry creating snapshot", e);
+                return null;
+              }))));
   }
 
   @Override
   public void loadingFailed(LoadFailedMessage message) {
-    setStatusToFailed(message.getTenantId(), message.getErrorMessage());
-    retryIfAttemptsLeft(message.getTenantId(), loadHoldingsRetryDelay, o -> loadServiceFacade.loadHoldings(new ConfigurationMessage(message.getConfiguration(), message.getTenantId())));
+    String tenantId = message.getTenantId();
+    setStatusToFailed(tenantId, message.getErrorMessage())
+      .thenAccept(o ->
+        retryAfterDelayIfAttemptsLeft(tenantId, loadHoldingsRetryDelay, o2 ->
+          executeWithLock(START_LOADING_LOCK, () ->
+            tryChangingStatusToInProgress(tenantId, getStatusLoadingHoldings(
+              message.getTotalCount(), 0, message.getTotalPages(), 0))
+              .thenAccept(o3 -> loadServiceFacade.loadHoldings(new LoadHoldingsMessage(message.getConfiguration(), tenantId,
+                message.getTotalCount(), message.getTotalPages())))
+            .exceptionally(e -> {
+              logger.error("Failed to retry loading holdings", e);
+              return null;
+            })
+          )));
   }
 
-  private void retryIfAttemptsLeft(String tenantId, long retryDelay, Handler<Long> retryHandler) {
-    retryStatusRepository.get(tenantId)
+  private CompletableFuture<Void> resetRetries(String tenantId, int retryCount) {
+    return retryStatusRepository
+      .get(tenantId)
+      .thenCompose(status -> {
+        if(status.getTimerId() != null) {
+          vertx.cancelTimer(status.getTimerId());
+        }
+        return retryStatusRepository.update(new RetryStatus(retryCount, null), tenantId);
+      });
+  }
+  private CompletableFuture<Void> tryChangingStatusToInProgress(String tenantId, HoldingsLoadingStatus newStatus){
+    return holdingsStatusRepository.get(tenantId)
+      .thenCompose(status -> {
+        LoadStatusAttributes attributes = status.getData().getAttributes();
+        logger.info("Current status is {}", attributes.getStatus().getName());
+        if(attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS){
+          return holdingsStatusRepository.update(newStatus, tenantId);
+        }
+        return failedFuture(new IllegalStateException("Loading status is already In Progress"));
+      });
+  }
+
+  private CompletableFuture<Void> retryAfterDelayIfAttemptsLeft(String tenantId, long retryDelay, Handler<Long> retryHandler) {
+    return retryStatusRepository.get(tenantId)
       .thenAccept(retryStatus -> {
         int retryAttempts = retryStatus.getRetryAttemptsLeft();
         if (retryAttempts > 1) {
@@ -157,13 +216,34 @@ public class HoldingsServiceImpl implements HoldingsService {
     });
   }
 
-  private void setStatusToFailed(String tenantId, String message) {
-    holdingsStatusRepository.update(getLoadStatusFailed(createError(message, null).getErrors()),
+  private CompletableFuture<Void> setStatusToFailed(String tenantId, String message) {
+    return holdingsStatusRepository.update(getLoadStatusFailed(createError(message, null).getErrors()),
       tenantId)
       .exceptionally(e -> {
         logger.error("Failed to update status to failed", e);
         return null;
       });
+  }
+
+  private Future<Void> executeWithLock(String lockName, Producer<CompletableFuture<Void>> futureProducer) {
+    Future<Lock> future = Future.future();
+    Future<Void> responseFuture = Future.future();
+    vertx.sharedData().getLock(lockName, future);
+    future.map(lock -> {
+      futureProducer.call()
+        .whenComplete((o, throwable) -> {
+            if (throwable != null) {
+              responseFuture.fail(throwable);
+            }
+            else{
+              responseFuture.complete();
+            }
+            lock.release();
+          }
+        );
+      return null;
+    });
+    return responseFuture;
   }
 
   private List<String> getTitleIdsAsList(List<ResourceInfoInDB> resources){

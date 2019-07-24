@@ -7,27 +7,10 @@ CREATE OR REPLACE FUNCTION update_started_date_before_insertion()
 AS $$
  DECLARE
     started text;
-    finished text;
-    status text;
  BEGIN
-   status = NEW.jsonb->'data'->'attributes'->'status'->>'name';
-
-   IF status = 'Started' THEN
-     started = '"' || CURRENT_TIMESTAMP(2) || '"';
-     NEW.jsonb = jsonb_set(NEW.jsonb, '{data,attributes,started}' ,  started::jsonb);
-   end IF;
-
-   IF status = 'Completed' THEN
-
-     finished = '"' || CURRENT_TIMESTAMP(2) || '"';
-     NEW.jsonb = jsonb_set(NEW.jsonb, '{data,attributes,finished}' ,  finished::jsonb);
-   end IF;
-
-   IF status = 'In Progress' OR status = 'Completed' THEN
-
-     started = to_json(OLD.jsonb->'data'->'attributes'->>'started');
-     NEW.jsonb = jsonb_set(NEW.jsonb, '{data,attributes,started}' ,  started::jsonb);
-
+   started = NEW.jsonb->'data'->'attributes'->>'started';
+   IF started IS NULL THEN
+     NEW.jsonb = jsonb_set(NEW.jsonb, '{data,attributes,started}' ,  to_json(OLD.jsonb->'data'->'attributes'->>'started')::jsonb);
    ELSE NEW.jsonb = NEW.jsonb;
    end IF;
  RETURN NEW;

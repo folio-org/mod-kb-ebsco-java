@@ -1,5 +1,7 @@
 package org.folio.service.holdings;
 
+import org.folio.service.holdings.message.LoadHoldingsMessage;
+
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.core.Vertx;
 
@@ -11,5 +13,5 @@ public interface LoadServiceFacade {
 
   void createSnapshot(ConfigurationMessage configuration);
 
-  void loadHoldings(ConfigurationMessage configuration);
+  void loadHoldings(LoadHoldingsMessage configuration);
 }

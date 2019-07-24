@@ -2,7 +2,10 @@ package org.folio.repository.holdings.status;
 
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.STATUS_RECTYPE;
+import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
@@ -28,21 +31,12 @@ public class HoldingsLoadingStatusFactory {
       .withJsonapi(JSONAPI);
   }
 
-  public static HoldingsLoadingStatus getStatusStarted() {
-    return new HoldingsLoadingStatus()
-      .withData(new LoadStatusData()
-        .withType(STATUS_RECTYPE)
-        .withAttributes(new LoadStatusAttributes()
-          .withStatus(new LoadStatusInformation()
-            .withName(LoadStatusNameEnum.STARTED))))
-      .withJsonapi(JSONAPI);
-  }
-
   public static HoldingsLoadingStatus getStatusPopulatingStagingArea() {
     return new HoldingsLoadingStatus()
       .withData(new LoadStatusData()
         .withType(STATUS_RECTYPE)
         .withAttributes(new LoadStatusAttributes()
+          .withStarted(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().atZone(ZoneId.systemDefault())))
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.IN_PROGRESS)
             .withDetail(LoadStatusNameDetailEnum.POPULATING_STAGING_AREA))
@@ -73,7 +67,8 @@ public class HoldingsLoadingStatusFactory {
         .withAttributes(new LoadStatusAttributes()
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.COMPLETED))
-          .withTotalCount(totalCount)))
+          .withTotalCount(totalCount)
+          .withFinished(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().atZone(ZoneId.systemDefault())))))
       .withJsonapi(JSONAPI);
   }
 

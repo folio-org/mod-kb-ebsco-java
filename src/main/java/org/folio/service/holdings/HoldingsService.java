@@ -8,6 +8,7 @@ import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
+import org.folio.service.holdings.message.SnapshotFailedMessage;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -37,7 +38,7 @@ public interface HoldingsService {
 
   void snapshotCreated(SnapshotCreatedMessage message);
 
-  void snapshotFailed(LoadFailedMessage message);
+  void snapshotFailed(SnapshotFailedMessage message);
 
   void loadingFailed(LoadFailedMessage message);
 }

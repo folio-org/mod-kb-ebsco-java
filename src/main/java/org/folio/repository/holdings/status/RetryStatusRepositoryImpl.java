@@ -69,6 +69,16 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
       .thenApply(result -> null);
   }
 
+  @Override
+  public CompletableFuture<Void> delete(String tenantId) {
+    final String query = String.format(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
+    LOG.info("Do delete query = " + query);
+    Future<UpdateResult> future = Future.future();
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+    postgresClient.execute(query, future);
+    return mapVertxFuture(future).thenApply(result -> null);
+  }
+
   private JsonArray createInsertParameters(RetryStatus retryStatus) {
     JsonArray parameters = new JsonArray()
       .add(UUID.randomUUID().toString())
@@ -90,16 +100,6 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
       parameters.addNull();
     }
     return parameters;
-  }
-
-  @Override
-  public CompletableFuture<Void> delete(String tenantId) {
-    final String query = String.format(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
-    LOG.info("Do delete query = " + query);
-    Future<UpdateResult> future = Future.future();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, future);
-    return mapVertxFuture(future).thenApply(result -> null);
   }
 
   private RetryStatus mapStatus(ResultSet resultSet) {

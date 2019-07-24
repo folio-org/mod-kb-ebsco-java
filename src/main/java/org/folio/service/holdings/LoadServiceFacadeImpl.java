@@ -14,7 +14,9 @@ import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.service.holdings.message.LoadFailedMessage;
+import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
+import org.folio.service.holdings.message.SnapshotFailedMessage;
 import org.glassfish.jersey.internal.util.Producer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -58,22 +60,22 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
           if(throwable != null) {
             logger.error("Failed to create snapshot", throwable);
             holdingsService.snapshotFailed(
-              new LoadFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
+              new SnapshotFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
           }
         });
   }
 
   @Override
-  public void loadHoldings(ConfigurationMessage message) {
+  public void loadHoldings(LoadHoldingsMessage message) {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
-      getLoadingStatus(loadingService)
-        .thenCompose(status -> loadHoldings(status.getTotalCount(), message.getTenantId(), loadingService))
-        .whenComplete((result, throwable) -> {
-          if (throwable != null) {
-            logger.error("Failed to load holdings", throwable);
-            holdingsService.loadingFailed(new LoadFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
-          }
-        });
+    loadHoldings(message.getTenantId(), loadingService, message.getTotalPages())
+      .whenComplete((result, throwable) -> {
+        if (throwable != null) {
+          logger.error("Failed to load holdings", throwable);
+          holdingsService.loadingFailed(new LoadFailedMessage(
+            message.getConfiguration(), throwable.getMessage(), message.getTenantId(), message.getTotalCount(), message.getTotalPages()));
+        }
+      });
   }
 
   private CompletableFuture<Void> populateHoldings(LoadService loadingService) {
@@ -103,7 +105,7 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
           future.complete(loadStatus);
         } else if (IN_PROGRESS.equals(status)) {
           if (retries <= 1) {
-            throw new IllegalStateException("Failed to get status with status response:" + loadStatus);
+            throw new IllegalStateException("Failed to get status with status response:" + loadStatus.getStatus());
           }
           waitForCompleteStatus(retries - 1, future, loadingService);
         } else {
@@ -119,11 +121,9 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
     return loadingService.getLoadingStatus();
   }
 
-  public CompletableFuture<Void> loadHoldings(Integer totalCount, String tenantId, LoadService loadingService) {
+  public CompletableFuture<Void> loadHoldings(String tenantId, LoadService loadingService, int pagesCount) {
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-    final int totalRequestCount = getRequestCount(totalCount);
-
-    List<Integer> pagesToLoad = IntStream.range(0, totalRequestCount).boxed().collect(Collectors.toList());
+    List<Integer> pagesToLoad = IntStream.range(0, pagesCount).boxed().collect(Collectors.toList());
     for (Integer page : pagesToLoad) {
       future = future
         .thenCompose(o -> retryOnFailure(loadPageRetries, loadPageDelay, () -> loadingService.loadHoldings(MAX_COUNT, page)))

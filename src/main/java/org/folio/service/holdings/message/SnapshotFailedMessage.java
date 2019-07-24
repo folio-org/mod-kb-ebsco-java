@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @JsonIgnoreProperties(
   ignoreUnknown = true
 )
@@ -20,22 +19,18 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @DataObject
-public class LoadFailedMessage {
+public class SnapshotFailedMessage {
   private Configuration configuration;
   private String errorMessage;
   private String tenantId;
-  private Integer totalCount;
-  private Integer totalPages;
 
-  public LoadFailedMessage() {
+  public SnapshotFailedMessage() {
   }
 
-  public LoadFailedMessage(JsonObject jsonObject) {
-    LoadFailedMessage message = jsonObject.mapTo(LoadFailedMessage.class);
+  public SnapshotFailedMessage(JsonObject jsonObject) {
+    SnapshotFailedMessage message = jsonObject.mapTo(SnapshotFailedMessage.class);
     this.errorMessage = message.getErrorMessage();
     this.tenantId = message.getTenantId();
-    this.totalCount = message.getTotalCount();
-    this.totalPages = message.getTotalPages();
     this.configuration = message.getConfiguration();
   }
 
