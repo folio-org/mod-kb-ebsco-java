@@ -1,3 +1,16 @@
+## v2.5.0 2019-07-24
+* MODKBEKBJ-285 - Implement GET /loadHoldings/status
+* MODKBEKBJ-282 - Add separate endpoint for updating resource tags
+* MODKBEKBJ-281 - Add separate endpoint for updating provider tags
+* MODKBEKBJ-263 - Add method to return list of Tags available for an entity type
+* MODKBEKBJ-280 - Add separate endpoint for updating package tags
+* MODKBEKBJ-266 - Resources: Make unit tests payloads more realistic
+* MODKBEKBJ-265 - Title: Make unit tests payloads more realistic
+* MODKBEKBJ-264 - Package: Make unit tests payloads more realistic
+* MODKBEKBJ-251 - Provider: Make unit tests payloads more realistic
+* MODKBEKBJ-273 - Holdings: Update save holdings flow
+* MODKBEKBJ-271 - Provider/Package Search: Internal server error
+
 ## v2.4.0 2019-06-10
 * MODKBEKBJ-187	- Tags: Update mod-kb-ebsco-java to search providers by tag filter only
 * MODKBEKBJ-214	- Tags: add provider table to database
