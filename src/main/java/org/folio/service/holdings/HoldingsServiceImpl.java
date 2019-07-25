@@ -94,10 +94,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     executeWithLock(START_LOADING_LOCK, () ->
         tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
           .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount - 1))
-          .thenAccept(o -> {
-            logger.error("Starting loading holdings");
-            loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId));
-          })
+          .thenAccept(o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId)))
           .exceptionally(e -> {
             logger.error("Failed to start loading holdings", e);
             return null;

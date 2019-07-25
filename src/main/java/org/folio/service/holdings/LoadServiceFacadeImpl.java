@@ -52,23 +52,25 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
   @Override
   public void createSnapshot(ConfigurationMessage message) {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
-    populateHoldings(loadingService)
-        .thenCompose(isSuccessful -> waitForCompleteStatus(statusRetryCount, loadingService))
-        .thenAccept(status -> holdingsService.snapshotCreated(new SnapshotCreatedMessage(message.getConfiguration(),
-          status.getTotalCount(), getRequestCount(status.getTotalCount()), message.getTenantId())))
-        .whenComplete((o, throwable) -> {
-          if(throwable != null) {
-            logger.error("Failed to create snapshot", throwable);
-            holdingsService.snapshotFailed(
-              new SnapshotFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
-          }
-        });
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> populateHoldings(loadingService))
+      .thenCompose(isSuccessful -> waitForCompleteStatus(statusRetryCount, loadingService))
+      .thenAccept(status -> holdingsService.snapshotCreated(new SnapshotCreatedMessage(message.getConfiguration(),
+        status.getTotalCount(), getRequestCount(status.getTotalCount()), message.getTenantId())))
+      .whenComplete((o, throwable) -> {
+        if (throwable != null) {
+          logger.error("Failed to create snapshot", throwable);
+          holdingsService.snapshotFailed(
+            new SnapshotFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
+        }
+      });
   }
 
   @Override
   public void loadHoldings(LoadHoldingsMessage message) {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
-    loadHoldings(message.getTenantId(), loadingService, message.getTotalPages())
+    CompletableFuture.completedFuture(null)
+      .thenCompose(o -> loadHoldings(message.getTenantId(), loadingService, message.getTotalPages()))
       .whenComplete((result, throwable) -> {
         if (throwable != null) {
           logger.error("Failed to load holdings", throwable);
@@ -123,7 +125,7 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
 
   public CompletableFuture<Void> loadHoldings(String tenantId, LoadService loadingService, int pagesCount) {
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-    List<Integer> pagesToLoad = IntStream.range(0, pagesCount).boxed().collect(Collectors.toList());
+    List<Integer> pagesToLoad = IntStream.range(1, pagesCount + 1).boxed().collect(Collectors.toList());
     for (Integer page : pagesToLoad) {
       future = future
         .thenCompose(o -> retryOnFailure(loadPageRetries, loadPageDelay, () -> loadingService.loadHoldings(MAX_COUNT, page)))
@@ -156,7 +158,7 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
           vertx.setTimer(delay, timerId -> retryOnFailure(retries - 1, delay, future, futureProducer)
           );
         } else {
-          future.completeExceptionally(new IllegalStateException());
+          future.completeExceptionally(throwable);
         }
         return null;
       });
