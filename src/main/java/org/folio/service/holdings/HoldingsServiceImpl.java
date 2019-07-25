@@ -93,7 +93,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     String tenantId = context.getOkapiData().getTenant();
     executeWithLock(START_LOADING_LOCK, () ->
         tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
-          .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount))
+          .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount - 1))
           .thenAccept(o -> {
             logger.error("Starting loading holdings");
             loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId));
@@ -136,7 +136,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     String tenantId = message.getTenantId();
     holdingsStatusRepository.update(getStatusLoadingHoldings(
       message.getTotalCount(), 0, message.getTotalPages(), 0), tenantId)
-      .thenCompose(o -> resetRetries(tenantId, loadHoldingsRetryCount))
+      .thenCompose(o -> resetRetries(tenantId, loadHoldingsRetryCount - 1))
       .thenAccept(o ->
         loadServiceFacade.loadHoldings(new LoadHoldingsMessage(message.getConfiguration(), tenantId, message.getTotalCount(), message.getTotalPages())))
       .exceptionally(e -> {
@@ -204,7 +204,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     return retryStatusRepository.get(tenantId)
       .thenAccept(retryStatus -> {
         int retryAttempts = retryStatus.getRetryAttemptsLeft();
-        if (retryAttempts > 1) {
+        if (retryAttempts >= 1) {
           long timerId = vertx.setTimer(retryDelay,
             retryHandler);
           retryStatusRepository.update(new RetryStatus(retryAttempts - 1 , timerId), tenantId);

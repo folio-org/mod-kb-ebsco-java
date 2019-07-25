@@ -6,20 +6,22 @@ import static java.time.ZonedDateTime.parse;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.rest.impl.LoadHoldingsImplTest.CREATE_SNAPSHOT_ACTION;
 import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_GET_ENDPOINT;
 import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_ENDPOINT;
 import static org.folio.rest.impl.LoadHoldingsImplTest.LOAD_HOLDINGS_ENDPOINT;
-import static org.folio.rest.impl.LoadHoldingsImplTest.SNAPSHOT_CREATED_ACTION;
-import static org.folio.rest.impl.LoadHoldingsImplTest.SNAPSHOT_FAILED_ACTION;
-import static org.folio.rest.impl.LoadHoldingsImplTest.intercept;
-import static org.folio.rest.impl.LoadHoldingsImplTest.interceptAndBlock;
-import static org.folio.rest.impl.LoadHoldingsImplTest.mockResponseList;
+import static org.folio.rest.impl.LoadHoldingsImplTest.handleStatusChange;
+import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
+import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
+import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
+import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
 import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
+import static org.folio.util.TestUtil.interceptAndContinue;
+import static org.folio.util.TestUtil.interceptAndStop;
 import static org.folio.util.TestUtil.mockDefaultConfiguration;
 import static org.folio.util.TestUtil.mockGet;
+import static org.folio.util.TestUtil.mockResponseList;
 import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -32,13 +34,19 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.service.holdings.HoldingsService;
 import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -54,16 +62,23 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @RunWith(VertxUnitRunner.class)
 public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
-  public static final String HOLDINGS_STATUS_ENDPOINT = LOAD_HOLDINGS_ENDPOINT + "/status";
-  private static final int SLEEP_TIME = 200;
+  private static final String HOLDINGS_STATUS_ENDPOINT = LOAD_HOLDINGS_ENDPOINT + "/status";
   private static final int TIMEOUT = 300;
-  public static final int SNAPSHOT_RETRIES = 2;
+  private static final int SNAPSHOT_RETRIES = 2;
   private List<Handler<SendContext>> interceptors = new ArrayList<>();
+
+  @InjectMocks
+  @Autowired
+  HoldingsService holdingsService;
+  @Spy
+  @Autowired
+  HoldingsStatusRepositoryImpl holdingsStatusRepository;
 
   @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
+    MockitoAnnotations.initMocks(this);
     TestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatusNotStarted(vertx);
   }
@@ -96,15 +111,14 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     );
 
     Async startedAsync = context.async();
-    Handler<SendContext> interceptor = intercept(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> startedAsync.complete());
+    Handler<SendContext> interceptor = interceptAndContinue(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> startedAsync.complete());
     vertx.eventBus().addInterceptor(interceptor);
     interceptors.add(interceptor);
 
     Async finishedAsync = context.async();
-    interceptor = interceptAndBlock(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> finishedAsync.complete());
+    interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> finishedAsync.complete());
     vertx.eventBus().addInterceptor(interceptor);
     interceptors.add(interceptor);
-
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
@@ -116,7 +130,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnStatusCompleted(TestContext context) throws IOException, URISyntaxException, InterruptedException {
+  public void shouldReturnStatusCompleted(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
 
     mockGet(new EqualToPattern(LoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
@@ -128,8 +142,11 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
 
+    Async async = context.async();
+    handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
+
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
-    Thread.sleep(SLEEP_TIME);
+    async.await(TIMEOUT);
     final HoldingsLoadingStatus status = getWithOk(HOLDINGS_STATUS_ENDPOINT).body().as(HoldingsLoadingStatus.class);
 
     assertThat(status.getData().getType(), equalTo("status"));
@@ -147,7 +164,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     mockGet(new EqualToPattern(LoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), SC_INTERNAL_SERVER_ERROR);
 
     Async finishedAsync = context.async(SNAPSHOT_RETRIES);
-    Handler<SendContext> interceptor = intercept(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, message -> finishedAsync.countDown());
+    Handler<SendContext> interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, message -> finishedAsync.countDown());
     vertx.eventBus().addInterceptor(interceptor);
     interceptors.add(interceptor);
 

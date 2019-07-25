@@ -9,19 +9,29 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.*;
-import com.google.common.io.Files;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.filter.log.LogDetail;
-import io.vertx.core.Vertx;
+import java.util.function.Consumer;
 
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.RestConstants;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.ContentPattern;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+import com.google.common.io.Files;
+
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.SendContext;
 
 public final class TestUtil {
 
@@ -135,11 +145,62 @@ public final class TestUtil {
         .withStatus(status)));
   }
 
+  public static void mockResponseList(UrlPathPattern urlPattern, ResponseDefinitionBuilder... responses) {
+    int scenarioStep = 0;
+    String scenarioName = "Scenario -" + UUID.randomUUID().toString();
+    for (ResponseDefinitionBuilder response : responses) {
+      if (scenarioStep == 0) {
+        stubFor(
+          get(urlPattern)
+            .inScenario(scenarioName)
+            .willSetStateTo(String.valueOf(++scenarioStep))
+            .willReturn(response));
+      } else {
+        stubFor(
+          get(urlPattern)
+            .inScenario(scenarioName)
+            .whenScenarioStateIs(String.valueOf(scenarioStep))
+            .willSetStateTo(String.valueOf(++scenarioStep))
+            .willReturn(response));
+      }
+    }
+  }
+
   public static void clearDataFromTable(Vertx vertx, String tableName) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "DELETE FROM " + (PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + tableName),
       event -> future.complete(null));
     future.join();
+  }
+
+  public static Handler<SendContext> interceptAndContinue(String serviceAddress, String serviceMethodName,
+                                                          Consumer<Message> messageConsumer) {
+    return messageContext -> {
+      Message message = messageContext.message();
+      if (messageMatches(serviceAddress, serviceMethodName, message)) {
+        messageConsumer.accept(message);
+        messageContext.next();
+      } else {
+        messageContext.next();
+      }
+    };
+  }
+
+  public static Handler<SendContext> interceptAndStop(String serviceAddress, String serviceMethodName,
+                                                      Consumer<Message> messageConsumer) {
+    return messageContext -> {
+      Message message = messageContext.message();
+      if (messageMatches(serviceAddress, serviceMethodName, message)) {
+        messageConsumer.accept(message);
+      } else {
+        messageContext.next();
+      }
+    };
+  }
+
+  private static boolean messageMatches(String serviceAddress, String serviceMethodName, Message message) {
+    return serviceAddress.equals(message.address())
+      && serviceMethodName.equals(message.headers().get("action"));
   }
 }
