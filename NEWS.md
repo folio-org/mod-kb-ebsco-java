@@ -1,3 +1,6 @@
+## v2.5.1 2019-07-26
+* MODKBEKBJ-293 - Add default timestamp to updated_at column
+ 
 ## v2.5.0 2019-07-24
 * MODKBEKBJ-285 - Implement GET /loadHoldings/status
 * MODKBEKBJ-282 - Add separate endpoint for updating resource tags
