@@ -2,6 +2,7 @@ package org.folio.repository;
 
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.holdings.status.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
@@ -14,6 +15,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.folio.common.FutureUtils;
+import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.tools.utils.ObjectMapperTool;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -22,11 +28,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
-import org.apache.commons.lang3.mutable.MutableObject;
-
-import org.folio.common.FutureUtils;
-import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class DbUtil {
   private DbUtil() {}
@@ -40,10 +41,11 @@ public class DbUtil {
       .add(name);
   }
 
-  public static CompletableFuture<Void> executeInTransaction(String tenantId, Vertx vertx,
-                                                       BiFunction<PostgresClient, AsyncResult<SQLConnection>, CompletableFuture<Void>> action) {
+  public static <T> CompletableFuture<T> executeInTransaction(String tenantId, Vertx vertx,
+                                                              BiFunction<PostgresClient, AsyncResult<SQLConnection>, CompletableFuture<T>> action) {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     MutableObject<AsyncResult<SQLConnection>> mutableConnection = new MutableObject<>();
+    MutableObject<T> mutableResult = new MutableObject<>();
     CompletableFuture<Boolean> rollbackFuture = new CompletableFuture<>();
 
     return CompletableFuture.completedFuture(null)
@@ -56,7 +58,10 @@ public class DbUtil {
         return startTxFuture;
       })
       .thenCompose(o -> action.apply(postgresClient, mutableConnection.getValue()))
-      .thenCompose(o -> endTransaction(postgresClient, mutableConnection))
+      .thenCompose(result -> {
+        mutableResult.setValue(result);
+        return endTransaction(postgresClient, mutableConnection);
+      })
       .whenComplete((result, ex) -> {
         if (ex != null) {
           LOG.info("Transaction was not successful. Roll back changes.");
@@ -65,7 +70,7 @@ public class DbUtil {
           rollbackFuture.complete(null);
         }
       })
-      .thenCombine(rollbackFuture, (o, aBoolean) -> null);
+      .thenCombine(rollbackFuture, (o, aBoolean) -> mutableResult.getValue());
   }
 
   private static CompletionStage<Void> endTransaction(PostgresClient postgresClient, MutableObject<AsyncResult<SQLConnection>> mutableConnection) {
@@ -104,6 +109,10 @@ public class DbUtil {
 
   public static String getHoldingsStatusTableName(String tenantId) {
     return getTableName(tenantId, HOLDINGS_STATUS_TABLE);
+  }
+
+  public static String getRetryStatusTableName(String tenantId) {
+    return getTableName(tenantId, RETRY_STATUS_TABLE);
   }
 
   public static <T> Optional<T> mapColumn(JsonObject row, String columnName, Class<T> tClass){

@@ -8,8 +8,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.folio.repository.holdings.status.HoldingsStatusRepository;
+import org.folio.repository.holdings.status.RetryStatus;
+import org.folio.repository.holdings.status.RetryStatusRepository;
+import org.folio.rest.annotations.Validate;
+import org.folio.rest.jaxrs.model.TenantAttributes;
+import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.tools.utils.TenantTool;
+import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -18,21 +31,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.folio.repository.holdings.status.HoldingsStatusRepository;
-import org.folio.rest.annotations.Validate;
-import org.folio.rest.jaxrs.model.TenantAttributes;
-import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.TenantTool;
-import org.folio.spring.SpringContextUtil;
 
 public class TenantApiImpl extends TenantAPI {
 
   private static final String TEST_DATA_SQL = "templates/db_scripts/test-data.sql";
-  private static final String OKAPI_TENANT_HEADER = "x-okapi-tenant";
   private static final String TENANT_PLACEHOLDER = "${myuniversity}";
   private static final String MODULE_PLACEHOLDER = "${mymodule}";
   private static final String TEST_MODE = "test.mode";
@@ -40,6 +42,8 @@ public class TenantApiImpl extends TenantAPI {
 
   @Autowired
   private HoldingsStatusRepository holdingsStatusRepository;
+  @Autowired
+  private RetryStatusRepository retryStatusRepository;
 
   public TenantApiImpl() {
     super();
@@ -64,13 +68,20 @@ public class TenantApiImpl extends TenantAPI {
   private Future<Void> setLoadingStatus(Map<String, String> headers) {
 
     Future<Void> future = Future.future();
-    setStatusNotStarted(TenantTool.tenantId(headers))
+    String tenantId = TenantTool.tenantId(headers);
+    setStatusNotStarted(tenantId)
+      .thenCompose(o -> resetRetryStatus(tenantId))
       .thenAccept(future::complete)
       .exceptionally(e -> {
         future.fail(e.getCause());
         return null;
       });
     return future;
+  }
+
+  private CompletionStage<Void> resetRetryStatus(String tenantId) {
+    return retryStatusRepository.delete(tenantId)
+      .thenCompose(o -> retryStatusRepository.save(new RetryStatus(0, null), tenantId));
   }
 
   private CompletableFuture<Void> setStatusNotStarted(String tenantId) {
