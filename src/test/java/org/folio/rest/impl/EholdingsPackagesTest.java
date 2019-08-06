@@ -18,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -60,10 +61,8 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,6 +74,7 @@ import org.folio.holdingsiq.model.PackageData;
 import org.folio.repository.RecordType;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
@@ -96,6 +96,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String CUSTOM_PACKAGE_STUB_FILE = "responses/rmapi/packages/get-custom-package-by-id-response.json";
   private static final String RESOURCES_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response.json";
   private static final String RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response-empty.json";
+  private static final String RESOURCES_BY_PACKAGE_ID_EMPTY_CUSTOMER_RESOURCE_LIST_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response-empty-customer-list.json";
   private static final String EXPECTED_PACKAGE_BY_ID_STUB_FILE = "responses/kb-ebsco/packages/expected-package-by-id.json";
   private static final String EXPECTED_RESOURCES_STUB_FILE = "responses/kb-ebsco/resources/expected-resources-by-package-id.json";
   private static final String EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE = "responses/kb-ebsco/resources/expected-resources-by-package-id-with-tags.json";
@@ -811,6 +812,18 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     } finally {
       TagsTestUtil.clearTags(vertx);
     }
+  }
+
+  @Test
+  public void shouldReturnFilteredResourcesWithNonEmptyCustomerResourceList() throws IOException, URISyntaxException {
+    String packageResourcesUrl = "/eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "/resources";
+
+    mockDefaultConfiguration(getWiremockUrl());
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_CUSTOMER_RESOURCE_LIST_STUB_FILE);
+    final ResourceCollection resourceCollection = getWithStatus(packageResourcesUrl, 200).as(ResourceCollection.class);
+
+    final MetaTotalResults metaTotalResults = resourceCollection.getMeta();
+    assertThat(metaTotalResults.getTotalResults(),  equalTo(3));
   }
 
   @Test
