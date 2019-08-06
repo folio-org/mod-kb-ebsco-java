@@ -21,7 +21,7 @@
     "attributes": {
       "description": "Data type attributes",
       "type": "object",
-      "$ref": "packageDataAttributes.json"
+      "$ref": "packagePutDataAttributes.json"
     }
   },
   "required": [

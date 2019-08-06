@@ -1,9 +1,10 @@
 package org.folio.rest.validator;
 
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.springframework.stereotype.Component;
+
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
+import org.folio.rest.jaxrs.model.PackagePutRequest;
 
 @Component
 public class PackagePutBodyValidator {
@@ -18,7 +19,7 @@ public class PackagePutBodyValidator {
       request.getData().getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
-    PackageDataAttributes attributes = request.getData().getAttributes();
+    PackagePutDataAttributes attributes = request.getData().getAttributes();
     Boolean isSelected = attributes.getIsSelected();
     Boolean allowKbToAddTitles = attributes.getAllowKbToAddTitles();
 
