@@ -1,20 +1,15 @@
 package org.folio.rest.converter.providers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.VendorPut;
 import org.folio.holdingsiq.model.VendorPutToken;
-import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 
 @Component
 public class ProviderPutRequestConverter implements Converter<ProviderPutRequest, VendorPut> {
-
-  @Autowired
-  private Converter<org.folio.holdingsiq.model.Packages, PackageCollection> packagesConverter;
 
   @Override
   public VendorPut convert(@NonNull ProviderPutRequest provider) {

@@ -19,7 +19,7 @@ import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Packages;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderData;
-import org.folio.rest.jaxrs.model.ProviderDataAttributes;
+import org.folio.rest.jaxrs.model.ProviderGetDataAttributes;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
@@ -45,7 +45,7 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
       .withData(new ProviderData()
         .withId(String.valueOf(vendor.getVendorId()))
         .withType(PROVIDERS_TYPE)
-        .withAttributes(new ProviderDataAttributes()
+        .withAttributes(new ProviderGetDataAttributes()
           .withName(vendor.getVendorName())
           .withPackagesTotal(vendor.getPackagesTotal())
           .withPackagesSelected(vendor.getPackagesSelected())
@@ -66,7 +66,6 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
           .withPackages(new Packages()
             .withMeta(new MetaDataIncluded().withIncluded(true))
             .withData(convertPackagesRelationship(packages))));
-
     }
     return provider;
   }

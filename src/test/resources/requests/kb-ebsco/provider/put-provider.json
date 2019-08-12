@@ -3,8 +3,6 @@
     "id": "19",
     "type": "providers",
     "attributes": {
-      "name": "EBSCO",
-      "packagesTotal": 625,
       "packagesSelected": 19,
       "providerToken": {
         "factName": "[[galesiteid]]",
@@ -12,7 +10,6 @@
         "helpText": "<ul><li>Enter site id</li></ul>",
         "value": "My Test Token"
       },
-      "supportsCustomPackages": false,
       "proxy": {
         "id": "<n>",
         "inherited": false
