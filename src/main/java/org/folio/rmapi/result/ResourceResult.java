@@ -19,14 +19,6 @@ public class ResourceResult {
     this.includeTitle = includeTitle;
   }
 
-  public ResourceResult(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle, Tags tags) {
-    this.title = title;
-    this.vendor = vendor;
-    this.packageData = packageData;
-    this.includeTitle = includeTitle;
-    this.tags = tags;
-  }
-
   public Title getTitle() {
     return title;
   }

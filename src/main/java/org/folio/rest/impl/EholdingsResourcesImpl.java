@@ -156,12 +156,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         processResourceUpdate(entity, parsedResourceId, context)
-          .thenCompose(resourceResult ->
-            updateResourceTags(resourceId, resourceResult.getTitleName(), entity.getData().getAttributes().getTags(),
-              context.getOkapiData().getTenant())
-          .thenApply(o -> new ResourceResult(resourceResult,null,null,false,
-            entity.getData().getAttributes().getTags())))
-      )
+          .thenApply(resourceResult -> new ResourceResult(resourceResult, null, null, false)))
       .addErrorMapper(InputValidationException.class, exception ->
         EholdingsResources.PutEholdingsResourcesByResourceIdResponse.respond422WithApplicationVndApiJson(
           ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail())))

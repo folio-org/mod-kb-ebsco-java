@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -49,7 +48,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -64,7 +62,6 @@ import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
-import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
@@ -310,46 +307,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateTagsOnSuccessfulPut() throws IOException, URISyntaxException {
-    try {
-      String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-      ObjectMapper mapper = new ObjectMapper();
-      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"), ResourcePutRequest.class);
-      List<String> tags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      request.getData().getAttributes().setTags(new Tags().withTagList(tags));
-
-      mockUpdateResourceScenario(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID, mapper.writeValueAsString(request));
-      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
-
-      assertEquals(1, resources.size());
-      List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
-      assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
-    }
-    finally {
-      TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
-      TagsTestUtil.clearTags(vertx);
-    }
-  }
-
-  @Test
-  public void shouldUpdateWithoutTagsOnSuccessfulPut() throws IOException, URISyntaxException {
-      String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-      ObjectMapper mapper = new ObjectMapper();
-      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"),
-        ResourcePutRequest.class);
-      List<String> tags = Collections.emptyList();
-      request.getData().getAttributes().setTags(new Tags()
-        .withTagList(tags));
-      mockUpdateResourceScenario(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
-        mapper.writeValueAsString(request));
-      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
-
-      assertEquals(0, resources.size());
-      List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
-      assertEquals(resourceTagsFromDB.size(),request.getData().getAttributes().getTags().getTagList().size());
-  }
-
-  @Test
   public void shouldUpdateTagsOnSuccessfulTagsPut() throws IOException, URISyntaxException {
     try {
       List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
@@ -375,33 +332,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     } finally {
       TagsTestUtil.clearTags(vertx);
       TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
-    }
-  }
-
-  @Test
-  public void shouldUpdateOnlyTagsOnPutWhenResourceIsNotSelectedAndUpdatedFieldsAreNotEmpty() throws IOException, URISyntaxException {
-    try {
-      String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
-      ObjectMapper mapper = new ObjectMapper();
-      ResourcePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/resource/put-managed-resource.json"),
-        ResourcePutRequest.class);
-
-      List<String> tags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      request.getData().getAttributes().setTags(new Tags().withTagList(tags));
-      request.getData().getAttributes().setIsSelected(false);
-      request.getData().getAttributes().setCoverageStatement("coverage statement");
-
-      mockUpdateResourceScenario(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID, mapper.writeValueAsString(request));
-      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
-
-      assertEquals(1, resources.size());
-      WireMock.verify(0, putRequestedFor(anyUrl()));
-      List<String> resourceTagsFromDB = TagsTestUtil.getTags(vertx);
-      assertThat(resourceTagsFromDB, containsInAnyOrder(tags.toArray()));
-    }
-    finally {
-      TestUtil.clearDataFromTable(vertx,RESOURCES_TABLE_NAME);
-      TagsTestUtil.clearTags(vertx);
     }
   }
 
