@@ -3,14 +3,16 @@ package org.folio.rest.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;

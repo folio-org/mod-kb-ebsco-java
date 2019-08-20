@@ -5,6 +5,12 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.time.ZonedDateTime.parse;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
+import static org.junit.Assert.assertTrue;
+
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_GET_ENDPOINT;
 import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_ENDPOINT;
@@ -17,36 +23,17 @@ import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
 import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
-import static org.folio.util.TestUtil.interceptAndContinue;
-import static org.folio.util.TestUtil.interceptAndStop;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockResponseList;
-import static org.folio.util.TestUtil.readFile;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
-import static org.junit.Assert.assertTrue;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.mockResponseList;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.interceptAndContinue;
+import static org.folio.util.KBTestUtil.interceptAndStop;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
-import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
-import org.folio.service.holdings.HoldingsService;
-import org.folio.util.HoldingsStatusUtil;
-import org.folio.util.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -58,6 +45,21 @@ import io.vertx.core.eventbus.SendContext;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
+import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.service.holdings.HoldingsService;
+import org.folio.util.HoldingsStatusUtil;
+import org.folio.util.KBTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class LoadHoldingsStatusImplTest extends WireMockTestBase {
@@ -79,7 +81,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void setUp() throws Exception {
     super.setUp();
     MockitoAnnotations.initMocks(this);
-    TestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatusNotStarted(vertx);
   }
 

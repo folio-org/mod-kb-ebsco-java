@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
-import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.Collections;
 import java.util.List;

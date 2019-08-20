@@ -5,10 +5,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import static org.folio.util.TestUtil.getRequestSpecificationBuilder;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockEmptyConfiguration;
-import static org.folio.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.STUB_TOKEN;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.mockEmptyConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -16,9 +17,10 @@ import java.net.URISyntaxException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,10 +62,12 @@ public class EholdingsStatusTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn500OnInvalidOkapiUrl() {
-    RequestSpecification spec = getRequestSpecificationBuilder("http://localhost")
-      .addHeader(RestConstants.OKAPI_URL_HEADER, "wrongUrl^").build();
     RestAssured.given()
-      .spec(spec).port(port)
+      .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
+      .header(RestConstants.OKAPI_TOKEN_HEADER, STUB_TOKEN)
+      .header(RestConstants.OKAPI_URL_HEADER, "wrongUrl^")
+      .baseUri("http://localhost")
+      .port(port)
       .when()
       .get(EHOLDINGS_STATUS_PATH)
       .then()

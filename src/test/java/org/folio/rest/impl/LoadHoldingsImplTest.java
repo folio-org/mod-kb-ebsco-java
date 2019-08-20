@@ -5,20 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
-import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
-import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
-import static org.folio.service.holdings.HoldingConstants.SAVE_HOLDINGS_ACTION;
-import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
-import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
-import static org.folio.util.TestUtil.STUB_TENANT;
-import static org.folio.util.TestUtil.interceptAndContinue;
-import static org.folio.util.TestUtil.interceptAndStop;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockResponseList;
-import static org.folio.util.TestUtil.readFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,34 +12,27 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
+import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
+import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
+import static org.folio.service.holdings.HoldingConstants.SAVE_HOLDINGS_ACTION;
+import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
+import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.mockResponseList;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.interceptAndContinue;
+import static org.folio.util.KBTestUtil.interceptAndStop;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-
-import org.folio.holdingsiq.model.Configuration;
-import org.folio.repository.holdings.HoldingInfoInDB;
-import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
-import org.folio.repository.holdings.status.RetryStatusRepository;
-import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
-import org.folio.service.holdings.HoldingsMessage;
-import org.folio.service.holdings.HoldingsService;
-import org.folio.service.holdings.LoadServiceFacade;
-import org.folio.service.holdings.message.LoadHoldingsMessage;
-import org.folio.util.HoldingsStatusUtil;
-import org.folio.util.HoldingsTestUtil;
-import org.folio.util.TestUtil;
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
@@ -69,6 +48,29 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.folio.holdingsiq.model.Configuration;
+import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
+import org.folio.repository.holdings.status.RetryStatusRepository;
+import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
+import org.folio.service.holdings.HoldingsMessage;
+import org.folio.service.holdings.HoldingsService;
+import org.folio.service.holdings.LoadServiceFacade;
+import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.folio.util.HoldingsStatusUtil;
+import org.folio.util.HoldingsTestUtil;
+import org.folio.util.KBTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class LoadHoldingsImplTest extends WireMockTestBase {
@@ -100,7 +102,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
-    TestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatusNotStarted(vertx);
   }
 

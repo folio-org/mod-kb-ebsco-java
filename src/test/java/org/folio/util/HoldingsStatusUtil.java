@@ -4,7 +4,7 @@ import static org.folio.repository.holdings.HoldingsTableConstants.JSONB_COLUMN;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.ID_COLUMN;
-import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.Arrays;
 import java.util.UUID;

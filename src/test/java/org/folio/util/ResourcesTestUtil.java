@@ -4,7 +4,7 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
-import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.Arrays;
 import java.util.List;

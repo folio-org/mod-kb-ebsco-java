@@ -3,11 +3,14 @@ package org.folio.rest.converter.packages;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import static org.folio.test.util.TestUtil.getFile;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +23,6 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.config.TestConfig;
-import org.folio.util.TestUtil;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
@@ -34,7 +36,7 @@ public class PackageResponseConverterTest {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    Title title = mapper.readValue(TestUtil.getFile("responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json"), Title.class);
+    Title title = mapper.readValue(getFile("responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json"), Title.class);
 
     final ResourceResult resourceResult = new ResourceResult(title, null, null, false);
     final Resource resource = conversionService.convert(resourceResult, Resource.class);
