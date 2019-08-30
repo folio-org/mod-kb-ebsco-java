@@ -13,6 +13,10 @@ import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.Matchers.equalTo;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.STUB_TOKEN;
+import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -24,9 +28,11 @@ import com.github.tomakehurst.wiremock.matching.AnythingPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,7 +40,6 @@ import org.folio.rest.jaxrs.model.Config;
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.jaxrs.model.Configuration;
 import org.folio.rest.util.RestConstants;
-import org.folio.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsConfigurationTest extends WireMockTestBase {
@@ -53,7 +58,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
         .withHeader(TENANT_HEADER.getName(), new EqualToPattern(TENANT_HEADER.getValue()))
         .withHeader(TOKEN_HEADER.getName(), new EqualToPattern(TOKEN_HEADER.getValue()))
         .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(stubResponseFilename))));
+          .withBody(readFile(stubResponseFilename))));
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -72,7 +77,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
     String wiremockUrl = getWiremockUrl();
 
     ObjectMapper mapper = new ObjectMapper();
-    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(wiremockUrl);
 
     RestAssured.given()
@@ -85,11 +90,11 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
       .statusCode(200);
 
     verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
-      .withRequestBody(equalToJson(TestUtil.readFile("requests/kb-ebsco/configuration/post-api-key-configuration.json"))));
+      .withRequestBody(equalToJson(readFile("requests/kb-ebsco/configuration/post-api-key-configuration.json"))));
     verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
-      .withRequestBody(equalToJson(TestUtil.readFile("requests/kb-ebsco/configuration/post-customer-id-configuration.json"))));
+      .withRequestBody(equalToJson(readFile("requests/kb-ebsco/configuration/post-customer-id-configuration.json"))));
 
-    Config config = mapper.readValue(TestUtil.readFile("requests/kb-ebsco/configuration/post-url-configuration.json"), Config.class);
+    Config config = mapper.readValue(readFile("requests/kb-ebsco/configuration/post-url-configuration.json"), Config.class);
     config.setValue(wiremockUrl);
     verify(1, postRequestedFor(urlEqualTo("/configurations/entries"))
       .withRequestBody(equalToJson(mapper.writeValueAsString(config))));
@@ -99,13 +104,13 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
   public void shouldDeleteOldConfigurationOnPutWhenConfigurationExists() throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
 
-    String configsString = TestUtil.readFile("responses/kb-ebsco/configuration/get-configuration.json");
+    String configsString = readFile("responses/kb-ebsco/configuration/get-configuration.json");
     Configs configs = mapper.readValue(configsString, Configs.class);
     List<String> existingIds = mapItems(configs.getConfigs(), Config::getId);
 
     mockConfigurationUpdate(configsString);
 
-    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(getWiremockUrl());
 
     putWithOk("eholdings/configuration", mapper.writeValueAsString(configuration));
@@ -122,7 +127,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
         .willReturn(new ResponseDefinitionBuilder().withStatus(403)));
 
-    Configuration configuration = mapper.readValue(TestUtil.getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
+    Configuration configuration = mapper.readValue(getFile("requests/kb-ebsco/put-configuration.json"), Configuration.class);
     configuration.getData().getAttributes().setRmapiBaseUrl(getWiremockUrl());
 
     putWithStatus("eholdings/configuration", mapper.writeValueAsString(configuration), SC_UNPROCESSABLE_ENTITY);
@@ -135,7 +140,7 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
       .spec(getRequestSpecification())
       .header(new Header(RestConstants.OKAPI_URL_HEADER, wiremockUrl))
       .header(CONTENT_TYPE_HEADER)
-      .body(TestUtil.readFile("requests/kb-ebsco/put-configuration.json"))
+      .body(readFile("requests/kb-ebsco/put-configuration.json"))
       .when()
       .put("eholdings/configuration")
       .then()
@@ -184,7 +189,10 @@ public class EholdingsConfigurationTest extends WireMockTestBase {
   @Test
   public void shouldReturn400OnGetWithoutUrlHeader() {
     RestAssured.given()
-      .spec(TestUtil.getRequestSpecificationBuilder("http://localhost").build()).port(port)
+      .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
+      .header(RestConstants.OKAPI_TOKEN_HEADER, STUB_TOKEN)
+      .baseUri("http://localhost")
+      .port(port)
       .header(new Header(RestConstants.OKAPI_URL_HEADER, null))
       .when()
       .get("eholdings/configuration")

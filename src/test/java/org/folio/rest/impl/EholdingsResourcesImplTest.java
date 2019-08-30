@@ -33,12 +33,12 @@ import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
+import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.mockPut;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.TagsTestUtil.insertTag;
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockPut;
-import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -65,9 +65,9 @@ import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
+import org.folio.util.KBTestUtil;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsResourcesImplTest extends WireMockTestBase {
@@ -317,7 +317,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       assertEquals(STUB_VENDOR_NAME, resources.get(0).getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     }
   }
 
@@ -331,7 +331,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     }
   }
 
@@ -504,6 +504,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockGet(new EqualToPattern(resourcePath), stubResponseFile);
     mockPut(new EqualToPattern(resourcePath), putBodyPattern, SC_NO_CONTENT);
 
-    deleteWithOk("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID);
+    deleteWithNoContent("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID);
   }
 }

@@ -15,10 +15,10 @@ import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_3;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
-import static org.folio.util.TestUtil.STUB_TENANT;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGetWithBody;
-import static org.folio.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.mockGetWithBody;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;

@@ -48,12 +48,12 @@ import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
+import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.mockGetWithBody;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.PackagesTestUtil.setUpPackage;
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockGetWithBody;
-import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -87,10 +87,10 @@ import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Token;
+import org.folio.util.KBTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ProvidersTestUtil;
 import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
 
 
 @RunWith(VertxUnitRunner.class)
@@ -164,7 +164,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -191,7 +191,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -217,7 +217,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -243,7 +243,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(0, providers.size());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -266,7 +266,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -406,7 +406,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -420,7 +420,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -433,8 +433,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     JsonapiError response = putWithStatus(PROVIDER_TAGS_PATH, mapper.writeValueAsString(tags),
       SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
 
-    assertEquals(response.getErrors().get(0).getTitle(), "Invalid name");
-    assertEquals(response.getErrors().get(0).getDetail(), "name must not be empty");
+    assertEquals("Invalid name", response.getErrors().get(0).getTitle());
+    assertEquals("name must not be empty", response.getErrors().get(0).getDetail());
   }
 
   @Test
@@ -515,7 +515,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       JSONAssert.assertEquals(expected, actual, false);
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 

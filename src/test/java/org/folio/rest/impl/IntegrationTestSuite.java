@@ -1,11 +1,13 @@
 package org.folio.rest.impl;
 
-import java.io.IOException;
+import java.util.Collections;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
+import org.folio.test.util.TestSetUpHelper;
 
 @Suite.SuiteClasses({
   EholdingsCacheImplTest.class,
@@ -24,8 +26,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 public class IntegrationTestSuite {
   @BeforeClass
-  public static void setUpClass() throws IOException {
-    TestSetUpHelper.startVertxAndPostgres();
+  public static void setUpClass() {
+    TestSetUpHelper.startVertxAndPostgres(Collections.singletonMap("spring.configuration", "org.folio.spring.config.TestConfig"));
   }
 
   @AfterClass

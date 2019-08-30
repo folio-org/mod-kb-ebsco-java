@@ -4,15 +4,17 @@ import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
+
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

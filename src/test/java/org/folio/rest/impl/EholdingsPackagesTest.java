@@ -40,14 +40,14 @@ import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
+import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.mockPost;
+import static org.folio.test.util.TestUtil.mockPut;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
-import static org.folio.util.TestUtil.getFile;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.mockPost;
-import static org.folio.util.TestUtil.mockPut;
-import static org.folio.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -87,10 +87,10 @@ import org.folio.rest.jaxrs.model.PackageTags;
 import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
+import org.folio.util.KBTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsPackagesTest extends WireMockTestBase {
@@ -151,7 +151,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(1).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -174,7 +174,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(0, packages.size());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -197,7 +197,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -245,7 +245,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     }
     finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -259,7 +259,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -275,7 +275,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertThat(packages.get(0).getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -291,7 +291,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertTrue(Objects.isNull(updatedPackage.getData().getAttributes().getTags()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -329,7 +329,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
     mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), putBodyPattern, SC_NO_CONTENT);
 
-    deleteWithOk(PACKAGES_PATH);
+    deleteWithNoContent(PACKAGES_PATH);
 
     List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
     assertThat(tagsAfterRequest, empty());
@@ -343,7 +343,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
     mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), new AnythingPattern(), SC_NO_CONTENT);
 
-    deleteWithOk(PACKAGES_PATH);
+    deleteWithNoContent(PACKAGES_PATH);
 
     List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
     assertThat(packages, is(empty()));
@@ -405,7 +405,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), putBodyPattern, SC_NO_CONTENT);
 
-    deleteWithOk(PACKAGES_PATH);
+    deleteWithNoContent(PACKAGES_PATH);
 
     verify(1, putRequestedFor(PACKAGE_URL_PATTERN)
       .withRequestBody(putBodyPattern));
@@ -669,7 +669,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         false);
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     }
   }
 

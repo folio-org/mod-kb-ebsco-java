@@ -37,9 +37,9 @@ import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_NAME;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
-import static org.folio.util.TestUtil.mockDefaultConfiguration;
-import static org.folio.util.TestUtil.mockGet;
-import static org.folio.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -55,11 +55,13 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -73,9 +75,9 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.util.HoldingsTestUtil;
+import org.folio.util.KBTestUtil;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
-import org.folio.util.TestUtil;
 import org.folio.util.TitlesTestUtil;
 
 @RunWith(VertxUnitRunner.class)
@@ -124,7 +126,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       JSONAssert.assertEquals(
         readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, false);
     } finally {
-      TestUtil.clearDataFromTable(vertx, HOLDINGS_TABLE);
+      KBTestUtil.clearDataFromTable(vertx, HOLDINGS_TABLE);
     }
   }
 
@@ -148,7 +150,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .extract().as(TitleCollection.class);
       assertEquals(STUB_CUSTOM_TITLE_NAME, response.getData().get(0).getAttributes().getName());
     } finally {
-      TestUtil.clearDataFromTable(vertx, HOLDINGS_TABLE);
+      KBTestUtil.clearDataFromTable(vertx, HOLDINGS_TABLE);
     }
   }
 
@@ -193,7 +195,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     }
     finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 
@@ -267,7 +269,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       JSONAssert.assertEquals(expected, actual, false);
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 
@@ -304,7 +306,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     }
     finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 
@@ -318,7 +320,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       assertEquals("Test Title", titles.get(0).getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 
@@ -366,7 +368,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       assertThat(tags, containsInAnyOrder(newTags.toArray()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 
@@ -392,7 +394,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       WireMock.verify(0, putRequestedFor(anyUrl()));
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 
@@ -408,7 +410,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       assertEquals("sd-test-java-again", titles.get(0).getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 
@@ -446,7 +448,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       assertEquals(newName, titles.get(0).getName());
     } finally {
       TagsTestUtil.clearTags(vertx);
-      TestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
+      KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
 

@@ -3,8 +3,8 @@ package org.folio.rmapi;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 
-import static org.folio.util.TestUtil.STUB_TENANT;
-import static org.folio.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.mockGet;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -14,7 +14,9 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
+
 import io.vertx.core.Vertx;
+
 import org.junit.Rule;
 import org.junit.Test;
 
