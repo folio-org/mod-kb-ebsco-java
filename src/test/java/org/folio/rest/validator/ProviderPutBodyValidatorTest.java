@@ -2,7 +2,7 @@ package org.folio.rest.validator;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.ProviderDataAttributes;
+import org.folio.rest.jaxrs.model.ProviderPutDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutData;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.Token;
@@ -24,7 +24,7 @@ public class ProviderPutBodyValidatorTest {
     providerToken.setValue(RandomStringUtils.randomAlphanumeric(500));
 
     ProviderPutRequest request = new ProviderPutRequest()
-        .withData(new ProviderPutData().withAttributes(new ProviderDataAttributes().withProviderToken(providerToken)));
+        .withData(new ProviderPutData().withAttributes(new ProviderPutDataAttributes().withProviderToken(providerToken)));
     validator.validate(request);
   }
   
@@ -34,7 +34,7 @@ public class ProviderPutBodyValidatorTest {
     providerToken.setValue(RandomStringUtils.randomAlphanumeric(501));
 
     ProviderPutRequest request = new ProviderPutRequest()
-        .withData(new ProviderPutData().withAttributes(new ProviderDataAttributes().withProviderToken(providerToken)));
+        .withData(new ProviderPutData().withAttributes(new ProviderPutDataAttributes().withProviderToken(providerToken)));
     validator.validate(request);
   }
 

@@ -9,7 +9,7 @@
     "data": {
       "type": "object",
       "description": "Status data",
-      "$ref": "statusData.json"
+      "$ref": "loadHoldingsStatusData.json"
     },
     "jsonapi": {
       "type": "object",

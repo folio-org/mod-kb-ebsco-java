@@ -13,7 +13,7 @@
     "attributes": {
       "type": "object",
       "description": "Status Attributes",
-      "$ref": "statusAttributes.json"
+      "$ref": "loadHoldingsStatusAttributes.json"
     }
   },
   "required": [

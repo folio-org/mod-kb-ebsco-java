@@ -1,8 +1,9 @@
 package org.folio.rest.validator;
 
+import org.springframework.stereotype.Component;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
-import org.springframework.stereotype.Component;
 
 @Component
 public class ProviderPutBodyValidator {
@@ -12,8 +13,7 @@ public class ProviderPutBodyValidator {
   private static final String VALUE_TOO_LONG = "Value is too long (maximum is 500 characters)";
 
   /**
-   * @throws InputValidationException
-   *           if put validation fails
+   * @throws InputValidationException if put validation fails
    */
   public void validate(ProviderPutRequest putRequest) {
     if (putRequest != null

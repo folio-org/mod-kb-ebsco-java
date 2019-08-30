@@ -19,7 +19,7 @@
     "attributes": {
       "type": "object",
       "description": "Provider object data attributes",
-      "$ref": "providerDataAttributes.json"
+      "$ref": "providerGetDataAttributes.json"
     },
     "relationships": {
       "type": "object",

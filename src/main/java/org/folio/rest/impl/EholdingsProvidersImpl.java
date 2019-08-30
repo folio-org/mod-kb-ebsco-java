@@ -48,7 +48,7 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderCollection;
-import org.folio.rest.jaxrs.model.ProviderDataAttributes;
+import org.folio.rest.jaxrs.model.ProviderPutDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.folio.rest.jaxrs.model.ProviderTags;
 import org.folio.rest.jaxrs.model.ProviderTagsDataAttributes;
@@ -150,17 +150,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
     bodyValidator.validate(entity);
 
-    final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         processUpdateRequest(entity, providerIdLong, context)
-          .thenCompose(result ->
-            updateTags(createDbProvider(result), tags, context.getOkapiData().getTenant())
-              .thenApply(vendorResult -> new VendorResult(result,null, tags))))
+          .thenApply(result -> new VendorResult(result, null)))
       .addErrorMapper(InputValidationException.class, error422Mapper())
       .executeWithResult(Provider.class);
   }
-
 
   @Override
   public void putEholdingsProvidersTagsByProviderId(String providerId, String contentType, ProviderTagsPutRequest entity,
@@ -318,13 +314,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .withJsonapi(JSONAPI);
   }
 
-  private ProviderInfoInDb createDbProvider(VendorById vendorById) {
-    return ProviderInfoInDb
-      .builder().id(String.valueOf(vendorById.getVendorId()))
-      .name(vendorById.getVendorName())
-      .build();
-  }
-
   private ProviderInfoInDb createDbProvider(String providerId, ProviderTagsDataAttributes attributes) {
     return ProviderInfoInDb.builder()
       .id(providerId)
@@ -348,7 +337,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private boolean providerCanBeUpdated(ProviderPutRequest request) {
-    ProviderDataAttributes attributes = request.getData().getAttributes();
+    ProviderPutDataAttributes attributes = request.getData().getAttributes();
     return !Objects.isNull(attributes.getPackagesSelected()) && attributes.getPackagesSelected() != 0;
   }
 
