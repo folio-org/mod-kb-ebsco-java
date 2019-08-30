@@ -4,8 +4,8 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
 
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutData;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 
 public class PackagesTestData {
@@ -26,7 +26,7 @@ public class PackagesTestData {
   public static final String FULL_PACKAGE_ID_4 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID_2;
   public static final String FULL_PACKAGE_ID_5 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID_3;
 
-  public static PackagePutRequest getPackagePutRequest(PackageDataAttributes attributes) {
+  public static PackagePutRequest getPackagePutRequest(PackagePutDataAttributes attributes) {
     return new PackagePutRequest()
       .withData(new PackagePutData()
         .withType(PackagePutData.Type.PACKAGES)

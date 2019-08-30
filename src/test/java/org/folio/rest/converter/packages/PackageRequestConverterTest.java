@@ -13,7 +13,7 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.spring.config.TestConfig;
 
@@ -26,7 +26,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToSelectPackage() {
     PackagePut packagePut = packagesConverter.convertToRMAPIPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)));
     assertTrue(packagePut.getIsSelected());
   }
@@ -34,7 +34,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToHidePackage() {
     PackagePut packagePut = packagesConverter.convertToRMAPIPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)
         .withVisibilityData(new VisibilityData()
           .withIsHidden(true))));
@@ -44,7 +44,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToAllowKbAddTitlesToPackage() {
     PackagePut packagePut = packagesConverter.convertToRMAPIPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)
         .withAllowKbToAddTitles(true)));
     assertTrue(packagePut.getAllowEbscoToAddTitles());
@@ -53,7 +53,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToAddCustomCoverage() {
     PackagePut packagePut = packagesConverter.convertToRMAPIPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("2000-10-10")
@@ -65,7 +65,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToChangeCustomPackageName() {
     PackagePut packagePut = packagesConverter.convertToRMAPICustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withName("new package name")));
     assertEquals("new package name", packagePut.getPackageName());
   }
@@ -73,7 +73,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToChangeCustomPackageCoverageDates() {
     PackagePut packagePut = packagesConverter.convertToRMAPICustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("2003-01-01")
           .withEndCoverage("2004-01-01"))));
@@ -85,7 +85,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToChangeCustomPackageCoverageDatesToEmpty() {
     PackagePut packagePut = packagesConverter.convertToRMAPICustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("")
           .withEndCoverage(""))));
@@ -96,7 +96,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToChangeCustomPackageContentType() {
     PackagePut packagePut = packagesConverter.convertToRMAPICustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withContentType(ContentType.AGGREGATED_FULL_TEXT)));
     Integer aggregatedFullTextContentTypeCode = 1;
     assertEquals(aggregatedFullTextContentTypeCode, packagePut.getContentType());
@@ -105,7 +105,7 @@ public class PackageRequestConverterTest {
   @Test
   public void shouldCreateRequestToChangeCustomPackageVisibility() {
     PackagePut packagePut = packagesConverter.convertToRMAPICustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withVisibilityData(new VisibilityData()
           .withIsHidden(true))));
     assertTrue(packagePut.getIsHidden());

@@ -3,15 +3,16 @@ package org.folio.rest.validator;
 import static org.hamcrest.Matchers.containsString;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.impl.PackagesTestData;
-import org.folio.rest.jaxrs.model.Coverage;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.Token;
-import org.folio.rest.jaxrs.model.VisibilityData;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.impl.PackagesTestData;
+import org.folio.rest.jaxrs.model.Coverage;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
+import org.folio.rest.jaxrs.model.Token;
+import org.folio.rest.jaxrs.model.VisibilityData;
 
 public class PackagePutBodyValidatorTest {
 
@@ -23,7 +24,7 @@ public class PackagePutBodyValidatorTest {
   @Test
   public void shouldValidateWhenPackageIsSelected() {
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)
         .withCustomCoverage(new Coverage())
         .withAllowKbToAddTitles(true)
@@ -37,7 +38,7 @@ public class PackagePutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("isHidden"));
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
       .withIsSelected(false)
       .withVisibilityData(new VisibilityData()
         .withIsHidden(true))));
@@ -48,7 +49,7 @@ public class PackagePutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("beginCoverage"));
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(false)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("2000-01-01"))));
@@ -59,7 +60,7 @@ public class PackagePutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("allowKbToAddTitles"));
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(false)
         .withAllowKbToAddTitles(true)));
   }
@@ -69,7 +70,7 @@ public class PackagePutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("value"));
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(false)
         .withPackageToken(new Token().withValue("tokenValue"))));
   }
@@ -79,7 +80,7 @@ public class PackagePutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("value"));
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)
         .withPackageToken(new Token().withValue(StringUtils.repeat("tokenvalue",200)))));
   }
@@ -89,7 +90,7 @@ public class PackagePutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("beginCoverage"));
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("abcd-ab-ab"))));
@@ -98,7 +99,7 @@ public class PackagePutBodyValidatorTest {
   @Test
   public void shouldValidateWhenPackageIsSelectedAndCoverageDateIsEmpty() {
     validator.validate(PackagesTestData.getPackagePutRequest(
-      new PackageDataAttributes()
+      new PackagePutDataAttributes()
         .withIsSelected(true)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage(""))));

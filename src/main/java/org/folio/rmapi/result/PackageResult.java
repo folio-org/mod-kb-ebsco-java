@@ -21,13 +21,6 @@ public class PackageResult {
     this.titles = titles;
   }
 
-  public PackageResult(PackageByIdData packageData, VendorById vendor, Titles titles, Tags tags) {
-    this.packageData = packageData;
-    this.vendor = vendor;
-    this.titles = titles;
-    this.tags = tags;
-  }
-
   public PackageByIdData getPackageData() {
     return packageData;
   }

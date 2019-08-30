@@ -26,7 +26,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +64,8 @@ import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.PackageTags;
 import org.folio.rest.jaxrs.model.PackageTagsDataAttributes;
@@ -187,15 +186,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     packagesPostBodyValidator.validate(entity);
 
     PackagePost packagePost = packagePostRequestConverter.convert(entity);
-    final Tags tags = entity.getData().getAttributes().getTags();
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         getVendorId(context)
           .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
-          .thenCompose(packageById ->
-            updateTags(tags, createDbPackage(packageById), context.getOkapiData().getTenant())
-              .thenApply(o -> new PackageResult(packageById, null, null, tags)))
+          .thenApply(packageById -> new PackageResult(packageById, null, null))
       )
       .addErrorMapper(ServiceResponseException.class,
         exception ->
@@ -226,16 +222,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity,
                                               Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
-    final Tags tags = entity.getData().getAttributes().getTags();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context -> processUpdateRequest(entity, parsedPackageId, context)
         .thenCompose(o -> {
           CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
           return handleDeletedPackage(future, parsedPackageId, context.getOkapiData().getTenant());
         })
-        .thenCompose(packageById ->
-          updateTags(tags, createDbPackage(packageById), context.getOkapiData().getTenant())
-            .thenApply(o -> new PackageResult(packageById, null, null, tags)))
+        .thenApply(packageById -> new PackageResult(packageById, null, null))
       )
       .addErrorMapper(InputValidationException.class, error422Mapper())
       .executeWithResult(Package.class);
@@ -474,24 +467,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return packageRepository.delete(packages.getId(), tenant);
   }
 
-  private PackageInfoInDB createDbPackage(PackageByIdData packageData) {
-    return PackageInfoInDB.builder()
-      .id(createPackageId(packageData))
-      .name(packageData.getPackageName())
-      .contentType(packageData.getContentType())
-      .build();
-  }
-
-  private PackageId createPackageId(PackageByIdData packageData) {
-    return PackageId.builder()
-      .providerIdPart(packageData.getVendorId())
-      .packageIdPart(packageData.getPackageId())
-      .build();
-  }
-
   private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId,
                                                        RMAPITemplateContext context) {
-    if (!isPackageUpdateable(entity)) {
+    if (!isPackageUpdatable(entity)) {
       //proceed to next stage without updating
       return completedFuture(null);
     }
@@ -506,8 +484,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
   }
 
-  private boolean isPackageUpdateable(PackagePutRequest entity) {
-    PackageDataAttributes packageData = entity.getData().getAttributes();
+  private boolean isPackageUpdatable(PackagePutRequest entity) {
+    PackagePutDataAttributes packageData = entity.getData().getAttributes();
     if (!Objects.isNull(packageData.getIsCustom()) && !packageData.getIsCustom() &&
       !Objects.isNull(packageData.getIsSelected()) && !packageData.getIsSelected()) {
       try {

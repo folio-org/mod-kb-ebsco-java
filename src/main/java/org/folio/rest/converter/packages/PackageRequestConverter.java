@@ -7,14 +7,14 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.TokenInfo;
-import org.folio.rest.jaxrs.model.PackageDataAttributes;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 
 @Component
 public class PackageRequestConverter {
 
   public PackagePut convertToRMAPICustomPackagePutRequest(PackagePutRequest request) {
-    PackageDataAttributes attributes = request.getData().getAttributes();
+    PackagePutDataAttributes attributes = request.getData().getAttributes();
     PackagePut.PackagePutBuilder builder = convertCommonAttributesToPackagePutRequest(attributes);
     builder.packageName(attributes.getName());
     Integer contentType = contentTypeToRMAPICode.get(attributes.getContentType());
@@ -23,7 +23,7 @@ public class PackageRequestConverter {
   }
 
   public PackagePut convertToRMAPIPackagePutRequest(PackagePutRequest request) {
-    PackageDataAttributes attributes = request.getData().getAttributes();
+    PackagePutDataAttributes attributes = request.getData().getAttributes();
     PackagePut.PackagePutBuilder builder = convertCommonAttributesToPackagePutRequest(attributes);
     builder.allowEbscoToAddTitles(attributes.getAllowKbToAddTitles());
     if (attributes.getPackageToken() != null) {
@@ -35,7 +35,7 @@ public class PackageRequestConverter {
     return builder.build();
   }
 
-  private PackagePut.PackagePutBuilder convertCommonAttributesToPackagePutRequest(PackageDataAttributes attributes) {
+  private PackagePut.PackagePutBuilder convertCommonAttributesToPackagePutRequest(PackagePutDataAttributes attributes) {
     PackagePut.PackagePutBuilder builder = PackagePut.builder();
 
     builder.isSelected(attributes.getIsSelected());
