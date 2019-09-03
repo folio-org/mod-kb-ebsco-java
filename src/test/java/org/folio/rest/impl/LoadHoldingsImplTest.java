@@ -139,18 +139,19 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
   @Test
   public void shouldRetryCreationOfSnapshotWhenItFails(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
-    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
+
     stubFor(
       post(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody("")
           .withStatus(202)));
-    mockResponseList(new UrlPathPattern(new EqualToPattern(HOLDINGS_GET_ENDPOINT), false),
-      new ResponseDefinitionBuilder().withStatus(500),
-      new ResponseDefinitionBuilder()
-        .withBody("")
-        .withStatus(202)
-    );
+    ResponseDefinitionBuilder failedResponse = new ResponseDefinitionBuilder().withStatus(500);
+    ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
+      .withBody(readFile("responses/rmapi/holdings/status/get-status-completed.json"));
+    mockResponseList(new UrlPathPattern(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), false),
+      failedResponse,
+      successfulResponse,
+      successfulResponse);
 
     Async async = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
