@@ -215,7 +215,7 @@
           "pathPattern": "/loadHoldings",
           "modulePermissions": ["configuration.entries.collection.get"],
           "unit": "day",
-          "delay": "2"
+          "delay": "5"
         }
       ]
     }
