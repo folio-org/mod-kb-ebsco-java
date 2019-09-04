@@ -16,6 +16,7 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.unit.TestContext;
 
 import org.apache.http.protocol.HTTP;
 import org.junit.Before;
@@ -64,8 +65,9 @@ public abstract class WireMockTestBase extends TestBase {
   private VertxCache<TitleCacheKey, Title> titleCache;
 
   @BeforeClass
-  public static void setUpClassWithProperties(){
+  public static void setUpClass(TestContext context){
     configProperties.put("spring.configuration", "org.folio.spring.config.TestConfig");
+    TestBase.setUpClass(context);
   }
 
   @Before
