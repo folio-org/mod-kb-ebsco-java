@@ -3,62 +3,46 @@
     {
       "tableName": "tags",
       "withMetadata": false,
-      "pkColumnName": "id",
-      "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-tags-table.sql"
     },
     {
       "tableName": "packages",
       "withMetadata": false,
-      "pkColumnName": "id",
-      "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-packages-table.sql"
     },
     {
       "tableName": "providers",
       "withMetadata": false,
-      "pkColumnName": "id",
-      "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-providers-table.sql"
     },
     {
       "tableName": "resources",
       "withMetadata": false,
-      "pkColumnName": "id",
-      "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-resources-table.sql"
     },
     {
       "tableName": "titles",
       "withMetadata": false,
-      "pkColumnName": "id",
-      "generateId": false,
       "withAuditing": false,
       "customSnippetPath": "create-titles-table.sql"
     },
     {
       "tableName": "holdings",
-      "pkColumnName": "id",
-      "generateId": false,
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-holdings-table.sql"
     },
     {
       "tableName": "holdings_status",
-      "pkColumnName": "id",
-      "generateId": false,
       "withMetadata": false,
       "withAuditing": false
     },
     {
       "tableName": "retry_status",
-      "pkColumnName": "id",
-      "generateId": false,
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-retry-status-table.sql"
@@ -67,8 +51,13 @@
   "scripts": [
     {
     "run": "after",
-    "snippet": "CREATE OR REPLACE FUNCTION update_started_date_before_insertion()   RETURNS TRIGGER AS $$  DECLARE     started text;  BEGIN    started = NEW.jsonb->'data'->'attributes'->>'started';    IF started IS NULL THEN      NEW.jsonb = jsonb_set(NEW.jsonb, '{data,attributes,started}' ,  to_json(OLD.jsonb->'data'->'attributes'->>'started')::jsonb);    ELSE NEW.jsonb = NEW.jsonb;    end IF;  RETURN NEW;  END; $$ language 'plpgsql'; DROP TRIGGER IF EXISTS  update_started_date_before_insertion_trigger ON holdings_status CASCADE; CREATE TRIGGER  update_started_date_before_insertion_trigger BEFORE UPDATE ON holdings_status FOR EACH ROW EXECUTE PROCEDURE update_started_date_before_insertion();",
+    "snippetPath": "update_started_date_before_insertion.sql",
     "fromModuleVersion": "1.0"
+    },
+    {
+      "run": "after",
+      "snippetPath": "drop_set_id_in_jsonb.sql",
+      "fromModuleVersion": "1.0"
     }
   ]
 }
