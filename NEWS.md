@@ -1,3 +1,13 @@
+## v3.0.0 2019-09-10
+* MODKBEKBJ-312 - Update RMB to version 27.0.0
+* MODKBEKBJ-309 - Change frequency of loading to 5 days
+* MODKBEKBJ-306 - Correctly process "None" status on loading holdings
+* MODKBEKBJ-287 - Remove update of resource tags from resource endpoints
+* MODKBEKBJ-286 - Remove update of provider tags from provider endpoints
+* MODKBEKBJ-283 - Remove update of package tags from package endpoints
+* MODKBEKBJ-294 - "Internal Server Error" appears after removing any title from Custom package
+* MODKBEKBJ-284 - Add retry mechanism for loading holdings
+
 ## v2.5.1 2019-07-26
 * MODKBEKBJ-293 - Add default timestamp to updated_at column
  
