@@ -27,6 +27,11 @@
       "description": "Whether this package is selected or not",
       "example": false
     },
+    "isFullPackage": {
+      "type": "boolean",
+      "description": "Whether this package is partially selected or not",
+      "example": false
+    },
     "name": {
       "type": "string",
       "description": "Package name",

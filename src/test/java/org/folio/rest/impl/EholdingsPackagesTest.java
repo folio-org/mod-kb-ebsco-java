@@ -63,10 +63,12 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,6 +77,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.PackagePut;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -114,9 +117,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final UrlPathPattern PACKAGE_URL_PATTERN = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
   private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
 
-  private static final String PACKAGED_UPDATED_STATE = "Packaged updated";
+  private static final String PACKAGE_UPDATED_STATE = "Package updated";
   private static final String GET_PACKAGE_SCENARIO = "Get package";
   private static final String STUB_TITLE_NAME = "Activity Theory Perspectives on Technology in Higher Education";
+  private ObjectMapper mapper = new ObjectMapper();
 
   @Test
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
@@ -313,7 +317,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutTagsWhenRequestBodyIsInvalid() throws IOException, URISyntaxException {
-    ObjectMapper mapper = new ObjectMapper();
     PackageTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/package/put-package-tags.json"), PackageTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
     putWithStatus(PACKAGE_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY);
@@ -367,7 +370,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     Package packageData = getWithOk(PACKAGES_PATH + "?include=resources")
       .as(Package.class);
 
-    ObjectMapper mapper = new ObjectMapper();
     Package expectedPackage = mapper.readValue(readFile(EXPECTED_PACKAGE_BY_ID_STUB_FILE), Package.class);
     ResourceCollection expectedResources = mapper.readValue(readFile(EXPECTED_RESOURCES_STUB_FILE), ResourceCollection.class);
     expectedPackage.getIncluded().addAll(expectedResources.getData());
@@ -396,7 +398,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldSendDeleteRequestForPackage() throws IOException, URISyntaxException {
-
     mockDefaultConfiguration(getWiremockUrl());
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
@@ -420,7 +421,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturn400WhenPackageIsNotCustom() throws URISyntaxException, IOException {
     mockDefaultConfiguration(getWiremockUrl());
 
-    ObjectMapper mapper = new ObjectMapper();
     PackageData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class)
       .toBuilder().isCustom(false).build();
 
@@ -440,7 +440,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
-    ObjectMapper mapper = new ObjectMapper();
     PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
     packageData = packageData.toByIdBuilder().isSelected(updatedIsSelected).build();
     String updatedPackageValue = mapper.writeValueAsString(packageData);
@@ -467,7 +466,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
-    ObjectMapper mapper = new ObjectMapper();
     PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
 
     packageData = packageData.toByIdBuilder()
@@ -498,6 +496,26 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldPassIsFullPackageAttributeToRMAPI() throws URISyntaxException, IOException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    PackageByIdData updatedPackage = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class)
+                                    .toByIdBuilder().isSelected(true).build();
+
+    mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), mapper.writeValueAsString(updatedPackage));
+
+    PackagePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/package/put-package-selected.json"), PackagePutRequest.class);
+    request.getData().getAttributes().setIsFullPackage(false);
+    putWithOk(PACKAGES_PATH, mapper.writeValueAsString(request)).as(Package.class);
+
+    PackagePut rmApiPutRequest = mapper.readValue(readFile("requests/rmapi/packages/put-package-is-selected.json"), PackagePut.class)
+                                  .toBuilder().isFullPackage(false).build();
+
+    verify(putRequestedFor(PACKAGE_URL_PATTERN)
+      .withRequestBody(new EqualToJsonPattern(mapper.writeValueAsString(rmApiPutRequest), true, true)));
+  }
+
+  @Test
   public void shouldUpdateAllAttributesInCustomPackage() throws URISyntaxException, IOException {
     boolean updatedSelected = true;
     boolean updatedHidden = true;
@@ -509,7 +527,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
 
-    ObjectMapper mapper = new ObjectMapper();
     PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
 
     packageData = packageData.toByIdBuilder()
@@ -590,14 +607,12 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnDefaultResourcesOnGetWithResources() throws IOException, URISyntaxException {
-
     String query = "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(PACKAGE_RESOURCES_PATH, query);
   }
 
   @Test
   public void shouldReturnResourcesWithPagingOnGetWithResources() throws IOException, URISyntaxException {
-
     String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?page=2";
     String query = "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=2&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
@@ -605,7 +620,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyListWhenResourcesAreNotFound() throws IOException, URISyntaxException {
-
     mockDefaultConfiguration(getWiremockUrl());
 
     mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE);
@@ -641,7 +655,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnFilteredResourcesWithNonEmptyCustomerResourceList() throws IOException, URISyntaxException {
-
     mockDefaultConfiguration(getWiremockUrl());
     mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_CUSTOMER_RESOURCE_LIST_STUB_FILE);
     final ResourceCollection resourceCollection = getWithOk(PACKAGE_RESOURCES_PATH).as(ResourceCollection.class);
@@ -734,7 +747,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   private void shouldReturnResourcesOnGetWithResources(String getURL, String rmAPIQuery) throws IOException, URISyntaxException {
-
     mockDefaultConfiguration(getWiremockUrl());
 
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
@@ -757,7 +769,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     stubFor(
       get(urlPattern)
         .inScenario(GET_PACKAGE_SCENARIO)
-        .whenScenarioStateIs(PACKAGED_UPDATED_STATE)
+        .whenScenarioStateIs(PACKAGE_UPDATED_STATE)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(updatedPackage)));
   }
@@ -774,12 +786,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .inScenario(GET_PACKAGE_SCENARIO)
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(SC_NO_CONTENT))
-        .willSetStateTo(PACKAGED_UPDATED_STATE));
+        .willSetStateTo(PACKAGE_UPDATED_STATE));
   }
 
   private Package sendPut(String mockUpdatedPackage) throws IOException, URISyntaxException {
-    ObjectMapper mapper = new ObjectMapper();
-
     mockDefaultConfiguration(getWiremockUrl());
 
     mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), mockUpdatedPackage);
@@ -790,8 +800,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   private void sendPutTags(List<String> newTags) throws IOException, URISyntaxException {
-    ObjectMapper mapper = new ObjectMapper();
-
     PackageTagsPutRequest tags = mapper.readValue(getFile("requests/kb-ebsco/package/put-package-tags.json"), PackageTagsPutRequest.class);
 
     if(newTags != null) {
@@ -812,7 +820,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockPost(new EqualToPattern(PACKAGES_STUB_URL), new AnythingPattern(), packageCreatedIdStubResponseFile, SC_OK);
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
 
-    ObjectMapper mapper = new ObjectMapper();
     PackagePostRequest request = mapper.readValue(requestBody, PackagePostRequest.class);
     return postWithOk("eholdings/packages", mapper.writeValueAsString(request));
   }

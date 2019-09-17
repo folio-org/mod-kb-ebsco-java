@@ -9,6 +9,7 @@
       },
       "isCustom": true,
       "isSelected": true,
+      "isFullPackage": true,
       "name": "name of the ages forever and ever",
       "visibilityData": {
         "isHidden": false,

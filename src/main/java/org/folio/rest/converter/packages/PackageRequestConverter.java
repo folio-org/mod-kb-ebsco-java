@@ -39,6 +39,7 @@ public class PackageRequestConverter {
     PackagePut.PackagePutBuilder builder = PackagePut.builder();
 
     builder.isSelected(attributes.getIsSelected());
+    builder.isFullPackage(attributes.getIsFullPackage());
 
     if (attributes.getProxy() != null) {
       org.folio.holdingsiq.model.Proxy proxy = org.folio.holdingsiq.model.Proxy.builder()
@@ -64,5 +65,5 @@ public class PackageRequestConverter {
 
     return builder;
   }
-  
+
 }
