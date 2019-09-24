@@ -1,3 +1,6 @@
+## v3.0.1 2019-09-24
+* MODKBEKBJ-311 - Add isFullPackage to schema for PUT /packages/{id} endpoint,
+
 ## v3.0.0 2019-09-10
 * MODKBEKBJ-312 - Update RMB to version 27.0.0
 * MODKBEKBJ-309 - Change frequency of loading to 5 days
