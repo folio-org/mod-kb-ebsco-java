@@ -38,8 +38,10 @@
     },
     {
       "tableName": "holdings_status",
+      "fromModuleVersion": "3.0.2",
       "withMetadata": false,
-      "withAuditing": false
+      "withAuditing": false,
+      "customSnippetPath": "create-holdings-status-table.sql"
     },
     {
       "tableName": "retry_status",

@@ -12,8 +12,18 @@ import java.util.concurrent.CompletionStage;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.repository.holdings.status.RetryStatus;
 import org.folio.repository.holdings.status.RetryStatusRepository;
@@ -22,15 +32,6 @@ import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class TenantApiImpl extends TenantAPI {
 
@@ -85,8 +86,7 @@ public class TenantApiImpl extends TenantAPI {
   }
 
   private CompletableFuture<Void> setStatusNotStarted(String tenantId) {
-    return holdingsStatusRepository.delete(tenantId)
-      .thenCompose(o -> holdingsStatusRepository.save(getStatusNotStarted(), tenantId));
+    return holdingsStatusRepository.save(getStatusNotStarted(), tenantId);
   }
 
   private Future<List<String>> setupTestData(Map<String, String> headers, Context context) {
