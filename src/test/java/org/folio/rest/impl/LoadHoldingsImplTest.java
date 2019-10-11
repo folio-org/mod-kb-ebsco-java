@@ -41,14 +41,12 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.SendContext;
+import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -91,7 +89,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
   @Autowired
   RetryStatusRepository retryStatusRepository;
   private Configuration stubConfiguration;
-  private Handler<SendContext> interceptor;
+  private Handler<DeliveryContext<LoadHoldingsMessage>> interceptor;
 
   @Before
   public void setUp() throws Exception {
@@ -109,7 +107,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
   @After
   public void tearDown() {
     if (interceptor != null) {
-      vertx.eventBus().removeInterceptor(interceptor);
+      vertx.eventBus().removeOutboundInterceptor(interceptor);
     }
   }
 
@@ -155,7 +153,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
     Async async = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
-    vertx.eventBus().addInterceptor(interceptor);
+    vertx.eventBus().addOutboundInterceptor(interceptor);
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
@@ -176,7 +174,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
     Async async = context.async(TEST_SNAPSHOT_RETRY_COUNT);
     interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, o -> async.countDown());
-    vertx.eventBus().addInterceptor(interceptor);
+    vertx.eventBus().addOutboundInterceptor(interceptor);
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
@@ -222,7 +220,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     int secondTryPages = 2;
     Async async = context.async(firstTryPages + secondTryPages);
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
-    vertx.eventBus().addInterceptor(interceptor);
+    vertx.eventBus().addOutboundInterceptor(interceptor);
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
@@ -242,7 +240,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
         messages.add(((JsonObject) message.body()).getJsonObject("holdings").mapTo(HoldingsMessage.class));
         async.countDown();
       });
-    vertx.eventBus().addInterceptor(interceptor);
+    vertx.eventBus().addOutboundInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
     proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 5001, 2));
@@ -265,7 +263,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     Async async = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION,
       message -> async.complete());
-    vertx.eventBus().addInterceptor(interceptor);
+    vertx.eventBus().addOutboundInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
     proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 2, 1));
