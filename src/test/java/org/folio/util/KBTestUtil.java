@@ -15,14 +15,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.eventbus.SendContext;
 
 import org.folio.rest.jaxrs.model.Configs;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 /**
  * Contains common methods that are used in mod-kb-ebsco-java
@@ -81,8 +81,8 @@ public final class KBTestUtil {
     future.join();
   }
 
-  public static Handler<SendContext> interceptAndContinue(String serviceAddress, String serviceMethodName,
-                                                          Consumer<Message> messageConsumer) {
+  public static Handler<DeliveryContext<LoadHoldingsMessage>> interceptAndContinue(String serviceAddress, String serviceMethodName,
+                                                                                   Consumer<Message> messageConsumer) {
     return messageContext -> {
       Message message = messageContext.message();
       if (messageMatches(serviceAddress, serviceMethodName, message)) {
@@ -94,7 +94,7 @@ public final class KBTestUtil {
     };
   }
 
-  public static Handler<SendContext> interceptAndStop(String serviceAddress, String serviceMethodName,
+  public static Handler<DeliveryContext<LoadHoldingsMessage>> interceptAndStop(String serviceAddress, String serviceMethodName,
                                                       Consumer<Message> messageConsumer) {
     return messageContext -> {
       Message message = messageContext.message();
