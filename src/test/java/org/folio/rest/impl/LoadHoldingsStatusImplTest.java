@@ -61,6 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.rest.client.TenantClient;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.rest.jaxrs.model.TenantAttributes;
+import org.folio.rest.tools.PomReader;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.KBTestUtil;
@@ -108,14 +110,20 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatus(vertx, getStatusCompleted(1000));
 
+
     Async async = context.async();
     TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
     try {
-      tenantClient.postTenant(null, res2 -> async.complete());
+      TenantAttributes tenantAttributes = new TenantAttributes() ;
+      tenantAttributes.setModuleFrom("0.0.1");
+      tenantAttributes.setModuleTo(PomReader.INSTANCE.getVersion());
+      tenantClient.postTenant(tenantAttributes, res2 -> async.complete());
     } catch (Exception e) {
       e.printStackTrace();
     }
     async.awaitSuccess();
+
+
 
     final HoldingsLoadingStatus status = getWithOk(HOLDINGS_STATUS_ENDPOINT).body().as(HoldingsLoadingStatus.class);
     assertThat(status.getData().getAttributes().getStatus().getName().value(), equalToIgnoringWhiteSpace("Completed"));
