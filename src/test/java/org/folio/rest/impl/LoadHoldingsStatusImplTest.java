@@ -42,13 +42,11 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.SendContext;
+import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,6 +62,7 @@ import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.tools.PomReader;
 import org.folio.service.holdings.HoldingsService;
+import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.KBTestUtil;
 
@@ -73,7 +72,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   private static final String HOLDINGS_STATUS_ENDPOINT = LOAD_HOLDINGS_ENDPOINT + "/status";
   private static final int TIMEOUT = 300;
   private static final int SNAPSHOT_RETRIES = 2;
-  private List<Handler<SendContext>> interceptors = new ArrayList<>();
+  private List<Handler<DeliveryContext<LoadHoldingsMessage>>> interceptors = new ArrayList<>();
 
   @InjectMocks
   @Autowired
@@ -94,7 +93,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   @After
   public void tearDown() {
     interceptors.forEach(interceptor ->
-      vertx.eventBus().removeInterceptor(interceptor));
+      vertx.eventBus().removeOutboundInterceptor(interceptor));
   }
 
   @Test
@@ -144,13 +143,13 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     );
 
     Async startedAsync = context.async();
-    Handler<SendContext> interceptor = interceptAndContinue(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> startedAsync.complete());
-    vertx.eventBus().addInterceptor(interceptor);
+    Handler<DeliveryContext<LoadHoldingsMessage>> interceptor = interceptAndContinue(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> startedAsync.complete());
+    vertx.eventBus().addOutboundInterceptor(interceptor);
     interceptors.add(interceptor);
 
     Async finishedAsync = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> finishedAsync.complete());
-    vertx.eventBus().addInterceptor(interceptor);
+    vertx.eventBus().addOutboundInterceptor(interceptor);
     interceptors.add(interceptor);
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
@@ -197,8 +196,8 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     mockGet(new EqualToPattern(LoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), SC_INTERNAL_SERVER_ERROR);
 
     Async finishedAsync = context.async(SNAPSHOT_RETRIES);
-    Handler<SendContext> interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, message -> finishedAsync.countDown());
-    vertx.eventBus().addInterceptor(interceptor);
+    Handler<DeliveryContext<LoadHoldingsMessage>> interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, message -> finishedAsync.countDown());
+    vertx.eventBus().addOutboundInterceptor(interceptor);
     interceptors.add(interceptor);
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);

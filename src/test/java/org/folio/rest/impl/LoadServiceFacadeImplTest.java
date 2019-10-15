@@ -18,13 +18,11 @@ import java.net.URISyntaxException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.SendContext;
+import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.service.holdings.ConfigurationMessage;
 import org.folio.service.holdings.LoadServiceFacade;
+import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @RunWith(VertxUnitRunner.class)
 public class LoadServiceFacadeImplTest extends WireMockTestBase {
@@ -47,7 +46,7 @@ public class LoadServiceFacadeImplTest extends WireMockTestBase {
 
   private Configuration stubConfiguration;
 
-  private Handler<SendContext> interceptor;
+  private Handler<DeliveryContext<LoadHoldingsMessage>> interceptor;
 
   @Before
   public void setUp() throws Exception {
@@ -62,7 +61,7 @@ public class LoadServiceFacadeImplTest extends WireMockTestBase {
   @After
   public void tearDown() {
     if (interceptor != null) {
-      vertx.eventBus().removeInterceptor(interceptor);
+      vertx.eventBus().addOutboundInterceptor(interceptor);
     }
   }
 
@@ -83,7 +82,7 @@ public class LoadServiceFacadeImplTest extends WireMockTestBase {
 
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
       message -> async.complete());
-    vertx.eventBus().addInterceptor(interceptor);
+    vertx.eventBus().addOutboundInterceptor(interceptor);
 
     loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_TENANT));
 
