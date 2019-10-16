@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_GET_ENDPOINT;
 import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_ENDPOINT;
@@ -23,6 +24,8 @@ import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
 import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
@@ -54,7 +57,10 @@ import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
+import org.folio.rest.client.TenantClient;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.rest.jaxrs.model.TenantAttributes;
+import org.folio.rest.tools.PomReader;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.util.HoldingsStatusUtil;
@@ -95,6 +101,31 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     mockDefaultConfiguration(getWiremockUrl());
     final HoldingsLoadingStatus status = getWithOk(HOLDINGS_STATUS_ENDPOINT).body().as(HoldingsLoadingStatus.class);
     assertThat(status.getData().getAttributes().getStatus().getName().value(), equalToIgnoringWhiteSpace("Not Started"));
+  }
+
+  @Test
+  public void shouldNotOverrideStatusOnSecondCallToTenantAPI(TestContext context) throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    HoldingsStatusUtil.insertStatus(vertx, getStatusCompleted(1000));
+
+
+    Async async = context.async();
+    TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
+    try {
+      TenantAttributes tenantAttributes = new TenantAttributes() ;
+      tenantAttributes.setModuleFrom("0.0.1");
+      tenantAttributes.setModuleTo(PomReader.INSTANCE.getVersion());
+      tenantClient.postTenant(tenantAttributes, res2 -> async.complete());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    async.awaitSuccess();
+
+
+
+    final HoldingsLoadingStatus status = getWithOk(HOLDINGS_STATUS_ENDPOINT).body().as(HoldingsLoadingStatus.class);
+    assertThat(status.getData().getAttributes().getStatus().getName().value(), equalToIgnoringWhiteSpace("Completed"));
   }
 
   @Test

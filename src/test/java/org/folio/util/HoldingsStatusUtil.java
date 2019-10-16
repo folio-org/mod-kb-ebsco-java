@@ -20,10 +20,14 @@ import org.folio.rest.persist.PostgresClient;
 public class HoldingsStatusUtil {
 
   public static HoldingsLoadingStatus insertStatusNotStarted(Vertx vertx) {
+    return insertStatus(vertx, getStatusNotStarted());
+  }
+
+  public static HoldingsLoadingStatus insertStatus(Vertx vertx, HoldingsLoadingStatus status) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx)
       .execute("INSERT INTO " + holdingsStatusTestTable() + " (" + ID_COLUMN + ", " + JSONB_COLUMN + " ) VALUES (?,?)",
-        new JsonArray(Arrays.asList(UUID.randomUUID().toString(), Json.encode(getStatusNotStarted()))),
+        new JsonArray(Arrays.asList(UUID.randomUUID().toString(), Json.encode(status))),
          event -> future.complete(null));
     return future.join();
   }
