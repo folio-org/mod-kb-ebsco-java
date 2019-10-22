@@ -4,10 +4,24 @@ import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.internal.util.Producer;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.holdingsiq.service.LoadService;
@@ -17,16 +31,15 @@ import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
-import org.glassfish.jersey.internal.util.Producer;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @Component
 public class LoadServiceFacadeImpl implements LoadServiceFacade {
+  public static final DateTimeFormatter HOLDINGS_STATUS_TIME_FORMATTER = new DateTimeFormatterBuilder()
+    .parseCaseInsensitive()
+    .append(DateTimeFormatter.ISO_LOCAL_DATE)
+    .appendLiteral(' ')
+    .append(DateTimeFormatter.ISO_LOCAL_TIME)
+    .toFormatter();
   private static final int MAX_COUNT = 5000;
   private static final Logger logger = LoggerFactory.getLogger(LoadServiceFacadeImpl.class);
   private final HoldingsService holdingsService;
@@ -34,17 +47,20 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
   private final int loadPageDelay;
   private long statusRetryDelay;
   private int statusRetryCount;
+  private int snapshotRefreshPeriod;
   private Vertx vertx;
 
   public LoadServiceFacadeImpl(@Value("${holdings.status.check.delay}") long statusRetryDelay,
                                @Value("${holdings.status.retry.count}") int statusRetryCount,
                                @Value("${holdings.page.retry.delay}") int loadPageRetryDelay,
+                               @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
                                @Value("${holdings.page.retry.count}") int loadPageRetryCount,
                                Vertx vertx) {
     this.loadPageDelay = loadPageRetryDelay;
     this.loadPageRetries = loadPageRetryCount;
     this.statusRetryDelay = statusRetryDelay;
     this.statusRetryCount = statusRetryCount;
+    this.snapshotRefreshPeriod = snapshotRefreshPeriod;
     this.vertx = vertx;
     this.holdingsService = HoldingsService.createProxy(vertx, HOLDINGS_SERVICE_ADDRESS);
   }
@@ -54,7 +70,6 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> populateHoldings(loadingService))
-      .thenCompose(isSuccessful -> waitForCompleteStatus(statusRetryCount, loadingService))
       .thenAccept(status -> holdingsService.snapshotCreated(new SnapshotCreatedMessage(message.getConfiguration(),
         status.getTotalCount(), getRequestCount(status.getTotalCount()), message.getTenantId())))
       .whenComplete((o, throwable) -> {
@@ -80,14 +95,17 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
       });
   }
 
-  private CompletableFuture<Void> populateHoldings(LoadService loadingService) {
+  private CompletableFuture<HoldingsLoadStatus> populateHoldings(LoadService loadingService) {
     return getLoadingStatus(loadingService).thenCompose(loadStatus -> {
-      final LoadStatus other = LoadStatus.fromValue(loadStatus.getStatus());
-      if (IN_PROGRESS.equals(other)) {
-        return CompletableFuture.completedFuture(null);
+      final LoadStatus statusEnum = LoadStatus.fromValue(loadStatus.getStatus());
+      if (snapshotCreatedRecently(loadStatus)) {
+        return CompletableFuture.completedFuture(loadStatus);
+      } else if (IN_PROGRESS.equals(statusEnum)) {
+        return waitForCompleteStatus(statusRetryCount, loadingService);
       } else {
         logger.info("Start populating holdings to stage environment.");
-        return loadingService.populateHoldings();
+        return loadingService.populateHoldings()
+          .thenCompose(isSuccessful -> waitForCompleteStatus(statusRetryCount, loadingService));
       }
     });
   }
@@ -174,5 +192,14 @@ public class LoadServiceFacadeImpl implements LoadServiceFacade {
     final int quotient = totalCount / MAX_COUNT;
     final int remainder = totalCount % MAX_COUNT;
     return remainder == 0 ? quotient : quotient + 1;
+  }
+
+  private boolean snapshotCreatedRecently(HoldingsLoadStatus loadStatus) {
+    if(StringUtils.isEmpty(loadStatus.getCreated())){
+      return false;
+    }
+    ZonedDateTime earliestDateConsideredFresh = LocalDateTime.now().minusSeconds(snapshotRefreshPeriod).atZone(ZoneOffset.UTC);
+    ZonedDateTime snapshotCreated = LocalDateTime.parse(loadStatus.getCreated(), HOLDINGS_STATUS_TIME_FORMATTER).atZone(ZoneOffset.UTC);
+    return snapshotCreated.isAfter(earliestDateConsideredFresh);
   }
 }
