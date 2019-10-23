@@ -17,11 +17,6 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
 
-import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
-import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -33,15 +28,24 @@ import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import org.folio.common.VertxIdService;
+import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.rest.persist.PostgresClient;
+
 @Component
 public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   private static final Logger LOG = LoggerFactory.getLogger(HoldingsStatusRepositoryImpl.class);
 
   private Vertx vertx;
+  private VertxIdService vertxIdService;
 
   @Autowired
-  public HoldingsStatusRepositoryImpl(Vertx vertx) {
+  public HoldingsStatusRepositoryImpl(Vertx vertx, VertxIdService vertxIdService) {
     this.vertx = vertx;
+    this.vertxIdService = vertxIdService;
   }
 
   @Override
@@ -52,8 +56,8 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   @Override
   public CompletableFuture<Void> save(HoldingsLoadingStatus status, String tenantId) {
 
-    final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(2));
-    JsonArray parameters = new JsonArray().add(UUID.randomUUID().toString()).add(Json.encode(status));
+    final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(3));
+    JsonArray parameters = new JsonArray().add(UUID.randomUUID().toString()).add(Json.encode(status)).add(vertxIdService.getVertxId());
     LOG.info("Do insert query = " + query);
     Future<UpdateResult> future = Future.future();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
@@ -63,13 +67,15 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<Void> update(HoldingsLoadingStatus status, String tenantId) {
-
     final String query = String.format(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId), Json.encode(status));
+    UUID vertxId = vertxIdService.getVertxId();
+    JsonArray parameters = new JsonArray().add(vertxId);
     LOG.info("Do update query = " + query);
     Future<UpdateResult> future = Future.future();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, future);
-    return mapVertxFuture(future).thenApply(result -> null);
+    postgresClient.execute(query, parameters, future);
+    return mapVertxFuture(future)
+      .thenApply(this::assertUpdated);
   }
 
   @Override
@@ -86,11 +92,14 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   public CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
       final String query = String.format(UPDATE_IMPORTED_COUNT, getHoldingsStatusTableName(tenantId), holdingsAmount, pageAmount);
+      UUID vertxId = vertxIdService.getVertxId();
+      JsonArray parameters = new JsonArray().add(vertxId);
       LOG.info("Increment imported count query = " + query);
       Future<UpdateResult> future = Future.future();
-      postgresClient.execute(connection, query, future);
+      postgresClient.execute(connection, query, parameters, future);
       return mapVertxFuture(future)
-        .thenCompose(result -> get(tenantId, connection));
+        .thenApply(this::assertUpdated)
+        .thenCompose(o -> get(tenantId, connection));
     });
   }
 
@@ -106,6 +115,13 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
       postgresClient.select(query, future);
     }
     return mapResult(future, this::mapStatus);
+  }
+
+  private Void assertUpdated(UpdateResult result) {
+    if(result.getUpdated() == 0){
+      throw new IllegalArgumentException("Couldn't update holdings status");
+    }
+    return null;
   }
 
   private HoldingsLoadingStatus mapStatus(ResultSet resultSet) {

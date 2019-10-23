@@ -6,6 +6,15 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.Response;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.resource.LoadHoldings;
@@ -14,14 +23,6 @@ import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class LoadHoldingsImpl implements LoadHoldings {
 
@@ -47,7 +48,7 @@ public class LoadHoldingsImpl implements LoadHoldings {
       holdingsService.loadHoldings(context);
       return CompletableFuture.completedFuture(null);
     })
-      .execute();
+    .execute();
   }
 
   @Override
