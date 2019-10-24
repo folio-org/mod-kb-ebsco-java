@@ -1,6 +1,7 @@
 package org.folio.service.holdings;
 
 import static org.folio.common.FutureUtils.failedFuture;
+import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getLoadStatusFailed;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
@@ -45,6 +46,7 @@ import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.rest.util.template.RMAPITemplateContext;
+import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
@@ -95,16 +97,14 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public void loadHoldings(RMAPITemplateContext context) {
+  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context) {
     String tenantId = context.getOkapiData().getTenant();
-    executeWithLock(START_LOADING_LOCK, () ->
-        tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
-          .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount - 1))
-          .thenAccept(o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId)))
-          .exceptionally(e -> {
-            logger.error("Failed to start loading holdings", e);
-            return null;
-          }));
+    Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
+      tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
+        .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount - 1))
+        .thenAccept(o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId)))
+    );
+    return mapVertxFuture(executeFuture);
   }
 
   @Override
@@ -200,7 +200,7 @@ public class HoldingsServiceImpl implements HoldingsService {
           return holdingsStatusRepository.delete(tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, tenantId));
         }
-        return failedFuture(new IllegalStateException("Loading status is already In Progress"));
+        return failedFuture(new ProcessInProgressException("Loading status is already In Progress"));
       });
   }
 

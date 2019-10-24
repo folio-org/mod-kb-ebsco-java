@@ -31,7 +31,7 @@ import io.vertx.ext.sql.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.VertxIdService;
+import org.folio.common.VertxIdProvider;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
 
@@ -40,12 +40,12 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   private static final Logger LOG = LoggerFactory.getLogger(HoldingsStatusRepositoryImpl.class);
 
   private Vertx vertx;
-  private VertxIdService vertxIdService;
+  private VertxIdProvider vertxIdProvider;
 
   @Autowired
-  public HoldingsStatusRepositoryImpl(Vertx vertx, VertxIdService vertxIdService) {
+  public HoldingsStatusRepositoryImpl(Vertx vertx, VertxIdProvider vertxIdProvider) {
     this.vertx = vertx;
-    this.vertxIdService = vertxIdService;
+    this.vertxIdProvider = vertxIdProvider;
   }
 
   @Override
@@ -57,7 +57,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   public CompletableFuture<Void> save(HoldingsLoadingStatus status, String tenantId) {
 
     final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(3));
-    JsonArray parameters = new JsonArray().add(UUID.randomUUID().toString()).add(Json.encode(status)).add(vertxIdService.getVertxId());
+    JsonArray parameters = new JsonArray().add(UUID.randomUUID().toString()).add(Json.encode(status)).add(vertxIdProvider.getVertxId());
     LOG.info("Do insert query = " + query);
     Future<UpdateResult> future = Future.future();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
@@ -68,7 +68,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   @Override
   public CompletableFuture<Void> update(HoldingsLoadingStatus status, String tenantId) {
     final String query = String.format(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId), Json.encode(status));
-    UUID vertxId = vertxIdService.getVertxId();
+    String vertxId = vertxIdProvider.getVertxId();
     JsonArray parameters = new JsonArray().add(vertxId);
     LOG.info("Do update query = " + query);
     Future<UpdateResult> future = Future.future();
@@ -92,7 +92,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   public CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
       final String query = String.format(UPDATE_IMPORTED_COUNT, getHoldingsStatusTableName(tenantId), holdingsAmount, pageAmount);
-      UUID vertxId = vertxIdService.getVertxId();
+      String vertxId = vertxIdProvider.getVertxId();
       JsonArray parameters = new JsonArray().add(vertxId);
       LOG.info("Increment imported count query = " + query);
       Future<UpdateResult> future = Future.future();
