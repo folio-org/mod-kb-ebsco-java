@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.apache.http.HttpStatus.SC_CONFLICT;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,23 +13,30 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
+import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SAVE_HOLDINGS_ACTION;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
+import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.HoldingsStatusUtil.PROCESS_ID;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -41,12 +49,14 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -61,6 +71,7 @@ import org.folio.holdingsiq.model.Configuration;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.RetryStatusRepository;
+import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.service.holdings.HoldingsMessage;
 import org.folio.service.holdings.HoldingsService;
@@ -132,6 +143,29 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
     final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
+  }
+
+  @Test
+  public void shouldNotStartLoadingWhenStatusInProgress() throws IOException, URISyntaxException {
+    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    HoldingsStatusUtil.insertStatus(vertx, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID);
+    mockDefaultConfiguration(getWiremockUrl());
+    interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
+    vertx.eventBus().addOutboundInterceptor(interceptor);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_CONFLICT);
+  }
+
+  @Test
+  public void shouldStartLoadingWhenStatusInProgressAndProcessTimedOut() throws IOException, URISyntaxException {
+    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
+    status.getData().getAttributes()
+      .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().minus(10, ChronoUnit.DAYS).atZone(ZoneId.systemDefault())));
+    HoldingsStatusUtil.insertStatus(vertx, status, PROCESS_ID);
+    mockDefaultConfiguration(getWiremockUrl());
+    interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
+    vertx.eventBus().addOutboundInterceptor(interceptor);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
   }
 
   @Test

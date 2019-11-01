@@ -27,7 +27,9 @@ public class HoldingsLoadingStatusFactory {
         .withType(STATUS_RECTYPE)
         .withAttributes(new LoadStatusAttributes()
           .withStatus(new LoadStatusInformation()
-            .withName(LoadStatusNameEnum.NOT_STARTED))))
+            .withName(LoadStatusNameEnum.NOT_STARTED))
+          .withUpdated(getTimeNow())
+        ))
       .withJsonapi(JSONAPI);
   }
 
@@ -36,10 +38,11 @@ public class HoldingsLoadingStatusFactory {
       .withData(new LoadStatusData()
         .withType(STATUS_RECTYPE)
         .withAttributes(new LoadStatusAttributes()
-          .withStarted(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().atZone(ZoneId.systemDefault())))
+          .withStarted(getTimeNow())
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.IN_PROGRESS)
             .withDetail(LoadStatusNameDetailEnum.POPULATING_STAGING_AREA))
+          .withUpdated(getTimeNow())
           .withErrors(null)))
       .withJsonapi(JSONAPI);
   }
@@ -52,6 +55,7 @@ public class HoldingsLoadingStatusFactory {
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.IN_PROGRESS)
             .withDetail(LoadStatusNameDetailEnum.LOADING_HOLDINGS))
+          .withUpdated(getTimeNow())
           .withTotalCount(totalCount)
           .withImportedCount(importedCount)
           .withTotalPages(totalPages)
@@ -68,7 +72,8 @@ public class HoldingsLoadingStatusFactory {
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.COMPLETED))
           .withTotalCount(totalCount)
-          .withFinished(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().atZone(ZoneId.systemDefault())))))
+          .withUpdated(getTimeNow())
+          .withFinished(getTimeNow())))
       .withJsonapi(JSONAPI);
   }
 
@@ -79,7 +84,12 @@ public class HoldingsLoadingStatusFactory {
         .withAttributes(new LoadStatusAttributes()
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.FAILED))
+          .withUpdated(getTimeNow())
           .withErrors(errors)))
       .withJsonapi(JSONAPI);
+  }
+
+  private static String getTimeNow() {
+    return POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().atZone(ZoneId.systemDefault()));
   }
 }

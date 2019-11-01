@@ -2,19 +2,8 @@ package org.folio.rest.impl;
 
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.Response;
-
-import org.folio.repository.holdings.status.HoldingsStatusRepository;
-import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
-import org.folio.rest.jaxrs.resource.LoadHoldings;
-import org.folio.rest.tools.utils.TenantTool;
-import org.folio.rest.util.template.RMAPITemplate;
-import org.folio.rest.util.template.RMAPITemplateFactory;
-import org.folio.service.holdings.HoldingsService;
-import org.folio.spring.SpringContextUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -22,6 +11,19 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.folio.repository.holdings.status.HoldingsStatusRepository;
+import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.rest.jaxrs.resource.LoadHoldings;
+import org.folio.rest.tools.utils.TenantTool;
+import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.template.RMAPITemplate;
+import org.folio.rest.util.template.RMAPITemplateFactory;
+import org.folio.service.holdings.HoldingsService;
+import org.folio.service.holdings.exception.ProcessInProgressException;
+import org.folio.spring.SpringContextUtil;
 
 public class LoadHoldingsImpl implements LoadHoldings {
 
@@ -43,11 +45,10 @@ public class LoadHoldingsImpl implements LoadHoldings {
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Received signal to start scheduled loading of holdings");
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    template.requestAction(context -> {
-      holdingsService.loadHoldings(context);
-      return CompletableFuture.completedFuture(null);
-    })
-      .execute();
+    template.requestAction(context -> holdingsService.loadHoldings(context))
+      .addErrorMapper(ProcessInProgressException.class,
+        e -> PostLoadHoldingsResponse.respond409WithTextPlain(ErrorUtil.createError(e.getMessage())))
+    .execute();
   }
 
   @Override

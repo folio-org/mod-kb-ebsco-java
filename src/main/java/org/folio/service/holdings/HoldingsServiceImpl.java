@@ -1,6 +1,7 @@
 package org.folio.service.holdings;
 
 import static org.folio.common.FutureUtils.failedFuture;
+import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getLoadStatusFailed;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -19,6 +21,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.Lock;
+
+import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.internal.util.Producer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Holding;
 import org.folio.repository.holdings.HoldingInfoInDB;
@@ -31,21 +46,11 @@ import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.rest.util.template.RMAPITemplateContext;
+import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
-import org.glassfish.jersey.internal.util.Producer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.Lock;
 
 @Component
 public class HoldingsServiceImpl implements HoldingsService {
@@ -68,6 +73,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   private int snapshotRetryCount;
   private long loadHoldingsRetryDelay;
   private int loadHoldingsRetryCount;
+  private int loadHoldingsTimeout;
 
   @Autowired
   public HoldingsServiceImpl(Vertx vertx, HoldingsRepository holdingsRepository,
@@ -75,6 +81,7 @@ public class HoldingsServiceImpl implements HoldingsService {
                              @Value("${holdings.snapshot.retry.count}") int snapshotRetryCount,
                              @Value("${holdings.snapshot.retry.delay}") long loadHoldingsRetryDelay,
                              @Value("${holdings.snapshot.retry.count}") int loadHoldingsRetryCount,
+                             @Value("${holdings.timeout}") int loadHoldingsTimeout,
                              HoldingsStatusRepository holdingsStatusRepository,
                              RetryStatusRepository retryStatusRepository) {
     this.vertx = vertx;
@@ -85,20 +92,19 @@ public class HoldingsServiceImpl implements HoldingsService {
     this.snapshotRetryCount = snapshotRetryCount;
     this.loadHoldingsRetryDelay = loadHoldingsRetryDelay;
     this.loadHoldingsRetryCount = loadHoldingsRetryCount;
+    this.loadHoldingsTimeout = loadHoldingsTimeout;
     this.loadServiceFacade = LoadServiceFacade.createProxy(vertx, HoldingConstants.LOAD_FACADE_ADDRESS);
   }
 
   @Override
-  public void loadHoldings(RMAPITemplateContext context) {
+  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context) {
     String tenantId = context.getOkapiData().getTenant();
-    executeWithLock(START_LOADING_LOCK, () ->
-        tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
-          .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount - 1))
-          .thenAccept(o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId)))
-          .exceptionally(e -> {
-            logger.error("Failed to start loading holdings", e);
-            return null;
-          }));
+    Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
+      tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea())
+        .thenCompose(o -> resetRetries(tenantId, snapshotRetryCount - 1))
+        .thenAccept(o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), tenantId)))
+    );
+    return mapVertxFuture(executeFuture);
   }
 
   @Override
@@ -190,10 +196,11 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
         logger.info("Current status is {}", attributes.getStatus().getName());
-        if(attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS){
-          return holdingsStatusRepository.update(newStatus, tenantId);
+        if(attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)){
+          return holdingsStatusRepository.delete(tenantId)
+            .thenCompose(o -> holdingsStatusRepository.save(newStatus, tenantId));
         }
-        return failedFuture(new IllegalStateException("Loading status is already In Progress"));
+        return failedFuture(new ProcessInProgressException("Loading status is already In Progress"));
       });
   }
 
@@ -271,5 +278,14 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   private String getHoldingsId(Holding holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
+  }
+
+  private boolean processTimedOut(HoldingsLoadingStatus status) {
+    String updatedString = status.getData().getAttributes().getUpdated();
+    if(StringUtils.isEmpty(updatedString)){
+      return true;
+    }
+    ZonedDateTime updated = ZonedDateTime.parse(updatedString, POSTGRES_TIMESTAMP_FORMATTER);
+    return ZonedDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
   }
 }

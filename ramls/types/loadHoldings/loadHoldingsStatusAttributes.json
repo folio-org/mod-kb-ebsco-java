@@ -11,6 +11,11 @@
       "description": "Holdings loading started time",
       "example": "1999-12-31 14:59:59"
     },
+    "updated": {
+      "type": "string",
+      "description": "Time of last update to status",
+      "example": "1999-12-31 16:01:03"
+    },
     "finished": {
       "type": "string",
       "description": "Holdings loading finished time",

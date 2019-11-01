@@ -29,6 +29,7 @@ import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.HoldingsStatusUtil.PROCESS_ID;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
@@ -42,11 +43,13 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,7 +110,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void shouldNotOverrideStatusOnSecondCallToTenantAPI(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
     KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
-    HoldingsStatusUtil.insertStatus(vertx, getStatusCompleted(1000));
+    HoldingsStatusUtil.insertStatus(vertx, getStatusCompleted(1000), PROCESS_ID);
 
 
     Async async = context.async();
