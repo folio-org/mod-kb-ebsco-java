@@ -139,7 +139,8 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/status",
-          "permissionsRequired" :["kb-ebsco.status.get"]
+          "permissionsRequired" :["kb-ebsco.status.get"],
+          "modulePermissions" : ["configuration.entries.collection.get"]
         },
         {
           "methods": ["DELETE"],
@@ -196,11 +197,7 @@
       "interfaceType": "system",
       "handlers": [
         {
-          "methods": ["POST"],
-          "pathPattern": "/_/tenant"
-        },
-        {
-          "methods": ["DELETE"],
+          "methods": ["POST", "DELETE"],
           "pathPattern": "/_/tenant"
         }
       ]
