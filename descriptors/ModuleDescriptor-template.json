@@ -197,11 +197,7 @@
       "interfaceType": "system",
       "handlers": [
         {
-          "methods": ["POST"],
-          "pathPattern": "/_/tenant"
-        },
-        {
-          "methods": ["DELETE"],
+          "methods": ["POST", "DELETE"],
           "pathPattern": "/_/tenant"
         }
       ]
