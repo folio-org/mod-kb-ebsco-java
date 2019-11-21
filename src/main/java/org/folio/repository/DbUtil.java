@@ -1,6 +1,7 @@
 package org.folio.repository;
 
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
+import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
@@ -15,11 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 
-import org.apache.commons.lang3.mutable.MutableObject;
-import org.folio.common.FutureUtils;
-import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.ObjectMapperTool;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -28,6 +24,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.SQLConnection;
+
+import org.apache.commons.lang3.mutable.MutableObject;
+
+import org.folio.common.FutureUtils;
+import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class DbUtil {
   private DbUtil() {}
@@ -109,6 +111,10 @@ public class DbUtil {
 
   public static String getHoldingsStatusTableName(String tenantId) {
     return getTableName(tenantId, HOLDINGS_STATUS_TABLE);
+  }
+
+  public static String getHoldingsStatusAuditTableName(String tenantId) {
+    return getTableName(tenantId, HOLDINGS_STATUS_AUDIT_TABLE);
   }
 
   public static String getRetryStatusTableName(String tenantId) {

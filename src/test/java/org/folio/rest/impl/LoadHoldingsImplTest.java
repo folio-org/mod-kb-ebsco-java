@@ -13,7 +13,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
+import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
@@ -72,11 +74,13 @@ import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.RetryStatusRepository;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.rest.jaxrs.model.LoadStatusNameDetailEnum;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.service.holdings.HoldingsMessage;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.holdings.LoadServiceFacade;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.folio.util.HoldingsStatusAuditTestUtil;
 import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.HoldingsTestUtil;
 import org.folio.util.KBTestUtil;
@@ -113,6 +117,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
       .build();
     KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatusNotStarted(vertx);
+    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
   }
 
   @After
@@ -126,20 +131,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
 
-    Async async = context.async();
-    handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
-
-    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
-    StringValuePattern urlPattern = new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT);
-    stubFor(post(new UrlPathPattern(urlPattern, false))
-      .willReturn(new ResponseDefinitionBuilder()
-        .withBody("")
-        .withStatus(202)));
-    mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
-
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
-
-    async.await(TIMEOUT);
+    runPostHoldingsWithMocks(context);
 
     final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
@@ -153,6 +145,35 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_CONFLICT);
+  }
+
+  @Test
+  public void shouldSaveStatusChangesToAuditTable(TestContext context) throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+    runPostHoldingsWithMocks(context);
+    List<HoldingsLoadingStatus> records = HoldingsStatusAuditTestUtil.getRecords(vertx);
+    assertStatus(records.get(0), LoadStatusNameEnum.NOT_STARTED);
+    assertStatus(records.get(1), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null);
+    assertStatus(records.get(2), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 0);
+    assertStatus(records.get(3), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 1);
+    assertStatus(records.get(4), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 2);
+    assertStatus(records.get(5), LoadStatusNameEnum.COMPLETED);
+  }
+
+  @Test
+  public void shouldClearOldStatusChangeRecords() throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    HoldingsStatusAuditTestUtil.insertStatus(vertx, getStatusCompleted(1000), Instant.now().minus(60, ChronoUnit.DAYS));
+
+    interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
+    vertx.eventBus().addOutboundInterceptor(interceptor);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+
+    List<HoldingsLoadingStatus> records = HoldingsStatusAuditTestUtil.getRecords(vertx);
+    assertEquals(2, records.size());
+    assertStatus(records.get(0), LoadStatusNameEnum.NOT_STARTED);
+    assertStatus(records.get(1), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null);
   }
 
   @Test
@@ -305,10 +326,37 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     assertTrue(async.isSucceeded());
   }
 
+  private void runPostHoldingsWithMocks(TestContext context) throws IOException, URISyntaxException {
+    Async async = context.async();
+    handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
+
+    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
+    StringValuePattern urlPattern = new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT);
+    stubFor(post(new UrlPathPattern(urlPattern, false))
+      .willReturn(new ResponseDefinitionBuilder()
+        .withBody("")
+        .withStatus(202)));
+    mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
+
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+
+    async.await(TIMEOUT);
+  }
+
   public static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy, Consumer<Void> handler) {
     when(repositorySpy.update(
       argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString()))
       .thenAnswer(invocationOnMock -> ((CompletableFuture<Void>) invocationOnMock.callRealMethod())
         .thenAccept(handler));
+  }
+
+  private void assertStatus(HoldingsLoadingStatus firstRecord, LoadStatusNameEnum status) {
+    assertStatus(firstRecord, status, null, null);
+  }
+
+  private void assertStatus(HoldingsLoadingStatus firstRecord, LoadStatusNameEnum status, LoadStatusNameDetailEnum detail, Integer importedPages) {
+    assertEquals(status, firstRecord.getData().getAttributes().getStatus().getName());
+    assertEquals(detail, firstRecord.getData().getAttributes().getStatus().getDetail());
+    assertEquals(importedPages, firstRecord.getData().getAttributes().getImportedPages());
   }
 }

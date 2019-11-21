@@ -117,7 +117,6 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
     try {
       TenantAttributes tenantAttributes = new TenantAttributes() ;
-      tenantAttributes.setModuleFrom("0.0.1");
       tenantAttributes.setModuleTo(PomReader.INSTANCE.getVersion());
       tenantClient.postTenant(tenantAttributes, res2 -> async.complete());
     } catch (Exception e) {
