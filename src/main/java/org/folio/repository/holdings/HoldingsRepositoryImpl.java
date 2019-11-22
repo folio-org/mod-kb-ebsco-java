@@ -17,14 +17,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Lists;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -33,6 +29,11 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class HoldingsRepositoryImpl implements HoldingsRepository {
@@ -64,9 +65,9 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     JsonArray parameters = createParameters(holdings, updatedAt);
     final String query = String.format(INSERT_OR_UPDATE_HOLDINGS_STATEMENT, getHoldingsTableName(tenantId),
       createInsertPlaceholders(3, holdings.size()));
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(connection, query, parameters, future);
-    return mapVertxFuture(future).thenApply(result -> null);
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(connection, query, parameters, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -74,9 +75,9 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     final String query = String.format(REMOVE_FROM_HOLDINGS, getHoldingsTableName(tenantId), timestamp.toString());
     LOG.info("Do delete query = " + query);
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, future);
-    return mapVertxFuture(future).thenApply(result -> null);
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -86,9 +87,9 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     final String query = String.format(GET_HOLDINGS_BY_IDS, getHoldingsTableName(tenantId), resourceIdString);
     LOG.info("Do select query = " + query);
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    Future<ResultSet> future = Future.future();
-    postgresClient.select(query, future);
-    return mapResult(future, this::mapHoldings);
+    Promise<ResultSet> promise = Promise.promise();
+    postgresClient.select(query, promise);
+    return mapResult(promise.future(), this::mapHoldings);
   }
 
   private List<HoldingInfoInDB> mapHoldings(ResultSet resultSet) {

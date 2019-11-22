@@ -14,11 +14,7 @@ import static org.folio.repository.holdings.status.RetryStatusTableConstants.UPD
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -26,6 +22,11 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class RetryStatusRepositoryImpl implements RetryStatusRepository {
@@ -42,19 +43,19 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     final String query = String.format(GET_RETRY_STATUS, getRetryStatusTableName(tenantId));
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     LOG.info("Select retry status = " + query);
-    Future<ResultSet> future = Future.future();
-      postgresClient.select(query, future);
-    return mapResult(future, this::mapStatus);
+    Promise<ResultSet> promise = Promise.promise();
+      postgresClient.select(query, promise);
+    return mapResult(promise.future(), this::mapStatus);
   }
 
   @Override
   public CompletableFuture<Void> save(RetryStatus status, String tenantId) {
     final String query = String.format(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId), createPlaceholders(3));
     LOG.info("Do insert query = " + query);
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, createInsertParameters(status), future);
-    return mapVertxFuture(future).thenApply(result -> null);
+    postgresClient.execute(query, createInsertParameters(status), promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -62,10 +63,10 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     final String query = String.format(UPDATE_RETRY_STATUS, getRetryStatusTableName(tenantId));
     JsonArray parameters = createUpdateParameters(retryStatus);
     LOG.info("Do update query = " + query);
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, parameters, future);
-    return mapVertxFuture(future)
+    postgresClient.execute(query, parameters, promise);
+    return mapVertxFuture(promise.future())
       .thenApply(result -> null);
   }
 
@@ -73,10 +74,10 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<Void> delete(String tenantId) {
     final String query = String.format(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
     LOG.info("Do delete query = " + query);
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, future);
-    return mapVertxFuture(future).thenApply(result -> null);
+    postgresClient.execute(query, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   private JsonArray createInsertParameters(RetryStatus retryStatus) {

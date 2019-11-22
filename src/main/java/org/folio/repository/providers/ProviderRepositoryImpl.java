@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -49,9 +49,9 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Do insert query = " + query);
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, parameters, future.completer());
-    return mapVertxFuture(future).thenApply(result -> null);
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, parameters, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -63,9 +63,9 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Do delete query = " + query);
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, parameter, future.completer());
-    return mapVertxFuture(future).thenApply(result -> null);
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, parameter, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -87,10 +87,10 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Select providers by tags = " + query);
-    Future<ResultSet> future = Future.future();
-    postgresClient.select(query, parameters, future.completer());
+    Promise<ResultSet> promise = Promise.promise();
+    postgresClient.select(query, parameters, promise);
 
-    return mapResult(future, this::mapProviderIds);
+    return mapResult(promise.future(), this::mapProviderIds);
   }
 
   private List<Long> mapProviderIds(ResultSet resultSet) {

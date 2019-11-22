@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -230,24 +231,24 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private Future<Void> executeWithLock(String lockName, Producer<CompletableFuture<Void>> futureProducer) {
-    Future<Lock> future = Future.future();
-    Future<Void> responseFuture = Future.future();
-    vertx.sharedData().getLock(lockName, future);
-    future.map(lock -> {
+    Promise<Lock> lockPromise = Promise.promise();
+    Promise<Void> responsePromise = Promise.promise();
+    vertx.sharedData().getLock(lockName, lockPromise);
+    lockPromise.future().map(lock -> {
       futureProducer.call()
         .whenComplete((o, throwable) -> {
             if (throwable != null) {
-              responseFuture.fail(throwable);
+              responsePromise.fail(throwable);
             }
             else{
-              responseFuture.complete();
+              responsePromise.complete();
             }
             lock.release();
           }
         );
       return null;
     });
-    return responseFuture;
+    return responsePromise.future();
   }
 
   private List<String> getTitleIdsAsList(List<ResourceInfoInDB> resources){

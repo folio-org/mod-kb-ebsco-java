@@ -26,6 +26,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -243,7 +245,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .requestAction(context ->
         context.getPackagesService().retrievePackage(parsedPackageId)
           .thenCompose(packageData -> {
-            if (!packageData.getIsCustom()) {
+            if (BooleanUtils.isNotTrue(packageData.getIsCustom())) {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
             return context.getPackagesService().deletePackage(parsedPackageId).thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
@@ -474,7 +476,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       return completedFuture(null);
     }
     PackagePut packagePutBody;
-    if (entity.getData().getAttributes().getIsCustom()) {
+    if (BooleanUtils.isTrue(entity.getData().getAttributes().getIsCustom())) {
       customPackagePutBodyValidator.validate(entity);
       packagePutBody = converter.convertToRMAPICustomPackagePutRequest(entity);
     } else {
@@ -486,8 +488,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private boolean isPackageUpdatable(PackagePutRequest entity) {
     PackagePutDataAttributes packageData = entity.getData().getAttributes();
-    if (!Objects.isNull(packageData.getIsCustom()) && !packageData.getIsCustom() &&
-      !Objects.isNull(packageData.getIsSelected()) && !packageData.getIsSelected()) {
+    if (BooleanUtils.isFalse(packageData.getIsCustom()) &&
+      BooleanUtils.isFalse(packageData.getIsSelected())) {
       try {
         packagePutBodyValidator.validate(entity);
       } catch (InputValidationException ex) {
@@ -532,8 +534,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return mapItems(holdings, resource ->
       ResourceId.builder()
         .providerIdPart(resource.getVendorId())
-        .packageIdPart(Long.valueOf(resource.getPackageId()))
-        .titleIdPart(Long.valueOf(resource.getTitleId()))
+        .packageIdPart(Long.parseLong(resource.getPackageId()))
+        .titleIdPart(Long.parseLong(resource.getTitleId()))
         .build());
   }
 }

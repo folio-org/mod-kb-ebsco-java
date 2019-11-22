@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -59,10 +59,10 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(3));
     JsonArray parameters = new JsonArray().add(UUID.randomUUID().toString()).add(Json.encode(status)).add(vertxIdProvider.getVertxId());
     LOG.info("Do insert query = " + query);
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, parameters, future);
-    return mapVertxFuture(future).thenApply(result -> null);
+    postgresClient.execute(query, parameters, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -71,10 +71,10 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     String vertxId = vertxIdProvider.getVertxId();
     JsonArray parameters = new JsonArray().add(vertxId);
     LOG.info("Do update query = " + query);
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, parameters, future);
-    return mapVertxFuture(future)
+    postgresClient.execute(query, parameters, promise);
+    return mapVertxFuture(promise.future())
       .thenApply(this::assertUpdated);
   }
 
@@ -82,10 +82,10 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   public CompletableFuture<Void> delete(String tenantId) {
     final String query = String.format(DELETE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
     LOG.info("Do delete query = " + query);
-    Future<UpdateResult> future = Future.future();
+    Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, future);
-    return mapVertxFuture(future).thenApply(result -> null);
+    postgresClient.execute(query, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -95,9 +95,9 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
       String vertxId = vertxIdProvider.getVertxId();
       JsonArray parameters = new JsonArray().add(vertxId);
       LOG.info("Increment imported count query = " + query);
-      Future<UpdateResult> future = Future.future();
-      postgresClient.execute(connection, query, parameters, future);
-      return mapVertxFuture(future)
+      Promise<UpdateResult> promise = Promise.promise();
+      postgresClient.execute(connection, query, parameters, promise);
+      return mapVertxFuture(promise.future())
         .thenApply(this::assertUpdated)
         .thenCompose(o -> get(tenantId, connection));
     });
@@ -107,14 +107,14 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     final String query = String.format(GET_HOLDINGS_STATUS, getHoldingsStatusTableName(tenantId));
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     LOG.info("Select holdings loading status = " + query);
-    Future<ResultSet> future = Future.future();
+    Promise<ResultSet> promise = Promise.promise();
     if(connection != null) {
-      postgresClient.select(connection, query, future);
+      postgresClient.select(connection, query, promise);
     }
     else{
-      postgresClient.select(query, future);
+      postgresClient.select(query, promise);
     }
-    return mapResult(future, this::mapStatus);
+    return mapResult(promise.future(), this::mapStatus);
   }
 
   private Void assertUpdated(UpdateResult result) {

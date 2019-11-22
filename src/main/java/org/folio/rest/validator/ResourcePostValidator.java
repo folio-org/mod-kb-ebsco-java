@@ -1,5 +1,6 @@
 package org.folio.rest.validator;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +25,7 @@ public class ResourcePostValidator {
   }
 
   public void validateRelatedObjects(PackageByIdData packageData, Title title, Titles existingTitles) {
-    if(!packageData.getIsCustom()){
+    if(BooleanUtils.isNotTrue(packageData.getIsCustom())){
       throw new InputValidationException("Invalid PackageId", "Packageid Cannot associate Title with a managed Package");
     }
     if(titleExists(title, existingTitles)){

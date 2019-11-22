@@ -20,7 +20,6 @@ import org.springframework.core.convert.ConversionService;
 
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
-import org.folio.rest.impl.EholdingsPackagesImpl;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
 
@@ -43,7 +42,7 @@ import org.folio.rest.validator.HeaderValidator;
  */
 public class RMAPITemplate {
 
-  private final Logger logger = LoggerFactory.getLogger(EholdingsPackagesImpl.class);
+  private final Logger logger = LoggerFactory.getLogger(RMAPITemplate.class);
 
   private ConfigurationService configurationService;
   private ConversionService conversionService;
