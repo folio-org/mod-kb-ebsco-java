@@ -22,6 +22,7 @@ import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.service.holdings.HoldingsService;
+import org.folio.service.holdings.HoldingsStatusAuditService;
 import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.spring.SpringContextUtil;
 
@@ -32,6 +33,8 @@ public class LoadHoldingsImpl implements LoadHoldings {
   private RMAPITemplateFactory templateFactory;
   @Autowired
   private HoldingsService holdingsService;
+  @Autowired
+  private HoldingsStatusAuditService holdingsStatusAuditService;
   @Autowired
   private HoldingsStatusRepository holdingsStatusRepository;
 
@@ -45,7 +48,11 @@ public class LoadHoldingsImpl implements LoadHoldings {
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Received signal to start scheduled loading of holdings");
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    template.requestAction(context -> holdingsService.loadHoldings(context))
+    template.requestAction(context ->
+        holdingsStatusAuditService.clearExpiredRecords(context.getOkapiData().getTenant()).thenCompose(o ->
+          holdingsService.loadHoldings(context)
+        )
+    )
       .addErrorMapper(ProcessInProgressException.class,
         e -> PostLoadHoldingsResponse.respond409WithTextPlain(ErrorUtil.createError(e.getMessage())))
     .execute();
