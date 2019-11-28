@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
@@ -343,11 +343,14 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     async.await(TIMEOUT);
   }
 
+
   public static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy, Consumer<Void> handler) {
-    when(repositorySpy.update(
-      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString()))
-      .thenAnswer(invocationOnMock -> ((CompletableFuture<Void>) invocationOnMock.callRealMethod())
-        .thenAccept(handler));
+    doAnswer(invocationOnMock -> {
+      @SuppressWarnings("unchecked")
+      CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
+      return future.thenAccept(handler);
+    }).when(repositorySpy).update(
+      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString());
   }
 
   private void assertStatus(HoldingsLoadingStatus firstRecord, LoadStatusNameEnum status) {
