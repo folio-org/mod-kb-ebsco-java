@@ -18,11 +18,11 @@ import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_EN
 import static org.folio.rest.impl.LoadHoldingsImplTest.LOAD_HOLDINGS_ENDPOINT;
 import static org.folio.rest.impl.LoadHoldingsImplTest.handleStatusChange;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
+import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.FAILED;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
-import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
 import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
@@ -198,12 +198,8 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     mockGet(new EqualToPattern(LoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), SC_INTERNAL_SERVER_ERROR);
 
     Async finishedAsync = context.async(SNAPSHOT_RETRIES);
-    Handler<DeliveryContext<LoadHoldingsMessage>> interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, message -> finishedAsync.countDown());
-    vertx.eventBus().addOutboundInterceptor(interceptor);
-    interceptors.add(interceptor);
-
+    handleStatusChange(FAILED, holdingsStatusRepository, o -> finishedAsync.countDown());
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
-
     finishedAsync.await(TIMEOUT);
 
     final HoldingsLoadingStatus status = getWithOk(HOLDINGS_STATUS_ENDPOINT).body().as(HoldingsLoadingStatus.class);

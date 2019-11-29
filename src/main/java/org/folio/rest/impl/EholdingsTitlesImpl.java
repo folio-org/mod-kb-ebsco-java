@@ -15,6 +15,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,7 +142,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(parsedTitleId)
           .thenCompose(title -> {
-            if(!title.getIsTitleCustom()){
+            if(BooleanUtils.isNotTrue(title.getIsTitleCustom())){
               return CompletableFuture.completedFuture(null);
             }
             CustomerResources resource = title.getCustomerResourcesList().get(0);

@@ -7,11 +7,15 @@ import static org.apache.http.HttpStatus.SC_CONFLICT;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
@@ -43,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
@@ -59,6 +64,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -74,6 +80,7 @@ import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.RetryStatusRepository;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameDetailEnum;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.service.holdings.HoldingsMessage;
@@ -151,13 +158,18 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
   public void shouldSaveStatusChangesToAuditTable(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
     runPostHoldingsWithMocks(context);
-    List<HoldingsLoadingStatus> records = HoldingsStatusAuditTestUtil.getRecords(vertx);
-    assertStatus(records.get(0), LoadStatusNameEnum.NOT_STARTED);
-    assertStatus(records.get(1), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null);
-    assertStatus(records.get(2), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 0);
-    assertStatus(records.get(3), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 1);
-    assertStatus(records.get(4), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 2);
-    assertStatus(records.get(5), LoadStatusNameEnum.COMPLETED);
+    List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
+      .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
+
+    assertThat(attributes, containsInAnyOrder(
+      statusEquals(LoadStatusNameEnum.NOT_STARTED),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 0),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 1),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 2),
+      statusEquals(LoadStatusNameEnum.COMPLETED)
+      )
+    );
   }
 
   @Test
@@ -170,10 +182,13 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     vertx.eventBus().addOutboundInterceptor(interceptor);
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
-    List<HoldingsLoadingStatus> records = HoldingsStatusAuditTestUtil.getRecords(vertx);
-    assertEquals(2, records.size());
-    assertStatus(records.get(0), LoadStatusNameEnum.NOT_STARTED);
-    assertStatus(records.get(1), LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null);
+    List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
+      .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
+    assertEquals(2, attributes.size());
+    assertThat(attributes, containsInAnyOrder(
+      statusEquals(LoadStatusNameEnum.NOT_STARTED),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null)
+      ));
   }
 
   @Test
@@ -343,20 +358,25 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     async.await(TIMEOUT);
   }
 
+
   public static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy, Consumer<Void> handler) {
-    when(repositorySpy.update(
-      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString()))
-      .thenAnswer(invocationOnMock -> ((CompletableFuture<Void>) invocationOnMock.callRealMethod())
-        .thenAccept(handler));
+    doAnswer(invocationOnMock -> {
+      @SuppressWarnings("unchecked")
+      CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
+      return future.thenAccept(handler);
+    }).when(repositorySpy).update(
+      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString());
   }
 
-  private void assertStatus(HoldingsLoadingStatus firstRecord, LoadStatusNameEnum status) {
-    assertStatus(firstRecord, status, null, null);
+  private Matcher<LoadStatusAttributes> statusEquals(LoadStatusNameEnum status) {
+    return statusEquals(status, null, null);
   }
 
-  private void assertStatus(HoldingsLoadingStatus firstRecord, LoadStatusNameEnum status, LoadStatusNameDetailEnum detail, Integer importedPages) {
-    assertEquals(status, firstRecord.getData().getAttributes().getStatus().getName());
-    assertEquals(detail, firstRecord.getData().getAttributes().getStatus().getDetail());
-    assertEquals(importedPages, firstRecord.getData().getAttributes().getImportedPages());
+  private Matcher<LoadStatusAttributes> statusEquals(LoadStatusNameEnum status, LoadStatusNameDetailEnum detail, Integer importedPages) {
+    return allOf(
+      hasProperty("status", hasProperty("name", equalTo(status))),
+      hasProperty("status", hasProperty("detail", equalTo(detail))),
+      hasProperty("importedPages", equalTo(importedPages))
+    );
   }
 }

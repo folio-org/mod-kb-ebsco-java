@@ -54,5 +54,6 @@ public class ResourceCollectionItemConverters {
       return result;
     }
   }
-  
+
+  private ResourceCollectionItemConverters() { }
 }

@@ -17,7 +17,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -76,9 +76,9 @@ public class DbUtil {
   }
 
   private static CompletionStage<Void> endTransaction(PostgresClient postgresClient, MutableObject<AsyncResult<SQLConnection>> mutableConnection) {
-    Future<Void> vertxFuture = Future.future();
-    postgresClient.endTx(mutableConnection.getValue(), vertxFuture.completer());
-    return FutureUtils.mapVertxFuture(vertxFuture);
+    Promise<Void> promise = Promise.promise();
+    postgresClient.endTx(mutableConnection.getValue(), promise);
+    return FutureUtils.mapVertxFuture(promise.future());
   }
 
   private static String getTableName(String tenantId, String tableName) {

@@ -16,6 +16,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -56,10 +57,10 @@ public class TenantApiImpl extends TenantAPI {
   public void postTenant(TenantAttributes entity, Map<String, String> headers, Handler<AsyncResult<Response>> handlers,
                          Context context) {
 
-    Future<Response> future = Future.future();
-    super.postTenant(entity, headers, future, context);
+    Promise<Response> promise = Promise.promise();
+    super.postTenant(entity, headers, promise, context);
 
-    future.compose(response -> setupTestData(headers, context).map(response))
+    promise.future().compose(response -> setupTestData(headers, context).map(response))
       .compose(response -> setLoadingStatus(headers).map(response))
       .setHandler(handlers);
   }
@@ -68,16 +69,16 @@ public class TenantApiImpl extends TenantAPI {
 
   private Future<Void> setLoadingStatus(Map<String, String> headers) {
 
-    Future<Void> future = Future.future();
+    Promise<Void> promise = Promise.promise();
     String tenantId = TenantTool.tenantId(headers);
     setStatusNotStarted(tenantId)
       .thenCompose(o -> resetRetryStatus(tenantId))
-      .thenAccept(future::complete)
+      .thenAccept(promise::complete)
       .exceptionally(e -> {
-        future.fail(e.getCause());
+        promise.fail(e.getCause());
         return null;
       });
-    return future;
+    return promise.future();
   }
 
   private CompletionStage<Void> resetRetryStatus(String tenantId) {
@@ -114,13 +115,13 @@ public class TenantApiImpl extends TenantAPI {
 
       sqlScript = sqlScript.replace(TENANT_PLACEHOLDER, tenantId).replace(MODULE_PLACEHOLDER, moduleName);
 
-      Future<List<String>> future = Future.future();
-      PostgresClient.getInstance(context.owner()).runSQLFile(sqlScript, false, future);
+      Promise<List<String>> promise = Promise.promise();
+      PostgresClient.getInstance(context.owner()).runSQLFile(sqlScript, false, promise);
 
       logger.info("Received flag to initialize test data. Check the server log for details.");
       logger.info("************ Creating test data ************");
 
-      return future;
+      return promise.future();
     } catch (IOException e) {
       return Future.failedFuture(e);
     }

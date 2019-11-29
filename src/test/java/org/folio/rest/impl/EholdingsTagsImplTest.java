@@ -138,8 +138,8 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     try {
       TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
 
-      assertEquals(col.getData().size(), 4);
-      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(4));
+      assertEquals(4, col.getData().size());
+      assertEquals(Integer.valueOf(4), col.getMeta().getTotalResults());
       assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
       clearTags(vertx);
@@ -151,8 +151,8 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     try {
       TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
 
-      assertEquals(col.getData().size(), 0);
-      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(0));
+      assertEquals(0, col.getData().size());
+      assertEquals(Integer.valueOf(0), col.getMeta().getTotalResults());
     } finally {
       clearTags(vertx);
     }
@@ -166,8 +166,8 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
         TagUniqueCollection.class);
 
-      assertEquals(col.getData().size(), 1);
-      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(1));
+      assertEquals(1, col.getData().size());
+      assertEquals(Integer.valueOf(1), col.getMeta().getTotalResults());
       assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
       clearTags(vertx);
@@ -182,8 +182,8 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       TagUniqueCollection col = getWithOk(
         "eholdings/tags/summary?filter[rectype]=resource&filter[rectype]=provider").as(TagUniqueCollection.class);
 
-      assertEquals(col.getData().size(), 2);
-      assertEquals(col.getMeta().getTotalResults(), Integer.valueOf(2));
+      assertEquals(2, col.getData().size());
+      assertEquals(Integer.valueOf(2), col.getMeta().getTotalResults());
       assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
       clearTags(vertx);
@@ -197,7 +197,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
   }
-  
+
   private boolean checkContainingOfUniqueTags(List<String> source, TagUniqueCollection collection){
     return source.containsAll(mapItems(collection.getData(),
       tagUniqueCollectionItem -> tagUniqueCollectionItem.getAttributes().getValue()));

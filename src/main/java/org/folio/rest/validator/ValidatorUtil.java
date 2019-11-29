@@ -7,7 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
 
@@ -62,7 +64,7 @@ public class ValidatorUtil {
   }
 
   public static void checkFalseOrNull(String paramName, Boolean value) {
-    if (Objects.nonNull(value) && value) {
+    if (BooleanUtils.isTrue(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_FALSE_FORMAT, paramName));

@@ -3,8 +3,6 @@ package org.folio.repository.resources;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.folio.holdingsiq.model.Title;
-
 public interface ResourceRepository {
 
   CompletableFuture<Void> save(String resourceId, String name, String tenantId);

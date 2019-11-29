@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -64,9 +64,9 @@ public class PackageRepositoryImpl implements PackageRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Do insert query = " + query);
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, parameters, future.completer());
-    return mapVertxFuture(future)
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, parameters, promise);
+    return mapVertxFuture(promise.future())
       .thenApply(result -> null);
   }
 
@@ -80,9 +80,9 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     LOG.info("Do delete query = " + query);
 
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, parameter, future.completer());
-    return mapVertxFuture(future)
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, parameter, promise);
+    return mapVertxFuture(promise.future())
       .thenApply(result -> null);
   }
 
@@ -110,10 +110,10 @@ public class PackageRepositoryImpl implements PackageRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Select packages by ids = " + query);
-    Future<ResultSet> future = Future.future();
-    postgresClient.select(query, parameters, future.completer());
+    Promise<ResultSet> promise = Promise.promise();
+    postgresClient.select(query, parameters, promise);
 
-    return mapResult(future, this::mapPackages);
+    return mapResult(promise.future(), this::mapPackages);
   }
 
   private CompletableFuture<List<PackageInfoInDB>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix, int page, int count, String tenantId) {
@@ -139,10 +139,10 @@ public class PackageRepositoryImpl implements PackageRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Select packages by tags = " + query);
-    Future<ResultSet> future = Future.future();
-    postgresClient.select(query, parameters, future.completer());
+    Promise<ResultSet> promise = Promise.promise();
+    postgresClient.select(query, parameters, promise);
 
-    return mapResult(future, this::mapPackages);
+    return mapResult(promise.future(), this::mapPackages);
   }
 
   private JsonArray createInsertOrUpdateParameters(String id, String name, String contentType) {
