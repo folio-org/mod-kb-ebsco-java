@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -57,9 +57,9 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Do insert query = " + query);
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, parameters, future.completer());
-    return mapVertxFuture(future).thenApply(result -> null);
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, parameters, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
@@ -71,9 +71,9 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Do delete query = " + query);
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, parameter, future.completer());
-    return mapVertxFuture(future).thenApply(result -> null);
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, parameter, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
 
@@ -96,10 +96,10 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Select titles by resource tags = " + query);
-    Future<ResultSet> future = Future.future();
-    postgresClient.select(query, parameters, future.completer());
+    Promise<ResultSet> promise = Promise.promise();
+    postgresClient.select(query, parameters, promise);
 
-    return mapResult(future, this::mapTitles);
+    return mapResult(promise.future(), this::mapTitles);
   }
 
   @Override
@@ -114,10 +114,10 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
     LOG.info("Select packages by tags = " + query);
-    Future<ResultSet> future = Future.future();
-    postgresClient.select(query, parameters, future.completer());
+    Promise<ResultSet> promise = Promise.promise();
+    postgresClient.select(query, parameters, promise);
 
-    return mapResult(future, this::readTagCount);
+    return mapResult(promise.future(), this::readTagCount);
   }
 
   private String createPlaceholders(int size) {

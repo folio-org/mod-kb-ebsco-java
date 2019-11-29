@@ -5,12 +5,13 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.stereotype.Component;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
-import org.springframework.stereotype.Component;
 
 @Component
 public class ResourcePutBodyValidator {
@@ -30,10 +31,10 @@ public class ResourcePutBodyValidator {
 
     ResourcePutDataAttributes attributes = request.getData().getAttributes();
 
-    Boolean isSelected = attributes.getIsSelected();
-    if (Objects.isNull(isSelected)) {
+    if (Objects.isNull(attributes.getIsSelected())) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, IS_SELECTED_MUST_NOT_BE_EMPTY);
     }
+    boolean isSelected = attributes.getIsSelected();
     String cvgStmt = attributes.getCoverageStatement();
 
     /*

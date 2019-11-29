@@ -18,7 +18,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.folio.rest.validator.ResourceTagsPutBodyValidator;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -60,6 +61,7 @@ import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ResourcePostValidator;
 import org.folio.rest.validator.ResourcePutBodyValidator;
+import org.folio.rest.validator.ResourceTagsPutBodyValidator;
 import org.folio.rmapi.result.ObjectsForPostResourceResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.SpringContextUtil;
@@ -176,7 +178,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .requestAction(context ->
         context.getResourcesService().retrieveResource(parsedResourceId)
           .thenCompose(title -> {
-            if (!title.getCustomerResourcesList().get(0).getIsPackageCustom()) {
+            if (BooleanUtils.isNotTrue(title.getCustomerResourcesList().get(0).getIsPackageCustom())) {
               throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
             }
             return context.getResourcesService().deleteResource(parsedResourceId);

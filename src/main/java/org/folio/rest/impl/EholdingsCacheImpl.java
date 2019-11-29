@@ -34,6 +34,6 @@ public class EholdingsCacheImpl implements EholdingsCache {
   public void deleteEholdingsCache(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     headerValidator.validate(okapiHeaders);
     rmapiConfigurationCache.invalidate(okapiHeaders.get(RestConstants.OKAPI_TENANT_HEADER));
-    asyncResultHandler.handle(Future.succeededFuture(EholdingsCacheImpl.DeleteEholdingsCacheResponse.respond204()));
+    asyncResultHandler.handle(Future.succeededFuture(EholdingsCache.DeleteEholdingsCacheResponse.respond204()));
   }
 }
