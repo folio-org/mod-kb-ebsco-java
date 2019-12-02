@@ -74,7 +74,12 @@ public class CommonResourceConverter {
         resource.getCustomCoverageList().stream()
         .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
         .collect(Collectors.toList())))
-      .withProxy(proxyConverter.convert(resource.getProxy()));
+      .withProxy(proxyConverter.convert(resource.getProxy()))
+      .withUserDefinedField1(resource.getUserDefinedField1())
+      .withUserDefinedField2(resource.getUserDefinedField2())
+      .withUserDefinedField3(resource.getUserDefinedField3())
+      .withUserDefinedField4(resource.getUserDefinedField4())
+      .withUserDefinedField5(resource.getUserDefinedField5());
   }
 
 }

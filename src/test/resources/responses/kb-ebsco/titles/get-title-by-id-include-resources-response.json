@@ -108,7 +108,11 @@
         "proxy": {
           "id": "EZProxy",
           "inherited": true
-        }
+        },
+        "userDefinedField1": "test 1",
+        "userDefinedField2": "test 2",
+        "userDefinedField3": "",
+        "userDefinedField5": "test 5"
       },
       "relationships": {
         "provider": {

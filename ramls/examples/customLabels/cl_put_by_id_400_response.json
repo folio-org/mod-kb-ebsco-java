@@ -1,0 +1,10 @@
+{
+  "errors": [{
+    "title": "Invalid Label id",
+    "detail": "Label Id can't be blank",
+    "source": {}
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
