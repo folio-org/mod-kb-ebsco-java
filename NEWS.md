@@ -1,3 +1,15 @@
+## v3.1.0 2019-12-02
+* MODKBEKBJ-333 - Set fromModuleVersion attribute for all tables
+* MODKBEKBJ-339 - Update RMB version to 29.0.1
+* MODKBEKBJ-320 - Add audit table for holdings_status
+* MODKBEKBJ-338 - Manage container memory
+* MODKBEKBJ-329 - Fix Security Vulnerability
+* MODKBEKBJ-325 - Fix Issue with accessing eholdings with highly limited permissions
+* MODKBEKBJ-324 - Add timeout to loading process
+* MODKBEKBJ-321 - Create holdings snapshot only if it wasn't recently created
+* MODKBEKBJ-311 - Don't override loading status when TenantAPI is called second time
+* MODKBEKBJ-315 - Fix Security Vulnerability
+
 ## v3.0.1 2019-09-24
 * MODKBEKBJ-311 - Add isFullPackage to schema for PUT /packages/{id} endpoint,
 
