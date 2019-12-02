@@ -1,0 +1,11 @@
+{
+  "data": {
+    "type": "customLabel",
+    "attributes": {
+      "id": 1,
+      "displayLabel": "test label 1 updated",
+      "displayOnFullTextFinder": "false",
+      "displayOnPublicationFinder": true
+    }
+  }
+}

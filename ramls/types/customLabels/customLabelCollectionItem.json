@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Custom Label object schema for a collection",
+  "description": "Custom Label object schema for a collection",
+  "javaType": "org.folio.rest.jaxrs.model.CustomLabelCollectionItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "example": "customLabel"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Custom label object data attributes",
+      "$ref": "customLabelDataAttributes.json"
+    }
+  },
+  "required": ["type", "attributes"]
+}

@@ -110,6 +110,26 @@
         "$ref": "../coverage.json"
       }
     },
+    "userDefinedField1": {
+      "type": "string",
+      "description": "User defined field 1"
+    },
+    "userDefinedField2": {
+      "type": "string",
+      "description": "User defined field 2"
+    },
+    "userDefinedField3": {
+      "type": "string",
+      "description": "User defined field 3"
+    },
+    "userDefinedField4": {
+      "type": "string",
+      "description": "User defined field 4"
+    },
+    "userDefinedField5": {
+      "type": "string",
+      "description": "User defined field 5"
+    },
     "proxy": {
       "type": "object",
       "description": "Proxy.  Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",

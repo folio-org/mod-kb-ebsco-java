@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Custom Label Object Data Attributes Schema",
+  "description": "Custom Label Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.CustomLabelDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Label id",
+      "example": 1,
+      "minimum": 1,
+      "maximum": 5,
+      "exclusiveMaximum":true
+    },
+    "displayLabel": {
+      "type": "string",
+      "description": "Display Label Name."
+    },
+    "displayOnFullTextFinder": {
+      "type": "boolean",
+      "description": "Indicates if displayed on Full Text Finder",
+      "example": false
+    },
+    "displayOnPublicationFinder": {
+      "type": "boolean",
+      "description": "Indicates if displayed on Publication Finder",
+      "example": false
+    }
+  },
+  "required": ["id", "displayLabel", "displayOnFullTextFinder", "displayOnPublicationFinder"]
+}

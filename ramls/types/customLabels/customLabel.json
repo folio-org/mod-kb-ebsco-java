@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Custom Label object schema",
+  "description": "Custom Label schema",
+  "javaType": "org.folio.rest.jaxrs.model.CustomLabel",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "The Data Schema",
+      "$ref": "customLabelCollectionItem.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": ["data", "jsonapi"]
+}
