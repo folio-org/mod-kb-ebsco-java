@@ -2,36 +2,42 @@
   "tables": [
     {
       "tableName": "tags",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-tags-table.sql"
     },
     {
       "tableName": "packages",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-packages-table.sql"
     },
     {
       "tableName": "providers",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-providers-table.sql"
     },
     {
       "tableName": "resources",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-resources-table.sql"
     },
     {
       "tableName": "titles",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-titles-table.sql"
     },
     {
       "tableName": "holdings",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-holdings-table.sql"
@@ -52,6 +58,7 @@
     },
     {
       "tableName": "retry_status",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-retry-status-table.sql"
@@ -61,12 +68,11 @@
     {
     "run": "after",
     "snippetPath": "update_started_date_before_insertion.sql",
-    "fromModuleVersion": "1.0"
+    "fromModuleVersion": "mod-kb-ebsco-java-3.0.1"
     },
     {
       "run": "after",
-      "snippetPath": "drop_set_id_in_jsonb.sql",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.0.2"
+      "snippetPath": "drop_set_id_in_jsonb.sql"
     },
     {
       "run": "after",
