@@ -175,6 +175,26 @@
       "type": "object",
       "description": "Resource tags",
       "$ref": "../../raml-util/schemas/tags.schema"
+    },
+    "userDefinedField1": {
+      "type": "string",
+      "description": "User defined field 1"
+    },
+    "userDefinedField2": {
+      "type": "string",
+      "description": "User defined field 2"
+    },
+    "userDefinedField3": {
+      "type": "string",
+      "description": "User defined field 3"
+    },
+    "userDefinedField4": {
+      "type": "string",
+      "description": "User defined field 4"
+    },
+    "userDefinedField5": {
+      "type": "string",
+      "description": "User defined field 5"
     }
   }
 }

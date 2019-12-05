@@ -81,11 +81,11 @@
         "embargoValue": 0
       },
       "url": "http:\/\/search.ebscohost.com\/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
-      "userDefinedField1": null,
-      "userDefinedField2": null,
-      "userDefinedField3": null,
+      "userDefinedField1": "test 1",
+      "userDefinedField2": "test 2",
+      "userDefinedField3": "",
       "userDefinedField4": null,
-      "userDefinedField5": null
+      "userDefinedField5": "test 5"
     }
   ],
   "description": null,
