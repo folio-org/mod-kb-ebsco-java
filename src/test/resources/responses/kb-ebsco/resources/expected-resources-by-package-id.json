@@ -76,7 +76,11 @@
         ],
         "customCoverages": [
 
-        ]
+        ],
+        "userDefinedField1": "test 1",
+        "userDefinedField2": "test 2",
+        "userDefinedField3": "",
+        "userDefinedField5": "test 5"
       },
       "relationships": {
         "provider": {
@@ -159,7 +163,11 @@
         ],
         "customCoverages": [
 
-        ]
+        ],
+        "userDefinedField1": "test 3",
+        "userDefinedField2": "test 4",
+        "userDefinedField3": "",
+        "userDefinedField5": "test 6"
       },
       "relationships": {
         "provider": {
@@ -409,7 +417,12 @@
         ],
         "customCoverages": [
 
-        ]
+        ],
+        "userDefinedField1": "test 8",
+        "userDefinedField2": "test 9",
+        "userDefinedField3": "test 10",
+        "userDefinedField4": "test 11",
+        "userDefinedField5": "test 12"
       },
       "relationships": {
         "provider": {
