@@ -44,7 +44,7 @@ public class ResourcesTestData {
   public static ResourceResult createResourceData() {
     Title title = Title.builder()
       .contributorsList(Collections.emptyList())
-      .customerResourcesList(Collections.singletonList(CustomerResources.builder()
+      .customerResourcesList(Collections.singletonList(CustomerResources.customerResourcesBuilder()
         .coverageStatement(OLD_COVERAGE_STATEMENT)
         .isSelected(false)
         .visibilityData(VisibilityInfo.builder()

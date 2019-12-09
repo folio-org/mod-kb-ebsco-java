@@ -1,15 +1,16 @@
 package org.folio.rest.validator;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ResourcePutBodyValidatorTest {
   private final ResourcePutBodyValidator validator = new ResourcePutBodyValidator();
@@ -71,6 +72,27 @@ public class ResourcePutBodyValidatorTest {
       new ResourcePutDataAttributes()
       .withIsSelected(false)
       .withCoverageStatement("hello")), false);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedFieldIsNotNull() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
+    validator.validate(ResourcesTestData.getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(false)
+        .withUserDefinedField3("not null")), false);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenUserDefinedFieldIsLongerThanAllowed() {
+    expectedEx.expect(InputValidationException.class);
+
+    expectedEx.expectMessage("Invalid userDefinedField1");
+    validator.validate(ResourcesTestData.getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withUserDefinedField1(RandomStringUtils.randomAlphanumeric(101))), false);
   }
 
   @Test

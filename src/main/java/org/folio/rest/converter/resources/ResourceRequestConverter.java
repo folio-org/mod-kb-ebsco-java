@@ -35,8 +35,7 @@ public class ResourceRequestConverter {
     builder.publisherName(oldTitle.getPublisherName());
     builder.edition(oldTitle.getEdition());
     builder.description(oldTitle.getDescription());
-    String url = attributes.getUrl() != null ? attributes.getUrl() : oldResource.getUrl();
-    builder.url(url);
+    builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
 
     builder.identifiersList(oldTitle.getIdentifiersList());
     builder.contributorsList(oldTitle.getContributorsList());
@@ -44,9 +43,9 @@ public class ResourceRequestConverter {
   }
 
   private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(ResourcePutDataAttributes attributes, Title oldTitle) {
-    ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
+    ResourcePut.ResourcePutBuilder builder = ResourcePut.resourcePutBuilder();
     CustomerResources oldResource = oldTitle.getCustomerResourcesList().get(0);
-    builder.isSelected((attributes.getIsSelected() != null ? attributes.getIsSelected() : oldResource.getIsSelected()));
+    builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
     Proxy proxy = attributes.getProxy();
     String proxyId = proxy != null && proxy.getId() != null ? proxy.getId() : oldResource.getProxy().getId();
@@ -64,8 +63,7 @@ public class ResourceRequestConverter {
 
     builder.isHidden(isHidden);
 
-    String coverageStatement = attributes.getCoverageStatement() != null ?
-      attributes.getCoverageStatement() : oldResource.getCoverageStatement();
+    String coverageStatement = valueOrDefault(attributes.getCoverageStatement(), oldResource.getCoverageStatement());
     builder.coverageStatement(coverageStatement);
 
     org.folio.rest.jaxrs.model.EmbargoPeriod embargoPeriod = attributes.getCustomEmbargoPeriod();
@@ -94,7 +92,16 @@ public class ResourceRequestConverter {
     builder.pubType(oldTitle.getPubType());
     builder.isPeerReviewed(oldTitle.getIsPeerReviewed());
 
+    builder.userDefinedField1(valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedField1()));
+    builder.userDefinedField2(valueOrDefault(attributes.getUserDefinedField2(), oldResource.getUserDefinedField2()));
+    builder.userDefinedField3(valueOrDefault(attributes.getUserDefinedField3(), oldResource.getUserDefinedField3()));
+    builder.userDefinedField4(valueOrDefault(attributes.getUserDefinedField4(), oldResource.getUserDefinedField4()));
+    builder.userDefinedField5(valueOrDefault(attributes.getUserDefinedField5(), oldResource.getUserDefinedField5()));
     return builder;
+  }
+
+  private <T> T valueOrDefault(T value, T defaultValue) {
+    return value != null ? value : defaultValue;
   }
 
   private List<CoverageDates> convertToRMAPICustomCoverageList(List<Coverage> customCoverages) {
