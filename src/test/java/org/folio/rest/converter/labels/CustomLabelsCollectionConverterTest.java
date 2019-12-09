@@ -20,7 +20,7 @@ import org.folio.spring.config.TestConfig;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class CustomLabelsItemCollectionTest {
+public class CustomLabelsCollectionConverterTest {
 
   @Autowired
   private CustomLabelsCollectionConverter itemConverter;
