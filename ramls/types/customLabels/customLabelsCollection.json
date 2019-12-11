@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Custom Labels Collection Schema",
+  "description": "Custom Labels Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.CustomLabelsCollection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of custom labels",
+      "items": {
+        "type": "object",
+        "$ref": "customLabelCollectionItem.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in packages collection",
+      "$ref": "../metaTotalResults.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": ["data", "meta", "jsonapi"]
+}

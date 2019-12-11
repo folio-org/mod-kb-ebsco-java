@@ -1,0 +1,55 @@
+{
+  "data": [
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 1,
+        "displayLabel": "label 1",
+        "displayOnFullTextFinder": false,
+        "displayOnPublicationFinder": false
+      }
+    },
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 2,
+        "displayLabel": "label 2",
+        "displayOnFullTextFinder": true,
+        "displayOnPublicationFinder": true
+      }
+    },
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 3,
+        "displayLabel": "label 3",
+        "displayOnFullTextFinder": false,
+        "displayOnPublicationFinder": true
+      }
+    },
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 4,
+        "displayLabel": "label 4",
+        "displayOnFullTextFinder": true,
+        "displayOnPublicationFinder": false
+      }
+    },
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 5,
+        "displayLabel": "label 5",
+        "displayOnFullTextFinder": false,
+        "displayOnPublicationFinder": false
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 5
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

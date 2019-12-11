@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Custom Label PUT Request Schema",
+  "description": "Custom Label PUT Request Schema",
+  "javaType": "org.folio.rest.jaxrs.model.CustomLabelPutRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of Custom Label put request",
+      "type": "object",
+      "$ref": "customLabelCollectionItem.json"
+    }
+  },
+  "required": ["data"]
+}
