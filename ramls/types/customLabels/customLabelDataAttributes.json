@@ -16,7 +16,8 @@
     },
     "displayLabel": {
       "type": "string",
-      "description": "Display Label Name."
+      "description": "Display Label Name",
+      "maxLength": 50
     },
     "displayOnFullTextFinder": {
       "type": "boolean",
