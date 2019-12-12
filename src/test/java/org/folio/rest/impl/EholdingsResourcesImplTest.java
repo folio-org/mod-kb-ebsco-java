@@ -53,10 +53,8 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
-import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
-import org.drools.core.util.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -66,7 +64,6 @@ import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
-import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
@@ -309,14 +306,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/resources/put-custom-resource-is-selected-multiple-attributes.json"))));
-  }
-
-  @Test
-  public void shouldReturn422OnWhenUserDefinedFieldIsInvalid() throws IOException, URISyntaxException {
-    ResourcePutRequest request = Json.decodeValue(readFile("requests/kb-ebsco/resource/put-custom-resource.json"), ResourcePutRequest.class);
-    request.getData().getAttributes()
-      .withUserDefinedField1(StringUtils.repeat("*", 101));
-    putWithStatus("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID, Json.encode(request), SC_UNPROCESSABLE_ENTITY).asString();
   }
 
   @Test

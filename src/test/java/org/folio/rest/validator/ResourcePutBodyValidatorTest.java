@@ -81,7 +81,39 @@ public class ResourcePutBodyValidatorTest {
     validator.validate(ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
-        .withUserDefinedField3("not null")), false);
+        .withUserDefinedField1("not null")), false);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField2IsNotNull() {
+    testUserDefinedFieldValidation("userDefinedField2",
+      new ResourcePutDataAttributes()
+        .withIsSelected(false)
+        .withUserDefinedField2("not null"));
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField3IsNotNull() {
+    testUserDefinedFieldValidation("userDefinedField3",
+      new ResourcePutDataAttributes()
+        .withIsSelected(false)
+        .withUserDefinedField3("not null"));
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField4IsNotNull() {
+    testUserDefinedFieldValidation("userDefinedField4",
+      new ResourcePutDataAttributes()
+        .withIsSelected(false)
+        .withUserDefinedField4("not null"));
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField5IsNotNull() {
+    testUserDefinedFieldValidation("userDefinedField5",
+      new ResourcePutDataAttributes()
+        .withIsSelected(false)
+        .withUserDefinedField5("not null"));
   }
 
   @Test
@@ -112,5 +144,11 @@ public class ResourcePutBodyValidatorTest {
     validator.validate(ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(null)), false);
+  }
+
+  private void testUserDefinedFieldValidation(final String fieldName, ResourcePutDataAttributes value) {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
+    validator.validate(ResourcesTestData.getResourcePutRequest(value), false);
   }
 }
