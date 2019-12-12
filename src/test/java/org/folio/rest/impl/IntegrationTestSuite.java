@@ -17,6 +17,7 @@ import org.folio.test.util.TestSetUpHelper;
   EHoldingsProxyTypesImplTest.class,
   EholdingsResourcesImplTest.class,
   EHoldingsRootProxyImplTest.class,
+  EholdingsCustomLabelsImplTest.class,
   EholdingsStatusTest.class,
   EholdingsTitlesTest.class,
   EholdingsTagsImplTest.class,

@@ -123,35 +123,32 @@ traits:
                   strict: false
                   value: !include examples/providers/providers_tags_put_422_response.json
     /packages:
-        get:
-          description: Search within a list of packages associated with a given provider.
-          is: [queriable, taggable, filterable, sortable, pageable]
-          responses:
-            200:
-              description: OK
-              body:
-                application/vnd.api+json:
-                  description: List of packages associated with a given provider matching search criteria.
-                  type: packageCollection
-                  example:
-                    strict: false
-                    value: !include examples/providers/providers_providerId_packages_get_200_response.json
-            400:
-              description: Bad Request
-              body:
-                application/vnd.api+json:
-                  type: jsonapiError
-                  example:
-                    strict: false
-                    value: !include examples/providers/providers_providerId_packages_get_400_response.json
-            404:
-              description: Not Found
-              body:
-                application/vnd.api+json:
-                  type: jsonapiError
-                  example:
-                    strict: false
-                    value: !include examples/providers/providers_providerId_packages_get_404_response.json
-
-
-
+      get:
+        description: Search within a list of packages associated with a given provider.
+        is: [queriable, taggable, filterable, sortable, pageable]
+        responses:
+          200:
+            description: OK
+            body:
+              application/vnd.api+json:
+                description: List of packages associated with a given provider matching search criteria.
+                type: packageCollection
+                example:
+                  strict: false
+                  value: !include examples/providers/providers_providerId_packages_get_200_response.json
+          400:
+            description: Bad Request
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/providers/providers_providerId_packages_get_400_response.json
+          404:
+            description: Not Found
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/providers/providers_providerId_packages_get_404_response.json
