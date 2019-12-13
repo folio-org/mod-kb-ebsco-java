@@ -72,7 +72,7 @@ types:
           example: application/vnd.api+json
       body:
         application/vnd.api+json:
-          type: customLabel
+          type: customLabelPutRequest
           example:
             strict: false
             value: !include examples/customLabels/cl_put_request.json
@@ -82,7 +82,7 @@ types:
           body:
             application/vnd.api+json:
               description: The server has successfully fulfilled the PUT request.
-              type: customLabelCollectionItem
+              type: customLabel
               example:
                 strict: false
                 value: !include examples/customLabels/cl_put_by_id_200_response.json
