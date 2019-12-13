@@ -21,6 +21,7 @@ public class ResourcePutBodyValidator {
   private static final String INVALID_IS_SELECTED_TITLE = "Resource cannot be updated unless added to holdings";
   private static final String INVALID_IS_SELECTED_DETAILS = "Resource must be added to holdings to be able to update";
   private static final String IS_SELECTED_MUST_NOT_BE_EMPTY = "isSelected must not be empty";
+  public static final int USER_DEFINED_FIELD_MAX_LENGTH = 100;
 
   public void validate(ResourcePutRequest request, boolean isTitleCustom) {
     if (request == null ||
@@ -64,6 +65,12 @@ public class ResourcePutBodyValidator {
         ValidatorUtil.checkDateValid("beginCoverage", customCoverage.getBeginCoverage());
         ValidatorUtil.checkDateValid("endCoverage", customCoverage.getEndCoverage());
       });
+
+      ValidatorUtil.checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), USER_DEFINED_FIELD_MAX_LENGTH);
+      ValidatorUtil.checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), USER_DEFINED_FIELD_MAX_LENGTH);
+      ValidatorUtil.checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), USER_DEFINED_FIELD_MAX_LENGTH);
+      ValidatorUtil.checkMaxLength("userDefinedField4", attributes.getUserDefinedField4(), USER_DEFINED_FIELD_MAX_LENGTH);
+      ValidatorUtil.checkMaxLength("userDefinedField5", attributes.getUserDefinedField5(), USER_DEFINED_FIELD_MAX_LENGTH);
     } else {
       validateManagedResourceIfNotSelected(attributes, isTitleCustom, cvgStmt);
     }
@@ -76,7 +83,13 @@ public class ResourcePutBodyValidator {
     if (!isTitleCustom &&
       (!Strings.isEmpty(cvgStmt) || !Objects.isNull(embargoUnit) ||
       (!Objects.isNull(isHidden) && isHidden) ||
-      (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()))) {
+      (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()) ||
+        !Objects.isNull(attributes.getUserDefinedField1()) ||
+        !Objects.isNull(attributes.getUserDefinedField2()) ||
+        !Objects.isNull(attributes.getUserDefinedField3()) ||
+        !Objects.isNull(attributes.getUserDefinedField4()) ||
+        !Objects.isNull(attributes.getUserDefinedField5())
+      )) {
       throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
     }
   }

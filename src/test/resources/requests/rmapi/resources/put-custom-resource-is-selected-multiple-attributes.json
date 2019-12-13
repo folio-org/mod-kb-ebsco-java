@@ -29,5 +29,10 @@
   "customCoverageList": [{
    "beginCoverage": "2018-01-10",
    "endCoverage": "2018-01-11"
-  }]
+  }],
+  "userDefinedField1": "test 1",
+  "userDefinedField2": "test 2",
+  "userDefinedField3": "",
+  "userDefinedField4" : null,
+  "userDefinedField5": "test 5"
 }

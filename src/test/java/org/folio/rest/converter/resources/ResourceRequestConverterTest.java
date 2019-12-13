@@ -37,7 +37,7 @@ public class ResourceRequestConverterTest {
   public void setUp() {
      resourceData = Title.builder()
       .contributorsList(Collections.emptyList())
-      .customerResourcesList(Collections.singletonList(CustomerResources.builder()
+      .customerResourcesList(Collections.singletonList(CustomerResources.customerResourcesBuilder()
         .coverageStatement(OLD_COVERAGE_STATEMENT)
         .isSelected(false)
         .visibilityData(VisibilityInfo.builder()
@@ -94,6 +94,23 @@ public class ResourceRequestConverterTest {
   }
 
   @Test
+  public void shouldCreateRequestToUpdateUserDefineFieldsForCustomResource() {
+    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withUserDefinedField1("test 1")
+        .withUserDefinedField2("test 2")
+        .withUserDefinedField3("test 3")
+        .withUserDefinedField4("test 4")
+        .withUserDefinedField5("test 5")), resourceData);
+    assertEquals("test 1", resourcePut.getUserDefinedField1());
+    assertEquals("test 2", resourcePut.getUserDefinedField2());
+    assertEquals("test 3", resourcePut.getUserDefinedField3());
+    assertEquals("test 4", resourcePut.getUserDefinedField4());
+    assertEquals("test 5", resourcePut.getUserDefinedField5());
+  }
+
+  @Test
   public void shouldCreateRequestToUpdateIsHiddenForCustomResource() {
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
@@ -140,7 +157,24 @@ public class ResourceRequestConverterTest {
             .withEmbargoUnit(EmbargoUnit.DAYS)
             .withEmbargoValue(10))), resourceData);
       assertEquals("Days", resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
-      assertEquals(10, (long)resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
+      assertEquals(10, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
+  }
+
+  @Test
+  public void shouldCreateRequestToUpdateUserDefinedFieldsForManagedResource() {
+    ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withUserDefinedField1("test 1")
+        .withUserDefinedField2("test 2")
+        .withUserDefinedField3("test 3")
+        .withUserDefinedField4("test 4")
+        .withUserDefinedField5("test 5")), resourceData);
+    assertEquals("test 1", resourcePut.getUserDefinedField1());
+    assertEquals("test 2", resourcePut.getUserDefinedField2());
+    assertEquals("test 3", resourcePut.getUserDefinedField3());
+    assertEquals("test 4", resourcePut.getUserDefinedField4());
+    assertEquals("test 5", resourcePut.getUserDefinedField5());
   }
 
   @Test
@@ -152,7 +186,7 @@ public class ResourceRequestConverterTest {
             .withEmbargoUnit(EmbargoUnit.YEARS)
             .withEmbargoValue(10))), resourceData);
       assertEquals("Years", resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
-      assertEquals(10, (long)resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
+      assertEquals(10, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
   }
 
   @Test

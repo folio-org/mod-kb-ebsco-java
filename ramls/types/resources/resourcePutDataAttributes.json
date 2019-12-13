@@ -112,28 +112,23 @@
     },
     "userDefinedField1": {
       "type": "string",
-      "description": "User defined field 1",
-      "maxLength": 100
+      "description": "User defined field 1"
     },
     "userDefinedField2": {
       "type": "string",
-      "description": "User defined field 2",
-      "maxLength": 100
+      "description": "User defined field 2"
     },
     "userDefinedField3": {
       "type": "string",
-      "description": "User defined field 3",
-      "maxLength": 100
+      "description": "User defined field 3"
     },
     "userDefinedField4": {
       "type": "string",
-      "description": "User defined field 4",
-      "maxLength": 100
+      "description": "User defined field 4"
     },
     "userDefinedField5": {
       "type": "string",
-      "description": "User defined field 5",
-      "maxLength": 100
+      "description": "User defined field 5"
     },
     "proxy": {
       "type": "object",

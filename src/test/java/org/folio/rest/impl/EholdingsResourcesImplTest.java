@@ -52,7 +52,9 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -233,7 +235,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       .withProvider(new HasOneRelationship()
         .withData(new RelationshipData()
           .withType(PROVIDERS_TYPE)
-          .withId(String.valueOf(STUB_VENDOR_ID))))
+          .withId(STUB_VENDOR_ID)))
       .withTitle(new HasOneRelationship()
         .withData(new RelationshipData()
           .withType(TITLES_TYPE)
