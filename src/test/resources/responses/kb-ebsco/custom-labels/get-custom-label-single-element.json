@@ -1,0 +1,14 @@
+{
+  "data": {
+    "type": "customLabel",
+    "attributes": {
+      "id": 1,
+      "displayLabel": "label 1",
+      "displayOnFullTextFinder": false,
+      "displayOnPublicationFinder": false
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

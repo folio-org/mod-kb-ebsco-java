@@ -1,0 +1,22 @@
+{
+  "proxy": {
+    "id": "EZ_proxy"
+  },
+  "vendorId": 19,
+  "ftfTokens": [
+    {
+      "key": "CCC.Password",
+      "shouldShowOneResourcePerLinkSource": true,
+      "targetID": "19",
+      "token": 1
+    }
+  ],
+  "labels": [
+    {
+      "id": 1,
+      "displayLabel": "test label 1",
+      "displayOnFullTextFinder": false,
+      "displayOnPublicationFinder": true
+    }
+  ]
+}
