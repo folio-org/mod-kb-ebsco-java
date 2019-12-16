@@ -1,5 +1,7 @@
 package org.folio.rest.validator;
 
+import static org.folio.rest.validator.ValidationConstants.USER_DEFINED_FIELD_MAX_LENGTH;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -21,7 +23,6 @@ public class ResourcePutBodyValidator {
   private static final String INVALID_IS_SELECTED_TITLE = "Resource cannot be updated unless added to holdings";
   private static final String INVALID_IS_SELECTED_DETAILS = "Resource must be added to holdings to be able to update";
   private static final String IS_SELECTED_MUST_NOT_BE_EMPTY = "isSelected must not be empty";
-  public static final int USER_DEFINED_FIELD_MAX_LENGTH = 100;
 
   public void validate(ResourcePutRequest request, boolean isTitleCustom) {
     if (request == null ||

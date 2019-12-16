@@ -20,7 +20,7 @@
     "attributes": {
       "description": "Data type attributes",
       "type": "object",
-      "$ref": "titlePostDataAttributes.json"
+      "$ref": "titlePutDataAttributes.json"
     }
   },
   "required": [

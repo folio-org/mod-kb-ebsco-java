@@ -1,16 +1,20 @@
 package org.folio.rest.validator;
 
+import static org.folio.rest.validator.ValidationConstants.USER_DEFINED_FIELD_MAX_LENGTH;
+
 import java.util.List;
 import java.util.Objects;
 
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.TitlePostIncluded;
-import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
+import org.folio.rest.jaxrs.model.TitlePostIncluded;
+import org.folio.rest.jaxrs.model.TitlePostRequest;
 
 /**
  * Verifies that post data for titles are valid
@@ -20,10 +24,10 @@ public class TitlesPostBodyValidator {
 
   private static final String INVALID_POST_BODY = "Invalid request body";
 
-  private TitlesPostAttributesValidator attributesValidator;
+  private TitleCommonRequestAttributesValidator attributesValidator;
 
   @Autowired
-  public TitlesPostBodyValidator(TitlesPostAttributesValidator attributesValidator) {
+  public TitlesPostBodyValidator(TitleCommonRequestAttributesValidator attributesValidator) {
     this.attributesValidator = attributesValidator;
   }
 
@@ -47,6 +51,12 @@ public class TitlesPostBodyValidator {
       throw new InputValidationException("Invalid package Id", "");
     }
 
-    attributesValidator.validate(entity.getData().getAttributes());
+    TitlePostDataAttributes attributes = entity.getData().getAttributes();
+    ValidatorUtil.checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), USER_DEFINED_FIELD_MAX_LENGTH);
+    ValidatorUtil.checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), USER_DEFINED_FIELD_MAX_LENGTH);
+    ValidatorUtil.checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), USER_DEFINED_FIELD_MAX_LENGTH);
+    ValidatorUtil.checkMaxLength("userDefinedField4", attributes.getUserDefinedField4(), USER_DEFINED_FIELD_MAX_LENGTH);
+    ValidatorUtil.checkMaxLength("userDefinedField5", attributes.getUserDefinedField5(), USER_DEFINED_FIELD_MAX_LENGTH);
+    attributesValidator.validate(attributes);
   }
 }
