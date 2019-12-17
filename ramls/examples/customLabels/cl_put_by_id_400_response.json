@@ -1,8 +1,6 @@
 {
   "errors": [{
-    "title": "Invalid Label id",
-    "detail": "Label Id can't be blank",
-    "source": {}
+    "title": "Invalid format for Custom Label id: 'a'"
   }],
   "jsonapi": {
     "version": "1.0"

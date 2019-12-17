@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
+import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,6 +28,8 @@ public class ValidatorUtil {
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String IDENTIFIER_ID = "identifier id";
+  private static final String INVALID_ID = "%s should be in range %d - %d";
+  private static final String NOT_EQUAL_ID = "Ids should be equal!  %d != %d";
 
   private ValidatorUtil() {
   }
@@ -146,5 +149,22 @@ public class ValidatorUtil {
     checkIsNotNull(paramName, identifier);
     checkIsNotNull(IDENTIFIER_ID, identifier.getId());
     checkMaxLength(paramName, identifier.getId(), 20);
+  }
+
+  public static void checkInRange(int minInclusive, int maxInclusive, Integer value, String paramName) {
+    IntRange myRange = new IntRange(minInclusive, maxInclusive);
+    if(!myRange.containsInteger(value)){
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(INVALID_ID, paramName, minInclusive, maxInclusive));
+    }
+  }
+
+  public static void checkIsEqual(int customLabelId, int id) {
+    if(customLabelId != id) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, IDENTIFIER_ID),
+        String.format(NOT_EQUAL_ID, customLabelId, id));
+    }
   }
 }

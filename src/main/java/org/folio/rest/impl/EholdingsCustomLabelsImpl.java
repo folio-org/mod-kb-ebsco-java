@@ -6,7 +6,10 @@ import static javax.ws.rs.core.Response.status;
 
 import static org.folio.rest.util.ErrorUtil.createError;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
@@ -22,10 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.holdingsiq.model.CustomLabel;
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.converter.labels.CustomLabelPutRequestToRmApiConverter;
 import org.folio.rest.jaxrs.model.CustomLabelPutRequest;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.resource.EholdingsCustomLabels;
+import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
+import org.folio.rest.validator.CustomLabelsPutBodyValidator;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
@@ -36,6 +42,10 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
 
   @Autowired
   private RMAPITemplateFactory templateFactory;
+  @Autowired
+  private CustomLabelPutRequestToRmApiConverter putRequestConverter;
+  @Autowired
+  private CustomLabelsPutBodyValidator putBodyValidator;
 
   public EholdingsCustomLabelsImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -73,10 +83,12 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
   }
 
   private CustomLabel getCustomLabelById(int fieldId, RootProxyCustomLabels rootProxyCustomLabels) {
-    if (fieldId <= 0 || fieldId > rootProxyCustomLabels.getLabelList().size()){
+    final Integer index = findElementById(rootProxyCustomLabels.getLabelList(), fieldId);
+    if (fieldId <= 0 || Objects.isNull(index)){
       throw new NotFoundException();
     }
-    return rootProxyCustomLabels.getLabelList().get(fieldId - 1);
+
+    return rootProxyCustomLabels.getLabelList().get(index);
   }
 
   @Override
@@ -84,7 +96,46 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
   public void putEholdingsCustomLabelsById(String id, String contentType, CustomLabelPutRequest entity,
                                            Map<String, String> okapiHeaders,
                                            Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(succeededFuture(status(Status.NOT_IMPLEMENTED).build()));
+    final int fieldId = parseCustomLabelId(id);
+    putBodyValidator.validate(entity, fieldId);
+    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+      .requestAction(context -> updateCustomLabel(context, putRequestConverter.convert(entity))
+        .thenApply(o -> entity))
+      .executeWithResult(org.folio.rest.jaxrs.model.CustomLabel.class);
+  }
+
+  private CompletableFuture<RootProxyCustomLabels> updateCustomLabel(RMAPITemplateContext context, CustomLabel customLabel) {
+    return context.getHoldingsService().retrieveRootProxyCustomLabels()
+      .thenCompose(rootProxyCustomLabels -> updateCustomLabelsCollection(customLabel, rootProxyCustomLabels, context));
+  }
+
+  private CompletableFuture<RootProxyCustomLabels> updateCustomLabelsCollection(CustomLabel entity,
+                                                                                RootProxyCustomLabels labels,
+                                                                                RMAPITemplateContext context) {
+    updateCustomLabelsCollection(entity, labels);
+    return context.getHoldingsService().updateRootProxyCustomLabels(labels);
+  }
+
+  private void updateCustomLabelsCollection(CustomLabel entity, RootProxyCustomLabels labels) {
+    final List<CustomLabel> labelList = labels.getLabelList();
+    final Integer index = findElementById(labelList, entity.getId());
+
+    if(Objects.nonNull(index)){
+      labelList.set(index, entity);
+    } else {
+      labelList.add(entity);
+    }
+  }
+
+  private Integer findElementById(List<CustomLabel> labelList, int id){
+
+    for (int index = 0; index < labelList.size(); index++) {
+      final Integer customLabelId = labelList.get(index).getId();
+      if (customLabelId.equals(id)){
+        return index;
+      }
+    }
+    return null;
   }
 
   @Override

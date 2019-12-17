@@ -2,7 +2,7 @@
   "data": {
     "type": "customLabel",
     "attributes": {
-      "id": 1,
+      "id": 6,
       "displayLabel": "test label 1 updated",
       "displayOnFullTextFinder": false,
       "displayOnPublicationFinder": true

@@ -3,7 +3,7 @@
     "type": "customLabel",
     "attributes": {
       "id": 1,
-      "displayLabel": "test label 1 updated",
+      "displayLabel": "Lorem ipsum dolor sit amet, consectetuer adipiscin",
       "displayOnFullTextFinder": false,
       "displayOnPublicationFinder": true
     }
