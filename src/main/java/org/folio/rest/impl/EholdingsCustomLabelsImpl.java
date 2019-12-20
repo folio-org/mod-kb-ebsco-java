@@ -83,7 +83,7 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
   }
 
   private CustomLabel getCustomLabelById(int fieldId, RootProxyCustomLabels rootProxyCustomLabels) {
-    final Integer index = findElementById(rootProxyCustomLabels.getLabelList(), fieldId);
+    final Integer index = findIndexById(rootProxyCustomLabels.getLabelList(), fieldId);
     if (fieldId <= 0 || Objects.isNull(index)){
       throw new NotFoundException();
     }
@@ -118,7 +118,7 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
 
   private void updateCustomLabelsCollection(CustomLabel entity, RootProxyCustomLabels labels) {
     final List<CustomLabel> labelList = labels.getLabelList();
-    final Integer index = findElementById(labelList, entity.getId());
+    final Integer index = findIndexById(labelList, entity.getId());
 
     if(Objects.nonNull(index)){
       labelList.set(index, entity);
@@ -127,7 +127,7 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
     }
   }
 
-  private Integer findElementById(List<CustomLabel> labelList, int id){
+  private Integer findIndexById(List<CustomLabel> labelList, int id){
 
     for (int index = 0; index < labelList.size(); index++) {
       final Integer customLabelId = labelList.get(index).getId();

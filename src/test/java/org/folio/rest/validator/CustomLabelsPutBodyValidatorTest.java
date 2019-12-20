@@ -56,7 +56,7 @@ public class CustomLabelsPutBodyValidatorTest {
   @Test
   public void shouldThrowExceptionWhenNotEqualId() {
     expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid identifier id");
+    expectedEx.expectMessage("Invalid Custom Label id");
     CustomLabelPutRequest putRequest = new CustomLabelPutRequest()
       .withData(new CustomLabelCollectionItem()
         .withAttributes(new CustomLabelDataAttributes()
