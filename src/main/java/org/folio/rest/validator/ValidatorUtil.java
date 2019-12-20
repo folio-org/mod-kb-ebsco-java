@@ -26,7 +26,7 @@ public class ValidatorUtil {
   private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
-  private static final String INVALID_ID = "%s should be in range %d - %d";
+  private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
 
   private ValidatorUtil() {
   }
@@ -147,7 +147,7 @@ public class ValidatorUtil {
     if(!myRange.containsInteger(value)){
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
-        String.format(INVALID_ID, paramName, minInclusive, maxInclusive));
+        String.format(MUST_BE_IN_RANGE, paramName, minInclusive, maxInclusive));
     }
   }
 }

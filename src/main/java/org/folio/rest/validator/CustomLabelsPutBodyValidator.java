@@ -11,9 +11,9 @@ public class CustomLabelsPutBodyValidator {
 
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
-  private static final String MUST_BE_IN_RANGE = "Ids should be equal!  %d != %d";
+  private static final String MUST_HAVE_EQUAL_IDS = "Ids should be equal!  %d != %d";
   private static final int CUSTOM_LABEL_NAME_MAX_LENGTH = 50;
-  private String CUSTOM_LABEL_ID = "Custom Label id";
+  private static final String CUSTOM_LABEL_ID = "Custom Label id";
 
   public void validate(CustomLabelPutRequest request, int customLabelId) {
     if (request == null ||
@@ -34,7 +34,7 @@ public class CustomLabelsPutBodyValidator {
     if(customLabelId != id) {
       throw new InputValidationException(
         String.format("Invalid %s", CUSTOM_LABEL_ID),
-        String.format(MUST_BE_IN_RANGE, customLabelId, id));
+        String.format(MUST_HAVE_EQUAL_IDS, customLabelId, id));
     }
   }
 }
