@@ -9,15 +9,12 @@
     "id": {
       "type": "integer",
       "description": "Label id",
-      "example": 1,
-      "minimum": 1,
-      "maximum": 5,
-      "exclusiveMaximum":true
+      "example": 1
     },
     "displayLabel": {
       "type": "string",
       "description": "Display Label Name",
-      "maxLength": 50
+      "example": "User defined field 1"
     },
     "displayOnFullTextFinder": {
       "type": "boolean",

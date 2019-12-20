@@ -7,11 +7,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
+import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.Identifier;
 
 public class ValidatorUtil {
 
@@ -26,7 +26,7 @@ public class ValidatorUtil {
   private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
-  private static final String IDENTIFIER_ID = "identifier id";
+  private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
 
   private ValidatorUtil() {
   }
@@ -142,9 +142,12 @@ public class ValidatorUtil {
     }
   }
 
-  public static void checkIdentifierValid(String paramName, Identifier identifier) {
-    checkIsNotNull(paramName, identifier);
-    checkIsNotNull(IDENTIFIER_ID, identifier.getId());
-    checkMaxLength(paramName, identifier.getId(), 20);
+  public static void checkInRange(int minInclusive, int maxInclusive, Integer value, String paramName) {
+    IntRange myRange = new IntRange(minInclusive, maxInclusive);
+    if(!myRange.containsInteger(value)){
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_BE_IN_RANGE, paramName, minInclusive, maxInclusive));
+    }
   }
 }

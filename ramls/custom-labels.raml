@@ -94,14 +94,14 @@ types:
               example:
                 strict: false
                 value: !include examples/customLabels/cl_put_by_id_400_response.json
-        404:
-          description: Not Found
+        422:
+          description: Unprocessable Entity
           body:
             application/vnd.api+json:
               type: jsonapiError
               example:
                 strict: false
-                value: !include examples/customLabels/cl_get_put_delete_by_id_404_response.json
+                value: !include examples/customLabels/cl_put_by_id_422_response.json
     delete:
       description: Delete a Custom Label by Id
       responses:

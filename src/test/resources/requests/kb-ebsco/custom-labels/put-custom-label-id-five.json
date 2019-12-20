@@ -2,10 +2,10 @@
   "data": {
     "type": "customLabel",
     "attributes": {
-      "id": 1,
-      "displayLabel": "test label 1 updated",
+      "id": 5,
+      "displayLabel": "test label 5 updated",
       "displayOnFullTextFinder": false,
-      "displayOnPublicationFinder": true
+      "displayOnPublicationFinder": false
     }
   }
 }

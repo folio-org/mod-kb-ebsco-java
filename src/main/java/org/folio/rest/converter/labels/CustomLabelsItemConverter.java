@@ -11,7 +11,7 @@ import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 @Component
 public class CustomLabelsItemConverter implements Converter<CustomLabel, CustomLabelCollectionItem> {
 
-  private static final String CUSTOM_LABEL_TYPE = "customLabel";
+  static final String CUSTOM_LABEL_TYPE = "customLabel";
 
   @Override
   public CustomLabelCollectionItem convert(@NonNull CustomLabel customLabel) {
