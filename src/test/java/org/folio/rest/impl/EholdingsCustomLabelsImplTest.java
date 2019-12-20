@@ -11,7 +11,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NOT_IMPLEMENTED;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
@@ -164,9 +163,43 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn501WhenDeleteByIdIsNotImplemented(){
-    final int expectedCode = SC_NOT_IMPLEMENTED;
-    final int code =  deleteWithStatus(CUSTOM_LABELS_PATH + "/1", expectedCode).response().statusCode();
-    assertEquals(expectedCode, code);
+  public void shouldDeleteCustomLabelWhenIdIsValid() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/custom-labels/get-custom-labels-two-elements.json";
+    mockCustomLabelsConfiguration(stubResponseFile);
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
+
+    deleteWithNoContent(CUSTOM_LABELS_PATH + "/1");
+
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+      .withRequestBody(equalToJson(readFile("requests/rmapi/custom-labels/put-custom-label-one-element.json"))));
+  }
+
+  @Test
+  public void shouldReturn404OnDeleteWhenCustomLabelNotFound() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/custom-labels/get-custom-labels-two-elements.json";
+    mockCustomLabelsConfiguration(stubResponseFile);
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
+
+    final JsonapiError jsonapiError = deleteWithStatus(CUSTOM_LABELS_PATH + "/2", SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertEquals("Label not found", jsonapiError.getErrors().get(0).getTitle());
+    assertEquals("Label with id: '2' does not exist", jsonapiError.getErrors().get(0).getDetail());
+  }
+  @Test
+  public void shouldReturn400OnDeleteWhenCustomLabelIdIsInvalid() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/custom-labels/get-custom-labels-two-elements.json";
+    mockCustomLabelsConfiguration(stubResponseFile);
+    stubFor(
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
+
+    final JsonapiError jsonapiError = deleteWithStatus(CUSTOM_LABELS_PATH + "/a", SC_BAD_REQUEST)
+      .as(JsonapiError.class);
+
+    assertEquals("Invalid format for Custom Label id: 'a'", jsonapiError.getErrors().get(0).getTitle());
   }
 }

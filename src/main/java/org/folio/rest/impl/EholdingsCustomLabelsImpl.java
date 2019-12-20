@@ -1,8 +1,6 @@
 package org.folio.rest.impl;
 
-import static io.vertx.core.Future.succeededFuture;
 import static java.lang.String.format;
-import static javax.ws.rs.core.Response.status;
 
 import static org.folio.rest.util.ErrorUtil.createError;
 
@@ -14,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -142,7 +139,21 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
   @HandleValidationErrors
   public void deleteEholdingsCustomLabelsById(String id, Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(succeededFuture(status(Status.NOT_IMPLEMENTED).build()));
+    final int fieldId = parseCustomLabelId(id);
+    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+      .requestAction(context -> deleteCustomLabel(context, fieldId))
+      .addErrorMapper(NotFoundException.class, exception ->
+        DeleteEholdingsCustomLabelsByIdResponse.respond404WithApplicationVndApiJson(
+          createError(CUSTOM_LABEL_NOT_FOUND_TITLE, format(CUSTOM_LABEL_NOT_FOUND_MESSAGE, fieldId))))
+      .execute();
   }
 
+  private CompletableFuture<Void> deleteCustomLabel(RMAPITemplateContext context, int fieldId) {
+     return context.getHoldingsService().retrieveRootProxyCustomLabels()
+      .thenAccept(rootProxyLabels -> {
+        final CustomLabel customLabelById = getCustomLabelById(fieldId, rootProxyLabels);
+        rootProxyLabels.getLabelList().remove(customLabelById);
+        context.getHoldingsService().updateRootProxyCustomLabels(rootProxyLabels);
+      });
+  }
 }
