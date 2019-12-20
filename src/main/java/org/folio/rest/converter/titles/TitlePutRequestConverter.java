@@ -11,10 +11,11 @@ import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.ResourcePut;
+import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
-import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
+import org.folio.rest.model.TitleCommonRequestAttributes;
 
 @Component
 public class TitlePutRequestConverter {
@@ -29,8 +30,8 @@ public class TitlePutRequestConverter {
   }
 
   public ResourcePut convertToRMAPICustomResourcePutRequest(TitlePutRequest entity, CustomerResources oldResource) {
-    TitlePostDataAttributes attributes = entity.getData().getAttributes();
-    ResourcePut.ResourcePutBuilder builder = ResourcePut.resourcePutBuilder();
+    TitleCommonRequestAttributes attributes = entity.getData().getAttributes();
+    ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
 
     Proxy proxy = null;
     if(oldResource.getProxy()!=null && oldResource.getProxy().getId()!=null){
@@ -57,11 +58,13 @@ public class TitlePutRequestConverter {
     builder.description(attributes.getDescription());
     builder.identifiersList(toIdentifiersConverter.convert(attributes.getIdentifiers()));
     builder.contributorsList(toContributorsConverter.convert(attributes.getContributors()));
-    builder.userDefinedField1(oldResource.getUserDefinedField1());
-    builder.userDefinedField2(oldResource.getUserDefinedField2());
-    builder.userDefinedField3(oldResource.getUserDefinedField3());
-    builder.userDefinedField4(oldResource.getUserDefinedField4());
-    builder.userDefinedField5(oldResource.getUserDefinedField5());
+    builder.userDefinedFields(UserDefinedFields.builder()
+    .userDefinedField1(oldResource.getUserDefinedFields().getUserDefinedField1())
+    .userDefinedField2(oldResource.getUserDefinedFields().getUserDefinedField2())
+    .userDefinedField3(oldResource.getUserDefinedFields().getUserDefinedField3())
+    .userDefinedField4(oldResource.getUserDefinedFields().getUserDefinedField4())
+    .userDefinedField5(oldResource.getUserDefinedFields().getUserDefinedField5())
+      .build());
     return builder.build();
   }
 }

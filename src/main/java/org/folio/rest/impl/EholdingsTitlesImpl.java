@@ -51,7 +51,7 @@ import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
-import org.folio.rest.validator.TitlesPostAttributesValidator;
+import org.folio.rest.validator.TitleCommonRequestAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.spring.SpringContextUtil;
@@ -71,7 +71,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Autowired
   private TitlesPostBodyValidator titlesPostBodyValidator;
   @Autowired
-  private TitlesPostAttributesValidator titlesPostAttributesValidator;
+  private TitleCommonRequestAttributesValidator titleCommonRequestAttributesValidator;
   @Autowired
   private RMAPITemplateFactory templateFactory;
   @Autowired
@@ -135,7 +135,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @HandleValidationErrors
   public void putEholdingsTitlesByTitleId(String titleId, String contentType, TitlePutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    titlesPostAttributesValidator.validate(entity.getData().getAttributes());
+    titleCommonRequestAttributesValidator.validate(entity.getData().getAttributes());
 
     Long parsedTitleId = idParser.parseTitleId(titleId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)

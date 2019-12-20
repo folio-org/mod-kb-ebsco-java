@@ -12,7 +12,10 @@ import java.util.Collections;
 
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.EmbargoPeriod;
+import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.jaxrs.model.ResourcePutData;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
@@ -44,18 +47,19 @@ public class ResourcesTestData {
   public static ResourceResult createResourceData() {
     Title title = Title.builder()
       .contributorsList(Collections.emptyList())
-      .customerResourcesList(Collections.singletonList(CustomerResources.customerResourcesBuilder()
+      .customerResourcesList(Collections.singletonList(CustomerResources.builder()
         .coverageStatement(OLD_COVERAGE_STATEMENT)
         .isSelected(false)
         .visibilityData(VisibilityInfo.builder()
           .isHidden(OLD_VISIBILITY_DATA).build())
         .customCoverageList(Collections.singletonList(CoverageDates.builder()
           .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
-        .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
+        .customEmbargoPeriod(EmbargoPeriod.builder()
           .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(org.folio.holdingsiq.model.Proxy.builder()
+        .proxy(Proxy.builder()
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
+        .userDefinedFields(UserDefinedFields.builder().build())
         .build()
       ))
       .identifiersList(Collections.emptyList())

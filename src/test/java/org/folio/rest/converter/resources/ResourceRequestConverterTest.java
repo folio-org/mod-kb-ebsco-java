@@ -13,6 +13,7 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
@@ -37,7 +38,7 @@ public class ResourceRequestConverterTest {
   public void setUp() {
      resourceData = Title.builder()
       .contributorsList(Collections.emptyList())
-      .customerResourcesList(Collections.singletonList(CustomerResources.customerResourcesBuilder()
+      .customerResourcesList(Collections.singletonList(CustomerResources.builder()
         .coverageStatement(OLD_COVERAGE_STATEMENT)
         .isSelected(false)
         .visibilityData(VisibilityInfo.builder()
@@ -49,6 +50,7 @@ public class ResourceRequestConverterTest {
         .proxy(org.folio.holdingsiq.model.Proxy.builder()
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
+        .userDefinedFields(UserDefinedFields.builder().build())
         .build()
       ))
       .identifiersList(Collections.emptyList())
@@ -103,11 +105,11 @@ public class ResourceRequestConverterTest {
         .withUserDefinedField3("test 3")
         .withUserDefinedField4("test 4")
         .withUserDefinedField5("test 5")), resourceData);
-    assertEquals("test 1", resourcePut.getUserDefinedField1());
-    assertEquals("test 2", resourcePut.getUserDefinedField2());
-    assertEquals("test 3", resourcePut.getUserDefinedField3());
-    assertEquals("test 4", resourcePut.getUserDefinedField4());
-    assertEquals("test 5", resourcePut.getUserDefinedField5());
+    assertEquals("test 1", resourcePut.getUserDefinedFields().getUserDefinedField1());
+    assertEquals("test 2", resourcePut.getUserDefinedFields().getUserDefinedField2());
+    assertEquals("test 3", resourcePut.getUserDefinedFields().getUserDefinedField3());
+    assertEquals("test 4", resourcePut.getUserDefinedFields().getUserDefinedField4());
+    assertEquals("test 5", resourcePut.getUserDefinedFields().getUserDefinedField5());
   }
 
   @Test
@@ -170,11 +172,11 @@ public class ResourceRequestConverterTest {
         .withUserDefinedField3("test 3")
         .withUserDefinedField4("test 4")
         .withUserDefinedField5("test 5")), resourceData);
-    assertEquals("test 1", resourcePut.getUserDefinedField1());
-    assertEquals("test 2", resourcePut.getUserDefinedField2());
-    assertEquals("test 3", resourcePut.getUserDefinedField3());
-    assertEquals("test 4", resourcePut.getUserDefinedField4());
-    assertEquals("test 5", resourcePut.getUserDefinedField5());
+    assertEquals("test 1", resourcePut.getUserDefinedFields().getUserDefinedField1());
+    assertEquals("test 2", resourcePut.getUserDefinedFields().getUserDefinedField2());
+    assertEquals("test 3", resourcePut.getUserDefinedFields().getUserDefinedField3());
+    assertEquals("test 4", resourcePut.getUserDefinedFields().getUserDefinedField4());
+    assertEquals("test 5", resourcePut.getUserDefinedFields().getUserDefinedField5());
   }
 
   @Test

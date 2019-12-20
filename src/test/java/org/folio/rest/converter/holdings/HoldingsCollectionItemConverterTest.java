@@ -26,7 +26,6 @@ public class HoldingsCollectionItemConverterTest {
   @Autowired
   private HoldingCollectionItemConverter holdingCollectionItemConverter;
 
-
   @Test
   public void shouldConvertHoldingToResource() throws IOException, URISyntaxException {
     HoldingInfoInDB holding = getHolding();

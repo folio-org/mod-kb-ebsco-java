@@ -3,6 +3,7 @@ package org.folio.rest.validator;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import org.folio.rest.exception.InputValidationException;
@@ -47,7 +48,7 @@ public class TitlePostBodyValidatorTest {
       + ". Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis s"
       + "ed, nonummy id, metus. Nullam accumsan lorem in dui. Cras ultricies mi";
   private static final String TITLE_TEST_NAME = "Title Test Name";
-  private TitlesPostBodyValidator validator = new TitlesPostBodyValidator(new TitlesPostAttributesValidator());
+  private TitlesPostBodyValidator validator = new TitlesPostBodyValidator(new TitleCommonRequestAttributesValidator());
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPostBody() {
@@ -132,13 +133,10 @@ public class TitlePostBodyValidatorTest {
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionIfTitleEditionIsTooLong() {
-    TitlePostRequest titlePostRequest = new TitlePostRequest();
-    titlePostRequest
-      .withData(new TitlePostData()
-        .withAttributes(new TitlePostDataAttributes()
-          .withName(TITLE_TEST_NAME)
-          .withPublisherName(
-            TEXT_LONGER_THAN_250_CHARACTERS)));
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withPublisherName(
+        TEXT_LONGER_THAN_250_CHARACTERS));
 
     validator.validate(titlePostRequest);
   }
@@ -158,86 +156,71 @@ public class TitlePostBodyValidatorTest {
     validator.validate(titlePostRequest);
   }
 
+  @Test(expected = InputValidationException.class)
+  public void shouldThrowExceptionIfUserDefinedFieldIsTooLong() {
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withUserDefinedField1(StringUtils.repeat("*", 101))
+      .withPublicationType(PublicationType.BOOK));
+
+    validator.validate(titlePostRequest);
+  }
 
   @Test
   public void shouldNotThrowExceptionIfTitleDescriptionIsEmpty(){
-    TitlePostRequest titlePostRequest = new TitlePostRequest();
-    titlePostRequest
-      .withData(new TitlePostData()
-        .withAttributes(new TitlePostDataAttributes()
-          .withName(TITLE_TEST_NAME)
-          .withPublicationType(PublicationType.BOOK)
-          .withDescription("")))
-      .withIncluded(getTitlePostIncluded());
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withPublicationType(PublicationType.BOOK)
+      .withDescription(""));
 
     validator.validate(titlePostRequest);
   }
+
   @Test
   public void shouldNotThrowExceptionIfTitleDescriptionIsNull(){
-    TitlePostRequest titlePostRequest = new TitlePostRequest();
-    titlePostRequest
-      .withData(new TitlePostData()
-        .withAttributes(new TitlePostDataAttributes()
-          .withName(TITLE_TEST_NAME)
-          .withPublicationType(PublicationType.BOOK)
-          .withDescription(null)))
-      .withIncluded(getTitlePostIncluded());
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withPublicationType(PublicationType.BOOK)
+      .withDescription(null));
 
     validator.validate(titlePostRequest);
   }
-
   @Test
   public void shouldNotThrowExceptionIfTitleEditionIsEmpty(){
-    TitlePostRequest titlePostRequest = new TitlePostRequest();
-    titlePostRequest
-      .withData(new TitlePostData()
-        .withAttributes(new TitlePostDataAttributes()
-          .withName(TITLE_TEST_NAME)
-          .withPublicationType(PublicationType.BOOK)
-          .withEdition("")))
-      .withIncluded(getTitlePostIncluded());
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withPublicationType(PublicationType.BOOK)
+      .withEdition(""));
 
     validator.validate(titlePostRequest);
   }
 
   @Test
   public void shouldNotThrowExceptionIfTitleEditionIsNull(){
-    TitlePostRequest titlePostRequest = new TitlePostRequest();
-    titlePostRequest
-      .withData(new TitlePostData()
-        .withAttributes(new TitlePostDataAttributes()
-          .withName(TITLE_TEST_NAME)
-          .withPublicationType(PublicationType.BOOK)
-          .withEdition(null)))
-      .withIncluded(getTitlePostIncluded());
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withPublicationType(PublicationType.BOOK)
+      .withEdition(null));
 
     validator.validate(titlePostRequest);
   }
 
   @Test
   public void shouldNotThrowExceptionIfTitlePublisherNameIsNull(){
-    TitlePostRequest titlePostRequest = new TitlePostRequest();
-    titlePostRequest
-      .withData(new TitlePostData()
-        .withAttributes(new TitlePostDataAttributes()
-          .withName(TITLE_TEST_NAME)
-          .withPublicationType(PublicationType.BOOK)
-          .withPublisherName(null)))
-      .withIncluded(getTitlePostIncluded());
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withPublicationType(PublicationType.BOOK)
+      .withPublisherName(null));
 
     validator.validate(titlePostRequest);
   }
 
   @Test
   public void shouldNotThrowExceptionIfTitlePublisherNameIsEmpty(){
-    TitlePostRequest titlePostRequest = new TitlePostRequest();
-    titlePostRequest
-      .withData(new TitlePostData()
-        .withAttributes(new TitlePostDataAttributes()
-          .withName(TITLE_TEST_NAME)
-          .withPublicationType(PublicationType.BOOK)
-          .withPublisherName("")))
-      .withIncluded(getTitlePostIncluded());
+    TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
+      .withName(TITLE_TEST_NAME)
+      .withPublicationType(PublicationType.BOOK)
+      .withPublisherName(""));
 
     validator.validate(titlePostRequest);
   }
@@ -251,4 +234,12 @@ public class TitlePostBodyValidatorTest {
     return titleIncluded;
   }
 
+  private TitlePostRequest createRequest(TitlePostDataAttributes attributes) {
+    TitlePostRequest titlePostRequest = new TitlePostRequest();
+    titlePostRequest
+      .withData(new TitlePostData()
+        .withAttributes(attributes))
+      .withIncluded(getTitlePostIncluded());
+    return titlePostRequest;
+  }
 }

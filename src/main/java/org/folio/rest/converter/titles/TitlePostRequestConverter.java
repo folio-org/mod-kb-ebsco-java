@@ -10,9 +10,11 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.TitlePost;
+import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rmapi.result.ResourceResult;
 
@@ -26,24 +28,32 @@ public class TitlePostRequestConverter implements Converter<TitlePostRequest, Ti
   @Autowired
   private Converter<List<Contributors>, List<Contributor>> toContributorsConverter;
 
-
   @Override
   public TitlePost convert(@NonNull TitlePostRequest entity) {
-    Boolean isPeerReviewed = entity.getData().getAttributes().getIsPeerReviewed();
+    TitlePostDataAttributes attributes = entity.getData().getAttributes();
+    Boolean isPeerReviewed = attributes.getIsPeerReviewed();
     TitlePost.TitlePostBuilder titlePost = TitlePost.builder()
-      .titleName(entity.getData().getAttributes().getName())
-      .description(entity.getData().getAttributes().getDescription())
-      .edition(entity.getData().getAttributes().getEdition())
+      .titleName(attributes.getName())
+      .description(attributes.getDescription())
+      .edition(attributes.getEdition())
       .isPeerReviewed(java.util.Objects.isNull(isPeerReviewed) ? Boolean.FALSE : isPeerReviewed)
-      .publisherName(entity.getData().getAttributes().getPublisherName())
-      .pubType(ConverterConsts.publicationTypes.inverseBidiMap().get(entity.getData().getAttributes().getPublicationType()));
+      .publisherName(attributes.getPublisherName())
+      .pubType(ConverterConsts.publicationTypes.inverseBidiMap().get(attributes.getPublicationType()))
+      .userDefinedFields(UserDefinedFields.builder()
+        .userDefinedField1(attributes.getUserDefinedField1())
+        .userDefinedField2(attributes.getUserDefinedField2())
+        .userDefinedField3(attributes.getUserDefinedField3())
+        .userDefinedField4(attributes.getUserDefinedField4())
+        .userDefinedField5(attributes.getUserDefinedField5())
+          .build()
+      );
 
-    List<org.folio.rest.jaxrs.model.Identifier> identifiersList = entity.getData().getAttributes().getIdentifiers();
+    List<org.folio.rest.jaxrs.model.Identifier> identifiersList = attributes.getIdentifiers();
     if (!identifiersList.isEmpty()) {
       titlePost.identifiersList(toIdentifiersConverter.convert(identifiersList));
     }
 
-    List<org.folio.rest.jaxrs.model.Contributors> contributorsList = entity.getData().getAttributes().getContributors();
+    List<org.folio.rest.jaxrs.model.Contributors> contributorsList = attributes.getContributors();
     if (!contributorsList.isEmpty()) {
       titlePost.contributorsList(toContributorsConverter.convert(contributorsList));
     }
