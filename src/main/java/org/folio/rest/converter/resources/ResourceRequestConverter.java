@@ -11,6 +11,7 @@ import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
@@ -43,7 +44,7 @@ public class ResourceRequestConverter {
   }
 
   private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(ResourcePutDataAttributes attributes, Title oldTitle) {
-    ResourcePut.ResourcePutBuilder builder = ResourcePut.resourcePutBuilder();
+    ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
     CustomerResources oldResource = oldTitle.getCustomerResourcesList().get(0);
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
@@ -92,11 +93,14 @@ public class ResourceRequestConverter {
     builder.pubType(oldTitle.getPubType());
     builder.isPeerReviewed(oldTitle.getIsPeerReviewed());
 
-    builder.userDefinedField1(valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedField1()));
-    builder.userDefinedField2(valueOrDefault(attributes.getUserDefinedField2(), oldResource.getUserDefinedField2()));
-    builder.userDefinedField3(valueOrDefault(attributes.getUserDefinedField3(), oldResource.getUserDefinedField3()));
-    builder.userDefinedField4(valueOrDefault(attributes.getUserDefinedField4(), oldResource.getUserDefinedField4()));
-    builder.userDefinedField5(valueOrDefault(attributes.getUserDefinedField5(), oldResource.getUserDefinedField5()));
+    builder.userDefinedFields(UserDefinedFields.builder()
+      .userDefinedField1(valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedFields().getUserDefinedField1()))
+      .userDefinedField2(valueOrDefault(attributes.getUserDefinedField2(), oldResource.getUserDefinedFields().getUserDefinedField2()))
+      .userDefinedField3(valueOrDefault(attributes.getUserDefinedField3(), oldResource.getUserDefinedFields().getUserDefinedField3()))
+      .userDefinedField4(valueOrDefault(attributes.getUserDefinedField4(), oldResource.getUserDefinedFields().getUserDefinedField4()))
+      .userDefinedField5(valueOrDefault(attributes.getUserDefinedField5(), oldResource.getUserDefinedFields().getUserDefinedField5()))
+    .build());
+
     return builder;
   }
 

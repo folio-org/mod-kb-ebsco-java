@@ -75,11 +75,11 @@ public class CommonResourceConverter {
         .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
         .collect(Collectors.toList())))
       .withProxy(proxyConverter.convert(resource.getProxy()))
-      .withUserDefinedField1(resource.getUserDefinedField1())
-      .withUserDefinedField2(resource.getUserDefinedField2())
-      .withUserDefinedField3(resource.getUserDefinedField3())
-      .withUserDefinedField4(resource.getUserDefinedField4())
-      .withUserDefinedField5(resource.getUserDefinedField5());
+      .withUserDefinedField1(resource.getUserDefinedFields().getUserDefinedField1())
+      .withUserDefinedField2(resource.getUserDefinedFields().getUserDefinedField2())
+      .withUserDefinedField3(resource.getUserDefinedFields().getUserDefinedField3())
+      .withUserDefinedField4(resource.getUserDefinedFields().getUserDefinedField4())
+      .withUserDefinedField5(resource.getUserDefinedFields().getUserDefinedField5());
   }
 
 }

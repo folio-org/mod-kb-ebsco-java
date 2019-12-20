@@ -10,8 +10,8 @@ import org.folio.rest.converter.common.attr.ContributorsConverterPair;
 import org.folio.rest.converter.common.attr.IdentifiersConverterPair;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.PublicationType;
-import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePutData;
+import org.folio.rest.jaxrs.model.TitlePutDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 
 public class TitlePutRequestConverterTest {
@@ -76,7 +76,7 @@ public class TitlePutRequestConverterTest {
   private TitlePutRequest createEmptyTitlePutRequest() {
     TitlePutRequest request = new TitlePutRequest();
     request.setData(new TitlePutData());
-    request.getData().setAttributes(new TitlePostDataAttributes());
+    request.getData().setAttributes(new TitlePutDataAttributes());
     return request;
   }
 }

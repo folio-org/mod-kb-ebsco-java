@@ -5,22 +5,23 @@ import java.util.Objects;
 
 import javax.validation.ValidationException;
 
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.Identifier;
-import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.springframework.stereotype.Component;
 
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Identifier;
+import org.folio.rest.model.TitleCommonRequestAttributes;
+
 @Component
-public class TitlesPostAttributesValidator {
+public class TitleCommonRequestAttributesValidator {
 
   private static final String TITLE_NAME = "Title Name";
 
   /**
-   * Provides validation for the post data attributes
+   * Provides validation for the common data attributes
    *
    * @throws ValidationException if validation fails
    */
-  public void validate(TitlePostDataAttributes attributes) {
+  public void validate(TitleCommonRequestAttributes attributes) {
     ValidatorUtil.checkIsNotNull(TITLE_NAME, attributes.getName());
     ValidatorUtil.checkIsNotEmpty(TITLE_NAME, attributes.getName());
     ValidatorUtil.checkMaxLength(TITLE_NAME, attributes.getName(), 400);

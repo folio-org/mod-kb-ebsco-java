@@ -3,7 +3,7 @@
   "title": "Title attributes schema",
   "description": "Title attributes schema",
   "type": "object",
-  "javaType": "org.folio.rest.jaxrs.model.TitlePostDataAttributes",
+  "javaType": "org.folio.rest.jaxrs.model.TitlePutDataAttributes",
   "javaInterfaces": ["org.folio.rest.model.TitleCommonRequestAttributes"],
   "additionalProperties": false,
   "properties": {
@@ -59,25 +59,6 @@
       "type": "object",
       "description": "Title tags",
       "$ref": "../../raml-util/schemas/tags.schema"
-    },"userDefinedField1": {
-      "type": "string",
-      "description": "User defined field 1"
-    },
-    "userDefinedField2": {
-      "type": "string",
-      "description": "User defined field 2"
-    },
-    "userDefinedField3": {
-      "type": "string",
-      "description": "User defined field 3"
-    },
-    "userDefinedField4": {
-      "type": "string",
-      "description": "User defined field 4"
-    },
-    "userDefinedField5": {
-      "type": "string",
-      "description": "User defined field 5"
     }
   },
   "required": [

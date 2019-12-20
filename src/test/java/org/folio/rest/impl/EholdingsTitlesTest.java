@@ -401,7 +401,6 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldAddTitleDataOnPut() throws IOException, URISyntaxException {
     try {
-
       putTitle(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
 
       List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
@@ -494,7 +493,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
 
     mockDefaultConfiguration(getWiremockUrl());
-    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}", true, true);
+    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n} \"userDefinedField2\": \"test 2\",\n\"userDefinedField3\": \"\",\n\"userDefinedField4\" : null,\n\"userDefinedField5\": \"test 5\"", true, true);
 
     stubFor(
       post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
