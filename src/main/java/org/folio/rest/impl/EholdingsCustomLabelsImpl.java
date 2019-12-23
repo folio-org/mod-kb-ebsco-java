@@ -150,10 +150,10 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
 
   private CompletableFuture<Void> deleteCustomLabel(RMAPITemplateContext context, int fieldId) {
      return context.getHoldingsService().retrieveRootProxyCustomLabels()
-      .thenAccept(rootProxyLabels -> {
+      .thenCompose(rootProxyLabels -> {
         final CustomLabel customLabelById = getCustomLabelById(fieldId, rootProxyLabels);
         rootProxyLabels.getLabelList().remove(customLabelById);
-        context.getHoldingsService().updateRootProxyCustomLabels(rootProxyLabels);
+        return context.getHoldingsService().updateRootProxyCustomLabels(rootProxyLabels).thenApply(updated -> null);
       });
   }
 }
