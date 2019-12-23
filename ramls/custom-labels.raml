@@ -114,4 +114,12 @@ types:
               type: jsonapiError
               example:
                 strict: false
+                value: !include examples/customLabels/cl_delete_by_id_400_response.json
+        404:
+          description: NotFound
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
                 value: !include examples/customLabels/cl_get_put_delete_by_id_404_response.json
