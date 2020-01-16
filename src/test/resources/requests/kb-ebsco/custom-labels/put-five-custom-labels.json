@@ -4,7 +4,7 @@
       "type": "customLabel",
       "attributes": {
         "id": 1,
-        "displayLabel": "test label 1 updated",
+        "displayLabel": "test label 1",
         "displayOnFullTextFinder": false,
         "displayOnPublicationFinder": true
       }
@@ -13,8 +13,8 @@
       "type": "customLabel",
       "attributes": {
         "id": 2,
-        "displayLabel": "label 2",
-        "displayOnFullTextFinder": true,
+        "displayLabel": "test label 2",
+        "displayOnFullTextFinder": false,
         "displayOnPublicationFinder": true
       }
     },
@@ -22,7 +22,7 @@
       "type": "customLabel",
       "attributes": {
         "id": 3,
-        "displayLabel": "label 3",
+        "displayLabel": "test label 3",
         "displayOnFullTextFinder": false,
         "displayOnPublicationFinder": true
       }
@@ -31,25 +31,19 @@
       "type": "customLabel",
       "attributes": {
         "id": 4,
-        "displayLabel": "label 4",
-        "displayOnFullTextFinder": true,
-        "displayOnPublicationFinder": false
+        "displayLabel": "test label 4",
+        "displayOnFullTextFinder": false,
+        "displayOnPublicationFinder": true
       }
     },
     {
       "type": "customLabel",
       "attributes": {
         "id": 5,
-        "displayLabel": "label 5",
+        "displayLabel": "test label 5",
         "displayOnFullTextFinder": false,
-        "displayOnPublicationFinder": false
+        "displayOnPublicationFinder": true
       }
     }
-  ],
-  "meta": {
-    "totalResults": 5
-  },
-  "jsonapi": {
-    "version": "1.0"
-  }
+  ]
 }

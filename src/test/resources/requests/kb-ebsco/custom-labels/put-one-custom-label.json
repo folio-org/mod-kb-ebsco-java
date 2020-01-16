@@ -4,7 +4,7 @@
       "type": "customLabel",
       "attributes": {
         "id": 1,
-        "displayLabel": "Lorem ipsum dolor sit amet, consectetuer adipiscin.",
+        "displayLabel": "test label 1 updated",
         "displayOnFullTextFinder": false,
         "displayOnPublicationFinder": true
       }
