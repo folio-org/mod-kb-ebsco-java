@@ -12,7 +12,6 @@ documentation:
 types:
   customLabelsCollection: !include types/customLabels/customLabelsCollection.json
   customLabelCollectionItem: !include types/customLabels/customLabelCollectionItem.json
-  customLabel: !include types/customLabels/customLabel.json
   customLabelPutRequest: !include types/customLabels/customLabelPutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
@@ -63,4 +62,4 @@ types:
             type: jsonapiError
             example:
               strict: false
-              value: !include examples/customLabels/cl_collection_put_400_response.json
+              value: !include examples/customLabels/cl_collection_put_422_response.json

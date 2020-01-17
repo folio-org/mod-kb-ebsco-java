@@ -394,8 +394,8 @@
     },
     {
       "permissionName": "kb-ebsco.custom-labels.collection.put",
-      "displayName": "put Custom Labels collection item",
-      "description": "Put Custom Labels collection item"
+      "displayName": "put Custom Labels collection",
+      "description": "Put Custom Labels collection"
     },
     {
       "permissionName": "kb-ebsco.all",
