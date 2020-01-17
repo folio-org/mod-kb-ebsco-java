@@ -19,20 +19,20 @@ public class CustomLabelPutRequestToRmApiConverter implements Converter<CustomLa
   public RootProxyCustomLabels convert(CustomLabelPutRequest customLabelPutRequest) {
     List<CustomLabelCollectionItem> customLabelItems = customLabelPutRequest.getData();
     List<CustomLabel> labelList = customLabelItems.stream()
-        .map(this::toCustomLabel)
-        .collect(Collectors.toList());
+      .map(this::toCustomLabel)
+      .collect(Collectors.toList());
     return RootProxyCustomLabels.builder()
-        .labelList(labelList)
-        .build();
+      .labelList(labelList)
+      .build();
   }
 
   private CustomLabel toCustomLabel(CustomLabelCollectionItem customLabelCollectionItem) {
     CustomLabelDataAttributes attributes = customLabelCollectionItem.getAttributes();
     return CustomLabel.builder()
-        .id(attributes.getId())
-        .displayLabel(attributes.getDisplayLabel())
-        .displayOnFullTextFinder(attributes.getDisplayOnFullTextFinder())
-        .displayOnPublicationFinder(attributes.getDisplayOnPublicationFinder())
-        .build();
+      .id(attributes.getId())
+      .displayLabel(attributes.getDisplayLabel())
+      .displayOnFullTextFinder(attributes.getDisplayOnFullTextFinder())
+      .displayOnPublicationFinder(attributes.getDisplayOnPublicationFinder())
+      .build();
   }
 }

@@ -1,12 +1,13 @@
 package org.folio.rest.validator;
 
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
+
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabelCollectionItem;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelPutRequest;
-import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 @Component
 public class CustomLabelsPutBodyValidator {

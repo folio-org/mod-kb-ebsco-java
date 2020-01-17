@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.apache.http.HttpStatus;
@@ -78,7 +77,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     mockCustomLabelsConfiguration(stubResponseFile);
     final String putBody = readFile("requests/kb-ebsco/custom-labels/put-custom-label-invalid-id.json");
     final JsonapiError jsonapiError = putWithStatus(CUSTOM_LABELS_PATH, putBody, SC_UNPROCESSABLE_ENTITY)
-        .as(JsonapiError.class);
+      .as(JsonapiError.class);
     assertEquals("Invalid Custom Label id", jsonapiError.getErrors().get(0).getTitle());
     assertEquals("Custom Label id should be in range 1 - 5", jsonapiError.getErrors().get(0).getDetail());
   }
@@ -89,7 +88,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     mockCustomLabelsConfiguration(stubResponseFile);
     final String putBody = readFile("requests/kb-ebsco/custom-labels/put-custom-label-invalid-name.json");
     final JsonapiError jsonapiError = putWithStatus(CUSTOM_LABELS_PATH, putBody, SC_UNPROCESSABLE_ENTITY)
-        .as(JsonapiError.class);
+      .as(JsonapiError.class);
     assertEquals("Invalid Custom Label Name", jsonapiError.getErrors().get(0).getTitle());
     assertEquals("Custom Label Name is too long (maximum is 50 characters)", jsonapiError.getErrors().get(0).getDetail());
   }
@@ -100,7 +99,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     mockCustomLabelsConfiguration(stubResponseFile);
     final String putBody = readFile("requests/kb-ebsco/custom-labels/put-custom-labels-duplicate-id.json");
     final JsonapiError jsonapiError = putWithStatus(CUSTOM_LABELS_PATH, putBody, SC_UNPROCESSABLE_ENTITY)
-        .as(JsonapiError.class);
+      .as(JsonapiError.class);
     assertEquals("Invalid request body", jsonapiError.getErrors().get(0).getTitle());
     assertEquals("Each label in body must contain unique id", jsonapiError.getErrors().get(0).getDetail());
   }
@@ -110,12 +109,12 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/custom-labels/get-custom-labels-two-elements.json";
     mockCustomLabelsConfiguration(stubResponseFile);
     stubFor(
-        put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-            .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
 
     final String putBody = readFile("requests/kb-ebsco/custom-labels/put-one-custom-label.json");
     final CustomLabelsCollection updatedCollection = putWithStatus(CUSTOM_LABELS_PATH, putBody, SC_OK)
-        .as(CustomLabelsCollection.class);
+      .as(CustomLabelsCollection.class);
 
     assertEquals(1, updatedCollection.getData().size());
     assertEquals((Integer) 1, updatedCollection.getMeta().getTotalResults());
@@ -123,7 +122,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     assertNotNull(item);
     assertEquals("test label 1 updated", item.getAttributes().getDisplayLabel());
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .withRequestBody(equalToJson(readFile("requests/rmapi/custom-labels/put-custom-labels-one-item.json"))));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/custom-labels/put-custom-labels-one-item.json"))));
   }
 
   @Test
@@ -131,12 +130,12 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/custom-labels/get-custom-labels-two-elements.json";
     mockCustomLabelsConfiguration(stubResponseFile);
     stubFor(
-        put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-            .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
+      put(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
 
     final String putBody = readFile("requests/kb-ebsco/custom-labels/put-five-custom-labels.json");
     final CustomLabelsCollection updatedCollection = putWithStatus(CUSTOM_LABELS_PATH, putBody, SC_OK)
-        .as(CustomLabelsCollection.class);
+      .as(CustomLabelsCollection.class);
 
     assertEquals(5, updatedCollection.getData().size());
     assertEquals((Integer) 5, updatedCollection.getMeta().getTotalResults());
@@ -150,13 +149,13 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     assertEquals("test label 5", lastItem.getAttributes().getDisplayLabel());
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-        .withRequestBody(equalToJson(readFile("requests/rmapi/custom-labels/put-custom-labels-five-items.json"))));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/custom-labels/put-custom-labels-five-items.json"))));
   }
 
   private void mockCustomLabelsConfiguration(String stubResponseFile) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
     stubFor(
-        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-            .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
+        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
   }
 }

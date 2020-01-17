@@ -39,33 +39,34 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels {
   @Override
   @HandleValidationErrors
   public void getEholdingsCustomLabels(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-      Context vertxContext) {
+                                       Context vertxContext) {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-        .requestAction(context -> context.getHoldingsService().retrieveRootProxyCustomLabels())
-        .executeWithResult(CustomLabelsCollection.class);
+      .requestAction(context -> context.getHoldingsService().retrieveRootProxyCustomLabels())
+      .executeWithResult(CustomLabelsCollection.class);
   }
 
   @Override
   @HandleValidationErrors
   public void putEholdingsCustomLabels(String contentType, CustomLabelPutRequest entity, Map<String, String> okapiHeaders,
-      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     putBodyValidator.validate(entity);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-        .requestAction(context -> {
-          RootProxyCustomLabels rootProxyCustomLabels = putRequestConverter.convert(entity);
-          return updateCustomLabels(context, rootProxyCustomLabels).thenApply(e -> entity);
-        })
-        .executeWithResult(CustomLabelsCollection.class);
+      .requestAction(context -> {
+        RootProxyCustomLabels rootProxyCustomLabels = putRequestConverter.convert(entity);
+        return updateCustomLabels(context, rootProxyCustomLabels).thenApply(e -> entity);
+      })
+      .executeWithResult(CustomLabelsCollection.class);
   }
 
   private CompletableFuture<RootProxyCustomLabels> updateCustomLabels(RMAPITemplateContext context,
-      RootProxyCustomLabels source) {
+                                                                      RootProxyCustomLabels source) {
     return context.getHoldingsService().retrieveRootProxyCustomLabels()
-        .thenCompose(target -> updateCustomLabels(target, source, context));
+      .thenCompose(target -> updateCustomLabels(target, source, context));
   }
 
   private CompletableFuture<RootProxyCustomLabels> updateCustomLabels(RootProxyCustomLabels target,
-      RootProxyCustomLabels source, RMAPITemplateContext context) {
+                                                                      RootProxyCustomLabels source,
+                                                                      RMAPITemplateContext context) {
     target.getLabelList().clear();
     target.getLabelList().addAll(source.getLabelList());
     return context.getHoldingsService().updateRootProxyCustomLabels(target);

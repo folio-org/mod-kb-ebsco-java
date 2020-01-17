@@ -14,8 +14,8 @@ public class CustomLabelPutRequestConverter implements Converter<CustomLabelPutR
   @Override
   public CustomLabelsCollection convert(CustomLabelPutRequest customLabelPutRequest) {
     return new CustomLabelsCollection()
-        .withData(customLabelPutRequest.getData())
-        .withMeta(new MetaTotalResults().withTotalResults(customLabelPutRequest.getData().size()))
-        .withJsonapi(RestConstants.JSONAPI);
+      .withData(customLabelPutRequest.getData())
+      .withMeta(new MetaTotalResults().withTotalResults(customLabelPutRequest.getData().size()))
+      .withJsonapi(RestConstants.JSONAPI);
   }
 }

@@ -34,23 +34,22 @@ public class CustomLabelsPutBodyValidatorTest {
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPutData() {
-    CustomLabelPutRequest putRequest = new CustomLabelPutRequest()
-        .withData(null);
+    CustomLabelPutRequest putRequest = new CustomLabelPutRequest().withData(null);
     validator.validate(putRequest);
   }
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenEmptyPutData() {
     CustomLabelPutRequest putRequest = new CustomLabelPutRequest()
-        .withData(Collections.singletonList(new CustomLabelCollectionItem()));
+      .withData(Collections.singletonList(new CustomLabelCollectionItem()));
     validator.validate(putRequest);
   }
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenInvalidId() {
     CustomLabelPutRequest putRequest = new CustomLabelPutRequest()
-        .withData(Collections.singletonList(new CustomLabelCollectionItem()
-            .withAttributes(new CustomLabelDataAttributes().withId(6))));
+      .withData(Collections.singletonList(new CustomLabelCollectionItem()
+        .withAttributes(new CustomLabelDataAttributes().withId(6))));
     validator.validate(putRequest);
   }
 
@@ -59,8 +58,8 @@ public class CustomLabelsPutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid Custom Label id");
     CustomLabelPutRequest putRequest = new CustomLabelPutRequest()
-        .withData(Collections.singletonList(
-            new CustomLabelCollectionItem().withAttributes(new CustomLabelDataAttributes().withId(null))));
+      .withData(Collections.singletonList(
+        new CustomLabelCollectionItem().withAttributes(new CustomLabelDataAttributes().withId(null))));
     validator.validate(putRequest);
   }
 
@@ -69,10 +68,10 @@ public class CustomLabelsPutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid Custom Label Name");
     final CustomLabelPutRequest request = new CustomLabelPutRequest()
-        .withData(Collections.singletonList(
-            new CustomLabelCollectionItem().withAttributes(
-                new CustomLabelDataAttributes().withId(1)
-                    .withDisplayLabel(RandomStringUtils.randomAlphanumeric(51)))));
+      .withData(Collections.singletonList(
+        new CustomLabelCollectionItem().withAttributes(
+          new CustomLabelDataAttributes().withId(1)
+            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(51)))));
     validator.validate(request);
   }
 
@@ -81,12 +80,12 @@ public class CustomLabelsPutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid Publication Finder");
     final CustomLabelPutRequest request = new CustomLabelPutRequest()
-        .withData(Collections.singletonList(new CustomLabelCollectionItem().withAttributes(
-            new CustomLabelDataAttributes()
-                .withId(1)
-                .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
-                .withDisplayOnFullTextFinder(false)
-                .withDisplayOnPublicationFinder(null))));
+      .withData(Collections.singletonList(new CustomLabelCollectionItem().withAttributes(
+        new CustomLabelDataAttributes()
+          .withId(1)
+          .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+          .withDisplayOnFullTextFinder(false)
+          .withDisplayOnPublicationFinder(null))));
     validator.validate(request);
   }
 
@@ -95,12 +94,12 @@ public class CustomLabelsPutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid Full Text Finder");
     final CustomLabelPutRequest request = new CustomLabelPutRequest()
-        .withData(Collections.singletonList(new CustomLabelCollectionItem().withAttributes(
-            new CustomLabelDataAttributes()
-                .withId(1)
-                .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
-                .withDisplayOnFullTextFinder(null)
-                .withDisplayOnPublicationFinder(false))));
+      .withData(Collections.singletonList(new CustomLabelCollectionItem().withAttributes(
+        new CustomLabelDataAttributes()
+          .withId(1)
+          .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+          .withDisplayOnFullTextFinder(null)
+          .withDisplayOnPublicationFinder(false))));
     validator.validate(request);
   }
 
@@ -109,38 +108,38 @@ public class CustomLabelsPutBodyValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid request body");
     final CustomLabelPutRequest request = new CustomLabelPutRequest()
-        .withData(Arrays.asList(
-            new CustomLabelCollectionItem().withAttributes(
-                new CustomLabelDataAttributes()
-                    .withId(1)
-                    .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
-                    .withDisplayOnFullTextFinder(false)
-                    .withDisplayOnPublicationFinder(false)),
-            new CustomLabelCollectionItem().withAttributes(
-                new CustomLabelDataAttributes()
-                    .withId(1)
-                    .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
-                    .withDisplayOnFullTextFinder(false)
-                    .withDisplayOnPublicationFinder(false))));
+      .withData(Arrays.asList(
+        new CustomLabelCollectionItem().withAttributes(
+          new CustomLabelDataAttributes()
+            .withId(1)
+            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayOnFullTextFinder(false)
+            .withDisplayOnPublicationFinder(false)),
+        new CustomLabelCollectionItem().withAttributes(
+          new CustomLabelDataAttributes()
+            .withId(1)
+            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayOnFullTextFinder(false)
+            .withDisplayOnPublicationFinder(false))));
     validator.validate(request);
   }
 
   @Test
   public void shouldNotFallWhenPutBodyRequestIsValid() {
     final CustomLabelPutRequest request = new CustomLabelPutRequest()
-        .withData(Arrays.asList(
-            new CustomLabelCollectionItem().withAttributes(
-                new CustomLabelDataAttributes()
-                    .withId(1)
-                    .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
-                    .withDisplayOnFullTextFinder(false)
-                    .withDisplayOnPublicationFinder(false)),
-            new CustomLabelCollectionItem().withAttributes(
-                new CustomLabelDataAttributes()
-                    .withId(2)
-                    .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
-                    .withDisplayOnFullTextFinder(false)
-                    .withDisplayOnPublicationFinder(false))));
+      .withData(Arrays.asList(
+        new CustomLabelCollectionItem().withAttributes(
+          new CustomLabelDataAttributes()
+            .withId(1)
+            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayOnFullTextFinder(false)
+            .withDisplayOnPublicationFinder(false)),
+        new CustomLabelCollectionItem().withAttributes(
+          new CustomLabelDataAttributes()
+            .withId(2)
+            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayOnFullTextFinder(false)
+            .withDisplayOnPublicationFinder(false))));
     validator.validate(request);
   }
 }
