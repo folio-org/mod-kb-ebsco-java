@@ -173,19 +173,9 @@
           "permissionsRequired": ["kb-ebsco.custom-labels.collection.get"]
         },
         {
-          "methods": ["GET"],
-          "pathPattern": "/eholdings/custom-labels/{id}",
-          "permissionsRequired": ["kb-ebsco.custom-labels.item.get"]
-        },
-        {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/custom-labels/{id}",
-          "permissionsRequired": ["kb-ebsco.custom-labels.item.put"]
-        },
-        {
-          "methods": ["DELETE"],
-          "pathPattern": "/eholdings/custom-labels/{id}",
-          "permissionsRequired": ["kb-ebsco.custom-labels.item.delete"]
+          "pathPattern": "/eholdings/custom-labels",
+          "permissionsRequired": ["kb-ebsco.custom-labels.collection.put"]
         }
       ]
     },
@@ -403,19 +393,9 @@
       "description": "Get Custom Labels collection"
     },
     {
-      "permissionName": "kb-ebsco.custom-labels.item.get",
-      "displayName": "get Custom Labels collection item",
-      "description": "Get Custom Labels collection item"
-    },
-    {
-      "permissionName": "kb-ebsco.custom-labels.item.put",
-      "displayName": "put Custom Labels collection item",
-      "description": "Put Custom Labels collection item"
-    },
-    {
-      "permissionName": "kb-ebsco.custom-labels.item.delete",
-      "displayName": "delete Custom Labels collection item",
-      "description": "Delete Custom Labels collection item"
+      "permissionName": "kb-ebsco.custom-labels.collection.put",
+      "displayName": "put Custom Labels collection",
+      "description": "Put Custom Labels collection"
     },
     {
       "permissionName": "kb-ebsco.all",
@@ -454,9 +434,7 @@
         "kb-ebsco.unique.tags.collection.get",
         "kb-ebsco.holdings.load.status.get",
         "kb-ebsco.custom-labels.collection.get",
-        "kb-ebsco.custom-labels.item.get",
-        "kb-ebsco.custom-labels.item.put",
-        "kb-ebsco.custom-labels.item.delete"
+        "kb-ebsco.custom-labels.collection.put"
       ]
     }
   ],

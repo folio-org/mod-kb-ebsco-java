@@ -1,8 +1,0 @@
-{
-  "errors": [{
-    "title": "Invalid format for Custom Label id: 'a'"
-  }],
-  "jsonapi": {
-    "version": "1.0"
-  }
-}

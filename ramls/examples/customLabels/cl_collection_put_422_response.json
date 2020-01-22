@@ -1,0 +1,11 @@
+{
+  "errors": [
+    {
+      "title": "Invalid Custom Label id",
+      "detail": "Custom Label id should be in range 1 - 5"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

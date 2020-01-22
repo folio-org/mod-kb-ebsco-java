@@ -7,9 +7,12 @@
   "additionalProperties": false,
   "properties": {
     "data": {
-      "description": "Data object of Custom Label put request",
-      "type": "object",
-      "$ref": "customLabelCollectionItem.json"
+      "description": "List of custom labels put request",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "$ref": "customLabelCollectionItem.json"
+      }
     }
   },
   "required": ["data"]

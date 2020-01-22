@@ -1,0 +1,10 @@
+{
+  "errors": [{
+    "title": "Invalid format",
+    "detail": "Format for Custom Label id is invalid: 'a'",
+    "source": {}
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
