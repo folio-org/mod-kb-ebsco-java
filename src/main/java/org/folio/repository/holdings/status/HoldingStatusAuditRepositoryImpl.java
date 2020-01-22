@@ -7,7 +7,7 @@ import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConst
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -33,9 +33,9 @@ public class HoldingStatusAuditRepositoryImpl implements HoldingsStatusAuditRepo
     final String query = String.format(DELETE_BEFORE_TIMESTAMP, getHoldingsStatusAuditTableName(tenantId), timestamp.toString());
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     LOG.info("Delete holdings status audit records before timestamp = " + query);
-    Future<UpdateResult> future = Future.future();
-    postgresClient.execute(query, future);
-    return mapVertxFuture(future)
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(query, promise);
+    return mapVertxFuture(promise.future())
       .thenApply(result -> null);
   }
 }

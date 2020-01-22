@@ -5,9 +5,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.service.holdings.AbstractLoadServiceFacade.HOLDINGS_STATUS_TIME_FORMATTER;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
-import static org.folio.service.holdings.LoadServiceFacadeImpl.HOLDINGS_STATUS_TIME_FORMATTER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.mockResponseList;
@@ -42,18 +42,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.service.holdings.ConfigurationMessage;
-import org.folio.service.holdings.LoadServiceFacade;
+import org.folio.service.holdings.DefaultLoadServiceFacade;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @RunWith(VertxUnitRunner.class)
-public class LoadServiceFacadeImplTest extends WireMockTestBase {
+public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
 
   static final String HOLDINGS_STATUS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings/status";
   static final String HOLDINGS_POST_HOLDINGS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
   private static final int TIMEOUT = 180000;
 
   @Autowired
-  LoadServiceFacade loadServiceFacade;
+  DefaultLoadServiceFacade loadServiceFacade;
 
   private Configuration stubConfiguration;
 

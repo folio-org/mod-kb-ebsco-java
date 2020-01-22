@@ -20,28 +20,24 @@ import org.folio.holdingsiq.model.Configuration;
 @Setter
 @AllArgsConstructor
 @DataObject
-public class LoadFailedMessage {
+public class DeltaReportCreatedMessage {
   private Configuration configuration;
-  private String errorMessage;
-  private String tenantId;
-  private String transactionId;
   private Integer totalCount;
   private Integer totalPages;
+  private String tenantId;
 
-  public LoadFailedMessage() {
+  public DeltaReportCreatedMessage() {
   }
 
-  public LoadFailedMessage(JsonObject jsonObject) {
-    LoadFailedMessage message = jsonObject.mapTo(LoadFailedMessage.class);
-    this.errorMessage = message.getErrorMessage();
-    this.tenantId = message.getTenantId();
-    this.transactionId = message.getTransactionId();
+  public DeltaReportCreatedMessage(JsonObject jsonObject) {
+    DeltaReportCreatedMessage message = jsonObject.mapTo(DeltaReportCreatedMessage.class);
     this.totalCount = message.getTotalCount();
     this.totalPages = message.getTotalPages();
+    this.tenantId = message.getTenantId();
     this.configuration = message.getConfiguration();
   }
 
-  public JsonObject toJson(){
+  public JsonObject toJson() {
     return mapFrom(this);
   }
 }

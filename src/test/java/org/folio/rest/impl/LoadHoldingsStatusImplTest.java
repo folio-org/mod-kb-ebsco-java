@@ -13,10 +13,10 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_GET_ENDPOINT;
-import static org.folio.rest.impl.LoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_ENDPOINT;
-import static org.folio.rest.impl.LoadHoldingsImplTest.LOAD_HOLDINGS_ENDPOINT;
-import static org.folio.rest.impl.LoadHoldingsImplTest.handleStatusChange;
+import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.HOLDINGS_GET_ENDPOINT;
+import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_ENDPOINT;
+import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.LOAD_HOLDINGS_ENDPOINT;
+import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.handleStatusChange;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.FAILED;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
@@ -135,7 +135,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     mockDefaultConfiguration(getWiremockUrl());
 
     mockResponseList(
-      new UrlPathPattern(new EqualToPattern(LoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), false),
+      new UrlPathPattern(new EqualToPattern(DefaultLoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), false),
       new ResponseDefinitionBuilder()
         .withBody(readFile("responses/rmapi/holdings/status/get-status-in-progress.json"))
         .withStatus(200),
@@ -167,7 +167,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void shouldReturnStatusCompleted(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
 
-    mockGet(new EqualToPattern(LoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
+    mockGet(new EqualToPattern(DefaultLoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
 
     stubFor(post(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false))
       .willReturn(new ResponseDefinitionBuilder()
@@ -195,7 +195,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void shouldReturnErrorWhenRMAPIReturnsError(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
 
-    mockGet(new EqualToPattern(LoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), SC_INTERNAL_SERVER_ERROR);
+    mockGet(new EqualToPattern(DefaultLoadHoldingsImplTest.HOLDINGS_STATUS_ENDPOINT), SC_INTERNAL_SERVER_ERROR);
 
     Async finishedAsync = context.async(SNAPSHOT_RETRIES);
     handleStatusChange(FAILED, holdingsStatusRepository, o -> finishedAsync.countDown());

@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.toList;
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.repository.DbUtil.executeInTransaction;
+import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.tag.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX;
 import static org.folio.repository.tag.TagTableConstants.DELETE_TAG_RECORD;

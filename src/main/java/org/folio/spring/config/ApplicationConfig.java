@@ -3,7 +3,9 @@ package org.folio.spring.config;
 import java.util.List;
 
 import io.vertx.core.Vertx;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +30,7 @@ import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.rmapi.cache.VendorCacheKey;
+import org.folio.service.holdings.LoadServiceFacade;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -98,5 +101,11 @@ public class ApplicationConfig {
   @Bean
   public PackageParametersValidator packageParametersValidator() {
     return new PackageParametersValidator();
+  }
+
+  @Bean
+  public LoadServiceFacade loadServiceFacade(@Value("${holdings.load.implementation.qualifier}") String qualifier,
+                                             ApplicationContext context){
+    return (LoadServiceFacade) context.getBean(qualifier);
   }
 }

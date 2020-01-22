@@ -68,6 +68,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -93,7 +94,7 @@ import org.folio.util.HoldingsTestUtil;
 import org.folio.util.KBTestUtil;
 
 @RunWith(VertxUnitRunner.class)
-public class LoadHoldingsImplTest extends WireMockTestBase {
+public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   static final String HOLDINGS_STATUS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings/status";
   static final String HOLDINGS_POST_HOLDINGS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
   static final String HOLDINGS_GET_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
@@ -112,6 +113,12 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
   RetryStatusRepository retryStatusRepository;
   private Configuration stubConfiguration;
   private Handler<DeliveryContext<LoadHoldingsMessage>> interceptor;
+
+  @BeforeClass
+  public static void setUpClass(TestContext context){
+    System.setProperty("holdings.load.implementation.qualifier", "DefaultLoadServiceFacade");
+    WireMockTestBase.setUpClass(context);
+  }
 
   @Before
   public void setUp() throws Exception {
@@ -313,7 +320,7 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 5001, 2));
+    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 5001, 2, null, null));
 
     async.await(TIMEOUT);
     assertEquals(2, messages.size());
@@ -322,21 +329,18 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingPageWhenPageFails(TestContext context) throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+    Async async = context.async();
+    handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
     mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
 
+    mockPostHoldings();
     mockResponseList(new UrlPathPattern(new EqualToPattern(HOLDINGS_GET_ENDPOINT), false),
       new ResponseDefinitionBuilder().withStatus(SC_INTERNAL_SERVER_ERROR),
       new ResponseDefinitionBuilder()
         .withBody(readFile("responses/rmapi/holdings/holdings/get-holdings.json"))
     );
-
-    Async async = context.async();
-    interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION,
-      message -> async.complete());
-    vertx.eventBus().addOutboundInterceptor(interceptor);
-
-    LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 2, 1));
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
   }
@@ -346,16 +350,20 @@ public class LoadHoldingsImplTest extends WireMockTestBase {
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
 
     mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
-    StringValuePattern urlPattern = new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT);
-    stubFor(post(new UrlPathPattern(urlPattern, false))
-      .willReturn(new ResponseDefinitionBuilder()
-        .withBody("")
-        .withStatus(202)));
+    mockPostHoldings();
     mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
 
     postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
 
     async.await(TIMEOUT);
+  }
+
+  private void mockPostHoldings() {
+    StringValuePattern urlPattern = new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT);
+    stubFor(post(new UrlPathPattern(urlPattern, false))
+      .willReturn(new ResponseDefinitionBuilder()
+        .withBody("")
+        .withStatus(202)));
   }
 
 

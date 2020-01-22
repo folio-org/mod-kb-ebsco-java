@@ -62,6 +62,13 @@
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-retry-status-table.sql"
+    },
+    {
+      "tableName": "transaction_ids",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1",
+      "withMetadata": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-transaction-ids-table.sql"
     }
   ],
   "scripts": [
