@@ -23,7 +23,9 @@ import org.folio.test.util.TestSetUpHelper;
   EholdingsTagsImplTest.class,
   DefaultLoadHoldingsImplTest.class,
   LoadHoldingsStatusImplTest.class,
-  DefaultLoadServiceFacadeTest.class
+  DefaultLoadServiceFacadeTest.class,
+  TransactionLoadHoldingsImplTest.class,
+  TransactionLoadServiceFacadeTest.class
 })
 @RunWith(Suite.class)
 public class IntegrationTestSuite {

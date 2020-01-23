@@ -258,7 +258,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   protected abstract CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService);
 
   /**
-   * Specifies the page size that will be used when loading data from snapshots and delta reports
+   * Specifies the page size that will be used when loading data from snapshots
    */
   protected abstract int getMaxPageSize();
 }

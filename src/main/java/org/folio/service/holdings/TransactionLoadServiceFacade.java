@@ -69,6 +69,9 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
   @Override
   protected CompletableFuture<HoldingsStatus> getLastLoadingStatus(LoadService loadingService) {
     return loadingService.getTransactions().thenCompose(transactions -> {
+      if(transactions.getHoldingsDownloadTransactionIds().isEmpty()){
+        return CompletableFuture.completedFuture(createNoneStatus());
+      }
       List<HoldingsDownloadTransaction> sortedTransactions = sortByDate(transactions);
       HoldingsDownloadTransaction lastTransaction = sortedTransactions.get(sortedTransactions.size() - 1);
       if(!Objects.equals(transactionStatusToLoadStatus.get(lastTransaction.getStatus()), IN_PROGRESS)) {
@@ -98,7 +101,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
       return CompletableFuture.completedFuture(null);
     }
     if(message.getPreviousTransactionId() == null){
-      return loadWithPagination(message.getTotalPages(), (page) ->
+      return loadWithPagination(message.getTotalPages(), page ->
         loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
           .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), message.getCurrentTransactionId()))));
     } else{
@@ -116,7 +119,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
         .thenCompose(o -> {
           int totalPages = getRequestCount(Integer.valueOf(deltaReportStatus.getValue().getTotalCount()), DELTA_REPORT_MAX_SIZE);
           return loadWithPagination(totalPages,
-            (page) ->
+            page ->
               loadingService.loadDeltaReport(deltaReportId.getValue(), DELTA_REPORT_MAX_SIZE, page)
                 .thenAccept(holdings -> holdingsService.processChanges(new DeltaReportMessage(holdings.getHoldings(),
                   message.getTenantId(), message.getCurrentTransactionId()))));
@@ -162,6 +165,11 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
       .build();
   }
 
+  private HoldingsStatus createNoneStatus() {
+    return HoldingsStatus.builder()
+      .status(LoadStatus.NONE)
+      .build();
+  }
 
   private List<HoldingsDownloadTransaction> sortByDate(HoldingsTransactionIdsList transactions) {
     return transactions.getHoldingsDownloadTransactionIds().stream()
