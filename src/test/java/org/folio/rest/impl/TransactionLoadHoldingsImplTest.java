@@ -61,6 +61,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -123,6 +124,11 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   public static void setUpClass(TestContext context) {
     System.setProperty("holdings.load.implementation.qualifier", "TransactionLoadServiceFacade");
     WireMockTestBase.setUpClass(context);
+  }
+
+  @AfterClass
+  public static void tearDownPropertiesAfterClass(){
+    System.clearProperty("holdings.load.implementation.qualifier");
   }
 
   public static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy, Consumer<Void> handler) {

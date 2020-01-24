@@ -516,7 +516,7 @@
             </vertx.logger-delegate-factory-class-name>
           </systemPropertyVariables>
           <excludes>
-            **/org/folio/rest/impl/*Test.java
+            **/org/folio/rest/impl/integrationsuite/*.java
           </excludes>
           <includes>
             <include>**/Test*.java</include>

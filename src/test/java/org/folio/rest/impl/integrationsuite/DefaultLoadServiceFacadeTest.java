@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.service.holdings.ConfigurationMessage;
 import org.folio.service.holdings.DefaultLoadServiceFacade;
 import org.folio.service.holdings.message.LoadHoldingsMessage;

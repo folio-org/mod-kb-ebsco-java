@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -19,6 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+
+import org.folio.rest.impl.WireMockTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class EHoldingsProxyTypesImplTest extends WireMockTestBase {

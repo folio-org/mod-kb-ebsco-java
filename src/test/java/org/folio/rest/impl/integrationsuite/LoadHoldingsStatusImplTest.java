@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -13,10 +13,10 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.HOLDINGS_GET_ENDPOINT;
-import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_ENDPOINT;
-import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.LOAD_HOLDINGS_ENDPOINT;
-import static org.folio.rest.impl.DefaultLoadHoldingsImplTest.handleStatusChange;
+import static org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest.HOLDINGS_GET_ENDPOINT;
+import static org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest.HOLDINGS_POST_HOLDINGS_ENDPOINT;
+import static org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest.LOAD_HOLDINGS_ENDPOINT;
+import static org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest.handleStatusChange;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.FAILED;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
@@ -61,6 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.rest.client.TenantClient;
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.tools.PomReader;

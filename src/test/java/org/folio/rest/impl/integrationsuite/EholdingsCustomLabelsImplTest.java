@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -28,12 +28,15 @@ import java.net.URISyntaxException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.JsonapiError;
 
@@ -112,7 +115,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400WhenCustomLabelIsInvalid() throws IOException, URISyntaxException {
+  public void shouldReturn400WhenCustomLabelIsInvalid() {
 
     final JsonapiError error = getWithStatus(CUSTOM_LABELS_PATH + "/a", SC_BAD_REQUEST).as(JsonapiError.class);
     assertEquals("Invalid format for Custom Label id: 'a'", error.getErrors().get(0).getTitle());

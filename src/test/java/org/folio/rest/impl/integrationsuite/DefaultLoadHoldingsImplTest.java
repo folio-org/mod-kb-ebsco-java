@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -80,6 +80,7 @@ import org.folio.holdingsiq.model.Configuration;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.RetryStatusRepository;
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameDetailEnum;
@@ -116,7 +117,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @BeforeClass
   public static void setUpClass(TestContext context){
-    System.setProperty("holdings.load.implementation.qualifier", "DefaultLoadServiceFacade");
     WireMockTestBase.setUpClass(context);
   }
 

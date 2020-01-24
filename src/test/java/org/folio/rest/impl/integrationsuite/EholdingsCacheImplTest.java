@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
@@ -16,6 +16,8 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.folio.rest.impl.WireMockTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsCacheImplTest extends WireMockTestBase {

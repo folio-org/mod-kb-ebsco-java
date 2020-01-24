@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -45,6 +45,7 @@ import org.folio.holdingsiq.model.HoldingsDownloadTransaction;
 import org.folio.holdingsiq.model.HoldingsLoadTransactionStatus;
 import org.folio.holdingsiq.model.HoldingsTransactionIdsList;
 import org.folio.holdingsiq.model.TransactionId;
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.service.holdings.ConfigurationMessage;
 import org.folio.service.holdings.TransactionLoadServiceFacade;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
