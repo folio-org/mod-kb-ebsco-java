@@ -106,6 +106,28 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldCreateSnapshotUsingExistingTransactionIfItIsInProgress(TestContext context) throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    Async async = context.async();
+    mockGetWithBody(new EqualToPattern(HOLDINGS_TRANSACTIONS_ENDPOINT), readFile("responses/rmapi/holdings/status/get-transaction-list-in-progress.json"));
+
+    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)),false),
+      new ResponseDefinitionBuilder().withBody(readFile("responses/rmapi/holdings/status/get-transaction-status-completed.json"))
+    );
+    mockPostHoldings();
+
+    interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
+      message -> async.complete());
+    vertx.eventBus().addOutboundInterceptor(interceptor);
+
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_TENANT));
+
+    async.await(TIMEOUT);
+    assertTrue(async.isSucceeded());
+  }
+
+  @Test
   public void shouldNotCreateSnapshotIfItWasRecentlyCreated(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
     Async async = context.async();

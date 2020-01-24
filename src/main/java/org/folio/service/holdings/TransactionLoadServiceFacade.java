@@ -97,9 +97,6 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService) {
-    if(message.getPreviousTransactionId() != null && message.getPreviousTransactionId().equals(message.getCurrentTransactionId())){
-      return CompletableFuture.completedFuture(null);
-    }
     if(message.getPreviousTransactionId() == null){
       return loadWithPagination(message.getTotalPages(), page ->
         loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
