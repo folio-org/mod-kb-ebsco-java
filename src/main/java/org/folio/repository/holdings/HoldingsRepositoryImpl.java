@@ -61,6 +61,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     JsonArray parameters = createParameters(holdings, updatedAt);
     final String query = String.format(INSERT_OR_UPDATE_HOLDINGS_STATEMENT, getHoldingsTableName(tenantId),
       createInsertPlaceholders(3, holdings.size()));
+    LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
@@ -105,19 +106,15 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
-  private <T> CompletableFuture<Void> executeInBatches(Set<T> items, Function<List<T>, CompletableFuture<Void>> batchOperation) {
-    return executeInBatches(items, MAX_BATCH_SIZE, batchOperation);
-  }
-
   /**
    * Splits items into batches and sequentially executes batchOperation on each batch
+   * @param <T> Type of process items
    * @param items items to process in batches
    * @param batchOperation operation to execute on each batch
-   * @param <T> Type of process items
    * @return future that will be completed when all batches are successfully processed
    */
-  private <T> CompletableFuture<Void> executeInBatches(Set<T> items, int maxBatchSize, Function<List<T>, CompletableFuture<Void>> batchOperation) {
-    List<List<T>> batches = Lists.partition(Lists.newArrayList(items), maxBatchSize);
+  private <T> CompletableFuture<Void> executeInBatches(Set<T> items, Function<List<T>, CompletableFuture<Void>> batchOperation) {
+    List<List<T>> batches = Lists.partition(Lists.newArrayList(items), HoldingsRepositoryImpl.MAX_BATCH_SIZE);
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
     for (List<T> batch : batches) {
       future = future.thenCompose(o -> batchOperation.apply(batch));

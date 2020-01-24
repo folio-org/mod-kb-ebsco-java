@@ -100,8 +100,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
 
   private CompletableFuture<HoldingsStatus> populateHoldingsIfNecessary(LoadService loadingService) {
     return getLastLoadingStatus(loadingService).thenCompose(loadStatus -> {
-      final LoadStatus statusEnum = loadStatus.getStatus();
-      if (IN_PROGRESS.equals(statusEnum)) {
+      if (IN_PROGRESS.equals(loadStatus.getStatus())) {
         return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
       }
       else if (snapshotCreatedRecently(loadStatus)) {

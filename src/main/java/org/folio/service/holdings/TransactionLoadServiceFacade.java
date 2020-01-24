@@ -9,7 +9,6 @@ import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -74,11 +73,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
       }
       List<HoldingsDownloadTransaction> sortedTransactions = sortByDate(transactions);
       HoldingsDownloadTransaction lastTransaction = sortedTransactions.get(sortedTransactions.size() - 1);
-      if (!Objects.equals(transactionStatusToLoadStatus.get(lastTransaction.getStatus()), IN_PROGRESS)) {
-        return getLoadingStatus(loadingService, lastTransaction.getTransactionId());
-      } else {
-        return CompletableFuture.completedFuture(mapInProgressTransaction(lastTransaction));
-      }
+      return getLoadingStatus(loadingService, lastTransaction.getTransactionId());
     });
   }
 
@@ -162,14 +157,6 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
       .status(transactionStatusToLoadStatus.get(transaction.getStatus()))
       .totalCount(StringUtils.isEmpty(transaction.getTotalCount()) ? null : Integer.parseInt(transaction.getTotalCount()))
       .transactionId(transactionId)
-      .build();
-  }
-
-  private HoldingsStatus mapInProgressTransaction(HoldingsDownloadTransaction lastTransaction) {
-    return HoldingsStatus.builder()
-      .created(lastTransaction.getCreationDate())
-      .status(transactionStatusToLoadStatus.get(lastTransaction.getStatus()))
-      .transactionId(lastTransaction.getTransactionId())
       .build();
   }
 
