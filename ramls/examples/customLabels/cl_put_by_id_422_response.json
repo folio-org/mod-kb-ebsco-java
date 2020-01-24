@@ -1,9 +1,0 @@
-{
-  "errors": [{
-      "title": "Invalid identifier id",
-      "detail": "Ids should be equal!  3 != 5"
-    }],
-  "jsonapi": {
-    "version": "1.0"
-  }
-}

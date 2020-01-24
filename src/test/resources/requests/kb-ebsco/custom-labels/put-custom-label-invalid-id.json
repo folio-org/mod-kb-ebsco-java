@@ -1,11 +1,13 @@
 {
-  "data": {
-    "type": "customLabel",
-    "attributes": {
-      "id": 6,
-      "displayLabel": "test label 1 updated",
-      "displayOnFullTextFinder": false,
-      "displayOnPublicationFinder": true
+  "data": [
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 6,
+        "displayLabel": "test label 1 updated",
+        "displayOnFullTextFinder": false,
+        "displayOnPublicationFinder": true
+      }
     }
-  }
+  ]
 }

@@ -12,7 +12,6 @@ documentation:
 types:
   customLabelsCollection: !include types/customLabels/customLabelsCollection.json
   customLabelCollectionItem: !include types/customLabels/customLabelCollectionItem.json
-  customLabel: !include types/customLabels/customLabel.json
   customLabelPutRequest: !include types/customLabels/customLabelPutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
@@ -35,91 +34,32 @@ types:
         body:
           text/plain:
             example: "Internal server error, contact administrator"
-  /{id}:
-    displayName: Get Custom Label by Id
-    description: Instance of a Custom Label by given Id
-    get:
-      description: Retrieve specific Custom Label by Id
-      responses:
-        200:
-          description: OK
-          body:
-            application/vnd.api+json:
-              type: customLabel
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_item_get_200_response.json
-        400:
-          description: Bad Request
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_get_by_id_400_response.json
-        404:
-          description: Not Found
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_get_put_delete_by_id_404_response.json
-    put:
-      description: Update a Custom Label by Id
-      headers:
-        Content-Type:
-          example: application/vnd.api+json
-      body:
-        application/vnd.api+json:
-          type: customLabelPutRequest
-          example:
-            strict: false
-            value: !include examples/customLabels/cl_put_request.json
-      responses:
-        200:
-          description: OK
-          body:
-            application/vnd.api+json:
-              description: The server has successfully fulfilled the PUT request.
-              type: customLabel
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_put_by_id_200_response.json
-        400:
-          description: Bad Request
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_put_by_id_400_response.json
-        422:
-          description: Unprocessable Entity
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_put_by_id_422_response.json
-    delete:
-      description: Delete a Custom Label by Id
-      responses:
-        204:
-          description: No Content
-        400:
-          description: Bad Request
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_delete_by_id_400_response.json
-        404:
-          description: NotFound
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/customLabels/cl_get_put_delete_by_id_404_response.json
+  put:
+    description: Update a list of custom labels.
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        type: customLabelPutRequest
+        example:
+          strict: false
+          value: !include examples/customLabels/cl_collection_put_request.json
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: The server has successfully fulfilled the PUT request.
+            type: customLabelsCollection
+            example:
+              strict: false
+              value: !include examples/customLabels/cl_collection_put_200_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/customLabels/cl_collection_put_422_response.json

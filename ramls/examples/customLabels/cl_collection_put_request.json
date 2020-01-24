@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 1,
+        "displayLabel": "Department",
+        "displayOnFullTextFinder": false,
+        "displayOnPublicationFinder": false
+      }
+    },
+    {
+      "type": "customLabel",
+      "attributes": {
+        "id": 2,
+        "displayLabel": "Faculty",
+        "displayOnFullTextFinder": false,
+        "displayOnPublicationFinder": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "errors": [{
+    "title": "Label not found",
+    "detail": "Label with id: '8' does not exist",
+    "source": {}
+  }],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
