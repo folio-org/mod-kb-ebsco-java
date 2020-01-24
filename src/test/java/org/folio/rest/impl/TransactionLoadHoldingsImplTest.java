@@ -15,6 +15,7 @@ import static org.mockito.Mockito.doAnswer;
 
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.holdings.status.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
@@ -152,6 +153,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatusNotStarted(vertx);
     KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    KBTestUtil.clearDataFromTable(vertx, TRANSACTION_ID_TABLE);
   }
 
   @After
@@ -165,6 +167,17 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
     mockDefaultConfiguration(getWiremockUrl());
 
+    runPostHoldingsWithMocks(context);
+
+    final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    assertThat(holdingsList.size(), Matchers.notNullValue());
+  }
+
+  @Test
+  public void shouldSaveHoldingsWhenPreviousTransactionExpired(TestContext context) throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    TransactionIdTestUtil.addTransactionId(vertx, PREVIOUS_TRANSACTION_ID);
     runPostHoldingsWithMocks(context);
 
     final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
