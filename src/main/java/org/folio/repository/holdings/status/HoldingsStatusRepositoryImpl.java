@@ -3,7 +3,7 @@ package org.folio.repository.holdings.status;
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.repository.DbUtil.executeInTransaction;
+import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
 import static org.folio.repository.DbUtil.mapColumn;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.DELETE_LOADING_STATUS;
@@ -67,9 +67,9 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<Void> update(HoldingsLoadingStatus status, String tenantId) {
-    final String query = String.format(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId), Json.encode(status));
+    final String query = String.format(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
     String vertxId = vertxIdProvider.getVertxId();
-    JsonArray parameters = new JsonArray().add(vertxId);
+    JsonArray parameters = new JsonArray().add(Json.encode(status)).add(vertxId);
     LOG.info("Do update query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);

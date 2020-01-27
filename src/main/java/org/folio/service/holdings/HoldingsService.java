@@ -6,11 +6,14 @@ import java.util.concurrent.CompletableFuture;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.rest.util.template.RMAPITemplateContext;
+import org.folio.service.holdings.message.DeltaReportCreatedMessage;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
@@ -42,9 +45,13 @@ public interface HoldingsService {
 
   void saveHolding(HoldingsMessage holdings);
 
+  void processChanges(DeltaReportMessage holdings);
+
   void snapshotCreated(SnapshotCreatedMessage message);
 
   void snapshotFailed(SnapshotFailedMessage message);
+
+  void deltaReportCreated(DeltaReportCreatedMessage message, Handler<AsyncResult<Void>> handler);
 
   void loadingFailed(LoadFailedMessage message);
 }

@@ -1,6 +1,5 @@
 package org.folio.service.holdings;
 
-
 import static io.vertx.core.json.JsonObject.mapFrom;
 
 import java.util.List;
@@ -13,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.folio.holdingsiq.model.Holding;
+import org.folio.holdingsiq.model.HoldingInReport;
 
 @JsonIgnoreProperties(
   ignoreUnknown = true
@@ -22,15 +21,15 @@ import org.folio.holdingsiq.model.Holding;
 @Setter
 @AllArgsConstructor
 @DataObject
-public class HoldingsMessage {
-  private List<Holding> holdingList;
+public class DeltaReportMessage {
+  private List<HoldingInReport> holdingList;
   private String tenantId;
   private String transactionId;
 
-  public HoldingsMessage() {}
+  private DeltaReportMessage() { }
 
-  public HoldingsMessage(JsonObject jsonObject) {
-    HoldingsMessage message = jsonObject.mapTo(HoldingsMessage.class);
+  public DeltaReportMessage(JsonObject jsonObject) {
+    DeltaReportMessage message = jsonObject.mapTo(DeltaReportMessage.class);
     this.holdingList = message.getHoldingList();
     this.tenantId = message.getTenantId();
     this.transactionId = message.getTransactionId();

@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.apache.http.HttpStatus;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.CustomLabelCollectionItem;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.JsonapiError;

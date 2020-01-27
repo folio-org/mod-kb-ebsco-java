@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
@@ -68,6 +68,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.repository.RecordType;
 import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;

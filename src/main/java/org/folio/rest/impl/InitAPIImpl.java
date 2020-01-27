@@ -1,19 +1,20 @@
 package org.folio.rest.impl;
 
-import org.folio.rest.resource.interfaces.InitAPI;
-import org.folio.service.holdings.HoldingConstants;
-import org.folio.service.holdings.HoldingsService;
-import org.folio.service.holdings.LoadServiceFacade;
-import org.folio.spring.SpringContextUtil;
-import org.folio.spring.config.ApplicationConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.serviceproxy.ServiceBinder;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.folio.rest.resource.interfaces.InitAPI;
+import org.folio.service.holdings.HoldingConstants;
+import org.folio.service.holdings.HoldingsService;
+import org.folio.service.holdings.LoadServiceFacade;
+import org.folio.spring.SpringContextUtil;
+import org.folio.spring.config.ApplicationConfig;
 
 public class InitAPIImpl implements InitAPI{
   @Autowired

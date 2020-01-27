@@ -12,4 +12,6 @@ public interface HoldingsRepository {
   CompletableFuture<Void> deleteBeforeTimestamp(Instant timestamp, String tenantId);
 
   CompletableFuture<List<HoldingInfoInDB>> findAllById(List<String> resourceIds, String tenantId);
+
+  CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, String tenantId);
 }

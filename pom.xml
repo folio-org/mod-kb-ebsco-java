@@ -37,6 +37,7 @@
     <raml-module-builder.version>29.0.1</raml-module-builder.version>
     <vertx.version>3.8.1</vertx.version>
     <aspectj.version>1.9.1</aspectj.version>
+    <folio-service-tools.version>1.3.2-SNAPSHOT</folio-service-tools.version>
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -185,8 +186,13 @@
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
+      <artifactId>folio-service-tools-dev</artifactId>
+      <version>${folio-service-tools.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
       <artifactId>folio-service-tools-test</artifactId>
-      <version>1.3.0</version>
+      <version>${folio-service-tools.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -510,7 +516,7 @@
             </vertx.logger-delegate-factory-class-name>
           </systemPropertyVariables>
           <excludes>
-            **/org/folio/rest/impl/*Test.java
+            **/org/folio/rest/impl/integrationsuite/*.java
           </excludes>
           <includes>
             <include>**/Test*.java</include>

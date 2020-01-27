@@ -3,10 +3,12 @@ package org.folio.repository.holdings;
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.createInsertPlaceholders;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.repository.DbUtil.executeInTransaction;
+import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.mapColumn;
+import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_HOLDINGS_BY_ID_LIST;
 import static org.folio.repository.holdings.HoldingsTableConstants.GET_HOLDINGS_BY_IDS;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS_STATEMENT;
 import static org.folio.repository.holdings.HoldingsTableConstants.REMOVE_FROM_HOLDINGS;
@@ -15,6 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -49,15 +52,8 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   @Override
   public CompletableFuture<Void> saveAll(Set<HoldingInfoInDB> holdings, Instant updatedAt, String tenantId) {
-    return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
-      List<List<HoldingInfoInDB>> batches = Lists.partition(Lists.newArrayList(holdings), MAX_BATCH_SIZE);
-      CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-      for (List<HoldingInfoInDB> batch : batches) {
-        future = future.thenCompose(o ->
-          saveHoldings(batch, updatedAt, tenantId, connection, postgresClient));
-      }
-      return future;
-    });
+    return executeInTransaction(tenantId, vertx, (postgresClient, connection) ->
+      executeInBatches(holdings, batch -> saveHoldings(batch, updatedAt, tenantId, connection, postgresClient)));
   }
 
   private CompletableFuture<Void> saveHoldings(List<HoldingInfoInDB> holdings, Instant updatedAt, String tenantId,
@@ -65,6 +61,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     JsonArray parameters = createParameters(holdings, updatedAt);
     final String query = String.format(INSERT_OR_UPDATE_HOLDINGS_STATEMENT, getHoldingsTableName(tenantId),
       createInsertPlaceholders(3, holdings.size()));
+    LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
@@ -92,6 +89,39 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     return mapResult(promise.future(), this::mapHoldings);
   }
 
+  @Override
+  public CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, String tenantId) {
+    return executeInTransaction(tenantId, vertx, (postgresClient, connection) ->
+      executeInBatches(holdings, batch -> deleteHoldings(batch, tenantId, connection, postgresClient)));
+  }
+
+  private CompletableFuture<Void> deleteHoldings(List<HoldingsId> holdings, String tenantId,
+                                               AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
+    JsonArray parameters = createHoldingsIdParameters(holdings);
+    final String query = String.format(DELETE_HOLDINGS_BY_ID_LIST, getHoldingsTableName(tenantId),
+      createPlaceholders(holdings.size()));
+    LOG.info("Do delete query = " + query);
+    Promise<UpdateResult> promise = Promise.promise();
+    postgresClient.execute(connection, query, parameters, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
+  }
+
+  /**
+   * Splits items into batches and sequentially executes batchOperation on each batch
+   * @param <T> Type of process items
+   * @param items items to process in batches
+   * @param batchOperation operation to execute on each batch
+   * @return future that will be completed when all batches are successfully processed
+   */
+  private <T> CompletableFuture<Void> executeInBatches(Set<T> items, Function<List<T>, CompletableFuture<Void>> batchOperation) {
+    List<List<T>> batches = Lists.partition(Lists.newArrayList(items), HoldingsRepositoryImpl.MAX_BATCH_SIZE);
+    CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+    for (List<T> batch : batches) {
+      future = future.thenCompose(o -> batchOperation.apply(batch));
+    }
+    return future;
+  }
+
   private List<HoldingInfoInDB> mapHoldings(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), row -> mapColumn(row, "jsonb", HoldingInfoInDB.class).orElse(null));
   }
@@ -109,4 +139,12 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     });
     return params;
   }
+  private JsonArray createHoldingsIdParameters(List<HoldingsId> ids) {
+    return new JsonArray(
+      ids.stream()
+      .map(id -> id.getVendorId() + "-" + id.getPackageId() + "-" + id.getTitleId())
+      .collect(Collectors.toList())
+    );
+  }
+
 }

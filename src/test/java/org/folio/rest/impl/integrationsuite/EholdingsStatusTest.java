@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -24,6 +24,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.ConfigurationStatus;
 import org.folio.rest.util.RestConstants;
 

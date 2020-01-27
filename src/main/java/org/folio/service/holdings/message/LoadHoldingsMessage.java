@@ -3,8 +3,6 @@ package org.folio.service.holdings.message;
 
 import static io.vertx.core.json.JsonObject.mapFrom;
 
-import org.folio.holdingsiq.model.Configuration;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.vertx.codegen.annotations.DataObject;
@@ -12,6 +10,8 @@ import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import org.folio.holdingsiq.model.Configuration;
 
 @JsonIgnoreProperties(
   ignoreUnknown = true
@@ -25,6 +25,8 @@ public class LoadHoldingsMessage {
   private String tenantId;
   private Integer totalCount;
   private Integer totalPages;
+  private String currentTransactionId;
+  private String previousTransactionId;
 
   public LoadHoldingsMessage() {
   }
@@ -34,6 +36,8 @@ public class LoadHoldingsMessage {
     this.tenantId = message.getTenantId();
     this.totalCount = message.getTotalCount();
     this.totalPages = message.getTotalPages();
+    this.currentTransactionId = message.getCurrentTransactionId();
+    this.previousTransactionId = message.getPreviousTransactionId();
     this.configuration = message.getConfiguration();
   }
 
