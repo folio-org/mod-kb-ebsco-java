@@ -46,7 +46,6 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
-import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsDataAttributes;
@@ -273,10 +272,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<Title> processResourceUpdate(ResourcePutRequest entity, ResourceId parsedResourceId, RMAPITemplateContext context) {
-    if(!resourceCanBeUpdated(entity)){
-      //Return current state of resource without updating it
-      return context.getResourcesService().retrieveResource(parsedResourceId);
-    }
     return context.getResourcesService().retrieveResource(parsedResourceId)
       .thenCompose(title -> {
         ResourcePut resourcePutBody;
@@ -290,20 +285,5 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         return context.getResourcesService().updateResource(parsedResourceId, resourcePutBody);
       })
       .thenCompose(o -> context.getResourcesService().retrieveResource(parsedResourceId));
-  }
-
-  private boolean resourceCanBeUpdated(ResourcePutRequest entity) {
-    ResourcePutDataAttributes attributes = entity.getData().getAttributes();
-    boolean isTitleCustom = !Objects.isNull(attributes.getIsTitleCustom()) && attributes.getIsTitleCustom();
-    boolean isSelected = !Objects.isNull(attributes.getIsSelected()) && attributes.getIsSelected();
-    if(!isSelected && !isTitleCustom){
-      try{
-        resourcePutBodyValidator.validate(entity, isTitleCustom);
-      }
-      catch (InputValidationException ex){
-        return false;
-      }
-    }
-    return true;
   }
 }

@@ -19,6 +19,6 @@ public enum ReportStatus {
     return Arrays.stream(values())
       .filter(statusValue -> statusValue.value.equalsIgnoreCase(value))
       .findFirst()
-      .orElseThrow(() -> new IllegalArgumentException("DeltaReportStatus with value " + value + " doesn't exist"));
+      .orElseThrow(() -> new IllegalArgumentException("ReportStatus with value " + value + " doesn't exist"));
   }
 }
