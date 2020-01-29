@@ -85,11 +85,11 @@ public class ResourcePutBodyValidator {
       (!Strings.isEmpty(cvgStmt) || !Objects.isNull(embargoUnit) ||
       (!Objects.isNull(isHidden) && isHidden) ||
       (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()) ||
-        !Objects.isNull(attributes.getUserDefinedField1()) ||
-        !Objects.isNull(attributes.getUserDefinedField2()) ||
-        !Objects.isNull(attributes.getUserDefinedField3()) ||
-        !Objects.isNull(attributes.getUserDefinedField4()) ||
-        !Objects.isNull(attributes.getUserDefinedField5())
+        !Strings.isEmpty(attributes.getUserDefinedField1()) ||
+        !Strings.isEmpty(attributes.getUserDefinedField2()) ||
+        !Strings.isEmpty(attributes.getUserDefinedField3()) ||
+        !Strings.isEmpty(attributes.getUserDefinedField4()) ||
+        !Strings.isEmpty(attributes.getUserDefinedField5())
       )) {
       throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
     }

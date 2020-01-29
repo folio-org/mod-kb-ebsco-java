@@ -37,6 +37,7 @@ import static org.folio.test.util.TestUtil.getFile;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockPut;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.TagsTestUtil.insertTag;
 
@@ -53,6 +54,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.junit.Test;
@@ -65,6 +67,7 @@ import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
@@ -294,6 +297,25 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
+  }
+
+  @Test
+  public void shouldDeselectManagedResourceOnPutWithSelectedFalse() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response-is-selected-false.json";
+    String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource.json";
+
+    ResourcePutRequest request = readJsonFile("requests/kb-ebsco/resource/put-managed-resource-is-not-selected.json", ResourcePutRequest.class);
+    request.getData().getAttributes().setIsSelected(false);
+    String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT, STUB_MANAGED_RESOURCE_ID,
+      Json.encode(request));
+
+    Resource expectedResource = readJsonFile(expectedResourceFile, Resource.class);
+    expectedResource.getData().getAttributes().setIsSelected(false);
+    JSONAssert.assertEquals(Json.encode(expectedResource), actualResponse, false);
+
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true))
+      .withRequestBody(new EqualToJsonPattern(readFile("requests/rmapi/resources/put-managed-resource-is-not-selected.json"),
+        true, true)));
   }
 
   @Test
