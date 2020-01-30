@@ -1,0 +1,36 @@
+{
+  "data": [
+    {
+      "id": "6b30f929-6075-4e18-82fa-525f1355acd7",
+      "type": "accessTypes",
+      "attributes": {
+        "name": "my custom type 1",
+        "description": "Description 1",
+        "metadata": {
+          "createdDate": "",
+          "createdByUserId": "",
+          "createdByUsername": ""
+        }
+      }
+    },
+    {
+      "id": "342dcb99-c476-4f93-b430-471874b18e2a",
+      "type": "accessTypes",
+      "attributes": {
+        "name": "my custom type 2",
+        "description": "Description 2",
+        "metadata": {
+          "createdDate": "",
+          "createdByUserId": "",
+          "createdByUsername": ""
+        }
+      }
+    }
+  ],
+  "meta": {
+    "totalResults": 2
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Access Type PUT Request Schema",
+  "description": "Access Type PUT Request Schema",
+  "javaType": "org.folio.rest.jaxrs.model.AccessTypePutRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "description": "Data object of Access Type put request",
+      "type": "object",
+      "$ref": "accessTypeCollectionItem.json"
+    }
+  },
+  "required": ["data"]
+}

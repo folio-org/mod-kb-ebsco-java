@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Access Type Post Attributes Object Schema",
+  "description": "Access Type Post Attributes Object Schema",
+  "javaType": "org.folio.rest.jaxrs.model.AccessTypePostAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": ["accessTypes"],
+      "example": "accessTypes"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Custom label object data attributes",
+      "$ref": "accessTypePostDataAttributes.json"
+    }
+  },
+  "required": ["type", "attributes"]
+}

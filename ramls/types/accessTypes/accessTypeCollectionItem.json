@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Access Type object schema for a collection",
+  "description": "Access Type object schema for a collection",
+  "javaType": "org.folio.rest.jaxrs.model.AccessTypeCollectionItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "UUID of access type",
+      "example": "f973c3b6-85fc-4d35-bda8-f31b568957bf"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": ["accessTypes"],
+      "example": "accessTypes"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Custom label object data attributes",
+      "$ref": "accessTypeDataAttributes.json"
+    }
+  },
+  "required": ["type", "attributes"]
+}

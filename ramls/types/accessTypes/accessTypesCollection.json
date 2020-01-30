@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Access Types Collection Schema",
+  "description": "Access Types Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.AccessTypeCollection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of access types",
+      "items": {
+        "type": "object",
+        "$ref": "accessTypeCollectionItem.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in collection",
+      "$ref": "../metaTotalResults.json"
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": ["data", "meta", "jsonapi"]
+}

@@ -1,0 +1,8 @@
+{
+  "id": "1c7420e2-2271-4672-b605-8aae25d97210",
+  "type": "accessType",
+  "attributes": {
+    "name": "Subscribed",
+    "description": "Indicates subscription of the entity"
+  }
+}
