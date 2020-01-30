@@ -1,0 +1,55 @@
+{
+  "data" : {
+    "id" : "19-3964-762169",
+    "type" : "resources",
+    "attributes" : {
+      "isTitleCustom" : false,
+      "titleId" : 762169,
+      "name" : "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+      "coverageStatement": "",
+      "customEmbargoPeriod": {},
+      "isPackageCustom" : false,
+      "isSelected" : true,
+      "managedCoverages": [
+        {
+          "beginCoverage": "2016-01-01",
+          "endCoverage": "2016-12-31"
+        }
+      ],
+      "customCoverages": [],
+      "isTokenNeeded" : false,
+      "locationId" : 2863717,
+      "managedEmbargoPeriod": {
+        "embargoValue": 0
+      },
+      "packageId" : "19-3964",
+      "packageName" : "ABC-CLIO eBook Collection",
+      "url" : "https://publisher.abc-clio.com/9780313068003/",
+      "providerId" : 19,
+      "providerName" : "ABC-CLIO",
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "proxy": {},
+      "userDefinedField1": "",
+      "userDefinedField2": "",
+      "userDefinedField3": "",
+      "userDefinedField4": "",
+      "userDefinedField5": "",
+      "publisherName": "Praeger",
+      "edition": "",
+      "publicationType": "Book",
+      "subjects": [
+        {
+          "type": "BISAC",
+          "subject": "SOCIAL SCIENCE / Ethnic Studies / General"
+        }
+      ],
+      "contributors": [],
+      "identifiers": [],
+      "isPeerReviewed": false,
+      "description": ""
+    }
+  }
+}
