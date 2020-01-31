@@ -12,8 +12,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import org.folio.rest.jaxrs.model.AccessType;
-import org.folio.rest.jaxrs.model.AccessTypePutRequest;
+import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.resource.EholdingsAccessTypes;
 import org.folio.spring.SpringContextUtil;
 
@@ -24,32 +24,37 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   }
 
   @Override
+  @HandleValidationErrors
   public void getEholdingsAccessTypes(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                       Context vertxContext) {
     asyncResultHandler.handle(succeededFuture(status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 
   @Override
-  public void postEholdingsAccessTypes(String contentType, AccessType entity, Map<String, String> okapiHeaders,
+  @HandleValidationErrors
+  public void postEholdingsAccessTypes(String contentType, AccessTypeCollectionItem entity, Map<String, String> okapiHeaders,
                                        Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     asyncResultHandler.handle(succeededFuture(status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 
   @Override
+  @HandleValidationErrors
   public void getEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(succeededFuture(status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 
   @Override
-  public void putEholdingsAccessTypesById(String id, String contentType, AccessTypePutRequest entity,
+  @HandleValidationErrors
+  public void putEholdingsAccessTypesById(String id, String contentType, AccessTypeCollectionItem entity,
                                           Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(succeededFuture(status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 
   @Override
+  @HandleValidationErrors
   public void deleteEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     asyncResultHandler.handle(succeededFuture(status(Response.Status.NOT_IMPLEMENTED).build()));
