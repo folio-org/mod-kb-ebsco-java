@@ -73,7 +73,7 @@
     {
       "tableName": "access_types",
       "fromModuleVersion": "mod-kb-ebsco-java-3.1.1",
-      "withMetadata": false,
+      "withMetadata": true,
       "withAuditing": false
     }
   ],

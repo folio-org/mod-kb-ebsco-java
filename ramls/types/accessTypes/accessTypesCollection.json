@@ -17,7 +17,8 @@
     "meta": {
       "type": "object",
       "description": "metadata containing total results in collection",
-      "$ref": "../metaTotalResults.json"
+      "$ref": "../metaTotalResults.json",
+      "readonly": true
     },
     "jsonapi": {
       "type": "object",

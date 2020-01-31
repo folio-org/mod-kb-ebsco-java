@@ -1,0 +1,18 @@
+{
+  "id": "a8da8c43-2d23-4d14-a7b7-517599b28824",
+  "type": "accessTypes",
+  "attributes": {
+    "name": "Subscribed",
+    "description": "Indicates subscription of the entity"
+  },
+  "creator": {
+    "lastName": "Doe",
+    "firstName": "John",
+    "middleName": "Joseph"
+  },
+  "metadata": {
+    "createdDate": "",
+    "createdByUserId": "",
+    "createdByUsername": ""
+  }
+}

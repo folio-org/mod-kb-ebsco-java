@@ -15,12 +15,7 @@
       "type": "string",
       "description": "Access Type Description",
       "example": "Indicates subscription of the entity"
-    },
-    "metadata": {
-      "type": "object",
-      "description": "Metadata for the entity",
-      "$ref": "../../raml-util/schemas/metadata.schema"
     }
   },
-  "required": ["name", "description"]
+  "required": ["name"]
 }

@@ -43,12 +43,12 @@ types:
     body:
       application/vnd.api+json:
         description: Create an access type
-        type: accessType
+        type: accessTypeCollectionItem
         example:
           strict: false
           value: !include examples/accessTypes/access_type_post_request.json
     responses:
-      200:
+      201:
         description: OK
         body:
           application/vnd.api+json:
@@ -56,7 +56,7 @@ types:
             type: accessTypeCollectionItem
             example:
               strict: false
-              value: !include examples/accessTypes/access_type_post_200_response.json
+              value: !include examples/accessTypes/access_type_post_201_response.json
       400:
         description: Bad Request
         body:
@@ -76,6 +76,9 @@ types:
   /{id}:
     displayName: Get Access Type by Id
     description: Instance of a Access Type by given Id
+    uriParameters:
+      id:
+        pattern : "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
     get:
       description: Retrieve specific Access Types by Id
       responses:
@@ -110,7 +113,7 @@ types:
           example: application/vnd.api+json
       body:
         application/vnd.api+json:
-          type: accessTypePutRequest
+          type: accessTypeCollectionItem
           example:
             strict: false
             value: !include examples/accessTypes/access_type_put_request.json
