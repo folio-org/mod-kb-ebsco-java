@@ -3,7 +3,6 @@ package org.folio.spring.config;
 import java.util.List;
 
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +16,8 @@ import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
+import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
@@ -107,5 +108,11 @@ public class ApplicationConfig {
   public LoadServiceFacade loadServiceFacade(@Value("${holdings.load.implementation.qualifier}") String qualifier,
                                              ApplicationContext context){
     return (LoadServiceFacade) context.getBean(qualifier);
+  }
+
+  @Bean
+  public DBExceptionTranslator excTranslator(@Value("${db.exception.translator.name}") String translatorName) {
+    DBExceptionTranslatorFactory factory = DBExceptionTranslatorFactory.instance();
+    return factory.create(translatorName);
   }
 }

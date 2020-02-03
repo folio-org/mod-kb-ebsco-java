@@ -11,6 +11,7 @@ import org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest;
 import org.folio.rest.impl.integrationsuite.DefaultLoadServiceFacadeTest;
 import org.folio.rest.impl.integrationsuite.EHoldingsProxyTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EHoldingsRootProxyImplTest;
+import org.folio.rest.impl.integrationsuite.EholdingsAccessTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCacheImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsConfigurationTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCustomLabelsImplTest;
@@ -39,7 +40,8 @@ import org.folio.test.util.TestSetUpHelper;
   DefaultLoadHoldingsImplTest.class,
   LoadHoldingsStatusImplTest.class,
   DefaultLoadServiceFacadeTest.class,
-  TransactionLoadServiceFacadeTest.class
+  TransactionLoadServiceFacadeTest.class,
+  EholdingsAccessTypesImplTest.class
 })
 @RunWith(Suite.class)
 public class IntegrationTestSuite {

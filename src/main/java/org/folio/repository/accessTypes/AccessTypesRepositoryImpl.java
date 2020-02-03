@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.persist.PostgresClient;
 
@@ -30,6 +31,9 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypesRepositoryImpl.class);
   private Vertx vertx;
+
+  @Autowired
+  private DBExceptionTranslator excTranslator;
 
   @Autowired
   public AccessTypesRepositoryImpl(Vertx vertx) {
@@ -71,9 +75,10 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     if (StringUtils.isBlank(accessType.getId())) {
       accessType.setId(UUID.randomUUID().toString());
     }
+    LOG.info("Saving access type: " + accessType);
     pgClient(tenantId).save(ACCESS_TYPES_TABLE_NAME, accessType.getId(), accessType, promise);
 
-    return mapResult(promise.future(), accessTypeId -> {
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), accessTypeId -> {
       accessType.setId(accessTypeId);
       return accessType;
     });
@@ -84,6 +89,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     Promise<ResultSet> promise = Promise.promise();
 
     String query = String.format(SELECT_COUNT_ACCESS_TYPES, getAccessTypesTableName(tenantId));
+    LOG.info("Do count query: " + query);
     pgClient(tenantId).select(query, promise);
 
     return mapResult(promise.future(), rs -> rs.getResults().get(0).getLong(0));
