@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 
 public interface AccessTypesRepository {
+
   /**
    * Returns all access types for given tenantId.
    */
@@ -28,5 +29,11 @@ public interface AccessTypesRepository {
 
   CompletableFuture<Long> count(String tenantId);
 
-//  CompletableFuture<Void> delete(String resourceId, String tenantId);
+  /**
+   * Delete access type with given id and tenantId
+   *
+   * @param id of access type to delete
+   * @return {@link CompletableFuture} with the result of operation
+   */
+  CompletableFuture<Void> delete(String id, String tenantId);
 }

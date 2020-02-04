@@ -189,17 +189,17 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/access-types{accessTypeId}",
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
           "permissionsRequired": ["kb-ebsco.access-types.item.get"]
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/access-types{accessTypeId}",
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
           "permissionsRequired": ["kb-ebsco.access-types.item.put"]
         },
         {
           "methods": ["DELETE"],
-          "pathPattern": "/eholdings/access-types{accessTypeId}",
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
           "permissionsRequired": ["kb-ebsco.access-types.item.delete"]
         }
       ]

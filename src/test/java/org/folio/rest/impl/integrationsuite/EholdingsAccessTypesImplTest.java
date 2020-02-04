@@ -8,6 +8,10 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -27,8 +31,6 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
-import io.restassured.response.ExtractableResponse;
-import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.apache.http.HttpStatus;
@@ -37,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.folio.repository.accesstypes.AccessTypesTableConstants;
 import org.folio.rest.converter.accesstypes.AccessTypeCollectionConverter;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -113,8 +116,29 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn400OnGetIfIdIsInvalid() {
     String id = "99999999-9999-2-9999-999999999999";
-    ExtractableResponse<Response> withStatus = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST);
-    JsonapiError error = withStatus.as(JsonapiError.class);
+    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals(String.format("Invalid id '%s'", id), error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn204OnDelete() {
+    List<AccessTypeCollectionItem> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
+    String accessTypeIdToDelete = accessTypesBeforeDelete.get(0).getId();
+    deleteWithNoContent(ACCESS_TYPES_PATH + "/" + accessTypeIdToDelete);
+
+    List<AccessTypeCollectionItem> accessTypesAfterDelete = AccessTypesTestUtil.getAccessTypes(vertx);
+
+    assertEquals(accessTypesBeforeDelete.size() - 1, accessTypesAfterDelete.size());
+    assertThat(accessTypesAfterDelete, not(hasItem(
+      hasProperty(AccessTypesTableConstants.ID_COLUMN, equalTo(accessTypeIdToDelete)))));
+  }
+
+  @Test
+  public void shouldReturn400OnDeleteIfIdIsInvalid() {
+    String id = "99999999-9999-2-9999-999999999999";
+    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
     assertEquals(String.format("Invalid id '%s'", id), error.getErrors().get(0).getTitle());

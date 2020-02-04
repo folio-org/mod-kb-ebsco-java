@@ -92,7 +92,10 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   @HandleValidationErrors
   public void deleteEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    asyncResultHandler.handle(succeededFuture(status(Response.Status.NOT_IMPLEMENTED).build()));
+    ValidatorUtil.isUUIDValid(id);
+    accessTypesService.deleteById(id, okapiHeaders)
+      .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(DeleteEholdingsAccessTypesByIdResponse.respond204())))
+      .exceptionally(throwable -> failedResponse(throwable, asyncResultHandler));
   }
 
   private Void failedResponse(Throwable throwable, Handler<AsyncResult<Response>> handler) {

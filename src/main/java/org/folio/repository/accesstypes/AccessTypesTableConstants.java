@@ -3,6 +3,7 @@ package org.folio.repository.accesstypes;
 public class AccessTypesTableConstants {
   private AccessTypesTableConstants() {}
 
+  public static final String ID_COLUMN = "id";
   public static final String ACCESS_TYPES_TABLE_NAME = "access_types";
   public static final String ACCESS_TYPES_TYPE = "accessTypes";
   public static final String JSONB_COLUMN = "jsonb";

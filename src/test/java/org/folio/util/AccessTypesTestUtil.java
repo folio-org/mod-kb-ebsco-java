@@ -3,8 +3,8 @@ package org.folio.util;
 import static org.apache.commons.lang3.StringUtils.join;
 
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.JSONB_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;

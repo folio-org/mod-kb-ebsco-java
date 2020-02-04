@@ -6,9 +6,6 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.BadRequestException;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
@@ -60,6 +57,11 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessTypeCollectionItem> findById(String id, Map<String, String> okapiHeaders) {
     return repository.findById(id, TenantTool.tenantId(okapiHeaders));
+  }
+
+  @Override
+  public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
+    return repository.delete(id, TenantTool.tenantId(okapiHeaders));
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {

@@ -20,6 +20,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,6 +103,15 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     pgClient(tenantId).select(query, promise);
 
     return mapResult(promise.future(), rs -> rs.getResults().get(0).getLong(0));
+  }
+
+  @Override
+  public CompletableFuture<Void> delete(String id, String tenantId) {
+    Promise<UpdateResult> promise = Promise.promise();
+
+    pgClient(tenantId).delete(ACCESS_TYPES_TABLE_NAME, id, promise);
+
+    return mapResult(promise.future(), updateResult -> null);
   }
 
   private AccessTypeCollectionItem mapAccessItem(JsonObject row) {
