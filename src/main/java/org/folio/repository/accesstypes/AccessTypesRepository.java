@@ -1,4 +1,4 @@
-package org.folio.repository.accessTypes;
+package org.folio.repository.accesstypes;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -16,7 +16,7 @@ public interface AccessTypesRepository {
    *
    * @param id id of access type to get
    */
-  CompletableFuture<AccessTypeCollectionItem> findById(String tenantId, String id);
+  CompletableFuture<AccessTypeCollectionItem> findById(String id, String tenantId);
 
   /**
    * Saves a new access type record to the database

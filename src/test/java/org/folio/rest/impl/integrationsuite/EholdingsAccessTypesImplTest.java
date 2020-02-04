@@ -15,22 +15,31 @@ import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
+import static org.folio.util.AccessTypesTestUtil.testData;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.folio.rest.converter.accesstypes.AccessTypeCollectionConverter;
 import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -71,9 +80,50 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnAccessTypeCollectionOnGet() {
+    List<AccessTypeCollectionItem> testAccessTypes = testData();
+    List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testAccessTypes, vertx);
+
+    AccessTypeCollection expected = new AccessTypeCollectionConverter().convert(accessTypeCollectionItems);
+    AccessTypeCollection actual = getWithOk(ACCESS_TYPES_PATH).as(AccessTypeCollection.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturnAccessTypeOnGet() {
+    List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testData(), vertx);
+
+    AccessTypeCollectionItem expected = accessTypeCollectionItems.get(0);
+    AccessTypeCollectionItem actual = getWithOk(ACCESS_TYPES_PATH + "/" + expected.getId())
+      .as(AccessTypeCollectionItem.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturn404OnGetIfAccessTypeIsMissing() {
+    String id = "99999999-9999-9999-9999-999999999999";
+    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, HttpStatus.SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals(String.format("Access type with id '%s' not found", id), error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn400OnGetIfIdIsInvalid() {
+    String id = "99999999-9999-2-9999-999999999999";
+    ExtractableResponse<Response> withStatus = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST);
+    JsonapiError error = withStatus.as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals(String.format("Invalid id '%s'", id), error.getErrors().get(0).getTitle());
+  }
+
+  @Test
   public void shouldReturnAccessTypeWhenDataIsValid() throws IOException, URISyntaxException {
 
-    String postBody  = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     final AccessTypeCollectionItem accessType = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8)
       .as(AccessTypeCollectionItem.class);
 
@@ -86,7 +136,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn500WhenSaveWithDuplicateIdObject() throws IOException, URISyntaxException {
 
-    String postBody  = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8);
     postWithStatus(ACCESS_TYPES_PATH, postBody, SC_BAD_REQUEST, USER8);
   }
@@ -94,9 +144,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn400WhenReachedMaximumAccessTypesSize() throws IOException, URISyntaxException {
 
-    String postBody1  = readFile("requests/kb-ebsco/access-types/access-type-1.json");
-    String postBody2  = readFile("requests/kb-ebsco/access-types/access-type-2.json");
-    String postBody3  = readFile("requests/kb-ebsco/access-types/access-type-3.json");
+    String postBody1 = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    String postBody2 = readFile("requests/kb-ebsco/access-types/access-type-2.json");
+    String postBody3 = readFile("requests/kb-ebsco/access-types/access-type-3.json");
 
     postWithStatus(ACCESS_TYPES_PATH, postBody1, SC_CREATED, USER8);
     postWithStatus(ACCESS_TYPES_PATH, postBody2, SC_CREATED, USER8);
@@ -110,7 +160,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404WhenUserNoFound() throws IOException, URISyntaxException {
 
-    String postBody  = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     final JsonapiError errors = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_NOT_FOUND, USER2).as(JsonapiError.class);
     assertEquals("User not found", errors.getErrors().get(0).getTitle());
   }
@@ -118,7 +168,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422WhenRequestHasUnrecognizedField() throws IOException, URISyntaxException {
 
-    String postBody  = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     String badRequestBody = postBody.replaceFirst("type", "BadType");
     final String response = postWithStatus(ACCESS_TYPES_PATH, badRequestBody, SC_UNPROCESSABLE_ENTITY, USER8).asString();
     assertThat(response, containsString("Unrecognized field"));
@@ -127,7 +177,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422WhenPostHasInvalidUUID() throws IOException, URISyntaxException {
 
-    String postBody  = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     String badRequestBody = postBody.replaceAll("-1111-", "-2-");  // make bad UUID
     Errors errors = postWithStatus(ACCESS_TYPES_PATH, badRequestBody, SC_UNPROCESSABLE_ENTITY, USER8).as(Errors.class);
     assertEquals("id", errors.getErrors().get(0).getParameters().get(0).getKey());
@@ -146,6 +196,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       .statusCode(SC_BAD_REQUEST)
       .body(containsString("Content-type"));
   }
+
   @Test
   public void shouldReturn400WhenJsonIsInvalid() {
     RestAssured.given()

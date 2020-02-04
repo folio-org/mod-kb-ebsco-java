@@ -1,16 +1,18 @@
-package org.folio.repository.accessTypes;
+package org.folio.repository.accesstypes;
 
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
 import static org.folio.repository.DbUtil.mapColumn;
-import static org.folio.repository.accessTypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
-import static org.folio.repository.accessTypes.AccessTypesTableConstants.SELECT_ALL_ACCESS_TYPES;
-import static org.folio.repository.accessTypes.AccessTypesTableConstants.SELECT_COUNT_ACCESS_TYPES;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_ALL_ACCESS_TYPES;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_ACCESS_TYPES;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+
+import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -18,6 +20,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,6 +33,9 @@ import org.folio.rest.persist.PostgresClient;
 public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypesRepositoryImpl.class);
+
+  private static final String ACCESS_TYPE_NOT_FOUND_MESSAGE = "Access type with id '%s' not found";
+
   private Vertx vertx;
 
   @Autowired
@@ -40,25 +46,28 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     this.vertx = vertx;
   }
 
-  /**
-   * Returns all access types for given tenantId.
-   */
   @Override
   public CompletableFuture<List<AccessTypeCollectionItem>> findAll(String tenantId) {
+    LOG.info("Retrieving access types: tenantId = {}", tenantId);
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(String.format(SELECT_ALL_ACCESS_TYPES, getAccessTypesTableName(tenantId)), promise);
 
     return mapResult(promise.future(), this::readAccessTypes);
   }
 
-  /**
-   * Returns an access type by given recordId.
-   *
-   * If note with given id doesn't exist then returns failed Future with NotFoundException as a cause.
-   */
   @Override
-  public CompletableFuture<AccessTypeCollectionItem> findById(String tenantId, String recordId) {
-    return null;
+  public CompletableFuture<AccessTypeCollectionItem> findById(String id, String tenantId) {
+    LOG.info("Retrieving access type: id = {}, tenantId = {}", id, tenantId);
+    Promise<AccessTypeCollectionItem> promise = Promise.promise();
+    pgClient(tenantId).getById(ACCESS_TYPES_TABLE_NAME, id, AccessTypeCollectionItem.class, promise);
+
+    return mapResult(promise.future(), accessTypeCollectionItem -> {
+      if (accessTypeCollectionItem == null) {
+        throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
+      } else {
+        return accessTypeCollectionItem;
+      }
+    });
   }
 
   /**

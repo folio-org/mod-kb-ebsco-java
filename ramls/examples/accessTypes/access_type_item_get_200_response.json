@@ -1,1 +1,16 @@
-{}
+{
+  "id": "3866efa9-4af8-4c4e-8fab-2451963cf0ea",
+  "type": "accessTypes",
+  "attributes": {
+    "name": "Access Type 1",
+    "description": "Access Type description 1"
+  },
+  "creator": {
+    "lastName": "last name",
+    "firstName": "first name"
+  },
+  "updater": {
+    "lastName": "last name",
+    "firstName": "first name"
+  }
+}

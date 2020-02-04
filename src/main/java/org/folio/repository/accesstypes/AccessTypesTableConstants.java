@@ -1,4 +1,4 @@
-package org.folio.repository.accessTypes;
+package org.folio.repository.accesstypes;
 
 public class AccessTypesTableConstants {
   private AccessTypesTableConstants() {}
