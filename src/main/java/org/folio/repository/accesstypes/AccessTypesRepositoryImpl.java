@@ -21,7 +21,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -71,12 +70,6 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     });
   }
 
-  /**
-   * Saves a new access type record to the database
-   *
-   * @param accessType - current AccessType  {@link AccessTypeCollectionItem} object to save
-   * @return
-   */
   @Override
   public CompletableFuture<AccessTypeCollectionItem> save(AccessTypeCollectionItem accessType, String tenantId) {
 
@@ -91,6 +84,21 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), accessTypeId -> {
       accessType.setId(accessTypeId);
       return accessType;
+    });
+  }
+
+  @Override
+  public CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, String tenantId) {
+
+    Promise<UpdateResult> promise = Promise.promise();
+
+    pgClient(tenantId).update(ACCESS_TYPES_TABLE_NAME, accessType, id, promise);
+
+    return mapResult(promise.future(), updateResult -> {
+      if(updateResult.getUpdated() == 0){
+        throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
+      }
+    return null;
     });
   }
 
@@ -111,7 +119,12 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
     pgClient(tenantId).delete(ACCESS_TYPES_TABLE_NAME, id, promise);
 
-    return mapResult(promise.future(), updateResult -> null);
+    return mapResult(promise.future(), updateResult -> {
+      if(updateResult.getUpdated() == 0){
+        throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
+      }
+      return null;
+     });
   }
 
   private AccessTypeCollectionItem mapAccessItem(JsonObject row) {

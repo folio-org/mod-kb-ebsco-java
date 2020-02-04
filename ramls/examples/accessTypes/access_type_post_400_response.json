@@ -1,8 +1,11 @@
 {
-  "id": "1c7420e2-2271-4672-b605-8aae25d97210",
-  "type": "accessType",
-  "attributes": {
-    "name": "Subscribed",
-    "description": "Indicates subscription of the entity"
+  "errors": [
+    {
+      "title": "duplicate key value violates unique constraint \"access_types_pkey\"",
+      "detail": "Key (id)=(11111111-1111-1111-a111-111111111111) already exists."
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
   }
 }

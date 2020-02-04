@@ -22,7 +22,6 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
-
 import org.jetbrains.annotations.NotNull;
 
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
@@ -98,7 +97,7 @@ public class AccessTypesTestUtil {
       return mapper.readValue(json, AccessTypeCollectionItem.class);
     } catch (IOException e) {
       e.printStackTrace();
-      throw new IllegalArgumentException("Can't parse note type", e);
+      throw new IllegalArgumentException("Can't parse access type", e);
     }
   }
 

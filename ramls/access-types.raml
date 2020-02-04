@@ -12,8 +12,6 @@ documentation:
 types:
   accessTypeCollection: !include types/accessTypes/accessTypesCollection.json
   accessTypeCollectionItem: !include types/accessTypes/accessTypeCollectionItem.json
-  accessType: !include types/accessTypes/accessTypePostRequest.json
-  accessTypePutRequest: !include types/accessTypes/accessTypePutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/access-types:
@@ -118,15 +116,8 @@ types:
             strict: false
             value: !include examples/accessTypes/access_type_put_request.json
       responses:
-        200:
-          description: OK
-          body:
-            application/vnd.api+json:
-              description: The server has successfully fulfilled the PUT request.
-              type: accessTypeCollectionItem
-              example:
-                strict: false
-                value: !include examples/accessTypes/access_type_put_by_id_200_response.json
+        204:
+          description: "Item successfully updated"
         400:
           description: Bad Request
           body:

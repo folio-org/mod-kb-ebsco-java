@@ -9,22 +9,22 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 
-public class AccessTypesPostBodyValidatorTest {
+public class AccessTypesBodyValidatorTest {
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
-  private AccessTypePostBodyValidator validator = new AccessTypePostBodyValidator();
+  private AccessTypesBodyValidator validator = new AccessTypesBodyValidator();
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPutBody() {
     AccessTypeCollectionItem postRequest = null;
-    validator.validate(postRequest);
+    validator.validate(postRequest, null);
   }
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenEmptyPostDataAttributes() {
     AccessTypeCollectionItem postRequest = new AccessTypeCollectionItem();
     postRequest.withAttributes(new AccessTypeDataAttributes());
-    validator.validate(postRequest);
+    validator.validate(postRequest, null);
   }
 
   @Test
@@ -34,7 +34,7 @@ public class AccessTypesPostBodyValidatorTest {
     final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
       .withAttributes(
           new AccessTypeDataAttributes().withName(RandomStringUtils.randomAlphanumeric(76)));
-    validator.validate(request);
+    validator.validate(request, null);
   }
 
   @Test
@@ -46,7 +46,7 @@ public class AccessTypesPostBodyValidatorTest {
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))
           .withDescription(RandomStringUtils.randomAlphanumeric(151)));
-    validator.validate(request);
+    validator.validate(request, null);
   }
 
   @Test
@@ -56,7 +56,19 @@ public class AccessTypesPostBodyValidatorTest {
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))
           .withDescription(null));
-    validator.validate(request);
+    validator.validate(request, null);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenInvalidId() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage("Invalid id");
+    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
+      .withAttributes(
+        new AccessTypeDataAttributes()
+          .withName(RandomStringUtils.randomAlphanumeric(75))
+          .withDescription(RandomStringUtils.randomAlphanumeric(150)));
+    validator.validate(request, "c0af6d39-6705-43d7-b91e-c01c3549ddww");
   }
 
   @Test
@@ -66,6 +78,6 @@ public class AccessTypesPostBodyValidatorTest {
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))
           .withDescription(RandomStringUtils.randomAlphanumeric(150)));
-    validator.validate(request);
+    validator.validate(request, null);
   }
 }

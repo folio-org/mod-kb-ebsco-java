@@ -14,18 +14,22 @@ public interface AccessTypesRepository {
 
   /**
    * Fetches an access type from the database
-   *
+   * If access type with given id doesn't exist then returns NotFoundException as a cause.
    * @param id id of access type to get
    */
   CompletableFuture<AccessTypeCollectionItem> findById(String id, String tenantId);
 
   /**
    * Saves a new access type record to the database
-   *
    * @param accessType - current AccessType  {@link AccessTypeCollectionItem} object to save
-   * @return
    */
   CompletableFuture<AccessTypeCollectionItem> save(AccessTypeCollectionItem accessType, String tenantId);
+
+  /**
+   * Updates access type with given id.
+   * If access type with given id doesn't exist then returns NotFoundException as a cause.
+   */
+  CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, String tenantId);
 
   CompletableFuture<Long> count(String tenantId);
 

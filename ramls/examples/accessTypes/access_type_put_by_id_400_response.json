@@ -1,1 +1,10 @@
-{}
+{
+  "errors": [
+    {
+      "title": "Missing user id header, cannot look up user"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

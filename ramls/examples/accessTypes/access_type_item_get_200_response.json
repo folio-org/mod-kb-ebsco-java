@@ -9,8 +9,11 @@
     "lastName": "last name",
     "firstName": "first name"
   },
-  "updater": {
-    "lastName": "last name",
-    "firstName": "first name"
+  "metadata": {
+    "createdDate": "2020-02-03T13:23:56.784+0000",
+    "updatedDate": "2020-02-03T13:23:56.784+0000",
+    "createdByUserId": "22222222-2222-2222-a222-222222222222",
+    "updatedByUserId": "22222222-2222-2222-a222-222222222222",
+    "createdByUsername": "john_doe"
   }
 }

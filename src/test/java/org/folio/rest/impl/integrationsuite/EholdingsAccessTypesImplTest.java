@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
@@ -32,8 +33,6 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
-import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,8 +52,10 @@ import org.folio.util.AccessTypesTestUtil;
 public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   private static final String USER_8 = "88888888-8888-4888-8888-888888888888";
+  private static final String USER_9 = "99999999-9999-4999-9999-999999999999";
   private static final String USER_2 = "22222222-2222-4222-2222-222222222222";
   private static final Header USER8 = new Header(OKAPI_USER_ID_HEADER, USER_8);
+  private static final Header USER9 = new Header(OKAPI_USER_ID_HEADER, USER_9);
   private static final Header USER2 = new Header(OKAPI_USER_ID_HEADER, USER_2);
   private static final String ACCESS_TYPES_PATH = "/eholdings/access-types";
 
@@ -68,6 +69,13 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(200)
           .withBody(readFile("responses/userlookup/mock_user_response_200.json"))
+        ));
+
+    stubFor(
+      get(new UrlPathPattern(new EqualToPattern("/users/" + USER_9), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(200)
+          .withBody(readFile("responses/userlookup/mock_user_response_2_200.json"))
         ));
 
     stubFor(
@@ -107,16 +115,16 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnGetIfAccessTypeIsMissing() {
     String id = "99999999-9999-9999-9999-999999999999";
-    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, HttpStatus.SC_NOT_FOUND).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_NOT_FOUND).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
     assertEquals(String.format("Access type with id '%s' not found", id), error.getErrors().get(0).getTitle());
   }
 
   @Test
-  public void shouldReturn400OnGetIfIdIsInvalid() {
+  public void shouldReturn422OnGetIfIdIsInvalid() {
     String id = "99999999-9999-2-9999-999999999999";
-    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
     assertEquals(String.format("Invalid id '%s'", id), error.getErrors().get(0).getTitle());
@@ -136,12 +144,21 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnDeleteIfIdIsInvalid() {
+  public void shouldReturn422OnDeleteIfIdIsInvalid() {
     String id = "99999999-9999-2-9999-999999999999";
-    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
+    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
     assertEquals(String.format("Invalid id '%s'", id), error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn404IfNotFound() {
+    String id = "11111111-1111-1111-a111-111111111111";
+    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals(String.format("Access type with id '%s' not found", id), error.getErrors().get(0).getTitle());
   }
 
   @Test
@@ -237,4 +254,43 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       .body(containsString("Json content error"));
   }
 
+  @Test
+  public void shouldUpdateAccessTypeWhenValidData() throws IOException, URISyntaxException {
+    String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8);
+
+    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
+    String accessTypeId = "/11111111-1111-1111-a111-111111111111";
+    putWithNoContent(ACCESS_TYPES_PATH + accessTypeId, putBody, USER9);
+
+    final List<AccessTypeCollectionItem> accessTypes = AccessTypesTestUtil.getAccessTypes(vertx);
+    assertEquals(1, accessTypes.size());
+    assertNotNull(accessTypes.get(0).getCreator());
+    assertEquals("firstname_test", accessTypes.get(0).getCreator().getFirstName());
+    assertEquals("cedrick", accessTypes.get(0).getMetadata().getCreatedByUsername());
+    assertNotNull(accessTypes.get(0).getUpdater());
+    assertEquals("John", accessTypes.get(0).getUpdater().getFirstName());
+    assertEquals("john_doe", accessTypes.get(0).getMetadata().getUpdatedByUsername());
+  }
+
+  @Test
+  public void shouldReturn404WhenNoAccessType() throws IOException, URISyntaxException {
+    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
+    String accessTypeId = "/33333333-3333-3333-a333-333333333333";
+    putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody.replaceAll("1", "3"), SC_NOT_FOUND, USER9);
+  }
+
+  @Test
+  public void shouldReturn400WhenNoUserHeader() throws IOException, URISyntaxException {
+    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
+    String accessTypeId = "/33333333-3333-3333-a333-333333333333";
+    putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody.replaceAll("1", "3"), SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void shouldReturn422WhenInvalidId() throws IOException, URISyntaxException {
+    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
+    String accessTypeId = "/c0af6d39-6705-43d7-b91e-c01c3549ddww";
+    putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody, SC_UNPROCESSABLE_ENTITY, USER9);
+  }
 }

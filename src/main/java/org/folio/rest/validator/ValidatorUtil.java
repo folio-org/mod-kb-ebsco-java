@@ -9,8 +9,6 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.validation.ValidationException;
-
 import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +30,7 @@ public class ValidatorUtil {
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
+  private static final String MUST_BE_UUID_FORMAT = "Id should follow UUID format %s";
 
   private static final Pattern UUID_PATTERN =
     Pattern.compile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$");
@@ -145,8 +144,9 @@ public class ValidatorUtil {
   public static boolean isUUIDValid(String uuid) {
     Matcher matcher = UUID_PATTERN.matcher(uuid);
     if (!matcher.matches()) {
-      throw new ValidationException(
-        String.format(INVALID_ID_FORMAT, uuid)
+      throw new InputValidationException(
+        String.format(INVALID_ID_FORMAT, uuid),
+        String.format(MUST_BE_UUID_FORMAT, UUID_PATTERN)
       );
     }
     return true;

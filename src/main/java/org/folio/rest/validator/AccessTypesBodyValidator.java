@@ -7,15 +7,15 @@ import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 
 @Component
-public class AccessTypePostBodyValidator {
+public class AccessTypesBodyValidator {
 
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
 
   /**
-   * @throws InputValidationException if put validation fails
+   * @throws InputValidationException  if validation of attributes fails
    */
-  public void validate(AccessTypeCollectionItem request) {
+  public void validate(AccessTypeCollectionItem request, String id) {
     if (request == null || request.getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
@@ -25,6 +25,9 @@ public class AccessTypePostBodyValidator {
 
     if (attributes.getDescription() != null) {
       ValidatorUtil.checkMaxLength("description", attributes.getDescription(), 150);
+    }
+    if (id != null) {
+      ValidatorUtil.isUUIDValid(id);
     }
   }
 }

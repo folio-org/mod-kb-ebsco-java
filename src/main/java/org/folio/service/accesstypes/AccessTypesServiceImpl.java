@@ -16,7 +16,6 @@ import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.tools.utils.TenantTool;
-import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.userlookup.UserLookUpService;
 
 @Component
@@ -64,6 +63,18 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return repository.delete(id, TenantTool.tenantId(okapiHeaders));
   }
 
+  @Override
+  public CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, Map<String, String> okapiHeaders) {
+
+    return userLookUpService.getUserInfo(okapiHeaders)
+      .thenCompose(updaterUser -> {
+        accessType.setUpdater(
+          getUserDisplayInfo(updaterUser.getFirstName(), updaterUser.getMiddleName(), updaterUser.getLastName()));
+        accessType.getMetadata().setUpdatedByUsername(updaterUser.getUserName());
+        return repository.update(id, accessType, TenantTool.tenantId(okapiHeaders));
+      });
+  }
+
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {
     return repository.count(TenantTool.tenantId(okapiHeaders))
       .thenApply(storedCount -> {
@@ -80,13 +91,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     userDisplayInfo.setMiddleName(middleName);
     userDisplayInfo.setLastName(lastName);
     return userDisplayInfo;
-  }
-
-  private CompletableFuture<AccessTypeCollectionItem> updateUserMetadata(UserLookUp creatorUser,
-                                                                         AccessTypeCollectionItem accessType,
-                                                                         Map<String, String> okapiHeaders) {
-    accessType.getMetadata().setCreatedByUsername(creatorUser.getUserName());
-    return repository.save(accessType, TenantTool.tenantId(okapiHeaders));
   }
 
 }

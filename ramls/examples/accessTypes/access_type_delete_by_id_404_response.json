@@ -1,1 +1,10 @@
-{}
+{
+  "errors": [
+    {
+      "title": "Access type with id '99999999-9999-9999-9999-999999999999' not found"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

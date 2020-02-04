@@ -16,4 +16,6 @@ public interface AccessTypesService {
 
   CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders);
 
+  CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, Map<String, String> okapiHeaders);
+
 }

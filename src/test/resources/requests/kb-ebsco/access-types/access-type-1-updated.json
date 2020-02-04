@@ -1,0 +1,7 @@
+{
+  "type": "accessTypes",
+  "attributes": {
+    "name": "test access type updated",
+    "description": "test access type description updated"
+  }
+}

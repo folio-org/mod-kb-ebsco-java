@@ -7,10 +7,17 @@
         "name": "my custom type 1",
         "description": "Description 1",
         "metadata": {
-          "createdDate": "",
-          "createdByUserId": "",
-          "createdByUsername": ""
+          "createdDate": "2020-02-03T13:23:56.784",
+          "updatedDate": "2020-02-03T13:23:56.784+0000",
+          "createdByUserId": "22222222-2222-2222-a222-222222222222",
+          "updatedByUserId": "22222222-2222-2222-a222-222222222222",
+          "createdByUsername": "john_doe"
         }
+      },
+      "creator": {
+        "lastName": "Doe",
+        "firstName": "John",
+        "middleName": "Joseph"
       }
     },
     {
@@ -20,10 +27,23 @@
         "name": "my custom type 2",
         "description": "Description 2",
         "metadata": {
-          "createdDate": "",
-          "createdByUserId": "",
-          "createdByUsername": ""
+          "createdDate": "2020-02-03T13:23:56.784+0000",
+          "updatedDate": "2020-02-03T14:36:06.234+0000",
+          "createdByUserId": "22222222-2222-2222-a222-222222222222",
+          "updatedByUserId": "33333333-3333-3333-a333-333333333333",
+          "createdByUsername": "john_doe",
+          "updatedByUsername": "jane_doe"
         }
+      },
+      "creator": {
+        "lastName": "Doe",
+        "firstName": "John",
+        "middleName": "Joseph"
+      },
+      "updater": {
+        "lastName": "Doe",
+        "firstName": "Jane",
+        "middleName": "Rosemary"
       }
     }
   ],
