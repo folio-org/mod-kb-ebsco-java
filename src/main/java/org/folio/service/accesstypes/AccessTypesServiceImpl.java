@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypesMappingRepository;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
@@ -25,6 +27,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   private UserLookUpService userLookUpService;
   @Autowired
   private AccessTypesRepository repository;
+  @Autowired
+  private AccessTypesMappingRepository mappingRepository;
   @Autowired
   private Converter<List<AccessTypeCollectionItem>, AccessTypeCollection> accessTypeCollectionConverter;
 
@@ -72,6 +76,18 @@ public class AccessTypesServiceImpl implements AccessTypesService {
         accessType.getMetadata().setUpdatedByUsername(updaterUser.getUserName());
         return repository.update(id, accessType, TenantTool.tenantId(okapiHeaders));
       });
+  }
+
+  @Override
+  public CompletableFuture<Boolean> existsById(String accessTypeId, Map<String, String> okapiHeaders) {
+    return repository.existsById(accessTypeId, TenantTool.tenantId(okapiHeaders));
+  }
+
+  @Override
+  public CompletableFuture<Void> assignAccessType(String accessTypeId, String recordId, RecordType recordType,
+                                                  Map<String, String> okapiHeaders) {
+    return findById(accessTypeId, okapiHeaders)
+      .thenCompose(item -> mappingRepository.saveMapping(accessTypeId, recordId, recordType, okapiHeaders));
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {

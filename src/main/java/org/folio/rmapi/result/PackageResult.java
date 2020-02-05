@@ -10,6 +10,7 @@ public class PackageResult {
   private VendorById vendor;
   private Titles titles;
   private Tags tags;
+  private String accessTypeId;
 
   public PackageResult(PackageByIdData packageData) {
     this.packageData = packageData;
@@ -39,5 +40,13 @@ public class PackageResult {
 
   public void setTags(Tags tags) {
     this.tags = tags;
+  }
+
+  public String getAccessTypeId() {
+    return accessTypeId;
+  }
+
+  public void setAccessTypeId(String accessTypeId) {
+    this.accessTypeId = accessTypeId;
   }
 }

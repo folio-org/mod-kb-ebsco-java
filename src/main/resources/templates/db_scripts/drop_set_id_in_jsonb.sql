@@ -8,3 +8,4 @@ DROP TRIGGER IF EXISTS set_id_in_jsonb ON retry_status CASCADE;
 DROP TRIGGER IF EXISTS set_id_in_jsonb ON holdings_status CASCADE;
 DROP TRIGGER IF EXISTS set_id_in_jsonb ON holdings_status_audit CASCADE;
 DROP TRIGGER IF EXISTS set_id_in_jsonb ON transaction_ids CASCADE;
+DROP TRIGGER IF EXISTS set_id_in_jsonb ON access_types_mapping CASCADE;

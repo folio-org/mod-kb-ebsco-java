@@ -91,6 +91,7 @@ import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.ResourceCollectionResult;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
+import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.spring.SpringContextUtil;
 
@@ -136,6 +137,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private HoldingsService holdingsService;
   @Autowired
   private Converter<Titles, TitleCollectionResult> titleCollectionConverter;
+  @Autowired
+  private AccessTypesService accessTypesService;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -186,20 +189,53 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void postEholdingsPackages(String contentType, PackagePostRequest entity, Map<String, String> okapiHeaders,
                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     packagesPostBodyValidator.validate(entity);
+    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
     PackagePost packagePost = packagePostRequestConverter.convert(entity);
+    String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
 
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
+    if (accessTypeId == null) {
+      template.requestAction(context ->
         getVendorId(context)
           .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
-          .thenApply(packageById -> new PackageResult(packageById, null, null))
-      )
+          .thenApply(packageById -> new PackageResult(packageById, null, null)));
+    } else {
+      template.requestAction(context ->
+        accessTypesService.existsById(accessTypeId, okapiHeaders)
+          .thenCompose(aBoolean -> {
+            if (Boolean.TRUE.equals(aBoolean)) {
+              return getVendorId(context)
+                .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
+                .thenApply(packageById -> new PackageResult(packageById, null, null))
+                .thenCompose(packageResult -> updateAccessType(accessTypeId, packageResult, okapiHeaders));
+            } else {
+              throw new ValidationException("Access type does not exist");
+            }
+          }));
+    }
+
+    template
       .addErrorMapper(ServiceResponseException.class,
         exception ->
           PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
             ErrorUtil.createErrorFromRMAPIResponse(exception)))
+      .addErrorMapper(ValidationException.class,
+        e -> PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
+          ErrorUtil.createError(e.getMessage())
+        ))
       .executeWithResult(Package.class);
+  }
+
+  private CompletableFuture<PackageResult> updateAccessType(String accessTypeId, PackageResult packageResult,
+                                                            Map<String, String> okapiHeaders) {
+    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
+    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
+    return accessTypesService
+      .assignAccessType(accessTypeId, recordId, RecordType.PACKAGE, okapiHeaders)
+      .thenApply(aVoid -> {
+        packageResult.setAccessTypeId(accessTypeId);
+        return packageResult;
+      });
   }
 
   @Override
@@ -222,7 +258,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @HandleValidationErrors
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity,
-                                              Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                              Map<String, String> okapiHeaders,
+                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context -> processUpdateRequest(entity, parsedPackageId, context)
@@ -248,7 +285,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
             if (BooleanUtils.isNotTrue(packageData.getIsCustom())) {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
-            return context.getPackagesService().deletePackage(parsedPackageId).thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
+            return context.getPackagesService().deletePackage(parsedPackageId)
+              .thenCompose(aVoid -> deleteTags(parsedPackageId, context.getOkapiData().getTenant()));
           }))
       .execute();
   }
@@ -257,9 +295,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterTags,
-                                                       String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
-                                                       String filterPublisher, int page, int count, Map<String, String> okapiHeaders,
-                                                       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                       String filterSelected, String filterType, String filterName,
+                                                       String filterIsxn, String filterSubject,
+                                                       String filterPublisher, int page, int count,
+                                                       Map<String, String> okapiHeaders,
+                                                       Handler<AsyncResult<Response>> asyncResultHandler,
+                                                       Context vertxContext) {
 
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
@@ -294,15 +335,19 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   @Override
-  public void putEholdingsPackagesTagsByPackageId(String packageId, String contentType, PackageTagsPutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void putEholdingsPackagesTagsByPackageId(String packageId, String contentType, PackageTagsPutRequest entity,
+                                                  Map<String, String> okapiHeaders,
+                                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
         packageTagsPutBodyValidator.validate(entity);
         PackageTagsDataAttributes attributes = entity.getData().getAttributes();
-        return updateTags(attributes.getTags(), createDbPackage(packageId, attributes), new OkapiData(okapiHeaders).getTenant())
+        return updateTags(attributes.getTags(), createDbPackage(packageId, attributes),
+          new OkapiData(okapiHeaders).getTenant())
           .thenAccept(o2 ->
-            asyncResultHandler.handle(Future.succeededFuture(PutEholdingsPackagesTagsByPackageIdResponse.respond200WithApplicationVndApiJson(
-              convertToPackageTags(attributes)))));
+            asyncResultHandler
+              .handle(Future.succeededFuture(PutEholdingsPackagesTagsByPackageIdResponse.respond200WithApplicationVndApiJson(
+                convertToPackageTags(attributes)))));
       })
       .exceptionally(e -> {
         new ErrorHandler()
@@ -315,10 +360,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private PackageInfoInDB createDbPackage(String packageId, PackageTagsDataAttributes attributes) {
     return PackageInfoInDB.builder()
-          .contentType(ConverterConsts.contentTypes.inverseBidiMap().get(attributes.getContentType()))
-          .name(attributes.getName())
-          .id(idParser.parsePackageId(packageId))
-          .build();
+      .contentType(ConverterConsts.contentTypes.inverseBidiMap().get(attributes.getContentType()))
+      .name(attributes.getName())
+      .id(idParser.parsePackageId(packageId))
+      .build();
   }
 
   private PackageTags convertToPackageTags(PackageTagsDataAttributes attributes) {
@@ -329,7 +374,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .withJsonapi(JSONAPI);
   }
 
-  private Function<TitleCollectionResult, CompletionStage<TitleCollectionResult>> loadResourceTags(RMAPITemplateContext context) {
+  private Function<TitleCollectionResult, CompletionStage<TitleCollectionResult>> loadResourceTags(
+    RMAPITemplateContext context) {
     return titleCollection -> {
       Map<String, TitleResult> resourceIdToTitle = mapResourceIdToTitleResult(titleCollection);
 
@@ -360,7 +406,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<ResourceCollectionResult> getTitlesByPackageIdAndTags(String packageId, List<String> tags,
-                                                                                  int page, int count, RMAPITemplateContext context) {
+                                                                                  int page, int count,
+                                                                                  RMAPITemplateContext context) {
 
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<ResourceInfoInDB>> mutableDbTitles = new MutableObject<>();
@@ -397,7 +444,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return Arrays.asList(filterTags.split("\\s*,\\s*"));
   }
 
-  private CompletableFuture<Packages> getPackagesByTags(List<String> tags, int page, int count, RMAPITemplateContext context) {
+  private CompletableFuture<Packages> getPackagesByTags(List<String> tags, int page, int count,
+                                                        RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     return tagRepository
@@ -445,7 +493,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
     return
       packageRepository.delete(packageId, tenant)
-        .thenCompose(o -> tagRepository.deleteRecordTags(tenant, packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart(), RecordType.PACKAGE))
+        .thenCompose(o -> tagRepository
+          .deleteRecordTags(tenant, packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart(), RecordType.PACKAGE))
         .thenCompose(aBoolean -> completedFuture(null));
   }
 
@@ -501,6 +550,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   /**
    * Delete local package and tags if package was deleted on update (normally this can only happen in case of custom package),
+   *
    * @return future with initial result, or exceptionally completed future if deletion of tags failed
    */
   private CompletableFuture<PackageByIdData> handleDeletedPackage(CompletableFuture<PackageByIdData> future,

@@ -49,6 +49,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     PackageByIdData packageByIdData = result.getPackageData();
     Titles titles = result.getTitles();
     VendorById vendor = result.getVendor();
+    String accessTypeId = result.getAccessTypeId();
 
     Package packageData = new Package()
       .withData(packageCollectionItemConverter.convert(packageByIdData))
@@ -85,6 +86,9 @@ public class PackageConverter implements Converter<PackageResult, Package> {
             .withType(PROVIDERS_TYPE)));
     }
 
+    if (accessTypeId != null) {
+      packageData.getData().getAttributes().withAccessTypeId(accessTypeId);
+    }
     return packageData;
   }
 

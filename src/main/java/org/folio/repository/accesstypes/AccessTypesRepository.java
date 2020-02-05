@@ -40,4 +40,12 @@ public interface AccessTypesRepository {
    * @return {@link CompletableFuture} with the result of operation
    */
   CompletableFuture<Void> delete(String id, String tenantId);
+
+  /**
+   * Returns whether an access type with the given id exists.
+   *
+   * @param id of access type.
+   * @return {@literal true} if an access type with the given id exists, {@literal false} otherwise.
+   */
+  CompletableFuture<Boolean> existsById(String id, String tenantId);
 }

@@ -7,6 +7,7 @@ import static org.folio.repository.DbUtil.mapColumn;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_ALL_ACCESS_TYPES;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_ACCESS_TYPES;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_ACCESS_TYPES_BY_ID;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -125,6 +127,22 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       }
       return null;
      });
+  }
+
+  @Override
+  public CompletableFuture<Boolean> existsById(String id, String tenantId) {
+    Promise<ResultSet> promise = Promise.promise();
+
+    String query = String.format(SELECT_COUNT_ACCESS_TYPES_BY_ID, getAccessTypesTableName(tenantId));
+    LOG.info("Do count by id query: " + query);
+    JsonArray params = new JsonArray();
+    params.add(id);
+    pgClient(tenantId).select(query, params, promise);
+
+    return mapResult(promise.future(), rs -> {
+      List<JsonArray> results = rs.getResults();
+      return results.get(0).getLong(0).equals(1L);
+    });
   }
 
   private AccessTypeCollectionItem mapAccessItem(JsonObject row) {
