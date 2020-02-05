@@ -6,14 +6,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.folio.rest.exception.InputValidationException;
+import org.folio.util.UuidUtil;
 
 public class ValidatorUtil {
 
@@ -30,10 +29,7 @@ public class ValidatorUtil {
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
-  private static final String MUST_BE_UUID_FORMAT = "Id should follow UUID format %s";
-
-  private static final Pattern UUID_PATTERN =
-    Pattern.compile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$");
+  private static final String MUST_BE_UUID_FORMAT = "Id should follow UUID format";
 
   private ValidatorUtil() {
   }
@@ -142,12 +138,10 @@ public class ValidatorUtil {
   }
 
   public static void checkUUIDValid(String uuid) {
-    Matcher matcher = UUID_PATTERN.matcher(uuid);
-    if (!matcher.matches()) {
+    if (!UuidUtil.isLooseUuid(uuid)) {
       throw new InputValidationException(
         String.format(INVALID_ID_FORMAT, uuid),
-        String.format(MUST_BE_UUID_FORMAT, UUID_PATTERN)
-      );
+        MUST_BE_UUID_FORMAT);
     }
   }
 
