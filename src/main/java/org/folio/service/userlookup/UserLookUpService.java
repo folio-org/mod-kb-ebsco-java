@@ -1,5 +1,13 @@
 package org.folio.service.userlookup;
 
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+
+import static org.folio.rest.RestVerticle.OKAPI_HEADER_TENANT;
+import static org.folio.rest.RestVerticle.OKAPI_USERID_HEADER;
+import static org.folio.rest.util.RestConstants.OKAPI_URL_HEADER;
+
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -13,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import org.folio.rest.RestVerticle;
 import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
@@ -23,6 +30,9 @@ import org.folio.rest.tools.utils.TenantTool;
 public class UserLookUpService {
 
   private static final Logger logger = LoggerFactory.getLogger(UserLookUpService.class);
+  private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
+  private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
+
   /**
    * Returns the user information for the userid specified in the original
    * request.
@@ -34,8 +44,8 @@ public class UserLookUpService {
     CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
     headers.addAll(okapiHeaders);
 
-    final String tenantId = TenantTool.calculateTenantId(headers.get(RestVerticle.OKAPI_HEADER_TENANT));
-    final String userId = headers.get(RestVerticle.OKAPI_USERID_HEADER);
+    final String tenantId = TenantTool.calculateTenantId(headers.get(OKAPI_HEADER_TENANT));
+    final String userId = headers.get(OKAPI_USERID_HEADER);
     CompletableFuture<UserLookUp> future = new CompletableFuture();
     if (userId == null) {
       logger.error("No userid header");
@@ -43,7 +53,7 @@ public class UserLookUpService {
       return future;
     }
 
-    String okapiURL = headers.get("X-Okapi-Url");
+    String okapiURL = headers.get(OKAPI_URL_HEADER);
     String url = "/users/" + userId;
     try {
       final HttpClientInterface httpClient = HttpClientFactory.getHttpClient(okapiURL, tenantId);
@@ -52,12 +62,12 @@ public class UserLookUpService {
           try {
             if (Response.isSuccess(response.getCode())) {
               return mapUserInfo(response);
-            } else if (response.getCode() == 401 || response.getCode() == 403) {
-              logger.error("Authorization failure");
-              throw new NotAuthorizedException("Authorization failure");
-            } else if (response.getCode() == 404) {
-              logger.error("User not found");
-              throw new NotFoundException("User not found");
+            } else if (response.getCode() == SC_UNAUTHORIZED || response.getCode() == SC_FORBIDDEN) {
+              logger.error(AUTHORIZATION_FAIL_ERROR_MESSAGE);
+              throw new NotAuthorizedException(AUTHORIZATION_FAIL_ERROR_MESSAGE);
+            } else if (response.getCode() == SC_NOT_FOUND) {
+              logger.error(USER_NOT_FOUND_ERROR_MESSAGE);
+              throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
             } else {
               logger.error("Cannot get user data: " + response.getError().toString(), response.getException());
               throw new IllegalStateException(response.getError().toString());

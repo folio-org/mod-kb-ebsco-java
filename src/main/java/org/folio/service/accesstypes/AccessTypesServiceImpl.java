@@ -28,7 +28,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Autowired
   private Converter<List<AccessTypeCollectionItem>, AccessTypeCollection> accessTypeCollectionConverter;
 
-
   @Value("${access.types.number.limit.value}")
   private int accessTypesMaxValue;
 

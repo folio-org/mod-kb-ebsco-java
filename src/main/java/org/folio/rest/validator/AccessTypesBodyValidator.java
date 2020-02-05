@@ -27,7 +27,7 @@ public class AccessTypesBodyValidator {
       ValidatorUtil.checkMaxLength("description", attributes.getDescription(), 150);
     }
     if (id != null) {
-      ValidatorUtil.isUUIDValid(id);
+      ValidatorUtil.checkUUIDValid(id);
     }
   }
 }

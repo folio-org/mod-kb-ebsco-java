@@ -104,6 +104,14 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_item_get_404_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_item_get_422_response.json
     put:
       description: Update a Access Type by Id
       headers:
@@ -134,6 +142,14 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_put_by_id_404_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_put_by_id_422_response.json
     delete:
       description: Delete a Access Type by Id
       responses:
@@ -147,3 +163,11 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_delete_by_id_404_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_delete_by_id_422_response.json

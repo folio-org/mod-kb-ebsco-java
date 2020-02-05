@@ -141,7 +141,7 @@ public class ValidatorUtil {
     }
   }
 
-  public static boolean isUUIDValid(String uuid) {
+  public static void checkUUIDValid(String uuid) {
     Matcher matcher = UUID_PATTERN.matcher(uuid);
     if (!matcher.matches()) {
       throw new InputValidationException(
@@ -149,7 +149,6 @@ public class ValidatorUtil {
         String.format(MUST_BE_UUID_FORMAT, UUID_PATTERN)
       );
     }
-    return true;
   }
 
   public static void checkUrlFormat(String paramName, String value) {

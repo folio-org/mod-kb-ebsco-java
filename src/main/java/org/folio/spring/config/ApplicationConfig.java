@@ -1,6 +1,16 @@
 package org.folio.spring.config;
 
+import static org.folio.rest.exception.AccessTypesExceptionHandlers.error400Mapper;
+import static org.folio.rest.exception.AccessTypesExceptionHandlers.error401AuthorizationExcMapper;
+import static org.folio.rest.exception.AccessTypesExceptionHandlers.error401NotAuthorizedMapper;
+import static org.folio.rest.exception.AccessTypesExceptionHandlers.error404Mapper;
+import static org.folio.rest.exception.AccessTypesExceptionHandlers.errorDataBaseMapper;
+
 import java.util.List;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +26,8 @@ import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
+import org.folio.db.exc.AuthorizationException;
+import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -27,6 +39,7 @@ import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceImpl;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.cache.TitleCacheKey;
@@ -106,7 +119,7 @@ public class ApplicationConfig {
 
   @Bean
   public LoadServiceFacade loadServiceFacade(@Value("${holdings.load.implementation.qualifier}") String qualifier,
-                                             ApplicationContext context){
+                                             ApplicationContext context) {
     return (LoadServiceFacade) context.getBean(qualifier);
   }
 
@@ -114,5 +127,16 @@ public class ApplicationConfig {
   public DBExceptionTranslator excTranslator(@Value("${db.exception.translator.name}") String translatorName) {
     DBExceptionTranslatorFactory factory = DBExceptionTranslatorFactory.instance();
     return factory.create(translatorName);
+  }
+
+  @Bean
+  public ErrorHandler accessTypesExceptionHandler() {
+    return new ErrorHandler()
+      .add(ConstraintViolationException.class, errorDataBaseMapper())
+      .add(BadRequestException.class, error400Mapper())
+      .add(NotFoundException.class, error404Mapper())
+      .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
+      .add(AuthorizationException.class, error401AuthorizationExcMapper())
+      .addDefaultMapper();
   }
 }

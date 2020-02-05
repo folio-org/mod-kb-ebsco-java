@@ -179,7 +179,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8);
-    postWithStatus(ACCESS_TYPES_PATH, postBody, SC_BAD_REQUEST, USER8);
+    final JsonapiError errors = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_BAD_REQUEST, USER8)
+      .as(JsonapiError.class);
+    assertThat(errors.getErrors().get(0).getTitle(), containsString("duplicate key value violates unique constraint"));
   }
 
   @Test
@@ -277,20 +279,30 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void shouldReturn404WhenNoAccessType() throws IOException, URISyntaxException {
     String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
     String accessTypeId = "/33333333-3333-3333-a333-333333333333";
-    putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody.replaceAll("1", "3"), SC_NOT_FOUND, USER9);
+    final JsonapiError errors = putWithStatus(ACCESS_TYPES_PATH + accessTypeId,
+      putBody.replaceAll("1", "3"), SC_NOT_FOUND, USER9)
+      .as(JsonapiError.class);
+    assertThat(errors.getErrors().get(0).getTitle(), containsString("not found"));
+
   }
 
   @Test
   public void shouldReturn400WhenNoUserHeader() throws IOException, URISyntaxException {
     String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
     String accessTypeId = "/33333333-3333-3333-a333-333333333333";
-    putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody.replaceAll("1", "3"), SC_BAD_REQUEST);
+    final JsonapiError errors = putWithStatus(ACCESS_TYPES_PATH + accessTypeId,
+      putBody.replaceAll("1", "3"), SC_BAD_REQUEST)
+      .as(JsonapiError.class);
+    assertThat(errors.getErrors().get(0).getTitle(), containsString("Missing user id header"));
   }
 
   @Test
   public void shouldReturn422WhenInvalidId() throws IOException, URISyntaxException {
     String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
     String accessTypeId = "/c0af6d39-6705-43d7-b91e-c01c3549ddww";
-    putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody, SC_UNPROCESSABLE_ENTITY, USER9);
+    final JsonapiError errors = putWithStatus(ACCESS_TYPES_PATH + accessTypeId,
+      putBody, SC_UNPROCESSABLE_ENTITY, USER9)
+      .as(JsonapiError.class);
+    assertThat(errors.getErrors().get(0).getTitle(), containsString("Invalid id"));
   }
 }
