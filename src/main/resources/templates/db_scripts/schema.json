@@ -95,7 +95,7 @@
     {
       "run": "after",
       "snippetPath": "access_types_update_metadata_user_info.sql",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.1.0"
+      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1"
     }
   ]
 }

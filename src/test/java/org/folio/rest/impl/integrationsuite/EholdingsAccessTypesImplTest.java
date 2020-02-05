@@ -54,9 +54,11 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   private static final String USER_8 = "88888888-8888-4888-8888-888888888888";
   private static final String USER_9 = "99999999-9999-4999-9999-999999999999";
   private static final String USER_2 = "22222222-2222-4222-2222-222222222222";
+  private static final String USER_3 = "33333333-3333-4333-3333-333333333333";
   private static final Header USER8 = new Header(OKAPI_USER_ID_HEADER, USER_8);
   private static final Header USER9 = new Header(OKAPI_USER_ID_HEADER, USER_9);
   private static final Header USER2 = new Header(OKAPI_USER_ID_HEADER, USER_2);
+  private static final Header USER3 = new Header(OKAPI_USER_ID_HEADER, USER_3);
   private static final String ACCESS_TYPES_PATH = "/eholdings/access-types";
 
 
@@ -76,6 +78,12 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(200)
           .withBody(readFile("responses/userlookup/mock_user_response_2_200.json"))
+        ));
+
+    stubFor(
+      get(new UrlPathPattern(new EqualToPattern("/users/" + USER_2), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(404)
         ));
 
     stubFor(
@@ -304,5 +312,15 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       putBody, SC_UNPROCESSABLE_ENTITY, USER9)
       .as(JsonapiError.class);
     assertThat(errors.getErrors().get(0).getTitle(), containsString("Invalid id"));
+  }
+
+  @Test
+  public void shouldReturn403WhenUnAuthorized() throws IOException, URISyntaxException {
+    String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8);
+
+    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
+    String accessTypeId = "11111111-1111-1111-a111-111111111111";
+    putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody, SC_BAD_REQUEST, USER3);
   }
 }
