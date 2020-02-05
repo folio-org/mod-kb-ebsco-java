@@ -1,0 +1,20 @@
+{
+  "id": "11111111-1111-1111-a111-111111111111",
+  "type": "accessTypes",
+  "attributes": {
+    "name": "Subscribed",
+    "description": "Indicates subscription of the entity"
+  },
+  "creator": {
+    "lastName": "Doe",
+    "firstName": "John",
+    "middleName": "Joseph"
+  },
+  "metadata": {
+    "createdDate": "2020-02-03T13:23:56.784",
+    "updatedDate": "2020-02-03T13:23:56.784+0000",
+    "createdByUserId": "22222222-2222-2222-a222-222222222222",
+    "updatedByUserId": "22222222-2222-2222-a222-222222222222",
+    "createdByUsername": "john_doe"
+  }
+}

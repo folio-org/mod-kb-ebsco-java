@@ -1,5 +1,6 @@
 package org.folio.repository;
 
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
@@ -72,6 +73,10 @@ public class DbUtil {
 
   public static String getTransactionIdTableName(String tenantId) {
     return getTableName(tenantId, TRANSACTION_ID_TABLE);
+  }
+
+  public static String getAccessTypesTableName(String tenantId) {
+    return getTableName(tenantId, ACCESS_TYPES_TABLE_NAME);
   }
 
   public static <T> Optional<T> mapColumn(JsonObject row, String columnName, Class<T> tClass){

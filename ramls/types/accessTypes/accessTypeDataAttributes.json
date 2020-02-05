@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Access Type Object Data Attributes Schema",
+  "description": "Access Type Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.AccessTypeDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Access Type Name",
+      "example": "Subscribed"
+    },
+    "description": {
+      "type": "string",
+      "description": "Access Type Description",
+      "example": "Indicates subscription of the entity"
+    }
+  },
+  "required": ["name"]
+}

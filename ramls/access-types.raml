@@ -1,0 +1,173 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+types:
+  accessTypeCollection: !include types/accessTypes/accessTypesCollection.json
+  accessTypeCollectionItem: !include types/accessTypes/accessTypeCollectionItem.json
+  jsonapiError: !include types/jsonapiError.json
+
+/eholdings/access-types:
+  displayName: Access Types
+  get:
+    description: Get a list of access types.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: List of Access Types available.
+            type: accessTypeCollection
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_collection_get_200_response.json
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"
+  post:
+    description: Create an access type
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        description: Create an access type
+        type: accessTypeCollectionItem
+        example:
+          strict: false
+          value: !include examples/accessTypes/access_type_post_request.json
+    responses:
+      201:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: The server has successfully fulfilled the POST request.
+            type: accessTypeCollectionItem
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_post_201_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_post_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_post_422_response.json
+  /{id}:
+    displayName: Get Access Type by Id
+    description: Instance of a Access Type by given Id
+    uriParameters:
+      id:
+        pattern : "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+    get:
+      description: Retrieve specific Access Types by Id
+      responses:
+        200:
+          description: OK
+          body:
+            application/vnd.api+json:
+              type: accessTypeCollectionItem
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_item_get_200_response.json
+        400:
+          description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_item_get_400_response.json
+        404:
+          description: Not Found
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_item_get_404_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_item_get_422_response.json
+    put:
+      description: Update a Access Type by Id
+      headers:
+        Content-Type:
+          example: application/vnd.api+json
+      body:
+        application/vnd.api+json:
+          type: accessTypeCollectionItem
+          example:
+            strict: false
+            value: !include examples/accessTypes/access_type_put_request.json
+      responses:
+        204:
+          description: "Item successfully updated"
+        400:
+          description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_put_by_id_400_response.json
+        404:
+          description: Not Found
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_put_by_id_404_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_put_by_id_422_response.json
+    delete:
+      description: Delete a Access Type by Id
+      responses:
+        204:
+          description: No Content
+        400:
+          description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_delete_by_id_404_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_delete_by_id_422_response.json

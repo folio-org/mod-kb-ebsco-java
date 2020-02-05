@@ -1,0 +1,7 @@
+{
+  "type": "accessTypes",
+  "attributes": {
+    "name": "Subscribed",
+    "description": "Indicates subscription of the entity"
+  }
+}

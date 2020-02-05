@@ -12,9 +12,11 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.folio.rest.exception.InputValidationException;
+import org.folio.util.UuidUtil;
 
 public class ValidatorUtil {
 
+  private static final String INVALID_ID_FORMAT = "Invalid id '%s'";
   private static final String INVALID_FIELD_FORMAT = "Invalid %s";
   private static final String MUST_BE_FALSE_FORMAT = "%s must be false";
   private static final String MUST_BE_NULL_FORMAT = "%s must be null or not specified";
@@ -27,6 +29,7 @@ public class ValidatorUtil {
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
+  private static final String MUST_BE_UUID_FORMAT = "Id should follow UUID format";
 
   private ValidatorUtil() {
   }
@@ -134,6 +137,14 @@ public class ValidatorUtil {
     }
   }
 
+  public static void checkUUIDValid(String uuid) {
+    if (!UuidUtil.isLooseUuid(uuid)) {
+      throw new InputValidationException(
+        String.format(INVALID_ID_FORMAT, uuid),
+        MUST_BE_UUID_FORMAT);
+    }
+  }
+
   public static void checkUrlFormat(String paramName, String value) {
     if (!isUrlValid(value)) {
       throw new InputValidationException(
@@ -144,7 +155,7 @@ public class ValidatorUtil {
 
   public static void checkInRange(int minInclusive, int maxInclusive, Integer value, String paramName) {
     IntRange myRange = new IntRange(minInclusive, maxInclusive);
-    if(!myRange.containsInteger(value)){
+    if (!myRange.containsInteger(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_IN_RANGE, paramName, minInclusive, maxInclusive));

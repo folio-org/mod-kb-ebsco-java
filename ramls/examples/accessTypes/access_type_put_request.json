@@ -1,0 +1,7 @@
+{
+  "type": "accessTypes",
+  "attributes": {
+    "name": "Subscribed updated",
+    "description": "Indicates subscription of the entity updated"
+  }
+}

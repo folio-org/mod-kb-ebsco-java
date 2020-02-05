@@ -1,0 +1,8 @@
+{
+  "id": "33333333-3333-3333-a333-333333333333",
+  "type": "accessTypes",
+  "attributes": {
+    "name": "test access type third",
+    "description": "test access type description second"
+  }
+}

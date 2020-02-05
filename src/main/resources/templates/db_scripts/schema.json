@@ -69,6 +69,12 @@
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-transaction-ids-table.sql"
+    },
+    {
+      "tableName": "access_types",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1",
+      "withMetadata": true,
+      "withAuditing": false
     }
   ],
   "scripts": [
@@ -85,6 +91,11 @@
       "run": "after",
       "snippetPath": "holdings_status_history_trigger.sql",
       "fromModuleVersion": "mod-kb-ebsco-java-3.0.2"
+    },
+    {
+      "run": "after",
+      "snippetPath": "access_types_update_metadata_user_info.sql",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1"
     }
   ]
 }

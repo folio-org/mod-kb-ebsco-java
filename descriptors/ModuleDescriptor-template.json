@@ -176,6 +176,31 @@
           "methods": ["PUT"],
           "pathPattern": "/eholdings/custom-labels",
           "permissionsRequired": ["kb-ebsco.custom-labels.collection.put"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/access-types",
+          "permissionsRequired": ["kb-ebsco.access-types.collection.get"]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/access-types",
+          "permissionsRequired": ["kb-ebsco.access-types.item.post"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.access-types.item.get"]
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.access-types.item.put"]
+        },
+        {
+          "methods": ["DELETE"],
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.access-types.item.delete"]
         }
       ]
     },
@@ -398,6 +423,31 @@
       "description": "Put Custom Labels collection"
     },
     {
+      "permissionName": "kb-ebsco.access-types.collection.get",
+      "displayName": "get Access Types collection",
+      "description": "Get Access Types collection"
+    },
+    {
+      "permissionName": "kb-ebsco.access-types.item.post",
+      "displayName": "post Access Type collection item",
+      "description": "Post Access Type collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.access-types.item.get",
+      "displayName": "get Access Type collection item",
+      "description": "Get Access Type collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.access-types.item.put",
+      "displayName": "put Access Type collection item",
+      "description": "Put Access Type collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.access-types.item.delete",
+      "displayName": "delete Access Type collection item",
+      "description": "Delete Access Type collection item"
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
@@ -434,11 +484,20 @@
         "kb-ebsco.unique.tags.collection.get",
         "kb-ebsco.holdings.load.status.get",
         "kb-ebsco.custom-labels.collection.get",
-        "kb-ebsco.custom-labels.collection.put"
+        "kb-ebsco.custom-labels.collection.put",
+        "kb-ebsco.access-types.collection.get",
+        "kb-ebsco.access-types.item.post",
+        "kb-ebsco.access-types.item.get",
+        "kb-ebsco.access-types.item.put",
+        "kb-ebsco.access-types.item.delete"
       ]
     }
   ],
   "requires": [
+    {
+      "id": "users",
+      "version": "15.0"
+    },
     {
       "id": "configuration",
       "version": "2.0"
