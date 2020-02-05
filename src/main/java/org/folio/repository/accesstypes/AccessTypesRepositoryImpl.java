@@ -94,7 +94,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
     pgClient(tenantId).update(ACCESS_TYPES_TABLE_NAME, accessType, id, promise);
 
-    return mapResult(promise.future(), updateResult -> {
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), updateResult -> {
       if(updateResult.getUpdated() == 0){
         throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
       }
@@ -119,7 +119,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
     pgClient(tenantId).delete(ACCESS_TYPES_TABLE_NAME, id, promise);
 
-    return mapResult(promise.future(), updateResult -> {
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), updateResult -> {
       if(updateResult.getUpdated() == 0){
         throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
       }
