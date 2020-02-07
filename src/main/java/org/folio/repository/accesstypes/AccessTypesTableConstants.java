@@ -19,6 +19,9 @@ public class AccessTypesTableConstants {
   public static final String TAG_FIELD_LIST = String.format("%s, %s, %s, %s",
     ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, ACCESS_TYPE_ID_COLUMN);
 
+  static final String SELECT_ACCESS_TYPE_MAPPING = "SELECT *  FROM %s;";
+  static final String SELECT_ACCESS_TYPE_MAPPING_BY_RECORD_ID =
+    "SELECT *  FROM %s WHERE " + RECORD_ID_COLUMN + "=? AND " + RECORD_TYPE_COLUMN + "=?;";
   static final String INSERT_ACCESS_TYPE_MAPPING = "INSERT INTO %s (" + TAG_FIELD_LIST + ") VALUES (?,?,?,?)";
 
 }

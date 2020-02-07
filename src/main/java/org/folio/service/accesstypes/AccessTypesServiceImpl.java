@@ -84,10 +84,10 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> assignAccessType(String accessTypeId, String recordId, RecordType recordType,
+  public CompletableFuture<Boolean> assignAccessType(String accessTypeId, String recordId, RecordType recordType,
                                                   Map<String, String> okapiHeaders) {
     return findById(accessTypeId, okapiHeaders)
-      .thenCompose(item -> mappingRepository.saveMapping(accessTypeId, recordId, recordType, okapiHeaders));
+      .thenCompose(item -> mappingRepository.saveMapping(accessTypeId, recordId, recordType, TenantTool.tenantId(okapiHeaders)));
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {

@@ -79,6 +79,7 @@ import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -91,6 +92,7 @@ import org.folio.rest.jaxrs.model.PackageTags;
 import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
+import org.folio.util.AccessTypesTestUtil;
 import org.folio.util.KBTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ResourcesTestUtil;
@@ -581,6 +583,26 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRMAPIRequestFile), false, true);
     verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
       .withRequestBody(postBodyPattern));
+  }
+
+  @Test
+  public void shouldReturn200OnPostPackageWithExistedAccessType() throws URISyntaxException, IOException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes =
+        AccessTypesTestUtil.insertAccessTypes(AccessTypesTestUtil.testData(), vertx);
+
+      String packagePostRMAPIRequestFile = "requests/rmapi/packages/post-package.json";
+      String requestBody = String.format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"), accessTypes.get(0).getId());
+      final Package createdPackage = sendPost(requestBody).as(Package.class);
+
+      assertTrue(Objects.isNull(createdPackage.getData().getAttributes().getTags()));
+      EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRMAPIRequestFile), false, true);
+      verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
+        .withRequestBody(postBodyPattern));
+    } finally {
+      AccessTypesTestUtil.clearAccessTypes(vertx);
+      AccessTypesTestUtil.clearAccessTypesMapping(vertx);
+    }
   }
 
   @Test

@@ -232,7 +232,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
     return accessTypesService
       .assignAccessType(accessTypeId, recordId, RecordType.PACKAGE, okapiHeaders)
-      .thenApply(aVoid -> {
+      .thenApply(a -> {
         packageResult.setAccessTypeId(accessTypeId);
         return packageResult;
       });

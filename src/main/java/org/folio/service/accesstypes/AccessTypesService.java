@@ -19,7 +19,7 @@ public interface AccessTypesService {
 
   CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, Map<String, String> okapiHeaders);
 
-  CompletableFuture<Void> assignAccessType(String accessTypeId, String recordId, RecordType recordType, Map<String, String> okapiHeaders);
+  CompletableFuture<Boolean> assignAccessType(String accessTypeId, String recordId, RecordType recordType, Map<String, String> okapiHeaders);
 
   CompletableFuture<Boolean> existsById(String accessTypeId, Map<String, String> okapiHeaders);
 }

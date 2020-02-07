@@ -2,8 +2,10 @@ package org.folio.util;
 
 import static org.apache.commons.lang3.StringUtils.join;
 
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.INSERT_ACCESS_TYPE_MAPPING;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.JSONB_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
@@ -24,10 +26,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 import org.jetbrains.annotations.NotNull;
 
+import org.folio.repository.DbUtil;
+import org.folio.repository.RecordType;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.service.accesstypes.AccessTypesServiceImpl;
 
 public class AccessTypesTestUtil {
 
@@ -61,6 +66,26 @@ public class AccessTypesTestUtil {
     return populateAccessTypesIds(items, future.join().getRows());
   }
 
+//  public static List<AccessTypeCollectionItem> insertAccessTypesMapping(String recordId, RecordType type, String accessTypeId, Vertx vertx) {
+//    CompletableFuture<ResultSet> future = new CompletableFuture<>();
+//    String insert = String.format(INSERT_ACCESS_TYPE_MAPPING, accessTypesMappingTestTable());
+//
+//    JsonArray params = new JsonArray();
+//    params.add(UUID.randomUUID().toString());
+//    params.add(recordId);
+//    params.add(type.getValue());
+//    params.add(accessTypeId);
+//
+//    PostgresClient.getInstance(vertx).select(insertStatement, params, ar -> {
+//      if (ar.succeeded()) {
+//        future.complete(ar.result());
+//      } else {
+//        future.completeExceptionally(ar.cause());
+//      }
+//    });
+//    return populateAccessTypesIds(items, future.join().getRows());
+//  }
+
   private static List<AccessTypeCollectionItem> populateAccessTypesIds(List<AccessTypeCollectionItem> items,
                                                                        List<JsonObject> rows) {
     List<AccessTypeCollectionItem> result = new ArrayList<>(items.size());
@@ -92,6 +117,14 @@ public class AccessTypesTestUtil {
     future.join();
   }
 
+  public static void clearAccessTypesMapping(Vertx vertx) {
+    CompletableFuture<Void> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).execute(
+      "DELETE FROM " + accessTypesMappingTestTable(),
+      event -> future.complete(null));
+    future.join();
+  }
+
   private static AccessTypeCollectionItem parseAccessType(ObjectMapper mapper, String json) {
     try {
       return mapper.readValue(json, AccessTypeCollectionItem.class);
@@ -103,6 +136,10 @@ public class AccessTypesTestUtil {
 
   private static String accessTypesTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME;
+  }
+
+  private static String accessTypesMappingTestTable() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
   }
 
   @NotNull
