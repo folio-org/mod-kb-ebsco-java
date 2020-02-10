@@ -86,13 +86,13 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Override
   public CompletableFuture<Boolean> assignAccessType(String accessTypeId, String recordId, RecordType recordType,
-                                                  Map<String, String> okapiHeaders) {
+                                                     Map<String, String> okapiHeaders) {
     AccessTypeMapping accessTypeMapping = AccessTypeMapping.builder()
       .recordId(recordId)
       .recordType(recordType)
       .accessTypeId(accessTypeId)
       .build();
-    return mappingRepository.saveMapping(accessTypeMapping, TenantTool.tenantId(okapiHeaders));
+    return mappingRepository.save(accessTypeMapping, TenantTool.tenantId(okapiHeaders));
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {

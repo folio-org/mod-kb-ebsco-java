@@ -2,10 +2,9 @@ package org.folio.util;
 
 import static org.apache.commons.lang3.StringUtils.join;
 
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.INSERT_ACCESS_TYPE_MAPPING;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.JSONB_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
@@ -86,37 +85,6 @@ public class AccessTypesTestUtil {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse access type mapping", e);
     }
-  }
-
-  public static AccessTypeMapping insertAccessTypesMapping(AccessTypeMapping accessTypeMapping, Vertx vertx) {
-    CompletableFuture<ResultSet> future = new CompletableFuture<>();
-    String insertStatement = String.format(INSERT_ACCESS_TYPE_MAPPING, accessTypesMappingTestTable());
-
-    JsonArray params = new JsonArray();
-    params.add(UUID.randomUUID().toString());
-    params.add(accessTypeMapping.getRecordId());
-    params.add(accessTypeMapping.getRecordType().getValue());
-    params.add(accessTypeMapping.getAccessTypeId());
-
-    PostgresClient.getInstance(vertx).select(insertStatement, params, ar -> {
-      if (ar.succeeded()) {
-        future.complete(ar.result());
-      } else {
-        future.completeExceptionally(ar.cause());
-      }
-    });
-    return populateAccessTypesMappingId(accessTypeMapping, future.join().getRows());
-  }
-
-  private static AccessTypeMapping populateAccessTypesMappingId(AccessTypeMapping accessTypeMapping,
-                                                                List<JsonObject> rows) {
-    String id = rows.get(0).getString(ID_COLUMN);
-    return AccessTypeMapping.builder()
-      .id(id)
-      .accessTypeId(accessTypeMapping.getAccessTypeId())
-      .recordType(accessTypeMapping.getRecordType())
-      .recordId(accessTypeMapping.getRecordId())
-      .build();
   }
 
   private static List<AccessTypeCollectionItem> populateAccessTypesIds(List<AccessTypeCollectionItem> items,

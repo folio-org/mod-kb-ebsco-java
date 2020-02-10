@@ -101,6 +101,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
+  private static final String ACCESS_TYPE_NOT_FOUND_MESSAGE = "Access type does not exist";
+  private static final String ACCESS_TYPE_NOT_FOUND_DETAILS_MESSAGE = "Access type with id %s does not exist.";
 
   @Autowired
   private PackageRequestConverter converter;
@@ -195,21 +197,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
 
     if (accessTypeId == null) {
-      template.requestAction(context ->
-        getVendorId(context)
-          .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
-          .thenApply(packageById -> new PackageResult(packageById, null, null)));
+      template.requestAction(context -> postCustomPackage(packagePost, context));
     } else {
       template.requestAction(context ->
         accessTypesService.existsById(accessTypeId, okapiHeaders)
-          .thenCompose(aBoolean -> {
-            if (Boolean.TRUE.equals(aBoolean)) {
-              return getVendorId(context)
-                .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
-                .thenApply(packageById -> new PackageResult(packageById, null, null))
+          .thenCompose(isExist -> {
+            if (Boolean.TRUE.equals(isExist)) {
+              return postCustomPackage(packagePost, context)
                 .thenCompose(packageResult -> updateAccessType(accessTypeId, packageResult, okapiHeaders));
             } else {
-              throw new ValidationException("Access type does not exist");
+              throw new InputValidationException(ACCESS_TYPE_NOT_FOUND_MESSAGE,
+                String.format(ACCESS_TYPE_NOT_FOUND_DETAILS_MESSAGE, accessTypeId));
             }
           }));
     }
@@ -219,23 +217,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         exception ->
           PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
             ErrorUtil.createErrorFromRMAPIResponse(exception)))
-      .addErrorMapper(ValidationException.class,
-        e -> PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
-          ErrorUtil.createError(e.getMessage())
-        ))
       .executeWithResult(Package.class);
-  }
-
-  private CompletableFuture<PackageResult> updateAccessType(String accessTypeId, PackageResult packageResult,
-                                                            Map<String, String> okapiHeaders) {
-    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
-    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
-    return accessTypesService
-      .assignAccessType(accessTypeId, recordId, RecordType.PACKAGE, okapiHeaders)
-      .thenApply(a -> {
-        packageResult.setAccessTypeId(accessTypeId);
-        return packageResult;
-      });
   }
 
   @Override
@@ -355,6 +337,24 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
+      });
+  }
+
+  private CompletableFuture<PackageResult> postCustomPackage(PackagePost packagePost, RMAPITemplateContext context) {
+    return getVendorId(context)
+      .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
+      .thenApply(packageById -> new PackageResult(packageById, null, null));
+  }
+
+  private CompletableFuture<PackageResult> updateAccessType(String accessTypeId, PackageResult packageResult,
+                                                            Map<String, String> okapiHeaders) {
+    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
+    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
+    return accessTypesService
+      .assignAccessType(accessTypeId, recordId, RecordType.PACKAGE, okapiHeaders)
+      .thenApply(a -> {
+        packageResult.setAccessTypeId(accessTypeId);
+        return packageResult;
       });
   }
 
