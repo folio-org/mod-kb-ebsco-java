@@ -12,7 +12,5 @@ public interface AccessTypesMappingRepository {
 
   CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType, String tenantId);
 
-  CompletableFuture<Boolean> saveMapping(String accessTypeId, String recordId, RecordType recordType, String tenantId);
-
   CompletableFuture<Boolean> saveMapping(AccessTypeMapping accessTypeMapping, String tenantId);
 }

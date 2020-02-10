@@ -86,19 +86,6 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
   }
 
   @Override
-  public CompletableFuture<Boolean> saveMapping(String accessTypeId, String recordId, RecordType recordType,
-                                                String tenantId) {
-    JsonArray params = createInsertParams(accessTypeId, recordId, recordType);
-
-    Promise<UpdateResult> promise = Promise.promise();
-    String insert = String.format(INSERT_ACCESS_TYPE_MAPPING, DbUtil.getAccessTypesMappingTableName(tenantId));
-
-    pgClient(tenantId).execute(insert, params, promise);
-    return mapVertxFuture(promise.future())
-      .thenApply(updateResult -> updateResult.getUpdated() == 1);
-  }
-
-  @Override
   public CompletableFuture<Boolean> saveMapping(AccessTypeMapping accessTypeMapping, String tenantId) {
     return saveMapping(accessTypeMapping.getAccessTypeId(), accessTypeMapping.getRecordId(),
       accessTypeMapping.getRecordType(), tenantId);
@@ -112,6 +99,18 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
     params.add(recordType.getValue());
     params.add(accessTypeId);
     return params;
+  }
+
+  private CompletableFuture<Boolean> saveMapping(String accessTypeId, String recordId, RecordType recordType,
+                                                 String tenantId) {
+    JsonArray params = createInsertParams(accessTypeId, recordId, recordType);
+
+    Promise<UpdateResult> promise = Promise.promise();
+    String insert = String.format(INSERT_ACCESS_TYPE_MAPPING, DbUtil.getAccessTypesMappingTableName(tenantId));
+
+    pgClient(tenantId).execute(insert, params, promise);
+    return mapVertxFuture(promise.future())
+      .thenApply(updateResult -> updateResult.getUpdated() == 1);
   }
 
   private PostgresClient pgClient(String tenantId) {

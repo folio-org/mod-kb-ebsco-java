@@ -12,6 +12,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.accesstypes.AccessTypesMappingRepository;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -86,8 +87,12 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<Boolean> assignAccessType(String accessTypeId, String recordId, RecordType recordType,
                                                   Map<String, String> okapiHeaders) {
-    return findById(accessTypeId, okapiHeaders)
-      .thenCompose(item -> mappingRepository.saveMapping(accessTypeId, recordId, recordType, TenantTool.tenantId(okapiHeaders)));
+    AccessTypeMapping accessTypeMapping = AccessTypeMapping.builder()
+      .recordId(recordId)
+      .recordType(recordType)
+      .accessTypeId(accessTypeId)
+      .build();
+    return mappingRepository.saveMapping(accessTypeMapping, TenantTool.tenantId(okapiHeaders));
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {
