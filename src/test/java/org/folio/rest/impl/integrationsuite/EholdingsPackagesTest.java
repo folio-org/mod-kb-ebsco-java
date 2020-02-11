@@ -654,7 +654,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals("Access type with id '99999999-9999-9999-9999-999999999999' not found", error.getErrors().get(0).getTitle());
+    assertEquals("Access type with id '99999999-9999-1999-a999-999999999999' not found", error.getErrors().get(0).getTitle());
   }
 
   @Test
@@ -667,7 +667,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .as(Errors.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals("must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$\"",
+    assertEquals("must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
       error.getErrors().get(0).getMessage());
   }
 
