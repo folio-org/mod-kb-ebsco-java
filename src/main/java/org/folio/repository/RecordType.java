@@ -13,7 +13,7 @@ public enum RecordType {
   public String getValue() {
     return value;
   }
-  
+
   public static RecordType fromValue(String value) {
     return valueOf(value.toUpperCase());
   }

@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.RecordType.PACKAGE;
@@ -48,6 +49,7 @@ import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.AccessTypesTestUtil.clearAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.clearAccessTypesMapping;
 import static org.folio.util.AccessTypesTestUtil.getAccessTypeMappings;
+import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
@@ -58,6 +60,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -72,7 +75,6 @@ import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,7 +84,7 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
-import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.repository.accesstypes.AccessTypeInDb;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.ContentType;
@@ -98,6 +100,7 @@ import org.folio.rest.jaxrs.model.PackageTags;
 import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
+import org.folio.util.AccessTypesTestUtil;
 import org.folio.util.KBTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ResourcesTestUtil;
@@ -258,6 +261,28 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     }
     finally {
       TagsTestUtil.clearTags(vertx);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnPackageWithAccessTypeOnGetById() throws IOException, URISyntaxException {
+    try {
+      final List<AccessTypeCollectionItem> accessTypeCollectionItems = testData();
+      insertAccessTypes(accessTypeCollectionItems, vertx);
+      final String expectedAccessTypeId = accessTypeCollectionItems.get(0).getId();
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
+      mockDefaultConfiguration(getWiremockUrl());
+
+      mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+      Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID).as(Package.class);
+
+      assertNotNull(packageData.getIncluded());
+      assertEquals(expectedAccessTypeId, ((LinkedHashMap) packageData.getIncluded().get(0)).get("id"));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      AccessTypesTestUtil.clearAccessTypes(vertx);
+      AccessTypesTestUtil.clearAccessTypesMapping(vertx);
       KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
@@ -607,10 +632,12 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
         .withRequestBody(postBodyPattern));
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      List<AccessTypeInDb> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
       assertEquals(1, accessTypeMappingsInDB.size());
       assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
       assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+      assertNotNull(createdPackage.getIncluded());
+      assertEquals(accessTypeId, ((LinkedHashMap) createdPackage.getIncluded().get(0)).get("id"));
     } finally {
       clearAccessTypes(vertx);
       clearAccessTypesMapping(vertx);
@@ -627,7 +654,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals("Access type does not exist", error.getErrors().get(0).getTitle());
+    assertEquals("Access type with id '99999999-9999-9999-9999-999999999999' not found", error.getErrors().get(0).getTitle());
   }
 
   @Test

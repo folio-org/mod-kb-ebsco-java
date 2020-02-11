@@ -8,7 +8,6 @@ public class AccessTypesTableConstants {
 
   public static final String SELECT_ALL_ACCESS_TYPES = "SELECT *  FROM %s ;";
   public static final String SELECT_COUNT_ACCESS_TYPES = "SELECT COUNT(*)  FROM %s ;";
-  public static final String SELECT_COUNT_ACCESS_TYPES_BY_ID = "SELECT COUNT(*) FROM %s WHERE " + ID_COLUMN + " = (?);";
 
   private AccessTypesTableConstants() {
   }

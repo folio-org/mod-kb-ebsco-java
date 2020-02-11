@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypeInDb;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 
@@ -19,7 +20,7 @@ public interface AccessTypesService {
 
   CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, Map<String, String> okapiHeaders);
 
-  CompletableFuture<Boolean> assignAccessType(String accessTypeId, String recordId, RecordType recordType, Map<String, String> okapiHeaders);
+  CompletableFuture<Boolean> assignToRecord(AccessTypeInDb accessTypeInDb, Map<String, String> okapiHeaders);
 
-  CompletableFuture<Boolean> existsById(String accessTypeId, Map<String, String> okapiHeaders);
+  CompletableFuture<AccessTypeCollectionItem> findByRecordIdAndRecordType(String recordId, RecordType recordType, String tenant);
 }

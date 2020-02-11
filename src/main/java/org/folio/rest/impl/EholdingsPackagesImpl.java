@@ -19,6 +19,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 import javax.validation.ValidationException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
@@ -26,7 +27,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.util.Strings;
@@ -52,6 +52,7 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypeInDb;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
@@ -64,6 +65,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
@@ -199,17 +201,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (accessTypeId == null) {
       template.requestAction(context -> postCustomPackage(packagePost, context));
     } else {
-      template.requestAction(context ->
-        accessTypesService.existsById(accessTypeId, okapiHeaders)
-          .thenCompose(isExist -> {
-            if (Boolean.TRUE.equals(isExist)) {
-              return postCustomPackage(packagePost, context)
-                .thenCompose(packageResult -> updateAccessType(accessTypeId, packageResult, okapiHeaders));
-            } else {
-              throw new InputValidationException(ACCESS_TYPE_NOT_FOUND_MESSAGE,
-                String.format(ACCESS_TYPE_NOT_FOUND_DETAILS_MESSAGE, accessTypeId));
-            }
-          }));
+      template.requestAction(context -> accessTypesService.findById(accessTypeId, okapiHeaders)
+        .thenCompose(accessType -> postCustomPackage(packagePost, context)
+          .thenCompose(packageResult -> updateAccessType(accessType, packageResult, okapiHeaders))));
     }
 
     template
@@ -217,7 +211,30 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         exception ->
           PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
             ErrorUtil.createErrorFromRMAPIResponse(exception)))
+      .addErrorMapper(NotFoundException.class,
+        exception -> PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
+          ErrorUtil.createError(exception.getMessage())
+        ))
       .executeWithResult(Package.class);
+  }
+
+  private CompletableFuture<PackageResult> updateAccessType(AccessTypeCollectionItem accessType, PackageResult packageResult,
+                                                            Map<String, String> okapiHeaders) {
+    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
+    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
+    return accessTypesService.assignToRecord(buildAccessType(accessType, recordId), okapiHeaders)
+      .thenApply(a -> {
+        packageResult.setAccessType(accessType);
+        return packageResult;
+      });
+  }
+
+  private AccessTypeInDb buildAccessType(AccessTypeCollectionItem accessType, String recordId) {
+    return AccessTypeInDb.builder()
+      .accessTypeId(accessType.getId())
+      .recordId(recordId)
+      .recordType(RecordType.PACKAGE)
+      .build();
   }
 
   @Override
@@ -232,9 +249,24 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         context.getPackagesService().retrievePackage(parsedPackageId, includedObjects)
           .thenCompose(result ->
             loadTags(result, context.getOkapiData().getTenant())
+              .thenCompose(packageResult -> loadAccessType(result, context.getOkapiData().getTenant()))
           )
       ))
       .executeWithResult(Package.class);
+  }
+
+  private CompletionStage<PackageResult> loadAccessType(PackageResult result, String tenant) {
+    String packageId = getPackageId(result);
+    return accessTypesService.findByRecordIdAndRecordType(packageId, RecordType.PACKAGE, tenant)
+      .thenCompose(accessType -> {
+        result.setAccessType(accessType);
+        return completedFuture(result);
+      });
+  }
+
+  private String getPackageId(PackageResult result) {
+    PackageByIdData packageData = result.getPackageData();
+    return packageData.getVendorId() + "-" + packageData.getPackageId();
   }
 
   @Override
@@ -344,18 +376,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return getVendorId(context)
       .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
       .thenApply(packageById -> new PackageResult(packageById, null, null));
-  }
-
-  private CompletableFuture<PackageResult> updateAccessType(String accessTypeId, PackageResult packageResult,
-                                                            Map<String, String> okapiHeaders) {
-    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
-    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
-    return accessTypesService
-      .assignAccessType(accessTypeId, recordId, RecordType.PACKAGE, okapiHeaders)
-      .thenApply(a -> {
-        packageResult.setAccessTypeId(accessTypeId);
-        return packageResult;
-      });
   }
 
   private PackageInfoInDB createDbPackage(String packageId, PackageTagsDataAttributes attributes) {
@@ -481,8 +501,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<PackageResult> loadTags(PackageResult result, String tenant) {
-    PackageByIdData packageData = result.getPackageData();
-    String packageId = packageData.getVendorId() + "-" + packageData.getPackageId();
+    String packageId = getPackageId(result);
     return tagRepository.findByRecord(tenant, packageId, RecordType.PACKAGE)
       .thenCompose(tags -> {
         result.setTags(tagsConverter.convert(tags));

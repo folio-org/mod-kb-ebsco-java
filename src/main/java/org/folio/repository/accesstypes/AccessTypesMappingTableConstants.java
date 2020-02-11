@@ -14,6 +14,8 @@ public class AccessTypesMappingTableConstants {
   public static final String INSERT_ACCESS_TYPE_MAPPING =
     "INSERT INTO %s (" + ACCESS_TYPES_MAPPING_FIELD_LIST + ") VALUES (?,?,?,?)";
 
+   public static final String SELECT_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE =
+     "SELECT * FROM %s WHERE " + RECORD_ID_COLUMN + " =? AND " + RECORD_TYPE_COLUMN + "=? LIMIT 1";
 
   private AccessTypesMappingTableConstants() {
   }

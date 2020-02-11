@@ -1,5 +1,7 @@
 package org.folio.service.accesstypes;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -12,7 +14,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.repository.accesstypes.AccessTypeInDb;
 import org.folio.repository.accesstypes.AccessTypesMappingRepository;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -80,19 +82,20 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Boolean> existsById(String accessTypeId, Map<String, String> okapiHeaders) {
-    return repository.existsById(accessTypeId, TenantTool.tenantId(okapiHeaders));
+  public CompletableFuture<Boolean> assignToRecord(AccessTypeInDb accessTypeInDb, Map<String, String> okapiHeaders) {
+    return mappingRepository.save(accessTypeInDb, TenantTool.tenantId(okapiHeaders));
   }
 
   @Override
-  public CompletableFuture<Boolean> assignAccessType(String accessTypeId, String recordId, RecordType recordType,
-                                                     Map<String, String> okapiHeaders) {
-    AccessTypeMapping accessTypeMapping = AccessTypeMapping.builder()
-      .recordId(recordId)
-      .recordType(recordType)
-      .accessTypeId(accessTypeId)
-      .build();
-    return mappingRepository.save(accessTypeMapping, TenantTool.tenantId(okapiHeaders));
+  public CompletableFuture<AccessTypeCollectionItem> findByRecordIdAndRecordType(String recordId, RecordType recordType, String tenant) {
+    return mappingRepository.findByRecordIdAndRecordType(recordId, recordType, tenant)
+      .thenCompose(accessTypeInDb -> {
+        if(accessTypeInDb != null) {
+          return repository.findById(accessTypeInDb.getAccessTypeId(), tenant);
+        } else {
+          return completedFuture(null);
+        }
+      });
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {

@@ -3,6 +3,7 @@ package org.folio.rmapi.result;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.model.VendorById;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 
 public class PackageResult {
@@ -10,7 +11,7 @@ public class PackageResult {
   private VendorById vendor;
   private Titles titles;
   private Tags tags;
-  private String accessTypeId;
+  private AccessTypeCollectionItem accessType;
 
   public PackageResult(PackageByIdData packageData) {
     this.packageData = packageData;
@@ -42,11 +43,11 @@ public class PackageResult {
     this.tags = tags;
   }
 
-  public String getAccessTypeId() {
-    return accessTypeId;
+  public AccessTypeCollectionItem getAccessType() {
+    return accessType;
   }
 
-  public void setAccessTypeId(String accessTypeId) {
-    this.accessTypeId = accessTypeId;
+  public void setAccessType(AccessTypeCollectionItem accessType) {
+    this.accessType = accessType;
   }
 }

@@ -86,12 +86,6 @@
       "type": "object",
       "description": "Package tags",
       "$ref": "../../raml-util/schemas/tags.schema"
-    },
-    "accessTypeId": {
-      "type": "string",
-      "description": "Access type id",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
-      "example": "f973c3b6-85fc-4d35-bda8-f31b568957bf"
     }
   }
 }

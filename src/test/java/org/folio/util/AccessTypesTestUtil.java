@@ -2,6 +2,7 @@ package org.folio.util;
 
 import static org.apache.commons.lang3.StringUtils.join;
 
+import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.ACCESS_TYPES_MAPPING_FIELD_LIST;
 import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
@@ -25,10 +26,10 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
-
 import org.jetbrains.annotations.NotNull;
 
-import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypeInDb;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
@@ -46,6 +47,18 @@ public class AccessTypesTestUtil {
         .map(json -> parseAccessType(mapper, json))
         .collect(Collectors.toList())));
     return future.join();
+  }
+
+  public static void insertAccessTypeMapping(String recordId, final RecordType recordType, String accessTypeId, Vertx vertx) {
+    CompletableFuture<ResultSet> future = new CompletableFuture<>();
+
+    String insertStatement = "INSERT INTO " + accessTypesMappingTestTable() + "("
+      + ACCESS_TYPES_MAPPING_FIELD_LIST + ") VALUES " + "(?,?,?,?)";
+    JsonArray params = new JsonArray(Arrays.asList(UUID.randomUUID().toString(), recordId, recordType.getValue(), accessTypeId));
+
+    PostgresClient.getInstance(vertx)
+      .execute(insertStatement, params, event -> future.complete(null));
+    future.join();
   }
 
   public static List<AccessTypeCollectionItem> insertAccessTypes(List<AccessTypeCollectionItem> items, Vertx vertx) {
@@ -66,11 +79,11 @@ public class AccessTypesTestUtil {
     return populateAccessTypesIds(items, future.join().getRows());
   }
 
-  public static List<AccessTypeMapping> getAccessTypeMappings(Vertx vertx) {
+  public static List<AccessTypeInDb> getAccessTypeMappings(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
     mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-    CompletableFuture<List<AccessTypeMapping>> future = new CompletableFuture<>();
+    CompletableFuture<List<AccessTypeInDb>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesMappingTestTable(),
       event -> future.complete(event.result().getRows().stream()
         .map(entry -> parseAccessTypeMapping(mapper, entry))
@@ -78,9 +91,9 @@ public class AccessTypesTestUtil {
     return future.join();
   }
 
-  private static AccessTypeMapping parseAccessTypeMapping(ObjectMapper mapper, JsonObject entry) {
+  private static AccessTypeInDb parseAccessTypeMapping(ObjectMapper mapper, JsonObject entry) {
     try {
-      return mapper.readValue(entry.encode(), AccessTypeMapping.class);
+      return mapper.readValue(entry.encode(), AccessTypeInDb.class);
     } catch (IOException e) {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse access type mapping", e);
