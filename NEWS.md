@@ -1,3 +1,17 @@
+## v3.2.0 2020-02-11
+* MODKBEKBJ-334 - Custom labels: Expand POST title payload
+* MODKBEKBJ-335 - Custom labels: Expand PUT title payload
+* MODKBEKBJ-336 - Custom labels: Expand GET title payload regardless of the package(s)
+* MODKBEKBJ-337 - Custom labels: Expand GET title payload for package-title records
+* MODKBEKBJ-340 - Custom labels: retrieve custom labels list
+* MODKBEKBJ-341 - Custom labels: update custom labels list
+* MODKBEKBJ-342 - Custom labels: retrieve custom label by id
+* MODKBEKBJ-343 - Custom labels: delete custom label
+* MODKBEKBJ-344 - Use new HoldingsIQ endpoints to use delta reports
+* MODKBEKBJ-345 - Custom Labels: update existing implementation
+* MODKBEKBJ-346 - Fix bug where resource is not removed if request has userDefinedFields
+* MODKBEKBJ-348 - Settings: CRUD Access Status Types
+
 ## v3.1.0 2019-12-02
 * MODKBEKBJ-333 - Set fromModuleVersion attribute for all tables
 * MODKBEKBJ-339 - Update RMB version to 29.0.1
