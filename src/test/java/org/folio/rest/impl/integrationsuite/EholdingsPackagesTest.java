@@ -278,6 +278,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID).as(Package.class);
 
       assertNotNull(packageData.getIncluded());
+      assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(expectedAccessTypeId, ((LinkedHashMap) packageData.getIncluded().get(0)).get("id"));
     } finally {
       TagsTestUtil.clearTags(vertx);
@@ -637,6 +638,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
       assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
       assertNotNull(createdPackage.getIncluded());
+      assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(accessTypeId, ((LinkedHashMap) createdPackage.getIncluded().get(0)).get("id"));
     } finally {
       clearAccessTypes(vertx);

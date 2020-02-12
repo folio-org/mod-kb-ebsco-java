@@ -103,8 +103,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
-  private static final String ACCESS_TYPE_NOT_FOUND_MESSAGE = "Access type does not exist";
-  private static final String ACCESS_TYPE_NOT_FOUND_DETAILS_MESSAGE = "Access type with id %s does not exist.";
 
   @Autowired
   private PackageRequestConverter converter;

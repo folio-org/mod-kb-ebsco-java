@@ -89,6 +89,14 @@ public class PackageConverter implements Converter<PackageResult, Package> {
 
     if (accessType != null) {
       packageData.getIncluded().add(accessType);
+      packageData.getData()
+        .getRelationships()
+        .withAccessType(new HasOneRelationship()
+          .withData(new RelationshipData()
+            .withId(accessType.getId())
+            .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES.value()))
+          .withMeta(new MetaDataIncluded()
+            .withIncluded(true)));
     }
     return packageData;
   }
@@ -99,8 +107,8 @@ public class PackageConverter implements Converter<PackageResult, Package> {
 
   private List<RelationshipData> convertResourcesRelationship(PackageByIdData packageByIdData, Titles titles) {
     return mapItems(titles.getTitleList(),
-      title ->new RelationshipData()
-          .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId() + "-" + title.getTitleId())
-          .withType(RESOURCES_TYPE));
+      title -> new RelationshipData()
+        .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId() + "-" + title.getTitleId())
+        .withType(RESOURCES_TYPE));
   }
 }
