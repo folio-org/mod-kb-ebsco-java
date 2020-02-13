@@ -166,7 +166,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_NOT_FOUND).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Access type not found by id: %s", id), error.getErrors().get(0).getTitle());
+    assertEquals(String.format("Access type with id '%s' not found", id), error.getErrors().get(0).getTitle());
   }
 
   @Test
