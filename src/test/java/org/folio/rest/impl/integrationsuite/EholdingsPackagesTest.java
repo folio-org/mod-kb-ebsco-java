@@ -656,7 +656,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals("Access type with id '99999999-9999-1999-a999-999999999999' not found", error.getErrors().get(0).getTitle());
+    assertEquals("Access type not found by id: 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
   }
 
   @Test

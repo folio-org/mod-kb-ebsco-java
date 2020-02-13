@@ -252,11 +252,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         future.complete(result);
       })
       .exceptionally(throwable -> {
-        if (throwable instanceof NotFoundException) {
+        Throwable cause = throwable.getCause();
+        if (cause instanceof NotFoundException) {
           result.setAccessType(null);
           future.complete(result);
         } else {
-          future.completeExceptionally(throwable);
+          future.completeExceptionally(cause);
         }
         return null;
       });
