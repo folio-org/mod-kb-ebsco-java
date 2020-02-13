@@ -142,6 +142,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private Void checkAccessTypesSize(List<Integer> futures) {
     final Integer configValue = futures.get(0);
+    //do not allow user set access type more than defaultAccessTypesMaxValue
     final int limit = configValue <= defaultAccessTypesMaxValue ? configValue : defaultAccessTypesMaxValue;
     final Integer stored = futures.get(1);
     if (stored >= limit) {
