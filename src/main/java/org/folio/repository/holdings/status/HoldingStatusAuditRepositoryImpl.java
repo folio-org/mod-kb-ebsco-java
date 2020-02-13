@@ -1,8 +1,8 @@
 package org.folio.repository.holdings.status;
 
-import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.repository.DbUtil.getHoldingsStatusAuditTableName;
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.DELETE_BEFORE_TIMESTAMP;
+import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
@@ -12,7 +12,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

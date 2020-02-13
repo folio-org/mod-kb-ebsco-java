@@ -3,6 +3,7 @@ package org.folio.service.holdings;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.FAILED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
+import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -14,17 +15,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableMap;
-
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.FutureUtils;
 import org.folio.holdingsiq.model.DeltaReportStatus;
 import org.folio.holdingsiq.model.HoldingsDownloadTransaction;
 import org.folio.holdingsiq.model.HoldingsLoadTransactionStatus;
@@ -136,7 +134,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
     Integer totalCount = Integer.parseInt(status.getTotalCount());
     holdingsService.deltaReportCreated(new DeltaReportCreatedMessage(message.getConfiguration(),
       totalCount, getRequestCount(totalCount, DELTA_REPORT_MAX_SIZE), message.getTenantId()), promise);
-    return FutureUtils.mapVertxFuture(promise.future());
+    return mapVertxFuture(promise.future());
   }
 
   @Override

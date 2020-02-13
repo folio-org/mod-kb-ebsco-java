@@ -52,7 +52,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   public void postEholdingsAccessTypes(String contentType, AccessTypeCollectionItem entity, Map<String, String> okapiHeaders,
                                        Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    bodyValidator.validate(entity, null);
+    bodyValidator.validate(entity, entity.getId());
     accessTypesService.save(entity, okapiHeaders)
     .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
       PostEholdingsAccessTypesResponse.respond201WithApplicationVndApiJson(accessType))))

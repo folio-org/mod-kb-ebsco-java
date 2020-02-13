@@ -25,6 +25,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
+import org.folio.config.ModConfiguration;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
 import org.folio.db.exc.ConstraintViolationException;
@@ -138,5 +139,9 @@ public class ApplicationConfig {
       .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
       .add(AuthorizationException.class, error401AuthorizationExcMapper())
       .addDefaultMapper();
+  }
+  @Bean
+  public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
+    return new ModConfiguration(module);
   }
 }
