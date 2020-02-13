@@ -100,7 +100,9 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<AccessTypeCollectionItem> findByRecord(String recordId, RecordType recordType,
       Map<String, String> okapiHeaders) {
     return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
-      .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException("asdasd")))
+      .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException(
+        String.format("Access type mapping not found: recordId = %s, recordType = %s", recordId, recordType)))
+      )
       .thenCompose(mapping -> {
         CompletableFuture<Optional<AccessTypeCollectionItem>> future = repository.findById(mapping.getAccessTypeId(),
           tenantId(okapiHeaders));
