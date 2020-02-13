@@ -12,12 +12,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.resource.EholdingsAccessTypes;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.AccessTypesBodyValidator;
-import org.folio.rest.validator.ValidatorUtil;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.spring.SpringContextUtil;
 
@@ -35,6 +35,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void getEholdingsAccessTypes(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                       Context vertxContext) {
@@ -48,11 +49,12 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void postEholdingsAccessTypes(String contentType, AccessTypeCollectionItem entity, Map<String, String> okapiHeaders,
                                        Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    bodyValidator.validate(entity, null);
+    bodyValidator.validate(entity);
     accessTypesService.save(entity, okapiHeaders)
     .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
       PostEholdingsAccessTypesResponse.respond201WithApplicationVndApiJson(accessType))))
@@ -63,10 +65,10 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void getEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    ValidatorUtil.checkUUIDValid(id);
     accessTypesService.findById(id, okapiHeaders)
       .thenAccept(accessTypeCollectionItem -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesByIdResponse.respond200WithApplicationVndApiJson(accessTypeCollectionItem))))
@@ -77,11 +79,12 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void putEholdingsAccessTypesById(String id, String contentType, AccessTypeCollectionItem entity,
                                           Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    bodyValidator.validate(entity, id);
+    bodyValidator.validate(entity);
     accessTypesService.update(id, entity, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsAccessTypesByIdResponse.respond204())))
@@ -92,10 +95,10 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void deleteEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    ValidatorUtil.checkUUIDValid(id);
     accessTypesService.deleteById(id, okapiHeaders)
       .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(DeleteEholdingsAccessTypesByIdResponse.respond204())))
       .exceptionally(throwable -> {

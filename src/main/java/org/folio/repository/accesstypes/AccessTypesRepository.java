@@ -1,6 +1,7 @@
 package org.folio.repository.accesstypes;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
@@ -17,7 +18,7 @@ public interface AccessTypesRepository {
    * If access type with given id doesn't exist then returns NotFoundException as a cause.
    * @param id id of access type to get
    */
-  CompletableFuture<AccessTypeCollectionItem> findById(String id, String tenantId);
+  CompletableFuture<Optional<AccessTypeCollectionItem>> findById(String id, String tenantId);
 
   /**
    * Saves a new access type record to the database
@@ -40,4 +41,5 @@ public interface AccessTypesRepository {
    * @return {@link CompletableFuture} with the result of operation
    */
   CompletableFuture<Void> delete(String id, String tenantId);
+
 }

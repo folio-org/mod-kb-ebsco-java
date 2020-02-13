@@ -15,6 +15,11 @@
       "type": "object",
       "description": "Displays Provider Relationship if any",
       "$ref": "../hasOneRelationship.json"
+    },
+    "accessType": {
+      "type": "object",
+      "description": "Displays Access Type Relationship if any",
+      "$ref": "../hasOneRelationship.json"
     }
   }
 }

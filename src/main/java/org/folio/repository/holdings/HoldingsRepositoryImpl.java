@@ -1,7 +1,6 @@
 package org.folio.repository.holdings;
 
 import static org.folio.common.FutureUtils.mapResult;
-import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.createInsertPlaceholders;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
@@ -12,6 +11,7 @@ import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_HOLDIN
 import static org.folio.repository.holdings.HoldingsTableConstants.GET_HOLDINGS_BY_IDS;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS_STATEMENT;
 import static org.folio.repository.holdings.HoldingsTableConstants.REMOVE_FROM_HOLDINGS;
+import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,7 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -32,7 +31,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

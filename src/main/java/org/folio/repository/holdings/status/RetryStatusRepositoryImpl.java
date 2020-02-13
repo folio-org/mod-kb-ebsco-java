@@ -1,7 +1,6 @@
 package org.folio.repository.holdings.status;
 
 import static org.folio.common.FutureUtils.mapResult;
-import static org.folio.common.FutureUtils.mapVertxFuture;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.DELETE_RETRY_STATUS;
@@ -10,6 +9,7 @@ import static org.folio.repository.holdings.status.RetryStatusTableConstants.INS
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.RETRIES_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.TIMER_ID_COLUMN;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.UPDATE_RETRY_STATUS;
+import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -22,7 +22,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

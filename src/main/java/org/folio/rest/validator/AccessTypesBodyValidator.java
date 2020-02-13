@@ -15,7 +15,7 @@ public class AccessTypesBodyValidator {
   /**
    * @throws InputValidationException  if validation of attributes fails
    */
-  public void validate(AccessTypeCollectionItem request, String id) {
+  public void validate(AccessTypeCollectionItem request) {
     if (request == null || request.getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
@@ -25,9 +25,6 @@ public class AccessTypesBodyValidator {
 
     if (attributes.getDescription() != null) {
       ValidatorUtil.checkMaxLength("description", attributes.getDescription(), 150);
-    }
-    if (id != null) {
-      ValidatorUtil.checkUUIDValid(id);
     }
   }
 }

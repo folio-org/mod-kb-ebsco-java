@@ -122,20 +122,20 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404OnGetIfAccessTypeIsMissing() {
-    String id = "99999999-9999-9999-9999-999999999999";
+    String id = "11111111-1111-1111-a111-111111111111";
     JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_NOT_FOUND).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Access type with id '%s' not found", id), error.getErrors().get(0).getTitle());
+    assertEquals(String.format("Access type not found by id: %s", id), error.getErrors().get(0).getTitle());
   }
 
   @Test
-  public void shouldReturn422OnGetIfIdIsInvalid() {
+  public void shouldReturn400OnGetIfIdIsInvalid() {
     String id = "99999999-9999-2-9999-999999999999";
-    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Invalid id '%s'", id), error.getErrors().get(0).getTitle());
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
   }
 
   @Test
@@ -152,12 +152,12 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnDeleteIfIdIsInvalid() {
+  public void shouldReturn400OnDeleteIfIdIsInvalid() {
     String id = "99999999-9999-2-9999-999999999999";
-    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Invalid id '%s'", id), error.getErrors().get(0).getTitle());
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
   }
 
   @Test
@@ -305,13 +305,13 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenInvalidId() throws IOException, URISyntaxException {
+  public void shouldReturn400WhenInvalidId() throws IOException, URISyntaxException {
     String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
     String accessTypeId = "/c0af6d39-6705-43d7-b91e-c01c3549ddww";
     final JsonapiError errors = putWithStatus(ACCESS_TYPES_PATH + accessTypeId,
-      putBody, SC_UNPROCESSABLE_ENTITY, USER9)
+      putBody, SC_BAD_REQUEST, USER9)
       .as(JsonapiError.class);
-    assertThat(errors.getErrors().get(0).getTitle(), containsString("Invalid id"));
+    assertThat(errors.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
   }
 
   @Test
