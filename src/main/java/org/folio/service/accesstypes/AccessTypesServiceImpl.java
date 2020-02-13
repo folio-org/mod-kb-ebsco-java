@@ -1,10 +1,9 @@
 package org.folio.service.accesstypes;
 
+import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Arrays;
-import static org.folio.rest.tools.utils.TenantTool.tenantId;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,8 +31,8 @@ import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.tools.utils.TenantTool;
-import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.exc.ServiceExceptions;
+import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.userlookup.UserLookUpService;
 
 @Component
@@ -131,13 +130,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return FutureUtils
       .allOfSucceeded(Arrays.asList(allowed, stored),throwable -> LOG.warn(throwable.getMessage(), throwable))
       .thenApply(this::checkAccessTypesSize);
-    return repository.count(tenantId(okapiHeaders))
-      .thenApply(storedCount -> {
-        if (storedCount >= accessTypesMaxValue) {
-          throw new BadRequestException("Maximum number of access types allowed is " + accessTypesMaxValue);
-        }
-        return null;
-      });
   }
 
   private UserDisplayInfo getUserDisplayInfo(UserLookUp userLookUp) {
@@ -149,7 +141,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   private Void checkAccessTypesSize(List<Integer> futures) {
-    final Integer limit = futures.get(0);
+    final Integer configValue = futures.get(0);
+    final int limit = configValue <= defaultAccessTypesMaxValue ? configValue : defaultAccessTypesMaxValue;
     final Integer stored = futures.get(1);
     if (stored >= limit) {
       throw new BadRequestException("Maximum number of access types allowed is " + limit);
