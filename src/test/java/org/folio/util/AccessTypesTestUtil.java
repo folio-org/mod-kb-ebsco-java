@@ -29,7 +29,7 @@ import io.vertx.ext.sql.ResultSet;
 import org.jetbrains.annotations.NotNull;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.accesstypes.AccessTypeInDb;
+import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
@@ -79,11 +79,11 @@ public class AccessTypesTestUtil {
     return populateAccessTypesIds(items, future.join().getRows());
   }
 
-  public static List<AccessTypeInDb> getAccessTypeMappings(Vertx vertx) {
+  public static List<AccessTypeMapping> getAccessTypeMappings(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
     mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
-    CompletableFuture<List<AccessTypeInDb>> future = new CompletableFuture<>();
+    CompletableFuture<List<AccessTypeMapping>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesMappingTestTable(),
       event -> future.complete(event.result().getRows().stream()
         .map(entry -> parseAccessTypeMapping(mapper, entry))
@@ -91,9 +91,9 @@ public class AccessTypesTestUtil {
     return future.join();
   }
 
-  private static AccessTypeInDb parseAccessTypeMapping(ObjectMapper mapper, JsonObject entry) {
+  private static AccessTypeMapping parseAccessTypeMapping(ObjectMapper mapper, JsonObject entry) {
     try {
-      return mapper.readValue(entry.encode(), AccessTypeInDb.class);
+      return mapper.readValue(entry.encode(), AccessTypeMapping.class);
     } catch (IOException e) {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse access type mapping", e);

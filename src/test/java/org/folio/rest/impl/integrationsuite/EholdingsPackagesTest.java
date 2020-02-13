@@ -84,7 +84,7 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
-import org.folio.repository.accesstypes.AccessTypeInDb;
+import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.ContentType;
@@ -633,7 +633,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
         .withRequestBody(postBodyPattern));
 
-      List<AccessTypeInDb> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
       assertEquals(1, accessTypeMappingsInDB.size());
       assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
       assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());

@@ -1,12 +1,15 @@
 package org.folio.service.accesstypes;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,13 +17,13 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.accesstypes.AccessTypeInDb;
+import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.accesstypes.AccessTypesMappingRepository;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
-import org.folio.rest.tools.utils.TenantTool;
+import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.userlookup.UserLookUpService;
 
 @Component
@@ -48,25 +51,25 @@ public class AccessTypesServiceImpl implements AccessTypesService {
           accessType.setCreator(
             getUserDisplayInfo(creatorUser.getFirstName(), creatorUser.getMiddleName(), creatorUser.getLastName()));
           accessType.getMetadata().setCreatedByUsername(creatorUser.getUserName());
-          return repository.save(accessType, TenantTool.tenantId(okapiHeaders));
+          return repository.save(accessType, tenantId(okapiHeaders));
         })
       );
   }
 
   @Override
   public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
-    return repository.findAll(TenantTool.tenantId(okapiHeaders))
+    return repository.findAll(tenantId(okapiHeaders))
       .thenApply(accessTypeCollectionConverter::convert);
   }
 
   @Override
   public CompletableFuture<AccessTypeCollectionItem> findById(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, TenantTool.tenantId(okapiHeaders));
+    return repository.findById(id, tenantId(okapiHeaders)).thenApply(getAccessTypeOrFail(id));
   }
 
   @Override
   public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
-    return repository.delete(id, TenantTool.tenantId(okapiHeaders));
+    return repository.delete(id, tenantId(okapiHeaders));
   }
 
   @Override
@@ -77,29 +80,37 @@ public class AccessTypesServiceImpl implements AccessTypesService {
         accessType.setUpdater(
           getUserDisplayInfo(updaterUser.getFirstName(), updaterUser.getMiddleName(), updaterUser.getLastName()));
         accessType.getMetadata().setUpdatedByUsername(updaterUser.getUserName());
-        return repository.update(id, accessType, TenantTool.tenantId(okapiHeaders));
+        return repository.update(id, accessType, tenantId(okapiHeaders));
       });
   }
 
   @Override
-  public CompletableFuture<Boolean> assignToRecord(AccessTypeInDb accessTypeInDb, Map<String, String> okapiHeaders) {
-    return mappingRepository.save(accessTypeInDb, TenantTool.tenantId(okapiHeaders));
+  public CompletableFuture<Void> assignToRecord(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
+      Map<String, String> okapiHeaders) {
+
+    AccessTypeMapping mapping = AccessTypeMapping.builder()
+      .accessTypeId(accessType.getId())
+      .recordId(recordId)
+      .recordType(recordType).build();
+
+    return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
   }
 
   @Override
-  public CompletableFuture<AccessTypeCollectionItem> findByRecordIdAndRecordType(String recordId, RecordType recordType, String tenant) {
-    return mappingRepository.findByRecordIdAndRecordType(recordId, recordType, tenant)
-      .thenCompose(accessTypeInDb -> {
-        if(accessTypeInDb != null) {
-          return repository.findById(accessTypeInDb.getAccessTypeId(), tenant);
-        } else {
-          return completedFuture(null);
-        }
+  public CompletableFuture<AccessTypeCollectionItem> findByRecord(String recordId, RecordType recordType,
+      Map<String, String> okapiHeaders) {
+    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
+      .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException("asdasd")))
+      .thenCompose(mapping -> {
+        CompletableFuture<Optional<AccessTypeCollectionItem>> future = repository.findById(mapping.getAccessTypeId(),
+          tenantId(okapiHeaders));
+
+        return future.thenApply(getAccessTypeOrFail(mapping.getAccessTypeId()));
       });
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {
-    return repository.count(TenantTool.tenantId(okapiHeaders))
+    return repository.count(tenantId(okapiHeaders))
       .thenApply(storedCount -> {
         if (storedCount >= accessTypesMaxValue) {
           throw new BadRequestException("Maximum number of access types allowed is " + accessTypesMaxValue);
@@ -116,4 +127,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return userDisplayInfo;
   }
 
+  private Function<Optional<AccessTypeCollectionItem>, AccessTypeCollectionItem> getAccessTypeOrFail(String id) {
+    return accessType -> accessType.orElseThrow(() -> ServiceExceptions.notFound("Access type", id));
+  }
 }

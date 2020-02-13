@@ -32,12 +32,6 @@ public class DbUtil {
       .add(name);
   }
 
-  public static JsonArray createParameters(Iterable<?> queryParameters) {
-    JsonArray parameters = new JsonArray();
-    queryParameters.forEach(parameters::add);
-    return parameters;
-  }
-
   private static String getTableName(String tenantId, String tableName) {
     return PostgresClient.convertToPsqlStandard(tenantId) + "." + tableName;
   }

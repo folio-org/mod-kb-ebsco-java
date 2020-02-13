@@ -52,7 +52,6 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordType;
-import org.folio.repository.accesstypes.AccessTypeInDb;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
@@ -220,19 +219,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                             Map<String, String> okapiHeaders) {
     PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
     String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
-    return accessTypesService.assignToRecord(buildAccessType(accessType, recordId), okapiHeaders)
+
+    return accessTypesService.assignToRecord(accessType, recordId, RecordType.PACKAGE, okapiHeaders)
       .thenApply(a -> {
         packageResult.setAccessType(accessType);
         return packageResult;
       });
-  }
-
-  private AccessTypeInDb buildAccessType(AccessTypeCollectionItem accessType, String recordId) {
-    return AccessTypeInDb.builder()
-      .accessTypeId(accessType.getId())
-      .recordId(recordId)
-      .recordType(RecordType.PACKAGE)
-      .build();
   }
 
   @Override
@@ -245,21 +237,31 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((context ->
         context.getPackagesService().retrievePackage(parsedPackageId, includedObjects)
-          .thenCompose(result ->
-            loadTags(result, context.getOkapiData().getTenant())
-              .thenCompose(packageResult -> loadAccessType(result, context.getOkapiData().getTenant()))
-          )
+          .thenCompose(packageResult -> loadTags(packageResult, context.getOkapiData().getTenant()))
+          .thenCompose(packageResult -> loadAccessType(packageResult, okapiHeaders))
       ))
       .executeWithResult(Package.class);
   }
 
-  private CompletionStage<PackageResult> loadAccessType(PackageResult result, String tenant) {
-    String packageId = getPackageId(result);
-    return accessTypesService.findByRecordIdAndRecordType(packageId, RecordType.PACKAGE, tenant)
-      .thenCompose(accessType -> {
+  private CompletionStage<PackageResult> loadAccessType(PackageResult result, Map<String, String> okapiHeaders) {
+    CompletableFuture<PackageResult> future = new CompletableFuture<>();
+
+    accessTypesService.findByRecord(getPackageId(result), RecordType.PACKAGE, okapiHeaders)
+      .thenAccept(accessType -> {
         result.setAccessType(accessType);
-        return completedFuture(result);
+        future.complete(result);
+      })
+      .exceptionally(throwable -> {
+        if (throwable instanceof NotFoundException) {
+          result.setAccessType(null);
+          future.complete(result);
+        } else {
+          future.completeExceptionally(throwable);
+        }
+        return null;
       });
+
+    return future;
   }
 
   private String getPackageId(PackageResult result) {

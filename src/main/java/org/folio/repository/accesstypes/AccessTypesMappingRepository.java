@@ -1,12 +1,13 @@
 package org.folio.repository.accesstypes;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.repository.RecordType;
 
 public interface AccessTypesMappingRepository {
 
-  CompletableFuture<Boolean> save(AccessTypeInDb accessTypeMapping, String tenantId);
+  CompletableFuture<AccessTypeMapping> save(AccessTypeMapping accessTypeMapping, String tenantId);
 
-  CompletableFuture<AccessTypeInDb> findByRecordIdAndRecordType(String recordId, RecordType recordType, String tenantId);
+  CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType, String tenantId);
 }
