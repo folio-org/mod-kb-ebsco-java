@@ -9,6 +9,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_ACCESS_TYPES;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -36,15 +37,11 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private static final String ACCESS_TYPE_NOT_FOUND_MESSAGE = "Access type with id '%s' not found";
 
+  @Autowired
   private Vertx vertx;
-
   @Autowired
   private DBExceptionTranslator excTranslator;
 
-  @Autowired
-  public AccessTypesRepositoryImpl(Vertx vertx) {
-    this.vertx = vertx;
-  }
 
   @Override
   public CompletableFuture<List<AccessTypeCollectionItem>> findAll(String tenantId) {
@@ -56,18 +53,12 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletableFuture<AccessTypeCollectionItem> findById(String id, String tenantId) {
+  public CompletableFuture<Optional<AccessTypeCollectionItem>> findById(String id, String tenantId) {
     LOG.info("Retrieving access type: id = {}, tenantId = {}", id, tenantId);
     Promise<AccessTypeCollectionItem> promise = Promise.promise();
     pgClient(tenantId).getById(ACCESS_TYPES_TABLE_NAME, id, AccessTypeCollectionItem.class, promise);
 
-    return mapResult(promise.future(), accessTypeCollectionItem -> {
-      if (accessTypeCollectionItem == null) {
-        throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
-      } else {
-        return accessTypeCollectionItem;
-      }
-    });
+    return mapResult(promise.future(), Optional::ofNullable);
   }
 
   @Override

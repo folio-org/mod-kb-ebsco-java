@@ -3,11 +3,16 @@ package org.folio.service.accesstypes;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Arrays;
+import static org.folio.rest.tools.utils.TenantTool.tenantId;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -19,12 +24,16 @@ import org.springframework.stereotype.Component;
 import org.folio.common.FutureUtils;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
+import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.repository.accesstypes.AccessTypesMappingRepository;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.service.userlookup.UserLookUp;
+import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.userlookup.UserLookUpService;
 
 @Component
@@ -37,6 +46,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   private UserLookUpService userLookUpService;
   @Autowired
   private AccessTypesRepository repository;
+  @Autowired
+  private AccessTypesMappingRepository mappingRepository;
   @Autowired
   private Converter<List<AccessTypeCollectionItem>, AccessTypeCollection> accessTypeCollectionConverter;
   @Autowired
@@ -54,25 +65,25 @@ public class AccessTypesServiceImpl implements AccessTypesService {
         .thenCompose(creatorUser -> {
           accessType.setCreator(getUserDisplayInfo(creatorUser));
           accessType.getMetadata().setCreatedByUsername(creatorUser.getUserName());
-          return repository.save(accessType, TenantTool.tenantId(okapiHeaders));
+          return repository.save(accessType, tenantId(okapiHeaders));
         })
       );
   }
 
   @Override
   public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
-    return repository.findAll(TenantTool.tenantId(okapiHeaders))
+    return repository.findAll(tenantId(okapiHeaders))
       .thenApply(accessTypeCollectionConverter::convert);
   }
 
   @Override
   public CompletableFuture<AccessTypeCollectionItem> findById(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, TenantTool.tenantId(okapiHeaders));
+    return repository.findById(id, tenantId(okapiHeaders)).thenApply(getAccessTypeOrFail(id));
   }
 
   @Override
   public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
-    return repository.delete(id, TenantTool.tenantId(okapiHeaders));
+    return repository.delete(id, tenantId(okapiHeaders));
   }
 
   @Override
@@ -82,7 +93,34 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .thenCompose(updaterUser -> {
         accessType.setUpdater(getUserDisplayInfo(updaterUser));
         accessType.getMetadata().setUpdatedByUsername(updaterUser.getUserName());
-        return repository.update(id, accessType, TenantTool.tenantId(okapiHeaders));
+        return repository.update(id, accessType, tenantId(okapiHeaders));
+      });
+  }
+
+  @Override
+  public CompletableFuture<Void> assignToRecord(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
+      Map<String, String> okapiHeaders) {
+
+    AccessTypeMapping mapping = AccessTypeMapping.builder()
+      .accessTypeId(accessType.getId())
+      .recordId(recordId)
+      .recordType(recordType).build();
+
+    return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
+  }
+
+  @Override
+  public CompletableFuture<AccessTypeCollectionItem> findByRecord(String recordId, RecordType recordType,
+      Map<String, String> okapiHeaders) {
+    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
+      .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException(
+        String.format("Access type mapping not found: recordId = %s, recordType = %s", recordId, recordType)))
+      )
+      .thenCompose(mapping -> {
+        CompletableFuture<Optional<AccessTypeCollectionItem>> future = repository.findById(mapping.getAccessTypeId(),
+          tenantId(okapiHeaders));
+
+        return future.thenApply(getAccessTypeOrFail(mapping.getAccessTypeId()));
       });
   }
 
@@ -93,6 +131,13 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return FutureUtils
       .allOfSucceeded(Arrays.asList(allowed, stored),throwable -> LOG.warn(throwable.getMessage(), throwable))
       .thenApply(this::checkAccessTypesSize);
+    return repository.count(tenantId(okapiHeaders))
+      .thenApply(storedCount -> {
+        if (storedCount >= accessTypesMaxValue) {
+          throw new BadRequestException("Maximum number of access types allowed is " + accessTypesMaxValue);
+        }
+        return null;
+      });
   }
 
   private UserDisplayInfo getUserDisplayInfo(UserLookUp userLookUp) {
@@ -110,5 +155,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       throw new BadRequestException("Maximum number of access types allowed is " + limit);
     }
     return null;
+  }
+  private Function<Optional<AccessTypeCollectionItem>, AccessTypeCollectionItem> getAccessTypeOrFail(String id) {
+    return accessType -> accessType.orElseThrow(() -> ServiceExceptions.notFound("Access type", id));
   }
 }

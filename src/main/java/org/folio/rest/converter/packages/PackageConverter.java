@@ -18,6 +18,7 @@ import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.HasManyRelationship;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -49,6 +50,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     PackageByIdData packageByIdData = result.getPackageData();
     Titles titles = result.getTitles();
     VendorById vendor = result.getVendor();
+    AccessTypeCollectionItem accessType = result.getAccessType();
 
     Package packageData = new Package()
       .withData(packageCollectionItemConverter.convert(packageByIdData))
@@ -85,6 +87,17 @@ public class PackageConverter implements Converter<PackageResult, Package> {
             .withType(PROVIDERS_TYPE)));
     }
 
+    if (accessType != null) {
+      packageData.getIncluded().add(accessType);
+      packageData.getData()
+        .getRelationships()
+        .withAccessType(new HasOneRelationship()
+          .withData(new RelationshipData()
+            .withId(accessType.getId())
+            .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES.value()))
+          .withMeta(new MetaDataIncluded()
+            .withIncluded(true)));
+    }
     return packageData;
   }
 
@@ -94,8 +107,8 @@ public class PackageConverter implements Converter<PackageResult, Package> {
 
   private List<RelationshipData> convertResourcesRelationship(PackageByIdData packageByIdData, Titles titles) {
     return mapItems(titles.getTitleList(),
-      title ->new RelationshipData()
-          .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId() + "-" + title.getTitleId())
-          .withType(RESOURCES_TYPE));
+      title -> new RelationshipData()
+        .withId(packageByIdData.getVendorId() + "-" + packageByIdData.getPackageId() + "-" + title.getTitleId())
+        .withType(RESOURCES_TYPE));
   }
 }

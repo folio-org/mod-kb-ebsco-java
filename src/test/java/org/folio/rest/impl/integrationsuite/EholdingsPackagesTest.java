@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.RecordType.PACKAGE;
@@ -45,6 +46,12 @@ import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockPost;
 import static org.folio.test.util.TestUtil.mockPut;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.AccessTypesTestUtil.clearAccessTypes;
+import static org.folio.util.AccessTypesTestUtil.clearAccessTypesMapping;
+import static org.folio.util.AccessTypesTestUtil.getAccessTypeMappings;
+import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
+import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
+import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
@@ -53,6 +60,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,12 +71,10 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,8 +84,11 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
+import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.ContentType;
+import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.Package;
@@ -91,6 +100,7 @@ import org.folio.rest.jaxrs.model.PackageTags;
 import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
+import org.folio.util.AccessTypesTestUtil;
 import org.folio.util.KBTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ResourcesTestUtil;
@@ -109,7 +119,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE = "responses/kb-ebsco/resources/expected-resources-by-package-id-with-tags.json";
   private static final String VENDOR_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/vendors/get-vendor-by-id-for-package.json";
 
-  private static final String PACKAGES_PATH = "eholdings/packages/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
+  private static final String PACKAGES_ENDPOINT = "eholdings/packages";
+  private static final String PACKAGES_PATH = PACKAGES_ENDPOINT + "/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
   private static final String PACKAGE_TAGS_PATH = PACKAGES_PATH + "/tags";
   private static final String PACKAGE_RESOURCES_PATH = PACKAGES_PATH + "/resources";
 
@@ -130,7 +141,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockDefaultConfiguration(getWiremockUrl());
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/packages.*"), stubResponseFile);
 
-    String packages = getWithOk("eholdings/packages?q=American&filter[type]=abstractandindex&count=5")
+    String packages = getWithOk(PACKAGES_ENDPOINT + "?q=American&filter[type]=abstractandindex&count=5")
       .asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-package-collection-with-five-elements.json"),
       packages, false);
@@ -147,7 +158,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       setUpPackages(vertx, getWiremockUrl());
 
       PackageCollection packageCollection = getWithOk(
-        "eholdings/packages?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2).as(PackageCollection.class);
+        PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2).as(PackageCollection.class);
       List<PackageCollectionItem> packages = packageCollection.getData();
 
       assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
@@ -172,7 +183,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
-      PackageCollection packageCollection = getWithOk("eholdings/packages?filter[tags]=" + STUB_TAG_VALUE).as(PackageCollection.class);
+      PackageCollection packageCollection = getWithOk(PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE).as(PackageCollection.class);
       List<PackageCollectionItem> packages = packageCollection.getData();
 
       assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
@@ -193,7 +204,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       setUpPackages(vertx, getWiremockUrl());
 
       PackageCollection packageCollection = getWithOk(
-        "eholdings/packages?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE).as(PackageCollection.class);
+        PACKAGES_ENDPOINT + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE).as(PackageCollection.class);
 
       List<PackageCollectionItem> packages = packageCollection.getData();
 
@@ -217,7 +228,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"),
       packagesStubResponseFile);
 
-    String packages = getWithOk("eholdings/packages?q=a&count=5&page=1&filter[custom]=true")
+    String packages = getWithOk(PACKAGES_ENDPOINT + "?q=a&count=5&page=1&filter[custom]=true")
       .asString();
 
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element.json"),
@@ -244,12 +255,35 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
-      Package packageData = getWithOk("eholdings/packages/" + packageId).as(Package.class);
+      Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + packageId).as(Package.class);
 
       assertTrue(packageData.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
     }
     finally {
       TagsTestUtil.clearTags(vertx);
+      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnPackageWithAccessTypeOnGetById() throws IOException, URISyntaxException {
+    try {
+      final List<AccessTypeCollectionItem> accessTypeCollectionItems = testData();
+      insertAccessTypes(accessTypeCollectionItems, vertx);
+      final String expectedAccessTypeId = accessTypeCollectionItems.get(0).getId();
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
+      mockDefaultConfiguration(getWiremockUrl());
+
+      mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+      Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID).as(Package.class);
+
+      assertNotNull(packageData.getIncluded());
+      assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
+      assertEquals(expectedAccessTypeId, ((LinkedHashMap) packageData.getIncluded().get(0)).get("id"));
+    } finally {
+      TagsTestUtil.clearTags(vertx);
+      AccessTypesTestUtil.clearAccessTypes(vertx);
+      AccessTypesTestUtil.clearAccessTypesMapping(vertx);
       KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
@@ -394,7 +428,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenCountInvalid() {
-    checkResponseNotEmptyWhenStatusIs400("eholdings/packages?q=American&filter[type]=abstractandindex&count=500");
+    checkResponseNotEmptyWhenStatusIs400(PACKAGES_ENDPOINT + "?q=American&filter[type]=abstractandindex&count=500");
   }
 
   @Test
@@ -415,7 +449,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenPackageIdIsInvalid() {
-    deleteWithStatus("eholdings/packages/abc-def", SC_BAD_REQUEST);
+    deleteWithStatus(PACKAGES_ENDPOINT + "/abc-def", SC_BAD_REQUEST);
   }
 
   @Test
@@ -584,6 +618,62 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn200OnPostPackageWithExistedAccessType() throws URISyntaxException, IOException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      String accessTypeId = accessTypes.get(0).getId();
+
+      String packagePostRMAPIRequestFile = "requests/rmapi/packages/post-package.json";
+      String requestBody = String.format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"),
+        accessTypeId);
+      final Package createdPackage = sendPost(requestBody).as(Package.class);
+
+      assertTrue(Objects.isNull(createdPackage.getData().getAttributes().getTags()));
+      EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRMAPIRequestFile), false, true);
+      verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
+        .withRequestBody(postBodyPattern));
+
+      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      assertEquals(1, accessTypeMappingsInDB.size());
+      assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+      assertNotNull(createdPackage.getIncluded());
+      assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
+      assertEquals(accessTypeId, ((LinkedHashMap) createdPackage.getIncluded().get(0)).get("id"));
+    } finally {
+      clearAccessTypes(vertx);
+      clearAccessTypesMapping(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturn400OnPostPackageWithNotExistedAccessType() throws URISyntaxException, IOException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    String requestBody = readFile("requests/kb-ebsco/package/post-package-with-not-existed-access-type-request.json");
+
+    JsonapiError error = postWithStatus(PACKAGES_ENDPOINT, requestBody, SC_BAD_REQUEST, CONTENT_TYPE_HEADER)
+      .as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals("Access type not found by id: 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn422OnPostPackageWithInvalidAccessTypeId() throws URISyntaxException, IOException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    String requestBody = readFile("requests/kb-ebsco/package/post-package-with-invalid-access-type-request.json");
+
+    Errors error = postWithStatus(PACKAGES_ENDPOINT, requestBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER)
+      .as(Errors.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals("must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
+      error.getErrors().get(0).getMessage());
+  }
+
+  @Test
   public void shouldReturn400WhenPackagePostDataIsInvalid()throws URISyntaxException, IOException{
     String providerStubResponseFile = "responses/rmapi/packages/get-package-provider-by-id.json";
     String packagePostStubRequestFile = "requests/kb-ebsco/package/post-package-request.json";
@@ -601,7 +691,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .spec(getRequestSpecification())
       .body(readFile(packagePostStubRequestFile))
       .when()
-      .post("eholdings/packages")
+      .post(PACKAGES_ENDPOINT)
       .then()
       .statusCode(SC_BAD_REQUEST);
   }
@@ -822,6 +912,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
 
     PackagePostRequest request = mapper.readValue(requestBody, PackagePostRequest.class);
-    return postWithOk("eholdings/packages", mapper.writeValueAsString(request));
+    return postWithOk(PACKAGES_ENDPOINT, mapper.writeValueAsString(request));
   }
 }
