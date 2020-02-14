@@ -10,8 +10,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,8 +24,6 @@ import org.folio.spring.SpringContextUtil;
 
 public class EholdingsStatusImpl implements EholdingsStatus {
 
-  private static final String INTERNAL_SERVER_ERROR = "Internal server error";
-  private final Logger logger = LoggerFactory.getLogger(EholdingsStatusImpl.class);
   @Autowired
   private ConfigurationService configurationService;
   @Autowired
@@ -52,10 +48,7 @@ public class EholdingsStatusImpl implements EholdingsStatus {
       .thenCompose(configuration -> configurationService.verifyCredentials(configuration, vertxContext, okapiData.getValue().getTenant()))
       .thenAccept(errors -> asyncResultHandler.handle(Future.succeededFuture(GetEholdingsStatusResponse.respond200WithApplicationVndApiJson(converter.convert(errors.isEmpty())))))
       .exceptionally(e -> {
-        logger.error(INTERNAL_SERVER_ERROR, e);
-        new ErrorHandler()
-          .addDefaultMapper()
-          .handle(asyncResultHandler, e);
+        new ErrorHandler().handle(asyncResultHandler, e);
         return null;
       });
   }

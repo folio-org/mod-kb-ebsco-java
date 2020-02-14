@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.RecordType.PACKAGE;
@@ -120,7 +121,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String VENDOR_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/vendors/get-vendor-by-id-for-package.json";
 
   private static final String PACKAGES_ENDPOINT = "eholdings/packages";
-  private static final String PACKAGES_PATH = PACKAGES_ENDPOINT + "/" + STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID;
+  private static final String PACKAGES_PATH = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID;
   private static final String PACKAGE_TAGS_PATH = PACKAGES_PATH + "/tags";
   private static final String PACKAGE_RESOURCES_PATH = PACKAGES_PATH + "/resources";
 
@@ -579,7 +580,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     Package aPackage = putWithOk(
       PACKAGES_PATH,
-      readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes")).as(Package.class);
+      readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json")).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
       .withRequestBody(putBodyPattern));
@@ -590,6 +591,214 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
     assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
     assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+  }
+
+  @Test
+  public void shouldUpdateAllAttributesInCustomPackageAndCreateNewAccessTypeMapping() throws URISyntaxException, IOException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      String accessTypeId = accessTypes.get(0).getId();
+
+      boolean updatedSelected = true;
+      boolean updatedHidden = true;
+      String updatedBeginCoverage = "2003-01-01";
+      String updatedEndCoverage = "2004-01-01";
+      String updatedPackageName = "name of the ages forever and ever";
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      EqualToJsonPattern putBodyPattern =
+        new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
+
+      PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+
+      packageData = packageData.toByIdBuilder()
+        .isSelected(updatedSelected)
+        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+        .customCoverage(CoverageDates.builder()
+          .beginCoverage(updatedBeginCoverage)
+          .endCoverage(updatedEndCoverage)
+          .build())
+        .packageName(updatedPackageName)
+        .contentType("AggregatedFullText").build();
+
+      String updatedPackageValue = mapper.writeValueAsString(packageData);
+      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+
+      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+        accessTypeId);
+      Package aPackage = putWithOk(PACKAGES_PATH, putBody).as(Package.class);
+
+      verify(putRequestedFor(PACKAGE_URL_PATTERN)
+        .withRequestBody(putBodyPattern));
+
+      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+      assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
+      assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+
+      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      assertEquals(1, accessTypeMappingsInDB.size());
+      assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
+      assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+      assertNotNull(aPackage.getIncluded());
+      assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
+      assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
+    } finally {
+      clearAccessTypes(vertx);
+      clearAccessTypesMapping(vertx);
+    }
+  }
+
+  @Test
+  public void shouldUpdateAllAttributesInCustomPackageAndDeleteAccessTypeMapping() throws URISyntaxException, IOException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      String accessTypeId = accessTypes.get(0).getId();
+
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
+
+      boolean updatedSelected = true;
+      boolean updatedHidden = true;
+      String updatedBeginCoverage = "2003-01-01";
+      String updatedEndCoverage = "2004-01-01";
+      String updatedPackageName = "name of the ages forever and ever";
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      EqualToJsonPattern putBodyPattern =
+        new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
+
+      PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+
+      packageData = packageData.toByIdBuilder()
+        .isSelected(updatedSelected)
+        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+        .customCoverage(CoverageDates.builder()
+          .beginCoverage(updatedBeginCoverage)
+          .endCoverage(updatedEndCoverage)
+          .build())
+        .packageName(updatedPackageName)
+        .contentType("AggregatedFullText").build();
+
+      String updatedPackageValue = mapper.writeValueAsString(packageData);
+      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+
+      String putBody = readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json");
+      Package aPackage = putWithOk(PACKAGES_PATH, putBody).as(Package.class);
+
+      verify(putRequestedFor(PACKAGE_URL_PATTERN)
+        .withRequestBody(putBodyPattern));
+
+      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+      assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
+      assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+
+      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      assertEquals(0, accessTypeMappingsInDB.size());
+
+      assertNotNull(aPackage.getIncluded());
+      assertEquals(0, aPackage.getIncluded().size());
+      assertNull(aPackage.getData().getRelationships().getAccessType());
+    } finally {
+      clearAccessTypes(vertx);
+      clearAccessTypesMapping(vertx);
+    }
+  }
+
+  @Test
+  public void shouldUpdateAllAttributesInCustomPackageAndUpdateAccessTypeMapping() throws URISyntaxException, IOException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      String currentAccessTypeId = accessTypes.get(0).getId();
+      String newAccessTypeId = accessTypes.get(1).getId();
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
+
+      boolean updatedSelected = true;
+      boolean updatedHidden = true;
+      String updatedBeginCoverage = "2003-01-01";
+      String updatedEndCoverage = "2004-01-01";
+      String updatedPackageName = "name of the ages forever and ever";
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      EqualToJsonPattern putBodyPattern =
+        new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
+
+      PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+
+      packageData = packageData.toByIdBuilder()
+        .isSelected(updatedSelected)
+        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+        .customCoverage(CoverageDates.builder()
+          .beginCoverage(updatedBeginCoverage)
+          .endCoverage(updatedEndCoverage)
+          .build())
+        .packageName(updatedPackageName)
+        .contentType("AggregatedFullText").build();
+
+      String updatedPackageValue = mapper.writeValueAsString(packageData);
+      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+
+      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+        newAccessTypeId);
+      Package aPackage = putWithOk(PACKAGES_PATH, putBody).as(Package.class);
+
+      verify(putRequestedFor(PACKAGE_URL_PATTERN)
+        .withRequestBody(putBodyPattern));
+
+      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+      assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
+      assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+
+      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      assertEquals(1, accessTypeMappingsInDB.size());
+      assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
+      assertEquals(newAccessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+      assertNotNull(aPackage.getIncluded());
+      assertEquals(newAccessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
+      assertEquals(newAccessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
+    } finally {
+      clearAccessTypes(vertx);
+      clearAccessTypesMapping(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturn400OnPutPackageWithNotExistedAccessType() throws URISyntaxException, IOException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    String requestBody = readFile("requests/kb-ebsco/package/put-package-with-not-existed-access-type.json");
+
+    JsonapiError error = putWithStatus(PACKAGES_PATH, requestBody, SC_BAD_REQUEST, CONTENT_TYPE_HEADER)
+      .as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals("Access type not found by id: 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn422OnPutPackageWithInvalidAccessTypeId() throws URISyntaxException, IOException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    String requestBody = readFile("requests/kb-ebsco/package/put-package-with-invalid-access-type.json");
+
+    Errors error = putWithStatus(PACKAGES_PATH, requestBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER)
+      .as(Errors.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals("must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
+      error.getErrors().get(0).getMessage());
   }
 
   @Test

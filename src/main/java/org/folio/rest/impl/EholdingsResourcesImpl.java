@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
@@ -123,9 +124,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         .thenCompose(title -> CompletableFuture.completedFuture(
               new ResourceResult(title, null, null, false)))
       )
-      .addErrorMapper(InputValidationException.class, exception ->
-        PostEholdingsResourcesResponse.respond422WithApplicationVndApiJson(
-          ErrorUtil.createError(exception.getMessage(), exception.getMessageDetail())))
+      .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .executeWithResult(Resource.class);
   }
 
@@ -203,7 +202,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .exceptionally(e -> {
       new ErrorHandler()
         .addInputValidation422Mapper()
-        .addDefaultMapper()
         .handle(asyncResultHandler, e);
       return null;
     });

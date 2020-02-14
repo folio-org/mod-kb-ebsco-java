@@ -176,12 +176,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         });
     }
 
-    template
-      .addErrorMapper(ServiceResponseException.class,
-        exception ->
-          GetEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
-            ErrorUtil.createErrorFromRMAPIResponse(exception)))
-      .executeWithResult(PackageCollection.class);
+    template.executeWithResult(PackageCollection.class);
   }
 
   @Override
@@ -203,10 +198,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     }
 
     template
-      .addErrorMapper(ServiceResponseException.class,
-        exception ->
-          PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
-            ErrorUtil.createErrorFromRMAPIResponse(exception)))
       .addErrorMapper(NotFoundException.class,
         exception -> PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
           ErrorUtil.createError(exception.getMessage())
@@ -247,6 +238,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))
         )
       )
+      .addErrorMapper(NotFoundException.class,
+        exception -> PutEholdingsPackagesByPackageIdResponse.respond400WithApplicationVndApiJson(
+          ErrorUtil.createError(exception.getMessage())
+        ))
       .executeWithResult(Package.class);
   }
 
@@ -329,7 +324,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .exceptionally(e -> {
         new ErrorHandler()
           .addInputValidation422Mapper()
-          .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
       });

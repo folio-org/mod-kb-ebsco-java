@@ -15,7 +15,11 @@ public class AccessTypesMappingTableConstants {
     "INSERT INTO %s (" + ACCESS_TYPES_MAPPING_FIELD_LIST + ") VALUES (?,?,?,?)";
 
   public static final String UPDATE_MAPPING =
-    "UPDATE %s SET " + ACCESS_TYPE_ID_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?;";
+    "UPDATE %s SET "
+      + RECORD_ID_COLUMN + " = ?, "
+      + RECORD_TYPE_COLUMN + " = ?, "
+      + ACCESS_TYPE_ID_COLUMN + " = ? "
+      + "WHERE " + ID_COLUMN + " = ?;";
 
   private static final String CONDITION_BY_RECORD_ID_AND_RECORD_TYPE =
     String.format("%s = ? AND %s = ?", RECORD_ID_COLUMN, RECORD_TYPE_COLUMN);

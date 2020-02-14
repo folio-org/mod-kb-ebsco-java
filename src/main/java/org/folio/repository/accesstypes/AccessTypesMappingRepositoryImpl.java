@@ -85,7 +85,7 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
 
   private CompletableFuture<AccessTypeMapping> merge(AccessTypeMapping mapping, Promise<UpdateResult> promise,
                                                      String tenantId) {
-    JsonArray params = createParams(asList(mapping.getAccessTypeId(), mapping.getId()));
+    JsonArray params = createUpdateParams(mapping);
     String query = format(UPDATE_MAPPING, getAccessTypesMappingTableName(tenantId));
 
     LOG.info("Do update query = {}", query);
@@ -123,6 +123,16 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
       .recordId(row.getString(RECORD_ID_COLUMN))
       .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN)))
       .build();
+  }
+
+  @NotNull
+  private JsonArray createUpdateParams(AccessTypeMapping mapping) {
+    return createParams(asList(
+      mapping.getRecordId(),
+      mapping.getRecordType().getValue(),
+      mapping.getAccessTypeId(),
+      mapping.getId()
+    ));
   }
 
   @NotNull
