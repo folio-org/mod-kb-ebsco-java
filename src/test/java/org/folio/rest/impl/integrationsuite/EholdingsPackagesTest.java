@@ -532,6 +532,64 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldUpdateAllAttributesInSelectedPackageAndCreateNewAccessTypeMapping() throws URISyntaxException, IOException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      String accessTypeId = accessTypes.get(0).getId();
+
+      boolean updatedSelected = true;
+      boolean updatedAllowEbscoToAddTitles = true;
+      boolean updatedHidden = true;
+      String updatedBeginCoverage = "2003-01-01";
+      String updatedEndCoverage = "2004-01-01";
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
+
+      PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
+
+      packageData = packageData.toByIdBuilder()
+        .isSelected(updatedSelected)
+        .customCoverage(CoverageDates.builder()
+          .beginCoverage(updatedBeginCoverage)
+          .endCoverage(updatedEndCoverage)
+          .build())
+        .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
+        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+        .build();
+
+      String updatedPackageValue = mapper.writeValueAsString(packageData);
+      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), updatedPackageValue);
+
+      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-selected-with-access-type.json"),
+        accessTypeId);
+      Package aPackage = putWithOk(PACKAGES_PATH, putBody).as(Package.class);
+
+      verify(putRequestedFor(PACKAGE_URL_PATTERN)
+        .withRequestBody(putBodyPattern));
+
+      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+      assertEquals(updatedAllowEbscoToAddTitles, aPackage.getData().getAttributes().getAllowKbToAddTitles());
+      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+
+      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      assertEquals(1, accessTypeMappingsInDB.size());
+      assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
+      assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+      assertNotNull(aPackage.getIncluded());
+      assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
+      assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
+    } finally {
+      clearAccessTypes(vertx);
+      clearAccessTypesMapping(vertx);
+    }
+  }
+
+  @Test
   public void shouldPassIsFullPackageAttributeToRMAPI() throws URISyntaxException, IOException {
     mockDefaultConfiguration(getWiremockUrl());
 
