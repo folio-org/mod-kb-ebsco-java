@@ -47,7 +47,6 @@ import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
-import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordType;
