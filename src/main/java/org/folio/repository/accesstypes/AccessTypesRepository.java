@@ -32,7 +32,7 @@ public interface AccessTypesRepository {
    */
   CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, String tenantId);
 
-  CompletableFuture<Long> count(String tenantId);
+  CompletableFuture<Integer> count(String tenantId);
 
   /**
    * Delete access type with given id and tenantId

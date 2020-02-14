@@ -29,6 +29,7 @@ import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
@@ -55,11 +56,15 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   private static final String USER_9 = "99999999-9999-4999-9999-999999999999";
   private static final String USER_2 = "22222222-2222-4222-2222-222222222222";
   private static final String USER_3 = "33333333-3333-4333-3333-333333333333";
+
   private static final Header USER8 = new Header(OKAPI_USER_ID_HEADER, USER_8);
   private static final Header USER9 = new Header(OKAPI_USER_ID_HEADER, USER_9);
   private static final Header USER2 = new Header(OKAPI_USER_ID_HEADER, USER_2);
   private static final Header USER3 = new Header(OKAPI_USER_ID_HEADER, USER_3);
   private static final String ACCESS_TYPES_PATH = "/eholdings/access-types";
+
+  private static final RegexPattern CONFIG_ACCESS_TYPE_LIMIT_URL_PATTERN =
+    new RegexPattern("/configurations/entries.*");
 
 
   @Override
@@ -171,7 +176,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnAccessTypeWhenDataIsValid() throws IOException, URISyntaxException {
-
+    mockValidAccessTypesLimit();
     String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     final AccessTypeCollectionItem accessType = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8)
       .as(AccessTypeCollectionItem.class);
@@ -184,7 +189,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn500WhenSaveWithDuplicateIdObject() throws IOException, URISyntaxException {
-
+    mockValidAccessTypesLimit();
     String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8);
     final JsonapiError errors = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_BAD_REQUEST, USER8)
@@ -194,6 +199,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenReachedMaximumAccessTypesSize() throws IOException, URISyntaxException {
+
+    mockValidAccessTypesLimit();
 
     String postBody1 = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     String postBody2 = readFile("requests/kb-ebsco/access-types/access-type-2.json");
@@ -209,8 +216,32 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404WhenUserNoFound() throws IOException, URISyntaxException {
+  public void shouldSaveOnlyAllowedNumberOfAccessTypes() throws IOException, URISyntaxException {
 
+    mockInvalidAccessTypesLimit();
+
+    String postBody1 = readFile("requests/kb-ebsco/access-types/access-type-1.json");
+    String postBody2 = readFile("requests/kb-ebsco/access-types/access-type-2.json");
+    String postBody3 = readFile("requests/kb-ebsco/access-types/access-type-3.json");
+    String postBody4 = readFile("requests/kb-ebsco/access-types/access-type-4.json");
+
+    postWithStatus(ACCESS_TYPES_PATH, postBody1, SC_CREATED, USER8);
+    postWithStatus(ACCESS_TYPES_PATH, postBody2, SC_CREATED, USER8);
+    postWithStatus(ACCESS_TYPES_PATH, postBody3, SC_CREATED, USER8);
+
+    final JsonapiError errors = postWithStatus(ACCESS_TYPES_PATH, postBody4, SC_BAD_REQUEST, USER8)
+      .as(JsonapiError.class);
+
+    assertEquals("Maximum number of access types allowed is 3", errors.getErrors().get(0).getTitle());
+
+    List<AccessTypeCollectionItem> accessTypes = AccessTypesTestUtil.getAccessTypes(vertx);
+    assertEquals(3, accessTypes.size());
+
+  }
+
+  @Test
+  public void shouldReturn404WhenUserNoFound() throws IOException, URISyntaxException {
+    mockValidAccessTypesLimit();
     String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     final JsonapiError errors = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_NOT_FOUND, USER2).as(JsonapiError.class);
     assertEquals("User not found", errors.getErrors().get(0).getTitle());
@@ -266,6 +297,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateAccessTypeWhenValidData() throws IOException, URISyntaxException {
+    mockValidAccessTypesLimit();
     String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8);
 
@@ -316,11 +348,30 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn403WhenUnAuthorized() throws IOException, URISyntaxException {
+    mockValidAccessTypesLimit();
     String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
     postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8);
 
     String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
     String accessTypeId = "11111111-1111-1111-a111-111111111111";
     putWithStatus(ACCESS_TYPES_PATH + accessTypeId, putBody, SC_BAD_REQUEST, USER3);
+  }
+
+  private void mockValidAccessTypesLimit() throws IOException, URISyntaxException {
+    stubFor(
+      get(new UrlPathPattern(CONFIG_ACCESS_TYPE_LIMIT_URL_PATTERN, true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(200)
+          .withBody(readFile("responses/configuration/access-types-limit.json"))
+        ));
+  }
+
+  private void mockInvalidAccessTypesLimit() throws IOException, URISyntaxException {
+    stubFor(
+      get(new UrlPathPattern(CONFIG_ACCESS_TYPE_LIMIT_URL_PATTERN, true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(200)
+          .withBody(readFile("responses/configuration/access-types-limit-invalid.json"))
+        ));
   }
 }

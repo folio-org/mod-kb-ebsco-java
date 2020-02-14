@@ -1,0 +1,8 @@
+{
+  "id": "44444444-4444-4444-a444-444444444444",
+  "type": "accessTypes",
+  "attributes": {
+    "name": "test access type four",
+    "description": "test access type description four"
+  }
+}

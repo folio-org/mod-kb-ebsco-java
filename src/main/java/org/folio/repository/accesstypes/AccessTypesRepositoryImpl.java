@@ -94,14 +94,14 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletableFuture<Long> count(String tenantId) {
+  public CompletableFuture<Integer> count(String tenantId) {
     Promise<ResultSet> promise = Promise.promise();
 
     String query = String.format(SELECT_COUNT_ACCESS_TYPES, getAccessTypesTableName(tenantId));
     LOG.info("Do count query: " + query);
     pgClient(tenantId).select(query, promise);
 
-    return mapResult(promise.future(), rs -> rs.getResults().get(0).getLong(0));
+    return mapResult(promise.future(), rs -> rs.getResults().get(0).getInteger(0));
   }
 
   @Override

@@ -1,0 +1,20 @@
+{
+  "configs": [
+    {
+      "id": "8081b458-c7db-4204-8893-718c0b4f594e",
+      "module": "EKB",
+      "configName": "access-types-limit",
+      "code": "access.types.number.limit.value",
+      "description": "Maximum number of access types allowed",
+      "default": true,
+      "enabled": true,
+      "value": "4"
+    }
+  ],
+  "totalRecords": 1,
+  "resultInfo": {
+    "totalRecords": 1,
+    "facets": [],
+    "diagnostics": []
+  }
+}

@@ -2,6 +2,8 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.common.FutureUtils.allOfSucceeded;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -9,8 +11,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import org.folio.cache.VertxCache;
-import org.folio.common.FutureUtils;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -24,10 +29,6 @@ import org.folio.holdingsiq.service.impl.PackagesHoldingsIQServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.VendorResult;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
@@ -59,7 +60,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     Set<CompletableFuture<PackageResult>> futures = packageIds.stream()
       .map(id -> retrievePackage(id, Collections.emptyList(), true))
       .collect(Collectors.toSet());
-    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToPackages);
   }
 

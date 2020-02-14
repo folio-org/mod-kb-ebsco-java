@@ -185,7 +185,8 @@
         {
           "methods": ["POST"],
           "pathPattern": "/eholdings/access-types",
-          "permissionsRequired": ["kb-ebsco.access-types.item.post"]
+          "permissionsRequired": ["kb-ebsco.access-types.item.post"],
+          "modulePermissions": ["users.item.get"]
         },
         {
           "methods": ["GET"],
@@ -195,7 +196,8 @@
         {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/access-types/{accessTypeId}",
-          "permissionsRequired": ["kb-ebsco.access-types.item.put"]
+          "permissionsRequired": ["kb-ebsco.access-types.item.put"],
+          "modulePermissions": ["users.item.get"]
         },
         {
           "methods": ["DELETE"],
