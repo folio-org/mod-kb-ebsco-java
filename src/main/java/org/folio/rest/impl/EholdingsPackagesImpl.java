@@ -4,7 +4,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.rest.util.ErrorHandler.error422Mapper;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
@@ -200,7 +199,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     } else {
       template.requestAction(context -> accessTypesService.findById(accessTypeId, okapiHeaders)
         .thenCompose(accessType -> postCustomPackage(packagePost, context)
-          .thenCompose(packageResult -> updateAccessType(accessType, packageResult, okapiHeaders))));
+          .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))));
     }
 
     template
@@ -213,18 +212,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           ErrorUtil.createError(exception.getMessage())
         ))
       .executeWithResult(Package.class);
-  }
-
-  private CompletableFuture<PackageResult> updateAccessType(AccessTypeCollectionItem accessType, PackageResult packageResult,
-                                                            Map<String, String> okapiHeaders) {
-    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
-    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
-
-    return accessTypesService.assignToRecord(accessType, recordId, RecordType.PACKAGE, okapiHeaders)
-      .thenApply(a -> {
-        packageResult.setAccessType(accessType);
-        return packageResult;
-      });
   }
 
   @Override
@@ -243,33 +230,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .executeWithResult(Package.class);
   }
 
-  private CompletionStage<PackageResult> loadAccessType(PackageResult result, Map<String, String> okapiHeaders) {
-    CompletableFuture<PackageResult> future = new CompletableFuture<>();
-
-    accessTypesService.findByRecord(getPackageId(result), RecordType.PACKAGE, okapiHeaders)
-      .thenAccept(accessType -> {
-        result.setAccessType(accessType);
-        future.complete(result);
-      })
-      .exceptionally(throwable -> {
-        Throwable cause = throwable.getCause();
-        if (cause instanceof NotFoundException) {
-          result.setAccessType(null);
-          future.complete(result);
-        } else {
-          future.completeExceptionally(cause);
-        }
-        return null;
-      });
-
-    return future;
-  }
-
-  private String getPackageId(PackageResult result) {
-    PackageByIdData packageData = result.getPackageData();
-    return packageData.getVendorId() + "-" + packageData.getPackageId();
-  }
-
   @Override
   @HandleValidationErrors
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity,
@@ -277,14 +237,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> processUpdateRequest(entity, parsedPackageId, context)
-        .thenCompose(o -> {
-          CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
-          return handleDeletedPackage(future, parsedPackageId, context.getOkapiData().getTenant());
-        })
-        .thenApply(packageById -> new PackageResult(packageById, null, null))
+      .requestAction(context -> fetchAccessType(entity, okapiHeaders)
+        .thenCompose(accessType -> processUpdateRequest(entity, parsedPackageId, context)
+          .thenCompose(o -> {
+            CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
+            return handleDeletedPackage(future, parsedPackageId, context.getOkapiData().getTenant());
+          })
+          .thenApply(packageById -> new PackageResult(packageById, null, null))
+          .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))
+        )
       )
-      .addErrorMapper(InputValidationException.class, error422Mapper())
       .executeWithResult(Package.class);
   }
 
@@ -371,6 +333,56 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           .handle(asyncResultHandler, e);
         return null;
       });
+  }
+
+  private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessTypeCollectionItem accessType,
+                                                                   PackageResult packageResult,
+                                                                   Map<String, String> okapiHeaders) {
+    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
+    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
+
+    return accessTypesService.updateRecordMapping(accessType, recordId, RecordType.PACKAGE, okapiHeaders)
+      .thenApply(a -> {
+        packageResult.setAccessType(accessType);
+        return packageResult;
+      });
+  }
+
+  private CompletableFuture<AccessTypeCollectionItem> fetchAccessType(PackagePutRequest entity,
+                                                                      Map<String, String> okapiHeaders) {
+    String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
+    if (accessTypeId == null) {
+      return CompletableFuture.completedFuture(null);
+    } else {
+      return accessTypesService.findById(accessTypeId, okapiHeaders);
+    }
+  }
+
+  private CompletionStage<PackageResult> loadAccessType(PackageResult result, Map<String, String> okapiHeaders) {
+    CompletableFuture<PackageResult> future = new CompletableFuture<>();
+
+    accessTypesService.findByRecord(getPackageId(result), RecordType.PACKAGE, okapiHeaders)
+      .thenAccept(accessType -> {
+        result.setAccessType(accessType);
+        future.complete(result);
+      })
+      .exceptionally(throwable -> {
+        Throwable cause = throwable.getCause();
+        if (cause instanceof NotFoundException) {
+          result.setAccessType(null);
+          future.complete(result);
+        } else {
+          future.completeExceptionally(cause);
+        }
+        return null;
+      });
+
+    return future;
+  }
+
+  private String getPackageId(PackageResult result) {
+    PackageByIdData packageData = result.getPackageData();
+    return packageData.getVendorId() + "-" + packageData.getPackageId();
   }
 
   private CompletableFuture<PackageResult> postCustomPackage(PackagePost packagePost, RMAPITemplateContext context) {

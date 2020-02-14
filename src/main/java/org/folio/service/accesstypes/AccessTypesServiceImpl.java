@@ -97,15 +97,25 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> assignToRecord(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
-      Map<String, String> okapiHeaders) {
+  public CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
+                                                     Map<String, String> okapiHeaders) {
+    if (accessType == null) {
+     return mappingRepository.deleteByRecord(recordId, recordType, tenantId(okapiHeaders));
+    }
 
-    AccessTypeMapping mapping = AccessTypeMapping.builder()
-      .accessTypeId(accessType.getId())
-      .recordId(recordId)
-      .recordType(recordType).build();
-
-    return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
+    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
+      .thenCompose(dbMapping -> {
+        AccessTypeMapping mapping;
+        if (dbMapping.isPresent()) {
+          mapping = dbMapping.get().toBuilder().accessTypeId(accessType.getId()).build();
+        } else {
+          mapping = AccessTypeMapping.builder()
+            .accessTypeId(accessType.getId())
+            .recordId(recordId)
+            .recordType(recordType).build();
+        }
+        return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
+      });
   }
 
   @Override
