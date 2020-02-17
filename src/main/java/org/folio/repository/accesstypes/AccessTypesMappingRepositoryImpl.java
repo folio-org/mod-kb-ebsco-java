@@ -9,11 +9,10 @@ import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.ACCESS_TYPE_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.DELETE_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.INSERT_MAPPING;
 import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.SELECT_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE;
-import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.UPDATE_MAPPING;
+import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.UPSERT_MAPPING;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.List;
@@ -50,12 +49,17 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
 
   @Override
   public CompletableFuture<AccessTypeMapping> save(AccessTypeMapping mapping, String tenantId) {
+    final AccessTypeMapping m = (StringUtils.isBlank(mapping.getId()))
+      ? mapping.toBuilder().id(UUID.randomUUID().toString()).build()
+      : mapping;
+    JsonArray params = createUpsertParams(m);
+    String query = format(UPSERT_MAPPING, getAccessTypesMappingTableName(tenantId));
+
+    LOG.info("Do insert query = {}", query);
     Promise<UpdateResult> promise = Promise.promise();
-    if (isNew(mapping)) {
-      return persist(mapping, promise, tenantId);
-    } else {
-      return merge(mapping, promise, tenantId);
-    }
+    pgClient(tenantId).execute(query, params, promise);
+
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> m);
   }
 
   @Override
@@ -83,33 +87,6 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> null);
   }
 
-  private CompletableFuture<AccessTypeMapping> merge(AccessTypeMapping mapping, Promise<UpdateResult> promise,
-                                                     String tenantId) {
-    JsonArray params = createUpdateParams(mapping);
-    String query = format(UPDATE_MAPPING, getAccessTypesMappingTableName(tenantId));
-
-    LOG.info("Do update query = {}", query);
-    pgClient(tenantId).execute(query, params, promise);
-
-    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> mapping);
-  }
-
-  private CompletableFuture<AccessTypeMapping> persist(AccessTypeMapping mapping, Promise<UpdateResult> promise,
-                                                       String tenantId) {
-    final AccessTypeMapping m = mapping.toBuilder().id(UUID.randomUUID().toString()).build();
-    JsonArray params = createInsertParams(m);
-    String query = format(INSERT_MAPPING, getAccessTypesMappingTableName(tenantId));
-
-    LOG.info("Do insert query = {}", query);
-    pgClient(tenantId).execute(query, params, promise);
-
-    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> m);
-  }
-
-  private boolean isNew(AccessTypeMapping mapping) {
-    return StringUtils.isBlank(mapping.getId());
-  }
-
   private Optional<AccessTypeMapping> mapToAccessTypeMapping(ResultSet resultSet) {
     final List<JsonObject> rows = resultSet.getRows();
 
@@ -126,17 +103,7 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
   }
 
   @NotNull
-  private JsonArray createUpdateParams(AccessTypeMapping mapping) {
-    return createParams(asList(
-      mapping.getRecordId(),
-      mapping.getRecordType().getValue(),
-      mapping.getAccessTypeId(),
-      mapping.getId()
-    ));
-  }
-
-  @NotNull
-  private JsonArray createInsertParams(AccessTypeMapping mapping) {
+  private JsonArray createUpsertParams(AccessTypeMapping mapping) {
     return createParams(asList(
       mapping.getId(),
       mapping.getRecordId(),
