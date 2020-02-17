@@ -55,13 +55,11 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -83,6 +81,7 @@ import org.folio.util.TitlesTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
+
   public static final String EHOLDINGS_TITLES_PATH = "eholdings/titles";
 
   @Test
@@ -102,8 +101,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .then()
       .statusCode(200)
       .extract().asString();
-    JSONAssert.assertEquals(
-      readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, false);
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, true);
   }
 
   @Test
@@ -124,8 +122,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .then()
         .statusCode(200)
         .extract().asString();
-      JSONAssert.assertEquals(
-        readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, false);
+      JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, true);
     } finally {
       KBTestUtil.clearDataFromTable(vertx, HOLDINGS_TABLE);
     }
@@ -193,8 +190,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       Title actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID).as(Title.class);
 
       assertTrue(actualResponse.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
-    }
-    finally {
+    } finally {
       TagsTestUtil.clearTags(vertx);
       KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
@@ -206,10 +202,10 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     mockDefaultConfiguration(getWiremockUrl());
     stubFor(
-        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-            .withBody(readFile(stubResponseFile))
-            .withStatus(404)));
+          .withBody(readFile(stubResponseFile))
+          .withStatus(404)));
 
     JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_NOT_FOUND)
       .as(JsonapiError.class);
@@ -304,8 +300,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       List<String> tagsFromDB = TagsTestUtil.getTags(vertx);
       assertThat(actual.getData().getAttributes().getTags().getTagList(), containsInAnyOrder(tagList.toArray()));
       assertThat(tagsFromDB, containsInAnyOrder(tagList.toArray()));
-    }
-    finally {
+    } finally {
       TagsTestUtil.clearTags(vertx);
       KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
@@ -451,7 +446,6 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       KBTestUtil.clearDataFromTable(vertx, TITLES_TABLE_NAME);
     }
   }
-
 
   @Test
   public void shouldReturn422WhenNameIsNotProvided() throws URISyntaxException, IOException {

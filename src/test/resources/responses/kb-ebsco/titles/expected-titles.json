@@ -29,6 +29,16 @@
             "subject": "BUSINESS & ECONOMICS / Small Business",
             "type": "BISAC"
           }
+        ],
+        "contributors": [
+          {
+            "type": "Author",
+            "contributor": "Mesiti, Pat."
+          },
+          {
+            "type": "Co-Author",
+            "contributor": "Black, John"
+          }
         ]
       },
       "relationships": {

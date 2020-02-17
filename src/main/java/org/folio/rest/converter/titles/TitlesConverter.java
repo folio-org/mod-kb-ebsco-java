@@ -10,10 +10,12 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.Subject;
 import org.folio.holdingsiq.model.Title;
 import org.folio.rest.converter.common.ConverterConsts;
+import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.TitleListDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.jaxrs.model.Titles;
@@ -25,6 +27,8 @@ public class TitlesConverter implements Converter<Title, org.folio.rest.jaxrs.mo
   private Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
   @Autowired
   private Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
+  @Autowired
+  private Converter<List<Contributor>, List<Contributors>> contributorsConverter;
 
   @Override
   public Titles convert(@NonNull Title title) {
@@ -38,8 +42,8 @@ public class TitlesConverter implements Converter<Title, org.folio.rest.jaxrs.mo
         .withIsTitleCustom(title.getIsTitleCustom())
         .withPublicationType(ConverterConsts.publicationTypes.get(title.getPubType().toLowerCase()))
         .withSubjects(subjectsConverter.convert(title.getSubjectsList()))
-        .withIdentifiers(identifiersConverter.convert(title.getIdentifiersList())));
-
+        .withIdentifiers(identifiersConverter.convert(title.getIdentifiersList()))
+        .withContributors(contributorsConverter.convert(title.getContributorsList())));
   }
-  
+
 }
