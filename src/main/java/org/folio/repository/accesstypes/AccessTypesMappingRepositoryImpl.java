@@ -17,7 +17,6 @@ import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
@@ -28,7 +27,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -49,17 +47,15 @@ public class AccessTypesMappingRepositoryImpl implements AccessTypesMappingRepos
 
   @Override
   public CompletableFuture<AccessTypeMapping> save(AccessTypeMapping mapping, String tenantId) {
-    final AccessTypeMapping m = (StringUtils.isBlank(mapping.getId()))
-      ? mapping.toBuilder().id(UUID.randomUUID().toString()).build()
-      : mapping;
-    JsonArray params = createUpsertParams(m);
+
+    JsonArray params = createUpsertParams(mapping);
     String query = format(UPSERT_MAPPING, getAccessTypesMappingTableName(tenantId));
 
     LOG.info("Do insert query = {}", query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
-    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> m);
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> mapping);
   }
 
   @Override
