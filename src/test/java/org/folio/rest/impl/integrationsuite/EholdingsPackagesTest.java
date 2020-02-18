@@ -590,6 +590,19 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn422OnPutWhenPackageIsNotUpdatable() throws URISyntaxException, IOException {
+
+      String putBody = readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json");
+      JsonapiError apiError = putWithStatus(PACKAGES_PATH, putBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER)
+        .as(JsonapiError.class);
+
+      verify(0, putRequestedFor(PACKAGE_URL_PATTERN));
+
+      assertEquals(1, apiError.getErrors().size());
+      assertEquals("Package is not updatable", apiError.getErrors().get(0).getTitle());
+  }
+
+  @Test
   public void shouldPassIsFullPackageAttributeToRMAPI() throws URISyntaxException, IOException {
     mockDefaultConfiguration(getWiremockUrl());
 
