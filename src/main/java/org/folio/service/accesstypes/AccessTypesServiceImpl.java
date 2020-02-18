@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -97,15 +98,30 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> assignToRecord(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
-      Map<String, String> okapiHeaders) {
+  public CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
+                                                     Map<String, String> okapiHeaders) {
+    if (accessType == null) {
+     return mappingRepository.deleteByRecord(recordId, recordType, tenantId(okapiHeaders));
+    }
 
-    AccessTypeMapping mapping = AccessTypeMapping.builder()
+    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
+      .thenCompose(dbMapping -> {
+        AccessTypeMapping mapping;
+        if (dbMapping.isPresent()) {
+          mapping = dbMapping.get().toBuilder().accessTypeId(accessType.getId()).build();
+        } else {
+          mapping = getAccessTypeMapping(accessType, recordId, recordType);
+        }
+        return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
+      });
+  }
+
+  private AccessTypeMapping getAccessTypeMapping(AccessTypeCollectionItem accessType, String recordId, RecordType recordType) {
+    return AccessTypeMapping.builder()
+      .id(UUID.randomUUID().toString())
       .accessTypeId(accessType.getId())
       .recordId(recordId)
       .recordType(recordType).build();
-
-    return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
   }
 
   @Override

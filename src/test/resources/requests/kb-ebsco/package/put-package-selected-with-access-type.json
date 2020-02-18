@@ -1,0 +1,26 @@
+{
+  "data": {
+    "type": "packages",
+    "attributes": {
+      "contentType": "Aggregated Full Text",
+      "accessTypeId": "%s",
+      "customCoverage": {
+        "beginCoverage": "2003-01-01",
+        "endCoverage": "2004-01-01"
+      },
+      "isCustom": true,
+      "isSelected": true,
+      "isFullPackage": true,
+      "name": "name of the ages forever and ever",
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "allowKbToAddTitles": false,
+      "proxy": {
+        "id": "<n>",
+        "inherited": false
+      }
+    }
+  }
+}

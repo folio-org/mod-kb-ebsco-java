@@ -61,9 +61,7 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
       })
       .exceptionally(e -> {
         logger.error(UPDATE_ERROR_MESSAGE, e);
-        new ErrorHandler()
-          .addDefaultMapper()
-          .handle(asyncResultHandler, e);
+        new ErrorHandler().handle(asyncResultHandler, e);
         return null;
       });
   }
@@ -97,7 +95,6 @@ public class EholdingsConfigurationImpl implements EholdingsConfiguration {
           .add(ConfigurationInvalidException.class, exception ->
             EholdingsConfiguration.PutEholdingsConfigurationResponse
               .respond422WithApplicationVndApiJson(ErrorUtil.createError(exception.getErrors().get(0).getMessage())))
-          .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
       });
