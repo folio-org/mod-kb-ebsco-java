@@ -2,7 +2,7 @@ package org.folio.rest.impl;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-import static org.folio.rest.util.ErrorHandler.error422Mapper;
+import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
@@ -119,8 +119,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           context.getProvidersService().retrieveProviders(q, page, count, Sort.valueOf(sort.toUpperCase()))
         );
     }
-    template
-      .executeWithResult(ProviderCollection.class);
+    template.executeWithResult(ProviderCollection.class);
   }
 
   @Override
@@ -154,7 +153,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .requestAction(context ->
         processUpdateRequest(entity, providerIdLong, context)
           .thenApply(result -> new VendorResult(result, null)))
-      .addErrorMapper(InputValidationException.class, error422Mapper())
+      .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .executeWithResult(Provider.class);
   }
 
@@ -177,7 +176,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .exceptionally(e -> {
         new ErrorHandler()
           .addInputValidation422Mapper()
-          .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
       });

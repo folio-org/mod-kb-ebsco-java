@@ -19,9 +19,9 @@ public interface AccessTypesService {
 
   CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, Map<String, String> okapiHeaders);
 
-  CompletableFuture<Void> assignToRecord(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
-      Map<String, String> okapiHeaders);
+  CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
+                                              Map<String, String> okapiHeaders);
 
   CompletableFuture<AccessTypeCollectionItem> findByRecord(String recordId, RecordType recordType,
-      Map<String, String> okapiHeaders);
+                                                           Map<String, String> okapiHeaders);
 }

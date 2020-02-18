@@ -11,9 +11,6 @@ import javax.ws.rs.core.Response;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.springframework.core.convert.ConversionService;
@@ -25,15 +22,15 @@ import org.folio.rest.validator.HeaderValidator;
 
 /**
  * Provides a common template for asynchronous interaction with Holdings services,
- *
+ * <p>
  * RMAPITemplate executes following step:
  * 1) Creates and configures Holdings services
  * 2) Calls requestAction with one of Holding services as a parameter
  * 3) Automatically converts return value of requestAction to the required response
  * 4) Optionally handles exception with custom error mappers or with default list of error mappers
- *
+ * <p>
  * Automatic conversion of result requires ConversionService to contain appropriate Converter implementation
- *
+ * <p>
  * RMAPITemplate requires following parameters:
  * 1) okapiHeaders to retrieve correct RMAPIConfiguration
  * 2) asyncResultHandler that will be called on success or failure
@@ -41,8 +38,6 @@ import org.folio.rest.validator.HeaderValidator;
  * 4) optional error mappers
  */
 public class RMAPITemplate {
-
-  private final Logger logger = LoggerFactory.getLogger(RMAPITemplate.class);
 
   private ConfigurationService configurationService;
   private ConversionService conversionService;
@@ -58,7 +53,8 @@ public class RMAPITemplate {
 
 
   public RMAPITemplate(ConfigurationService configurationService, ConversionService conversionService,
-                       HeaderValidator headerValidator, RMAPITemplateContextBuilder contextBuilder, Map<String, String> okapiHeaders,
+                       HeaderValidator headerValidator, RMAPITemplateContextBuilder contextBuilder,
+                       Map<String, String> okapiHeaders,
                        Handler<AsyncResult<Response>> asyncResultHandler) {
     this.configurationService = configurationService;
     this.conversionService = conversionService;
@@ -73,18 +69,19 @@ public class RMAPITemplate {
    *                      Return value of this function will be converted to response
    * @return this
    */
-  public RMAPITemplate requestAction(Function<RMAPITemplateContext, CompletableFuture<?>> requestAction){
+  public RMAPITemplate requestAction(Function<RMAPITemplateContext, CompletableFuture<?>> requestAction) {
     this.requestAction = requestAction;
     return this;
   }
 
   /**
    * Register error mapper for exceptionClass
+   *
    * @param exceptionClass class of exception that this mapper will handle
-   * @param errorMapper function that converts exception to javax.ws.rs.core.Response
+   * @param errorMapper    function that converts exception to javax.ws.rs.core.Response
    * @return this
    */
-  public <T extends Throwable>  RMAPITemplate addErrorMapper(Class<T> exceptionClass, Function<T, Response> errorMapper){
+  public <T extends Throwable> RMAPITemplate addErrorMapper(Class<T> exceptionClass, Function<T, Response> errorMapper) {
     errorHandler.add(exceptionClass, errorMapper);
     return this;
   }
@@ -97,10 +94,10 @@ public class RMAPITemplate {
     executeInternal(
       result ->
         Response
-        .status(HttpStatus.SC_OK)
-        .header(HTTP.CONTENT_TYPE, JSON_API_TYPE)
-        .entity(conversionService.convert(result, responseClass))
-        .build()
+          .status(HttpStatus.SC_OK)
+          .header(HTTP.CONTENT_TYPE, JSON_API_TYPE)
+          .entity(conversionService.convert(result, responseClass))
+          .build()
     );
   }
 
@@ -127,11 +124,9 @@ public class RMAPITemplate {
       .thenCompose(o -> requestAction.apply(contextBuilder.build()))
       .thenAccept(result -> asyncResultHandler.handle(Future.succeededFuture(successHandler.apply(result))))
       .exceptionally(e -> {
-        logger.error("Internal Server Error", e);
         errorHandler
-          .addInputValidationMapper()
+          .addInputValidation400Mapper()
           .addRmApiMapping()
-          .addDefaultMapper()
           .handle(asyncResultHandler, e);
         return null;
       });

@@ -120,8 +120,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
 
     ErrorHandler errHandler = new ErrorHandler()
       .add(ValidationException.class, exceptionHandler)
-      .addInputValidationMapper()
-      .addDefaultMapper();
+      .addInputValidation400Mapper();
 
     errHandler.handle(handler, th);
 

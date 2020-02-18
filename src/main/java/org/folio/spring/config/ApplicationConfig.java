@@ -1,10 +1,10 @@
 package org.folio.spring.config;
 
-import static org.folio.rest.exception.AccessTypesExceptionHandlers.error400Mapper;
-import static org.folio.rest.exception.AccessTypesExceptionHandlers.error401AuthorizationExcMapper;
-import static org.folio.rest.exception.AccessTypesExceptionHandlers.error401NotAuthorizedMapper;
-import static org.folio.rest.exception.AccessTypesExceptionHandlers.error404Mapper;
-import static org.folio.rest.exception.AccessTypesExceptionHandlers.errorDataBaseMapper;
+import static org.folio.rest.util.ExceptionMappers.error400BadRequestMapper;
+import static org.folio.rest.util.ExceptionMappers.error401AuthorizationMapper;
+import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
+import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
+import static org.folio.rest.util.ExceptionMappers.error400ConstraintViolationMapper;
 
 import java.util.List;
 
@@ -133,12 +133,11 @@ public class ApplicationConfig {
   @Bean
   public ErrorHandler accessTypesExceptionHandler() {
     return new ErrorHandler()
-      .add(ConstraintViolationException.class, errorDataBaseMapper())
-      .add(BadRequestException.class, error400Mapper())
-      .add(NotFoundException.class, error404Mapper())
+      .add(ConstraintViolationException.class, error400ConstraintViolationMapper())
+      .add(BadRequestException.class, error400BadRequestMapper())
+      .add(NotFoundException.class, error404NotFoundMapper())
       .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
-      .add(AuthorizationException.class, error401AuthorizationExcMapper())
-      .addDefaultMapper();
+      .add(AuthorizationException.class, error401AuthorizationMapper());
   }
   @Bean
   public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
