@@ -43,6 +43,15 @@
         "description": "List of title subjects",
         "$ref": "../subject.json"
       }
+    },
+    "contributors": {
+      "type": "array",
+      "description": "List of contributors",
+      "items": {
+        "type": "object",
+        "description": "The contributor's schema",
+        "$ref": "../contributor.json"
+      }
     }
   }
 }

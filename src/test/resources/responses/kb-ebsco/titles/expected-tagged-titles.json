@@ -25,16 +25,39 @@
             "subject": "LITERARY CRITICISM / American / General",
             "type": "BISAC"
           }
+        ],
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Bloom, Harold"
+          }
         ]
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
       }
     },
     {
       "type": "titles",
       "id": "19412030",
       "attributes": {
+        "identifiers": [],
         "name": "Test Title",
         "publicationType": "Book",
-        "publisherName": "Test one Press"
+        "publisherName": "Test one Press",
+        "subjects": [],
+        "contributors": []
+      },
+      "relationships": {
+        "resources": {
+          "meta": {
+            "included": false
+          }
+        }
       }
     }
   ],
