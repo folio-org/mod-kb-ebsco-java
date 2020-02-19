@@ -229,7 +229,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity,
                                               Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    if (notUpdatablePackage(entity)) {
+    if (!isPackageUpdatable(entity)) {
       throw new InputValidationException(PACKAGE_NOT_UPDATABLE_TITLE, PACKAGE_NOT_UPDATABLE_DETAILS);
     } else {
       PackageId parsedPackageId = idParser.parsePackageId(packageId);
@@ -561,17 +561,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
   }
 
-  private boolean notUpdatablePackage(PackagePutRequest entity) {
+  private boolean isPackageUpdatable(PackagePutRequest entity) {
     PackagePutDataAttributes packageData = entity.getData().getAttributes();
     if (BooleanUtils.isFalse(packageData.getIsCustom()) &&
       BooleanUtils.isFalse(packageData.getIsSelected())) {
       try {
         packagePutBodyValidator.validate(entity);
       } catch (InputValidationException ex) {
-        return true;
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   /**
