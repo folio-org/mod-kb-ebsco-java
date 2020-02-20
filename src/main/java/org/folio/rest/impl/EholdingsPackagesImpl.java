@@ -92,6 +92,7 @@ import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.ResourceCollectionResult;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
+import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.spring.SpringContextUtil;
@@ -142,6 +143,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private Converter<Titles, TitleCollectionResult> titleCollectionConverter;
   @Autowired
   private AccessTypesService accessTypesService;
+  @Autowired
+  private AccessTypeMappingsService accessTypeMappingsService;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -350,7 +353,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId,
                                                       Map<String, String> okapiHeaders) {
-    return accessTypesService.updateRecordMapping(accessType, recordId, RecordType.PACKAGE, okapiHeaders);
+    return accessTypeMappingsService.update(accessType, recordId, RecordType.PACKAGE, okapiHeaders);
   }
 
   private CompletableFuture<AccessTypeCollectionItem> fetchAccessType(PackagePutRequest entity,
