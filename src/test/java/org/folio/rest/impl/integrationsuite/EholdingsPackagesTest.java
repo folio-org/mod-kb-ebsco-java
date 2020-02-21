@@ -590,6 +590,51 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldDeleteAccessTypeMappingWhenRMAPIsend404() throws URISyntaxException, IOException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      String currentAccessTypeId = accessTypes.get(0).getId();
+      String newAccessTypeId = accessTypes.get(1).getId();
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      PackageByIdData packageData = mapper
+        .readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class)
+        .toByIdBuilder()
+        .contentType("AggregatedFullText")
+        .build();
+
+      String updatedPackageValue = mapper.writeValueAsString(packageData);
+      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+      stubFor(get(PACKAGE_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withStatus(SC_NOT_FOUND)));
+
+      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+        newAccessTypeId);
+      putWithStatus(PACKAGES_PATH, putBody, SC_NOT_FOUND);
+
+      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+      assertEquals(0, accessTypeMappingsInDB.size());
+    } finally {
+      clearAccessTypes(vertx);
+      clearAccessTypesMapping(vertx);
+    }
+  }
+
+  @Test
+  public void shouldReturn422OnPutWhenPackageIsNotUpdatable() throws URISyntaxException, IOException {
+
+      String putBody = readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json");
+      JsonapiError apiError = putWithStatus(PACKAGES_PATH, putBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER)
+        .as(JsonapiError.class);
+
+      verify(0, putRequestedFor(PACKAGE_URL_PATTERN));
+
+      assertEquals(1, apiError.getErrors().size());
+      assertEquals("Package is not updatable", apiError.getErrors().get(0).getTitle());
+  }
+
+  @Test
   public void shouldPassIsFullPackageAttributeToRMAPI() throws URISyntaxException, IOException {
     mockDefaultConfiguration(getWiremockUrl());
 

@@ -77,6 +77,7 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.parser.IdParser;
+import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
@@ -101,6 +102,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
+  private static final String PACKAGE_NOT_UPDATABLE_TITLE = "Package is not updatable";
+  private static final String PACKAGE_NOT_UPDATABLE_DETAILS = "Package's 'isCustom' and 'isSelected' are 'false'";
 
   @Autowired
   private PackageRequestConverter converter;
@@ -226,24 +229,28 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity,
                                               Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = idParser.parsePackageId(packageId);
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> fetchAccessType(entity, okapiHeaders)
-        .thenCompose(accessType -> processUpdateRequest(entity, parsedPackageId, context)
-          .thenCompose(o -> {
-            CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
-            return handleDeletedPackage(future, parsedPackageId, context.getOkapiData().getTenant());
-          })
-          .thenApply(packageById -> new PackageResult(packageById, null, null))
-          .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))
+    if (!isPackageUpdatable(entity)) {
+      throw new InputValidationException(PACKAGE_NOT_UPDATABLE_TITLE, PACKAGE_NOT_UPDATABLE_DETAILS);
+    } else {
+      PackageId parsedPackageId = idParser.parsePackageId(packageId);
+      templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+        .requestAction(context -> fetchAccessType(entity, okapiHeaders)
+          .thenCompose(accessType -> processUpdateRequest(entity, parsedPackageId, context)
+            .thenCompose(o -> {
+              CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
+              return handleDeletedPackage(future, parsedPackageId, okapiHeaders);
+            })
+            .thenApply(packageById -> new PackageResult(packageById, null, null))
+            .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))
+          )
         )
-      )
-      .addErrorMapper(NotFoundException.class,
-        exception -> PutEholdingsPackagesByPackageIdResponse.respond400WithApplicationVndApiJson(
-          ErrorUtil.createError(exception.getMessage())
-        ))
-      .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
-      .executeWithResult(Package.class);
+        .addErrorMapper(NotFoundException.class,
+          exception -> PutEholdingsPackagesByPackageIdResponse.respond400WithApplicationVndApiJson(
+            ErrorUtil.createError(exception.getMessage())
+          ))
+        .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
+        .executeWithResult(Package.class);
+    }
   }
 
   @Override
@@ -333,14 +340,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessTypeCollectionItem accessType,
                                                                    PackageResult packageResult,
                                                                    Map<String, String> okapiHeaders) {
-    PackageId id = idParser.parsePackageId(packageResult.getPackageData().getFullPackageId());
-    String recordId = id.getProviderIdPart() + "-" + id.getPackageIdPart();
-
-    return accessTypesService.updateRecordMapping(accessType, recordId, RecordType.PACKAGE, okapiHeaders)
+    String recordId = packageResult.getPackageData().getFullPackageId();
+    return updateRecordMapping(accessType, recordId, okapiHeaders)
       .thenApply(a -> {
         packageResult.setAccessType(accessType);
         return packageResult;
       });
+  }
+
+  private CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId,
+                                                      Map<String, String> okapiHeaders) {
+    return accessTypesService.updateRecordMapping(accessType, recordId, RecordType.PACKAGE, okapiHeaders);
   }
 
   private CompletableFuture<AccessTypeCollectionItem> fetchAccessType(PackagePutRequest entity,
@@ -373,11 +383,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       });
 
     return future;
-  }
-
-  private String getPackageId(PackageResult result) {
-    PackageByIdData packageData = result.getPackageData();
-    return packageData.getVendorId() + "-" + packageData.getPackageId();
   }
 
   private CompletableFuture<PackageResult> postCustomPackage(PackagePost packagePost, RMAPITemplateContext context) {
@@ -520,8 +525,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
     return
       packageRepository.delete(packageId, tenant)
-        .thenCompose(o -> tagRepository
-          .deleteRecordTags(tenant, packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart(), RecordType.PACKAGE))
+        .thenCompose(o -> tagRepository.deleteRecordTags(tenant, getPackageId(packageId), RecordType.PACKAGE))
         .thenCompose(aBoolean -> completedFuture(null));
   }
 
@@ -532,8 +536,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       PackageId id = packages.getId();
       return
         updateStoredPackage(tags, packages, tenant)
-          .thenCompose(o -> tagRepository.updateRecordTags(
-            tenant, id.getProviderIdPart() + "-" + id.getPackageIdPart(), RecordType.PACKAGE, tags.getTagList()))
+          .thenCompose(o -> tagRepository.updateRecordTags(tenant, getPackageId(id), RecordType.PACKAGE, tags.getTagList()))
           .thenApply(updated -> null);
     }
   }
@@ -547,10 +550,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId,
                                                        RMAPITemplateContext context) {
-    if (!isPackageUpdatable(entity)) {
-      //proceed to next stage without updating
-      return completedFuture(null);
-    }
     PackagePut packagePutBody;
     if (BooleanUtils.isTrue(entity.getData().getAttributes().getIsCustom())) {
       customPackagePutBodyValidator.validate(entity);
@@ -576,23 +575,34 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   /**
-   * Delete local package and tags if package was deleted on update (normally this can only happen in case of custom package),
+   * Delete local package, tags and access type mapping if package was deleted on update
+   * (normally this can only happen in case of custom package)
    *
    * @return future with initial result, or exceptionally completed future if deletion of tags failed
    */
   private CompletableFuture<PackageByIdData> handleDeletedPackage(CompletableFuture<PackageByIdData> future,
-                                                                  PackageId packageId, String tenant) {
-    CompletableFuture<Void> deleteTagsFuture = new CompletableFuture<>();
-    return future.whenComplete((packageById, e) ->
-    {
+                                                                  PackageId packageId, Map<String, String> okapiHeaders) {
+    CompletableFuture<Void> deleteFuture = new CompletableFuture<>();
+    return future.whenComplete((packageById, e) -> {
       if (e instanceof ResourceNotFoundException) {
-        deleteTags(packageId, tenant)
-          .thenAccept(o -> deleteTagsFuture.complete(null));
+        String recordId = getPackageId(packageId);
+        CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, recordId, okapiHeaders);
+        CompletableFuture<Void> deleteTags = deleteTags(packageId, TenantTool.tenantId(okapiHeaders));
+
+        CompletableFuture.allOf(deleteAccessMapping, deleteTags)
+          .thenAccept(o -> deleteFuture.complete(null));
       } else {
-        deleteTagsFuture.complete(null);
+        deleteFuture.complete(null);
       }
-    })
-      .thenCombine(deleteTagsFuture, (o, aBoolean) -> future.join());
+    }).thenCombine(deleteFuture, (o, aBoolean) -> future.join());
+  }
+
+  private String getPackageId(PackageId packageId) {
+    return packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart();
+  }
+
+  private String getPackageId(PackageResult result) {
+    return result.getPackageData().getFullPackageId();
   }
 
   private boolean isTagOnlySearch(String filterTags, String... q) {
