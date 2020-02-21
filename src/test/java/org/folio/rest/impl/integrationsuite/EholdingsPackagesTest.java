@@ -375,6 +375,27 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldDeletePackageAccessTypeMappingOnDelete() throws IOException, URISyntaxException {
+    try {
+      String accessTypeId = insertAccessTypes(testData(), vertx).get(0).getId();
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
+
+      mockDefaultConfiguration(getWiremockUrl());
+      mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+
+      EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+      mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), putBodyPattern, SC_NO_CONTENT);
+
+      deleteWithNoContent(PACKAGES_PATH);
+
+      List<AccessTypeMapping> mappingsAfterRequest = AccessTypesTestUtil.getAccessTypeMappings(vertx);
+      assertThat(mappingsAfterRequest, empty());
+    } finally {
+      clearAccessTypes(vertx);
+    }
+  }
+
+  @Test
   public void shouldDeletePackageOnDeleteRequest() throws IOException, URISyntaxException {
     sendPost(readFile("requests/kb-ebsco/package/post-package-request.json"));
     sendPutTags(Collections.singletonList(STUB_TAG_VALUE));
