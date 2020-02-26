@@ -7,15 +7,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
@@ -25,8 +24,6 @@ import org.folio.common.FutureUtils;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.repository.RecordType;
-import org.folio.repository.accesstypes.AccessTypeMapping;
-import org.folio.repository.accesstypes.AccessTypesMappingRepository;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
@@ -39,15 +36,18 @@ import org.folio.service.userlookup.UserLookUpService;
 @Component
 public class AccessTypesServiceImpl implements AccessTypesService {
 
-  private static final String ACCESS_TYPES_LIMIT_PROP = "access.types.number.limit.value";
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypesServiceImpl.class);
+
+  private static final String ACCESS_TYPES_LIMIT_PROP = "access.types.number.limit.value";
+  private static final String HAS_ASSIGNED_RECORDS_MESSAGE = "Can't delete access type that has assigned records";
+  private static final String MAXIMUM_ACCESS_TYPES_MESSAGE = "Maximum number of access types allowed is ";
 
   @Autowired
   private UserLookUpService userLookUpService;
   @Autowired
-  private AccessTypesRepository repository;
+  private AccessTypeMappingsService mappingService;
   @Autowired
-  private AccessTypesMappingRepository mappingRepository;
+  private AccessTypesRepository repository;
   @Autowired
   private Converter<List<AccessTypeCollectionItem>, AccessTypeCollection> accessTypeCollectionConverter;
   @Autowired
@@ -55,20 +55,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Value("${access.types.default.number.limit.value}")
   private int defaultAccessTypesMaxValue;
-
-  @Override
-  public CompletableFuture<AccessTypeCollectionItem> save(AccessTypeCollectionItem accessType,
-                                                          Map<String, String> okapiHeaders) {
-
-    return validateAccessTypeLimit(okapiHeaders)
-      .thenCompose(o -> userLookUpService.getUserInfo(okapiHeaders)
-        .thenCompose(creatorUser -> {
-          accessType.setCreator(getUserDisplayInfo(creatorUser));
-          accessType.getMetadata().setCreatedByUsername(creatorUser.getUserName());
-          return repository.save(accessType, tenantId(okapiHeaders));
-        })
-      );
-  }
 
   @Override
   public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
@@ -82,13 +68,32 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
-    return repository.delete(id, tenantId(okapiHeaders));
+  public CompletableFuture<AccessTypeCollectionItem> findByRecord(String recordId, RecordType recordType,
+                                                                  Map<String, String> okapiHeaders) {
+    return mappingService.findByRecord(recordId, recordType, okapiHeaders)
+      .thenCompose(mapping -> {
+        CompletableFuture<Optional<AccessTypeCollectionItem>> future = repository.findById(mapping.getAccessTypeId(),
+          tenantId(okapiHeaders));
+
+        return future.thenApply(getAccessTypeOrFail(mapping.getAccessTypeId()));
+      });
+  }
+
+  @Override
+  public CompletableFuture<AccessTypeCollectionItem> save(AccessTypeCollectionItem accessType,
+                                                          Map<String, String> okapiHeaders) {
+    return validateAccessTypeLimit(okapiHeaders)
+      .thenCompose(o -> userLookUpService.getUserInfo(okapiHeaders)
+        .thenCompose(creatorUser -> {
+          accessType.setCreator(getUserDisplayInfo(creatorUser));
+          accessType.getMetadata().setCreatedByUsername(creatorUser.getUserName());
+          return repository.save(accessType, tenantId(okapiHeaders));
+        })
+      );
   }
 
   @Override
   public CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, Map<String, String> okapiHeaders) {
-
     return userLookUpService.getUserInfo(okapiHeaders)
       .thenCompose(updaterUser -> {
         accessType.setUpdater(getUserDisplayInfo(updaterUser));
@@ -98,45 +103,19 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
-                                                     Map<String, String> okapiHeaders) {
-    if (accessType == null) {
-     return mappingRepository.deleteByRecord(recordId, recordType, tenantId(okapiHeaders));
-    }
-
-    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
-      .thenCompose(dbMapping -> {
-        AccessTypeMapping mapping;
-        if (dbMapping.isPresent()) {
-          mapping = dbMapping.get().toBuilder().accessTypeId(accessType.getId()).build();
-        } else {
-          mapping = getAccessTypeMapping(accessType, recordId, recordType);
+  public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
+    return hasMappings(id, okapiHeaders)
+      .thenAccept(hasMappings -> {
+        if (BooleanUtils.isTrue(hasMappings)) {
+          throw new BadRequestException(HAS_ASSIGNED_RECORDS_MESSAGE);
         }
-        return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
-      });
+      })
+      .thenCompose(aVoid -> repository.delete(id, tenantId(okapiHeaders)));
   }
 
-  private AccessTypeMapping getAccessTypeMapping(AccessTypeCollectionItem accessType, String recordId, RecordType recordType) {
-    return AccessTypeMapping.builder()
-      .id(UUID.randomUUID().toString())
-      .accessTypeId(accessType.getId())
-      .recordId(recordId)
-      .recordType(recordType).build();
-  }
-
-  @Override
-  public CompletableFuture<AccessTypeCollectionItem> findByRecord(String recordId, RecordType recordType,
-      Map<String, String> okapiHeaders) {
-    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
-      .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException(
-        String.format("Access type mapping not found: recordId = %s, recordType = %s", recordId, recordType)))
-      )
-      .thenCompose(mapping -> {
-        CompletableFuture<Optional<AccessTypeCollectionItem>> future = repository.findById(mapping.getAccessTypeId(),
-          tenantId(okapiHeaders));
-
-        return future.thenApply(getAccessTypeOrFail(mapping.getAccessTypeId()));
-      });
+  public CompletableFuture<Boolean> hasMappings(String id, Map<String, String> okapiHeaders) {
+    return mappingService.findByAccessTypeId(id, okapiHeaders)
+      .thenApply(accessTypeMappings -> !accessTypeMappings.isEmpty());
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(Map<String, String> okapiHeaders) {
@@ -144,7 +123,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       configuration.getInt(ACCESS_TYPES_LIMIT_PROP, defaultAccessTypesMaxValue, new OkapiParams(okapiHeaders)));
     final CompletableFuture<Integer> stored = repository.count(TenantTool.tenantId(okapiHeaders));
     return FutureUtils
-      .allOfSucceeded(Arrays.asList(allowed, stored),throwable -> LOG.warn(throwable.getMessage(), throwable))
+      .allOfSucceeded(Arrays.asList(allowed, stored), throwable -> LOG.warn(throwable.getMessage(), throwable))
       .thenApply(this::checkAccessTypesSize);
   }
 
@@ -162,10 +141,11 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     final int limit = configValue <= defaultAccessTypesMaxValue ? configValue : defaultAccessTypesMaxValue;
     final Integer stored = futures.get(1);
     if (stored >= limit) {
-      throw new BadRequestException("Maximum number of access types allowed is " + limit);
+      throw new BadRequestException(MAXIMUM_ACCESS_TYPES_MESSAGE + limit);
     }
     return null;
   }
+
   private Function<Optional<AccessTypeCollectionItem>, AccessTypeCollectionItem> getAccessTypeOrFail(String id) {
     return accessType -> accessType.orElseThrow(() -> ServiceExceptions.notFound("Access type", id));
   }

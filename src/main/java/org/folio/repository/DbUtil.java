@@ -1,6 +1,6 @@
 package org.folio.repository;
 
-import static org.folio.repository.accesstypes.AccessTypesMappingTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;

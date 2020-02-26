@@ -1,6 +1,6 @@
 package org.folio.repository.accesstypes;
 
-public class AccessTypesMappingTableConstants {
+public class AccessTypeMappingsTableConstants {
 
   public static final String ID_COLUMN = "id";
   public static final String RECORD_ID_COLUMN = "record_id";
@@ -25,7 +25,10 @@ public class AccessTypesMappingTableConstants {
   public static final String SELECT_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE =
     "SELECT * FROM %s WHERE " + CONDITION_BY_RECORD_ID_AND_RECORD_TYPE + " LIMIT 1;";
 
-  private AccessTypesMappingTableConstants() {
+  public static final String SELECT_MAPPING_BY_ACCESS_TYPE_ID =
+    "SELECT * FROM %s WHERE " + ACCESS_TYPE_ID_COLUMN + " = ?;";
+
+  private AccessTypeMappingsTableConstants() {
   }
 
 }

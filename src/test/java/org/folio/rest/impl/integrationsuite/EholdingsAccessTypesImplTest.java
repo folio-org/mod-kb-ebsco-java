@@ -20,6 +20,8 @@ import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.AccessTypesTestUtil.clearAccessTypesMapping;
+import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 
@@ -39,6 +41,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesTableConstants;
 import org.folio.rest.converter.accesstypes.AccessTypeCollectionConverter;
 import org.folio.rest.impl.WireMockTestBase;
@@ -166,12 +169,26 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404IfNotFound() {
+  public void shouldReturn404OnDeleteIfNotFound() {
     String id = "11111111-1111-1111-a111-111111111111";
     JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_NOT_FOUND).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
     assertEquals(String.format("Access type with id '%s' not found", id), error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn400OnDeleteWhenAssignedToRecords() {
+    try {
+      List<AccessTypeCollectionItem> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
+      String id = accessTypesBeforeDelete.get(0).getId();
+      insertAccessTypeMapping("11111111-1111", RecordType.PACKAGE, id, vertx);
+
+      JsonapiError errors = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
+      assertEquals("Can't delete access type that has assigned records", errors.getErrors().get(0).getTitle());
+    } finally {
+      clearAccessTypesMapping(vertx);
+    }
   }
 
   @Test
