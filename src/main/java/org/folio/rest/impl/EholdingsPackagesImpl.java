@@ -4,6 +4,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
@@ -201,10 +202,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     }
 
     template
-      .addErrorMapper(NotFoundException.class,
-        exception -> PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
-          ErrorUtil.createError(exception.getMessage())
-        ))
+      .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
       .executeWithResult(Package.class);
   }
 
@@ -244,10 +242,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
             .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))
           )
         )
-        .addErrorMapper(NotFoundException.class,
-          exception -> PutEholdingsPackagesByPackageIdResponse.respond400WithApplicationVndApiJson(
-            ErrorUtil.createError(exception.getMessage())
-          ))
+        .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
         .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
         .executeWithResult(Package.class);
     }
