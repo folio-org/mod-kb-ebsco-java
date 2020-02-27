@@ -1,9 +1,14 @@
 package org.folio.rmapi.result;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.Tags;
 
+@Getter
+@Setter
 public class VendorResult implements Tagable {
 
   private VendorById vendor;
@@ -13,23 +18,5 @@ public class VendorResult implements Tagable {
   public VendorResult(VendorById vendor, Packages packages) {
     this.vendor = vendor;
     this.packages = packages;
-  }
-
-  public VendorById getVendor() {
-    return vendor;
-  }
-
-  public Packages getPackages() {
-    return packages;
-  }
-
-  @Override
-  public Tags getTags() {
-    return tags;
-  }
-
-  @Override
-  public void setTags(Tags tags) {
-    this.tags = tags;
   }
 }

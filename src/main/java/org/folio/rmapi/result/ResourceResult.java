@@ -1,11 +1,16 @@
 package org.folio.rmapi.result;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 
+@Getter
+@Setter
 public class ResourceResult implements Accessible, Tagable {
 
   private Title title;
@@ -20,41 +25,5 @@ public class ResourceResult implements Accessible, Tagable {
     this.vendor = vendor;
     this.packageData = packageData;
     this.includeTitle = includeTitle;
-  }
-
-  public Title getTitle() {
-    return title;
-  }
-
-  public VendorById getVendor() {
-    return vendor;
-  }
-
-  public PackageByIdData getPackageData() {
-    return packageData;
-  }
-
-  public boolean isIncludeTitle() {
-    return includeTitle;
-  }
-
-  @Override
-  public Tags getTags() {
-    return tags;
-  }
-
-  @Override
-  public void setTags(Tags tags) {
-    this.tags = tags;
-  }
-
-  @Override
-  public AccessTypeCollectionItem getAccessType() {
-    return accessType;
-  }
-
-  @Override
-  public void setAccessType(AccessTypeCollectionItem accessType) {
-    this.accessType = accessType;
   }
 }
