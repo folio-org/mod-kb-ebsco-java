@@ -29,7 +29,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -44,9 +43,9 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.resources.ResourceRepository;
-import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
@@ -74,6 +73,7 @@ import org.folio.rmapi.result.ObjectsForPostResourceResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
+import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
 
@@ -98,8 +98,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Autowired
   private TagRepository tagRepository;
   @Autowired
-  private Converter<List<Tag>, Tags> tagsConverter;
-  @Autowired
   private ResourceRepository resourceRepository;
   @Autowired
   private ResourceTagsPutBodyValidator resourceTagsPutBodyValidator;
@@ -107,6 +105,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private AccessTypesService accessTypesService;
   @Autowired
   private AccessTypeMappingsService accessTypeMappingsService;
+  @Autowired
+  private RelatedEntitiesLoader relatedEntitiesLoader;
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -249,39 +249,12 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, Map<String, String> okapiHeaders) {
-    return CompletableFuture.allOf(loadAccessType(result, okapiHeaders), loadTags(result, okapiHeaders))
+    CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
+    RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resource)).recordType(RecordType.RESOURCE).build();
+    return CompletableFuture.allOf(
+      relatedEntitiesLoader.loadAccessType(result, recordKey, okapiHeaders),
+      relatedEntitiesLoader.loadTags(result, recordKey, okapiHeaders))
       .thenApply(aVoid -> result);
-  }
-
-  private CompletableFuture<ResourceResult> loadAccessType(ResourceResult result, Map<String, String> okapiHeaders) {
-    CompletableFuture<ResourceResult> future = new CompletableFuture<>();
-    CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
-    accessTypesService.findByRecord(getResourceId(resource), RecordType.RESOURCE, okapiHeaders)
-      .thenAccept(accessType -> {
-        result.setAccessType(accessType);
-        future.complete(result);
-      })
-      .exceptionally(throwable -> {
-        Throwable cause = throwable.getCause();
-        if (cause instanceof NotFoundException) {
-          result.setAccessType(null);
-          future.complete(result);
-        } else {
-          future.completeExceptionally(cause);
-        }
-        return null;
-      });
-
-    return future;
-  }
-
-  private CompletableFuture<ResourceResult> loadTags(ResourceResult result, Map<String, String> okapiHeaders) {
-    CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
-    return tagRepository.findByRecord(TenantTool.tenantId(okapiHeaders), getResourceId(resource), RecordType.RESOURCE)
-      .thenApply(tags -> {
-        result.setTags(tagsConverter.convert(tags));
-        return result;
-      });
   }
 
   private ResourceTags convertToResourceTags(ResourceTagsDataAttributes attributes) {

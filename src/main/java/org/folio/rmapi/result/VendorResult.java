@@ -4,7 +4,8 @@ import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.Tags;
 
-public class VendorResult {
+public class VendorResult implements Tagable {
+
   private VendorById vendor;
   private Packages packages;
   private Tags tags;
@@ -22,10 +23,12 @@ public class VendorResult {
     return packages;
   }
 
+  @Override
   public Tags getTags() {
     return tags;
   }
 
+  @Override
   public void setTags(Tags tags) {
     this.tags = tags;
   }

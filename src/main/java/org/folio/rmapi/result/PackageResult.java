@@ -6,7 +6,7 @@ import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 
-public class PackageResult {
+public class PackageResult implements Accessible, Tagable {
   private PackageByIdData packageData;
   private VendorById vendor;
   private Titles titles;
@@ -35,18 +35,22 @@ public class PackageResult {
     return titles;
   }
 
+  @Override
   public Tags getTags() {
     return tags;
   }
 
+  @Override
   public void setTags(Tags tags) {
     this.tags = tags;
   }
 
+  @Override
   public AccessTypeCollectionItem getAccessType() {
     return accessType;
   }
 
+  @Override
   public void setAccessType(AccessTypeCollectionItem accessType) {
     this.accessType = accessType;
   }

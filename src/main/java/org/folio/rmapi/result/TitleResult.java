@@ -6,7 +6,8 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.repository.tag.Tag;
 import org.folio.rest.jaxrs.model.Tags;
 
-public class TitleResult {
+public class TitleResult implements Tagable {
+
   private Title title;
   private boolean includeResource;
   private Tags tags;
@@ -25,10 +26,12 @@ public class TitleResult {
     return includeResource;
   }
 
+  @Override
   public Tags getTags() {
     return tags;
   }
 
+  @Override
   public void setTags(Tags tags) {
     this.tags = tags;
   }
