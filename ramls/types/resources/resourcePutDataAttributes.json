@@ -101,6 +101,12 @@
         "$ref": "../coverage.json"
       }
     },
+    "accessTypeId": {
+      "type": "string",
+      "description": "Access type id",
+      "$ref": "../../raml-util/schemas/uuid.schema",
+      "example": "f973c3b6-85fc-4d35-bda8-f31b568957bf"
+    },
     "customCoverages": {
       "type": "array",
       "description": "List of Custom Coverages information. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
@@ -132,8 +138,11 @@
     },
     "proxy": {
       "type": "object",
-      "description": "Proxy.  Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "description": "Proxy. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "$ref": "../proxy.json"
     }
-  }
+  },
+  "required": [
+    "isSelected"
+  ]
 }

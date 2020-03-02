@@ -35,12 +35,12 @@ import org.folio.holdingsiq.model.VendorPut;
 import org.folio.holdingsiq.model.Vendors;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
+import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
 import org.folio.repository.providers.ProviderInfoInDb;
 import org.folio.repository.providers.ProviderRepository;
-import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -67,6 +67,7 @@ import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rest.validator.ProviderTagsPutBodyValidator;
 import org.folio.rmapi.result.PackageCollectionResult;
 import org.folio.rmapi.result.VendorResult;
+import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsProvidersImpl implements EholdingsProviders {
@@ -88,11 +89,11 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Autowired
   private TagRepository tagRepository;
   @Autowired
-  private Converter<List<Tag>, Tags> tagsConverter;
-  @Autowired
   private ProviderRepository providerRepository;
   @Autowired
   private PackageRepository packageRepository;
+  @Autowired
+  private RelatedEntitiesLoader relatedEntitiesLoader;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -132,7 +133,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .requestAction(context ->
         context.getProvidersService().retrieveProvider(providerIdLong, include)
           .thenCompose(result ->
-            loadTags(result, context.getOkapiData().getTenant())
+            loadTags(result, okapiHeaders)
           )
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -280,12 +281,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     }
   }
 
-  private CompletableFuture<VendorResult> loadTags(VendorResult result, String tenant) {
-    return tagRepository.findByRecord(tenant, String.valueOf(result.getVendor().getVendorId()), RecordType.PROVIDER)
-      .thenCompose(tags -> {
-        result.setTags(tagsConverter.convert(tags));
-        return completedFuture(result);
-      });
+  private CompletableFuture<VendorResult> loadTags(VendorResult result, Map<String, String> okapiHeaders) {
+    RecordKey recordKey = RecordKey.builder()
+      .recordId(String.valueOf(result.getVendor().getVendorId()))
+      .recordType(RecordType.PROVIDER)
+      .build();
+    return relatedEntitiesLoader.loadTags(result, recordKey, okapiHeaders)
+      .thenApply(aVoid -> result);
   }
 
   private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, String tenant) {

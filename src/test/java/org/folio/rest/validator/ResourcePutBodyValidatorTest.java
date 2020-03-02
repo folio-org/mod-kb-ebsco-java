@@ -13,6 +13,7 @@ import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
 
 public class ResourcePutBodyValidatorTest {
+
   private final ResourcePutBodyValidator validator = new ResourcePutBodyValidator();
 
   @Rule
@@ -22,35 +23,35 @@ public class ResourcePutBodyValidatorTest {
   @Test
   public void shouldNotThrowExceptionWhenUrlIsValidFormatForACustomResource() {
     validator.validate(ResourcesTestData.getResourcePutRequest(
-        new ResourcePutDataAttributes()
-          .withIsSelected(true)
-          .withUrl("https://hello")), true);
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withUrl("https://hello")), true);
   }
 
   @Test
   public void shouldThrowExceptionWhenUrlIsInvalidFormatForACustomResource() {
     expectedEx.expect(InputValidationException.class);
     validator.validate(ResourcesTestData.getResourcePutRequest(
-        new ResourcePutDataAttributes()
-          .withIsSelected(true)
-          .withUrl("hello")), true);
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withUrl("hello")), true);
   }
 
   @Test
   public void shouldThrowExceptionWhenCvgStmtExceedsLengthForACustomResource() {
     expectedEx.expect(InputValidationException.class);
     validator.validate(ResourcesTestData.getResourcePutRequest(
-        new ResourcePutDataAttributes()
-          .withIsSelected(true)
-          .withCoverageStatement(RandomStringUtils.randomAlphanumeric(251))), true);
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withCoverageStatement(RandomStringUtils.randomAlphanumeric(251))), true);
   }
 
   @Test
   public void shouldNotThrowExceptionWhenCvgStmtIsValidForACustomResource() {
     validator.validate(ResourcesTestData.getResourcePutRequest(
-        new ResourcePutDataAttributes()
-          .withIsSelected(true)
-          .withCoverageStatement("my test coverage statement")), true);
+      new ResourcePutDataAttributes()
+        .withIsSelected(true)
+        .withCoverageStatement("my test coverage statement")), true);
   }
 
   @Test
@@ -59,9 +60,8 @@ public class ResourcePutBodyValidatorTest {
     expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
     validator.validate(ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
-      .withIsSelected(false)
-      .withVisibilityData(new VisibilityData()
-        .withIsHidden(true))), false);
+        .withIsSelected(false)
+        .withVisibilityData(new VisibilityData().withIsHidden(true))), false);
   }
 
   @Test
@@ -70,8 +70,8 @@ public class ResourcePutBodyValidatorTest {
     expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
     validator.validate(ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
-      .withIsSelected(false)
-      .withCoverageStatement("hello")), false);
+        .withIsSelected(false)
+        .withCoverageStatement("hello")), false);
   }
 
   @Test
@@ -133,17 +133,8 @@ public class ResourcePutBodyValidatorTest {
     expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
     validator.validate(ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
-      .withIsSelected(false)
-      .withCustomEmbargoPeriod(new EmbargoPeriod().withEmbargoUnit(EmbargoUnit.DAYS))), false);
-  }
-
-  @Test
-  public void shouldThrowExceptionWhenIsSelectedIsNull() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid request body");
-    validator.validate(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(null)), false);
+        .withIsSelected(false)
+        .withCustomEmbargoPeriod(new EmbargoPeriod().withEmbargoUnit(EmbargoUnit.DAYS))), false);
   }
 
   private void testUserDefinedFieldValidation(final String fieldName, ResourcePutDataAttributes value) {

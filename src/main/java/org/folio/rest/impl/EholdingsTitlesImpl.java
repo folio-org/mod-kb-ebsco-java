@@ -31,8 +31,8 @@ import org.folio.holdingsiq.model.TitlePost;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
-import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.repository.titles.DbTitle;
 import org.folio.repository.titles.TitlesRepository;
@@ -46,6 +46,7 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.parser.IdParser;
+import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
@@ -54,6 +55,7 @@ import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitleCommonRequestAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleResult;
+import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
@@ -77,9 +79,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Autowired
   private TagRepository tagRepository;
   @Autowired
-  private Converter<List<Tag>, Tags> tagsConverter;
-  @Autowired
   private TitlesRepository titlesRepository;
+  @Autowired
+  private RelatedEntitiesLoader relatedEntitiesLoader;
 
   public EholdingsTitlesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -170,9 +172,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(titleIdLong)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, includeResource)))
-          .thenCompose(result ->
-            loadTags(result, context.getOkapiData().getTenant())
-          )
+          .thenCompose(result -> loadTags(result, okapiHeaders))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsTitlesByTitleIdResponse
@@ -221,32 +221,29 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     return resultList;
   }
 
-  private CompletableFuture<TitleResult> loadTags(TitleResult result, String tenant) {
+  private CompletableFuture<TitleResult> loadTags(TitleResult result,
+                                                  Map<String, String> okapiHeaders) {
+    RecordKey recordKey = RecordKey.builder()
+      .recordType(RecordType.TITLE)
+      .recordId(String.valueOf(result.getTitle().getTitleId()))
+      .build();
     if (result.isIncludeResource()) {
       List<String> resourceIds = result.getTitle()
         .getCustomerResourcesList()
         .stream()
         .map(this::buildResourceId)
         .collect(Collectors.toList());
-      return tagRepository.findByRecordByIds(tenant, resourceIds, RecordType.RESOURCE)
+      return tagRepository.findByRecordByIds(TenantTool.tenantId(okapiHeaders), resourceIds, RecordType.RESOURCE)
         .thenApply(tags -> {
           result.setResourceTagList(tags);
           return result;
         })
-        .thenCompose(
-          titleResult -> loadTagsFromDb(result, tenant, String.valueOf(result.getTitle().getTitleId()),
-            RecordType.TITLE));
+        .thenCompose(titleResult -> relatedEntitiesLoader.loadTags(titleResult, recordKey, okapiHeaders)
+          .thenApply(aVoid -> titleResult)
+        );
     } else {
-      return loadTagsFromDb(result, tenant, String.valueOf(result.getTitle().getTitleId()), RecordType.TITLE);
+      return relatedEntitiesLoader.loadTags(result, recordKey, okapiHeaders).thenApply(aVoid -> result);
     }
-  }
-
-  private CompletableFuture<TitleResult> loadTagsFromDb(TitleResult titleResult, String tenant, String recordId, RecordType recordType) {
-    return tagRepository.findByRecord(tenant, recordId, recordType)
-      .thenApply(tags -> {
-        titleResult.setTags(tagsConverter.convert(tags));
-        return titleResult;
-      });
   }
 
   private String buildResourceId(CustomerResources customerResources) {

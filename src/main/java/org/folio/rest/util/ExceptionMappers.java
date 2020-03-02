@@ -32,6 +32,24 @@ public final class ExceptionMappers {
   }
 
   /**
+   * {@link NotFoundException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 400}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<NotFoundException, Response> error400NotFoundMapper() {
+    return exception ->
+      Response.status(SC_BAD_REQUEST)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(createError(exception.getMessage()))
+        .build();
+  }
+
+  /**
    * {@link BadRequestException} to {@link Response} error mapper
    * <pre>
    * Response.status = {@code 400}

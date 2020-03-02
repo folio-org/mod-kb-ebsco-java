@@ -17,7 +17,9 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
+import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.RelationshipData;
@@ -46,6 +48,7 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
     Title title = resourceResult.getTitle();
     PackageByIdData packageData = resourceResult.getPackageData();
     VendorById vendor = resourceResult.getVendor();
+    AccessTypeCollectionItem accessType = resourceResult.getAccessType();
     boolean includeTitle = resourceResult.isIncludeTitle();
 
     return mapItems(title.getCustomerResourcesList(),
@@ -86,6 +89,17 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
               .withData(new RelationshipData()
                 .withId(packageData.getVendorId() + "-" + packageData.getPackageId())
                 .withType(PACKAGES_TYPE)));
+        }
+        if (accessType != null) {
+          resultResource.getIncluded().add(accessType);
+          resultResource.getData()
+            .getRelationships()
+            .withAccessType(new HasOneRelationship()
+              .withData(new RelationshipData()
+                .withId(accessType.getId())
+                .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES.value()))
+              .withMeta(new MetaDataIncluded()
+                .withIncluded(true)));
         }
         return resultResource;
       });

@@ -1,12 +1,13 @@
 package org.folio.rest.validator;
 
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 import static org.folio.rest.validator.ValidationConstants.USER_DEFINED_FIELD_MAX_LENGTH;
 
 import java.util.List;
-import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.exception.InputValidationException;
@@ -18,24 +19,12 @@ import org.folio.rest.jaxrs.model.ResourcePutRequest;
 @Component
 public class ResourcePutBodyValidator {
 
-  private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
-  private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
   private static final String INVALID_IS_SELECTED_TITLE = "Resource cannot be updated unless added to holdings";
   private static final String INVALID_IS_SELECTED_DETAILS = "Resource must be added to holdings to be able to update";
-  private static final String IS_SELECTED_MUST_NOT_BE_EMPTY = "isSelected must not be empty";
 
   public void validate(ResourcePutRequest request, boolean isTitleCustom) {
-    if (request == null ||
-      request.getData() == null ||
-      request.getData().getAttributes() == null) {
-      throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
-    }
-
     ResourcePutDataAttributes attributes = request.getData().getAttributes();
 
-    if (Objects.isNull(attributes.getIsSelected())) {
-      throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, IS_SELECTED_MUST_NOT_BE_EMPTY);
-    }
     boolean isSelected = attributes.getIsSelected();
     String cvgStmt = attributes.getCoverageStatement();
 
@@ -49,7 +38,7 @@ public class ResourcePutBodyValidator {
        */
       if (isTitleCustom) {
         String url = attributes.getUrl();
-        if (!StringUtils.isBlank(url)) {
+        if (isNotBlank(url)) {
           ValidatorUtil.checkMaxLength("url", url, 600);
           ValidatorUtil.checkUrlFormat("url", url);
         }
@@ -59,7 +48,7 @@ public class ResourcePutBodyValidator {
        * Following fields can be updated only for a managed resource although UI sends complete payload
        * for both managed and custom resources
        */
-      if (!StringUtils.isBlank(cvgStmt)) {
+      if (isNotBlank(cvgStmt)) {
         ValidatorUtil.checkMaxLength("coverageStatement", cvgStmt, 250);
       }
       attributes.getCustomCoverages().forEach(customCoverage -> {
@@ -77,19 +66,21 @@ public class ResourcePutBodyValidator {
     }
   }
 
-  private void validateManagedResourceIfNotSelected(ResourcePutDataAttributes attributes, boolean isTitleCustom, String cvgStmt) {
+  private void validateManagedResourceIfNotSelected(ResourcePutDataAttributes attributes, boolean isTitleCustom,
+                                                    String cvgStmt) {
     Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
-    EmbargoUnit embargoUnit = attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
+    EmbargoUnit embargoUnit =
+      attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
     List<Coverage> customCoverages = attributes.getCustomCoverages();
     if (!isTitleCustom &&
-      (!Strings.isEmpty(cvgStmt) || !Objects.isNull(embargoUnit) ||
-      (!Objects.isNull(isHidden) && isHidden) ||
-      (!Objects.isNull(customCoverages) && !customCoverages.isEmpty()) ||
-        !Strings.isEmpty(attributes.getUserDefinedField1()) ||
-        !Strings.isEmpty(attributes.getUserDefinedField2()) ||
-        !Strings.isEmpty(attributes.getUserDefinedField3()) ||
-        !Strings.isEmpty(attributes.getUserDefinedField4()) ||
-        !Strings.isEmpty(attributes.getUserDefinedField5())
+      (isNotEmpty(cvgStmt) || nonNull(embargoUnit) ||
+        (nonNull(isHidden) && isHidden) ||
+        (nonNull(customCoverages) && !customCoverages.isEmpty()) ||
+        isNotEmpty(attributes.getUserDefinedField1()) ||
+        isNotEmpty(attributes.getUserDefinedField2()) ||
+        isNotEmpty(attributes.getUserDefinedField3()) ||
+        isNotEmpty(attributes.getUserDefinedField4()) ||
+        isNotEmpty(attributes.getUserDefinedField5())
       )) {
       throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
     }

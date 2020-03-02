@@ -4,6 +4,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
@@ -51,6 +52,7 @@ import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.packages.PackageInfoInDB;
@@ -96,6 +98,7 @@ import org.folio.rmapi.result.TitleResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.holdings.HoldingsService;
+import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
@@ -133,8 +136,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   private TagRepository tagRepository;
   @Autowired
-  private Converter<List<Tag>, Tags> tagsConverter;
-  @Autowired
   private PackageRepository packageRepository;
   @Autowired
   private ResourceRepository resourceRepository;
@@ -146,6 +147,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private AccessTypesService accessTypesService;
   @Autowired
   private AccessTypeMappingsService accessTypeMappingsService;
+  @Autowired
+  private RelatedEntitiesLoader relatedEntitiesLoader;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -205,10 +208,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     }
 
     template
-      .addErrorMapper(NotFoundException.class,
-        exception -> PostEholdingsPackagesResponse.respond400WithApplicationVndApiJson(
-          ErrorUtil.createError(exception.getMessage())
-        ))
+      .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
       .executeWithResult(Package.class);
   }
 
@@ -222,8 +222,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((context ->
         context.getPackagesService().retrievePackage(parsedPackageId, includedObjects)
-          .thenCompose(packageResult -> loadTags(packageResult, context.getOkapiData().getTenant()))
-          .thenCompose(packageResult -> loadAccessType(packageResult, okapiHeaders))
+          .thenCompose(packageResult -> {
+            RecordKey recordKey = RecordKey.builder()
+              .recordId(getPackageId(parsedPackageId))
+              .recordType(RecordType.PACKAGE)
+              .build();
+            return CompletableFuture.allOf(
+              relatedEntitiesLoader.loadAccessType(packageResult, recordKey, okapiHeaders),
+              relatedEntitiesLoader.loadTags(packageResult, recordKey, okapiHeaders))
+              .thenApply(aVoid -> packageResult);
+          })
       ))
       .executeWithResult(Package.class);
   }
@@ -248,10 +256,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
             .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))
           )
         )
-        .addErrorMapper(NotFoundException.class,
-          exception -> PutEholdingsPackagesByPackageIdResponse.respond400WithApplicationVndApiJson(
-            ErrorUtil.createError(exception.getMessage())
-          ))
+        .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
         .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
         .executeWithResult(Package.class);
     }
@@ -365,28 +370,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     } else {
       return accessTypesService.findById(accessTypeId, okapiHeaders);
     }
-  }
-
-  private CompletionStage<PackageResult> loadAccessType(PackageResult result, Map<String, String> okapiHeaders) {
-    CompletableFuture<PackageResult> future = new CompletableFuture<>();
-
-    accessTypesService.findByRecord(getPackageId(result), RecordType.PACKAGE, okapiHeaders)
-      .thenAccept(accessType -> {
-        result.setAccessType(accessType);
-        future.complete(result);
-      })
-      .exceptionally(throwable -> {
-        Throwable cause = throwable.getCause();
-        if (cause instanceof NotFoundException) {
-          result.setAccessType(null);
-          future.complete(result);
-        } else {
-          future.completeExceptionally(cause);
-        }
-        return null;
-      });
-
-    return future;
   }
 
   private CompletableFuture<PackageResult> postCustomPackage(PackagePost packagePost, RMAPITemplateContext context) {
@@ -517,15 +500,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     }
   }
 
-  private CompletableFuture<PackageResult> loadTags(PackageResult result, String tenant) {
-    String packageId = getPackageId(result);
-    return tagRepository.findByRecord(tenant, packageId, RecordType.PACKAGE)
-      .thenCompose(tags -> {
-        result.setTags(tagsConverter.convert(tags));
-        return completedFuture(result);
-      });
-  }
-
   private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
     return packageRepository.delete(packageId, tenant)
       .thenCompose(o -> tagRepository.deleteRecordTags(tenant, getPackageId(packageId), RecordType.PACKAGE))
@@ -605,10 +579,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private String getPackageId(PackageId packageId) {
     return packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart();
-  }
-
-  private String getPackageId(PackageResult result) {
-    return result.getPackageData().getFullPackageId();
   }
 
   private boolean isTagOnlySearch(String filterTags, String... q) {

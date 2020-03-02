@@ -21,6 +21,11 @@
       "description": "Relationship of package for a given object",
       "$ref": "../hasOneRelationship.json"
     },
+    "accessType": {
+      "type": "object",
+      "description": "Relationship of access type for a given object",
+      "$ref": "../hasOneRelationship.json"
+    },
     "resources": {
       "type": "object",
       "description": "Resources relationship",

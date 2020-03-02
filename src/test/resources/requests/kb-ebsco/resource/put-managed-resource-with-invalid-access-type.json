@@ -1,0 +1,98 @@
+{
+  "data" : {
+    "id" : "19-3964-762169",
+    "type" : "resources",
+    "attributes" : {
+      "isTitleCustom" : false,
+      "accessTypeId" : "99999999",
+      "titleId" : 762169,
+      "name" : "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+      "coverageStatement" : "test coverage statement",
+      "customEmbargoPeriod" : {
+        "embargoValue" : 10,
+        "embargoUnit": "Years"
+      },
+      "isPackageCustom" : false,
+      "isSelected" : true,
+      "managedCoverages": [
+        {
+          "beginCoverage": "2016-01-01",
+          "endCoverage": "2016-12-31"
+        }
+      ],
+      "customCoverages": [],
+      "isTokenNeeded" : false,
+      "locationId" : 2863717,
+      "managedEmbargoPeriod" : {
+        "embargoValue" : 0
+      },
+      "packageId" : "19-3964",
+      "packageName" : "ABC-CLIO eBook Collection",
+      "url" : "https://publisher.abc-clio.com/9780313068003/",
+      "providerId" : 19,
+      "providerName" : "ABC-CLIO",
+      "visibilityData" : {
+        "isHidden" : false,
+        "reason" : ""
+      },
+      "proxy" : {
+        "id" : "Test-proxy-id",
+        "inherited" : true
+      },
+      "userDefinedField1": "test 1",
+      "userDefinedField2": "test 2",
+      "userDefinedField3": "",
+      "userDefinedField5": "test 5",
+      "publisherName": "Praeger",
+      "edition": "",
+      "publicationType": "Book",
+      "subjects": [
+        {
+          "type": "BISAC",
+          "subject": "SOCIAL SCIENCE / Ethnic Studies / General"
+        }
+      ],
+      "contributors": [
+        {
+          "type": "author",
+          "contributor": "Beeman, William O."
+        }
+      ]
+    ,
+      "identifiers": [
+        {
+          "id": "300079",
+          "source": "ResourceIdentifier",
+          "subtype": 0,
+          "type": 7
+        },
+        {
+          "id": "762169",
+          "source": "AtoZ",
+          "subtype": 0,
+          "type": 9
+        },
+        {
+          "id": "978-0-275-98214-0",
+          "source": "ResourceIdentifier",
+          "subtype": 1,
+          "type": 1
+        },
+        {
+          "id": "978-0-313-06800-3",
+          "source": "ResourceIdentifier",
+          "subtype": 2,
+          "type": 1
+        },
+        {
+          "id": "978-1-282-40979-8",
+          "source": "ResourceIdentifier",
+          "subtype": 2,
+          "type": 1
+        }
+      ],
+      "isPeerReviewed": false,
+      "description": ""
+    }
+  }
+}
