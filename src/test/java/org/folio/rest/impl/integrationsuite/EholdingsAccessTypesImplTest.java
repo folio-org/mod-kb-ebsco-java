@@ -108,24 +108,49 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnAccessTypeCollectionOnGet() {
-    List<AccessTypeCollectionItem> testAccessTypes = testData();
-    List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testAccessTypes, vertx);
+    try {
+      List<AccessTypeCollectionItem> testAccessTypes = testData();
+      List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testAccessTypes, vertx);
+      String id0 = accessTypeCollectionItems.get(0).getId();
+      String id1 = accessTypeCollectionItems.get(1).getId();
 
-    AccessTypeCollection expected = new AccessTypeCollectionConverter().convert(accessTypeCollectionItems);
-    AccessTypeCollection actual = getWithOk(ACCESS_TYPES_PATH).as(AccessTypeCollection.class);
+      insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id0, vertx);
+      insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id0, vertx);
+      insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, id0, vertx);
+      insertAccessTypeMapping("11111111-1114", RecordType.PACKAGE, id1, vertx);
+      insertAccessTypeMapping("11111111-1115", RecordType.PACKAGE, id1, vertx);
 
-    assertEquals(expected, actual);
+      accessTypeCollectionItems.get(0).setRecordUsage(3);
+      accessTypeCollectionItems.get(1).setRecordUsage(2);
+      accessTypeCollectionItems.get(2).setRecordUsage(0);
+
+      AccessTypeCollection expected = new AccessTypeCollectionConverter().convert(accessTypeCollectionItems);
+      AccessTypeCollection actual = getWithOk(ACCESS_TYPES_PATH).as(AccessTypeCollection.class);
+
+      assertEquals(expected, actual);
+    } finally {
+      clearAccessTypesMapping(vertx);
+    }
   }
 
   @Test
   public void shouldReturnAccessTypeOnGet() {
-    List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testData(), vertx);
+    try {
+      List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testData(), vertx);
+      AccessTypeCollectionItem expected = accessTypeCollectionItems.get(0);
+      expected.setRecordUsage(3);
 
-    AccessTypeCollectionItem expected = accessTypeCollectionItems.get(0);
-    AccessTypeCollectionItem actual = getWithOk(ACCESS_TYPES_PATH + "/" + expected.getId())
-      .as(AccessTypeCollectionItem.class);
+      insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, expected.getId(), vertx);
+      insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, expected.getId(), vertx);
+      insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, expected.getId(), vertx);
 
-    assertEquals(expected, actual);
+      AccessTypeCollectionItem actual = getWithOk(ACCESS_TYPES_PATH + "/" + expected.getId())
+        .as(AccessTypeCollectionItem.class);
+
+      assertEquals(expected, actual);
+    } finally {
+      clearAccessTypesMapping(vertx);
+    }
   }
 
   @Test

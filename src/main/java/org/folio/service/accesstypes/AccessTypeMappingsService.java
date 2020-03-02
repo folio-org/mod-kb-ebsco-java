@@ -10,6 +10,8 @@ import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 
 public interface AccessTypeMappingsService {
 
+  CompletableFuture<Collection<AccessTypeMapping>> findAll(Map<String, String> okapiHeaders);
+
   CompletableFuture<AccessTypeMapping> findByRecord(String recordId, RecordType recordType,
                                                     Map<String, String> okapiHeaders);
 

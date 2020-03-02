@@ -35,6 +35,11 @@
       "$ref": "userDisplayInfo.json",
       "readonly": true
     },
+    "recordUsage": {
+      "type": "integer",
+      "description": "Number of records that use the access type",
+      "readonly": true
+    },
     "metadata": {
       "type": "object",
       "description": "Metadata for the entity",

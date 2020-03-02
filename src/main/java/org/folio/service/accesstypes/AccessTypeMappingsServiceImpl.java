@@ -24,6 +24,11 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   private AccessTypeMappingsRepository mappingRepository;
 
   @Override
+  public CompletableFuture<Collection<AccessTypeMapping>> findAll(Map<String, String> okapiHeaders) {
+    return mappingRepository.findAll(tenantId(okapiHeaders));
+  }
+
+  @Override
   public CompletableFuture<AccessTypeMapping> findByRecord(String recordId, RecordType recordType,
                                                            Map<String, String> okapiHeaders) {
     return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))

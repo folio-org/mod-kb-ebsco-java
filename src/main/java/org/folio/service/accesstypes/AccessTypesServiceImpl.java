@@ -4,8 +4,10 @@ import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -24,6 +26,7 @@ import org.folio.common.FutureUtils;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
@@ -59,12 +62,15 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders))
+      .thenCombine(mappingService.findAll(okapiHeaders), this::setEachRecordUsage)
       .thenApply(accessTypeCollectionConverter::convert);
   }
 
   @Override
   public CompletableFuture<AccessTypeCollectionItem> findById(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, tenantId(okapiHeaders)).thenApply(getAccessTypeOrFail(id));
+    return repository.findById(id, tenantId(okapiHeaders))
+      .thenApply(getAccessTypeOrFail(id))
+      .thenCombine(mappingService.findByAccessTypeId(id, okapiHeaders), this::setRecordUsage);
   }
 
   @Override
@@ -113,7 +119,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .thenCompose(aVoid -> repository.delete(id, tenantId(okapiHeaders)));
   }
 
-  public CompletableFuture<Boolean> hasMappings(String id, Map<String, String> okapiHeaders) {
+  private CompletableFuture<Boolean> hasMappings(String id, Map<String, String> okapiHeaders) {
     return mappingService.findByAccessTypeId(id, okapiHeaders)
       .thenApply(accessTypeMappings -> !accessTypeMappings.isEmpty());
   }
@@ -148,5 +154,25 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private Function<Optional<AccessTypeCollectionItem>, AccessTypeCollectionItem> getAccessTypeOrFail(String id) {
     return accessType -> accessType.orElseThrow(() -> ServiceExceptions.notFound("Access type", id));
+  }
+
+  private List<AccessTypeCollectionItem> setEachRecordUsage(List<AccessTypeCollectionItem> accessTypes,
+                                                            Collection<AccessTypeMapping> accessTypeMappings) {
+    accessTypes.forEach(accessType -> setRecordUsage(accessType, accessTypeMappings));
+    return accessTypes;
+  }
+
+  private AccessTypeCollectionItem setRecordUsage(AccessTypeCollectionItem accessType,
+                                                  Collection<AccessTypeMapping> accessTypeMappings) {
+    accessType.setRecordUsage(countRecordUsage(accessType.getId(), accessTypeMappings));
+    return accessType;
+  }
+
+  private int countRecordUsage(String id, Collection<AccessTypeMapping> accessTypeMappings) {
+    return Math.toIntExact(accessTypeMappings.stream()
+      .map(AccessTypeMapping::getAccessTypeId)
+      .filter(Objects::nonNull)
+      .filter(accessTypeId -> accessTypeId.equals(id))
+      .count());
   }
 }

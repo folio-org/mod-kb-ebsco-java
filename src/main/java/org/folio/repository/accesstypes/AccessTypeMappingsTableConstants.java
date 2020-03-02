@@ -28,6 +28,8 @@ public class AccessTypeMappingsTableConstants {
   public static final String SELECT_MAPPING_BY_ACCESS_TYPE_ID =
     "SELECT * FROM %s WHERE " + ACCESS_TYPE_ID_COLUMN + " = ?;";
 
+  public static final String SELECT_ALL_MAPPINGS = "SELECT * FROM %s;";
+
   private AccessTypeMappingsTableConstants() {
   }
 
