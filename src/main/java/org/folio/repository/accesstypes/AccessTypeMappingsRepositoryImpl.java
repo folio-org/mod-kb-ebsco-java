@@ -45,6 +45,10 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypeMappingsRepositoryImpl.class);
 
+  private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
+  private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
+  private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
+
   @Autowired
   private Vertx vertx;
   @Autowired
@@ -54,7 +58,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   public CompletableFuture<Collection<AccessTypeMapping>> findAll(String tenantId) {
     String query = format(SELECT_ALL_MAPPINGS, getAccessTypesMappingTableName(tenantId));
 
-    LOG.info("Do select query = {}", query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
 
@@ -67,7 +71,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     JsonArray params = createParams(asList(recordId, recordType.getValue()));
     String query = format(SELECT_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE, getAccessTypesMappingTableName(tenantId));
 
-    LOG.info("Do select query = {}", query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
@@ -79,7 +83,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     JsonArray params = createParams(Collections.singletonList(accessTypeId));
     String query = format(SELECT_MAPPING_BY_ACCESS_TYPE_ID, getAccessTypesMappingTableName(tenantId));
 
-    LOG.info("Do select query = {}", query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
@@ -92,7 +96,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     JsonArray params = createUpsertParams(mapping);
     String query = format(UPSERT_MAPPING, getAccessTypesMappingTableName(tenantId));
 
-    LOG.info("Do insert query = {}", query);
+    LOG.info(INSERT_LOG_MESSAGE, query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
@@ -104,7 +108,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     JsonArray params = createParams(asList(recordId, recordType.getValue()));
     String query = format(DELETE_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE, getAccessTypesMappingTableName(tenantId));
 
-    LOG.info("Do delete query = {}", query);
+    LOG.info(DELETE_LOG_MESSAGE, query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
