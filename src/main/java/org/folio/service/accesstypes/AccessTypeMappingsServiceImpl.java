@@ -57,6 +57,11 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
       });
   }
 
+  @Override
+  public CompletableFuture<Map<String, Integer>> countRecordsByAccessType(Map<String, String> okapiHeaders) {
+    return mappingRepository.countRecordsByAccessType(tenantId(okapiHeaders));
+  }
+
   private AccessTypeMapping createAccessTypeMapping(AccessTypeCollectionItem accessType, String recordId,
                                                     RecordType recordType) {
     return AccessTypeMapping.builder()

@@ -59,12 +59,18 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders))
+      .thenCombine(mappingService.countRecordsByAccessType(okapiHeaders), this::setEachRecordUsage)
       .thenApply(accessTypeCollectionConverter::convert);
   }
 
   @Override
   public CompletableFuture<AccessTypeCollectionItem> findById(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, tenantId(okapiHeaders)).thenApply(getAccessTypeOrFail(id));
+    return repository.findById(id, tenantId(okapiHeaders))
+      .thenApply(getAccessTypeOrFail(id))
+      .thenCombine(mappingService.findByAccessTypeId(id, okapiHeaders), (accessType, accessTypeMappings) -> {
+        accessType.setUsageNumber(accessTypeMappings.size());
+        return accessType;
+      });
   }
 
   @Override
@@ -113,7 +119,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .thenCompose(aVoid -> repository.delete(id, tenantId(okapiHeaders)));
   }
 
-  public CompletableFuture<Boolean> hasMappings(String id, Map<String, String> okapiHeaders) {
+  private CompletableFuture<Boolean> hasMappings(String id, Map<String, String> okapiHeaders) {
     return mappingService.findByAccessTypeId(id, okapiHeaders)
       .thenApply(accessTypeMappings -> !accessTypeMappings.isEmpty());
   }
@@ -148,5 +154,15 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private Function<Optional<AccessTypeCollectionItem>, AccessTypeCollectionItem> getAccessTypeOrFail(String id) {
     return accessType -> accessType.orElseThrow(() -> ServiceExceptions.notFound("Access type", id));
+  }
+
+  private List<AccessTypeCollectionItem> setEachRecordUsage(List<AccessTypeCollectionItem> accessTypes,
+                                                            Map<String, Integer> accessTypeMappingsCount) {
+    accessTypes.forEach(accessType -> setRecordUsage(accessType, accessTypeMappingsCount));
+    return accessTypes;
+  }
+
+  private void setRecordUsage(AccessTypeCollectionItem accessType, Map<String, Integer> accessTypeMappingsCount) {
+    accessType.setUsageNumber(accessTypeMappingsCount.getOrDefault(accessType.getId(), 0));
   }
 }
