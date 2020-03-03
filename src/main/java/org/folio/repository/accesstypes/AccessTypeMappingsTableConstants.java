@@ -29,8 +29,6 @@ public class AccessTypeMappingsTableConstants {
   public static final String SELECT_MAPPING_BY_ACCESS_TYPE_ID =
     "SELECT * FROM %s WHERE " + ACCESS_TYPE_ID_COLUMN + " = ?;";
 
-  public static final String SELECT_ALL_MAPPINGS = "SELECT * FROM %s;";
-
   public static final String COUNT_ALL_MAPPINGS_BY_ACCESS_TYPE_ID =
     "SELECT " + ACCESS_TYPE_ID_COLUMN + ", COUNT(*) as " + COUNT_COLUMN + " FROM %s GROUP BY " + ACCESS_TYPE_ID_COLUMN + ";";
 

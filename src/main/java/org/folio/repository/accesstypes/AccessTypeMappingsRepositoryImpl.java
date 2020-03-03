@@ -14,7 +14,6 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_ALL_MAPPINGS;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_MAPPING_BY_ACCESS_TYPE_ID;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.UPSERT_MAPPING;
@@ -57,17 +56,6 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   private Vertx vertx;
   @Autowired
   private DBExceptionTranslator excTranslator;
-
-  @Override
-  public CompletableFuture<Collection<AccessTypeMapping>> findAll(String tenantId) {
-    String query = format(SELECT_ALL_MAPPINGS, getAccessTypesMappingTableName(tenantId));
-
-    LOG.info(SELECT_LOG_MESSAGE, query);
-    Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenantId).select(query, promise);
-
-    return mapResult(promise.future(), resultSet -> mapItems(resultSet.getRows(), this::mapAccessItem));
-  }
 
   @Override
   public CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType,
