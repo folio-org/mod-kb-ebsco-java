@@ -1,6 +1,7 @@
 package org.folio.repository.accesstypes;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,4 +18,6 @@ public interface AccessTypeMappingsRepository {
   CompletableFuture<AccessTypeMapping> save(AccessTypeMapping accessTypeMapping, String tenantId);
 
   CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, String tenantId);
+
+  CompletableFuture<Map<String, Integer>> countRecordsByAccessType(String tenantId);
 }

@@ -120,9 +120,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       insertAccessTypeMapping("11111111-1114", RecordType.PACKAGE, id1, vertx);
       insertAccessTypeMapping("11111111-1115", RecordType.PACKAGE, id1, vertx);
 
-      accessTypeCollectionItems.get(0).setRecordUsage(3);
-      accessTypeCollectionItems.get(1).setRecordUsage(2);
-      accessTypeCollectionItems.get(2).setRecordUsage(0);
+      accessTypeCollectionItems.get(0).setUsageNumber(3);
+      accessTypeCollectionItems.get(1).setUsageNumber(2);
+      accessTypeCollectionItems.get(2).setUsageNumber(0);
 
       AccessTypeCollection expected = new AccessTypeCollectionConverter().convert(accessTypeCollectionItems);
       AccessTypeCollection actual = getWithOk(ACCESS_TYPES_PATH).as(AccessTypeCollection.class);
@@ -138,7 +138,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     try {
       List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testData(), vertx);
       AccessTypeCollectionItem expected = accessTypeCollectionItems.get(0);
-      expected.setRecordUsage(3);
+      expected.setUsageNumber(3);
 
       insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, expected.getId(), vertx);
       insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, expected.getId(), vertx);

@@ -35,7 +35,7 @@
       "$ref": "userDisplayInfo.json",
       "readonly": true
     },
-    "recordUsage": {
+    "usageNumber": {
       "type": "integer",
       "description": "Number of records that use the access type",
       "readonly": true

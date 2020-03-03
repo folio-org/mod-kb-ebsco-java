@@ -19,4 +19,6 @@ public interface AccessTypeMappingsService {
 
   CompletableFuture<Void> update(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
                                  Map<String, String> okapiHeaders);
+
+  CompletableFuture<Map<String, Integer>> countRecordsByAccessType(Map<String, String> okapiHeaders);
 }
