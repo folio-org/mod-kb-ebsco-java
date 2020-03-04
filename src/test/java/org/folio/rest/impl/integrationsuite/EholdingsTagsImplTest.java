@@ -8,7 +8,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.util.TagsTestUtil.clearTags;
+import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.TagsTestUtil.insertTags;
 
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       TagCollection expected = buildTagCollection(tags);
       assertEquals(expected, col);
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -91,7 +92,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG)));
       assertEquals(expected, col);
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -106,7 +107,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG).or(similarTo(TITLE_TAG))));
       assertEquals(expected, col);
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -121,7 +122,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       TagCollection expected = buildTagCollection(Collections.emptyList());
       assertEquals(expected, col);
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -144,7 +145,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       assertEquals(Integer.valueOf(4), col.getMeta().getTotalResults());
       assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -156,7 +157,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       assertEquals(0, col.getData().size());
       assertEquals(Integer.valueOf(0), col.getMeta().getTotalResults());
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -172,7 +173,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       assertEquals(Integer.valueOf(1), col.getMeta().getTotalResults());
       assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -188,7 +189,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       assertEquals(Integer.valueOf(2), col.getMeta().getTotalResults());
       assertTrue(checkContainingOfUniqueTags(tags, col));
     } finally {
-      clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 

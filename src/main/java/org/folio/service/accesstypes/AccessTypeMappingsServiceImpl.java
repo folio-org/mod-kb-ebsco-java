@@ -39,6 +39,13 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   }
 
   @Override
+  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
+                                                                              RecordType recordType, int page, int count,
+                                                                              Map<String, String> okapiHeaders) {
+    return mappingRepository.findByAccessTypeIds(accessTypeIds, recordType, page, count, tenantId(okapiHeaders));
+  }
+
+  @Override
   public CompletableFuture<Void> update(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
                                         Map<String, String> okapiHeaders) {
     if (accessType == null) {

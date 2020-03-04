@@ -74,14 +74,6 @@ public class TagsTestUtil {
     return result;
   }
 
-  public static void clearTags(Vertx vertx) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "DELETE FROM " + tagTestTable(),
-      event -> future.complete(null));
-    future.join();
-  }
-
   public static List<String> getTags(Vertx vertx) {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(

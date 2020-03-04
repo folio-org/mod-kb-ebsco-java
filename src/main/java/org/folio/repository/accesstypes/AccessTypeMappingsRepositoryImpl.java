@@ -2,8 +2,10 @@ package org.folio.repository.accesstypes;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 import static org.folio.common.FutureUtils.mapResult;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
@@ -15,12 +17,12 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_MAPPING_BY_ACCESS_TYPE_ID;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_MAPPING_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.UPSERT_MAPPING;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,7 +37,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -67,19 +68,39 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
-    return mapResult(promise.future(), this::mapToAccessTypeMapping);
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessItem);
   }
 
   @Override
   public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId, String tenantId) {
-    JsonArray params = createParams(Collections.singletonList(accessTypeId));
+    JsonArray params = createParams(singletonList(accessTypeId));
     String query = format(SELECT_MAPPING_BY_ACCESS_TYPE_ID, getAccessTypesMappingTableName(tenantId));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
-    return mapResult(promise.future(), resultSet -> mapItems(resultSet.getRows(), this::mapAccessItem));
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessItemCollection);
+  }
+
+  @Override
+  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
+                                                                              RecordType recordType, int page, int count,
+                                                                              String tenantId) {
+    int offset = (page - 1) * count;
+    JsonArray params = createParams(accessTypeIds);
+    params.add(recordType.getValue());
+    params.add(offset);
+    params.add(count);
+
+    String query = format(SELECT_MAPPING_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE, getAccessTypesMappingTableName(tenantId),
+      createPlaceholders(accessTypeIds.size()));
+
+    LOG.info(SELECT_LOG_MESSAGE, query);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessItemCollection);
   }
 
   @Override
@@ -123,7 +144,11 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
       .collect(Collectors.toMap(row -> row.getString(ACCESS_TYPE_ID_COLUMN), row -> row.getInteger(COUNT_COLUMN)));
   }
 
-  private Optional<AccessTypeMapping> mapToAccessTypeMapping(ResultSet resultSet) {
+  private List<AccessTypeMapping> mapAccessItemCollection(ResultSet resultSet) {
+    return mapItems(resultSet.getRows(), this::mapAccessItem);
+  }
+
+  private Optional<AccessTypeMapping> mapSingleAccessItem(ResultSet resultSet) {
     final List<JsonObject> rows = resultSet.getRows();
 
     return rows.isEmpty() ? Optional.empty() : Optional.of(mapAccessItem(rows.get(0)));
@@ -138,7 +163,6 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
       .build();
   }
 
-  @NotNull
   private JsonArray createUpsertParams(AccessTypeMapping mapping) {
     return createParams(asList(
       mapping.getId(),

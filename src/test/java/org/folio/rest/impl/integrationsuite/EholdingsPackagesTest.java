@@ -28,8 +28,11 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.RESOURCE;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_2;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_3;
@@ -47,12 +50,13 @@ import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockPost;
 import static org.folio.test.util.TestUtil.mockPut;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.util.AccessTypesTestUtil.clearAccessTypes;
-import static org.folio.util.AccessTypesTestUtil.clearAccessTypesMapping;
+import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME;
+import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_2;
 import static org.folio.util.AccessTypesTestUtil.getAccessTypeMappings;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
@@ -75,6 +79,7 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
@@ -102,7 +107,6 @@ import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.util.AccessTypesTestUtil;
-import org.folio.util.KBTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
@@ -167,8 +171,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(1).getAttributes().getName());
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -190,8 +194,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
       assertEquals(0, packages.size());
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -213,8 +217,56 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(1, packages.size());
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnPackagesOnSearchByAccessTypeWithPagination() throws IOException, URISyntaxException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(1).getId(), vertx);
+      setUpPackages(vertx, getWiremockUrl());
+
+      String resourcePath = PACKAGES_ENDPOINT + "?page=2&count=1&filter[access-type]="
+        + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+      PackageCollection packageCollection = getWithOk(resourcePath).as(PackageCollection.class);
+
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(1, packages.size());
+      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() throws IOException, URISyntaxException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(0).getId(), vertx);
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+
+      String resourcePath = PACKAGES_ENDPOINT + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+      PackageCollection packageCollection = getWithOk(resourcePath).as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(0, packages.size());
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -261,8 +313,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertTrue(packageData.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
     }
     finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -282,10 +334,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(expectedAccessTypeId, ((LinkedHashMap) packageData.getIncluded().get(0)).get("id"));
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      AccessTypesTestUtil.clearAccessTypes(vertx);
-      AccessTypesTestUtil.clearAccessTypesMapping(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -298,8 +350,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -314,8 +366,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME, packages.get(0).getName());
       assertThat(packages.get(0).getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -330,8 +382,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertThat(packageTags, is(tags));
       assertTrue(Objects.isNull(updatedPackage.getData().getAttributes().getTags()));
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx,PACKAGES_TABLE_NAME);
     }
   }
 
@@ -391,7 +443,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       List<AccessTypeMapping> mappingsAfterRequest = AccessTypesTestUtil.getAccessTypeMappings(vertx);
       assertThat(mappingsAfterRequest, empty());
     } finally {
-      clearAccessTypes(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     }
   }
 
@@ -605,8 +657,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearAccessTypes(vertx);
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -637,8 +689,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
       assertEquals(0, accessTypeMappingsInDB.size());
     } finally {
-      clearAccessTypes(vertx);
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -772,8 +824,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearAccessTypes(vertx);
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -831,8 +883,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(0, aPackage.getIncluded().size());
       assertNull(aPackage.getData().getRelationships().getAccessType());
     } finally {
-      clearAccessTypes(vertx);
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -893,8 +945,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(newAccessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(newAccessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearAccessTypes(vertx);
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -974,8 +1026,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(accessTypeId, ((LinkedHashMap) createdPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearAccessTypes(vertx);
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -1073,7 +1125,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + query)));
     } finally {
-      TagsTestUtil.clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -1105,8 +1157,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       JSONAssert.assertEquals(readFile("responses/kb-ebsco/resources/expected-tagged-resources.json"), actualResponse,
         false);
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     }
   }
 

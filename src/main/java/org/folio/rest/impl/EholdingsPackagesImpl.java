@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
@@ -11,13 +12,16 @@ import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
@@ -28,9 +32,10 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,6 +59,7 @@ import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
@@ -66,6 +72,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -158,12 +165,15 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackages(String filterCustom, String q, String filterSelected, String filterType,
-                                   String filterTags, String sort, int page, int count, Map<String, String> okapiHeaders,
-                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                   String filterTags, List<String> filterAccessType, String sort, int page, int count,
+                                   Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+                                   Context vertxContext) {
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (isTagOnlySearch(filterTags, q)) {
+    if (isOnlyOneFilterSearch(singletonList(filterTags), q)) {
       List<String> tags = parseTags(filterTags);
       template.requestAction(context -> getPackagesByTags(tags, page, count, context));
+    } else if (isOnlyOneFilterSearch(filterAccessType, q, filterCustom, filterSelected, filterTags)) {
+      template.requestAction(context -> getPackagesByAccessTypes(filterAccessType, page, count, context, okapiHeaders));
     } else {
       if (Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)) {
         throw new ValidationException("Invalid Query Parameter for filter[custom]");
@@ -293,7 +303,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
-    if (isTagOnlySearch(filterTags, filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher)) {
+    if (isOnlyOneFilterSearch(singletonList(filterTags), filterSelected, filterType, filterName,
+      filterIsxn, filterSubject, filterPublisher)) {
       List<String> tags = parseTags(filterTags);
       template.requestAction(context -> getTitlesByPackageIdAndTags(packageId, tags, page, count, context));
     } else {
@@ -483,6 +494,29 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       );
   }
 
+  private CompletableFuture<Packages> getPackagesByAccessTypes(List<String> accessTypeNames, int page, int count,
+                                                        RMAPITemplateContext context,
+                                                        Map<String, String> okapiHeaders) {
+    AtomicInteger totalCount = new AtomicInteger();
+    return accessTypesService.findByNames(accessTypeNames, okapiHeaders)
+      .thenApply(this::getAccessTypeIds)
+      .thenCompose(accessTypeIds -> accessTypeMappingsService.countRecordsByAccessType(okapiHeaders)
+        .thenCompose(mappingCount -> {
+          accessTypeIds.forEach(id -> totalCount.getAndAdd(mappingCount.getOrDefault(id, 0)));
+          return accessTypeMappingsService.findByAccessTypeIds(accessTypeIds, RecordType.PACKAGE, page, count, okapiHeaders);
+        }))
+      .thenApply(this::getPackageIds)
+      .thenCompose(packageIds -> context.getPackagesService().retrievePackages(packageIds))
+      .thenApply(packages -> packages.toBuilder().totalResults(totalCount.get()).build());
+  }
+
+  private List<String> getAccessTypeIds(AccessTypeCollection accessTypeCollection) {
+    return accessTypeCollection.getData()
+      .stream()
+      .map(AccessTypeCollectionItem::getId)
+      .collect(Collectors.toList());
+  }
+
   private CompletableFuture<Long> getVendorId(RMAPITemplateContext context) {
     VendorIdCacheKey cacheKey = VendorIdCacheKey.builder()
       .tenant(context.getOkapiData().getTenant())
@@ -581,12 +615,21 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart();
   }
 
-  private boolean isTagOnlySearch(String filterTags, String... q) {
-    return !Strings.isEmpty(filterTags) && Arrays.stream(q).allMatch(Strings::isEmpty);
+  private boolean isOnlyOneFilterSearch(List<String> filter, String... q) {
+    return !filter.isEmpty()
+      && IterableUtils.matchesAll(filter, StringUtils::isNotBlank)
+      && Arrays.stream(q).allMatch(StringUtils::isEmpty);
   }
 
   private List<PackageId> getPackageIds(List<PackageInfoInDB> packageIds) {
     return mapItems(packageIds, PackageInfoInDB::getId);
+  }
+
+  private List<PackageId> getPackageIds(Collection<AccessTypeMapping> accessTypeMappings) {
+    return accessTypeMappings.stream()
+      .map(AccessTypeMapping::getRecordId)
+      .map(id -> idParser.parsePackageId(id))
+      .collect(Collectors.toList());
   }
 
   private List<ResourceId> getTitleIds(List<ResourceInfoInDB> resources) {

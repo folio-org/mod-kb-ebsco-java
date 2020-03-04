@@ -37,6 +37,9 @@ import org.folio.rest.persist.PostgresClient;
 
 public class AccessTypesTestUtil {
 
+  public static final String STUB_ACCESS_TYPE_NAME = "Subscribed";
+  public static final String STUB_ACCESS_TYPE_NAME_2 = "Trial";
+  public static final String STUB_ACCESS_TYPE_NAME_3 = "Purchased with perpetual access";
 
   public static List<AccessTypeCollectionItem> getAccessTypes(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
@@ -49,12 +52,14 @@ public class AccessTypesTestUtil {
     return future.join();
   }
 
-  public static void insertAccessTypeMapping(String recordId, final RecordType recordType, String accessTypeId, Vertx vertx) {
+  public static void insertAccessTypeMapping(String recordId, final RecordType recordType, String accessTypeId,
+                                             Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = "INSERT INTO " + accessTypesMappingTestTable() + "("
       + ACCESS_TYPES_MAPPING_FIELD_LIST + ") VALUES " + "(?,?,?,?)";
-    JsonArray params = new JsonArray(Arrays.asList(UUID.randomUUID().toString(), recordId, recordType.getValue(), accessTypeId));
+    JsonArray params =
+      new JsonArray(Arrays.asList(UUID.randomUUID().toString(), recordId, recordType.getValue(), accessTypeId));
 
     PostgresClient.getInstance(vertx)
       .execute(insertStatement, params, event -> future.complete(null));
@@ -123,22 +128,6 @@ public class AccessTypesTestUtil {
     return params;
   }
 
-  public static void clearAccessTypes(Vertx vertx) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "DELETE FROM " + accessTypesTestTable(),
-      event -> future.complete(null));
-    future.join();
-  }
-
-  public static void clearAccessTypesMapping(Vertx vertx) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "DELETE FROM " + accessTypesMappingTestTable(),
-      event -> future.complete(null));
-    future.join();
-  }
-
   private static AccessTypeCollectionItem parseAccessType(ObjectMapper mapper, String json) {
     try {
       return mapper.readValue(json, AccessTypeCollectionItem.class);
@@ -161,7 +150,7 @@ public class AccessTypesTestUtil {
     AccessTypeCollectionItem accessType1 = new AccessTypeCollectionItem()
       .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
-        .withName("Access Type 1")
+        .withName(STUB_ACCESS_TYPE_NAME)
         .withDescription("Access Type description 1"))
       .withCreator(new UserDisplayInfo()
         .withFirstName("first name")
@@ -173,7 +162,7 @@ public class AccessTypesTestUtil {
     AccessTypeCollectionItem accessType2 = new AccessTypeCollectionItem()
       .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
-        .withName("Access Type 2")
+        .withName(STUB_ACCESS_TYPE_NAME_2)
         .withDescription("Access Type description 2"))
       .withCreator(new UserDisplayInfo()
         .withFirstName("first name")
@@ -185,7 +174,7 @@ public class AccessTypesTestUtil {
     AccessTypeCollectionItem accessType3 = new AccessTypeCollectionItem()
       .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
-        .withName("Access Type 3")
+        .withName(STUB_ACCESS_TYPE_NAME_3)
         .withDescription("Access Type description 3"))
       .withCreator(new UserDisplayInfo()
         .withFirstName("first name")

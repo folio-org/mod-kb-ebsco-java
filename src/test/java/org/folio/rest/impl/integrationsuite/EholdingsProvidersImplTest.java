@@ -26,6 +26,7 @@ import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.PROVIDER;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
+import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_2;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_3;
@@ -52,6 +53,7 @@ import static org.folio.test.util.TestUtil.getFile;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.PackagesTestUtil.setUpPackage;
 
@@ -90,7 +92,6 @@ import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Token;
-import org.folio.util.KBTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ProvidersTestUtil;
 import org.folio.util.TagsTestUtil;
@@ -166,8 +167,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(STUB_VENDOR_NAME_2, providers.get(1).getAttributes().getName());
 
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -193,8 +194,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         containsInAnyOrder(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
       assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -219,8 +220,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(1, packages.size());
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
@@ -245,8 +246,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
       assertEquals(0, providers.size());
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -268,8 +269,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(1, providers.size());
       assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -352,7 +353,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
       assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
     } finally {
-      TagsTestUtil.clearTags(vertx);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }
   }
 
@@ -408,8 +409,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -422,8 +423,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
       assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
     }
   }
 
@@ -517,8 +518,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
       JSONAssert.assertEquals(expected, actual, false);
     } finally {
-      TagsTestUtil.clearTags(vertx);
-      KBTestUtil.clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
 
