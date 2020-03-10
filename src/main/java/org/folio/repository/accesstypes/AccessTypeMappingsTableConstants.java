@@ -29,7 +29,9 @@ public class AccessTypeMappingsTableConstants {
   public static final String SELECT_MAPPING_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE =
     "SELECT * "
       + "FROM %s "
-      + "WHERE " + ACCESS_TYPE_ID_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + " = ? "
+      + "WHERE " + ACCESS_TYPE_ID_COLUMN + " IN (%s) "
+      + "AND " + RECORD_TYPE_COLUMN + " = ? "
+      + "AND " + RECORD_ID_COLUMN + " LIKE ? "
       + "ORDER BY " + RECORD_ID_COLUMN + " "
       + "OFFSET ? "
       + "LIMIT ?;";
@@ -38,7 +40,13 @@ public class AccessTypeMappingsTableConstants {
     "SELECT * FROM %s WHERE " + ACCESS_TYPE_ID_COLUMN + " = ?;";
 
   public static final String COUNT_ALL_MAPPINGS_BY_ACCESS_TYPE_ID =
-    "SELECT " + ACCESS_TYPE_ID_COLUMN + ", COUNT(*) as " + COUNT_COLUMN + " FROM %s GROUP BY " + ACCESS_TYPE_ID_COLUMN + ";";
+    "SELECT " + ACCESS_TYPE_ID_COLUMN + ", COUNT(*) as " + COUNT_COLUMN + " FROM %s "
+      + "GROUP BY " + ACCESS_TYPE_ID_COLUMN + ";";
+
+  public static final String COUNT_ALL_MAPPINGS_BY_ACCESS_TYPE_AND_RECORD =
+    "SELECT " + ACCESS_TYPE_ID_COLUMN + ", COUNT(*) as " + COUNT_COLUMN + " FROM %s "
+      + "WHERE " + RECORD_ID_COLUMN + " LIKE ? AND " + RECORD_TYPE_COLUMN + " = ? "
+      + "GROUP BY " + ACCESS_TYPE_ID_COLUMN + ";";
 
   private AccessTypeMappingsTableConstants() {
   }
