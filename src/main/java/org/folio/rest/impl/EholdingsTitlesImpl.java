@@ -1,7 +1,9 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
+import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +17,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
@@ -59,6 +59,7 @@ import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
+
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
 
@@ -90,15 +91,15 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsTitles(String filterTags, String filterSelected, String filterType, String filterName, String filterIsxn, String filterSubject,
-                                 String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
+  public void getEholdingsTitles(String filterTags, String filterSelected, String filterType, String filterName,
+                                 String filterIsxn, String filterSubject, String filterPublisher, String sort, int page,
+                                 int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if(!StringUtils.isEmpty(filterTags)){
-      List<String> tags = Arrays.asList(filterTags.split("\\s*,\\s*"));
+    if (isTagsSearch(filterTags)) {
+      List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getResourcesByTags(tags, page, count, context));
-    }
-    else {
+    } else {
       FilterQuery fq = FilterQuery.builder()
         .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
         .type(filterType).name(filterName).isxn(filterIsxn).subject(filterSubject)
@@ -118,7 +119,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   @Override
   @HandleValidationErrors
-  public void postEholdingsTitles(String contentType, TitlePostRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void postEholdingsTitles(String contentType, TitlePostRequest entity, Map<String, String> okapiHeaders,
+                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     titlesPostBodyValidator.validate(entity);
 
     TitlePost titlePost = titlePostRequestConverter.convert(entity);
@@ -136,7 +138,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   @Override
   @HandleValidationErrors
-  public void putEholdingsTitlesByTitleId(String titleId, String contentType, TitlePutRequest entity, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void putEholdingsTitlesByTitleId(String titleId, String contentType, TitlePutRequest entity,
+                                          Map<String, String> okapiHeaders,
+                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     titleCommonRequestAttributesValidator.validate(entity.getData().getAttributes());
 
     Long parsedTitleId = idParser.parseTitleId(titleId);
@@ -144,7 +148,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(parsedTitleId)
           .thenCompose(title -> {
-            if(BooleanUtils.isNotTrue(title.getIsTitleCustom())){
+            if (BooleanUtils.isNotTrue(title.getIsTitleCustom())) {
               return CompletableFuture.completedFuture(null);
             }
             CustomerResources resource = title.getCustomerResourcesList().get(0);
@@ -164,7 +168,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   @Override
   @HandleValidationErrors
-  public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders,
+                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     long titleIdLong = idParser.parseTitleId(titleId);
     boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
 
@@ -181,7 +186,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .executeWithResult(Title.class);
   }
 
-  private CompletableFuture<Titles> getResourcesByTags(List<String> tags, int page, int count, RMAPITemplateContext context) {
+  private CompletableFuture<Titles> getResourcesByTags(List<String> tags, int page, int count,
+                                                       RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
 
@@ -208,7 +214,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       );
   }
 
-  private List<org.folio.holdingsiq.model.Title> combineTitles(List<DbTitle> dbTitles, List<org.folio.holdingsiq.model.Title> titleList) {
+  private List<org.folio.holdingsiq.model.Title> combineTitles(List<DbTitle> dbTitles,
+                                                               List<org.folio.holdingsiq.model.Title> titleList) {
     List<org.folio.holdingsiq.model.Title> resultList = new ArrayList<>(titleList);
     resultList.addAll(
       dbTitles.stream()

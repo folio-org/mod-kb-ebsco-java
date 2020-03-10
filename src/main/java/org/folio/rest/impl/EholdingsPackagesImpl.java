@@ -1,17 +1,18 @@
 package org.folio.rest.impl;
 
-import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
+import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
+import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
+import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -32,9 +33,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,10 +168,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                    Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                    Context vertxContext) {
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (isOnlyOneFilterSearch(singletonList(filterTags), q)) {
-      List<String> tags = parseTags(filterTags);
+    if (isTagsSearch(filterTags, q)) {
+      List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getPackagesByTags(tags, page, count, context));
-    } else if (isOnlyOneFilterSearch(filterAccessType, q, filterCustom, filterSelected, filterTags)) {
+    } else if (isAccessTypeSearch(filterAccessType, q, filterCustom, filterSelected, filterTags)) {
       template.requestAction(context -> getPackagesByAccessTypes(filterAccessType, page, count, context, okapiHeaders));
     } else {
       if (Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)) {
@@ -227,7 +226,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void getEholdingsPackagesByPackageId(String packageId, String include, Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = idParser.parsePackageId(packageId);
-    List<String> includedObjects = include != null ? Arrays.asList(include.split(",")) : Collections.emptyList();
+    List<String> includedObjects = parseByComma(include);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction((context ->
@@ -303,9 +302,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
-    if (isOnlyOneFilterSearch(singletonList(filterTags), filterSelected, filterType, filterName,
-      filterIsxn, filterSubject, filterPublisher)) {
-      List<String> tags = parseTags(filterTags);
+    if (isTagsSearch(filterTags, filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher)) {
+      List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getTitlesByPackageIdAndTags(packageId, tags, page, count, context));
     } else {
       PackageId parsedPackageId = idParser.parsePackageId(packageId);
@@ -471,10 +469,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resourceIds;
   }
 
-  private List<String> parseTags(String filterTags) {
-    return Arrays.asList(filterTags.split("\\s*,\\s*"));
-  }
-
   private CompletableFuture<Packages> getPackagesByTags(List<String> tags, int page, int count,
                                                         RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
@@ -495,8 +489,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<Packages> getPackagesByAccessTypes(List<String> accessTypeNames, int page, int count,
-                                                        RMAPITemplateContext context,
-                                                        Map<String, String> okapiHeaders) {
+                                                               RMAPITemplateContext context,
+                                                               Map<String, String> okapiHeaders) {
     AtomicInteger totalCount = new AtomicInteger();
     return accessTypesService.findByNames(accessTypeNames, okapiHeaders)
       .thenApply(this::getAccessTypeIds)
@@ -613,12 +607,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private String getPackageId(PackageId packageId) {
     return packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart();
-  }
-
-  private boolean isOnlyOneFilterSearch(List<String> filter, String... q) {
-    return !filter.isEmpty()
-      && IterableUtils.matchesAll(filter, StringUtils::isNotBlank)
-      && Arrays.stream(q).allMatch(StringUtils::isEmpty);
   }
 
   private List<PackageId> getPackageIds(List<PackageInfoInDB> packageIds) {
