@@ -16,14 +16,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.util.AccessTypesTestUtil.clearAccessTypesMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -103,7 +105,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
-    AccessTypesTestUtil.clearAccessTypes(vertx);
+    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
   }
 
   @Test
@@ -129,7 +131,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
       assertEquals(expected, actual);
     } finally {
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -149,7 +151,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
       assertEquals(expected, actual);
     } finally {
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 
@@ -212,7 +214,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       JsonapiError errors = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
       assertEquals("Can't delete access type that has assigned records", errors.getErrors().get(0).getTitle());
     } finally {
-      clearAccessTypesMapping(vertx);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
 

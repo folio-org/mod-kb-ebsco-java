@@ -6,12 +6,11 @@ import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
+import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -151,7 +150,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   public void getEholdingsResourcesByResourceId(String resourceId, String include, Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
-    List<String> includedObjects = include != null ? Arrays.asList(include.split(",")) : Collections.emptyList();
+    List<String> includedObjects = parseByComma(include);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->

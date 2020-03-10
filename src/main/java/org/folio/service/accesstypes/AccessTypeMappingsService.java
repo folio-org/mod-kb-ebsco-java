@@ -15,6 +15,10 @@ public interface AccessTypeMappingsService {
 
   CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId, Map<String, String> okapiHeaders);
 
+  CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
+                                                                       RecordType recordType, int page, int count,
+                                                                       Map<String, String> okapiHeaders);
+
   CompletableFuture<Void> update(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
                                  Map<String, String> okapiHeaders);
 

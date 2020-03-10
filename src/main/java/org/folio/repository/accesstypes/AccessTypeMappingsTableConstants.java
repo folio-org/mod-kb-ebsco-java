@@ -26,6 +26,14 @@ public class AccessTypeMappingsTableConstants {
   public static final String SELECT_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE =
     "SELECT * FROM %s WHERE " + CONDITION_BY_RECORD_ID_AND_RECORD_TYPE + " LIMIT 1;";
 
+  public static final String SELECT_MAPPING_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE =
+    "SELECT * "
+      + "FROM %s "
+      + "WHERE " + ACCESS_TYPE_ID_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + " = ? "
+      + "ORDER BY " + RECORD_ID_COLUMN + " "
+      + "OFFSET ? "
+      + "LIMIT ?;";
+
   public static final String SELECT_MAPPING_BY_ACCESS_TYPE_ID =
     "SELECT * FROM %s WHERE " + ACCESS_TYPE_ID_COLUMN + " = ?;";
 

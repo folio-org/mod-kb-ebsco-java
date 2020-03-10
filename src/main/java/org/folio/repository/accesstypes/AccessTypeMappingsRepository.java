@@ -13,6 +13,10 @@ public interface AccessTypeMappingsRepository {
 
   CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId, String tenantId);
 
+  CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
+                                                                       RecordType recordType, int page, int count,
+                                                                       String tenantId);
+
   CompletableFuture<AccessTypeMapping> save(AccessTypeMapping accessTypeMapping, String tenantId);
 
   CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, String tenantId);

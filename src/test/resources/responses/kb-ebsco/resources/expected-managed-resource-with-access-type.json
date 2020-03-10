@@ -107,7 +107,7 @@
       "id": "%s",
       "type": "accessTypes",
       "attributes": {
-        "name": "Access Type 1",
+        "name": "Subscribed",
         "description": "Access Type description 1"
       },
       "creator": {

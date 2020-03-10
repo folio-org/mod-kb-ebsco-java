@@ -4,6 +4,7 @@ import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,6 +61,13 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders))
       .thenCombine(mappingService.countRecordsByAccessType(okapiHeaders), this::setEachRecordUsage)
+      .thenApply(accessTypeCollectionConverter::convert);
+  }
+
+  @Override
+  public CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames,
+                                                             Map<String, String> okapiHeaders) {
+    return repository.findByNames(accessTypeNames, tenantId(okapiHeaders))
       .thenApply(accessTypeCollectionConverter::convert);
   }
 

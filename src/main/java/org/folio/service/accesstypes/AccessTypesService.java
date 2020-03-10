@@ -1,5 +1,6 @@
 package org.folio.service.accesstypes;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -10,6 +11,8 @@ import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 public interface AccessTypesService {
 
   CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders);
+
+  CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames, Map<String, String> okapiHeaders);
 
   CompletableFuture<AccessTypeCollectionItem> findById(String id, Map<String, String> okapiHeaders);
 

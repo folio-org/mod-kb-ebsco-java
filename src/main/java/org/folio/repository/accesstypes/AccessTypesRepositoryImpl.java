@@ -8,6 +8,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_ALL_ACCESS_TYPES;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_ACCESS_TYPES;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,7 +29,10 @@ import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.persist.Criteria.Criteria;
+import org.folio.rest.persist.Criteria.Criterion;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.persist.interfaces.Results;
 
 @Component
 public class AccessTypesRepositoryImpl implements AccessTypesRepository {
@@ -53,6 +57,16 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
+  public CompletableFuture<List<AccessTypeCollectionItem>> findByNames(Collection<String> accessTypeNames, String tenantId) {
+    Promise<Results<AccessTypeCollectionItem>> promise = Promise.promise();
+
+    Criterion criterion = criterionForFindByNames(accessTypeNames);
+    pgClient(tenantId).get(ACCESS_TYPES_TABLE_NAME, AccessTypeCollectionItem.class, criterion, false, false, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), Results::getResults);
+  }
+
+  @Override
   public CompletableFuture<Optional<AccessTypeCollectionItem>> findById(String id, String tenantId) {
     LOG.info("Retrieving access type: id = {}, tenantId = {}", id, tenantId);
     Promise<AccessTypeCollectionItem> promise = Promise.promise();
@@ -63,7 +77,6 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<AccessTypeCollectionItem> save(AccessTypeCollectionItem accessType, String tenantId) {
-
     Promise<String> promise = Promise.promise();
 
     if (StringUtils.isBlank(accessType.getId())) {
@@ -80,7 +93,6 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, String tenantId) {
-
     Promise<UpdateResult> promise = Promise.promise();
 
     pgClient(tenantId).update(ACCESS_TYPES_TABLE_NAME, accessType, id, promise);
@@ -124,6 +136,19 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private List<AccessTypeCollectionItem> readAccessTypes(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), this::mapAccessItem);
+  }
+
+  private Criterion criterionForFindByNames(Collection<String> accessTypeNames) {
+    Criterion criterion = new Criterion();
+    accessTypeNames.forEach(name -> {
+      Criteria criteria = new Criteria();
+      criteria.addField("'attributes'");
+      criteria.addField("'name'");
+      criteria.setOperation("=");
+      criteria.setVal(name);
+      criterion.addCriterion(criteria, "OR");
+    });
+    return criterion;
   }
 
   private PostgresClient pgClient(String tenantId) {
