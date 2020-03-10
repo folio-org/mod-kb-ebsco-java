@@ -36,21 +36,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.ResourceId;
-import org.folio.rest.parser.IdParser;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class ResourceRepositoryImpl implements ResourceRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(ResourceRepositoryImpl.class);
-  private IdParser idParser;
-  private Vertx vertx;
 
   @Autowired
-  public ResourceRepositoryImpl(Vertx vertx, IdParser idParser) {
-    this.vertx = vertx;
-    this.idParser = idParser;
-  }
+  private Vertx vertx;
 
   @Override
   public CompletableFuture<Void> save(String resourceId, String name, String tenantId) {
@@ -117,7 +112,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     return mapItems(rowsById.entrySet(), this::readResource);
   }
   private ResourceId readResourceId(JsonObject row) {
-    return idParser.parseResourceId(row.getString(ID_COLUMN));
+    return IdParser.parseResourceId(row.getString(ID_COLUMN));
   }
 
   private ResourceInfoInDB readResource(Map.Entry<ResourceId, List<JsonObject>> entry) {

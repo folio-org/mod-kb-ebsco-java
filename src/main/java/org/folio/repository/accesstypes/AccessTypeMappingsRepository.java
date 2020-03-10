@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.repository.RecordType;
+import org.folio.rest.model.filter.AccessTypeFilter;
 
 public interface AccessTypeMappingsRepository {
 
@@ -13,13 +14,16 @@ public interface AccessTypeMappingsRepository {
 
   CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId, String tenantId);
 
-  CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
-                                                                       RecordType recordType, int page, int count,
-                                                                       String tenantId);
+  CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
+                                                                          String tenantId);
 
   CompletableFuture<AccessTypeMapping> save(AccessTypeMapping accessTypeMapping, String tenantId);
 
   CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, String tenantId);
 
   CompletableFuture<Map<String, Integer>> countRecordsByAccessType(String tenantId);
+
+  CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordIdPrefix(String recordIdPrefix,
+                                                                                    RecordType recordType,
+                                                                                    String tenantId);
 }

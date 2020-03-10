@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.model.filter.AccessTypeFilter;
 
 public interface AccessTypeMappingsService {
 
@@ -15,12 +16,15 @@ public interface AccessTypeMappingsService {
 
   CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId, Map<String, String> okapiHeaders);
 
-  CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
-                                                                       RecordType recordType, int page, int count,
-                                                                       Map<String, String> okapiHeaders);
+  CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
+                                                                          Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> update(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
                                  Map<String, String> okapiHeaders);
 
   CompletableFuture<Map<String, Integer>> countRecordsByAccessType(Map<String, String> okapiHeaders);
+
+  CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordPrefix(String recordIdPattern,
+                                                                                  RecordType recordType,
+                                                                                  Map<String, String> okapiHeaders);
 }
