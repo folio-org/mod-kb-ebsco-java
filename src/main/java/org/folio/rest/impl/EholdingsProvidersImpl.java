@@ -3,9 +3,9 @@ package org.folio.rest.impl;
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getPackageIds;
 import static org.folio.rest.util.IdParser.parseProviderId;
-import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
 import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
 import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
@@ -276,13 +276,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                                                          int page, int count,
                                                                                          RMAPITemplateContext context,
                                                                                          Map<String, String> okapiHeaders) {
-    AccessTypeFilter accessTypeFilter = AccessTypeFilter.builder()
-      .accessTypeNames(accessTypeNames)
-      .recordIdPrefix(providerId)
-      .recordType(RecordType.PACKAGE)
-      .count(count)
-      .page(page)
-      .build();
+    AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
+    accessTypeFilter.setAccessTypeNames(accessTypeNames);
+    accessTypeFilter.setRecordIdPrefix(providerId);
+    accessTypeFilter.setRecordType(RecordType.PACKAGE);
+    accessTypeFilter.setCount(count);
+    accessTypeFilter.setPage(page);
     return filteredEntitiesLoader.fetchPackagesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders)
       .thenApply(packages -> new PackageCollectionResult(packages, emptyList()));
   }

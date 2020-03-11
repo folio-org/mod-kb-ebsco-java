@@ -2,15 +2,11 @@ package org.folio.rest.model.filter;
 
 import java.util.List;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import org.folio.repository.RecordType;
 
-@Getter
-@Setter
-@Builder
+@Data
 public class AccessTypeFilter {
 
   private List<String> accessTypeNames;

@@ -172,12 +172,11 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getPackagesByTags(tags, page, count, context));
     } else if (isAccessTypeSearch(filterAccessType, q, filterCustom, filterSelected, filterTags)) {
-      AccessTypeFilter accessTypeFilter = AccessTypeFilter.builder()
-        .accessTypeNames(filterAccessType)
-        .recordType(RecordType.PACKAGE)
-        .count(count)
-        .page(page)
-        .build();
+      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
+      accessTypeFilter.setAccessTypeNames(filterAccessType);
+      accessTypeFilter.setRecordType(RecordType.PACKAGE);
+      accessTypeFilter.setCount(count);
+      accessTypeFilter.setPage(page);
       template.requestAction(context -> filteredEntitiesLoader
         .fetchPackagesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders));
     } else {
