@@ -1,3 +1,14 @@
+## v3.3.0 2020-03-11
+* MODKBEKBJ-349 - Set access type on create custom package
+* MODKBEKBJ-350 - Set access type on edit package
+* MODKBEKBJ-353 - Set access type on update not custom package
+* MODKBEKBJ-354 - Set access type on update resource
+* MODKBEKBJ-355 - Implement package filtering by access type
+* MODKBEKBJ-374 - Make max access types value be configurable
+* MODKBEKBJ-377 - Add contributors list in GET /eholdings/titles response
+* MODKBEKBJ-378 - Add number of records to GET /eholdings/access-types endpoints
+* MODKBEKBJ-380 - Fix delete access type implementation
+
 ## v3.2.0 2020-02-11
 * MODKBEKBJ-334 - Custom labels: Expand POST title payload
 * MODKBEKBJ-335 - Custom labels: Expand PUT title payload
