@@ -11,6 +11,7 @@ import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,6 +52,8 @@ import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourceBulkFetchCollection;
+import org.folio.rest.jaxrs.model.ResourcePostBulkFetchRequest;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
@@ -60,9 +63,11 @@ import org.folio.rest.jaxrs.model.ResourceTagsItem;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
+import org.folio.rest.model.ResourceBulk;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
+import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ResourcePostValidator;
@@ -219,6 +224,21 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .handle(asyncResultHandler, e);
         return null;
       });
+  }
+
+  @Override
+  @HandleValidationErrors
+  public void postEholdingsResourcesBulkFetch(String contentType, ResourcePostBulkFetchRequest entity,
+                                              Map<String, String> okapiHeaders,
+                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+
+    final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+    template.requestAction(context ->
+    {
+      ResourceBulk resourceIds = context.getResourcesService().parseToResourceId(entity.getResources(), idParser);
+      return context.getResourcesService().retrieveResourcesBulk(resourceIds, Collections.emptyList());
+    })
+    .executeWithResult(ResourceBulkFetchCollection.class);
   }
 
   private CompletableFuture<AccessTypeCollectionItem> fetchAccessType(ResourcePutRequest entity,

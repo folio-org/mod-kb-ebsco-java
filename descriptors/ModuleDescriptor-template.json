@@ -72,6 +72,11 @@
           "permissionsRequired": ["kb-ebsco.resources.collection.post"]
         },
         {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/resources/bulk/fetch",
+          "permissionsRequired": ["kb-ebsco.resources-bulk.collection.get"]
+        },
+        {
           "methods": ["GET"],
           "pathPattern": "/eholdings/resources/{resourceId}",
           "permissionsRequired": ["kb-ebsco.resources.item.get"]
@@ -346,6 +351,11 @@
       "description": "Put tags to a single resource"
     },
     {
+      "permissionName": "kb-ebsco.resources-bulk.collection.get",
+      "displayName": "get resources collection with limited fields set",
+      "description": "Get resources collection with limited fields set"
+    },
+    {
       "permissionName": "kb-ebsco.packages.collection.get",
       "displayName": "get packages",
       "description": "Get packages"
@@ -476,6 +486,7 @@
         "kb-ebsco.packages.item.put",
         "kb-ebsco.resources.item.get",
         "kb-ebsco.resources.collection.post",
+        "kb-ebsco.resources-bulk.collection.get",
         "kb-ebsco.resources.item.put",
         "kb-ebsco.resources.item.delete",
         "kb-ebsco.resource-tags.put",

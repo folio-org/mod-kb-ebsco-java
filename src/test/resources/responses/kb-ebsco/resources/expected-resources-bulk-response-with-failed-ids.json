@@ -1,0 +1,45 @@
+{
+  "included" : [ {
+    "id" : "19-3964-762169",
+    "type" : "resources",
+    "attributes" : {
+      "titleId" : 762169,
+      "name" : "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+      "publicationType" : "Book",
+      "packageId" : "19-3964",
+      "providerId" : 19,
+      "providerName" : "ABC-CLIO",
+      "managedCoverages" : [ {
+          "beginCoverage" : "2005-01-01",
+          "endCoverage" : "2005-12-31"
+      } ],
+      "customCoverages" : [ ]
+    }
+    },
+    {
+      "id": "123356-3157070-19412030",
+      "type": "resources",
+      "attributes": {
+        "titleId": 19412030,
+        "name": "sd-test-java-again",
+        "publicationType": "Book",
+        "coverageStatement": "My test statement",
+        "packageId": "123356-3157070",
+        "providerId": 123356,
+        "providerName": "API DEV GOVERNMENT CUSTOMER",
+        "managedCoverages": [],
+        "customCoverages": [{
+          "beginCoverage": "2018-01-10",
+          "endCoverage": "2018-01-11"
+        }]
+      }
+    }],
+  "meta" : {
+    "failed" : {
+      "resources" : ["186-3150130-19087948", "413-3757-9g04662"]
+    }
+  },
+  "jsonapi" : {
+    "version" : "1.0"
+  }
+}

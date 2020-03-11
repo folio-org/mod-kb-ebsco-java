@@ -1,0 +1,35 @@
+{
+  "included": [
+    {
+      "id": "19-2561032-904662",
+      "type": "resources",
+      "attributes": {
+        "titleId": 904662,
+        "name": "A to B",
+        "publicationType": "Journal",
+        "packageId": "19-2561032",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "managedCoverages": [
+          {
+            "beginCoverage": "2012-02-01",
+            "endCoverage": ""
+          }
+        ],
+        "customCoverages": []
+      }
+    }
+  ],
+  "meta": {
+    "failed": {
+      "resources": [
+        "186-3150130-190879d48",
+        "413-3757-9g04662",
+        "19-2320561-904661"
+      ]
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

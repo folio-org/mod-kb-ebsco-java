@@ -1,0 +1,27 @@
+{
+  "included" : [ {
+        "id" : "19-3964-762169",
+        "type" : "resources",
+        "attributes" : {
+          "titleId" : 762169,
+          "name" : "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+          "publicationType" : "Book",
+          "packageId" : "19-3964",
+          "providerId" : 19,
+          "providerName" : "ABC-CLIO",
+          "managedCoverages" : [ {
+              "beginCoverage" : "2005-01-01",
+              "endCoverage" : "2005-12-31"
+          } ],
+          "customCoverages" : [ ]
+        }
+    } ],
+  "meta" : {
+    "failed" : {
+      "resources" : [ ]
+    }
+  },
+  "jsonapi" : {
+    "version" : "1.0"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Bulk Fetch object schema",
+  "description": "Resource Bulk Fetch object schema",
+  "javaType": "org.folio.rest.jaxrs.model.ResourcePostBulkFetchRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "resources": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 20,
+      "description": "A list of resource ids",
+      "items": {
+        "type": "string",
+        "description": "A resource id.",
+        "examples": ["123-122-12354", "12-3446-67879"]
+      }
+    }
+  },
+  "required": [
+    "resources"
+  ]
+}

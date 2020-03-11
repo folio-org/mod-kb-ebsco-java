@@ -78,6 +78,7 @@ import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourceBulkFetchCollection;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
@@ -93,6 +94,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   private static final String CUSTOM_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID + "/titles/" + STUB_CUSTOM_TITLE_ID;
   private static final String STUB_MANAGED_RESOURCE_PATH = "eholdings/resources/" + STUB_MANAGED_RESOURCE_ID;
   private static final String RESOURCE_TAGS_PATH = "eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID + "/tags";
+  private static final String RESOURCES_BULK_FETCH = "/eholdings/resources/bulk/fetch";
 
   @Test
   public void shouldReturnResourceWhenValidId() throws IOException, URISyntaxException {
@@ -285,7 +287,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus("eholdings/resources/583-abc-762169", SC_BAD_REQUEST)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Resource id is invalid"));
+    assertThat(error.getErrors().get(0).getTitle(), equalTo("Resource id is invalid - 583-abc-762169"));
   }
 
   @Test
@@ -594,6 +596,58 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), stubResponseFile);
     deleteWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_BAD_REQUEST);
+  }
+
+  @Test
+  public void shouldReturnListWithBulkFetchResources() throws IOException, URISyntaxException {
+    String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk.json");
+    String expectedResourceFile = "responses/kb-ebsco/resources/expected-resources-bulk-response.json";
+    String responseRmApiFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
+
+    mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), responseRmApiFile);
+    mockDefaultConfiguration(getWiremockUrl());
+    final String actualResponse = postWithOk("/eholdings/resources/bulk/fetch", postBody).asString();
+    JSONAssert.assertEquals(
+      readFile(expectedResourceFile), actualResponse, true);
+  }
+
+  @Test
+  public void shouldReturnResourcesAndFailedIds() throws IOException, URISyntaxException {
+    String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk-with-invalid-ids.json");
+    String expectedResourceFile = "responses/kb-ebsco/resources/expected-resources-bulk-response-with-failed-ids.json";
+
+    mockDefaultConfiguration(getWiremockUrl());
+
+    String resourceResponse1 = "responses/rmapi/resources/get-resource-by-id-success-response.json";
+    mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), resourceResponse1);
+
+    String resourceResponse2 = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+    mockGet(new EqualToPattern(CUSTOM_RESOURCE_ENDPOINT), resourceResponse2);
+
+    String notFoundResponse = "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
+    mockDefaultConfiguration(getWiremockUrl());
+    stubFor(
+      get(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/186/packages/3150130/titles/19087948"), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(notFoundResponse))
+          .withStatus(404)));
+
+    final String actualResponse = postWithOk(RESOURCES_BULK_FETCH, postBody).asString();
+    JSONAssert.assertEquals(
+      readFile(expectedResourceFile), actualResponse, false);
+  }
+
+  @Test
+  public void shouldReturnErrorWhenRMApiFails() throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+    mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
+
+    String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk.json");
+    final ResourceBulkFetchCollection bulkFetchCollection = postWithOk(RESOURCES_BULK_FETCH, postBody).as(ResourceBulkFetchCollection.class);
+
+    assertThat(bulkFetchCollection.getIncluded().size(), equalTo(0));
+    assertThat(bulkFetchCollection.getMeta().getFailed().getResources().size(), equalTo(1));
+    assertThat(bulkFetchCollection.getMeta().getFailed().getResources().get(0), equalTo("19-3964-762169"));
   }
 
   private void mockPackageResources(String stubPackageResourcesFile) throws IOException, URISyntaxException {

@@ -2,11 +2,15 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import javax.validation.ValidationException;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -22,7 +26,10 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
 import org.folio.holdingsiq.service.impl.ResourcesHoldingsIQServiceImpl;
+import org.folio.rest.model.ResourceBulk;
+import org.folio.rest.parser.IdParser;
 import org.folio.rmapi.cache.ResourceCacheKey;
+import org.folio.rmapi.result.ResourceBulkResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
 
@@ -102,6 +109,29 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .thenApply(this::mapToResources);
   }
 
+  public CompletableFuture<ResourceBulkResult> retrieveResourcesBulk(ResourceBulk resourceBulk, List<String> includes) {
+    List<String> failed = new ArrayList<>(resourceBulk.getFaults());
+    Set<CompletableFuture<ResourceResult>> futures = resourceBulk.getResourceIds().stream()
+      .map(id -> retrieveResource(id, includes, true)
+        .exceptionally(throwable -> {
+          failed.add(id.getProviderIdPart() + "-" + id.getPackageIdPart() + "-" + id.getTitleIdPart());
+          return new ResourceResult(null, null, null, false);
+        }))
+      .collect(Collectors.toSet());
+
+    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+      .thenApply(resourceFutures -> mapToResources(resourceFutures, failed));
+  }
+
+  private ResourceBulkResult mapToResources(List<ResourceResult> resourceFutures, List<String> failed) {
+    List<Title> titlesList = resourceFutures.stream()
+      .filter(title -> Objects.nonNull(title.getTitle()))
+      .map(ResourceResult::getTitle)
+      .sorted(Comparator.comparing(Title::getTitleName))
+      .collect(Collectors.toList());
+    return new ResourceBulkResult(titlesList, failed);
+  }
+
   private Titles mapToResources(List<ResourceResult> resourceFutures) {
     List<Title> titlesList = resourceFutures.stream()
       .map(ResourceResult::getTitle)
@@ -110,5 +140,18 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
     return Titles.builder()
       .titleList(titlesList)
       .build();
+  }
+
+  public ResourceBulk parseToResourceId(Set<String> packagesSet, IdParser idParser) {
+    final ResourceBulk.ResourceBulkBuilder builder = ResourceBulk.builder();
+
+    packagesSet.forEach(resourceId -> {
+      try {
+        builder.resourceId(idParser.parseResourceId(resourceId));
+      } catch (ValidationException exception){
+        builder.fault(resourceId);
+      }
+    });
+    return builder.build();
   }
 }

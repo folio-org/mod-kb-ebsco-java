@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Bulk Fetch object schema for a collection",
+  "description": "Resource Bulk Fetch object schema for a collection",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceBulkFetchCollectionItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier of resource - combination of providerId-packageId-titleId",
+      "example": "583-4345-760027"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": ["resources"],
+      "example": "resources"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Resource object data attributes",
+      "$ref": "resourceBulkFetchDataAttributes.json"
+    }
+  }
+}
