@@ -24,6 +24,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,6 +90,9 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                                  String tenantId) {
     List<String> accessTypeIds = accessTypeFilter.getAccessTypeIds();
+    if (accessTypeIds.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     int page = accessTypeFilter.getPage();
     int count = accessTypeFilter.getCount();
     int offset = (page - 1) * count;
