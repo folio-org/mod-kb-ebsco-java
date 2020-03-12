@@ -59,6 +59,7 @@ import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.holdings.message.DeltaReportCreatedMessage;
@@ -325,8 +326,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private List<String> getTitleIdsAsList(List<ResourceInfoInDB> resources){
-    return mapItems(resources, dbResource -> dbResource.getId().getProviderIdPart() + "-"
-      + dbResource.getId().getPackageIdPart() + "-" + dbResource.getId().getTitleIdPart());
+    return mapItems(resources, dbResource -> IdParser.resourceIdToString(dbResource.getId()));
   }
 
   private CompletableFuture<Void> saveHoldings(List<Holding> holdings, Instant updatedAt, String tenantId) {

@@ -26,6 +26,7 @@ import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.impl.PackagesHoldingsIQServiceImpl;
+import org.folio.rest.util.IdParser;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.VendorResult;
@@ -104,7 +105,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private CompletableFuture<PackageByIdData> retrievePackageWithCache(PackageId packageId) {
     PackageCacheKey cacheKey = PackageCacheKey.builder()
-      .packageId(packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart())
+      .packageId(IdParser.packageIdToString(packageId))
       .rmapiConfiguration(configuration)
       .tenant(tenantId)
       .build();

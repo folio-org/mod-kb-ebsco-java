@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import static org.folio.rest.util.IdParser.parsePackageId;
+import static org.folio.rest.util.IdParser.parseResourceId;
+import static org.folio.rest.util.IdParser.parseTitleId;
 import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
 import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 
@@ -45,9 +48,9 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
-import org.folio.rest.parser.IdParser;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -69,8 +72,6 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private TitlePutRequestConverter titlePutRequestConverter;
   @Autowired
   private TitleParametersValidator parametersValidator;
-  @Autowired
-  private IdParser idParser;
   @Autowired
   private TitlesPostBodyValidator titlesPostBodyValidator;
   @Autowired
@@ -124,7 +125,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     titlesPostBodyValidator.validate(entity);
 
     TitlePost titlePost = titlePostRequestConverter.convert(entity);
-    PackageId packageId = idParser.parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
+    PackageId packageId = parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
@@ -143,7 +144,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     titleCommonRequestAttributesValidator.validate(entity.getData().getAttributes());
 
-    Long parsedTitleId = idParser.parseTitleId(titleId);
+    Long parsedTitleId = parseTitleId(titleId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(parsedTitleId)
@@ -155,7 +156,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             ResourcePut resourcePutRequest =
               titlePutRequestConverter.convertToRMAPICustomResourcePutRequest(entity, resource);
             String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
-            return context.getResourcesService().updateResource(idParser.parseResourceId(resourceId), resourcePutRequest);
+            return context.getResourcesService().updateResource(parseResourceId(resourceId), resourcePutRequest);
           })
           .thenCompose(o -> context.getTitlesService().retrieveTitle(parsedTitleId))
           .thenCompose(title ->
@@ -170,7 +171,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @HandleValidationErrors
   public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    long titleIdLong = idParser.parseTitleId(titleId);
+    long titleIdLong = parseTitleId(titleId);
     boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
@@ -238,7 +239,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       List<String> resourceIds = result.getTitle()
         .getCustomerResourcesList()
         .stream()
-        .map(this::buildResourceId)
+        .map(IdParser::getResourceId)
         .collect(Collectors.toList());
       return tagRepository.findByRecordByIds(TenantTool.tenantId(okapiHeaders), resourceIds, RecordType.RESOURCE)
         .thenApply(tags -> {
@@ -251,11 +252,6 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     } else {
       return relatedEntitiesLoader.loadTags(result, recordKey, okapiHeaders).thenApply(aVoid -> result);
     }
-  }
-
-  private String buildResourceId(CustomerResources customerResources) {
-    return customerResources.getVendorId() + "-" + customerResources.getPackageId() + "-"
-      + customerResources.getTitleId();
   }
 
   private CompletableFuture<TitleResult> updateTags(TitleResult result, String tenant, Tags tags) {

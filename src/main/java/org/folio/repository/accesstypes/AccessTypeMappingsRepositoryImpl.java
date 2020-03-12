@@ -10,6 +10,7 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_ALL_MAPPINGS_BY_ACCESS_TYPE_AND_RECORD;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_ALL_MAPPINGS_BY_ACCESS_TYPE_ID;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.DELETE_MAPPING_BY_RECORD_ID_AND_RECORD_TYPE;
@@ -23,6 +24,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +44,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordType;
+import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -84,12 +87,19 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   }
 
   @Override
-  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
-                                                                              RecordType recordType, int page, int count,
-                                                                              String tenantId) {
+  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
+                                                                                 String tenantId) {
+    List<String> accessTypeIds = accessTypeFilter.getAccessTypeIds();
+    if (accessTypeIds.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
+    int page = accessTypeFilter.getPage();
+    int count = accessTypeFilter.getCount();
     int offset = (page - 1) * count;
+
     JsonArray params = createParams(accessTypeIds);
-    params.add(recordType.getValue());
+    params.add(accessTypeFilter.getRecordType().getValue());
+    params.add(accessTypeFilter.getRecordIdPrefix() + "%");
     params.add(offset);
     params.add(count);
 
@@ -135,6 +145,20 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCount);
+  }
+
+  @Override
+  public CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordIdPrefix(String recordIdPrefix,
+                                                                                           RecordType recordType,
+                                                                                           String tenantId) {
+    String query = format(COUNT_ALL_MAPPINGS_BY_ACCESS_TYPE_AND_RECORD, getAccessTypesMappingTableName(tenantId));
+    JsonArray params = createParams(asList(recordIdPrefix + "%", recordType.getValue()));
+
+    LOG.info(SELECT_LOG_MESSAGE, query);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCount);
   }
