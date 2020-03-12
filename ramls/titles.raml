@@ -9,6 +9,7 @@ traits:
   pageable: !include traits/pageable.raml
   filterable: !include traits/titlesFilterable.raml
   taggable: !include traits/taggable.raml
+  accessible: !include traits/accessible.raml
   includable: !include traits/includeResources.raml
 
 types:
@@ -23,7 +24,7 @@ types:
   description: Collection of available titles in eholdings.
   get:
     description: Get a set of titles matching the given search criteria.
-    is: [taggable, filterable, sortable, pageable]
+    is: [taggable, accessible, filterable, sortable, pageable]
     responses:
       200:
         description: OK
