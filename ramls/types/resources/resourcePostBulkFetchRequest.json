@@ -14,6 +14,7 @@
       "items": {
         "type": "string",
         "description": "A resource id.",
+        "pattern": "\\d+-\\d+-\\d+",
         "examples": ["123-122-12354", "12-3446-67879"]
       }
     }

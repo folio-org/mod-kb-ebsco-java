@@ -23,7 +23,7 @@ public class ResourceCollectionBulkFetchConverter implements Converter<ResourceB
 
   @Override
   public ResourceBulkFetchCollection convert(ResourceBulkResult resourceBulkResult) {
-    List<ResourceBulkFetchCollectionItem> titleList = mapItems(resourceBulkResult.getTitles(), converter::convert);
+    List<ResourceBulkFetchCollectionItem> titleList = mapItems(resourceBulkResult.getTitles().getTitleList(), converter::convert);
     return new ResourceBulkFetchCollection()
       .withIncluded(titleList)
       .withJsonapi(RestConstants.JSONAPI)

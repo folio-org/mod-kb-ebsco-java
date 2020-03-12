@@ -11,7 +11,6 @@ import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,7 +62,6 @@ import org.folio.rest.jaxrs.model.ResourceTagsItem;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
-import org.folio.rest.model.ResourceBulk;
 import org.folio.rest.parser.IdParser;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
@@ -233,11 +231,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    template.requestAction(context ->
-    {
-      ResourceBulk resourceIds = context.getResourcesService().parseToResourceId(entity.getResources(), idParser);
-      return context.getResourcesService().retrieveResourcesBulk(resourceIds, Collections.emptyList());
-    })
+    template.requestAction(context -> context.getResourcesService().retrieveResourcesBulk(entity.getResources(), idParser))
     .executeWithResult(ResourceBulkFetchCollection.class);
   }
 

@@ -612,6 +612,28 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn422OnInvalidIdFormat() throws IOException, URISyntaxException {
+    String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk-with-invalid-id-format.json");
+
+    mockDefaultConfiguration(getWiremockUrl());
+
+    final Errors error = postWithStatus(RESOURCES_BULK_FETCH, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    assertThat(error.getErrors().get(0).getMessage(), equalTo("elements in list must match pattern"));
+  }
+
+  @Test
+  public void shouldReturnResponseWhenIdIsTooLong() throws IOException, URISyntaxException {
+    String postBody = readFile("requests/kb-ebsco/resource/post-resource-with-too-long-id.json");
+    String expectedResourceFile = "responses/kb-ebsco/resources/expected-response-on-too-long-id.json";
+
+    mockDefaultConfiguration(getWiremockUrl());
+
+    final String actualResponse = postWithOk(RESOURCES_BULK_FETCH, postBody).asString();
+    JSONAssert.assertEquals(
+      readFile(expectedResourceFile), actualResponse, false);
+  }
+
+  @Test
   public void shouldReturnResourcesAndFailedIds() throws IOException, URISyntaxException {
     String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk-with-invalid-ids.json");
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-resources-bulk-response-with-failed-ids.json";

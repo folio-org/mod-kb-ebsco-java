@@ -5,11 +5,11 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
-import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.Titles;
 
 @Value
 @AllArgsConstructor
 public class ResourceBulkResult {
-  List<Title> titles;
+  Titles titles;
   List<String> failedResources;
 }
