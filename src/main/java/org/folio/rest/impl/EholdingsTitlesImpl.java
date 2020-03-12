@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
+import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
 import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
 import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 
@@ -48,6 +49,7 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
+import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
@@ -58,6 +60,7 @@ import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitleCommonRequestAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleResult;
+import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
@@ -84,6 +87,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private TitlesRepository titlesRepository;
   @Autowired
   private RelatedEntitiesLoader relatedEntitiesLoader;
+  @Autowired
+  private FilteredEntitiesLoader filteredEntitiesLoader;
 
   public EholdingsTitlesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -92,14 +97,23 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsTitles(String filterTags, String filterSelected, String filterType, String filterName,
-                                 String filterIsxn, String filterSubject, String filterPublisher, String sort, int page,
-                                 int count, Map<String, String> okapiHeaders,
+  public void getEholdingsTitles(String filterTags, List<String> filterAccessType, String filterSelected, String filterType,
+                                 String filterName, String filterIsxn, String filterSubject, String filterPublisher,
+                                 String sort, int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (isTagsSearch(filterTags)) {
+    if (isTagsSearch(filterTags, filterAccessType.toArray(new String[0]))) {
       List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getResourcesByTags(tags, page, count, context));
+    } else if (isAccessTypeSearch(filterAccessType, filterTags)) {
+      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
+      accessTypeFilter.setAccessTypeNames(filterAccessType);
+      accessTypeFilter.setRecordType(RecordType.RESOURCE);
+      accessTypeFilter.setCount(count);
+      accessTypeFilter.setPage(page);
+      template.requestAction(
+        context -> filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders)
+      );
     } else {
       FilterQuery fq = FilterQuery.builder()
         .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))

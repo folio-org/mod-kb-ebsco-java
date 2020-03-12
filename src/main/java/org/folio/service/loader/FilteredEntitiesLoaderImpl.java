@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.ResourceId;
+import org.folio.holdingsiq.model.Titles;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -20,6 +22,8 @@ import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RMAPITemplateContext;
+import org.folio.rmapi.PackageServiceImpl;
+import org.folio.rmapi.TitlesServiceImpl;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
 
@@ -36,10 +40,23 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
                                                                      RMAPITemplateContext context,
                                                                      Map<String, String> okapiHeaders) {
     AtomicInteger totalCount = new AtomicInteger();
+    PackageServiceImpl packagesService = context.getPackagesService();
     return fetchAccessTypeMappings(accessTypeFilter, okapiHeaders, totalCount)
       .thenApply(this::extractPackageIds)
-      .thenCompose(packageIds -> context.getPackagesService().retrievePackages(packageIds))
+      .thenCompose(packagesService::retrievePackages)
       .thenApply(packages -> packages.toBuilder().totalResults(totalCount.get()).build());
+  }
+
+  @Override
+  public CompletableFuture<Titles> fetchTitlesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
+                                                                 RMAPITemplateContext context,
+                                                                 Map<String, String> okapiHeaders) {
+    AtomicInteger totalCount = new AtomicInteger();
+    TitlesServiceImpl titlesService = context.getTitlesService();
+    return fetchAccessTypeMappings(accessTypeFilter, okapiHeaders, totalCount)
+      .thenApply(this::extractTitleIds)
+      .thenCompose(titlesService::retrieveTitles)
+      .thenApply(titles -> titles.toBuilder().totalResults(totalCount.get()).build());
   }
 
   private CompletableFuture<Collection<AccessTypeMapping>> fetchAccessTypeMappings(AccessTypeFilter accessTypeFilter,
@@ -75,6 +92,14 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     return accessTypeMappings.stream()
       .map(AccessTypeMapping::getRecordId)
       .map(IdParser::parsePackageId)
+      .collect(Collectors.toList());
+  }
+
+  private List<Long> extractTitleIds(Collection<AccessTypeMapping> accessTypeMappings) {
+    return accessTypeMappings.stream()
+      .map(AccessTypeMapping::getRecordId)
+      .map(IdParser::parseResourceId)
+      .map(ResourceId::getTitleIdPart)
       .collect(Collectors.toList());
   }
 
