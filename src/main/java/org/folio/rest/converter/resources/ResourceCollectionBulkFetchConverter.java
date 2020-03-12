@@ -9,6 +9,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Title;
+import org.folio.rest.jaxrs.model.Failed;
 import org.folio.rest.jaxrs.model.MetaResourcesInformation;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollection;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollectionItem;
@@ -28,7 +29,7 @@ public class ResourceCollectionBulkFetchConverter implements Converter<ResourceB
       .withIncluded(titleList)
       .withJsonapi(RestConstants.JSONAPI)
       .withMeta(new MetaResourcesInformation()
-      .withFailed(new org.folio.rest.jaxrs.model.Failed()
+      .withFailed(new Failed()
         .withResources(resourceBulkResult.getFailedResources()))
     );
   }
