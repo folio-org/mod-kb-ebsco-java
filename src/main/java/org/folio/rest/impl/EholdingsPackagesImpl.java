@@ -3,9 +3,13 @@ package org.folio.rest.impl;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
+import static org.folio.rest.util.IdParser.getPackageIds;
+import static org.folio.rest.util.IdParser.getResourceIds;
+import static org.folio.rest.util.IdParser.getTitleIds;
+import static org.folio.rest.util.IdParser.packageIdToString;
+import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
 import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
 import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
@@ -13,16 +17,13 @@ import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
@@ -58,7 +59,6 @@ import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
-import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.packages.PackageInfoInDB;
 import org.folio.repository.packages.PackageRepository;
@@ -71,7 +71,6 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -85,7 +84,7 @@ import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.parser.IdParser;
+import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
@@ -104,6 +103,7 @@ import org.folio.rmapi.result.TitleResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.holdings.HoldingsService;
+import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
@@ -133,8 +133,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   private TitleParametersValidator titleParametersValidator;
   @Autowired
-  private IdParser idParser;
-  @Autowired
   private RMAPITemplateFactory templateFactory;
   @Autowired
   @Qualifier("vendorIdCache")
@@ -155,6 +153,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private AccessTypeMappingsService accessTypeMappingsService;
   @Autowired
   private RelatedEntitiesLoader relatedEntitiesLoader;
+  @Autowired
+  private FilteredEntitiesLoader filteredEntitiesLoader;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -172,7 +172,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getPackagesByTags(tags, page, count, context));
     } else if (isAccessTypeSearch(filterAccessType, q, filterCustom, filterSelected, filterTags)) {
-      template.requestAction(context -> getPackagesByAccessTypes(filterAccessType, page, count, context, okapiHeaders));
+      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
+      accessTypeFilter.setAccessTypeNames(filterAccessType);
+      accessTypeFilter.setRecordType(RecordType.PACKAGE);
+      accessTypeFilter.setCount(count);
+      accessTypeFilter.setPage(page);
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchPackagesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders));
     } else {
       if (Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)) {
         throw new ValidationException("Invalid Query Parameter for filter[custom]");
@@ -225,7 +231,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void getEholdingsPackagesByPackageId(String packageId, String include, Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = idParser.parsePackageId(packageId);
+    PackageId parsedPackageId = parsePackageId(packageId);
     List<String> includedObjects = parseByComma(include);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
@@ -233,7 +239,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         context.getPackagesService().retrievePackage(parsedPackageId, includedObjects)
           .thenCompose(packageResult -> {
             RecordKey recordKey = RecordKey.builder()
-              .recordId(getPackageId(parsedPackageId))
+              .recordId(packageIdToString(parsedPackageId))
               .recordType(RecordType.PACKAGE)
               .build();
             return CompletableFuture.allOf(
@@ -253,7 +259,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (!isPackageUpdatable(entity)) {
       throw new InputValidationException(PACKAGE_NOT_UPDATABLE_TITLE, PACKAGE_NOT_UPDATABLE_DETAILS);
     } else {
-      PackageId parsedPackageId = idParser.parsePackageId(packageId);
+      PackageId parsedPackageId = parsePackageId(packageId);
       templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
         .requestAction(context -> fetchAccessType(entity, okapiHeaders)
           .thenCompose(accessType -> processUpdateRequest(entity, parsedPackageId, context)
@@ -275,7 +281,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void deleteEholdingsPackagesByPackageId(String packageId, Map<String, String> okapiHeaders,
                                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = idParser.parsePackageId(packageId);
+    PackageId parsedPackageId = parsePackageId(packageId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getPackagesService().retrievePackage(parsedPackageId)
@@ -306,7 +312,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getTitlesByPackageIdAndTags(packageId, tags, page, count, context));
     } else {
-      PackageId parsedPackageId = idParser.parsePackageId(packageId);
+      PackageId parsedPackageId = parsePackageId(packageId);
 
       FilterQuery fq = FilterQuery.builder()
         .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
@@ -391,7 +397,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return PackageInfoInDB.builder()
       .contentType(ConverterConsts.contentTypes.inverseBidiMap().get(attributes.getContentType()))
       .name(attributes.getName())
-      .id(idParser.parsePackageId(packageId))
+      .id(parsePackageId(packageId))
       .build();
   }
 
@@ -465,7 +471,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private List<ResourceId> getRemainingResourceIds(List<HoldingInfoInDB> holdings, List<ResourceInfoInDB> resourcesResult) {
     final List<ResourceId> resourceIds = getTitleIds(resourcesResult);
-    resourceIds.removeIf(dbResource -> getResourceIdsFromHoldings(holdings).contains(dbResource));
+    resourceIds.removeIf(dbResource -> getResourceIds(holdings).contains(dbResource));
     return resourceIds;
   }
 
@@ -488,29 +494,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       );
   }
 
-  private CompletableFuture<Packages> getPackagesByAccessTypes(List<String> accessTypeNames, int page, int count,
-                                                               RMAPITemplateContext context,
-                                                               Map<String, String> okapiHeaders) {
-    AtomicInteger totalCount = new AtomicInteger();
-    return accessTypesService.findByNames(accessTypeNames, okapiHeaders)
-      .thenApply(this::getAccessTypeIds)
-      .thenCompose(accessTypeIds -> accessTypeMappingsService.countRecordsByAccessType(okapiHeaders)
-        .thenCompose(mappingCount -> {
-          accessTypeIds.forEach(id -> totalCount.getAndAdd(mappingCount.getOrDefault(id, 0)));
-          return accessTypeMappingsService.findByAccessTypeIds(accessTypeIds, RecordType.PACKAGE, page, count, okapiHeaders);
-        }))
-      .thenApply(this::getPackageIds)
-      .thenCompose(packageIds -> context.getPackagesService().retrievePackages(packageIds))
-      .thenApply(packages -> packages.toBuilder().totalResults(totalCount.get()).build());
-  }
-
-  private List<String> getAccessTypeIds(AccessTypeCollection accessTypeCollection) {
-    return accessTypeCollection.getData()
-      .stream()
-      .map(AccessTypeCollectionItem::getId)
-      .collect(Collectors.toList());
-  }
-
   private CompletableFuture<Long> getVendorId(RMAPITemplateContext context) {
     VendorIdCacheKey cacheKey = VendorIdCacheKey.builder()
       .tenant(context.getOkapiData().getTenant())
@@ -530,7 +513,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> deleteTags(PackageId packageId, String tenant) {
     return packageRepository.delete(packageId, tenant)
-      .thenCompose(o -> tagRepository.deleteRecordTags(tenant, getPackageId(packageId), RecordType.PACKAGE))
+      .thenCompose(o -> tagRepository.deleteRecordTags(tenant, packageIdToString(packageId), RecordType.PACKAGE))
       .thenCompose(aBoolean -> completedFuture(null));
   }
 
@@ -540,7 +523,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     } else {
       PackageId id = packages.getId();
       return updateStoredPackage(tags, packages, tenant)
-        .thenCompose(o -> tagRepository.updateRecordTags(tenant, getPackageId(id), RecordType.PACKAGE, tags.getTagList()))
+        .thenCompose(
+          o -> tagRepository.updateRecordTags(tenant, packageIdToString(id), RecordType.PACKAGE, tags.getTagList()))
         .thenApply(updated -> null);
     }
   }
@@ -599,37 +583,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   @NotNull
   private CompletableFuture<Void> deleteAssignedResources(PackageId packageId, Map<String, String> okapiHeaders) {
-    CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, getPackageId(packageId), okapiHeaders);
+    CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, packageIdToString(packageId), okapiHeaders);
     CompletableFuture<Void> deleteTags = deleteTags(packageId, TenantTool.tenantId(okapiHeaders));
 
     return CompletableFuture.allOf(deleteAccessMapping, deleteTags);
-  }
-
-  private String getPackageId(PackageId packageId) {
-    return packageId.getProviderIdPart() + "-" + packageId.getPackageIdPart();
-  }
-
-  private List<PackageId> getPackageIds(List<PackageInfoInDB> packageIds) {
-    return mapItems(packageIds, PackageInfoInDB::getId);
-  }
-
-  private List<PackageId> getPackageIds(Collection<AccessTypeMapping> accessTypeMappings) {
-    return accessTypeMappings.stream()
-      .map(AccessTypeMapping::getRecordId)
-      .map(id -> idParser.parsePackageId(id))
-      .collect(Collectors.toList());
-  }
-
-  private List<ResourceId> getTitleIds(List<ResourceInfoInDB> resources) {
-    return mapItems(resources, ResourceInfoInDB::getId);
-  }
-
-  private List<ResourceId> getResourceIdsFromHoldings(List<HoldingInfoInDB> holdings) {
-    return mapItems(holdings, resource ->
-      ResourceId.builder()
-        .providerIdPart(resource.getVendorId())
-        .packageIdPart(Long.parseLong(resource.getPackageId()))
-        .titleIdPart(Long.parseLong(resource.getTitleId()))
-        .build());
   }
 }

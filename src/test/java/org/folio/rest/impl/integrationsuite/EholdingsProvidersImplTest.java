@@ -24,6 +24,8 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.PROVIDER;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
@@ -53,6 +55,11 @@ import static org.folio.test.util.TestUtil.getFile;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME;
+import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_2;
+import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
+import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
+import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.PackagesTestUtil.setUpPackage;
@@ -80,6 +87,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
@@ -221,6 +229,58 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
     } finally {
       clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnPackagesOnSearchByProviderIdAndAccessTypeWithPagination() throws IOException, URISyntaxException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(1).getId(), vertx);
+
+      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+      setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
+      setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
+      mockDefaultConfiguration(getWiremockUrl());
+
+      String resourcePath = PROVIDER_PACKAGES + "?page=2&count=1&filter[access-type]="
+        + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+      PackageCollection packageCollection = getWithOk(resourcePath).as(PackageCollection.class);
+
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(1, packages.size());
+      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() throws IOException, URISyntaxException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+      insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(0).getId(), vertx);
+
+      mockDefaultConfiguration(getWiremockUrl());
+
+      mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
+
+      String resourcePath = PROVIDER_PACKAGES + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+      PackageCollection packageCollection = getWithOk(resourcePath).as(PackageCollection.class);
+      List<PackageCollectionItem> packages = packageCollection.getData();
+
+      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+      assertEquals(0, packages.size());
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }

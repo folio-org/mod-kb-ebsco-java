@@ -3,6 +3,10 @@ package org.folio.rest.impl;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 
+import static org.folio.rest.util.IdParser.getResourceId;
+import static org.folio.rest.util.IdParser.parsePackageId;
+import static org.folio.rest.util.IdParser.parseResourceId;
+import static org.folio.rest.util.IdParser.parseTitleId;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
@@ -62,7 +66,6 @@ import org.folio.rest.jaxrs.model.ResourceTagsItem;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
-import org.folio.rest.parser.IdParser;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.template.RMAPITemplate;
@@ -89,8 +92,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   @Autowired
   private ResourceRequestConverter converter;
-  @Autowired
-  private IdParser idParser;
   @Autowired
   private ResourcePostValidator postValidator;
   @Autowired
@@ -122,8 +123,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
     ResourcePostDataAttributes attributes = entity.getData().getAttributes();
 
-    long titleId = idParser.parseTitleId(attributes.getTitleId());
-    PackageId packageId = idParser.parsePackageId(attributes.getPackageId());
+    long titleId = parseTitleId(attributes.getTitleId());
+    PackageId packageId = parsePackageId(attributes.getPackageId());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(
@@ -152,7 +153,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @HandleValidationErrors
   public void getEholdingsResourcesByResourceId(String resourceId, String include, Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
+    ResourceId parsedResourceId = parseResourceId(resourceId);
     List<String> includedObjects = parseByComma(include);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
@@ -169,7 +170,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   public void putEholdingsResourcesByResourceId(String resourceId, String contentType, ResourcePutRequest entity,
                                                 Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
+    ResourceId parsedResourceId = parseResourceId(resourceId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context -> fetchAccessType(entity, okapiHeaders)
         .thenCompose(accessType -> processResourceUpdate(entity, parsedResourceId, context)
@@ -185,7 +186,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @HandleValidationErrors
   public void deleteEholdingsResourcesByResourceId(String resourceId, Map<String, String> okapiHeaders,
                                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    ResourceId parsedResourceId = idParser.parseResourceId(resourceId);
+    ResourceId parsedResourceId = parseResourceId(resourceId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
@@ -324,10 +325,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .updateRecordTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList()))
         .thenApply(updated -> null);
     }
-  }
-
-  private String getResourceId(CustomerResources resource) {
-    return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 
   private CompletableFuture<Title> processResourceUpdate(ResourcePutRequest entity, ResourceId parsedResourceId,

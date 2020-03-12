@@ -16,6 +16,7 @@ import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.accesstypes.AccessTypeMappingsRepository;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.model.filter.AccessTypeFilter;
 
 @Component
 public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService {
@@ -39,10 +40,9 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   }
 
   @Override
-  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeIds(Collection<String> accessTypeIds,
-                                                                              RecordType recordType, int page, int count,
-                                                                              Map<String, String> okapiHeaders) {
-    return mappingRepository.findByAccessTypeIds(accessTypeIds, recordType, page, count, tenantId(okapiHeaders));
+  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
+                                                                                 Map<String, String> okapiHeaders) {
+    return mappingRepository.findByAccessTypeFilter(accessTypeFilter, tenantId(okapiHeaders));
   }
 
   @Override
@@ -67,6 +67,14 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   @Override
   public CompletableFuture<Map<String, Integer>> countRecordsByAccessType(Map<String, String> okapiHeaders) {
     return mappingRepository.countRecordsByAccessType(tenantId(okapiHeaders));
+  }
+
+  @Override
+  public CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordPrefix(String recordIdPrefix,
+                                                                                         RecordType recordType,
+                                                                                         Map<String, String> okapiHeaders) {
+    return mappingRepository.countRecordsByAccessTypeAndRecordIdPrefix(recordIdPrefix, recordType,
+      tenantId(okapiHeaders));
   }
 
   private AccessTypeMapping createAccessTypeMapping(AccessTypeCollectionItem accessType, String recordId,
