@@ -3,13 +3,13 @@ package org.folio.rest.impl;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 
+import static org.folio.rest.util.ErrorUtil.createError;
+import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
+import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
-import static org.folio.rest.util.ErrorUtil.createError;
-import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
-import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
@@ -232,7 +232,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    template.requestAction(context -> context.getResourcesService().retrieveResourcesBulk(entity.getResources(), idParser))
+    template.requestAction(context -> context.getResourcesService().retrieveResourcesBulk(entity.getResources()))
     .executeWithResult(ResourceBulkFetchCollection.class);
   }
 

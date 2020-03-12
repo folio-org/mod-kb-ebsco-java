@@ -27,7 +27,7 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
 import org.folio.holdingsiq.service.impl.ResourcesHoldingsIQServiceImpl;
-import org.folio.rest.parser.IdParser;
+import org.folio.rest.util.IdParser;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.result.ResourceBulkResult;
 import org.folio.rmapi.result.ResourceResult;
@@ -109,10 +109,10 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .thenApply(this::mapToResources);
   }
 
-  public CompletableFuture<ResourceBulkResult> retrieveResourcesBulk(Set<String> resourceBulk, IdParser idParser) {
+  public CompletableFuture<ResourceBulkResult> retrieveResourcesBulk(Set<String> resourceBulk) {
     List<String> failed = new ArrayList<>();
     Set<CompletableFuture<ResourceResult>> futures = resourceBulk.stream()
-      .map(id -> parseToResourceId(id, failed, idParser))
+      .map(id -> parseToResourceId(id, failed))
       .filter(Objects::nonNull)
       .map(resourceId ->
         retrieveResource(resourceId, Collections.emptyList(), true)
@@ -142,9 +142,9 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .build();
   }
 
-  private ResourceId parseToResourceId(String resourceId, List<String> failed, IdParser idParser) {
+  private ResourceId parseToResourceId(String resourceId, List<String> failed) {
     try {
-      return idParser.parseResourceId(resourceId);
+      return IdParser.parseResourceId(resourceId);
     } catch (ValidationException exception){
       failed.add(resourceId);
     }
