@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Bulk Fetch Object Data Attributes Schema",
+  "description": "Resource Bulk Fetch Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceBulkFetchDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "titleId": {
+      "type": "integer",
+      "readonly": true,
+      "description": "Title Id",
+      "example": 2985519
+    },
+    "name": {
+      "type": "string",
+      "description": "Resource name. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
+      "example": "American Journal of Undergraduate Research"
+    },
+    "publicationType": {
+      "type": "string",
+      "description": "Publication type. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
+      "$ref": "../publicationType.json"
+    },
+    "coverageStatement": {
+      "type": "string",
+      "description": "Coverage statement. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "example": "Only 2000s issues available."
+    },
+    "packageId": {
+      "type": "string",
+      "readonly": true,
+      "description": "Unique package id",
+      "example": "19-2333046"
+    },
+    "providerId": {
+      "type": "integer",
+      "readonly": true,
+      "description": "Provider Id",
+      "example": 19
+    },
+    "providerName": {
+      "type": "string",
+      "readonly": true,
+      "description": "Provider name",
+      "example": "EBSCO"
+    },
+    "managedCoverages": {
+      "type": "array",
+      "readonly": true,
+      "description": "List of Managed Coverages information",
+      "items": {
+        "type": "object",
+        "description": "Managed Coverages information",
+        "$ref": "../coverage.json"
+      }
+    },
+    "customCoverages": {
+      "type": "array",
+      "description": "List of Custom Coverages information. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
+      "items": {
+        "type": "object",
+        "description": "Custom Coverages information",
+        "$ref": "../coverage.json"
+      }
+    }
+  }
+}
