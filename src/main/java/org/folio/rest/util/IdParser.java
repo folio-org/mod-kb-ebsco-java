@@ -19,7 +19,7 @@ import org.folio.repository.resources.ResourceInfoInDB;
 
 public final class IdParser {
 
-  private static final String RESOURCE_ID_INVALID_ERROR = "Resource id is invalid";
+  private static final String RESOURCE_ID_INVALID_ERROR = "Resource id is invalid - %s";
   private static final String TITLE_ID_IS_INVALID_ERROR = "Title id is invalid - %s";
   private static final String PACKAGE_ID_MISSING_ERROR = "Package and provider id are required";
   private static final String PACKAGE_ID_INVALID_ERROR = "Package or provider id are invalid";

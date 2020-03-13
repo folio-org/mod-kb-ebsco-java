@@ -16,6 +16,8 @@ types:
   resourcePutRequest: !include types/resources/resourcePutRequest.json
   resourceTagsPutRequest: !include types/resources/resourceTagsPutRequest.json
   resourceTags: !include types/resources/resourceTags.json
+  resourcePostBulkFetchRequest: !include types/resources/resourcePostBulkFetchRequest.json
+  resourceBulkFetchCollection:  !include types/resources/resourceBulkFetchCollection.json
 
 /eholdings/resources:
   displayName: Resources
@@ -210,10 +212,40 @@ types:
                   strict: false
                   value: !include examples/resources/resource_tags_put_200_response.json
           422:
-             description: Unprocessable Entity
-             body:
+            description: Unprocessable Entity
+            body:
               application/vnd.api+json:
                 type: jsonapiError
                 example:
                   strict: false
                   value: !include examples/resources/resource_tags_put_422_response.json
+  /bulk/fetch:
+    post:
+      description:
+      headers:
+        Content-Type:
+          example: application/vnd.api+json
+      body:
+        application/vnd.api+json:
+          type: resourcePostBulkFetchRequest
+          example:
+            strict: false
+            value:  !include examples/resources/resource_bulk_fetch_post_request.json
+      responses:
+        200:
+          description: OK
+          body:
+            application/vnd.api+json:
+              description:
+              type: resourceBulkFetchCollection
+              example:
+                strict: false
+                value: !include examples/resources/resource_bulk_fetch_post_200_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/resources/resource_bulk_post_422_response.json

@@ -3,13 +3,13 @@ package org.folio.rest.impl;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 
+import static org.folio.rest.util.ErrorUtil.createError;
+import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
+import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
-import static org.folio.rest.util.ErrorUtil.createError;
-import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
-import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
@@ -55,6 +55,8 @@ import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourceBulkFetchCollection;
+import org.folio.rest.jaxrs.model.ResourcePostBulkFetchRequest;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
@@ -66,6 +68,7 @@ import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
+import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.ResourcePostValidator;
@@ -220,6 +223,17 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .handle(asyncResultHandler, e);
         return null;
       });
+  }
+
+  @Override
+  @HandleValidationErrors
+  public void postEholdingsResourcesBulkFetch(String contentType, ResourcePostBulkFetchRequest entity,
+                                              Map<String, String> okapiHeaders,
+                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+
+    final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+    template.requestAction(context -> context.getResourcesService().retrieveResourcesBulk(entity.getResources()))
+    .executeWithResult(ResourceBulkFetchCollection.class);
   }
 
   private CompletableFuture<AccessTypeCollectionItem> fetchAccessType(ResourcePutRequest entity,
