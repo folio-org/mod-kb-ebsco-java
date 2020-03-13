@@ -1,3 +1,8 @@
+## v3.3.1 2020-03-13
+* Set Load Holdings Strategy to DefaultLoadServiceFacade
+* MODKBEKBJ-385 - Implement endpoint to bulk load resources records
+* MODKBEKBJ-375 - Provider: Search within Packages: Filter Packages by Access Status Type
+
 ## v3.3.0 2020-03-11
 * MODKBEKBJ-349 - Set access type on create custom package
 * MODKBEKBJ-350 - Set access type on edit package
