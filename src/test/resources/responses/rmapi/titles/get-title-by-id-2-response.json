@@ -1,7 +1,7 @@
 {
-  "titleId": 762169,
-  "titleName": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
-  "publisherName": "Chelsea House Publishers",
+  "titleId": 1108525,
+  "titleName": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+  "publisherName": "Praeger",
   "identifiersList": [
     {
       "id": "38624",
@@ -14,37 +14,19 @@
       "source": "ResourceIdentifier",
       "subtype": 2,
       "type": 1
-    },
-    {
-      "id": "978-0-7910-3651-8",
-      "source": "ResourceIdentifier",
-      "subtype": 1,
-      "type": 1
-    },
-    {
-      "id": "985846",
-      "source": "AtoZ",
-      "subtype": 0,
-      "type": 9
-    },
-    {
-      "id": "U7Q",
-      "source": "MFS",
-      "subtype": 0,
-      "type": 8
     }
   ],
   "subjectsList": [
     {
       "type": "BISAC",
-      "subject": "LITERARY CRITICISM \/ American \/ General"
+      "subject": "SOCIAL SCIENCE \/ Ethnic Studies \/ General"
     }
   ],
   "isTitleCustom": false,
   "pubType": "Book",
   "customerResourcesList": [
     {
-      "titleId": 762169,
+      "titleId": 1108525,
       "packageId": 3964,
       "packageName": "EBSCO eBooks",
       "packageType": "Selectable",
@@ -94,7 +76,7 @@
   "contributorsList": [
     {
       "type": "author",
-      "contributor": "Bloom, Harold"
+      "contributor": "Beeman, William O."
     }
   ]
 }

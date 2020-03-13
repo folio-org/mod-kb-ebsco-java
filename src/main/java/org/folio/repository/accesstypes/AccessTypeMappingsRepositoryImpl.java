@@ -39,6 +39,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -90,7 +91,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                                  String tenantId) {
     List<String> accessTypeIds = accessTypeFilter.getAccessTypeIds();
-    if (accessTypeIds.isEmpty()) {
+    if (CollectionUtils.isEmpty(accessTypeIds)) {
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
     int page = accessTypeFilter.getPage();
