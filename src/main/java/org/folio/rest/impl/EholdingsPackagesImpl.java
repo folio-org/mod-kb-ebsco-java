@@ -299,9 +299,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterTags,
-                                                       String filterSelected, String filterType, String filterName,
-                                                       String filterIsxn, String filterSubject,
-                                                       String filterPublisher, int page, int count,
+                                                       List<String> filterAccessType, String filterSelected,
+                                                       String filterType, String filterName, String filterIsxn,
+                                                       String filterSubject, String filterPublisher, int page, int count,
                                                        Map<String, String> okapiHeaders,
                                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                                        Context vertxContext) {
@@ -311,6 +311,18 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (isTagsSearch(filterTags, filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher)) {
       List<String> tags = parseByComma(filterTags);
       template.requestAction(context -> getTitlesByPackageIdAndTags(packageId, tags, page, count, context));
+    } else if (isAccessTypeSearch(filterAccessType, filterTags, filterSelected, filterType, filterName, filterIsxn,
+      filterSubject, filterPublisher)) {
+      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
+      accessTypeFilter.setAccessTypeNames(filterAccessType);
+      accessTypeFilter.setRecordIdPrefix(packageId);
+      accessTypeFilter.setRecordType(RecordType.RESOURCE);
+      accessTypeFilter.setCount(count);
+      accessTypeFilter.setPage(page);
+      template.requestAction(context ->
+        filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders)
+        .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
+      );
     } else {
       PackageId parsedPackageId = parsePackageId(packageId);
 
