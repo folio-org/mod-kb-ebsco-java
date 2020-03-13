@@ -15,11 +15,14 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -42,6 +45,7 @@ import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
+import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
@@ -60,6 +64,7 @@ import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
+import static org.folio.util.ResourcesTestUtil.mockGetTitles;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -79,7 +84,6 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
 import org.junit.Test;
@@ -105,6 +109,7 @@ import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.PackageTags;
 import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
+import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.util.AccessTypesTestUtil;
 import org.folio.util.PackagesTestUtil;
@@ -1124,6 +1129,56 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       JSONAssert.assertEquals(expected, actual, false);
 
       verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + query)));
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnResourcesWithAccessTypesOnGetWithResources() throws IOException, URISyntaxException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
+      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
+
+      mockDefaultConfiguration(getWiremockUrl());
+      mockGetTitles();
+
+      String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources"
+        + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+      ResourceCollection resourceCollection = getWithOk(resourcePath).as(ResourceCollection.class);
+      List<ResourceCollectionItem> resources = resourceCollection.getData();
+
+      assertEquals(2, (int) resourceCollection.getMeta().getTotalResults());
+      assertEquals(2, resources.size());
+      assertThat(resources, everyItem(hasProperty("id",
+        anyOf(equalTo(STUB_MANAGED_RESOURCE_ID), equalTo(STUB_MANAGED_RESOURCE_ID_2))
+      )));
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnResourcesWithAccessTypesOnGetWithResourcesWithPagination() throws IOException, URISyntaxException {
+    try {
+      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
+      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
+
+      mockDefaultConfiguration(getWiremockUrl());
+      mockGetTitles();
+
+      String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources?page=2&count=1&"
+        + "filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+      ResourceCollection resourceCollection = getWithOk(resourcePath).as(ResourceCollection.class);
+      List<ResourceCollectionItem> resources = resourceCollection.getData();
+
+      assertEquals(2, (int) resourceCollection.getMeta().getTotalResults());
+      assertEquals(1, resources.size());
+      assertThat(resources, everyItem(hasProperty("id", equalTo(STUB_MANAGED_RESOURCE_ID))));
     } finally {
       clearDataFromTable(vertx, TAGS_TABLE_NAME);
     }

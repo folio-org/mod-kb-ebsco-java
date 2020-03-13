@@ -57,6 +57,7 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.ResourcesTestUtil.mockGetTitles;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -183,6 +184,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
+      mockDefaultConfiguration(getWiremockUrl());
       mockGetTitles();
 
       String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
@@ -207,6 +209,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
+      mockDefaultConfiguration(getWiremockUrl());
       mockGetTitles();
 
       String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[access-type]="
@@ -230,6 +233,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
+      mockDefaultConfiguration(getWiremockUrl());
       mockGetTitles();
 
       String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=Not Exist";
@@ -617,24 +621,6 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
-  }
-
-  private void mockGetTitles() throws IOException, URISyntaxException {
-    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
-    mockDefaultConfiguration(getWiremockUrl());
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID),
-        true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile))));
-
-    String stubResponseFile2 = "responses/rmapi/titles/get-title-by-id-2-response.json";
-    mockDefaultConfiguration(getWiremockUrl());
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID_2),
-        true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile2))));
   }
 
 }
