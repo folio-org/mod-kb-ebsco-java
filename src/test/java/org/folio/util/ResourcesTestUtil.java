@@ -1,15 +1,26 @@
 package org.folio.util;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID_2;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.test.util.TestUtil.readFile;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import lombok.Builder;
@@ -48,6 +59,22 @@ public class ResourcesTestUtil {
 
   private static String resourceTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + RESOURCES_TABLE_NAME;
+  }
+
+  public static void mockGetTitles() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID),
+        true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile))));
+
+    String stubResponseFile2 = "responses/rmapi/titles/get-title-by-id-2-response.json";
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID_2),
+        true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile2))));
   }
 
   @Value
