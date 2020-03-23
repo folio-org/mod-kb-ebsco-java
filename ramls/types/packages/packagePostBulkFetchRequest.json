@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Bulk Fetch object schema",
+  "description": "Package Bulk Fetch object schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackagePostBulkFetchRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "packages": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 20,
+      "description": "A list of package ids",
+      "items": {
+        "type": "string",
+        "description": "Package id",
+        "pattern": "\\d+-\\d+",
+        "examples": ["123-12354", "12-34467879"]
+      }
+    }
+  },
+  "required": [
+    "packages"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Bulk Fetch Object Data Attributes Schema",
+  "description": "Package Bulk Fetch Object Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageBulkFetchDataAttributes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "packageId": {
+      "type": "string",
+      "readonly": true,
+      "description": "Unique package id",
+      "example": "19-2333046"
+    },
+    "name": {
+      "type": "string",
+      "description": "Package name",
+      "example": "American Journal of Undergraduate Research"
+    },
+    "providerId": {
+      "type": "integer",
+      "readonly": true,
+      "description": "Provider Id",
+      "example": 19
+    },
+    "providerName": {
+      "type": "string",
+      "readonly": true,
+      "description": "Provider name",
+      "example": "EBSCO"
+    },
+    "packageType": {
+      "type": "string",
+      "description": "Package type",
+      "example": "Complete"
+    },
+    "contentType": {
+      "type": "string",
+      "description": "Content Type of Package",
+      "$ref" : "contentTypeEnum.json",
+      "example": "Online Reference"
+    },
+    "customCoverage": {
+      "type": "object",
+      "description": "Custom Coverage",
+      "$ref": "../coverage.json"
+    },
+    "isCustom": {
+      "type": "boolean",
+      "description": "Whether this package is custom or not",
+      "example": false
+    },
+    "isSelected": {
+      "type": "boolean",
+      "description": "Whether this package is selected or not",
+      "example": false
+    },
+    "selectedCount": {
+      "type": "integer",
+      "description": "Selected count",
+      "example": 0
+    },
+    "titleCount": {
+      "type": "integer",
+      "description": "Title count",
+      "example": 1
+    }
+  }
+}
