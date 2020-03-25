@@ -331,8 +331,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWithResourcesWhenIncludeResources() throws IOException, URISyntaxException {
-    String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+  public void shouldReturnTitleWithSortedResourcesWhenIncludeResources() throws IOException, URISyntaxException {
+    String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response-with-resources.json";
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
     mockDefaultConfiguration(getWiremockUrl());
@@ -341,7 +341,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
 
-    JSONAssert.assertEquals(expected, actual, false);
+    JSONAssert.assertEquals(expected, actual, true);
   }
 
   @Test

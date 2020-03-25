@@ -1,10 +1,15 @@
 {
   "data": {
+    "id": "762169",
+    "type": "titles",
     "attributes": {
-      "contributors": [
+      "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+      "publisherName": "Chelsea House Publishers",
+      "isTitleCustom": false,
+      "subjects": [
         {
-          "type": "author",
-          "contributor": "Bloom, Harold"
+          "subject": "LITERARY CRITICISM / American / General",
+          "type": "BISAC"
         }
       ],
       "identifiers": [
@@ -19,32 +24,222 @@
           "type": "ISBN"
         }
       ],
-      "isPeerReviewed": false,
-      "isTitleCustom": false,
-      "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
       "publicationType": "Book",
-      "publisherName": "Chelsea House Publishers",
-      "subjects": [
+      "isPeerReviewed": false,
+      "contributors": [
         {
-          "subject": "LITERARY CRITICISM / American / General",
-          "type": "BISAC"
+          "type": "author",
+          "contributor": "Bloom, Harold"
         }
-      ]
+      ],
+      "tags": {
+        "tagList": []
+      }
     },
-    "id": "762169",
     "relationships": {
       "resources": {
         "data": [
           {
             "type": "resources",
+            "id": "19-987-762169"
+          },
+          {
+            "type": "resources",
+            "id": "19-7745-762169"
+          },
+          {
+            "type": "resources",
             "id": "19-3964-762169"
+          },
+          {
+            "type": "resources",
+            "id": "19-7897-762169"
           }
         ]
       }
-    },
-    "type": "titles"
+    }
   },
   "included": [
+    {
+      "id": "19-987-762169",
+      "type": "resources",
+      "attributes": {
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Bloom, Harold"
+          }
+        ],
+        "identifiers": [
+          {
+            "id": "978-0-7910-3651-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "LITERARY CRITICISM / American / General",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 3464602,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "19-987",
+        "packageName": "# eBooks",
+        "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "1996-01-01",
+            "endCoverage": "1996-12-31"
+          }
+        ],
+        "customCoverages": [],
+        "proxy": {
+          "id": "EZProxy",
+          "inherited": true
+        },
+        "tags": {
+          "tagList": []
+        },
+        "userDefinedField1": "test 1",
+        "userDefinedField2": "test 2",
+        "userDefinedField3": "",
+        "userDefinedField5": "test 5"
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "19-7745-762169",
+      "type": "resources",
+      "attributes": {
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Bloom, Harold"
+          }
+        ],
+        "identifiers": [
+          {
+            "id": "978-0-7910-3651-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "LITERARY CRITICISM / American / General",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 3464602,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "19-7745",
+        "packageName": "1st eBooks",
+        "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "1996-01-01",
+            "endCoverage": "1996-12-31"
+          }
+        ],
+        "customCoverages": [],
+        "proxy": {
+          "id": "EZProxy",
+          "inherited": true
+        },
+        "tags": {
+          "tagList": []
+        },
+        "userDefinedField1": "test 1",
+        "userDefinedField2": "test 2",
+        "userDefinedField3": "",
+        "userDefinedField5": "test 5"
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
     {
       "id": "19-3964-762169",
       "type": "resources",
@@ -108,6 +303,99 @@
         "proxy": {
           "id": "EZProxy",
           "inherited": true
+        },
+        "tags": {
+          "tagList": []
+        },
+        "userDefinedField1": "test 1",
+        "userDefinedField2": "test 2",
+        "userDefinedField3": "",
+        "userDefinedField5": "test 5"
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "19-7897-762169",
+      "type": "resources",
+      "attributes": {
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Bloom, Harold"
+          }
+        ],
+        "identifiers": [
+          {
+            "id": "978-0-7910-3651-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "LITERARY CRITICISM / American / General",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 3464602,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "19-7897",
+        "packageName": "泌尿生殖",
+        "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "1996-01-01",
+            "endCoverage": "1996-12-31"
+          }
+        ],
+        "customCoverages": [],
+        "proxy": {
+          "id": "EZProxy",
+          "inherited": true
+        },
+        "tags": {
+          "tagList": []
         },
         "userDefinedField1": "test 1",
         "userDefinedField2": "test 2",
