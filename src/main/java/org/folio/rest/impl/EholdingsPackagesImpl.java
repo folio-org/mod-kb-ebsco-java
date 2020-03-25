@@ -73,7 +73,9 @@ import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.jaxrs.model.Package;
+import org.folio.rest.jaxrs.model.PackageBulkFetchCollection;
 import org.folio.rest.jaxrs.model.PackageCollection;
+import org.folio.rest.jaxrs.model.PackagePostBulkFetchRequest;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
@@ -371,6 +373,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           .handle(asyncResultHandler, e);
         return null;
       });
+  }
+
+  @Validate
+  @Override
+  public void postEholdingsPackagesBulkFetch(String contentType, PackagePostBulkFetchRequest entity,
+      Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+
+    template.requestAction(context -> context.getPackagesService().retrievePackagesBulk(entity.getPackages()))
+      .executeWithResult(PackageBulkFetchCollection.class);
   }
 
   private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessTypeCollectionItem accessType,

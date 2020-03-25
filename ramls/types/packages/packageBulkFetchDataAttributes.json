@@ -7,10 +7,9 @@
   "additionalProperties": false,
   "properties": {
     "packageId": {
-      "type": "string",
-      "readonly": true,
-      "description": "Unique package id",
-      "example": "19-2333046"
+      "type": "integer",
+      "description": "Package Id",
+      "example": 1152699
     },
     "name": {
       "type": "string",

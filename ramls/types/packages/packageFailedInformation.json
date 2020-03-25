@@ -10,6 +10,7 @@
       "type": "object",
       "description": "Metadata of failed packages",
       "additionalProperties": false,
+      "$ref": "packageFailedIds.json",
       "properties": {
         "packages": {
           "type": "array",

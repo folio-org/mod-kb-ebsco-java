@@ -13,6 +13,11 @@
         },
         {
           "methods": ["POST"],
+          "pathPattern": "/eholdings/packages/bulk/fetch",
+          "permissionsRequired": ["kb-ebsco.packages-bulk.collection.get"]
+        },
+        {
+          "methods": ["POST"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.post"]
         },
@@ -361,6 +366,11 @@
       "description": "Get packages"
     },
     {
+      "permissionName": "kb-ebsco.packages-bulk.collection.get",
+      "displayName": "get packages collection with limited fields set",
+      "description": "Get packages collection with limited fields set"
+    },
+    {
       "permissionName": "kb-ebsco.packages.item.get",
       "displayName": "get package",
       "description": "Get package"
@@ -477,6 +487,7 @@
         "kb-ebsco.titles.collection.post",
         "kb-ebsco.titles.item.put",
         "kb-ebsco.packages.collection.get",
+        "kb-ebsco.packages-bulk.collection.get",
         "kb-ebsco.packages.collection.post",
         "kb-ebsco.packages.item.delete",
         "kb-ebsco.package-resources.collection.get",
