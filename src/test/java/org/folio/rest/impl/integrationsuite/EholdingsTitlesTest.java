@@ -330,19 +330,19 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR);
   }
 
-//  @Test
-//  public void shouldReturnTitleWithSortedResourcesWhenIncludeResources() throws IOException, URISyntaxException {
-//    String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response-with-resources.json";
-//    String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
-//
-//    mockDefaultConfiguration(getWiremockUrl());
-//    mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
-//
-//    String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK).asString();
-//    String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
-//
-//    JSONAssert.assertEquals(expected, actual, true);
-//  }
+  @Test
+  public void shouldReturnTitleWithSortedResourcesWhenIncludeResources() throws IOException, URISyntaxException {
+    String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response-with-resources.json";
+    String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
+
+    mockDefaultConfiguration(getWiremockUrl());
+    mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
+
+    String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK).asString();
+    String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
+
+    JSONAssert.assertEquals(expected, actual, true);
+  }
 
   @Test
   public void shouldReturnTitleWithResourcesWhenIncludeResourcesWithTags() throws IOException, URISyntaxException {

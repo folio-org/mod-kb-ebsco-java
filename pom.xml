@@ -510,7 +510,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.22.1</version>
         <configuration>
-<!--          <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>-->
           <useSystemClassLoader>false</useSystemClassLoader>
           <systemPropertyVariables>
             <vertx.logger-delegate-factory-class-name>
