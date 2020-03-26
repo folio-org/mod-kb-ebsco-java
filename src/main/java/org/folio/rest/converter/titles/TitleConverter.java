@@ -4,13 +4,12 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
@@ -53,12 +52,9 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   private Converter<List<Tag>, Tags> tagsConverter;
 
   @Override
-  public org.folio.rest.jaxrs.model.Title convert(@NonNull TitleResult titleResult) {
+  public Title convert(@NonNull TitleResult titleResult) {
     org.folio.holdingsiq.model.Title rmapiTitle = titleResult.getTitle();
-    boolean include = titleResult.isIncludeResource();
-
-    List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
-    org.folio.rest.jaxrs.model.Title title = new org.folio.rest.jaxrs.model.Title()
+    Title title = new Title()
       .withData(new Data()
         .withId(String.valueOf(rmapiTitle.getTitleId()))
         .withType(TITLES_TYPE)
@@ -79,14 +75,17 @@ public class TitleConverter implements Converter<TitleResult, Title> {
       )
       .withIncluded(null)
       .withJsonapi(RestConstants.JSONAPI);
+
+    boolean include = titleResult.isIncludeResource();
+    List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
     if (include && Objects.nonNull(customerResourcesList)) {
-      List<CustomerResources> sortedCustomerResourcesList = getSortedCustomerResourcesList(customerResourcesList);
+      customerResourcesList.sort(new PackageNameCustomComparator());
       title.withIncluded(resourcesConverter.convert(new ResourceResult(rmapiTitle, null, null, false))
         .stream()
         .map(Resource::getData)
         .collect(Collectors.toList())).getData()
         .withRelationships(new Relationships().withResources(new Resources()
-          .withData(convertResourcesRelationship(sortedCustomerResourcesList))));
+          .withData(convertResourcesRelationship(customerResourcesList))));
       if (!Objects.isNull(titleResult.getResourceTagList())) {
         title.getIncluded()
           .forEach(resourceCollectionItem -> {
@@ -103,34 +102,22 @@ public class TitleConverter implements Converter<TitleResult, Title> {
     return title;
   }
 
-  private List<CustomerResources> getSortedCustomerResourcesList(List<CustomerResources> customerResourcesList) {
-    if (customerResourcesList != null) {
-      customerResourcesList
-        .sort(Comparator.comparing(customerResources -> customerResources.getPackageName().toLowerCase()));
-      moveResourcesWithEmptyPackageToTail(customerResourcesList);
-    }
-    return customerResourcesList;
-  }
-
-  private void moveResourcesWithEmptyPackageToTail(List<CustomerResources> customerResourcesList) {
-    List<CustomerResources> resourcesWithEmptyPackageName = new ArrayList<>();
-    Iterator<CustomerResources> iterator = customerResourcesList.iterator();
-    while (iterator.hasNext()) {
-      CustomerResources nextResource = iterator.next();
-      if (nextResource.getPackageName().isEmpty()) {
-        resourcesWithEmptyPackageName.add(nextResource);
-        iterator.remove();
-      } else {
-        break;
-      }
-    }
-    customerResourcesList.addAll(resourcesWithEmptyPackageName);
-  }
-
   private List<RelationshipData> convertResourcesRelationship(List<CustomerResources> customerResources) {
     return mapItems(customerResources,
       resourceData -> new RelationshipData()
         .withId(resourceData.getVendorId() + "-" + resourceData.getPackageId() + "-" + resourceData.getTitleId())
         .withType(RESOURCES_TYPE));
+  }
+
+  private static class PackageNameCustomComparator implements Comparator<CustomerResources> {
+
+    @Override
+    public int compare(CustomerResources o1, CustomerResources o2) {
+      if (StringUtils.isBlank(o1.getPackageName()) || StringUtils.isBlank(o2.getPackageName())) {
+        return -(o1.getPackageName().length() - o2.getPackageName().length());
+      } else {
+        return o1.getPackageName().compareToIgnoreCase(o2.getPackageName());
+      }
+    }
   }
 }

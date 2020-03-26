@@ -89,6 +89,44 @@
     },
     {
       "titleId": 762169,
+      "packageId": 0,
+      "packageName": "",
+      "packageType": "Selectable",
+      "proxy": {
+        "id": "EZProxy",
+        "inherited": true
+      },
+      "isPackageCustom": false,
+      "vendorId": 19,
+      "vendorName": "EBSCO",
+      "locationId": 3464602,
+      "isSelected": true,
+      "isTokenNeeded": false,
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverageList": [
+        {
+          "beginCoverage": "1996-01-01",
+          "endCoverage": "1996-12-31"
+        }
+      ],
+      "customCoverageList": [
+
+      ],
+      "coverageStatement": null,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "customEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      }
+    },
+    {
+      "titleId": 762169,
       "packageId": 987,
       "packageName": "# eBooks",
       "packageType": "Selectable",

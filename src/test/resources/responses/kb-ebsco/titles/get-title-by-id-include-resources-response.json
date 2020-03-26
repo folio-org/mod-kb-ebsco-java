@@ -54,6 +54,10 @@
           {
             "type": "resources",
             "id": "19-7897-762169"
+          },
+          {
+            "type": "resources",
+            "id": "19-0-762169"
           }
         ]
       }
@@ -401,6 +405,91 @@
         "userDefinedField2": "test 2",
         "userDefinedField3": "",
         "userDefinedField5": "test 5"
+      },
+      "relationships": {
+        "provider": {
+          "meta": {
+            "included": false
+          }
+        },
+        "title": {
+          "meta": {
+            "included": false
+          }
+        },
+        "package": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    },
+    {
+      "id": "19-0-762169",
+      "type": "resources",
+      "attributes": {
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Bloom, Harold"
+          }
+        ],
+        "identifiers": [
+          {
+            "id": "978-0-7910-3651-8",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "LITERARY CRITICISM / American / General",
+            "type": "BISAC"
+          }
+        ],
+        "customEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "isPackageCustom": false,
+        "isSelected": true,
+        "isTokenNeeded": false,
+        "locationId": 3464602,
+        "managedEmbargoPeriod": {
+          "embargoValue": 0
+        },
+        "packageId": "19-0",
+        "packageName": "",
+        "providerId": 19,
+        "providerName": "EBSCO",
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        },
+        "managedCoverages": [
+          {
+            "beginCoverage": "1996-01-01",
+            "endCoverage": "1996-12-31"
+          }
+        ],
+        "customCoverages": [],
+        "proxy": {
+          "id": "EZProxy",
+          "inherited": true
+        },
+        "tags": {
+          "tagList": []
+        }
       },
       "relationships": {
         "provider": {
