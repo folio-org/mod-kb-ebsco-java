@@ -1,5 +1,9 @@
 package org.folio.rest.converter.titles;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
+import static java.util.Comparator.nullsLast;
+
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
@@ -40,6 +44,8 @@ public class TitleConverter implements Converter<TitleResult, Title> {
 
   private static final String RESOURCES_TYPE = "resources";
 
+  private static final PackageNameCustomComparator PACKAGE_NAME_CUSTOM_COMPARATOR = new PackageNameCustomComparator();
+
   @Autowired
   private Converter<ResourceResult, List<Resource>> resourcesConverter;
   @Autowired
@@ -79,7 +85,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
     boolean include = titleResult.isIncludeResource();
     List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
     if (include && Objects.nonNull(customerResourcesList)) {
-      customerResourcesList.sort(new PackageNameCustomComparator());
+      customerResourcesList.sort(PACKAGE_NAME_CUSTOM_COMPARATOR);
       title.withIncluded(resourcesConverter.convert(new ResourceResult(rmapiTitle, null, null, false))
         .stream()
         .map(Resource::getData)
@@ -111,10 +117,14 @@ public class TitleConverter implements Converter<TitleResult, Title> {
 
   private static class PackageNameCustomComparator implements Comparator<CustomerResources> {
 
+    private static final Comparator<CustomerResources> NULL_SAFE_LENGTH_COMPARATOR = nullsLast(
+      comparing(CustomerResources::getPackageName, comparingInt(String::length).reversed())
+    );
+
     @Override
     public int compare(CustomerResources o1, CustomerResources o2) {
       if (StringUtils.isBlank(o1.getPackageName()) || StringUtils.isBlank(o2.getPackageName())) {
-        return -(o1.getPackageName().length() - o2.getPackageName().length());
+        return NULL_SAFE_LENGTH_COMPARATOR.compare(o1, o2);
       } else {
         return o1.getPackageName().compareToIgnoreCase(o2.getPackageName());
       }
