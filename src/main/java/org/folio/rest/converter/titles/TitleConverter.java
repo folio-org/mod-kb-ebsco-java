@@ -1,14 +1,19 @@
 package org.folio.rest.converter.titles;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
+import static java.util.Comparator.nullsLast;
+
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.folio.repository.tag.Tag;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
@@ -18,6 +23,7 @@ import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.Subject;
+import org.folio.repository.tag.Tag;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Data;
@@ -38,6 +44,8 @@ public class TitleConverter implements Converter<TitleResult, Title> {
 
   private static final String RESOURCES_TYPE = "resources";
 
+  private static final PackageNameCustomComparator PACKAGE_NAME_CUSTOM_COMPARATOR = new PackageNameCustomComparator();
+
   @Autowired
   private Converter<ResourceResult, List<Resource>> resourcesConverter;
   @Autowired
@@ -50,12 +58,9 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   private Converter<List<Tag>, Tags> tagsConverter;
 
   @Override
-  public org.folio.rest.jaxrs.model.Title convert(@NonNull TitleResult titleResult) {
+  public Title convert(@NonNull TitleResult titleResult) {
     org.folio.holdingsiq.model.Title rmapiTitle = titleResult.getTitle();
-    boolean include = titleResult.isIncludeResource();
-
-    List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
-    org.folio.rest.jaxrs.model.Title title = new org.folio.rest.jaxrs.model.Title()
+    Title title = new Title()
       .withData(new Data()
         .withId(String.valueOf(rmapiTitle.getTitleId()))
         .withType(TITLES_TYPE)
@@ -76,17 +81,20 @@ public class TitleConverter implements Converter<TitleResult, Title> {
       )
       .withIncluded(null)
       .withJsonapi(RestConstants.JSONAPI);
+
+    boolean include = titleResult.isIncludeResource();
+    List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
     if (include && Objects.nonNull(customerResourcesList)) {
-      title
-        .withIncluded(resourcesConverter.convert(new ResourceResult(rmapiTitle, null, null, false))
-          .stream()
-          .map(Resource::getData)
-          .collect(Collectors.toList())).getData()
+      customerResourcesList.sort(PACKAGE_NAME_CUSTOM_COMPARATOR);
+      title.withIncluded(resourcesConverter.convert(new ResourceResult(rmapiTitle, null, null, false))
+        .stream()
+        .map(Resource::getData)
+        .collect(Collectors.toList())).getData()
         .withRelationships(new Relationships().withResources(new Resources()
           .withData(convertResourcesRelationship(customerResourcesList))));
       if (!Objects.isNull(titleResult.getResourceTagList())) {
         title.getIncluded()
-            .forEach(resourceCollectionItem -> {
+          .forEach(resourceCollectionItem -> {
 
             List<Tag> tags = titleResult.getResourceTagList()
               .stream().filter(tag ->
@@ -103,7 +111,23 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   private List<RelationshipData> convertResourcesRelationship(List<CustomerResources> customerResources) {
     return mapItems(customerResources,
       resourceData -> new RelationshipData()
-          .withId(resourceData.getVendorId() + "-" + resourceData.getPackageId() + "-" + resourceData.getTitleId())
-          .withType(RESOURCES_TYPE));
+        .withId(resourceData.getVendorId() + "-" + resourceData.getPackageId() + "-" + resourceData.getTitleId())
+        .withType(RESOURCES_TYPE));
+  }
+
+  private static class PackageNameCustomComparator implements Comparator<CustomerResources> {
+
+    private static final Comparator<CustomerResources> NULL_SAFE_LENGTH_COMPARATOR = nullsLast(
+      comparing(CustomerResources::getPackageName, comparingInt(String::length).reversed())
+    );
+
+    @Override
+    public int compare(CustomerResources o1, CustomerResources o2) {
+      if (StringUtils.isBlank(o1.getPackageName()) || StringUtils.isBlank(o2.getPackageName())) {
+        return NULL_SAFE_LENGTH_COMPARATOR.compare(o1, o2);
+      } else {
+        return o1.getPackageName().compareToIgnoreCase(o2.getPackageName());
+      }
+    }
   }
 }
