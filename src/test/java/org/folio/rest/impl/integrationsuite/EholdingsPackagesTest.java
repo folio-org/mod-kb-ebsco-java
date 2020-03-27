@@ -41,6 +41,7 @@ import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_2;
 import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID_3;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_CONTENT_TYPE;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_2;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
@@ -120,6 +121,7 @@ import org.folio.util.TagsTestUtil;
 public class EholdingsPackagesTest extends WireMockTestBase {
 
   private static final String PACKAGE_STUB_FILE = "responses/rmapi/packages/get-package-by-id-response.json";
+  private static final String PACKAGE_2_STUB_FILE = "responses/rmapi/packages/get-package-by-id-2-response.json";
   private static final String CUSTOM_PACKAGE_STUB_FILE = "responses/rmapi/packages/get-custom-package-by-id-response.json";
   private static final String RESOURCES_BY_PACKAGE_ID_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response.json";
   private static final String RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE = "responses/rmapi/resources/get-resources-by-package-id-response-empty.json";
@@ -133,9 +135,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String PACKAGES_PATH = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID;
   private static final String PACKAGE_TAGS_PATH = PACKAGES_PATH + "/tags";
   private static final String PACKAGE_RESOURCES_PATH = PACKAGES_PATH + "/resources";
+  private static final String PACKAGES_BULK_FETCH_PATH = "/eholdings/packages/bulk/fetch";
 
   private static final String PACKAGES_STUB_URL = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages";
   private static final String PACKAGE_BY_ID_URL = PACKAGES_STUB_URL + "/" + STUB_PACKAGE_ID;
+  private static final String PACKAGE_BY_ID_2_URL = PACKAGES_STUB_URL + "/" + STUB_PACKAGE_ID_2;
   private static final UrlPathPattern PACKAGE_URL_PATTERN = new UrlPathPattern(new EqualToPattern(PACKAGE_BY_ID_URL), false);
   private static final String RESOURCES_BY_PACKAGE_ID_URL = PACKAGE_BY_ID_URL + "/titles";
 
@@ -1275,6 +1279,63 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(PACKAGE_RESOURCES_PATH, SC_FORBIDDEN).as(JsonapiError.class);
     assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
+  }
+
+  @Test
+  public void shouldFetchPackagesInBulk() throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
+    mockGet(new RegexPattern(PACKAGE_BY_ID_2_URL), PACKAGE_2_STUB_FILE);
+
+    String postBody = readFile("requests/kb-ebsco/package/post-packages-bulk.json");
+    final String actualResponse = postWithOk(PACKAGES_BULK_FETCH_PATH, postBody).asString();
+
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-post-packages-bulk.json"),
+      actualResponse, false);
+  }
+
+  @Test
+  public void shouldReturn422OnFetchPackagesInBulkWithInvalidIdFormat() throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    String postBody = readFile("requests/kb-ebsco/package/post-packages-bulk-with-invalid-id-format.json");
+
+    Errors error = postWithStatus(PACKAGES_BULK_FETCH_PATH, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+
+    assertThat(error.getErrors().get(0).getMessage(), equalTo("elements in list must match pattern"));
+  }
+
+  @Test
+  public void shouldReturnPackagesAndFailedIdsOnFetchPackagesInBulk() throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
+    mockGet(new RegexPattern(PACKAGE_BY_ID_2_URL), PACKAGE_2_STUB_FILE);
+
+    String notFoundResponse = "responses/rmapi/packages/get-package-by-id-not-found-response.json";
+    stubFor(
+      get(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL + "/9999999"), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(notFoundResponse))
+          .withStatus(404)));
+
+    String postBody = readFile("requests/kb-ebsco/package/post-packages-bulk-with-non-existing-id.json");
+    final String actualResponse = postWithOk(PACKAGES_BULK_FETCH_PATH, postBody).asString();
+
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-post-packages-bulk-with-failed-id.json"),
+      actualResponse, false);
+  }
+
+  @Test
+  public void shouldReturnEmptyPackagesOnFetchPackagesInBulkIfNoPackageIds() throws IOException, URISyntaxException {
+    mockDefaultConfiguration(getWiremockUrl());
+
+    String postBody = readFile("requests/kb-ebsco/package/post-packages-bulk-empty.json");
+    final String actualResponse = postWithOk(PACKAGES_BULK_FETCH_PATH, postBody).asString();
+
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-post-packages-bulk-empty.json"),
+      actualResponse, false);
   }
 
   private void shouldReturnResourcesOnGetWithResources(String getURL, String rmAPIQuery) throws IOException, URISyntaxException {

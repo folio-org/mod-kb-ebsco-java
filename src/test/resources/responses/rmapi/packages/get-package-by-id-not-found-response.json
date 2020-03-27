@@ -1,0 +1,9 @@
+{
+  "Errors": [
+    {
+      "Code": 1001,
+      "Message": "Package not found",
+      "SubCode": 0
+    }
+  ]
+}

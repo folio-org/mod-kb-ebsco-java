@@ -1,0 +1,11 @@
+{
+  "included" : [ ],
+  "meta" : {
+    "failed" : {
+      "packages" : [ ]
+    }
+  },
+  "jsonapi" : {
+    "version" : "1.0"
+  }
+}
