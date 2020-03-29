@@ -9,8 +9,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Title;
-import org.folio.rest.jaxrs.model.Failed;
-import org.folio.rest.jaxrs.model.MetaResourcesInformation;
+import org.folio.rest.jaxrs.model.FailedResourceIds;
+import org.folio.rest.jaxrs.model.FailedResourcesInformation;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollection;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollectionItem;
 import org.folio.rest.util.RestConstants;
@@ -24,13 +24,15 @@ public class ResourceCollectionBulkFetchConverter implements Converter<ResourceB
 
   @Override
   public ResourceBulkFetchCollection convert(ResourceBulkResult resourceBulkResult) {
-    List<ResourceBulkFetchCollectionItem> titleList = mapItems(resourceBulkResult.getTitles().getTitleList(), converter::convert);
+    List<ResourceBulkFetchCollectionItem> titleList = mapItems(resourceBulkResult.getTitles().getTitleList(),
+        converter::convert);
+
     return new ResourceBulkFetchCollection()
       .withIncluded(titleList)
       .withJsonapi(RestConstants.JSONAPI)
-      .withMeta(new MetaResourcesInformation()
-      .withFailed(new Failed()
-        .withResources(resourceBulkResult.getFailedResources()))
+      .withMeta(new FailedResourcesInformation()
+        .withFailed(new FailedResourceIds()
+          .withResources(resourceBulkResult.getFailedResources()))
     );
   }
 }

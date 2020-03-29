@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "message": "elements in list must match pattern",
+      "type": "1",
+      "code": "-1",
+      "parameters": [
+        {
+          "key": "packages",
+          "value": "[19-3964, 18s-3150130]"
+        }
+      ]
+    }
+  ]
+}

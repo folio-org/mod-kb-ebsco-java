@@ -26,6 +26,8 @@ types:
   package: !include types/packages/package.json
   packageTags: !include types/packages/packageTags.json
   resourceCollection: !include types/resources/resourceCollection.json
+  packagePostBulkFetchRequest: !include types/packages/packagePostBulkFetchRequest.json
+  packageBulkFetchCollection:  !include types/packages/packageBulkFetchCollection.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/packages:
@@ -273,3 +275,34 @@ types:
                 example:
                   strict: false
                   value: !include examples/packages/packages_post_422_response.json
+  /bulk/fetch:
+      post:
+        description:
+        headers:
+          Content-Type:
+            example: application/vnd.api+json
+        body:
+          application/vnd.api+json:
+            type: packagePostBulkFetchRequest
+            example:
+              strict: false
+              value:  !include examples/packages/packages_bulk_fetch_post_request.json
+        responses:
+          200:
+            description: OK
+            body:
+              application/vnd.api+json:
+                description:
+                type: packageBulkFetchCollection
+                example:
+                  strict: false
+                  value: !include examples/packages/packages_bulk_fetch_post_200_response.json
+          422:
+            description: Unprocessable Entity
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/packages/packages_bulk_fetch_post_422_response.json
+

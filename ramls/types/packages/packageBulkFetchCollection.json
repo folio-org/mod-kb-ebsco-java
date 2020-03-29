@@ -1,24 +1,24 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Resource Bulk Fetch object schema",
-  "description": "Resource Bulk Fetch object schema",
-  "javaType": "org.folio.rest.jaxrs.model.ResourceBulkFetchCollection",
+  "title": "Package Bulk Fetch object schema",
+  "description": "Package Bulk Fetch object schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageBulkFetchCollection",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "included": {
       "type": "array",
-      "description": "List of included resource items",
+      "description": "List of included package items",
       "items": {
         "type": "object",
-        "$ref" : "resourceBulkFetchCollectionItem.json"
+        "$ref" : "packageBulkFetchCollectionItem.json"
       }
     },
     "meta": {
       "type": "object",
-      "description": "Metadata of failed resources",
+      "description": "Metadata of failed packages",
       "additionalProperties": false,
-      "$ref": "resourceFailedInformation.json"
+      "$ref": "packageFailedInformation.json"
     },
     "jsonapi": {
       "type": "object",
