@@ -18,7 +18,7 @@
       "type": "object",
       "description": "Metadata of failed resources",
       "additionalProperties": false,
-      "$ref": "resourcesMetaInformation.json"
+      "$ref": "resourceFailedInformation.json"
     },
     "jsonapi": {
       "type": "object",

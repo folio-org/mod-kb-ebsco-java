@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource Failed Ids Schema",
+  "description": "Failed ids of resources",
+  "javaType": "org.folio.rest.jaxrs.model.FailedResourceIds",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "resources": {
+      "type": "array",
+      "description": "List of failed resource ids",
+      "items": {
+        "type": "string",
+        "description": "Failed resource id"
+      }
+    }
+  }
+}

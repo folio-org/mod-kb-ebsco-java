@@ -26,7 +26,7 @@ public class PackageBulkFetchCollectionConverter implements Converter<PackageBul
   @Override
   public PackageBulkFetchCollection convert(@NotNull PackageBulkResult source) {
     List<PackageBulkFetchCollectionItem> packageList = mapItems(source.getPackages().getPackagesList(),
-      packageData -> packageBulkItemConverter.convert(packageData));
+        packageBulkItemConverter::convert);
 
     return new PackageBulkFetchCollection()
       .withJsonapi(RestConstants.JSONAPI)

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Resources Metadata Schema",
   "description": "Metadata providing failed ids for resources",
-  "javaType": "org.folio.rest.jaxrs.model.MetaResourcesInformation",
+  "javaType": "org.folio.rest.jaxrs.model.FailedResourcesInformation",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -10,16 +10,7 @@
       "type": "object",
       "description": "Metadata of failed resources",
       "additionalProperties": false,
-      "properties": {
-        "resources": {
-          "type": "array",
-          "description": "List of failed resource ids",
-          "items": {
-            "type": "string",
-            "description": "A failed resource id."
-          }
-        }
-      }
+      "$ref": "resourceFailedIds.json"
     }
   }
 }
