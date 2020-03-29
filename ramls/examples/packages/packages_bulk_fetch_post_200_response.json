@@ -1,0 +1,49 @@
+{
+  "included" : [ {
+    "id" : "19-13964",
+    "type" : "packages",
+    "attributes" : {
+      "packageId" : 13964,
+      "name" : "America and World War I: American Military Camp Newspapers",
+      "providerId" : 19,
+      "providerName" : "EBSCO",
+      "packageType" : "Complete",
+      "contentType" : "Aggregated Full Text",
+      "customCoverage" : {
+        "beginCoverage" : "",
+        "endCoverage" : ""
+      },
+      "isCustom" : false,
+      "isSelected" : false,
+      "selectedCount" : 0,
+      "titleCount" : 156
+    }
+  }, {
+    "id" : "19-3964",
+    "type" : "packages",
+    "attributes" : {
+      "packageId" : 3964,
+      "name" : "EBSCO Biotechnology Collection: India",
+      "providerId" : 19,
+      "providerName" : "EBSCO",
+      "packageType" : "Complete",
+      "contentType" : "Aggregated Full Text",
+      "customCoverage" : {
+        "beginCoverage" : "",
+        "endCoverage" : ""
+      },
+      "isCustom" : false,
+      "isSelected" : false,
+      "selectedCount" : 0,
+      "titleCount" : 156
+    }
+  } ],
+  "meta" : {
+    "failed" : {
+      "packages" : [ "19-9999999" ]
+    }
+  },
+  "jsonapi" : {
+    "version" : "1.0"
+  }
+}
