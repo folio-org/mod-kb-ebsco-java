@@ -1,10 +1,10 @@
 package org.folio.spring.config;
 
 import static org.folio.rest.util.ExceptionMappers.error400BadRequestMapper;
+import static org.folio.rest.util.ExceptionMappers.error400ConstraintViolationMapper;
 import static org.folio.rest.util.ExceptionMappers.error401AuthorizationMapper;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
 import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
-import static org.folio.rest.util.ExceptionMappers.error400ConstraintViolationMapper;
 
 import java.util.List;
 
@@ -57,6 +57,7 @@ import org.folio.service.holdings.LoadServiceFacade;
   "org.folio.service",
   "org.folio.common"})
 public class ApplicationConfig {
+
   @Bean
   public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
     PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
@@ -65,7 +66,7 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public ConversionService conversionService(List<Converter> converters) {
+  public ConversionService conversionService(List<Converter<?, ?>> converters) {
     DefaultConversionService conversionService = new DefaultConversionService();
     converters.forEach(conversionService::addConverter);
     return conversionService;
@@ -89,10 +90,10 @@ public class ApplicationConfig {
   @Bean
   public VertxCache<VendorCacheKey, VendorById> vendorCache(Vertx vertx, @Value("${vendor.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorCache");
-   }
+  }
 
-   @Bean
-   public VertxCache<TitleCacheKey, Title> titleCache(Vertx vertx, @Value("${title.cache.expire}") long expirationTime) {
+  @Bean
+  public VertxCache<TitleCacheKey, Title> titleCache(Vertx vertx, @Value("${title.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "titleCache");
   }
 
@@ -104,8 +105,9 @@ public class ApplicationConfig {
   @Bean
   public ConfigurationService configurationService(Vertx vertx, @Value("${configuration.cache.expire}") long expirationTime) {
     return new ConfigurationServiceCache(
-      new ConfigurationServiceImpl(
-        new ConfigurationClientProvider()), new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache"));
+      new ConfigurationServiceImpl(new ConfigurationClientProvider()),
+      new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache")
+    );
   }
 
   @Bean
@@ -131,7 +133,7 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public ErrorHandler accessTypesExceptionHandler() {
+  public ErrorHandler errorHandler() {
     return new ErrorHandler()
       .add(ConstraintViolationException.class, error400ConstraintViolationMapper())
       .add(BadRequestException.class, error400BadRequestMapper())
@@ -139,6 +141,7 @@ public class ApplicationConfig {
       .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
       .add(AuthorizationException.class, error401AuthorizationMapper());
   }
+
   @Bean
   public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
     return new ModConfiguration(module);
