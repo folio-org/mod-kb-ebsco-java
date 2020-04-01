@@ -9,15 +9,15 @@ import lombok.Getter;
 @Builder
 public class DbKbCredentials {
 
-  String id;
-  String name;
-  String apiKey;
-  String customerId;
-  String url;
-  Instant createdDate;
-  Instant updatedDate;
-  String createdByUserId;
-  String updatedByUserId;
-  String createdByUserName;
-  String updatedByUserName;
+  private final String id;
+  private final String name;
+  private final String apiKey;
+  private final String customerId;
+  private final String url;
+  private final Instant createdDate;
+  private final Instant updatedDate;
+  private final String createdByUserId;
+  private final String updatedByUserId;
+  private final String createdByUserName;
+  private final String updatedByUserName;
 }
