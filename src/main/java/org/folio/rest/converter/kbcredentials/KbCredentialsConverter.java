@@ -62,31 +62,4 @@ public class KbCredentialsConverter {
       return date != null ? Date.from(date) : null;
     }
   }
-
-  @Component
-  public static class KbCredentialsToDbConverter implements Converter<KbCredentials, DbKbCredentials> {
-
-    @Override
-    public DbKbCredentials convert(@NotNull KbCredentials source) {
-      KbCredentialsDataAttributes attributes = source.getAttributes();
-      Meta meta = source.getMeta();
-      return DbKbCredentials.builder()
-        .id(source.getId())
-        .name(attributes.getName())
-        .apiKey(attributes.getApiKey())
-        .customerId(attributes.getCustomerId())
-        .url(attributes.getUrl())
-        .createdDate(toInstant(meta.getCreatedDate()))
-        .createdByUserId(meta.getCreatedByUserId())
-        .createdByUserName(meta.getCreatedByUsername())
-        .updatedDate(toInstant(meta.getUpdatedDate()))
-        .updatedByUserId(meta.getUpdatedByUserId())
-        .updatedByUserName(meta.getUpdatedByUsername())
-        .build();
-    }
-
-    private Instant toInstant(Date date) {
-      return date != null ? date.toInstant() : null;
-    }
-  }
 }
