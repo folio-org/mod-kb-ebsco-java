@@ -1,9 +1,9 @@
 package org.folio.rest.converter.common.attr;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -14,9 +14,10 @@ import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 @Component
 public class EmbargoPeriodConverter implements Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> {
 
-  private static final Map<String, EmbargoUnit> EMBARGO_UNITS = new HashMap<>();
+  private static final Map<String, EmbargoUnit> EMBARGO_UNITS;
 
   static {
+    EMBARGO_UNITS = new CaseInsensitiveMap<>(4);
     EMBARGO_UNITS.put("Days", EmbargoUnit.DAYS);
     EMBARGO_UNITS.put("Weeks", EmbargoUnit.WEEKS);
     EMBARGO_UNITS.put("Months", EmbargoUnit.MONTHS);
