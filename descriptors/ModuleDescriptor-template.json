@@ -12,6 +12,11 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.collection.get"]
         },
         {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/kb-credentials",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.collection.post"]
+        },
+        {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
@@ -484,7 +489,8 @@
       "displayName": "EBSCO KB Broker Credentials - all permissions",
       "description": "All permissions for manging EBSCO KB Credentials",
       "subPermissions": [
-        "kb-ebsco.kb-credentials.collection.get"
+        "kb-ebsco.kb-credentials.collection.get",
+        "kb-ebsco.kb-credentials.collection.post"
       ]
     },
     {
