@@ -8,6 +8,11 @@
       "handlers": [
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.collection.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
         },
@@ -470,10 +475,24 @@
       "description": "Delete Access Type collection item"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.collection.get",
+      "displayName": "get KB credentials collection",
+      "description": "Get KB credentials collection"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.all",
+      "displayName": "EBSCO KB Broker Credentials - all permissions",
+      "description": "All permissions for manging EBSCO KB Credentials",
+      "subPermissions": [
+        "kb-ebsco.kb-credentials.collection.get"
+      ]
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
       "subPermissions": [
+        "kb-ebsco.kb-credentials.all",
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",

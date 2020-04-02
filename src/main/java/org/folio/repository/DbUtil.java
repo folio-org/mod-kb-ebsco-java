@@ -7,6 +7,7 @@ import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConst
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.holdings.status.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
@@ -82,6 +83,10 @@ public class DbUtil {
 
   public static String getAccessTypesMappingTableName(String tenantId) {
     return getTableName(tenantId, ACCESS_TYPES_MAPPING_TABLE_NAME);
+  }
+
+  public static String getKbCredentialsTableName(String tenantId) {
+    return getTableName(tenantId, KB_CREDENTIALS_TABLE_NAME);
   }
 
   public static <T> Optional<T> mapColumn(JsonObject row, String columnName, Class<T> tClass){
