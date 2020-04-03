@@ -22,17 +22,24 @@ public final class KbCredentialsTableConstants {
   public static final String UPDATED_BY_USER_NAME_COLUMN = "updated_by_user_name";
 
   public static final String SELECT_CREDENTIALS_QUERY;
+  public static final String INSERT_CREDENTIALS_QUERY;
   public static final String UPSERT_CREDENTIALS_QUERY;
 
 
   static {
-    String[] columns = new String[] {
+    String[] allColumns = new String[] {
       ID_COLUMN, URL_COLUMN, NAME_COLUMN, API_KEY_COLUMN, CUSTOMER_ID_COLUMN, CREATED_DATE_COLUMN, UPDATED_DATE_COLUMN,
       CREATED_BY_USER_ID_COLUMN, UPDATED_BY_USER_ID_COLUMN, CREATED_BY_USER_NAME_COLUMN, UPDATED_BY_USER_NAME_COLUMN
     };
 
+    String[] insertColumns = new String[] {
+      ID_COLUMN, URL_COLUMN, NAME_COLUMN, API_KEY_COLUMN, CUSTOMER_ID_COLUMN, CREATED_DATE_COLUMN,
+      CREATED_BY_USER_ID_COLUMN, CREATED_BY_USER_NAME_COLUMN
+    };
+
     SELECT_CREDENTIALS_QUERY = selectQuery() + ";";
-    UPSERT_CREDENTIALS_QUERY = insertQuery(columns) + " " + updateOnConflictedIdQuery(columns) + ";";
+    INSERT_CREDENTIALS_QUERY = insertQuery(insertColumns) + ";";
+    UPSERT_CREDENTIALS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(allColumns) + ";";
   }
 
   private KbCredentialsTableConstants() {

@@ -16,7 +16,7 @@ public class RMApiConfigurationConverter implements Converter<org.folio.holdings
 
   private final String defaultUrl;
 
-  public RMApiConfigurationConverter(@Value("${configuration.base.url.default}") String defaultUrl) {
+  public RMApiConfigurationConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
     this.defaultUrl = defaultUrl;
   }
 
