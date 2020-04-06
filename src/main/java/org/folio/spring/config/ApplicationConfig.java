@@ -2,9 +2,12 @@ package org.folio.spring.config;
 
 import static org.folio.rest.util.ExceptionMappers.error400BadRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error400ConstraintViolationMapper;
+import static org.folio.rest.util.ExceptionMappers.error400DatabaseMapper;
 import static org.folio.rest.util.ExceptionMappers.error401AuthorizationMapper;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
 import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
+import static org.folio.rest.util.ExceptionMappers.error422ConfigurationInvalidMapper;
+import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 
 import java.util.List;
 
@@ -29,17 +32,20 @@ import org.folio.config.ModConfiguration;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
 import org.folio.db.exc.ConstraintViolationException;
+import org.folio.db.exc.DatabaseException;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.ConfigurationService;
+import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceImpl;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
@@ -73,22 +79,27 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<String, org.folio.holdingsiq.model.Configuration> rmApiConfigurationCache(Vertx vertx, @Value("${configuration.cache.expire}") long expirationTime) {
+  public VertxCache<String, org.folio.holdingsiq.model.Configuration> rmApiConfigurationCache(Vertx vertx,
+                                                                                              @Value("${configuration.cache.expire}")
+                                                                                                long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache");
   }
 
   @Bean
-  public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx, @Value("${vendor.id.cache.expire}") long expirationTime) {
+  public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx,
+                                                          @Value("${vendor.id.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorIdCache");
   }
 
   @Bean
-  public VertxCache<PackageCacheKey, PackageByIdData> packageCache(Vertx vertx, @Value("${package.cache.expire}") long expirationTime) {
+  public VertxCache<PackageCacheKey, PackageByIdData> packageCache(Vertx vertx,
+                                                                   @Value("${package.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "packageCache");
   }
 
   @Bean
-  public VertxCache<VendorCacheKey, VendorById> vendorCache(Vertx vertx, @Value("${vendor.cache.expire}") long expirationTime) {
+  public VertxCache<VendorCacheKey, VendorById> vendorCache(Vertx vertx,
+                                                            @Value("${vendor.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorCache");
   }
 
@@ -98,12 +109,14 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<ResourceCacheKey, Title> resourceCache(Vertx vertx, @Value("${resource.cache.expire}") long expirationTime) {
+  public VertxCache<ResourceCacheKey, Title> resourceCache(Vertx vertx,
+                                                           @Value("${resource.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "resourceCache");
   }
 
   @Bean
-  public ConfigurationService configurationService(Vertx vertx, @Value("${configuration.cache.expire}") long expirationTime) {
+  public ConfigurationService configurationService(Vertx vertx,
+                                                   @Value("${configuration.cache.expire}") long expirationTime) {
     return new ConfigurationServiceCache(
       new ConfigurationServiceImpl(new ConfigurationClientProvider()),
       new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache")
@@ -139,7 +152,10 @@ public class ApplicationConfig {
       .add(BadRequestException.class, error400BadRequestMapper())
       .add(NotFoundException.class, error404NotFoundMapper())
       .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
-      .add(AuthorizationException.class, error401AuthorizationMapper());
+      .add(AuthorizationException.class, error401AuthorizationMapper())
+      .add(DatabaseException.class, error400DatabaseMapper())
+      .add(InputValidationException.class, error422InputValidationMapper())
+      .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper());
   }
 
   @Bean

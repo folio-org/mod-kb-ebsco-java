@@ -25,7 +25,7 @@ public class KbCredentialsConverter {
 
     private final String defaultUrl;
 
-    public KbCredentialsFromDbConverter(@Value("${configuration.base.url.default}") String defaultUrl) {
+    public KbCredentialsFromDbConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
       this.defaultUrl = defaultUrl;
     }
 
@@ -60,6 +60,24 @@ public class KbCredentialsConverter {
 
     private Date toDate(Instant date) {
       return date != null ? Date.from(date) : null;
+    }
+  }
+
+  @Component
+  public static class KbCredentialsToDbConverter implements Converter<KbCredentials, DbKbCredentials> {
+
+    @Override
+    public DbKbCredentials convert(@NotNull KbCredentials source) {
+      DbKbCredentials.DbKbCredentialsBuilder dbKbCredentialsBuilder = DbKbCredentials.builder();
+
+      KbCredentialsDataAttributes attributes = source.getAttributes();
+      return dbKbCredentialsBuilder
+        .id(source.getId())
+        .name(attributes.getName())
+        .apiKey(attributes.getApiKey())
+        .customerId(attributes.getCustomerId())
+        .url(attributes.getUrl())
+        .build();
     }
   }
 }

@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import io.restassured.http.Header;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -30,6 +31,7 @@ import io.vertx.ext.sql.ResultSet;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.db.DbUtils;
+import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.converter.kbcredentials.KbCredentialsConverter;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -39,11 +41,18 @@ public class KbCredentialsTestUtil {
 
   public static final String KB_CREDENTIALS_ENDPOINT = "/eholdings/kb-credentials";
 
-  public static final String STUB_API_KEY = "API_KEY";
-  public static final String STUB_USERNAME = "username1";
-  public static final String STUB_CUSTOMER_ID = "stub-customer";
+  public static final String STUB_API_KEY = "TEST_API_KEY";
+  public static final String STUB_USERNAME = "TEST_USER_NAME";
+  public static final String STUB_USER_ID = "88888888-8888-4888-8888-888888888888";
+  public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
   public static final String STUB_API_URL = "http://api.url.com";
-  public static final String STUB_CREDENTIALS_NAME = "University of Massachusetts";
+  public static final String STUB_CREDENTIALS_NAME = "TEST_NAME";
+  public static final String STUB_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
+    + "eyJzdWIiOiJURVNUX1VTRVJfTkFNRSIsInVzZXJfaWQiOiI4ODg4ODg4OC04ODg4LTQ4ODgtODg4OC04O"
+    + "Dg4ODg4ODg4ODgiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
+
+
+  public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, KbCredentialsTestUtil.STUB_TOKEN);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
     new KbCredentialsConverter.KbCredentialsFromDbConverter(STUB_API_KEY);
@@ -53,7 +62,7 @@ public class KbCredentialsTestUtil {
 
     String insertStatement = String.format(UPSERT_CREDENTIALS_QUERY, kbCredentialsTestTable());
     JsonArray params = DbUtils.createParams(Arrays.asList(UUID.randomUUID().toString(), url, name, apiKey, customerId,
-      Instant.now().toString(), null, UUID.randomUUID().toString(), null, STUB_USERNAME, null
+      Instant.now().toString(), null, STUB_USER_ID, null, STUB_USERNAME, null
     ));
 
     PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));

@@ -48,18 +48,18 @@ public class ValidatorUtil {
   }
 
   public static void checkIsBlank(String paramName, String value) {
-    if (StringUtils.isBlank(value)) {
+    if (StringUtils.isNotBlank(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
-        String.format(MUST_NOT_BE_EMPTY_FORMAT, paramName));
+        String.format(MUST_BE_EMPTY_FORMAT, paramName));
     }
   }
 
   public static void checkIsNotBlank(String paramName, String value) {
-    if (!StringUtils.isBlank(value)) {
+    if (StringUtils.isBlank(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
-        String.format(MUST_BE_EMPTY_FORMAT, paramName));
+        String.format(MUST_NOT_BE_EMPTY_FORMAT, paramName));
     }
   }
 
