@@ -62,7 +62,7 @@ public class KbCredentialsTestUtil {
 
     String insertStatement = String.format(UPSERT_CREDENTIALS_QUERY, kbCredentialsTestTable());
     JsonArray params = DbUtils.createParams(Arrays.asList(UUID.randomUUID().toString(), url, name, apiKey, customerId,
-      Instant.now().toString(), null, STUB_USER_ID, null, STUB_USERNAME, null
+      Instant.now().toString(), STUB_USER_ID, STUB_USERNAME, null, null, null
     ));
 
     PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));

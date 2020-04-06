@@ -26,10 +26,13 @@ import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
+import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.util.TokenUtil;
 import org.folio.rest.util.UserInfo;
 import org.folio.rest.validator.KbCredentialsPostBodyValidator;
+import org.folio.rest.validator.KbCredentialsPutBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
 
 @Component
@@ -51,6 +54,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Autowired
   private KbCredentialsPostBodyValidator postBodyValidator;
+  @Autowired
+  private KbCredentialsPutBodyValidator putBodyValidator;
 
   @Autowired
   private ConfigurationService configurationService;
@@ -59,15 +64,12 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Override
   public CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders) {
-    return repository.findAll(tenantId(okapiHeaders))
-      .thenApply(credentialsCollectionConverter::convert);
+    return repository.findAll(tenantId(okapiHeaders)).thenApply(credentialsCollectionConverter::convert);
   }
 
   @Override
   public CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, tenantId(okapiHeaders))
-      .thenApply(getCredentialsOrFail(id))
-      .thenApply(credentialsFromDBConverter::convert);
+    return fetchDbKbCredentials(id, okapiHeaders).thenApply(credentialsFromDBConverter::convert);
   }
 
   @Override
@@ -86,6 +88,26 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenApply(credentialsFromDBConverter::convert);
   }
 
+  @Override
+  public CompletableFuture<Void> update(String id, KbCredentialsPutRequest entity, Map<String, String> okapiHeaders) {
+    putBodyValidator.validate(entity);
+    KbCredentials kbCredentials = entity.getData();
+    KbCredentialsDataAttributes attributes = kbCredentials.getAttributes();
+    return verifyCredentials(kbCredentials, okapiHeaders)
+      .thenApply(o -> fetchUserInfo(okapiHeaders))
+      .thenCombine(fetchDbKbCredentials(id, okapiHeaders), (userInfo, dbKbCredentials) -> dbKbCredentials.toBuilder()
+        .name(attributes.getName())
+        .url(attributes.getUrl())
+        .apiKey(attributes.getApiKey())
+        .customerId(attributes.getCustomerId())
+        .updatedDate(Instant.now())
+        .updatedByUserId(userInfo.getUserId())
+        .updatedByUserName(userInfo.getUsername())
+        .build())
+      .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
+      .thenApply(dbKbCredentials -> null);
+  }
+
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
     Configuration configuration = configurationConverter.convert(kbCredentials);
     return configurationService.verifyCredentials(configuration, context, tenantId(okapiHeaders))
@@ -102,6 +124,10 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private UserInfo fetchUserInfo(Map<String, String> okapiHeaders) {
     Optional<UserInfo> tokenInfo = TokenUtil.userInfoFromToken(okapiHeaders.get(XOkapiHeaders.TOKEN));
     return tokenInfo.orElseThrow(() -> new NotAuthorizedException(INVALID_TOKEN_MESSAGE));
+  }
+
+  private CompletableFuture<DbKbCredentials> fetchDbKbCredentials(String id, Map<String, String> okapiHeaders) {
+    return repository.findById(id, tenantId(okapiHeaders)).thenApply(getCredentialsOrFail(id));
   }
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {

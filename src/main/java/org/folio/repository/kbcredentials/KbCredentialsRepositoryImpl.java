@@ -103,7 +103,10 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       credentials.getCustomerId(),
       credentials.getCreatedDate(),
       credentials.getCreatedByUserId(),
-      credentials.getCreatedByUserName()
+      credentials.getCreatedByUserName(),
+      credentials.getUpdatedDate(),
+      credentials.getUpdatedByUserId(),
+      credentials.getUpdatedByUserName()
     ));
 
     LOG.info(INSERT_LOG_MESSAGE, query);

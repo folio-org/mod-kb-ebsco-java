@@ -24,24 +24,18 @@ public final class KbCredentialsTableConstants {
 
   public static final String SELECT_CREDENTIALS_QUERY;
   public static final String SELECT_CREDENTIALS_BY_ID_QUERY;
-  public static final String INSERT_CREDENTIALS_QUERY;
   public static final String UPSERT_CREDENTIALS_QUERY;
 
 
   static {
     String[] allColumns = new String[] {
-      ID_COLUMN, URL_COLUMN, NAME_COLUMN, API_KEY_COLUMN, CUSTOMER_ID_COLUMN, CREATED_DATE_COLUMN, UPDATED_DATE_COLUMN,
-      CREATED_BY_USER_ID_COLUMN, UPDATED_BY_USER_ID_COLUMN, CREATED_BY_USER_NAME_COLUMN, UPDATED_BY_USER_NAME_COLUMN
-    };
-
-    String[] insertColumns = new String[] {
       ID_COLUMN, URL_COLUMN, NAME_COLUMN, API_KEY_COLUMN, CUSTOMER_ID_COLUMN, CREATED_DATE_COLUMN,
-      CREATED_BY_USER_ID_COLUMN, CREATED_BY_USER_NAME_COLUMN
+      CREATED_BY_USER_ID_COLUMN, CREATED_BY_USER_NAME_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN,
+      UPDATED_BY_USER_NAME_COLUMN
     };
 
     SELECT_CREDENTIALS_QUERY = selectQuery() + ";";
     SELECT_CREDENTIALS_BY_ID_QUERY = selectQuery() + " " + whereQuery(ID_COLUMN) + " " + limitQuery(1) + ";";
-    INSERT_CREDENTIALS_QUERY = insertQuery(insertColumns) + ";";
     UPSERT_CREDENTIALS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
   }
 
