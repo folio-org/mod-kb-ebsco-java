@@ -33,6 +33,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +69,10 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<DbKbCredentials> save(DbKbCredentials credentials, String tenant) {
     String query = format(INSERT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
-    String id = UUID.randomUUID().toString();
+    String id = credentials.getId();
+    if (StringUtils.isBlank(id)) {
+      id = UUID.randomUUID().toString();
+    }
     JsonArray params = DbUtils.createParams(asList(
       id,
       credentials.getUrl(),
