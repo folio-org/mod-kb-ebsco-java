@@ -1,3 +1,11 @@
+## v3.4.0 2020-04-06
+* MODKBEKBJ-356 - Filter titles by access type
+* MODKBEKBJ-376 - Filter titles by access type into package
+* MODKBEKBJ-384 - Apply sort to packages into title
+* MODKBEKBJ-386 - Implement endpoint to bulk load packages records
+* MODKBEKBJ-392 - Fix migrating from v3.2.0 to v3.3.1
+* MODKBEKBJ-426 - Fix embargo time units are not properly converted
+
 ## v3.3.1 2020-03-13
 * Set Load Holdings Strategy to DefaultLoadServiceFacade
 * MODKBEKBJ-385 - Implement endpoint to bulk load resources records
