@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -42,7 +43,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.exc.Constraint;
+import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -52,6 +56,9 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
+
+  private static final String CREDENTIALS_NAME_UNIQUENESS_MESSAGE = "Duplicate name";
+  private static final String CREDENTIALS_NAME_UNIQUENESS_DETAILS = "Credentials with name '%s' already exist";
 
   @Autowired
   private Vertx vertx;
@@ -103,7 +110,10 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), setId(credentials, id));
+    Future<UpdateResult> resultFuture = promise.future()
+      .recover(excTranslator.translateOrPassBy())
+      .recover(uniqueNameConstraintViolation(credentials.getName()));
+    return mapResult(resultFuture, setId(credentials, id));
   }
 
   private Collection<DbKbCredentials> mapCredentialsCollection(ResultSet resultSet) {
@@ -129,6 +139,20 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       .createdByUserName(row.getString(CREATED_BY_USER_NAME_COLUMN))
       .updatedByUserName(row.getString(UPDATED_BY_USER_NAME_COLUMN))
       .build();
+  }
+
+  private Function<Throwable, Future<UpdateResult>> uniqueNameConstraintViolation(String value) {
+    return throwable -> {
+      if (throwable instanceof ConstraintViolationException) {
+        Constraint constraint = ((ConstraintViolationException) throwable).getConstraint();
+        if (constraint.getType() == Constraint.Type.UNIQUE && constraint.getColumns().contains(NAME_COLUMN)) {
+          return Future.failedFuture(new InputValidationException(
+            CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
+            format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, value)));
+        }
+      }
+      return Future.failedFuture(throwable);
+    };
   }
 
   private Function<UpdateResult, DbKbCredentials> setId(DbKbCredentials credentials, String id) {

@@ -176,10 +176,11 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String postBody = Json.encode(kbCredentialsPostRequest);
 
+    stubForSuccessCredentials();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
+    assertEquals("Duplicate name", error.getErrors().get(0).getTitle());
     assertEquals(String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME),
       error.getErrors().get(0).getDetail());
   }
