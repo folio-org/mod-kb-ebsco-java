@@ -71,13 +71,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   @Override
-  public CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, tenantId(okapiHeaders))
-      .thenApply(getCredentialsOrFail(id))
-      .thenApply(credentialsFromDBConverter::convert);
-  }
-
-  @Override
   public CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders) {
     postBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
