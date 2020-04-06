@@ -4,9 +4,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -18,6 +22,8 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USERNAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
+import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.util.UUID;
 
@@ -35,7 +41,6 @@ import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
-import org.folio.util.KbCredentialsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
@@ -47,7 +52,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnKbCredentialsCollectionOnGet() {
-    KbCredentialsTestUtil.insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentialsCollection actual = getWithOk(KB_CREDENTIALS_ENDPOINT).as(KbCredentialsCollection.class);
 
     assertEquals(1, actual.getData().size());
@@ -160,7 +165,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPostWhenCredentialsWithProvidedNameAlreadyExist() {
-    KbCredentialsTestUtil.insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
       .withData(new KbCredentials()
         .withType(KbCredentials.Type.KB_CREDENTIALS)
@@ -197,6 +202,33 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     assertEquals("Invalid id", error.getErrors().get(0).getTitle());
     assertEquals("id must be null or not specified", error.getErrors().get(0).getDetail());
+  }
+
+  @Test
+  public void shouldReturnKbCredentialsOnGet() {
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentials expected = getKbCredentials(vertx).get(0);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + expected.getId();
+    KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturn400OnGetWhenIdIsInvalid() {
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
+    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+  }
+
+  @Test
+  public void shouldReturn404OnGetWhenIdIsInvalid() {
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
   }
 
   private void stubForSuccessCredentials() {

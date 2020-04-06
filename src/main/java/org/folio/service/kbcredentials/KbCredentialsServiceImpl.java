@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import javax.ws.rs.NotAuthorizedException;
 
@@ -30,6 +31,7 @@ import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.util.TokenUtil;
 import org.folio.rest.validator.KbCredentialsPostBodyValidator;
+import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class KbCredentialsServiceImpl implements KbCredentialsService {
@@ -62,6 +64,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   public CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders))
       .thenApply(collectionConverter::convert);
+  }
+
+  @Override
+  public CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders) {
+    return repository.findById(id, tenantId(okapiHeaders))
+      .thenApply(getCredentialsOrFail(id))
+      .thenApply(credentialsFromDBConverter::convert);
   }
 
   @Override
@@ -112,4 +121,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return tokenInfo.orElseThrow(() -> new NotAuthorizedException(INVALID_TOKEN_MESSAGE));
   }
 
+  private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {
+    return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(KbCredentials.class, id));
+  }
 }
