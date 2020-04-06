@@ -22,6 +22,11 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.item.get"]
         },
         {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.put"]
+        },
+        {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
@@ -500,13 +505,19 @@
       "description": "Get KB credentials collection item"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.item.put",
+      "displayName": "put KB credentials collection item",
+      "description": "Put KB credentials collection item"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.all",
       "displayName": "EBSCO KB Broker Credentials - all permissions",
       "description": "All permissions for managing EBSCO KB Credentials",
       "subPermissions": [
         "kb-ebsco.kb-credentials.collection.get",
         "kb-ebsco.kb-credentials.collection.post",
-        "kb-ebsco.kb-credentials.item.get"
+        "kb-ebsco.kb-credentials.item.get",
+        "kb-ebsco.kb-credentials.item.put"
       ]
     },
     {
