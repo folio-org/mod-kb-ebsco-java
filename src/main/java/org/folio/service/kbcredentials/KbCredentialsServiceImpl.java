@@ -68,8 +68,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   public CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders) {
     postBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
-    return verifyNameUniqueness(kbCredentials.getAttributes().getName(), okapiHeaders)
-      .thenCompose(o -> verifyCredentials(kbCredentials, okapiHeaders))
+    return verifyCredentials(kbCredentials, okapiHeaders)
       .thenApply(o -> fetchUserInfo(okapiHeaders))
       .thenApply(userInfo -> requireNonNull(credentialsToDBConverter.convert(kbCredentials))
         .toBuilder()
@@ -81,22 +80,11 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenApply(credentialsFromDBConverter::convert);
   }
 
-  private CompletableFuture<Void> verifyNameUniqueness(String name, Map<String, String> okapiHeaders) {
-    return repository.findAll(tenantId(okapiHeaders))
-      .thenAccept(kbCredentials -> kbCredentials.stream()
-        .filter(credentials -> credentials.getName().equals(name))
-        .findFirst()
-        .ifPresent(dbKbCredentials -> {
-          throw new InputValidationException(
-            CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
-            String.format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, name));
-        }));
-  }
-
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
-    Configuration configuration = configurationConverter.convert(kbCredentials);
-    return verifyNameUniqueness(kbCredentials.getAttributes().getName(), okapiHeaders)
-      .thenCompose(o -> configurationService.verifyCredentials(configuration, context, tenantId(okapiHeaders)))
+    String tenantId = tenantId(okapiHeaders);
+    return verifyNameUniqueness(kbCredentials.getAttributes().getName(), tenantId)
+      .thenApply(aVoid -> configurationConverter.convert(kbCredentials))
+      .thenCompose(configuration -> configurationService.verifyCredentials(configuration, context, tenantId))
       .thenCompose(errors -> {
         if (!errors.isEmpty()) {
           CompletableFuture<Void> future = new CompletableFuture<>();
@@ -105,6 +93,18 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         }
         return CompletableFuture.completedFuture(null);
       });
+  }
+
+  private CompletableFuture<Void> verifyNameUniqueness(String name, String tenantId) {
+    return repository.findAll(tenantId)
+      .thenAccept(kbCredentials -> kbCredentials.stream()
+        .filter(credentials -> credentials.getName().equals(name))
+        .findFirst()
+        .ifPresent(dbKbCredentials -> {
+          throw new InputValidationException(
+            CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
+            String.format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, name));
+        }));
   }
 
   private Pair<String, String> fetchUserInfo(Map<String, String> okapiHeaders) {
