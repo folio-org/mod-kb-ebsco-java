@@ -1,9 +1,10 @@
 package org.folio.repository.kbcredentials;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
-import org.folio.common.ListUtils;
+import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.SqlQueryHelper.limitQuery;
+import static org.folio.repository.SqlQueryHelper.selectQuery;
+import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
+import static org.folio.repository.SqlQueryHelper.whereQuery;
 
 public final class KbCredentialsTableConstants {
 
@@ -22,6 +23,7 @@ public final class KbCredentialsTableConstants {
   public static final String UPDATED_BY_USER_NAME_COLUMN = "updated_by_user_name";
 
   public static final String SELECT_CREDENTIALS_QUERY;
+  public static final String SELECT_CREDENTIALS_BY_ID_QUERY;
   public static final String INSERT_CREDENTIALS_QUERY;
   public static final String UPSERT_CREDENTIALS_QUERY;
 
@@ -38,37 +40,13 @@ public final class KbCredentialsTableConstants {
     };
 
     SELECT_CREDENTIALS_QUERY = selectQuery() + ";";
+    SELECT_CREDENTIALS_BY_ID_QUERY = selectQuery() + " " + whereQuery(ID_COLUMN) + " " + limitQuery(1) + ";";
     INSERT_CREDENTIALS_QUERY = insertQuery(insertColumns) + ";";
-    UPSERT_CREDENTIALS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(allColumns) + ";";
+    UPSERT_CREDENTIALS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
   }
 
   private KbCredentialsTableConstants() {
 
-  }
-
-  private static String selectQuery(String... columns) {
-    if (columns.length == 0) {
-      return "SELECT * FROM %s";
-    } else {
-      return "SELECT " + String.join(", ", columns) + " FROM %s";
-    }
-  }
-
-  private static String insertQuery(String[] columns) {
-    return "INSERT INTO %s (" + String.join(", ", columns) + ") VALUES "
-      + ListUtils.createInsertPlaceholders(columns.length, 1);
-  }
-
-  private static String updateOnConflictedIdQuery(String[] columns) {
-    String updateColumns = Arrays.stream(columns)
-      .filter(columnName -> !columnName.equals(ID_COLUMN))
-      .map(KbCredentialsTableConstants::assignExcludedColumn)
-      .collect(Collectors.joining(", "));
-    return "ON CONFLICT(" + ID_COLUMN + ") DO UPDATE SET " + updateColumns;
-  }
-
-  private static String assignExcludedColumn(String column) {
-    return column + "= EXCLUDED." + column;
   }
 
 }
