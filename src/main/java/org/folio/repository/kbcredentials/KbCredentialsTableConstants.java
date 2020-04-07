@@ -1,5 +1,6 @@
 package org.folio.repository.kbcredentials;
 
+import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.SqlQueryHelper.limitQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
@@ -25,6 +26,7 @@ public final class KbCredentialsTableConstants {
   public static final String SELECT_CREDENTIALS_QUERY;
   public static final String SELECT_CREDENTIALS_BY_ID_QUERY;
   public static final String UPSERT_CREDENTIALS_QUERY;
+  public static final String DELETE_CREDENTIALS_QUERY;
 
 
   static {
@@ -37,6 +39,7 @@ public final class KbCredentialsTableConstants {
     SELECT_CREDENTIALS_QUERY = selectQuery() + ";";
     SELECT_CREDENTIALS_BY_ID_QUERY = selectQuery() + " " + whereQuery(ID_COLUMN) + " " + limitQuery(1) + ";";
     UPSERT_CREDENTIALS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
+    DELETE_CREDENTIALS_QUERY = deleteQuery() + " " + whereQuery(ID_COLUMN) + ";";
   }
 
   private KbCredentialsTableConstants() {

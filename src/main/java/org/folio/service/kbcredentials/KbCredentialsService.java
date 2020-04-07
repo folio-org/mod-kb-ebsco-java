@@ -17,4 +17,6 @@ public interface KbCredentialsService {
   CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> update(String id, KbCredentialsPutRequest entity, Map<String, String> okapiHeaders);
+
+  CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders);
 }

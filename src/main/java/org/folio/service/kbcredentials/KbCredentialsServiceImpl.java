@@ -108,6 +108,11 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenApply(dbKbCredentials -> null);
   }
 
+  @Override
+  public CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders) {
+    return repository.delete(id, tenantId(okapiHeaders));
+  }
+
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
     Configuration configuration = configurationConverter.convert(kbCredentials);
     return configurationService.verifyCredentials(configuration, context, tenantId(okapiHeaders))

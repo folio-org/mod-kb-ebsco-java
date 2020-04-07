@@ -12,9 +12,13 @@ import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.util.AssignedUsersTestUtil.ASSIGNED_USERS_TABLE_NAME;
+import static org.folio.util.AssignedUsersTestUtil.insertAssignedUsers;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
@@ -25,6 +29,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
+import java.util.List;
 import java.util.UUID;
 
 import io.vertx.core.json.Json;
@@ -374,6 +379,54 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
+  }
+
+  @Test
+  public void shouldReturn201OnDelete() {
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentials kbCredentialInDb = getKbCredentials(vertx).get(0);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialInDb.getId();
+    deleteWithNoContent(resourcePath);
+
+    List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
+    assertTrue(kbCredentialsInDb.isEmpty());
+  }
+
+  @Test
+  public void shouldReturn400OnDeleteWhenHasRelatedRecords() {
+    try {
+      insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      String credentialsId = getKbCredentials(vertx).get(0).getId();
+      insertAssignedUsers(credentialsId, "username", "patron", "John", null, "Doe", vertx);
+
+      String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
+      JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
+
+      assertEquals("Credentials have related records and can't be deleted", error.getErrors().get(0).getTitle());
+
+      List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
+      assertFalse(kbCredentialsInDb.isEmpty());
+    } finally {
+      clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturn201OnDeleteWhenCredentialsAreMissing() {
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    deleteWithNoContent(resourcePath);
+
+    List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
+    assertTrue(kbCredentialsInDb.isEmpty());
+  }
+
+  @Test
+  public void shouldReturn400OnDeleteWhenIdIsInvalid() {
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
+    JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
   }
 
   private void stubForSuccessCredentials() {

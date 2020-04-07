@@ -12,6 +12,7 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CRE
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_BY_USER_NAME_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_DATE_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CUSTOMER_ID_COLUMN;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.DELETE_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAME_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_ID_QUERY;
@@ -30,6 +31,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import javax.ws.rs.BadRequestException;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -45,6 +48,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.Constraint;
 import org.folio.db.exc.ConstraintViolationException;
+import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
@@ -56,9 +60,11 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
+  private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
 
   private static final String CREDENTIALS_NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String CREDENTIALS_NAME_UNIQUENESS_DETAILS = "Credentials with name '%s' already exist";
+  private static final String CREDENTIALS_DELETE_ALLOWED_DETAILS = "Credentials have related records and can't be deleted";
 
   @Autowired
   private Vertx vertx;
@@ -119,6 +125,20 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     return mapResult(resultFuture, setId(credentials, id));
   }
 
+  @Override
+  public CompletableFuture<Void> delete(String id, String tenant) {
+    String query = format(DELETE_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+
+    LOG.info(DELETE_LOG_MESSAGE, query);
+    Promise<UpdateResult> promise = Promise.promise();
+    pgClient(tenant).execute(query, createParams(Collections.singleton(id)), promise);
+
+    Future<UpdateResult> resultFuture = promise.future()
+      .recover(excTranslator.translateOrPassBy())
+      .recover(foreignKeyConstraintViolation());
+    return mapResult(resultFuture, updateResult -> null);
+  }
+
   private Collection<DbKbCredentials> mapCredentialsCollection(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), this::mapCredentials);
   }
@@ -146,13 +166,24 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private Function<Throwable, Future<UpdateResult>> uniqueNameConstraintViolation(String value) {
     return throwable -> {
-      if (throwable instanceof ConstraintViolationException) {
+      if (DbExcUtils.isUniqueViolation(throwable)) {
         Constraint constraint = ((ConstraintViolationException) throwable).getConstraint();
-        if (constraint.getType() == Constraint.Type.UNIQUE && constraint.getColumns().contains(NAME_COLUMN)) {
+        if (constraint.getColumns().contains(NAME_COLUMN)) {
           return Future.failedFuture(new InputValidationException(
             CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
             format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, value)));
         }
+      }
+      return Future.failedFuture(throwable);
+    };
+  }
+
+  private Function<Throwable, Future<UpdateResult>> foreignKeyConstraintViolation() {
+    return throwable -> {
+      if (DbExcUtils.isFKViolation(throwable)) {
+        return Future.failedFuture(
+          new BadRequestException(CREDENTIALS_DELETE_ALLOWED_DETAILS)
+        );
       }
       return Future.failedFuture(throwable);
     };

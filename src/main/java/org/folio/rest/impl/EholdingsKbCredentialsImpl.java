@@ -81,6 +81,18 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
       .exceptionally(handleException(asyncResultHandler));
   }
 
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void deleteEholdingsKbCredentialsById(String id, Map<String, String> okapiHeaders,
+                                               Handler<AsyncResult<Response>> asyncResultHandler,
+                                               Context vertxContext) {
+    credentialsService.delete(id, okapiHeaders)
+      .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
+        DeleteEholdingsKbCredentialsByIdResponse.respond204())))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
   private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
     return throwable -> {
       errorHandler.handle(asyncResultHandler, throwable);
