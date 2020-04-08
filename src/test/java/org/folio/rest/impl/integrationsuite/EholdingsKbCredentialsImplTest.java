@@ -41,6 +41,7 @@ import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
+import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
@@ -186,26 +187,6 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnPostWhenCredentialsContainsId() {
-    KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
-      .withData(new KbCredentials()
-        .withId(UUID.randomUUID().toString())
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
-    String postBody = Json.encode(kbCredentialsPostRequest);
-
-    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
-      .as(JsonapiError.class);
-
-    assertEquals("Invalid id", error.getErrors().get(0).getTitle());
-    assertEquals("id must be null or not specified", error.getErrors().get(0).getDetail());
-  }
-
-  @Test
   public void shouldReturnKbCredentialsOnGet() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentials expected = getKbCredentials(vertx).get(0);
@@ -225,9 +206,172 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404OnGetWhenIdIsInvalid() {
+  public void shouldReturn404OnGetWhenCredentialsAreMissing() {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
+  }
+
+  @Test
+  public void shouldReturn204OnPutIfCredentialsAreValid() {
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentials kbCredentialsInDb = getKbCredentials(vertx).get(0);
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
+      .withData(new KbCredentials()
+        .withType(KbCredentials.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsDataAttributes()
+          .withName(STUB_CREDENTIALS_NAME + "updated")
+          .withCustomerId(STUB_CUSTOMER_ID + "updated")
+          .withApiKey(STUB_API_KEY)
+          .withUrl(getWiremockUrl())));
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    stubForSuccessCredentials();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
+    putWithNoContent(resourcePath, putBody, STUB_TOKEN_HEADER);
+
+    KbCredentials actual = getKbCredentials(vertx).get(0);
+
+    assertNotNull(actual);
+    assertNotNull(actual.getId());
+    assertNotNull(actual.getType());
+    assertEquals(getWiremockUrl(), actual.getAttributes().getUrl());
+    assertEquals(STUB_CREDENTIALS_NAME + "updated", actual.getAttributes().getName());
+    assertEquals(STUB_CUSTOMER_ID + "updated", actual.getAttributes().getCustomerId());
+    assertEquals(STUB_USERNAME, actual.getMeta().getCreatedByUsername());
+    assertEquals(STUB_USER_ID, actual.getMeta().getCreatedByUserId());
+    assertNotNull(actual.getMeta().getCreatedDate());
+    assertEquals(STUB_USERNAME, actual.getMeta().getUpdatedByUsername());
+    assertEquals(STUB_USER_ID, actual.getMeta().getUpdatedByUserId());
+    assertNotNull(actual.getMeta().getUpdatedDate());
+  }
+
+  @Test
+  public void shouldReturn422OnPutWhenCredentialsAreInvalid() {
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentials kbCredentialsInDb = getKbCredentials(vertx).get(0);
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
+      .withData(new KbCredentials()
+        .withType(KbCredentials.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsDataAttributes()
+          .withName(STUB_CREDENTIALS_NAME)
+          .withCustomerId(STUB_CUSTOMER_ID)
+          .withApiKey(STUB_API_KEY)
+          .withUrl(getWiremockUrl())));
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    stubForFailedCredentials();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertEquals("KB API Credentials are invalid", error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn422OnPutWhenCredentialsNameIsLongerThen255() {
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
+      .withData(new KbCredentials()
+        .withType(KbCredentials.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsDataAttributes()
+          .withName(Strings.repeat('*', 256))
+          .withCustomerId(STUB_CUSTOMER_ID)
+          .withApiKey(STUB_API_KEY)
+          .withUrl(getWiremockUrl())));
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
+    assertEquals("name is too long (maximum is 255 characters)", error.getErrors().get(0).getDetail());
+  }
+
+  @Test
+  public void shouldReturn422OnPutWhenCredentialsNameIsEmpty() {
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
+      .withData(new KbCredentials()
+        .withType(KbCredentials.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsDataAttributes()
+          .withName("")
+          .withCustomerId(STUB_CUSTOMER_ID)
+          .withApiKey(STUB_API_KEY)
+          .withUrl(getWiremockUrl())));
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
+    assertEquals("name must not be empty", error.getErrors().get(0).getDetail());
+  }
+
+  @Test
+  public void shouldReturn422OnPutWhenCredentialsWithProvidedNameAlreadyExist() {
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2", STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentials kbCredentialsInDb = getKbCredentials(vertx).get(1);
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
+      .withData(new KbCredentials()
+        .withType(KbCredentials.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsDataAttributes()
+          .withName(STUB_CREDENTIALS_NAME)
+          .withCustomerId(STUB_CUSTOMER_ID)
+          .withApiKey(STUB_API_KEY)
+          .withUrl(getWiremockUrl())));
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    stubForSuccessCredentials();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertEquals("Duplicate name", error.getErrors().get(0).getTitle());
+    assertEquals(String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME),
+      error.getErrors().get(0).getDetail());
+  }
+
+  @Test
+  public void shouldReturn400OnPutWhenIdIsInvalid() {
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
+      .withData(new KbCredentials()
+        .withId(UUID.randomUUID().toString())
+        .withType(KbCredentials.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsDataAttributes()
+          .withName(STUB_CREDENTIALS_NAME)
+          .withCustomerId(STUB_CUSTOMER_ID)
+          .withApiKey(STUB_API_KEY)
+          .withUrl(getWiremockUrl())));
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+  }
+
+  @Test
+  public void shouldReturn404OnPutWhenCredentialsAreMissing() {
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
+      .withData(new KbCredentials()
+        .withId(UUID.randomUUID().toString())
+        .withType(KbCredentials.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsDataAttributes()
+          .withName(STUB_CREDENTIALS_NAME)
+          .withCustomerId(STUB_CUSTOMER_ID)
+          .withApiKey(STUB_API_KEY)
+          .withUrl(getWiremockUrl())));
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    stubForSuccessCredentials();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
   }

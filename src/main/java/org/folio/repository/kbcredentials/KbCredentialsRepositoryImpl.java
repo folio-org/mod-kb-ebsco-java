@@ -13,13 +13,13 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CRE
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_DATE_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CUSTOMER_ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ID_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.INSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAME_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_ID_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_NAME_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_DATE_COLUMN;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
 
 import java.util.Collection;
@@ -89,7 +89,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   @Override
   public CompletableFuture<DbKbCredentials> save(DbKbCredentials credentials, String tenant) {
-    String query = format(INSERT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    String query = format(UPSERT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
     String id = credentials.getId();
     if (StringUtils.isBlank(id)) {
@@ -103,7 +103,10 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       credentials.getCustomerId(),
       credentials.getCreatedDate(),
       credentials.getCreatedByUserId(),
-      credentials.getCreatedByUserName()
+      credentials.getCreatedByUserName(),
+      credentials.getUpdatedDate(),
+      credentials.getUpdatedByUserId(),
+      credentials.getUpdatedByUserName()
     ));
 
     LOG.info(INSERT_LOG_MESSAGE, query);
