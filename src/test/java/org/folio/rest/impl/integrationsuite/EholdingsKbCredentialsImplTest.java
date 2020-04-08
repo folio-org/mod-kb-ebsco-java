@@ -187,26 +187,6 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnPostWhenCredentialsContainsId() {
-    KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
-      .withData(new KbCredentials()
-        .withId(UUID.randomUUID().toString())
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
-    String postBody = Json.encode(kbCredentialsPostRequest);
-
-    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
-      .as(JsonapiError.class);
-
-    assertEquals("Invalid id", error.getErrors().get(0).getTitle());
-    assertEquals("id must be null or not specified", error.getErrors().get(0).getDetail());
-  }
-
-  @Test
   public void shouldReturnKbCredentialsOnGet() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentials expected = getKbCredentials(vertx).get(0);
