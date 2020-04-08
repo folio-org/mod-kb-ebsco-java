@@ -31,8 +31,8 @@ import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.util.TokenUtil;
 import org.folio.rest.util.UserInfo;
-import org.folio.rest.validator.KbCredentialsPostBodyValidator;
-import org.folio.rest.validator.KbCredentialsPutBodyValidator;
+import org.folio.rest.validator.kbcredentials.KbCredentialsPostBodyValidator;
+import org.folio.rest.validator.kbcredentials.KbCredentialsPutBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
 
 @Component
