@@ -24,6 +24,10 @@ public final class SqlQueryHelper {
       + ListUtils.createInsertPlaceholders(columns.length, 1);
   }
 
+  public static String deleteQuery() {
+    return "DELETE FROM %s";
+  }
+
   public static String whereQuery(String... columns) {
     String whereQuery = Arrays.stream(columns)
       .map(SqlQueryHelper::assignParameter)

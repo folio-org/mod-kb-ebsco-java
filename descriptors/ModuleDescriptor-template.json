@@ -27,6 +27,11 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.item.put"]
         },
         {
+          "methods": ["DELETE"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.delete"]
+        },
+        {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
@@ -510,6 +515,11 @@
       "description": "Put KB credentials collection item"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.item.delete",
+      "displayName": "delete KB credentials collection item",
+      "description": "Delete KB credentials collection item"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.all",
       "displayName": "EBSCO KB Broker Credentials - all permissions",
       "description": "All permissions for managing EBSCO KB Credentials",
@@ -517,7 +527,8 @@
         "kb-ebsco.kb-credentials.collection.get",
         "kb-ebsco.kb-credentials.collection.post",
         "kb-ebsco.kb-credentials.item.get",
-        "kb-ebsco.kb-credentials.item.put"
+        "kb-ebsco.kb-credentials.item.put",
+        "kb-ebsco.kb-credentials.item.delete"
       ]
     },
     {
