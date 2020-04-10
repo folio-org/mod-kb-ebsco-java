@@ -11,7 +11,7 @@
       "description": "List of custom labels",
       "items": {
         "type": "object",
-        "$ref": "customLabelCollectionItem.json"
+        "$ref": "customLabel.json"
       }
     },
     "meta": {

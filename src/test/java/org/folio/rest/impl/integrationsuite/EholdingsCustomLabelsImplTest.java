@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.CustomLabelCollectionItem;
+import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.JsonapiError;
 
@@ -120,7 +120,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
 
     assertEquals(1, updatedCollection.getData().size());
     assertEquals((Integer) 1, updatedCollection.getMeta().getTotalResults());
-    CustomLabelCollectionItem item = updatedCollection.getData().get(0);
+    CustomLabel item = updatedCollection.getData().get(0);
     assertNotNull(item);
     assertEquals("test label 1 updated", item.getAttributes().getDisplayLabel());
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
@@ -142,11 +142,11 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     assertEquals(5, updatedCollection.getData().size());
     assertEquals((Integer) 5, updatedCollection.getMeta().getTotalResults());
 
-    CustomLabelCollectionItem firstItem = updatedCollection.getData().get(0);
+    CustomLabel firstItem = updatedCollection.getData().get(0);
     assertNotNull(firstItem);
     assertEquals("test label 1", firstItem.getAttributes().getDisplayLabel());
 
-    CustomLabelCollectionItem lastItem = updatedCollection.getData().get(4);
+    CustomLabel lastItem = updatedCollection.getData().get(4);
     assertNotNull(lastItem);
     assertEquals("test label 5", lastItem.getAttributes().getDisplayLabel());
 

@@ -8,6 +8,7 @@ import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
 import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422ConfigurationInvalidMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
+import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
+import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceImpl;
@@ -155,7 +157,8 @@ public class ApplicationConfig {
       .add(AuthorizationException.class, error401AuthorizationMapper())
       .add(DatabaseException.class, error400DatabaseMapper())
       .add(InputValidationException.class, error422InputValidationMapper())
-      .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper());
+      .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper())
+      .add(ServiceResponseException.class, errorServiceResponseMapper());
   }
 
   @Bean

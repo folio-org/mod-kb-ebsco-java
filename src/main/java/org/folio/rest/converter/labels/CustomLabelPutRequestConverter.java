@@ -1,6 +1,7 @@
 package org.folio.rest.converter.labels;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.jaxrs.model.CustomLabelPutRequest;
@@ -12,7 +13,7 @@ import org.folio.rest.util.RestConstants;
 public class CustomLabelPutRequestConverter implements Converter<CustomLabelPutRequest, CustomLabelsCollection> {
 
   @Override
-  public CustomLabelsCollection convert(CustomLabelPutRequest customLabelPutRequest) {
+  public CustomLabelsCollection convert(@NonNull CustomLabelPutRequest customLabelPutRequest) {
     return new CustomLabelsCollection()
       .withData(customLabelPutRequest.getData())
       .withMeta(new MetaTotalResults().withTotalResults(customLabelPutRequest.getData().size()))

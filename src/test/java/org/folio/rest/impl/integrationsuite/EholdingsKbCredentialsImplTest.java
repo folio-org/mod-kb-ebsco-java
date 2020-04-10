@@ -2,10 +2,15 @@ package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
@@ -17,9 +22,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.AssignedUsersTestUtil.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUsers;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
+import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
@@ -29,9 +38,12 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.UUID;
 
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import joptsimple.internal.Strings;
@@ -41,6 +53,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
@@ -50,6 +63,12 @@ import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
+
+  private static final String RM_API_PATH = "/rm/rmaccounts/";
+  private static final String RM_API_CUSTOMER_PATH = RM_API_PATH + STUB_CUSTOMER_ID + "/";
+  private static final String KB_GET_CUSTOM_LABELS_RESPONSE = "responses/kb-ebsco/custom-labels/get-custom-labels-list.json";
+  private static final String RM_GET_PROXY_CUSTOM_LABELS_RESPONSE = "responses/rmapi/proxiescustomlabels/"
+    + "get-root-proxy-custom-labels-success-response.json";
 
   @After
   public void tearDown() {
@@ -97,7 +116,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_TOKEN_HEADER)
       .as(KbCredentials.class);
 
@@ -124,7 +143,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -182,7 +201,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -233,7 +252,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
     putWithNoContent(resourcePath, putBody, STUB_TOKEN_HEADER);
 
@@ -268,7 +287,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -332,7 +351,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -374,7 +393,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
@@ -429,17 +448,55 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
   }
 
-  private void stubForSuccessCredentials() {
-    stubFor(
-      get(urlPathMatching("/rm/rmaccounts/.*"))
-        .willReturn(aResponse()
-          .withStatus(SC_OK)
-          .withBody("{\"totalResults\": 0, \"vendors\": []}")));
+  @Test
+  public void shouldReturnCustomLabelsOnGetCustomLabels() throws IOException, URISyntaxException {
+    insertKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = getKbCredentials(vertx).get(0).getId();
+    CustomLabelsCollection expected = readJsonFile(KB_GET_CUSTOM_LABELS_RESPONSE, CustomLabelsCollection.class);
+    expected.getData().forEach(customLabel -> customLabel.setCredentialsId(credentialsId));
+
+    mockGetCustomLabelsRequest(RM_GET_PROXY_CUSTOM_LABELS_RESPONSE);
+    String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, credentialsId);
+    CustomLabelsCollection actual = getWithOk(resourcePath).as(CustomLabelsCollection.class);
+
+    verify(1, getRequestedFor(urlEqualTo(RM_API_CUSTOMER_PATH)));
+    assertEquals(expected, actual);
   }
 
-  private void stubForFailedCredentials() {
+  @Test
+  public void shouldReturnUnauthorizedOnGetWithResourcesWhenRMAPI403() {
+    insertKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = getKbCredentials(vertx).get(0).getId();
+
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), SC_FORBIDDEN);
+    String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, credentialsId);
+    JsonapiError error = getWithStatus(resourcePath, SC_FORBIDDEN).as(JsonapiError.class);
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
+  }
+
+  @Test
+  public void shouldReturn404OnGetCustomLabelsWhenCredentialsAreMissing() {
+    String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, "11111111-1111-1111-a111-111111111111");
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
+  }
+
+  private void mockVerifyValidCredentialsRequest() {
     stubFor(
-      get(urlPathMatching("/rm/rmaccounts/.*"))
+      get(urlPathMatching(RM_API_PATH + ".*"))
+        .willReturn(aResponse().withStatus(SC_OK).withBody("{\"totalResults\": 0, \"vendors\": []}")));
+  }
+
+  private void mockVerifyFailedCredentialsRequest() {
+    stubFor(
+      get(urlPathMatching(RM_API_PATH + ".*"))
         .willReturn(aResponse().withStatus(SC_UNPROCESSABLE_ENTITY)));
+  }
+
+  private void mockGetCustomLabelsRequest(String stubResponseFile) throws IOException, URISyntaxException {
+    stubFor(
+      get(urlPathEqualTo(RM_API_CUSTOMER_PATH))
+        .willReturn(aResponse().withStatus(SC_OK).withBody(readFile(stubResponseFile))));
   }
 }

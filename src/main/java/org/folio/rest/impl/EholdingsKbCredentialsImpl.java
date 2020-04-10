@@ -26,6 +26,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
 
   @Autowired
   private KbCredentialsService credentialsService;
+
   @Autowired
   private ErrorHandler errorHandler;
 
@@ -90,6 +91,18 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
     credentialsService.delete(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         DeleteEholdingsKbCredentialsByIdResponse.respond204())))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsKbCredentialsCustomLabelsById(String id, Map<String, String> okapiHeaders,
+                                                        Handler<AsyncResult<Response>> asyncResultHandler,
+                                                        Context vertxContext) {
+    credentialsService.fetchCustomLabels(id, okapiHeaders)
+      .thenAccept(customLabelsCollection -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsKbCredentialsCustomLabelsByIdResponse.respond200WithApplicationVndApiJson(customLabelsCollection))))
       .exceptionally(handleException(asyncResultHandler));
   }
 

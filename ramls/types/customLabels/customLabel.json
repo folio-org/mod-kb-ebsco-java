@@ -1,21 +1,33 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Custom Label object schema",
-  "description": "Custom Label schema",
+  "title": "Custom Label object schema for a collection",
+  "description": "Custom Label object schema for a collection",
   "javaType": "org.folio.rest.jaxrs.model.CustomLabel",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "data": {
-      "type": "object",
-      "description": "The Data Schema",
-      "$ref": "customLabelCollectionItem.json"
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": [
+        "customLabels"
+      ],
+      "example": "customLabels"
     },
-    "jsonapi": {
+    "credentialsId": {
+      "type": "string",
+      "description": "The UUID of credentials",
+      "$ref": "../../raml-util/schemas/uuid.schema",
+      "examples": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
+    },
+    "attributes": {
       "type": "object",
-      "description": "version of json api",
-      "$ref": "../jsonapi.json"
+      "description": "Custom label object data attributes",
+      "$ref": "customLabelDataAttributes.json"
     }
   },
-  "required": ["data", "jsonapi"]
+  "required": [
+    "type",
+    "attributes"
+  ]
 }

@@ -1,13 +1,13 @@
 package org.folio.rest.converter.labels;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
+import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.spring.config.TestConfig;
 
@@ -27,14 +28,12 @@ public class CustomLabelsCollectionConverterTest {
 
   @Test
   public void shouldConvertToCustomLabelOnly() throws URISyntaxException, IOException {
-
-    ObjectMapper mapper = new ObjectMapper();
-
-    RootProxyCustomLabels rootProxy = mapper.readValue(
-      getFile("responses/rmapi/custom-labels/get-custom-labels.json"), RootProxyCustomLabels.class);
+    RootProxyCustomLabels rootProxy = readJsonFile("responses/rmapi/custom-labels/get-custom-labels.json",
+      RootProxyCustomLabels.class);
     final CustomLabelsCollection convertedLabel = itemConverter.convert(rootProxy);
-    Integer totalSize = 5;
-    assertEquals(totalSize, convertedLabel.getMeta().getTotalResults());
-    assertEquals("customLabel", convertedLabel.getData().get(0).getType());
+
+    assertNotNull(convertedLabel);
+    assertEquals((Integer) 5, convertedLabel.getMeta().getTotalResults());
+    assertEquals(CustomLabel.Type.CUSTOM_LABELS, convertedLabel.getData().get(0).getType());
   }
 }

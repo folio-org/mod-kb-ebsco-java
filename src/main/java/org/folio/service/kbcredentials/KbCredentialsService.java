@@ -3,6 +3,7 @@ package org.folio.service.kbcredentials;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
@@ -19,4 +20,6 @@ public interface KbCredentialsService {
   CompletableFuture<Void> update(String id, KbCredentialsPutRequest entity, Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders);
+
+  CompletableFuture<CustomLabelsCollection> fetchCustomLabels(String id, Map<String, String> okapiHeaders);
 }

@@ -5,13 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,8 +29,8 @@ public class CustomLabelPutRequestToRmApiConverterTest {
 
   @Test
   public void shouldConvertToRootProxyCustomLabelsWithOneLabel() throws URISyntaxException, IOException {
-    File resourceFile = getFile("requests/kb-ebsco/custom-labels/put-one-custom-label.json");
-    CustomLabelPutRequest putRequest = new ObjectMapper().readValue(resourceFile, CustomLabelPutRequest.class);
+    String resourceFile = "requests/kb-ebsco/custom-labels/put-one-custom-label.json";
+    CustomLabelPutRequest putRequest = readJsonFile(resourceFile, CustomLabelPutRequest.class);
 
     final RootProxyCustomLabels labels = converter.convert(putRequest);
 
@@ -48,8 +45,8 @@ public class CustomLabelPutRequestToRmApiConverterTest {
 
   @Test
   public void shouldConvertToRootProxyCustomLabelsWithFiveLabels() throws URISyntaxException, IOException {
-    File resourceFile = getFile("requests/kb-ebsco/custom-labels/put-five-custom-labels.json");
-    CustomLabelPutRequest putRequest = new ObjectMapper().readValue(resourceFile, CustomLabelPutRequest.class);
+    String resourceFile = "requests/kb-ebsco/custom-labels/put-five-custom-labels.json";
+    CustomLabelPutRequest putRequest = readJsonFile(resourceFile, CustomLabelPutRequest.class);
 
     final RootProxyCustomLabels labels = converter.convert(putRequest);
 

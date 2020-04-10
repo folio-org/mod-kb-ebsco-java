@@ -24,6 +24,7 @@ import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
+import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
@@ -59,6 +60,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Autowired
   private ConfigurationService configurationService;
+  @Autowired
+  private CustomLabelsService customLabelsService;
   @Autowired
   private Context context;
 
@@ -111,6 +114,21 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Override
   public CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders) {
     return repository.delete(id, tenantId(okapiHeaders));
+  }
+
+  @Override
+  public CompletableFuture<CustomLabelsCollection> fetchCustomLabels(String id, Map<String, String> okapiHeaders) {
+    return fetchDbKbCredentials(id, okapiHeaders)
+      .thenApply(dbKbCredentials -> {
+        KbCredentials kbCredentials = requireNonNull(credentialsFromDBConverter.convert(dbKbCredentials));
+        kbCredentials.getAttributes().withApiKey(dbKbCredentials.getApiKey());
+        return configurationConverter.convert(kbCredentials);
+      })
+      .thenCompose(configuration -> customLabelsService.fetchCustomLabels(configuration, okapiHeaders))
+      .thenApply(customLabelsCollection -> {
+        customLabelsCollection.getData().forEach(customLabel -> customLabel.setCredentialsId(id));
+        return customLabelsCollection;
+      });
   }
 
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
