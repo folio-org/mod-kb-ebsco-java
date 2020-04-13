@@ -19,7 +19,6 @@ import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentials;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.service.assignedusers.AssignedUsersService;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.spring.SpringContextUtil;
 
@@ -27,8 +26,6 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
 
   @Autowired
   private KbCredentialsService credentialsService;
-  @Autowired
-  private AssignedUsersService assignedUsersService;
   @Autowired
   private ErrorHandler errorHandler;
 
@@ -94,15 +91,6 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         DeleteEholdingsKbCredentialsByIdResponse.respond204())))
       .exceptionally(handleException(asyncResultHandler));
-  }
-
-  @Override
-  public void getEholdingsKbCredentialsUsersById(String id, Map<String, String> okapiHeaders,
-                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    assignedUsersService.findByCredentialsId(id, okapiHeaders)
-      .thenAccept(assignedUserCollection -> asyncResultHandler.handle(succeededFuture(
-        GetEholdingsKbCredentialsUsersByIdResponse.respond200WithApplicationVndApiJson(assignedUserCollection))))
-      .exceptionally(handleException(asyncResultHandler));;
   }
 
   private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {

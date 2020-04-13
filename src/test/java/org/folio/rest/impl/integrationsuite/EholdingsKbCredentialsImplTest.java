@@ -398,7 +398,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     try {
       insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
       String credentialsId = getKbCredentials(vertx).get(0).getId();
-      insertAssignedUsers(credentialsId, "username", "patron", "John", null, "Doe", vertx);
+      insertAssignedUsers(credentialsId, "username",  "John", null, "Doe", "patron", vertx);
 
       String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
       JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
