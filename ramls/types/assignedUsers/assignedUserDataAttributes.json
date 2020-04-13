@@ -40,6 +40,8 @@
   },
   "required": [
     "credentialsId",
-    "userName"
+    "userName",
+    "firstName",
+    "patronGroup"
   ]
 }
