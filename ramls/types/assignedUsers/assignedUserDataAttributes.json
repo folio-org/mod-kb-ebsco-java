@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Assigned Users Collection Item Data Attributes Schema",
+  "description": "Assigned Users Collection Item Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.AssignedUserDataAttributes",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "credentialsId": {
+      "type": "string",
+      "description": "UUID of KB Credentials tied to",
+      "$ref": "../../raml-util/schemas/uuid.schema",
+      "examples": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
+    },
+    "userName": {
+      "type": "string",
+      "description": "A unique name belonging to a user",
+      "examples": "john_doe"
+    },
+    "firstName": {
+      "type": "string",
+      "description": "The first name of a user",
+      "examples": "John"
+    },
+    "middleName": {
+      "type": "string",
+      "description": "The middle name of a user (if any)",
+      "examples": "William"
+    },
+    "lastName": {
+      "type": "string",
+      "description": "The surname of a user",
+      "examples": "Doe"
+    },
+    "patronGroup": {
+      "type": "string",
+      "description": "The patron group name",
+      "examples": "Staff"
+    }
+  },
+  "required": [
+    "credentialsId",
+    "userName"
+  ]
+}

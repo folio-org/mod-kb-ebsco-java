@@ -1,5 +1,6 @@
 package org.folio.util;
 
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.Arrays;
@@ -15,8 +16,6 @@ import org.folio.repository.SqlQueryHelper;
 import org.folio.rest.persist.PostgresClient;
 
 public class AssignedUsersTestUtil {
-
-  public static final String ASSIGNED_USERS_TABLE_NAME = "assigned_users";
 
   private static final String[] TABLE_COLUMNS = {
     "id",

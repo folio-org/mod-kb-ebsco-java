@@ -1,0 +1,8 @@
+ALTER TABLE assigned_user
+DROP COLUMN IF EXISTS jsonb,
+ADD COLUMN IF NOT EXISTS credentialsId uuid NOT NULL constraint fk_assigned_users_kb_credentials references kb_credentials,
+ADD COLUMN IF NOT EXISTS username VARCHAR (100) NOT NULL,
+ADD COLUMN IF NOT EXISTS firstName VARCHAR (100) NOT NULL,
+ADD COLUMN IF NOT EXISTS middleName VARCHAR (100) ,
+ADD COLUMN IF NOT EXISTS lastName VARCHAR (100) NOT NULL,
+ADD COLUMN IF NOT EXISTS patronGroup VARCHAR (100) NOT NULL;

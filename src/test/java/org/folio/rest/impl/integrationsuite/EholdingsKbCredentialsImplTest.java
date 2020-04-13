@@ -16,8 +16,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.util.AssignedUsersTestUtil.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUsers;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;

@@ -33,6 +33,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
         },
@@ -532,11 +537,25 @@
       ]
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.users.collection.get",
+      "displayName": "get assigned users to KB credentials",
+      "description": "Get assigned users to KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.users.all",
+      "displayName": "EBSCO KB Broker users assigned to credentials - all permissions",
+      "description": "All permissions for manging users assigned to EBSCO KB Credentials",
+      "subPermissions": [
+        "kb-ebsco.kb-credentials.users.collection.get"
+      ]
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
       "subPermissions": [
         "kb-ebsco.kb-credentials.all",
+        "kb-ebsco.kb-credentials.users.all",
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
