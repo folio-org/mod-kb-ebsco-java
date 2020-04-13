@@ -72,13 +72,13 @@
     },
     {
       "tableName": "access_types",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0",
       "withMetadata": true,
       "withAuditing": false
     },
     {
       "tableName": "access_types_mapping",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.3.0",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-access-type-mapping-table.sql"
@@ -100,9 +100,9 @@
   ],
   "scripts": [
     {
-    "run": "after",
-    "snippetPath": "update_started_date_before_insertion.sql",
-    "fromModuleVersion": "mod-kb-ebsco-java-3.0.1"
+      "run": "after",
+      "snippetPath": "update_started_date_before_insertion.sql",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1"
     },
     {
       "run": "after",
@@ -116,7 +116,7 @@
     {
       "run": "after",
       "snippetPath": "access_types_update_metadata_user_info.sql",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1"
+      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0"
     }
   ]
 }
