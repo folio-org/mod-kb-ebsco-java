@@ -41,7 +41,7 @@
   "required": [
     "credentialsId",
     "userName",
-    "firstName",
+    "lastName",
     "patronGroup"
   ]
 }
