@@ -39,7 +39,7 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsId {
     assignedUsersService.findByCredentialsId(id, okapiHeaders)
       .thenAccept(assignedUserCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsUsersByIdResponse.respond200WithApplicationVndApiJson(assignedUserCollection))))
-      .exceptionally(handleException(asyncResultHandler));;
+      .exceptionally(handleException(asyncResultHandler));
   }
 
   private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {

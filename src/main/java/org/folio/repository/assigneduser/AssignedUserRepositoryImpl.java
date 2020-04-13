@@ -29,13 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
-import org.folio.repository.kbcredentials.KbCredentialsRepositoryImpl;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(KbCredentialsRepositoryImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
 
   @Autowired
