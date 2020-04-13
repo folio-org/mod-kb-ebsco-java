@@ -8,6 +8,31 @@
       "handlers": [
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.collection.get"]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/kb-credentials",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.collection.post"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.get"]
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.put"]
+        },
+        {
+          "methods": ["DELETE"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.delete"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
         },
@@ -470,10 +495,48 @@
       "description": "Delete Access Type collection item"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.collection.get",
+      "displayName": "get KB credentials collection",
+      "description": "Get KB credentials collection"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.collection.post",
+      "displayName": "post KB credentials",
+      "description": "Post KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.item.get",
+      "displayName": "get KB credentials collection item",
+      "description": "Get KB credentials collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.item.put",
+      "displayName": "put KB credentials collection item",
+      "description": "Put KB credentials collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.item.delete",
+      "displayName": "delete KB credentials collection item",
+      "description": "Delete KB credentials collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.all",
+      "displayName": "EBSCO KB Broker Credentials - all permissions",
+      "description": "All permissions for managing EBSCO KB Credentials",
+      "subPermissions": [
+        "kb-ebsco.kb-credentials.collection.get",
+        "kb-ebsco.kb-credentials.collection.post",
+        "kb-ebsco.kb-credentials.item.get",
+        "kb-ebsco.kb-credentials.item.put",
+        "kb-ebsco.kb-credentials.item.delete"
+      ]
+    },
+    {
       "permissionName": "kb-ebsco.all",
       "displayName": "EBSCO KB Broker - all permissions",
       "description": "All permissions for EBSCO KB module",
       "subPermissions": [
+        "kb-ebsco.kb-credentials.all",
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",

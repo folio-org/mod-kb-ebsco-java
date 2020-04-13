@@ -15,6 +15,7 @@ import org.folio.rest.impl.integrationsuite.EholdingsAccessTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCacheImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsConfigurationTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCustomLabelsImplTest;
+import org.folio.rest.impl.integrationsuite.EholdingsKbCredentialsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsPackagesTest;
 import org.folio.rest.impl.integrationsuite.EholdingsProvidersImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsResourcesImplTest;
@@ -41,10 +42,12 @@ import org.folio.test.util.TestSetUpHelper;
   LoadHoldingsStatusImplTest.class,
   DefaultLoadServiceFacadeTest.class,
   TransactionLoadServiceFacadeTest.class,
-  EholdingsAccessTypesImplTest.class
+  EholdingsAccessTypesImplTest.class,
+  EholdingsKbCredentialsImplTest.class
 })
 @RunWith(Suite.class)
 public class IntegrationTestSuite {
+
   @BeforeClass
   public static void setUpClass() {
     TestSetUpHelper.startVertxAndPostgres(Collections.singletonMap("spring.configuration", "org.folio.spring.config.TestConfig"));

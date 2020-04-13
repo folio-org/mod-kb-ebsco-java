@@ -13,7 +13,7 @@ public class ConfigurationPutRequestConverter implements Converter<Configuration
 
   private final String defaultUrl;
 
-  public ConfigurationPutRequestConverter(@Value("${configuration.base.url.default}") String defaultUrl) {
+  public ConfigurationPutRequestConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
     this.defaultUrl = defaultUrl;
   }
 

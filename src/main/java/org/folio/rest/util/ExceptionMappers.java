@@ -22,6 +22,8 @@ import javax.ws.rs.core.Response;
 
 import org.folio.db.exc.AuthorizationException;
 import org.folio.db.exc.ConstraintViolationException;
+import org.folio.db.exc.DatabaseException;
+import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.exception.UnAuthorizedException;
 import org.folio.rest.exception.InputValidationException;
@@ -100,6 +102,24 @@ public final class ExceptionMappers {
       Response.status(SC_BAD_REQUEST)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(createError(exception.getMessage(), exception.getDetailedMessage()))
+        .build();
+  }
+
+  /**
+   * {@link DatabaseException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 400}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<DatabaseException, Response> error400DatabaseMapper() {
+    return exception ->
+      Response.status(SC_BAD_REQUEST)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(createError(exception.getMessage(), exception.getSqlState()))
         .build();
   }
 
@@ -190,6 +210,24 @@ public final class ExceptionMappers {
       Response.status(SC_UNPROCESSABLE_ENTITY)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(createError(exception.getMessage(), exception.getMessageDetail()))
+        .build();
+  }
+
+  /**
+   * {@link ConfigurationInvalidException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 422}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<ConfigurationInvalidException, Response> error422ConfigurationInvalidMapper() {
+    return exception ->
+      Response.status(SC_UNPROCESSABLE_ENTITY)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(ErrorUtil.createError(exception.getErrors().get(0).getMessage()))
         .build();
   }
 
