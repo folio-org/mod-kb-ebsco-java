@@ -53,6 +53,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
+    clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
@@ -395,21 +396,17 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnDeleteWhenHasRelatedRecords() {
-    try {
-      insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-      String credentialsId = getKbCredentials(vertx).get(0).getId();
-      insertAssignedUsers(credentialsId, "username",  "John", null, "Doe", "patron", vertx);
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = getKbCredentials(vertx).get(0).getId();
+    insertAssignedUsers(credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
-      String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-      JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
+    JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-      assertEquals("Credentials have related records and can't be deleted", error.getErrors().get(0).getTitle());
+    assertEquals("Credentials have related records and can't be deleted", error.getErrors().get(0).getTitle());
 
-      List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
-      assertFalse(kbCredentialsInDb.isEmpty());
-    } finally {
-      clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
-    }
+    List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
+    assertFalse(kbCredentialsInDb.isEmpty());
   }
 
   @Test

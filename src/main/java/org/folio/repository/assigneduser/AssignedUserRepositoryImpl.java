@@ -9,25 +9,36 @@ import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.INSERT_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.LAST_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.MIDDLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GROUP;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
+
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.exc.ConstraintViolationException;
+import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.persist.PostgresClient;
 
@@ -36,6 +47,9 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
+  private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
+  private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
+  private static final String KB_CREDENTIALS_NOT_FOUND_MESSAGE = "KB credentials with id '%s' not found";
 
   @Autowired
   private Vertx vertx;
@@ -53,20 +67,59 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAssignedUserCollection);
   }
 
+  @Override
+  public CompletableFuture<DbAssignedUser> save(DbAssignedUser entity, String tenant) {
+    String query = format(INSERT_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
+
+    JsonArray params = createParams(Arrays.asList(
+      entity.getId(),
+      entity.getCredentialsId(),
+      entity.getUsername(),
+      entity.getFirstName(),
+      entity.getMiddleName(),
+      entity.getLastName(),
+      entity.getPatronGroup()
+    ));
+
+    LOG.info(INSERT_LOG_MESSAGE, query);
+    Promise<UpdateResult> promise = Promise.promise();
+    pgClient(tenant).execute(query, params, promise);
+
+    Future<UpdateResult> resultFuture = promise.future()
+      .recover(excTranslator.translateOrPassBy())
+      .recover(constraintViolation(entity.getCredentialsId()));
+    return mapResult(resultFuture, updateResult -> entity);
+  }
+
   private Collection<DbAssignedUser> mapAssignedUserCollection(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), this::mapAssignedUserItem);
   }
 
   private DbAssignedUser mapAssignedUserItem(JsonObject row) {
-      return DbAssignedUser.builder()
-        .id(row.getString(ID_COLUMN))
-        .credentialsId(row.getString(CREDENTIALS_ID))
-        .username(row.getString(USER_NAME))
-        .firstName(row.getString(FIRST_NAME))
-        .middleName(row.getString(MIDDLE_NAME))
-        .lastName(row.getString(LAST_NAME))
-        .patronGroup(row.getString(PATRON_GROUP))
-        .build();
+    return DbAssignedUser.builder()
+      .id(row.getString(ID_COLUMN))
+      .credentialsId(row.getString(CREDENTIALS_ID))
+      .username(row.getString(USER_NAME))
+      .firstName(row.getString(FIRST_NAME))
+      .middleName(row.getString(MIDDLE_NAME))
+      .lastName(row.getString(LAST_NAME))
+      .patronGroup(row.getString(PATRON_GROUP))
+      .build();
+  }
+
+  private Function<Throwable, Future<UpdateResult>> constraintViolation(String credentialsId) {
+    return throwable -> {
+      if (DbExcUtils.isUniqueViolation(throwable)) {
+        if (((ConstraintViolationException) throwable).getConstraint().getColumns().contains(ID_COLUMN)) {
+          return Future.failedFuture(new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE));
+        }
+      } else if (DbExcUtils.isFKViolation(throwable)) {
+        return Future.failedFuture(
+          new NotFoundException(String.format(KB_CREDENTIALS_NOT_FOUND_MESSAGE, credentialsId))
+        );
+      }
+      return Future.failedFuture(throwable);
+    };
   }
 
   private PostgresClient pgClient(String tenantId) {
