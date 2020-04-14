@@ -13,25 +13,24 @@ types:
   assignedUserCollection: !include types/assignedUsers/assignedUserCollection.json
   jsonapiError: !include types/jsonapiError.json
 
-/eholdings/kb-credentials/{id}:
-  /users:
-    displayName: Users assigned to KB Credentials
-    get:
-      description: Retrieve users information assigned to a specific KB credentials.
-      responses:
-        200:
-          description: OK
-          body:
-            application/vnd.api+json:
-              type: assignedUserCollection
-              example:
-                strict: false
-                value: !include examples/assignedUsers/assigned_users_get_200_response.json
-        400:
-          description: Bad Request
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/assignedUsers/assigned_users_get_400_response.json
+/eholdings/kb-credentials/{id}/users:
+  displayName: Users assigned to KB Credentials
+  get:
+    description: Retrieve users information assigned to a specific KB credentials.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            type: assignedUserCollection
+            example:
+              strict: false
+              value: !include examples/assignedUsers/assigned_users_get_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/assignedUsers/assigned_users_get_400_response.json

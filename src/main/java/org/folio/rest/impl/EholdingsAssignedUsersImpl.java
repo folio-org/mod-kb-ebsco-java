@@ -15,12 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsId;
+import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdUsers;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.assignedusers.AssignedUsersService;
 import org.folio.spring.SpringContextUtil;
 
-public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsId {
+public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers {
 
   @Autowired
   private AssignedUsersService assignedUsersService;
