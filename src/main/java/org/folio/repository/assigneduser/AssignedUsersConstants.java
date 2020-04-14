@@ -6,10 +6,8 @@ import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
 
 public class AssignedUsersConstants {
-  private AssignedUsersConstants() {
-  }
-  public static final String ASSIGNED_USERS_TABLE_NAME = "assigned_users";
 
+  public static final String ASSIGNED_USERS_TABLE_NAME = "assigned_users";
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID = "credentials_id";
   public static final String USER_NAME = "user_name";
@@ -19,6 +17,7 @@ public class AssignedUsersConstants {
   public static final String PATRON_GROUP = "patron_group";
 
   public static final String SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
+  public static final String SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_AND_USERS_ID_QUERY;
   public static final String UPSERT_ASSIGNED_USERS_QUERY;
 
   static {
@@ -27,6 +26,11 @@ public class AssignedUsersConstants {
     };
 
     SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY = selectQuery() + " " + whereQuery(CREDENTIALS_ID) + ";";
+    SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_AND_USERS_ID_QUERY = selectQuery() + " " +
+      whereQuery(ID_COLUMN, CREDENTIALS_ID) + ";";
     UPSERT_ASSIGNED_USERS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
+  }
+
+  private AssignedUsersConstants() {
   }
 }

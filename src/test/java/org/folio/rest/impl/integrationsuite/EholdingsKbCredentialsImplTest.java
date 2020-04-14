@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.util.AssignedUsersTestUtil.insertAssignedUsers;
+import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
@@ -398,7 +398,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     try {
       insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
       String credentialsId = getKbCredentials(vertx).get(0).getId();
-      insertAssignedUsers(credentialsId, "username",  "John", null, "Doe", "patron", vertx);
+      insertAssignedUser(credentialsId, "username",  "John", null, "Doe", "patron", vertx);
 
       String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
       JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);

@@ -42,6 +42,18 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
       .exceptionally(handleException(asyncResultHandler));
   }
 
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsKbCredentialsUsersByIdAndUserId(String id, String userId, Map<String, String> okapiHeaders,
+                                                          Handler<AsyncResult<Response>> asyncResultHandler,
+                                                          Context vertxContext) {
+    assignedUsersService.findByCredentialsIdAndUserId(id, userId, okapiHeaders)
+      .thenAccept(assignedUser -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsKbCredentialsUsersByIdAndUserIdResponse.respond200WithApplicationVndApiJson(assignedUser))))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
   private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
     return throwable -> {
       errorHandler.handle(asyncResultHandler, throwable);

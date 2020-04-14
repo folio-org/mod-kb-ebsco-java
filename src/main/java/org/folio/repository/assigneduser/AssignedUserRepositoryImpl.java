@@ -12,11 +12,15 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN
 import static org.folio.repository.assigneduser.AssignedUsersConstants.LAST_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.MIDDLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GROUP;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_AND_USERS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
@@ -35,6 +39,7 @@ import org.folio.rest.persist.PostgresClient;
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
+
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
 
   @Autowired
@@ -53,20 +58,38 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAssignedUserCollection);
   }
 
+  @Override
+  public CompletableFuture<Optional<DbAssignedUser>> findByCredentialsIdAndUserId(String credentialsId, String userId,
+                                                                                  String tenant) {
+    String query = format(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_AND_USERS_ID_QUERY, getAssignedUsersTableName(tenant));
+
+    LOG.info(SELECT_LOG_MESSAGE, query);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenant).select(query, createParams(Arrays.asList(userId, credentialsId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAssignedUser);
+  }
+
+
+  private Optional<DbAssignedUser> mapSingleAssignedUser(ResultSet resultSet) {
+    List<JsonObject> rows = resultSet.getRows();
+    return rows.isEmpty() ? Optional.empty() : Optional.of(mapAssignedUserItem(rows.get(0)));
+  }
+
   private Collection<DbAssignedUser> mapAssignedUserCollection(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), this::mapAssignedUserItem);
   }
 
   private DbAssignedUser mapAssignedUserItem(JsonObject row) {
-      return DbAssignedUser.builder()
-        .id(row.getString(ID_COLUMN))
-        .credentialsId(row.getString(CREDENTIALS_ID))
-        .username(row.getString(USER_NAME))
-        .firstName(row.getString(FIRST_NAME))
-        .middleName(row.getString(MIDDLE_NAME))
-        .lastName(row.getString(LAST_NAME))
-        .patronGroup(row.getString(PATRON_GROUP))
-        .build();
+    return DbAssignedUser.builder()
+      .id(row.getString(ID_COLUMN))
+      .credentialsId(row.getString(CREDENTIALS_ID))
+      .username(row.getString(USER_NAME))
+      .firstName(row.getString(FIRST_NAME))
+      .middleName(row.getString(MIDDLE_NAME))
+      .lastName(row.getString(LAST_NAME))
+      .patronGroup(row.getString(PATRON_GROUP))
+      .build();
   }
 
   private PostgresClient pgClient(String tenantId) {
