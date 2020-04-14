@@ -3,6 +3,7 @@ package org.folio.util;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.LAST_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.MIDDLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GROUP;
@@ -25,7 +26,6 @@ import org.springframework.core.convert.converter.Converter;
 
 import org.folio.db.DbUtils;
 import org.folio.repository.SqlQueryHelper;
-import org.folio.repository.assigneduser.AssignedUsersConstants;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.AssignedUserCollectionItemConverter;
 import org.folio.rest.jaxrs.model.AssignedUser;
@@ -63,7 +63,7 @@ public class AssignedUsersTestUtil {
 
   private static DbAssignedUser parseAssignedUser(JsonObject row) {
     return DbAssignedUser.builder()
-      .id(row.getString(AssignedUsersConstants.ID_COLUMN))
+      .id(row.getString(ID_COLUMN))
       .credentialsId(row.getString(CREDENTIALS_ID))
       .username(row.getString(USER_NAME))
       .patronGroup(row.getString(PATRON_GROUP))
