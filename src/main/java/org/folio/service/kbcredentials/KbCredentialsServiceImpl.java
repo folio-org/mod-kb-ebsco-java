@@ -24,6 +24,7 @@ import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
+import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
@@ -113,6 +114,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return repository.delete(id, tenantId(okapiHeaders));
   }
 
+  @Override
+  public CompletableFuture<KbCredentials> findByUserId(String userId, Map<String, String> okapiHeaders) {
+    return repository.findByUserId(userId, tenantId(okapiHeaders))
+      .thenApply(getCredentialsOrFailWithUserId(userId))
+      .thenApply(credentialsFromDBConverter::convert);
+  }
+
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
     Configuration configuration = configurationConverter.convert(kbCredentials);
     return configurationService.verifyCredentials(configuration, context, tenantId(okapiHeaders))
@@ -137,5 +145,9 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {
     return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(KbCredentials.class, id));
+  }
+
+  private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFailWithUserId(String userId) {
+    return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(AssignedUser.class, userId));
   }
 }

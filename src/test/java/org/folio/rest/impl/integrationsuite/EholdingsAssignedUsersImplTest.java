@@ -15,7 +15,7 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssignedUsersTestUtil.KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT;
 import static org.folio.util.AssignedUsersTestUtil.getAssignedUsers;
-import static org.folio.util.AssignedUsersTestUtil.insertAssignedUsers;
+import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
@@ -52,8 +52,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn200WithCollection() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = getKbCredentials(vertx).get(0).getId();
-    insertAssignedUsers(credentialsId, "john_doe", "John", null, "Doe", "patron", vertx);
-    insertAssignedUsers(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
+    insertAssignedUser(credentialsId, "john_doe", "John", null, "Doe", "patron", vertx);
+    insertAssignedUser(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
     String assignedUsersPath = String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, credentialsId);
 
     final AssignedUserCollection assignedUsers = getWithOk(assignedUsersPath).as(AssignedUserCollection.class);
@@ -74,7 +74,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn400WhenInvalidCredentialsId() {
     String assignedUsersPath = String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, "invalid-id");
     final JsonapiError error = getWithStatus(assignedUsersPath, SC_BAD_REQUEST).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("invalid input syntax for type uuid: \"invalid-id\""));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect"));
   }
 
   @Test
@@ -108,7 +108,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn400OnPostWhenAssignedUserToMissingCredentials() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = getKbCredentials(vertx).get(0).getId();
-    insertAssignedUsers(credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
     String userId = getAssignedUsers(vertx).get(0).getId();
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()

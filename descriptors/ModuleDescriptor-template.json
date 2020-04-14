@@ -33,6 +33,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/users/{userId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.users.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users",
           "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.get"]
         },
@@ -520,6 +525,11 @@
       "description": "Get KB credentials collection item"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.item.users.get",
+      "displayName": "get KB credentials collection item by user id",
+      "description": "Get KB credentials collection item by user id"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.item.put",
       "displayName": "put KB credentials collection item",
       "description": "Put KB credentials collection item"
@@ -538,7 +548,8 @@
         "kb-ebsco.kb-credentials.collection.post",
         "kb-ebsco.kb-credentials.item.get",
         "kb-ebsco.kb-credentials.item.put",
-        "kb-ebsco.kb-credentials.item.delete"
+        "kb-ebsco.kb-credentials.item.delete",
+        "kb-ebsco.kb-credentials.item.users.get"
       ]
     },
     {

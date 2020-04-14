@@ -38,8 +38,8 @@ public class AssignedUsersTestUtil {
   private static final Converter<DbAssignedUser, AssignedUser> CONVERTER =
     new AssignedUserCollectionItemConverter.FromDb();
 
-  public static void insertAssignedUsers(String credentialsId, String username, String firstName, String middleName,
-                                         String lastName, String patronGroup, Vertx vertx) {
+  public static void insertAssignedUser(String credentialsId, String username, String firstName, String middleName,
+                                        String lastName, String patronGroup, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = String.format(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());

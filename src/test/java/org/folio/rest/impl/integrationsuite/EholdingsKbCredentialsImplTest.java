@@ -18,7 +18,8 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.util.AssignedUsersTestUtil.insertAssignedUsers;
+import static org.folio.util.AssignedUsersTestUtil.getAssignedUsers;
+import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
@@ -383,7 +384,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn201OnDelete() {
+  public void shouldReturn204OnDelete() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentials kbCredentialInDb = getKbCredentials(vertx).get(0);
 
@@ -398,7 +399,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn400OnDeleteWhenHasRelatedRecords() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = getKbCredentials(vertx).get(0).getId();
-    insertAssignedUsers(credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
@@ -410,7 +411,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn201OnDeleteWhenCredentialsAreMissing() {
+  public void shouldReturn204OnDeleteWhenCredentialsAreMissing() {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     deleteWithNoContent(resourcePath);
 
@@ -424,6 +425,36 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+  }
+
+  @Test
+  public void shouldReturn200AndKbCredentialsOnGetByUserId() {
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentials expected = getKbCredentials(vertx).get(0);
+    String credentialsId = expected.getId();
+    insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    String userId = getAssignedUsers(vertx).get(0).getId();
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/users/" + userId;
+    KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturn404OnGetByUserIdWhenAssignedUserIsMissing() {
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/users/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("AssignedUser not found"));
+  }
+
+  @Test
+  public void shouldReturn404OnGetByUserIdWhenUserIdIsInvalid() {
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/users/invalid-id";
+    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'userId' parameter is incorrect."));
   }
 
   private void stubForSuccessCredentials() {

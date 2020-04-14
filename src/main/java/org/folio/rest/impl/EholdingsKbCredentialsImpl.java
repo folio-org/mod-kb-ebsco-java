@@ -93,6 +93,18 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
       .exceptionally(handleException(asyncResultHandler));
   }
 
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsKbCredentialsUsersByUserId(String userId, Map<String, String> okapiHeaders,
+                                                     Handler<AsyncResult<Response>> asyncResultHandler,
+                                                     Context vertxContext) {
+    credentialsService.findByUserId(userId, okapiHeaders)
+      .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsKbCredentialsUsersByUserIdResponse.respond200WithApplicationVndApiJson(kbCredentials))))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
   private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
     return throwable -> {
       errorHandler.handle(asyncResultHandler, throwable);

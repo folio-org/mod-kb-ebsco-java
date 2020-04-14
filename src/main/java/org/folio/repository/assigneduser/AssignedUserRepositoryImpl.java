@@ -46,6 +46,7 @@ import org.folio.rest.persist.PostgresClient;
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
+
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";

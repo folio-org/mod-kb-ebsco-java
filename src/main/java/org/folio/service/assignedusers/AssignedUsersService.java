@@ -12,4 +12,5 @@ public interface AssignedUsersService {
   CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders);
 
   CompletableFuture<AssignedUser> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders);
+
 }

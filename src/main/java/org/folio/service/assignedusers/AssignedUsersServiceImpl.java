@@ -29,7 +29,8 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   private Converter<DbAssignedUser, AssignedUser> fromDbConverter;
 
   @Override
-  public CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders) {
+  public CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId,
+                                                                       Map<String, String> okapiHeaders) {
     return repository.findByCredentialsId(credentialsId, tenantId(okapiHeaders)).thenApply(collectionConverter::convert);
   }
 
