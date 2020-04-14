@@ -19,7 +19,6 @@ import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.util.List;
@@ -50,8 +49,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200WithCollection() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = getKbCredentials(vertx).get(0).getId();
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(credentialsId, "john_doe", "John", null, "Doe", "patron", vertx);
     insertAssignedUser(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
     String assignedUsersPath = String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, credentialsId);
@@ -79,8 +77,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn201OnPostWhenAssignedUserIsValid() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = getKbCredentials(vertx).get(0).getId();
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     AssignedUser expected = new AssignedUser()
       .withId(UUID.randomUUID().toString())
@@ -106,10 +103,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnPostWhenAssignedUserToMissingCredentials() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = getKbCredentials(vertx).get(0).getId();
-    insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
-    String userId = getAssignedUsers(vertx).get(0).getId();
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String userId = insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()
       .withData(new AssignedUser()
