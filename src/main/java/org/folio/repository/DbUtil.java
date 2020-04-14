@@ -2,6 +2,7 @@ package org.folio.repository;
 
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
@@ -87,6 +88,10 @@ public class DbUtil {
 
   public static String getKbCredentialsTableName(String tenantId) {
     return getTableName(tenantId, KB_CREDENTIALS_TABLE_NAME);
+  }
+
+  public static String getAssignedUsersTableName(String tenantId) {
+    return getTableName(tenantId, ASSIGNED_USERS_TABLE_NAME);
   }
 
   public static <T> Optional<T> mapColumn(JsonObject row, String columnName, Class<T> tClass){

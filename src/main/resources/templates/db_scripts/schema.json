@@ -95,7 +95,7 @@
       "fromModuleVersion": "mod-kb-ebsco-java-3.3.2",
       "withMetadata": false,
       "withAuditing": false,
-      "customSnippetPath": "create-assigned_users-table.sql"
+      "customSnippetPath": "create-assigned-users-table.sql"
     }
   ],
   "scripts": [

@@ -1,5 +1,7 @@
 package org.folio.util;
 
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.UPSERT_ASSIGNED_USERS_QUERY;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.Arrays;
@@ -11,30 +13,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.ext.sql.ResultSet;
 
 import org.folio.db.DbUtils;
-import org.folio.repository.SqlQueryHelper;
 import org.folio.rest.persist.PostgresClient;
 
 public class AssignedUsersTestUtil {
 
-  public static final String ASSIGNED_USERS_TABLE_NAME = "assigned_users";
-
-  private static final String[] TABLE_COLUMNS = {
-    "id",
-    "credentials_id",
-    "username",
-    "patron_group",
-    "first_name",
-    "middle_name",
-    "last_name"
-  };
-
-  public static void insertAssignedUsers(String credentialsId, String username, String patronGroup,
-                                         String firstName, String middleName, String lastName, Vertx vertx) {
+  public static void insertAssignedUsers(String credentialsId, String username, String firstName, String middleName,
+                                         String lastName, String patronGroup, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String insertStatement = String.format(SqlQueryHelper.insertQuery(TABLE_COLUMNS), kbAssignedUsersTestTable());
-    JsonArray params = DbUtils.createParams(Arrays.asList(UUID.randomUUID().toString(), credentialsId, username, patronGroup,
-      firstName, middleName, lastName
+    String insertStatement = String.format(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());
+    JsonArray params = DbUtils.createParams(Arrays.asList(UUID.randomUUID().toString(), credentialsId, username,
+      firstName, middleName, lastName, patronGroup
     ));
 
     PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));
