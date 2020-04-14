@@ -1,0 +1,11 @@
+{
+  "errors": [
+    {
+      "title": "Invalid username",
+      "detail": "username must be not null"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

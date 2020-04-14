@@ -10,7 +10,9 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 types:
+  assignedUser: !include types/assignedUsers/assignedUser.json
   assignedUserCollection: !include types/assignedUsers/assignedUserCollection.json
+  assignedUserPostRequest: !include types/assignedUsers/assignedUserPostRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/kb-credentials/{id}/users:
@@ -34,3 +36,49 @@ types:
             example:
               strict: false
               value: !include examples/assignedUsers/assigned_users_get_400_response.json
+  post:
+    description: Assign user to a specific KB credentials.
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        description: Create KB credentials
+        type: assignedUserPostRequest
+        example:
+          strict: false
+          value: !include examples/assignedUsers/assigned_users_post_request.json
+    responses:
+      201:
+        description: Created
+        body:
+          application/vnd.api+json:
+            description: The server has successfully fulfilled the POST request.
+            type: assignedUser
+            example:
+              strict: false
+              value: !include examples/assignedUsers/assigned_users_post_201_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/assignedUsers/assigned_users_post_400_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/assignedUsers/assigned_users_post_404_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/assignedUsers/assigned_users_post_422_response.json
