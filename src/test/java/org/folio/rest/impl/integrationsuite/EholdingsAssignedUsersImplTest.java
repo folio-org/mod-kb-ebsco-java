@@ -108,7 +108,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn400OnPostWhenAssignedUserToMissingCredentials() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = getKbCredentials(vertx).get(0).getId();
-    insertAssignedUsers(credentialsId, "username", "patron", "John", null, "Doe", vertx);
+    insertAssignedUsers(credentialsId, "username", "John", null, "Doe", "patron", vertx);
     String userId = getAssignedUsers(vertx).get(0).getId();
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()
