@@ -57,16 +57,19 @@ public class KbCredentialsTestUtil {
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
     new KbCredentialsConverter.KbCredentialsFromDbConverter(STUB_API_KEY);
 
-  public static void insertKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
+  public static String insertKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
+    String id = UUID.randomUUID().toString();
     String insertStatement = String.format(UPSERT_CREDENTIALS_QUERY, kbCredentialsTestTable());
-    JsonArray params = DbUtils.createParams(Arrays.asList(UUID.randomUUID().toString(), url, name, apiKey, customerId,
+    JsonArray params = DbUtils.createParams(Arrays.asList(id, url, name, apiKey, customerId,
       Instant.now().toString(), STUB_USER_ID, STUB_USERNAME, null, null, null
     ));
 
     PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));
     future.join();
+
+    return id;
   }
 
   public static List<KbCredentials> getKbCredentials(Vertx vertx) {

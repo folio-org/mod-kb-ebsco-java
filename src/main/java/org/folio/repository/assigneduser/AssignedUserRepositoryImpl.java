@@ -14,6 +14,7 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.LAST_NAME
 import static org.folio.repository.assigneduser.AssignedUsersConstants.MIDDLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GROUP;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.UPDATE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
 
 import java.util.Arrays;
@@ -40,7 +41,9 @@ import org.springframework.stereotype.Component;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
@@ -48,6 +51,8 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
+  private static final String UPDATE_LOG_MESSAGE = "Do update query = {}";
+
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
   private static final String KB_CREDENTIALS_NOT_FOUND_MESSAGE = "KB credentials with id '%s' not found";
 
@@ -89,6 +94,32 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
       .recover(excTranslator.translateOrPassBy())
       .recover(constraintViolation(entity.getCredentialsId()));
     return mapResult(resultFuture, updateResult -> entity);
+  }
+
+  @Override
+  public CompletableFuture<Void> update(DbAssignedUser dbAssignedUser, String tenant) {
+    String query = format(UPDATE_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
+
+    JsonArray params = createParams(Arrays.asList(
+      dbAssignedUser.getUsername(),
+      dbAssignedUser.getFirstName(),
+      dbAssignedUser.getMiddleName(),
+      dbAssignedUser.getLastName(),
+      dbAssignedUser.getPatronGroup(),
+      dbAssignedUser.getId(),
+      dbAssignedUser.getCredentialsId()
+    ));
+
+    LOG.info(UPDATE_LOG_MESSAGE, query);
+    Promise<UpdateResult> promise = Promise.promise();
+    pgClient(tenant).execute(query, params, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), updateResult -> {
+      if (updateResult.getUpdated() == 0) {
+        throw ServiceExceptions.notFound(AssignedUser.class, dbAssignedUser.getId());
+      }
+      return null;
+    });
   }
 
   private Collection<DbAssignedUser> mapAssignedUserCollection(ResultSet resultSet) {

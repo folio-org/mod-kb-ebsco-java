@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Credentials ID and user ID can't be updated"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
