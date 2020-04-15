@@ -193,6 +193,52 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn204OnPutWhenAssignedUserIsValid() {
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String userId = insertAssignedUser(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
+
+    AssignedUser expected = new AssignedUser()
+      .withId(userId)
+      .withType(AssignedUser.Type.ASSIGNED_USERS)
+      .withAttributes(new AssignedUserDataAttributes()
+        .withCredentialsId(credentialsId)
+        .withFirstName("John")
+        .withLastName("Doe")
+        .withUserName("johndoe")
+        .withPatronGroup("staff"));
+
+    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
+    putWithNoContent(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody);
+
+
+    List<AssignedUser> assignedUsersInDb = getAssignedUsers(vertx);
+    assertThat(assignedUsersInDb, hasSize(1));
+    assertEquals(expected, assignedUsersInDb.get(0));
+  }
+
+  @Test
+  public void shouldReturn404OnPutWhenAssignedUserNotFound() {
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String userId = UUID.randomUUID().toString();
+
+    AssignedUser expected = new AssignedUser()
+      .withId(userId)
+      .withType(AssignedUser.Type.ASSIGNED_USERS)
+      .withAttributes(new AssignedUserDataAttributes()
+        .withCredentialsId(credentialsId)
+        .withFirstName("John")
+        .withLastName("Doe")
+        .withUserName("johndoe")
+        .withPatronGroup("staff"));
+
+    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
+    JsonapiError error = putWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("not found"));
+    assertThat(getAssignedUsers(vertx), hasSize(0));
+  }
+
+  @Test
   public void shouldReturn404OnPutWhenAssignedUserAndCredentialsNotFound() {
     String credentialsId = UUID.randomUUID().toString();
     String userId = UUID.randomUUID().toString();

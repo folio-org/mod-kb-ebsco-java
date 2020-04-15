@@ -1,8 +1,5 @@
 package org.folio.repository.assigneduser;
 
-import static java.lang.String.join;
-import static java.util.Collections.nCopies;
-
 import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
@@ -27,7 +24,6 @@ public class AssignedUsersConstants {
   public static final String INSERT_ASSIGNED_USER_QUERY;
   public static final String UPDATE_ASSIGNED_USER_QUERY;
   public static final String DELETE_ASSIGNED_USER_QUERY;
-  public static final String ASSIGNED_USER_COLUMN_LIST;
 
   static {
     String[] allColumns = new String[] {
@@ -36,7 +32,6 @@ public class AssignedUsersConstants {
     String[] updateColumns = new String[] {
       USER_NAME, FIRST_NAME, MIDDLE_NAME, LAST_NAME, PATRON_GROUP
     };
-    ASSIGNED_USER_COLUMN_LIST = String.format(join(",", nCopies(7, "%s")), (Object[]) allColumns);
 
     SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY = selectQuery() + " " + whereQuery(CREDENTIALS_ID) + ";";
     UPSERT_ASSIGNED_USERS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";

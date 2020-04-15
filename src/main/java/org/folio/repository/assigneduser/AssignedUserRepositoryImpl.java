@@ -43,7 +43,6 @@ import org.springframework.stereotype.Component;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
-import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.service.exc.ServiceExceptions;
 
@@ -117,12 +116,9 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), updateResult -> {
-      if (updateResult.getUpdated() == 0) {
-        throw ServiceExceptions.notFound(AssignedUser.class, dbAssignedUser.getId());
-      }
-      return null;
-    });
+    Future<UpdateResult> resultFuture = promise.future()
+      .recover(excTranslator.translateOrPassBy());
+    return mapResult(resultFuture, updateResult -> checkUserFound(dbAssignedUser.getId(), updateResult));
   }
 
   @Override
@@ -135,11 +131,11 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     Future<UpdateResult> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy());
-    return mapResult(resultFuture, updateResult -> checkUserDeleted(userId, updateResult));
+    return mapResult(resultFuture, updateResult -> checkUserFound(userId, updateResult));
   }
 
   @Nullable
-  private Void checkUserDeleted(String userId, UpdateResult updateResult) {
+  private Void checkUserFound(String userId, UpdateResult updateResult) {
     if (updateResult.getUpdated() == 0) {
       throw ServiceExceptions.notFound("Assigned User", userId);
     }
