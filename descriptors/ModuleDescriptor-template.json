@@ -33,8 +33,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/kb-credentials/users/{userId}",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.item.users.get"]
+          "pathPattern": "/eholdings/user-kb-credential",
+          "permissionsRequired": ["kb-ebsco.user-kb-credential.get"]
         },
         {
           "methods": ["GET"],
@@ -45,6 +45,11 @@
           "methods": ["POST"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users",
           "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.post"]
+        },
+        {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users/{userId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.users.item.put"]
         },
         {
           "methods": ["GET"],
@@ -525,9 +530,9 @@
       "description": "Get KB credentials collection item"
     },
     {
-      "permissionName": "kb-ebsco.kb-credentials.item.users.get",
-      "displayName": "get KB credentials collection item by user id",
-      "description": "Get KB credentials collection item by user id"
+      "permissionName": "kb-ebsco.user-kb-credential.get",
+      "displayName": "get KB credentials collection item by user",
+      "description": "Get KB credentials collection item by user"
     },
     {
       "permissionName": "kb-ebsco.kb-credentials.item.put",
@@ -549,7 +554,7 @@
         "kb-ebsco.kb-credentials.item.get",
         "kb-ebsco.kb-credentials.item.put",
         "kb-ebsco.kb-credentials.item.delete",
-        "kb-ebsco.kb-credentials.item.users.get"
+        "kb-ebsco.user-kb-credential.get"
       ]
     },
     {
@@ -563,12 +568,18 @@
       "description": "Post assigned users to KB credentials"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.users.item.put",
+      "displayName": "put assigned users collection item",
+      "description": "Put assigned users collection item"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.users.all",
       "displayName": "EBSCO KB Broker users assigned to credentials - all permissions",
       "description": "All permissions for manging users assigned to EBSCO KB Credentials",
       "subPermissions": [
         "kb-ebsco.kb-credentials.users.collection.get",
-        "kb-ebsco.kb-credentials.users.collection.post"
+        "kb-ebsco.kb-credentials.users.collection.post",
+        "kb-ebsco.kb-credentials.users.item.put"
       ]
     },
     {
