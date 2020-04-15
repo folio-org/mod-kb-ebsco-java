@@ -40,6 +40,7 @@ import org.folio.rest.persist.PostgresClient;
 public class KbCredentialsTestUtil {
 
   public static final String KB_CREDENTIALS_ENDPOINT = "/eholdings/kb-credentials";
+  public static final String USER_KB_CREDENTIAL_ENDPOINT = "/eholdings/user-kb-credential";
 
   public static final String STUB_API_KEY = "TEST_API_KEY";
   public static final String STUB_USERNAME = "TEST_USER_NAME";

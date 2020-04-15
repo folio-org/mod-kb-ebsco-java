@@ -26,6 +26,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USERNAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
+import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
@@ -423,31 +424,19 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn200AndKbCredentialsOnGetByUserId() {
+  public void shouldReturn200AndKbCredentialsOnGetByUser() {
     String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    KbCredentials expected = getKbCredentials(vertx).get(0);
-    String userId = insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/users/" + userId;
-    KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
-
-    assertEquals(expected, actual);
+    KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
+    assertEquals(getKbCredentials(vertx).get(0), actual);
   }
 
   @Test
-  public void shouldReturn404OnGetByUserIdWhenAssignedUserIsMissing() {
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/users/11111111-1111-1111-a111-111111111111";
-    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
+  public void shouldReturn404OnGetByUserWhenAssignedUserIsMissing() {
+    JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("AssignedUser not found"));
-  }
-
-  @Test
-  public void shouldReturn404OnGetByUserIdWhenUserIdIsInvalid() {
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/users/invalid-id";
-    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
-
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'userId' parameter is incorrect."));
   }
 
   private void stubForSuccessCredentials() {

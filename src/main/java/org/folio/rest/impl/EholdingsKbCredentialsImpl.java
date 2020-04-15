@@ -18,11 +18,12 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentials;
+import org.folio.rest.jaxrs.resource.EholdingsUserKbCredential;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.spring.SpringContextUtil;
 
-public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
+public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, EholdingsUserKbCredential {
 
   @Autowired
   private KbCredentialsService credentialsService;
@@ -96,12 +97,12 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsKbCredentialsUsersByUserId(String userId, Map<String, String> okapiHeaders,
-                                                     Handler<AsyncResult<Response>> asyncResultHandler,
-                                                     Context vertxContext) {
-    credentialsService.findByUserId(userId, okapiHeaders)
+  public void getEholdingsUserKbCredential(Map<String, String> okapiHeaders,
+                                           Handler<AsyncResult<Response>> asyncResultHandler,
+                                           Context vertxContext) {
+    credentialsService.findByUser(okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
-        GetEholdingsKbCredentialsUsersByUserIdResponse.respond200WithApplicationVndApiJson(kbCredentials))))
+        GetEholdingsUserKbCredentialResponse.respond200WithApplicationVndApiJson(kbCredentials))))
       .exceptionally(handleException(asyncResultHandler));
   }
 

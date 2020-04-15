@@ -64,6 +64,14 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private Context context;
 
   @Override
+  public CompletableFuture<KbCredentials> findByUser(Map<String, String> okapiHeaders) {
+    String userId = fetchUserInfo(okapiHeaders).getUserId();
+    return repository.findByUserId(userId, tenantId(okapiHeaders))
+      .thenApply(getCredentialsOrFailWithUserId(userId))
+      .thenApply(credentialsFromDBConverter::convert);
+  }
+
+  @Override
   public CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders)).thenApply(credentialsCollectionConverter::convert);
   }
@@ -112,13 +120,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Override
   public CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders) {
     return repository.delete(id, tenantId(okapiHeaders));
-  }
-
-  @Override
-  public CompletableFuture<KbCredentials> findByUserId(String userId, Map<String, String> okapiHeaders) {
-    return repository.findByUserId(userId, tenantId(okapiHeaders))
-      .thenApply(getCredentialsOrFailWithUserId(userId))
-      .thenApply(credentialsFromDBConverter::convert);
   }
 
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
