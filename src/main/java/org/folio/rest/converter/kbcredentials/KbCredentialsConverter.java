@@ -3,7 +3,6 @@ package org.folio.rest.converter.kbcredentials;
 import java.time.Instant;
 import java.util.Date;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
@@ -35,7 +34,7 @@ public class KbCredentialsConverter {
         .withId(source.getId())
         .withType(KbCredentials.Type.KB_CREDENTIALS)
         .withAttributes(new KbCredentialsDataAttributes()
-          .withApiKey(hideApiKey(source))
+          .withApiKey(source.getApiKey())
           .withCustomerId(source.getCustomerId())
           .withName(source.getName())
           .withUrl(getUrl(source))
@@ -52,10 +51,6 @@ public class KbCredentialsConverter {
 
     private String getUrl(@NotNull DbKbCredentials source) {
       return source.getUrl() != null ? source.getUrl() : defaultUrl;
-    }
-
-    private String hideApiKey(@NotNull DbKbCredentials source) {
-      return source.getApiKey() != null ? StringUtils.repeat("*", 40) : null;
     }
 
     private Date toDate(Instant date) {

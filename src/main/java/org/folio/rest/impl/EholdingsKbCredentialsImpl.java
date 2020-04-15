@@ -64,7 +64,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   public void getEholdingsKbCredentialsById(String id, Map<String, String> okapiHeaders,
                                             Handler<AsyncResult<Response>> asyncResultHandler,
                                             Context vertxContext) {
-    credentialsService.findById(id, okapiHeaders)
+    credentialsService.findById(id, true, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsByIdResponse.respond200WithApplicationVndApiJson(kbCredentials))))
       .exceptionally(handleException(asyncResultHandler));
@@ -91,18 +91,6 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
     credentialsService.delete(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         DeleteEholdingsKbCredentialsByIdResponse.respond204())))
-      .exceptionally(handleException(asyncResultHandler));
-  }
-
-  @Override
-  @Validate
-  @HandleValidationErrors
-  public void getEholdingsKbCredentialsCustomLabelsById(String id, Map<String, String> okapiHeaders,
-                                                        Handler<AsyncResult<Response>> asyncResultHandler,
-                                                        Context vertxContext) {
-    credentialsService.fetchCustomLabels(id, okapiHeaders)
-      .thenAccept(customLabelsCollection -> asyncResultHandler.handle(succeededFuture(
-        GetEholdingsKbCredentialsCustomLabelsByIdResponse.respond200WithApplicationVndApiJson(customLabelsCollection))))
       .exceptionally(handleException(asyncResultHandler));
   }
 

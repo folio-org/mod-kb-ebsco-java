@@ -14,6 +14,7 @@ import java.util.function.Function;
 import javax.ws.rs.NotAuthorizedException;
 
 import io.vertx.core.Context;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,6 @@ import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
-import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
@@ -61,18 +61,23 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Autowired
   private ConfigurationService configurationService;
   @Autowired
-  private CustomLabelsService customLabelsService;
-  @Autowired
   private Context context;
 
   @Override
   public CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders) {
-    return repository.findAll(tenantId(okapiHeaders)).thenApply(credentialsCollectionConverter::convert);
+    return repository.findAll(tenantId(okapiHeaders))
+      .thenApply(credentialsCollectionConverter::convert)
+      .thenApply(kbCredentialsCollection -> {
+        kbCredentialsCollection.getData().forEach(this::hideApiKey);
+        return kbCredentialsCollection;
+      });
   }
 
   @Override
-  public CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders) {
-    return fetchDbKbCredentials(id, okapiHeaders).thenApply(credentialsFromDBConverter::convert);
+  public CompletableFuture<KbCredentials> findById(String id, boolean isSecured, Map<String, String> okapiHeaders) {
+    return fetchDbKbCredentials(id, okapiHeaders)
+      .thenApply(credentialsFromDBConverter::convert)
+      .thenApply(this::hideApiKey);
   }
 
   @Override
@@ -88,7 +93,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .createdByUserName(userInfo.getUsername())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
-      .thenApply(credentialsFromDBConverter::convert);
+      .thenApply(credentialsFromDBConverter::convert)
+      .thenApply(this::hideApiKey);
   }
 
   @Override
@@ -116,21 +122,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return repository.delete(id, tenantId(okapiHeaders));
   }
 
-  @Override
-  public CompletableFuture<CustomLabelsCollection> fetchCustomLabels(String id, Map<String, String> okapiHeaders) {
-    return fetchDbKbCredentials(id, okapiHeaders)
-      .thenApply(dbKbCredentials -> {
-        KbCredentials kbCredentials = requireNonNull(credentialsFromDBConverter.convert(dbKbCredentials));
-        kbCredentials.getAttributes().withApiKey(dbKbCredentials.getApiKey());
-        return configurationConverter.convert(kbCredentials);
-      })
-      .thenCompose(configuration -> customLabelsService.fetchCustomLabels(configuration, okapiHeaders))
-      .thenApply(customLabelsCollection -> {
-        customLabelsCollection.getData().forEach(customLabel -> customLabel.setCredentialsId(id));
-        return customLabelsCollection;
-      });
-  }
-
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
     Configuration configuration = configurationConverter.convert(kbCredentials);
     return configurationService.verifyCredentials(configuration, context, tenantId(okapiHeaders))
@@ -155,5 +146,10 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {
     return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(KbCredentials.class, id));
+  }
+
+  private KbCredentials hideApiKey(KbCredentials source) {
+    source.getAttributes().withApiKey(StringUtils.repeat("*", 40));
+    return source;
   }
 }
