@@ -44,7 +44,7 @@ types:
         example: application/vnd.api+json
     body:
       application/vnd.api+json:
-        description: Create KB credentials
+        description: Assign user to KB credentials
         type: assignedUserPostRequest
         example:
           strict: false
@@ -91,7 +91,7 @@ types:
     put:
       body:
         application/vnd.api+json:
-          description: Create KB credentials
+          description: Update User Assignment to KB Credentials
           type: assignedUserPutRequest
           example:
             strict: false
@@ -123,3 +123,24 @@ types:
               example:
                 strict: false
                 value: !include examples/assignedUsers/assigned_users_put_422_response.json
+    delete:
+      description: Remove association between user and KB Credentials
+      responses:
+        204:
+          description: No Content
+        404:
+          description: Not Found
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/assignedUsers/assigned_users_delete_404_response.json
+        400:
+          description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/assignedUsers/assigned_users_delete_400_response.json

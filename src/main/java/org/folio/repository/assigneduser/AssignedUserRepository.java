@@ -10,4 +10,6 @@ public interface AssignedUserRepository {
   CompletableFuture<DbAssignedUser> save(DbAssignedUser entity, String tenant);
 
   CompletableFuture<Void> update(DbAssignedUser dbAssignedUser, String tenant);
+
+  CompletableFuture<Void> delete(String credentialsId, String userId, String tenant);
 }

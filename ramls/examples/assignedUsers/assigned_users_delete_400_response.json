@@ -1,0 +1,11 @@
+{
+  "errors": [
+    {
+      "title": "invalid input syntax for type uuid: \"invalid-id\"",
+      "detail": "22P02"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
