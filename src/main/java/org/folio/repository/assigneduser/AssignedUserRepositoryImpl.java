@@ -36,8 +36,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-import org.folio.rest.jaxrs.model.AssignedUser;
-import org.folio.service.exc.ServiceExceptions;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,7 +43,9 @@ import org.springframework.stereotype.Component;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
@@ -58,7 +58,6 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
   private static final String KB_CREDENTIALS_NOT_FOUND_MESSAGE = "KB credentials with id '%s' not found";
-  private static final String USER_NOT_FOUND_MESSAGE = "Assigned User with id '%s' does not exist";
 
   @Autowired
   private Vertx vertx;
