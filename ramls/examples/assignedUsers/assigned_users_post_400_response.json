@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "The user is already assigned to another credentials"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
