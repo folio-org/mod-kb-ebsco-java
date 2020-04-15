@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.util.AssignedUsersTestUtil.insertAssignedUsers;
+import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
@@ -194,13 +194,12 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnKbCredentialsOnGet() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    KbCredentials expected = getKbCredentials(vertx).get(0);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + expected.getId();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
 
-    assertEquals(expected, actual);
+    assertEquals(getKbCredentials(vertx).get(0), actual);
   }
 
   @Test
@@ -221,8 +220,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn204OnPutIfCredentialsAreValid() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    KbCredentials kbCredentialsInDb = getKbCredentials(vertx).get(0);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
       .withData(new KbCredentials()
@@ -235,7 +233,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     stubForSuccessCredentials();
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     putWithNoContent(resourcePath, putBody, STUB_TOKEN_HEADER);
 
     KbCredentials actual = getKbCredentials(vertx).get(0);
@@ -256,8 +254,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutWhenCredentialsAreInvalid() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    KbCredentials kbCredentialsInDb = getKbCredentials(vertx).get(0);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
       .withData(new KbCredentials()
@@ -270,7 +267,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     stubForFailedCredentials();
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -320,8 +317,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPutWhenCredentialsWithProvidedNameAlreadyExist() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2", STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    KbCredentials kbCredentialsInDb = getKbCredentials(vertx).get(1);
+    String credentialsId =
+      insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2", STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
       .withData(new KbCredentials()
@@ -334,7 +331,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     stubForSuccessCredentials();
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialsInDb.getId();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -384,10 +381,9 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn201OnDelete() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    KbCredentials kbCredentialInDb = getKbCredentials(vertx).get(0);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + kbCredentialInDb.getId();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     deleteWithNoContent(resourcePath);
 
     List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
@@ -396,9 +392,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnDeleteWhenHasRelatedRecords() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = getKbCredentials(vertx).get(0).getId();
-    insertAssignedUsers(credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);

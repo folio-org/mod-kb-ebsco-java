@@ -38,17 +38,20 @@ public class AssignedUsersTestUtil {
   private static final Converter<DbAssignedUser, AssignedUser> CONVERTER =
     new AssignedUserCollectionItemConverter.FromDb();
 
-  public static void insertAssignedUsers(String credentialsId, String username, String firstName, String middleName,
-                                         String lastName, String patronGroup, Vertx vertx) {
+  public static String insertAssignedUser(String credentialsId, String username, String firstName, String middleName,
+                                          String lastName, String patronGroup, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
+    String id = UUID.randomUUID().toString();
     String insertStatement = String.format(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());
-    JsonArray params = DbUtils.createParams(Arrays.asList(UUID.randomUUID().toString(), credentialsId, username,
+    JsonArray params = DbUtils.createParams(Arrays.asList(id, credentialsId, username,
       firstName, middleName, lastName, patronGroup
     ));
 
     PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));
     future.join();
+
+    return id;
   }
 
   public static List<AssignedUser> getAssignedUsers(Vertx vertx) {
@@ -59,6 +62,14 @@ public class AssignedUsersTestUtil {
         .map(CONVERTER::convert)
         .collect(Collectors.toList())));
     return future.join();
+  }
+
+  public static String resourcePath(String... params) {
+    if (params.length == 1) {
+      return String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, params[0]);
+    } else {
+      return String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, params[0]) + "/" + params[1];
+    }
   }
 
   private static DbAssignedUser parseAssignedUser(JsonObject row) {
