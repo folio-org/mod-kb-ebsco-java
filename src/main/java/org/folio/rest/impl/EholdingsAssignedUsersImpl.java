@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
+import org.folio.rest.jaxrs.model.AssignedUserPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdUsers;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.assignedusers.AssignedUsersService;
@@ -52,6 +53,19 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
     assignedUsersService.save(entity, okapiHeaders)
       .thenAccept(assignedUser -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsKbCredentialsUsersByIdResponse.respond201WithApplicationVndApiJson(assignedUser))))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void putEholdingsKbCredentialsUsersByIdAndUserId(String id, String userId, AssignedUserPutRequest entity,
+                                                          Map<String, String> okapiHeaders,
+                                                          Handler<AsyncResult<Response>> asyncResultHandler,
+                                                          Context vertxContext) {
+    assignedUsersService.update(id, userId, entity, okapiHeaders)
+      .thenAccept(o -> asyncResultHandler.handle(succeededFuture(
+        PutEholdingsKbCredentialsUsersByIdAndUserIdResponse.respond204())))
       .exceptionally(handleException(asyncResultHandler));
   }
 

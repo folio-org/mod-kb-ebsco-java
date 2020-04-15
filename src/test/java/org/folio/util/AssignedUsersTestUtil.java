@@ -69,6 +69,14 @@ public class AssignedUsersTestUtil {
     return future.join();
   }
 
+  public static String resourcePath(String... params) {
+    if (params.length == 1) {
+      return String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, params[0]);
+    } else {
+      return String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, params[0]) + "/" + params[1];
+    }
+  }
+
   private static DbAssignedUser parseAssignedUser(JsonObject row) {
     return DbAssignedUser.builder()
       .id(row.getString(ID_COLUMN))

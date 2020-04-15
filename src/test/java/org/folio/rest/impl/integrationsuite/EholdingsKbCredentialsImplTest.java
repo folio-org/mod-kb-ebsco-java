@@ -195,13 +195,12 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnKbCredentialsOnGet() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    KbCredentials expected = getKbCredentials(vertx).get(0);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + expected.getId();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
 
-    assertEquals(expected, actual);
+    assertEquals(getKbCredentials(vertx).get(0), actual);
   }
 
   @Test

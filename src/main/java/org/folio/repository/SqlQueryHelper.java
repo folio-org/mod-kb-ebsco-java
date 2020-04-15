@@ -35,6 +35,10 @@ public final class SqlQueryHelper {
     return "WHERE " + whereQuery;
   }
 
+  public static String updateQuery(String... columns) {
+    return "UPDATE %s SET " + assignParameters(columns);
+  }
+
   public static String updateOnConflictedIdQuery(String idColumnName, String... columns) {
     String updateColumns = Arrays.stream(columns)
       .filter(columnName -> !columnName.equals(idColumnName))
@@ -45,6 +49,12 @@ public final class SqlQueryHelper {
 
   public static String limitQuery(int limit) {
     return "LIMIT " + limit;
+  }
+
+  private static String assignParameters(String[] columns) {
+    return Arrays.stream(columns)
+      .map(SqlQueryHelper::assignParameter)
+      .collect(Collectors.joining(", "));
   }
 
   private static String assignParameter(String column) {
