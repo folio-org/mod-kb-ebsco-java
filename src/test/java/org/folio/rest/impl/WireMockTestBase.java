@@ -1,6 +1,7 @@
 package org.folio.rest.impl;
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -87,6 +88,10 @@ public abstract class WireMockTestBase extends TestBase {
 
   protected ExtractableResponse<Response> postWithOk(String endpoint, String postBody){
     return postWithStatus(endpoint, postBody, SC_OK, CONTENT_TYPE_HEADER);
+  }
+
+  protected ExtractableResponse<Response> postWithCreated(String endpoint, String postBody){
+    return postWithStatus(endpoint, postBody, SC_CREATED, CONTENT_TYPE_HEADER);
   }
 
   @Override

@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Assigned Users Collection Schema",
+  "description": "Assigned Users Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.AssignedUserCollection",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "Collection of assigned users to KB Credentials",
+      "items": {
+        "type": "object",
+        "$ref": "assignedUser.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Metadata containing total size of collection",
+      "$ref": "../metaTotalResults.json",
+      "readonly": true
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "Version of JSON API",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "meta",
+    "jsonapi"
+  ]
+}
