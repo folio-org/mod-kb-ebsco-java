@@ -43,6 +43,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/custom-labels",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.custom-labels.collection.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
         },
@@ -475,6 +480,11 @@
       "description": "Get Custom Labels collection"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.custom-labels.collection.get",
+      "displayName": "get Custom Labels collection related to kb credentials",
+      "description": "Get Custom Labels collection related to KB Credentials"
+    },
+    {
       "permissionName": "kb-ebsco.custom-labels.collection.put",
       "displayName": "put Custom Labels collection",
       "description": "Put Custom Labels collection"
@@ -538,7 +548,8 @@
         "kb-ebsco.kb-credentials.collection.post",
         "kb-ebsco.kb-credentials.item.get",
         "kb-ebsco.kb-credentials.item.put",
-        "kb-ebsco.kb-credentials.item.delete"
+        "kb-ebsco.kb-credentials.item.delete",
+        "kb-ebsco.kb-credentials.custom-labels.collection.get"
       ]
     },
     {
