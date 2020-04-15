@@ -62,4 +62,9 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
     }
     return future;
   }
+
+  @Override
+  public CompletableFuture<Void> delete(String credentialsId, String userId, Map<String, String> okapiHeaders) {
+    return repository.delete(credentialsId, userId, tenantId(okapiHeaders));
+  }
 }

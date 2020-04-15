@@ -7,6 +7,7 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.DELETE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.INSERT_ASSIGNED_USER_QUERY;
@@ -35,15 +36,16 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+import org.folio.rest.jaxrs.model.AssignedUser;
+import org.folio.service.exc.ServiceExceptions;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
-import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
@@ -52,9 +54,11 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {}";
+  private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
 
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
   private static final String KB_CREDENTIALS_NOT_FOUND_MESSAGE = "KB credentials with id '%s' not found";
+  private static final String USER_NOT_FOUND_MESSAGE = "Assigned User with id '%s' does not exist";
 
   @Autowired
   private Vertx vertx;
@@ -120,6 +124,27 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
       }
       return null;
     });
+  }
+
+  @Override
+  public CompletableFuture<Void> delete(String credentialsId, String userId, String tenant) {
+    String query = format(DELETE_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
+
+    LOG.info(DELETE_LOG_MESSAGE, query);
+    Promise<UpdateResult> promise = Promise.promise();
+    pgClient(tenant).execute(query, createParams(Arrays.asList(credentialsId, userId)), promise);
+
+    Future<UpdateResult> resultFuture = promise.future()
+      .recover(excTranslator.translateOrPassBy());
+    return mapResult(resultFuture, updateResult -> checkUserDeleted(userId, updateResult));
+  }
+
+  @Nullable
+  private Void checkUserDeleted(String userId, UpdateResult updateResult) {
+    if (updateResult.getUpdated() == 0) {
+      throw ServiceExceptions.notFound("Assigned User", userId);
+    }
+    return null;
   }
 
   private Collection<DbAssignedUser> mapAssignedUserCollection(ResultSet resultSet) {
