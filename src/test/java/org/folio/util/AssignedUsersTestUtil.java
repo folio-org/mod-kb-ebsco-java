@@ -10,7 +10,6 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GR
 import static org.folio.repository.assigneduser.AssignedUsersConstants.UPSERT_ASSIGNED_USERS_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,8 +31,6 @@ import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.persist.PostgresClient;
 
 public class AssignedUsersTestUtil {
-
-  public static final String KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/users";
 
   private static final Converter<DbAssignedUser, AssignedUser> CONVERTER =
     new AssignedUserCollectionItemConverter.FromDb();
@@ -67,14 +64,6 @@ public class AssignedUsersTestUtil {
         .map(CONVERTER::convert)
         .collect(Collectors.toList())));
     return future.join();
-  }
-
-  public static String resourcePath(String... params) {
-    if (params.length == 1) {
-      return String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, params[0]);
-    } else {
-      return String.format(KB_CREDENTIALS_ASSIGNED_USER_ENDPOINT, params[0]) + "/" + params[1];
-    }
   }
 
   private static DbAssignedUser parseAssignedUser(JsonObject row) {

@@ -1,5 +1,6 @@
 package org.folio.repository.assigneduser;
 
+import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
@@ -21,8 +22,9 @@ public class AssignedUsersConstants {
   public static final String SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
   public static final String SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_AND_USERS_ID_QUERY;
   public static final String UPSERT_ASSIGNED_USERS_QUERY;
-  public static final String UPDATE_ASSIGNED_USER_QUERY;
   public static final String INSERT_ASSIGNED_USER_QUERY;
+  public static final String UPDATE_ASSIGNED_USER_QUERY;
+  public static final String DELETE_ASSIGNED_USER_QUERY;
 
   static {
     String[] allColumns = new String[] {
@@ -38,6 +40,7 @@ public class AssignedUsersConstants {
     UPSERT_ASSIGNED_USERS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
     INSERT_ASSIGNED_USER_QUERY = insertQuery(allColumns) + ";";
     UPDATE_ASSIGNED_USER_QUERY = updateQuery(updateColumns) + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID) + ";";
+    DELETE_ASSIGNED_USER_QUERY = deleteQuery() + " " + whereQuery(CREDENTIALS_ID, ID_COLUMN) + ";";
   }
 
   private AssignedUsersConstants() {

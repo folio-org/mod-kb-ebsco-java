@@ -17,4 +17,6 @@ public interface AssignedUsersService {
   CompletableFuture<Void> update(String credentialsId, String userId, AssignedUserPutRequest entity,
                                  Map<String, String> okapiHeaders);
 
+  CompletableFuture<Void> delete(String credentialsId, String userId, Map<String, String> okapiHeaders);
+
 }
