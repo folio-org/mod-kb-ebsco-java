@@ -1,7 +1,10 @@
 package org.folio.service.kbcredentials;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.common.FutureUtils.failedFuture;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.time.Instant;
@@ -9,11 +12,15 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.Context;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -24,7 +31,6 @@ import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
-import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
@@ -40,6 +46,7 @@ import org.folio.service.exc.ServiceExceptions;
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private static final String INVALID_TOKEN_MESSAGE = "Invalid token";
+  private static final String USER_CREDS_NOT_FOUND_MESSAGE = "User credentials not found: userId = %s";
 
   @Autowired
   private KbCredentialsRepository repository;
@@ -65,9 +72,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Override
   public CompletableFuture<KbCredentials> findByUser(Map<String, String> okapiHeaders) {
-    String userId = fetchUserInfo(okapiHeaders).getUserId();
-    return repository.findByUserId(userId, tenantId(okapiHeaders))
-      .thenApply(getCredentialsOrFailWithUserId(userId))
+    return fetchUserInfo(okapiHeaders)
+      .thenCompose(userInfo -> findUserCredentials(userInfo, tenantId(okapiHeaders)))
       .thenApply(credentialsFromDBConverter::convert);
   }
 
@@ -86,7 +92,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     postBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
     return verifyCredentials(kbCredentials, okapiHeaders)
-      .thenApply(o -> fetchUserInfo(okapiHeaders))
+      .thenCompose(o -> fetchUserInfo(okapiHeaders))
       .thenApply(userInfo -> requireNonNull(credentialsToDBConverter.convert(kbCredentials))
         .toBuilder()
         .createdDate(Instant.now())
@@ -103,7 +109,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     KbCredentials kbCredentials = entity.getData();
     KbCredentialsDataAttributes attributes = kbCredentials.getAttributes();
     return verifyCredentials(kbCredentials, okapiHeaders)
-      .thenApply(o -> fetchUserInfo(okapiHeaders))
+      .thenCompose(o -> fetchUserInfo(okapiHeaders))
       .thenCombine(fetchDbKbCredentials(id, okapiHeaders), (userInfo, dbKbCredentials) -> dbKbCredentials.toBuilder()
         .name(attributes.getName())
         .url(attributes.getUrl())
@@ -131,17 +137,42 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
           future.completeExceptionally(new ConfigurationInvalidException(errors));
           return future;
         }
-        return CompletableFuture.completedFuture(null);
+        return completedFuture(null);
       });
   }
 
-  private UserInfo fetchUserInfo(Map<String, String> okapiHeaders) {
+  private CompletableFuture<UserInfo> fetchUserInfo(Map<String, String> okapiHeaders) {
     Optional<UserInfo> tokenInfo = TokenUtil.userInfoFromToken(okapiHeaders.get(XOkapiHeaders.TOKEN));
-    return tokenInfo.orElseThrow(() -> new NotAuthorizedException(INVALID_TOKEN_MESSAGE));
+    return tokenInfo
+      .map(CompletableFuture::completedFuture)
+      .orElse(failedFuture(new NotAuthorizedException(INVALID_TOKEN_MESSAGE)));
   }
 
   private CompletableFuture<DbKbCredentials> fetchDbKbCredentials(String id, Map<String, String> okapiHeaders) {
     return repository.findById(id, tenantId(okapiHeaders)).thenApply(getCredentialsOrFail(id));
+  }
+
+  private CompletionStage<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
+    return repository.findByUserId(userInfo.getUserId(), tenant)
+      .thenCompose(ifEmpty(() -> findSingleKbCredentials(tenant)))
+      .thenApply(getCredentialsOrFailWithUserId(userInfo.getUserId()));
+  }
+
+  private static <T> Function<Optional<T>, CompletableFuture<Optional<T>>> ifEmpty(
+    Supplier<CompletableFuture<Optional<T>>> supplier) {
+    return optional -> optional
+      .map(value -> completedFuture(Optional.of(value)))
+      .orElse(supplier.get());
+  }
+
+  private CompletableFuture<Optional<DbKbCredentials>> findSingleKbCredentials(String tenant) {
+    CompletableFuture<Collection<DbKbCredentials>> allCreds = repository.findAll(tenant);
+
+    return allCreds.thenApply(credentials ->
+      credentials.size() == 1
+        ? Optional.of(CollectionUtils.extractSingleton(credentials))
+        : Optional.empty()
+    );
   }
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {
@@ -149,6 +180,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFailWithUserId(String userId) {
-    return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(AssignedUser.class, userId));
+    return credentials -> credentials.orElseThrow(
+        () -> new NotFoundException(format(USER_CREDS_NOT_FOUND_MESSAGE, userId)));
   }
 }
