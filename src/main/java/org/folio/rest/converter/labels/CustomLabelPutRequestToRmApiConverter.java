@@ -1,14 +1,15 @@
 package org.folio.rest.converter.labels;
 
+import static org.folio.common.ListUtils.mapItems;
+
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.CustomLabel;
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
-import org.folio.rest.jaxrs.model.CustomLabelCollectionItem;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelPutRequest;
 
@@ -16,18 +17,18 @@ import org.folio.rest.jaxrs.model.CustomLabelPutRequest;
 public class CustomLabelPutRequestToRmApiConverter implements Converter<CustomLabelPutRequest, RootProxyCustomLabels> {
 
   @Override
-  public RootProxyCustomLabels convert(CustomLabelPutRequest customLabelPutRequest) {
-    List<CustomLabelCollectionItem> customLabelItems = customLabelPutRequest.getData();
-    List<CustomLabel> labelList = customLabelItems.stream()
-      .map(this::toCustomLabel)
-      .collect(Collectors.toList());
+  public RootProxyCustomLabels convert(@NonNull CustomLabelPutRequest customLabelPutRequest) {
     return RootProxyCustomLabels.builder()
-      .labelList(labelList)
+      .labelList(toCustomLabelList(customLabelPutRequest))
       .build();
   }
 
-  private CustomLabel toCustomLabel(CustomLabelCollectionItem customLabelCollectionItem) {
-    CustomLabelDataAttributes attributes = customLabelCollectionItem.getAttributes();
+  private List<CustomLabel> toCustomLabelList(CustomLabelPutRequest customLabelPutRequest) {
+    return mapItems(customLabelPutRequest.getData(), this::toCustomLabel);
+  }
+
+  private CustomLabel toCustomLabel(org.folio.rest.jaxrs.model.CustomLabel customLabel) {
+    CustomLabelDataAttributes attributes = customLabel.getAttributes();
     return CustomLabel.builder()
       .id(attributes.getId())
       .displayLabel(attributes.getDisplayLabel())

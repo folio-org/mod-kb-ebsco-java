@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
@@ -19,7 +20,13 @@ import static org.junit.Assert.assertNotNull;
 
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -27,16 +34,15 @@ import java.net.URISyntaxException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.http.HttpStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import org.folio.repository.kbcredentials.KbCredentialsTableConstants;
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.CustomLabelCollectionItem;
+import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.JsonapiError;
 
@@ -44,6 +50,11 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
 
   private static final String CUSTOM_LABELS_PATH = "eholdings/custom-labels";
+
+  private static final String RM_API_CUSTOMER_PATH = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/";
+  private static final String KB_GET_CUSTOM_LABELS_RESPONSE = "responses/kb-ebsco/custom-labels/get-custom-labels-list.json";
+  private static final String RM_GET_PROXY_CUSTOM_LABELS_RESPONSE = "responses/rmapi/proxiescustomlabels/"
+    + "get-root-proxy-custom-labels-success-response.json";
 
   @Test
   public void shouldReturnCustomLabelsOnGet() throws IOException, URISyntaxException {
@@ -120,7 +131,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
 
     assertEquals(1, updatedCollection.getData().size());
     assertEquals((Integer) 1, updatedCollection.getMeta().getTotalResults());
-    CustomLabelCollectionItem item = updatedCollection.getData().get(0);
+    CustomLabel item = updatedCollection.getData().get(0);
     assertNotNull(item);
     assertEquals("test label 1 updated", item.getAttributes().getDisplayLabel());
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
@@ -142,16 +153,58 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
     assertEquals(5, updatedCollection.getData().size());
     assertEquals((Integer) 5, updatedCollection.getMeta().getTotalResults());
 
-    CustomLabelCollectionItem firstItem = updatedCollection.getData().get(0);
+    CustomLabel firstItem = updatedCollection.getData().get(0);
     assertNotNull(firstItem);
     assertEquals("test label 1", firstItem.getAttributes().getDisplayLabel());
 
-    CustomLabelCollectionItem lastItem = updatedCollection.getData().get(4);
+    CustomLabel lastItem = updatedCollection.getData().get(4);
     assertNotNull(lastItem);
     assertEquals("test label 5", lastItem.getAttributes().getDisplayLabel());
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/custom-labels/put-custom-labels-five-items.json"))));
+  }
+
+  @Test
+  public void shouldReturnCustomLabelsOnGetCustomLabels() throws IOException, URISyntaxException {
+    try {
+      insertKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      String credentialsId = getKbCredentials(vertx).get(0).getId();
+      CustomLabelsCollection expected = readJsonFile(KB_GET_CUSTOM_LABELS_RESPONSE, CustomLabelsCollection.class);
+      expected.getData().forEach(customLabel -> customLabel.setCredentialsId(credentialsId));
+
+      mockCustomLabelsConfiguration(RM_GET_PROXY_CUSTOM_LABELS_RESPONSE);
+      String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, credentialsId);
+      CustomLabelsCollection actual = getWithOk(resourcePath).as(CustomLabelsCollection.class);
+
+      verify(1, getRequestedFor(urlEqualTo(RM_API_CUSTOMER_PATH)));
+      assertEquals(expected, actual);
+    } finally {
+      clearDataFromTable(vertx, KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturn403OnGetWithResourcesWhenRMAPI403() {
+    try {
+      insertKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      String credentialsId = getKbCredentials(vertx).get(0).getId();
+
+      mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), SC_FORBIDDEN);
+      String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, credentialsId);
+      JsonapiError error = getWithStatus(resourcePath, SC_FORBIDDEN).as(JsonapiError.class);
+      assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
+    } finally {
+      clearDataFromTable(vertx, KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturn404OnGetCustomLabelsWhenCredentialsAreMissing() {
+    String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, "11111111-1111-1111-a111-111111111111");
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
   }
 
   private void mockCustomLabelsConfiguration(String stubResponseFile) throws IOException, URISyntaxException {

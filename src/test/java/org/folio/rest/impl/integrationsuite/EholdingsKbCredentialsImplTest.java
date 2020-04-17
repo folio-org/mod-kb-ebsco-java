@@ -98,7 +98,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_TOKEN_HEADER)
       .as(KbCredentials.class);
 
@@ -125,7 +125,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -183,7 +183,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -232,7 +232,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     putWithNoContent(resourcePath, putBody, STUB_TOKEN_HEADER);
 
@@ -266,7 +266,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -330,7 +330,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -372,7 +372,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
           .withUrl(getWiremockUrl())));
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
@@ -421,15 +421,13 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
   }
 
-  private void stubForSuccessCredentials() {
+  private void mockVerifyValidCredentialsRequest() {
     stubFor(
       get(urlPathMatching("/rm/rmaccounts/.*"))
-        .willReturn(aResponse()
-          .withStatus(SC_OK)
-          .withBody("{\"totalResults\": 0, \"vendors\": []}")));
+        .willReturn(aResponse().withStatus(SC_OK).withBody("{\"totalResults\": 0, \"vendors\": []}")));
   }
 
-  private void stubForFailedCredentials() {
+  private void mockVerifyFailedCredentialsRequest() {
     stubFor(
       get(urlPathMatching("/rm/rmaccounts/.*"))
         .willReturn(aResponse().withStatus(SC_UNPROCESSABLE_ENTITY)));

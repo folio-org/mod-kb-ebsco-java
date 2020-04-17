@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "type": "customLabel",
+      "type": "customLabels",
       "attributes": {
         "id": 1,
         "displayLabel": "label 1",
@@ -10,7 +10,7 @@
       }
     },
     {
-      "type": "customLabel",
+      "type": "customLabels",
       "attributes": {
         "id": 2,
         "displayLabel": "label 2",
@@ -19,7 +19,7 @@
       }
     },
     {
-      "type": "customLabel",
+      "type": "customLabels",
       "attributes": {
         "id": 3,
         "displayLabel": "label 3",
@@ -28,7 +28,7 @@
       }
     },
     {
-      "type": "customLabel",
+      "type": "customLabels",
       "attributes": {
         "id": 4,
         "displayLabel": "label 4",
@@ -37,7 +37,7 @@
       }
     },
     {
-      "type": "customLabel",
+      "type": "customLabels",
       "attributes": {
         "id": 5,
         "displayLabel": "label 5",

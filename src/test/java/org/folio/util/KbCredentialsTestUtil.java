@@ -40,6 +40,7 @@ import org.folio.rest.persist.PostgresClient;
 public class KbCredentialsTestUtil {
 
   public static final String KB_CREDENTIALS_ENDPOINT = "/eholdings/kb-credentials";
+  public static final String KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/custom-labels";
 
   public static final String STUB_API_KEY = "TEST_API_KEY";
   public static final String STUB_USERNAME = "TEST_USER_NAME";
@@ -55,7 +56,7 @@ public class KbCredentialsTestUtil {
   public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, KbCredentialsTestUtil.STUB_TOKEN);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
-    new KbCredentialsConverter.KbCredentialsFromDbConverter(STUB_API_KEY);
+    new KbCredentialsConverter.KbCredentialsFromDbSecuredConverter(STUB_API_KEY);
 
   public static String insertKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();

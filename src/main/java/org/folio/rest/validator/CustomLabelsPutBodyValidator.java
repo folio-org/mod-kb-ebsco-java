@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.CustomLabelCollectionItem;
+import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelPutRequest;
 
@@ -40,11 +40,11 @@ public class CustomLabelsPutBodyValidator {
     }
   }
 
-  private void validateCollectionItem(CustomLabelCollectionItem customLabelsCollectionItem) {
-    if (customLabelsCollectionItem == null || customLabelsCollectionItem.getAttributes() == null) {
+  private void validateCollectionItem(CustomLabel customLabel) {
+    if (customLabel == null || customLabel.getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_LABEL_ATTRIBUTES);
     }
-    final CustomLabelDataAttributes attributes = customLabelsCollectionItem.getAttributes();
+    final CustomLabelDataAttributes attributes = customLabel.getAttributes();
     ValidatorUtil.checkInRange(1, 5, attributes.getId(), CUSTOM_LABEL_ID_PARAM);
     ValidatorUtil.checkMaxLength(CUSTOM_LABEL_NAME_PARAM, attributes.getDisplayLabel(), CUSTOM_LABEL_NAME_MAX_LENGTH);
     ValidatorUtil.checkIsNotNull(FULL_TEXT_FINDER_PARAM, attributes.getDisplayOnFullTextFinder());
@@ -59,7 +59,7 @@ public class CustomLabelsPutBodyValidator {
 
   private long getUniqueIdsCount(CustomLabelPutRequest request) {
     return request.getData().stream()
-      .map(CustomLabelCollectionItem::getAttributes)
+      .map(CustomLabel::getAttributes)
       .filter(Objects::nonNull)
       .map(CustomLabelDataAttributes::getId)
       .distinct()
