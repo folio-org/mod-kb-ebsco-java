@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 public class CustomLabelsServiceImpl implements CustomLabelsService {
 
   @Autowired
+  @Qualifier("nonSecuredCredentialsService")
   private KbCredentialsService credentialsService;
 
   @Autowired

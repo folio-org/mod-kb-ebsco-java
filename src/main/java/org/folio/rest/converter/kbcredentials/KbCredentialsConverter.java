@@ -3,8 +3,10 @@ package org.folio.rest.converter.kbcredentials;
 import java.time.Instant;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -19,12 +21,32 @@ public class KbCredentialsConverter {
 
   }
 
-  @Component
-  public static class KbCredentialsFromDbConverter implements Converter<DbKbCredentials, KbCredentials> {
+  @Component("secured")
+  @Primary
+  public static class KbCredentialsFromDbSecuredConverter extends KbCredentialsFromDbNonSecuredConverter {
+
+    public KbCredentialsFromDbSecuredConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
+      super(defaultUrl);
+    }
+
+    @Override
+    public KbCredentials convert(@NotNull DbKbCredentials source) {
+      return hideApiKey(super.convert(source));
+    }
+
+    private KbCredentials hideApiKey(KbCredentials source) {
+      source.getAttributes().withApiKey(StringUtils.repeat("*", 40));
+      return source;
+    }
+
+  }
+
+  @Component("non-secured")
+  public static class KbCredentialsFromDbNonSecuredConverter implements Converter<DbKbCredentials, KbCredentials> {
 
     private final String defaultUrl;
 
-    public KbCredentialsFromDbConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
+    public KbCredentialsFromDbNonSecuredConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
       this.defaultUrl = defaultUrl;
     }
 
@@ -56,7 +78,9 @@ public class KbCredentialsConverter {
     private Date toDate(Instant date) {
       return date != null ? Date.from(date) : null;
     }
+
   }
+
 
   @Component
   public static class KbCredentialsToDbConverter implements Converter<KbCredentials, DbKbCredentials> {

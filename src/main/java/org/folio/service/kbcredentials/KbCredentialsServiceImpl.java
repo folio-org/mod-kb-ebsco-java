@@ -14,10 +14,8 @@ import java.util.function.Function;
 import javax.ws.rs.NotAuthorizedException;
 
 import io.vertx.core.Context;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.service.ConfigurationService;
@@ -36,7 +34,6 @@ import org.folio.rest.validator.kbcredentials.KbCredentialsPostBodyValidator;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPutBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
 
-@Component
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private static final String INVALID_TOKEN_MESSAGE = "Invalid token";
@@ -46,7 +43,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Autowired
   private Converter<KbCredentials, Configuration> configurationConverter;
-  @Autowired
   private Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
   @Autowired
   private Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter;
@@ -63,21 +59,21 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Autowired
   private Context context;
 
+  public KbCredentialsServiceImpl(
+    Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter) {
+    this.credentialsFromDBConverter = credentialsFromDBConverter;
+  }
+
   @Override
   public CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders))
-      .thenApply(credentialsCollectionConverter::convert)
-      .thenApply(kbCredentialsCollection -> {
-        kbCredentialsCollection.getData().forEach(this::hideApiKey);
-        return kbCredentialsCollection;
-      });
+      .thenApply(credentialsCollectionConverter::convert);
   }
 
   @Override
   public CompletableFuture<KbCredentials> findById(String id, boolean isSecured, Map<String, String> okapiHeaders) {
     return fetchDbKbCredentials(id, okapiHeaders)
-      .thenApply(credentialsFromDBConverter::convert)
-      .thenApply(this::hideApiKey);
+      .thenApply(credentialsFromDBConverter::convert);
   }
 
   @Override
@@ -93,8 +89,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .createdByUserName(userInfo.getUsername())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
-      .thenApply(credentialsFromDBConverter::convert)
-      .thenApply(this::hideApiKey);
+      .thenApply(credentialsFromDBConverter::convert);
   }
 
   @Override
@@ -148,8 +143,4 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(KbCredentials.class, id));
   }
 
-  private KbCredentials hideApiKey(KbCredentials source) {
-    source.getAttributes().withApiKey(StringUtils.repeat("*", 40));
-    return source;
-  }
 }
