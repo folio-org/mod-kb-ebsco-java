@@ -42,6 +42,11 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.post"]
         },
         {
+          "methods": ["DELETE"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users/{userId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.users.item.delete"]
+        },
+        {
           "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/custom-labels",
           "permissionsRequired": ["kb-ebsco.kb-credentials.custom-labels.collection.get"]
@@ -563,12 +568,18 @@
       "description": "Post assigned users to KB credentials"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.users.item.delete",
+      "displayName": "delete association between user and KB credentials",
+      "description": "delete association between user and KB credentials"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.users.all",
       "displayName": "EBSCO KB Broker users assigned to credentials - all permissions",
       "description": "All permissions for manging users assigned to EBSCO KB Credentials",
       "subPermissions": [
         "kb-ebsco.kb-credentials.users.collection.get",
-        "kb-ebsco.kb-credentials.users.collection.post"
+        "kb-ebsco.kb-credentials.users.collection.post",
+        "kb-ebsco.kb-credentials.users.item.delete"
       ]
     },
     {

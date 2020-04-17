@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Assigned User with id '99999999-9999-9999-9999-999999999999' does not exist"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
