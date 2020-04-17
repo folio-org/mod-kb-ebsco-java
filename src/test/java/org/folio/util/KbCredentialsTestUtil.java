@@ -51,9 +51,13 @@ public class KbCredentialsTestUtil {
   public static final String STUB_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
     + "eyJzdWIiOiJURVNUX1VTRVJfTkFNRSIsInVzZXJfaWQiOiI4ODg4ODg4OC04ODg4LTQ4ODgtODg4OC04O"
     + "Dg4ODg4ODg4ODgiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
-
+  public static final String STUB_INVALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
+    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
 
   public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, KbCredentialsTestUtil.STUB_TOKEN);
+  public static final Header STUB_INVALID_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN,
+    KbCredentialsTestUtil.STUB_INVALID_TOKEN);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
     new KbCredentialsConverter.KbCredentialsFromDbConverter(STUB_API_KEY);
