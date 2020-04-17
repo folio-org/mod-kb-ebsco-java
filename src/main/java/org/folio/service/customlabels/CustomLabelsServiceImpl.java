@@ -34,7 +34,7 @@ public class CustomLabelsServiceImpl implements CustomLabelsService {
   @Override
   public CompletableFuture<CustomLabelsCollection> fetchCustomLabels(String credentialsId,
                                                                      Map<String, String> okapiHeaders) {
-    return credentialsService.findById(credentialsId, false, okapiHeaders)
+    return credentialsService.findById(credentialsId, okapiHeaders)
       .thenApply(configurationConverter::convert)
       .thenCompose(configuration -> new HoldingsIQServiceImpl(configuration, vertx).retrieveRootProxyCustomLabels())
       .thenApply(labelsCollectionConverter::convert)

@@ -71,7 +71,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   @Override
-  public CompletableFuture<KbCredentials> findById(String id, boolean isSecured, Map<String, String> okapiHeaders) {
+  public CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders) {
     return fetchDbKbCredentials(id, okapiHeaders)
       .thenApply(credentialsFromDBConverter::convert);
   }

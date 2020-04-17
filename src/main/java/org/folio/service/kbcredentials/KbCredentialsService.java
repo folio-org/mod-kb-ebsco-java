@@ -12,7 +12,7 @@ public interface KbCredentialsService {
 
   CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders);
 
-  CompletableFuture<KbCredentials> findById(String id, boolean isSecured, Map<String, String> okapiHeaders);
+  CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders);
 
   CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders);
 

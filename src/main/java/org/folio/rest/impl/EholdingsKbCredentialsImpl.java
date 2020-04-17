@@ -66,7 +66,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   public void getEholdingsKbCredentialsById(String id, Map<String, String> okapiHeaders,
                                             Handler<AsyncResult<Response>> asyncResultHandler,
                                             Context vertxContext) {
-    credentialsService.findById(id, true, okapiHeaders)
+    credentialsService.findById(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsByIdResponse.respond200WithApplicationVndApiJson(kbCredentials))))
       .exceptionally(handleException(asyncResultHandler));
