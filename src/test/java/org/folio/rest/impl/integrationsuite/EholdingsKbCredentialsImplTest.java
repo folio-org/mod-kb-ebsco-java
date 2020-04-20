@@ -9,7 +9,10 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -95,7 +98,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_TOKEN_HEADER)
       .as(KbCredentials.class);
 
@@ -116,7 +119,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -160,7 +163,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -207,7 +210,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     putWithNoContent(resourcePath, putBody, STUB_TOKEN_HEADER);
 
@@ -235,7 +238,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       .withData(stubbedCredentials());
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -285,7 +288,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       .withData(stubbedCredentials());
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -317,7 +320,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
@@ -408,15 +411,13 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
         .withUrl(getWiremockUrl()));
   }
 
-  private void stubForSuccessCredentials() {
+  private void mockVerifyValidCredentialsRequest() {
     stubFor(
       get(urlPathMatching("/rm/rmaccounts/.*"))
-        .willReturn(aResponse()
-          .withStatus(SC_OK)
-          .withBody("{\"totalResults\": 0, \"vendors\": []}")));
+        .willReturn(aResponse().withStatus(SC_OK).withBody("{\"totalResults\": 0, \"vendors\": []}")));
   }
 
-  private void stubForFailedCredentials() {
+  private void mockVerifyFailedCredentialsRequest() {
     stubFor(
       get(urlPathMatching("/rm/rmaccounts/.*"))
         .willReturn(aResponse().withStatus(SC_UNPROCESSABLE_ENTITY)));

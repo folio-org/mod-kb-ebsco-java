@@ -12,6 +12,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -26,7 +27,9 @@ import org.folio.spring.SpringContextUtil;
 public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, EholdingsUserKbCredential {
 
   @Autowired
+  @Qualifier("securedCredentialsService")
   private KbCredentialsService credentialsService;
+
   @Autowired
   private ErrorHandler errorHandler;
 
