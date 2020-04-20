@@ -9,10 +9,7 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -33,6 +30,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_USERNAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
 import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.util.List;
@@ -375,7 +373,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
-    assertEquals(getKbCredentials(vertx).get(0), actual);
+    assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
   }
 
   @Test
@@ -383,7 +381,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
-    assertEquals(getKbCredentials(vertx).get(0), actual);
+    assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
   }
 
   @Test

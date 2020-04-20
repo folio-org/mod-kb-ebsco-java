@@ -63,6 +63,9 @@ public class KbCredentialsTestUtil {
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
     new KbCredentialsConverter.KbCredentialsFromDbSecuredConverter(STUB_API_KEY);
 
+  private static final Converter<DbKbCredentials, KbCredentials> CONVERTER_NON_SECURED =
+    new KbCredentialsConverter.KbCredentialsFromDbNonSecuredConverter(STUB_API_KEY);
+
   public static String insertKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
@@ -79,11 +82,20 @@ public class KbCredentialsTestUtil {
   }
 
   public static List<KbCredentials> getKbCredentials(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER);
+  }
+
+  public static List<KbCredentials> getKbCredentialsNonSecured(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER_NON_SECURED);
+  }
+
+  private static List<KbCredentials> getKbCredentials(Vertx vertx,
+                                                      Converter<DbKbCredentials, KbCredentials> converter) {
     CompletableFuture<List<KbCredentials>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(String.format(SELECT_CREDENTIALS_QUERY, kbCredentialsTestTable()),
       event -> future.complete(event.result().getRows().stream()
         .map(KbCredentialsTestUtil::parseKbCredentials)
-        .map(CONVERTER::convert)
+        .map(converter::convert)
         .collect(Collectors.toList())));
     return future.join();
   }
