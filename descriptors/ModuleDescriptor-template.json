@@ -545,11 +545,6 @@
       "description": "Get KB credentials collection item"
     },
     {
-      "permissionName": "kb-ebsco.user-kb-credential.get",
-      "displayName": "get KB credentials collection item by user",
-      "description": "Get KB credentials collection item by user"
-    },
-    {
       "permissionName": "kb-ebsco.kb-credentials.item.put",
       "displayName": "put KB credentials collection item",
       "description": "Put KB credentials collection item"
@@ -569,7 +564,6 @@
         "kb-ebsco.kb-credentials.item.get",
         "kb-ebsco.kb-credentials.item.put",
         "kb-ebsco.kb-credentials.item.delete",
-        "kb-ebsco.user-kb-credential.get",
         "kb-ebsco.kb-credentials.custom-labels.collection.get"
       ]
     },
