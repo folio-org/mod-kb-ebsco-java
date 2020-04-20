@@ -41,8 +41,8 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
-  private String ASSIGN_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users";
-  private String KB_CREDENTIALS_ASSIGNED_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users/%s";
+  private static final String ASSIGN_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users";
+  private static final String KB_CREDENTIALS_ASSIGNED_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users/%s";
 
   @After
   public void tearDown() {
