@@ -50,6 +50,7 @@ import org.folio.service.exc.ServiceExceptions;
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
+
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {}";

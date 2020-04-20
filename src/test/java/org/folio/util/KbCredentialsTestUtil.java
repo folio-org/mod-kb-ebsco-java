@@ -40,6 +40,7 @@ import org.folio.rest.persist.PostgresClient;
 public class KbCredentialsTestUtil {
 
   public static final String KB_CREDENTIALS_ENDPOINT = "/eholdings/kb-credentials";
+  public static final String USER_KB_CREDENTIAL_ENDPOINT = "/eholdings/user-kb-credential";
   public static final String KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/custom-labels";
 
   public static final String STUB_API_KEY = "TEST_API_KEY";
@@ -51,12 +52,19 @@ public class KbCredentialsTestUtil {
   public static final String STUB_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
     + "eyJzdWIiOiJURVNUX1VTRVJfTkFNRSIsInVzZXJfaWQiOiI4ODg4ODg4OC04ODg4LTQ4ODgtODg4OC04O"
     + "Dg4ODg4ODg4ODgiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
-
+  public static final String STUB_INVALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
+    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
 
   public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, KbCredentialsTestUtil.STUB_TOKEN);
+  public static final Header STUB_INVALID_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN,
+    KbCredentialsTestUtil.STUB_INVALID_TOKEN);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
     new KbCredentialsConverter.KbCredentialsFromDbSecuredConverter(STUB_API_KEY);
+
+  private static final Converter<DbKbCredentials, KbCredentials> CONVERTER_NON_SECURED =
+    new KbCredentialsConverter.KbCredentialsFromDbNonSecuredConverter(STUB_API_KEY);
 
   public static String insertKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
@@ -74,11 +82,20 @@ public class KbCredentialsTestUtil {
   }
 
   public static List<KbCredentials> getKbCredentials(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER);
+  }
+
+  public static List<KbCredentials> getKbCredentialsNonSecured(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER_NON_SECURED);
+  }
+
+  private static List<KbCredentials> getKbCredentials(Vertx vertx,
+                                                      Converter<DbKbCredentials, KbCredentials> converter) {
     CompletableFuture<List<KbCredentials>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(String.format(SELECT_CREDENTIALS_QUERY, kbCredentialsTestTable()),
       event -> future.complete(event.result().getRows().stream()
         .map(KbCredentialsTestUtil::parseKbCredentials)
-        .map(CONVERTER::convert)
+        .map(converter::convert)
         .collect(Collectors.toList())));
     return future.join();
   }

@@ -74,7 +74,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn400WhenInvalidCredentialsId() {
     String assignedUsersPath = String.format(ASSIGN_USER_PATH, "invalid-id");
     final JsonapiError error = getWithStatus(assignedUsersPath, SC_BAD_REQUEST).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("invalid input syntax for type uuid: \"invalid-id\""));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect"));
   }
 
   @Test

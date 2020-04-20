@@ -13,4 +13,6 @@ public interface KbCredentialsRepository {
   CompletableFuture<DbKbCredentials> save(DbKbCredentials credentials, String tenant);
 
   CompletableFuture<Void> delete(String id, String tenant);
+
+  CompletableFuture<Optional<DbKbCredentials>> findByUserId(String userId, String tenant);
 }

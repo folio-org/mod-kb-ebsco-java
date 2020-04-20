@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.DbUtil.getKbCredentialsTableName;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.API_KEY_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_BY_USER_ID_COLUMN;
@@ -16,6 +17,7 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.DEL
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAME_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_ID_QUERY;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_USER_ID_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_NAME_COLUMN;
@@ -137,6 +139,18 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       .recover(excTranslator.translateOrPassBy())
       .recover(foreignKeyConstraintViolation());
     return mapResult(resultFuture, updateResult -> null);
+  }
+
+  @Override
+  public CompletableFuture<Optional<DbKbCredentials>> findByUserId(String userId, String tenant) {
+    String query = format(SELECT_CREDENTIALS_BY_USER_ID_QUERY, getKbCredentialsTableName(tenant),
+      getAssignedUsersTableName(tenant));
+
+    LOG.info(SELECT_LOG_MESSAGE, query);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenant).select(query, createParams(Collections.singleton(userId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
 
   private Collection<DbKbCredentials> mapCredentialsCollection(ResultSet resultSet) {

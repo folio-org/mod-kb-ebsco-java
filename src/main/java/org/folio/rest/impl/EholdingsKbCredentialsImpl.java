@@ -19,15 +19,19 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentials;
+import org.folio.rest.jaxrs.resource.EholdingsUserKbCredential;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.spring.SpringContextUtil;
 
-public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
+public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, EholdingsUserKbCredential {
 
   @Autowired
   @Qualifier("securedCredentialsService")
-  private KbCredentialsService credentialsService;
+  private KbCredentialsService securedCredentialsService;
+  @Autowired
+  @Qualifier("nonSecuredCredentialsService")
+  private KbCredentialsService nonSecuredCredentialsService;
 
   @Autowired
   private ErrorHandler errorHandler;
@@ -41,7 +45,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   @HandleValidationErrors
   public void getEholdingsKbCredentials(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                         Context vertxContext) {
-    credentialsService.findAll(okapiHeaders)
+    securedCredentialsService.findAll(okapiHeaders)
       .thenAccept(kbCredentialsCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsResponse.respond200WithApplicationVndApiJson(kbCredentialsCollection))))
       .exceptionally(handleException(asyncResultHandler));
@@ -54,7 +58,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   public void postEholdingsKbCredentials(String contentType, KbCredentialsPostRequest entity,
                                          Map<String, String> okapiHeaders,
                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    credentialsService.save(entity, okapiHeaders)
+    securedCredentialsService.save(entity, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsKbCredentialsResponse.respond201WithApplicationVndApiJson(kbCredentials))))
       .exceptionally(handleException(asyncResultHandler));
@@ -66,7 +70,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   public void getEholdingsKbCredentialsById(String id, Map<String, String> okapiHeaders,
                                             Handler<AsyncResult<Response>> asyncResultHandler,
                                             Context vertxContext) {
-    credentialsService.findById(id, okapiHeaders)
+    securedCredentialsService.findById(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsByIdResponse.respond200WithApplicationVndApiJson(kbCredentials))))
       .exceptionally(handleException(asyncResultHandler));
@@ -78,7 +82,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   public void putEholdingsKbCredentialsById(String id, String contentType, KbCredentialsPutRequest entity,
                                             Map<String, String> okapiHeaders,
                                             Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    credentialsService.update(id, entity, okapiHeaders)
+    securedCredentialsService.update(id, entity, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsKbCredentialsByIdResponse.respond204())))
       .exceptionally(handleException(asyncResultHandler));
@@ -90,9 +94,21 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials {
   public void deleteEholdingsKbCredentialsById(String id, Map<String, String> okapiHeaders,
                                                Handler<AsyncResult<Response>> asyncResultHandler,
                                                Context vertxContext) {
-    credentialsService.delete(id, okapiHeaders)
+    securedCredentialsService.delete(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         DeleteEholdingsKbCredentialsByIdResponse.respond204())))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsUserKbCredential(Map<String, String> okapiHeaders,
+                                           Handler<AsyncResult<Response>> asyncResultHandler,
+                                           Context vertxContext) {
+    nonSecuredCredentialsService.findByUser(okapiHeaders)
+      .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsUserKbCredentialResponse.respond200WithApplicationVndApiJson(kbCredentials))))
       .exceptionally(handleException(asyncResultHandler));
   }
 

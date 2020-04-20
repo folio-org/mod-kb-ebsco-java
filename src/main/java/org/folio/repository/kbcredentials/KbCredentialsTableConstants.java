@@ -7,6 +7,8 @@ import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
 
+import org.folio.repository.assigneduser.AssignedUsersConstants;
+
 public final class KbCredentialsTableConstants {
 
   public static final String KB_CREDENTIALS_TABLE_NAME = "kb_credentials";
@@ -25,6 +27,7 @@ public final class KbCredentialsTableConstants {
 
   public static final String SELECT_CREDENTIALS_QUERY;
   public static final String SELECT_CREDENTIALS_BY_ID_QUERY;
+  public static final String SELECT_CREDENTIALS_BY_USER_ID_QUERY;
   public static final String UPSERT_CREDENTIALS_QUERY;
   public static final String DELETE_CREDENTIALS_QUERY;
 
@@ -38,6 +41,8 @@ public final class KbCredentialsTableConstants {
 
     SELECT_CREDENTIALS_QUERY = selectQuery() + ";";
     SELECT_CREDENTIALS_BY_ID_QUERY = selectQuery() + " " + whereQuery(ID_COLUMN) + " " + limitQuery(1) + ";";
+    SELECT_CREDENTIALS_BY_USER_ID_QUERY = selectQuery() + " WHERE " + ID_COLUMN + " = (" +
+      selectQuery(AssignedUsersConstants.CREDENTIALS_ID) + " " + whereQuery(AssignedUsersConstants.ID_COLUMN) + ");";
     UPSERT_CREDENTIALS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
     DELETE_CREDENTIALS_QUERY = deleteQuery() + " " + whereQuery(ID_COLUMN) + ";";
   }
