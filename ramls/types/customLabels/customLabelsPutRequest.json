@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Custom Label PUT Request Schema",
   "description": "Custom Label PUT Request Schema",
-  "javaType": "org.folio.rest.jaxrs.model.CustomLabelPutRequest",
+  "javaType": "org.folio.rest.jaxrs.model.CustomLabelsPutRequest",
   "type": "object",
   "additionalProperties": false,
   "properties": {

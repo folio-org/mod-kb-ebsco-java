@@ -11,7 +11,7 @@ documentation:
 
 types:
   customLabelsCollection: !include types/customLabels/customLabelsCollection.json
-  customLabelPutRequest: !include types/customLabels/customLabelPutRequest.json
+  customLabelsPutRequest: !include types/customLabels/customLabelsPutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/custom-labels:
@@ -33,35 +33,6 @@ types:
         body:
           text/plain:
             example: "Internal server error, contact administrator"
-  put:
-    description: Update a list of custom labels.
-    headers:
-      Content-Type:
-        example: application/vnd.api+json
-    body:
-      application/vnd.api+json:
-        type: customLabelPutRequest
-        example:
-          strict: false
-          value: !include examples/customLabels/cl_collection_put_request.json
-    responses:
-      200:
-        description: OK
-        body:
-          application/vnd.api+json:
-            description: The server has successfully fulfilled the PUT request.
-            type: customLabelsCollection
-            example:
-              strict: false
-              value: !include examples/customLabels/cl_collection_put_200_response.json
-      422:
-        description: Unprocessable Entity
-        body:
-          application/vnd.api+json:
-            type: jsonapiError
-            example:
-              strict: false
-              value: !include examples/customLabels/cl_collection_put_422_response.json
 /eholdings/kb-credentials/{id}/custom-labels:
   displayName: Custom labels
   description: Custom labels belongs to specific KB Credentials
@@ -88,3 +59,37 @@ types:
             example:
               strict: false
               value: !include examples/customLabels/custom_labels_get_404_response.json
+  put:
+    description: Update a list of custom labels.
+    body:
+      application/vnd.api+json:
+        type: customLabelsPutRequest
+        example:
+          strict: false
+          value: !include examples/customLabels/cl_collection_put_request.json
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: The server has successfully fulfilled the PUT request.
+            type: customLabelsCollection
+            example:
+              strict: false
+              value: !include examples/customLabels/cl_collection_put_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/customLabels/custom_labels_get_404_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/customLabels/cl_collection_put_422_response.json

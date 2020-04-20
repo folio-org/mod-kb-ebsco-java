@@ -282,7 +282,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnPackagesOnGetWithPackageId() throws IOException, URISyntaxException {
     String packagesStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
-    String providerIdByCustIdStubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-success-response.json";
+    String providerIdByCustIdStubResponseFile = "responses/rmapi/proxiescustomlabels/get-success-response.json";
 
     mockDefaultConfiguration(getWiremockUrl());
 

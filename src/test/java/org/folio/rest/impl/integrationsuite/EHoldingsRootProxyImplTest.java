@@ -45,7 +45,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnRootProxyWhenCustIdAndAPIKeyAreValid() throws IOException, URISyntaxException {
-    String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-success-response.json";
+    String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-success-response.json";
 
     String expectedRootProxyID = "<n>";
 
@@ -89,7 +89,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException {
-    String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-updated-response.json";
+    String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-updated-response.json";
 
     mockDefaultConfiguration(getWiremockUrl());
 
@@ -112,13 +112,13 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     assertThat(rootProxy.getData().getAttributes().getProxyTypeId(), equalTo(expected.getData().getAttributes().getProxyTypeId()));
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), true))
-      .withRequestBody(equalToJson(readFile("requests/rmapi/proxiescustomlabels/put-root-proxy-custom-labels.json"))));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/proxiescustomlabels/put-root-proxy.json"))));
   }
 
   @Test
   public void shouldReturn400WhenInvalidProxyIDAndRMAPIErrorOnPut() throws IOException, URISyntaxException {
-    String stubGetResponseFile = "responses/rmapi/proxiescustomlabels/get-root-proxy-custom-labels-updated-response.json";
-    String stubPutResponseFile = "responses/rmapi/proxiescustomlabels/put-root-proxy-custom-labels-400-error-response.json";
+    String stubGetResponseFile = "responses/rmapi/proxiescustomlabels/get-updated-response.json";
+    String stubPutResponseFile = "responses/rmapi/proxiescustomlabels/put-400-error-response.json";
 
     mockDefaultConfiguration(getWiremockUrl());
 
