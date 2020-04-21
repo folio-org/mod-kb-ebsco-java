@@ -171,3 +171,29 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_delete_by_id_422_response.json
+/eholdings/kb-credentials/{id}/access-types:
+  displayName: Access Types
+  description: Access Types belongs to specific KB Credentials
+  uriParameters:
+    id:
+      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  get:
+    description: Get a list of access types related to specific KB credentials.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: List of Access Types available.
+            type: accessTypeCollection
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_collection_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_collection_get_404_response.json
