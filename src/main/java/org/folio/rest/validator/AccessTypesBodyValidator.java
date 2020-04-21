@@ -1,5 +1,6 @@
 package org.folio.rest.validator;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.exception.InputValidationException;
@@ -12,6 +13,15 @@ public class AccessTypesBodyValidator {
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
 
+  private final int maxNameLength;
+  private final int maxDescriptionLength;
+
+  public AccessTypesBodyValidator(@Value("${kb.ebsco.credentials.access.types.name.length.max:75}") int maxNameLength,
+                                  @Value("${kb.ebsco.credentials.access.types.description.length.max:150}") int maxDescriptionLength) {
+    this.maxNameLength = maxNameLength;
+    this.maxDescriptionLength = maxDescriptionLength;
+  }
+
   /**
    * @throws InputValidationException  if validation of attributes fails
    */
@@ -21,10 +31,10 @@ public class AccessTypesBodyValidator {
     }
     AccessTypeDataAttributes attributes = request.getAttributes();
     ValidatorUtil.checkIsNotEmpty("name", attributes.getName());
-    ValidatorUtil.checkMaxLength("name", attributes.getName(), 75);
+    ValidatorUtil.checkMaxLength("name", attributes.getName(), maxNameLength);
 
     if (attributes.getDescription() != null) {
-      ValidatorUtil.checkMaxLength("description", attributes.getDescription(), 150);
+      ValidatorUtil.checkMaxLength("description", attributes.getDescription(), maxDescriptionLength);
     }
   }
 }

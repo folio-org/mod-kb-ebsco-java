@@ -54,7 +54,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Autowired
   private Configuration configuration;
 
-  @Value("${access.types.default.number.limit.value}")
+  @Value("${kb.ebsco.credentials.access.types.limit}")
   private int defaultAccessTypesMaxValue;
 
   @Override
