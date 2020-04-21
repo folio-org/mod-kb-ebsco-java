@@ -62,6 +62,11 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.custom-labels.collection.get"]
         },
         {
+          "methods": ["PUT"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/custom-labels",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.custom-labels.collection.put"]
+        },
+        {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages",
           "permissionsRequired": ["kb-ebsco.packages.collection.get"]
@@ -236,11 +241,6 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/custom-labels",
           "permissionsRequired": ["kb-ebsco.custom-labels.collection.get"]
-        },
-        {
-          "methods": ["PUT"],
-          "pathPattern": "/eholdings/custom-labels",
-          "permissionsRequired": ["kb-ebsco.custom-labels.collection.put"]
         },
         {
           "methods": ["GET"],
@@ -500,9 +500,9 @@
       "description": "Get Custom Labels collection related to KB Credentials"
     },
     {
-      "permissionName": "kb-ebsco.custom-labels.collection.put",
-      "displayName": "put Custom Labels collection",
-      "description": "Put Custom Labels collection"
+      "permissionName": "kb-ebsco.kb-credentials.custom-labels.collection.put",
+      "displayName": "put Custom Labels collection related to kb credentials",
+      "description": "Put Custom Labels collection related to KB Credentials"
     },
     {
       "permissionName": "kb-ebsco.access-types.collection.get",
@@ -564,7 +564,8 @@
         "kb-ebsco.kb-credentials.item.get",
         "kb-ebsco.kb-credentials.item.put",
         "kb-ebsco.kb-credentials.item.delete",
-        "kb-ebsco.kb-credentials.custom-labels.collection.get"
+        "kb-ebsco.kb-credentials.custom-labels.collection.get",
+        "kb-ebsco.kb-credentials.custom-labels.collection.put"
       ]
     },
     {
@@ -639,7 +640,6 @@
         "kb-ebsco.unique.tags.collection.get",
         "kb-ebsco.holdings.load.status.get",
         "kb-ebsco.custom-labels.collection.get",
-        "kb-ebsco.custom-labels.collection.put",
         "kb-ebsco.access-types.collection.get",
         "kb-ebsco.access-types.item.post",
         "kb-ebsco.access-types.item.get",
