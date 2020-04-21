@@ -72,9 +72,10 @@
     },
     {
       "tableName": "access_types",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0",
-      "withMetadata": true,
-      "withAuditing": false
+      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
+      "withMetadata": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-access-types-table.sql"
     },
     {
       "tableName": "access_types_mapping",
@@ -112,11 +113,6 @@
       "run": "after",
       "snippetPath": "holdings_status_history_trigger.sql",
       "fromModuleVersion": "mod-kb-ebsco-java-3.0.2"
-    },
-    {
-      "run": "after",
-      "snippetPath": "access_types_update_metadata_user_info.sql",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0"
     }
   ]
 }
