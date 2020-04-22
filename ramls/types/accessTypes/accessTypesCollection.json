@@ -11,7 +11,7 @@
       "description": "List of access types",
       "items": {
         "type": "object",
-        "$ref": "accessTypeCollectionItem.json"
+        "$ref": "accessType.json"
       }
     },
     "meta": {

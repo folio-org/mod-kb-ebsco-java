@@ -71,18 +71,17 @@
       "customSnippetPath": "create-transaction-ids-table.sql"
     },
     {
-      "tableName": "access_types",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
-      "withMetadata": false,
-      "withAuditing": false,
-      "customSnippetPath": "create-access-types-table.sql"
+      "tableName": "access_types_old",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0",
+      "withMetadata": true,
+      "withAuditing": false
     },
     {
       "tableName": "access_types_mapping",
       "fromModuleVersion": "mod-kb-ebsco-java-3.3.0",
       "withMetadata": false,
       "withAuditing": false,
-      "customSnippetPath": "create-access-type-mapping-table.sql"
+    "customSnippetPath": "create-access-type-mapping-table.sql"
     },
     {
       "tableName": "kb_credentials",
@@ -97,6 +96,13 @@
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-assigned-users-table.sql"
+    },
+    {
+      "tableName": "access_types",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
+      "withMetadata": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-access-types-table.sql"
     }
   ],
   "scripts": [
@@ -113,6 +119,11 @@
       "run": "after",
       "snippetPath": "holdings_status_history_trigger.sql",
       "fromModuleVersion": "mod-kb-ebsco-java-3.0.2"
+    },
+    {
+      "run": "after",
+      "snippetPath": "access_types_update_metadata_user_info.sql",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0"
     }
   ]
 }

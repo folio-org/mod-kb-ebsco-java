@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 
 public class AccessTypesBodyValidatorTest {
@@ -18,13 +18,13 @@ public class AccessTypesBodyValidatorTest {
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPutBody() {
-    AccessTypeCollectionItem postRequest = null;
+    AccessType postRequest = null;
     validator.validate(postRequest);
   }
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenEmptyPostDataAttributes() {
-    AccessTypeCollectionItem postRequest = new AccessTypeCollectionItem();
+    AccessType postRequest = new AccessType();
     postRequest.withAttributes(new AccessTypeDataAttributes());
     validator.validate(postRequest);
   }
@@ -33,7 +33,7 @@ public class AccessTypesBodyValidatorTest {
   public void shouldThrowExceptionWhenNameIsTooLong() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid name");
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
+    final AccessType request = new AccessType()
       .withAttributes(
         new AccessTypeDataAttributes().withName(RandomStringUtils.randomAlphanumeric(76)));
     validator.validate(request);
@@ -43,7 +43,7 @@ public class AccessTypesBodyValidatorTest {
   public void shouldThrowExceptionWhenDescriptionIsTooLong() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid description");
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
+    final AccessType request = new AccessType()
       .withAttributes(
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))
@@ -53,7 +53,7 @@ public class AccessTypesBodyValidatorTest {
 
   @Test
   public void shouldNotThrowExceptionWhenDescriptionIsNull() {
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
+    final AccessType request = new AccessType()
       .withAttributes(
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))
@@ -64,7 +64,7 @@ public class AccessTypesBodyValidatorTest {
 
   @Test
   public void shouldNotThrowExceptionWhenValidParameters() {
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
+    final AccessType request = new AccessType()
       .withAttributes(
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))

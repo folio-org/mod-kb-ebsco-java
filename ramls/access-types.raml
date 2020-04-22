@@ -10,8 +10,8 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 types:
+  accessType: !include types/accessTypes/accessType.json
   accessTypeCollection: !include types/accessTypes/accessTypesCollection.json
-  accessTypeCollectionItem: !include types/accessTypes/accessTypeCollectionItem.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/access-types:
@@ -41,7 +41,7 @@ types:
     body:
       application/vnd.api+json:
         description: Create an access type
-        type: accessTypeCollectionItem
+        type: accessType
         example:
           strict: false
           value: !include examples/accessTypes/access_type_post_request.json
@@ -51,7 +51,7 @@ types:
         body:
           application/vnd.api+json:
             description: The server has successfully fulfilled the POST request.
-            type: accessTypeCollectionItem
+            type: accessType
             example:
               strict: false
               value: !include examples/accessTypes/access_type_post_201_response.json
@@ -84,7 +84,7 @@ types:
           description: OK
           body:
             application/vnd.api+json:
-              type: accessTypeCollectionItem
+              type: accessType
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_item_get_200_response.json
@@ -119,7 +119,7 @@ types:
           example: application/vnd.api+json
       body:
         application/vnd.api+json:
-          type: accessTypeCollectionItem
+          type: accessType
           example:
             strict: false
             value: !include examples/accessTypes/access_type_put_request.json

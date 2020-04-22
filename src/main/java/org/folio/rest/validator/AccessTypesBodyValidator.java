@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 
 @Component
@@ -25,7 +25,7 @@ public class AccessTypesBodyValidator {
   /**
    * @throws InputValidationException  if validation of attributes fails
    */
-  public void validate(AccessTypeCollectionItem request) {
+  public void validate(AccessType request) {
     if (request == null || request.getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }

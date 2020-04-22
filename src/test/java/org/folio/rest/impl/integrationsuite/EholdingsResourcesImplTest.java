@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
@@ -72,7 +72,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -317,7 +317,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   @Test
   public void shouldCreateNewAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String accessTypeId = accessTypes.get(0).getId();
       String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
       String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource-with-access-type.json";
@@ -339,7 +339,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
       assertEquals(RESOURCE, accessTypeMappingsInDB.get(0).getRecordType());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -347,7 +347,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   @Test
   public void shouldDeleteAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String accessTypeId = accessTypes.get(0).getId();
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypeId, vertx);
 
@@ -367,7 +367,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
       assertEquals(0, accessTypeMappingsInDB.size());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -578,7 +578,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       List<AccessTypeMapping> actualMappings = getAccessTypeMappings(vertx);
       assertThat(actualMappings, empty());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }

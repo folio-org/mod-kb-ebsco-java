@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
@@ -37,7 +37,6 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_2;
-import static org.folio.rest.impl.ResourcesTestData.STUB_RESOURCE_ID;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TitlesTestData.CUSTOM_RESOURCE_ENDPOINT;
@@ -85,7 +84,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.folio.repository.RecordType;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
@@ -180,7 +179,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnTitlesOnSearchByAccessTypes() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
@@ -197,7 +196,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         anyOf(equalTo(STUB_MANAGED_TITLE_ID), equalTo(STUB_MANAGED_TITLE_ID_2))
       )));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -205,7 +204,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnTitleOnSearchByAccessTypesWithPagination() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
@@ -221,7 +220,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       assertEquals(2, (int) titleCollection.getMeta().getTotalResults());
       assertThat(titles, everyItem(hasProperty("id", equalTo(STUB_MANAGED_TITLE_ID))));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -229,7 +228,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnEmptyTitlesOnSearchByAccessTypesThatIsNotExist() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
@@ -243,7 +242,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       assertThat(titles, hasSize(0));
       assertEquals(0, (int) titleCollection.getMeta().getTotalResults());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }

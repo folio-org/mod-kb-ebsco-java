@@ -4,9 +4,9 @@ import static org.apache.commons.lang3.StringUtils.join;
 
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_FIELD_LIST;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.JSONB_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.JSONB_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.persist.PostgresClient;
@@ -41,9 +41,9 @@ public class AccessTypesTestUtil {
   public static final String STUB_ACCESS_TYPE_NAME_2 = "Trial";
   public static final String STUB_ACCESS_TYPE_NAME_3 = "Purchased with perpetual access";
 
-  public static List<AccessTypeCollectionItem> getAccessTypes(Vertx vertx) {
+  public static List<AccessType> getAccessTypes(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
-    CompletableFuture<List<AccessTypeCollectionItem>> future = new CompletableFuture<>();
+    CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesTestTable(),
       event -> future.complete(event.result().getRows().stream()
         .map(row -> row.getString(JSONB_COLUMN))
@@ -66,7 +66,7 @@ public class AccessTypesTestUtil {
     future.join();
   }
 
-  public static List<AccessTypeCollectionItem> insertAccessTypes(List<AccessTypeCollectionItem> items, Vertx vertx) {
+  public static List<AccessType> insertAccessTypes(List<AccessType> items, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = "INSERT INTO " + accessTypesTestTable() +
@@ -105,9 +105,9 @@ public class AccessTypesTestUtil {
     }
   }
 
-  private static List<AccessTypeCollectionItem> populateAccessTypesIds(List<AccessTypeCollectionItem> items,
+  private static List<AccessType> populateAccessTypesIds(List<AccessType> items,
                                                                        List<JsonObject> rows) {
-    List<AccessTypeCollectionItem> result = new ArrayList<>(items.size());
+    List<AccessType> result = new ArrayList<>(items.size());
 
     for (int i = 0; i < items.size(); i++) {
       result.add(items.get(i)
@@ -117,7 +117,7 @@ public class AccessTypesTestUtil {
     return result;
   }
 
-  private static JsonArray createParams(List<AccessTypeCollectionItem> items) {
+  private static JsonArray createParams(List<AccessType> items) {
     JsonArray params = new JsonArray();
 
     items.forEach(item -> {
@@ -128,9 +128,9 @@ public class AccessTypesTestUtil {
     return params;
   }
 
-  private static AccessTypeCollectionItem parseAccessType(ObjectMapper mapper, String json) {
+  private static AccessType parseAccessType(ObjectMapper mapper, String json) {
     try {
-      return mapper.readValue(json, AccessTypeCollectionItem.class);
+      return mapper.readValue(json, AccessType.class);
     } catch (IOException e) {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse access type", e);
@@ -138,7 +138,7 @@ public class AccessTypesTestUtil {
   }
 
   private static String accessTypesTestTable() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME;
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME_OLD;
   }
 
   private static String accessTypesMappingTestTable() {
@@ -146,9 +146,9 @@ public class AccessTypesTestUtil {
   }
 
   @NotNull
-  public static List<AccessTypeCollectionItem> testData() {
-    AccessTypeCollectionItem accessType1 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+  public static List<AccessType> testData() {
+    AccessType accessType1 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
         .withName(STUB_ACCESS_TYPE_NAME)
         .withDescription("Access Type description 1"))
@@ -159,8 +159,8 @@ public class AccessTypesTestUtil {
         .withFirstName("first name")
         .withLastName("last name"));
 
-    AccessTypeCollectionItem accessType2 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+    AccessType accessType2 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
         .withName(STUB_ACCESS_TYPE_NAME_2)
         .withDescription("Access Type description 2"))
@@ -171,8 +171,8 @@ public class AccessTypesTestUtil {
         .withFirstName("first name")
         .withLastName("last name"));
 
-    AccessTypeCollectionItem accessType3 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+    AccessType accessType3 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
         .withName(STUB_ACCESS_TYPE_NAME_3)
         .withDescription("Access Type description 3"))

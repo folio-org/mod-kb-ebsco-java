@@ -71,7 +71,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.converter.packages.PackageRequestConverter;
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageBulkFetchCollection;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -385,7 +385,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .executeWithResult(PackageBulkFetchCollection.class);
   }
 
-  private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessTypeCollectionItem accessType,
+  private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessType accessType,
                                                                    PackageResult packageResult,
                                                                    Map<String, String> okapiHeaders) {
     String recordId = packageResult.getPackageData().getFullPackageId();
@@ -396,12 +396,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       });
   }
 
-  private CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId,
+  private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       Map<String, String> okapiHeaders) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.PACKAGE, okapiHeaders);
   }
 
-  private CompletableFuture<AccessTypeCollectionItem> fetchAccessType(PackagePutRequest entity,
+  private CompletableFuture<AccessType> fetchAccessType(PackagePutRequest entity,
                                                                       Map<String, String> okapiHeaders) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {

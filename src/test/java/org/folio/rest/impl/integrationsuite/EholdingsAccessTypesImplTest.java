@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
@@ -48,7 +48,7 @@ import org.folio.repository.accesstypes.AccessTypesTableConstants;
 import org.folio.rest.converter.accesstypes.AccessTypeCollectionConverter;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.util.RestConstants;
@@ -105,16 +105,16 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
-    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
   }
 
   @Test
   public void shouldReturnAccessTypeCollectionOnGet() {
     try {
-      List<AccessTypeCollectionItem> testAccessTypes = testData();
-      List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testAccessTypes, vertx);
-      String id0 = accessTypeCollectionItems.get(0).getId();
-      String id1 = accessTypeCollectionItems.get(1).getId();
+      List<AccessType> testAccessTypes = testData();
+      List<AccessType> accessTypes = insertAccessTypes(testAccessTypes, vertx);
+      String id0 = accessTypes.get(0).getId();
+      String id1 = accessTypes.get(1).getId();
 
       insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id0, vertx);
       insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id0, vertx);
@@ -122,11 +122,11 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       insertAccessTypeMapping("11111111-1114", RecordType.PACKAGE, id1, vertx);
       insertAccessTypeMapping("11111111-1115", RecordType.PACKAGE, id1, vertx);
 
-      accessTypeCollectionItems.get(0).setUsageNumber(3);
-      accessTypeCollectionItems.get(1).setUsageNumber(2);
-      accessTypeCollectionItems.get(2).setUsageNumber(0);
+      accessTypes.get(0).setUsageNumber(3);
+      accessTypes.get(1).setUsageNumber(2);
+      accessTypes.get(2).setUsageNumber(0);
 
-      AccessTypeCollection expected = new AccessTypeCollectionConverter().convert(accessTypeCollectionItems);
+      AccessTypeCollection expected = new AccessTypeCollectionConverter().convert(accessTypes);
       AccessTypeCollection actual = getWithOk(ACCESS_TYPES_PATH).as(AccessTypeCollection.class);
 
       assertEquals(expected, actual);
@@ -138,16 +138,16 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnAccessTypeOnGet() {
     try {
-      List<AccessTypeCollectionItem> accessTypeCollectionItems = insertAccessTypes(testData(), vertx);
-      AccessTypeCollectionItem expected = accessTypeCollectionItems.get(0);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
+      AccessType expected = accessTypes.get(0);
       expected.setUsageNumber(3);
 
       insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, expected.getId(), vertx);
       insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, expected.getId(), vertx);
       insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, expected.getId(), vertx);
 
-      AccessTypeCollectionItem actual = getWithOk(ACCESS_TYPES_PATH + "/" + expected.getId())
-        .as(AccessTypeCollectionItem.class);
+      AccessType actual = getWithOk(ACCESS_TYPES_PATH + "/" + expected.getId())
+        .as(AccessType.class);
 
       assertEquals(expected, actual);
     } finally {
@@ -175,11 +175,11 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn204OnDelete() {
-    List<AccessTypeCollectionItem> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
+    List<AccessType> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
     String accessTypeIdToDelete = accessTypesBeforeDelete.get(0).getId();
     deleteWithNoContent(ACCESS_TYPES_PATH + "/" + accessTypeIdToDelete);
 
-    List<AccessTypeCollectionItem> accessTypesAfterDelete = AccessTypesTestUtil.getAccessTypes(vertx);
+    List<AccessType> accessTypesAfterDelete = AccessTypesTestUtil.getAccessTypes(vertx);
 
     assertEquals(accessTypesBeforeDelete.size() - 1, accessTypesAfterDelete.size());
     assertThat(accessTypesAfterDelete, not(hasItem(
@@ -207,7 +207,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn400OnDeleteWhenAssignedToRecords() {
     try {
-      List<AccessTypeCollectionItem> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
       String id = accessTypesBeforeDelete.get(0).getId();
       insertAccessTypeMapping("11111111-1111", RecordType.PACKAGE, id, vertx);
 
@@ -222,8 +222,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void shouldReturnAccessTypeWhenDataIsValid() throws IOException, URISyntaxException {
     mockValidAccessTypesLimit();
     String postBody = readFile("requests/kb-ebsco/access-types/access-type-1.json");
-    final AccessTypeCollectionItem accessType = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8)
-      .as(AccessTypeCollectionItem.class);
+    final AccessType accessType = postWithStatus(ACCESS_TYPES_PATH, postBody, SC_CREATED, USER8)
+      .as(AccessType.class);
 
     assertEquals("firstname_test", accessType.getCreator().getFirstName());
     assertEquals("lastname_test", accessType.getCreator().getLastName());
@@ -278,7 +278,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     assertEquals("Maximum number of access types allowed is 3", errors.getErrors().get(0).getTitle());
 
-    List<AccessTypeCollectionItem> accessTypes = AccessTypesTestUtil.getAccessTypes(vertx);
+    List<AccessType> accessTypes = AccessTypesTestUtil.getAccessTypes(vertx);
     assertEquals(3, accessTypes.size());
 
   }
@@ -349,7 +349,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String accessTypeId = "/11111111-1111-1111-a111-111111111111";
     putWithNoContent(ACCESS_TYPES_PATH + accessTypeId, putBody, USER9);
 
-    final List<AccessTypeCollectionItem> accessTypes = AccessTypesTestUtil.getAccessTypes(vertx);
+    final List<AccessType> accessTypes = AccessTypesTestUtil.getAccessTypes(vertx);
     assertEquals(1, accessTypes.size());
     assertNotNull(accessTypes.get(0).getCreator());
     assertEquals("firstname_test", accessTypes.get(0).getCreator().getFirstName());

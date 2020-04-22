@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
@@ -97,7 +97,7 @@ import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -234,7 +234,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnPackagesOnSearchByAccessTypeWithPagination() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(1).getId(), vertx);
       setUpPackages(vertx, getWiremockUrl());
@@ -249,7 +249,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(1, packages.size());
       assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
@@ -258,7 +258,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(0).getId(), vertx);
 
@@ -273,7 +273,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
       assertEquals(0, packages.size());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
@@ -330,9 +330,9 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnPackageWithAccessTypeOnGetById() throws IOException, URISyntaxException {
     try {
-      final List<AccessTypeCollectionItem> accessTypeCollectionItems = testData();
-      insertAccessTypes(accessTypeCollectionItems, vertx);
-      final String expectedAccessTypeId = accessTypeCollectionItems.get(0).getId();
+      final List<AccessType> accessTypes = testData();
+      insertAccessTypes(accessTypes, vertx);
+      final String expectedAccessTypeId = accessTypes.get(0).getId();
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
       mockDefaultConfiguration(getWiremockUrl());
 
@@ -344,7 +344,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(expectedAccessTypeId, ((LinkedHashMap) packageData.getIncluded().get(0)).get("id"));
     } finally {
       clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
@@ -452,7 +452,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       List<AccessTypeMapping> mappingsAfterRequest = AccessTypesTestUtil.getAccessTypeMappings(vertx);
       assertThat(mappingsAfterRequest, empty());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
     }
   }
 
@@ -616,7 +616,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldUpdateAllAttributesInSelectedPackageAndCreateNewAccessTypeMapping() throws URISyntaxException, IOException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String accessTypeId = accessTypes.get(0).getId();
 
       boolean updatedSelected = true;
@@ -666,7 +666,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -674,7 +674,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldDeleteAccessTypeMappingWhenRMAPIsend404() throws URISyntaxException, IOException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String currentAccessTypeId = accessTypes.get(0).getId();
       String newAccessTypeId = accessTypes.get(1).getId();
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
@@ -698,7 +698,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
       assertEquals(0, accessTypeMappingsInDB.size());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -781,7 +781,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndCreateNewAccessTypeMapping() throws URISyntaxException, IOException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String accessTypeId = accessTypes.get(0).getId();
 
       boolean updatedSelected = true;
@@ -833,7 +833,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -841,7 +841,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndDeleteAccessTypeMapping() throws URISyntaxException, IOException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String accessTypeId = accessTypes.get(0).getId();
 
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
@@ -892,7 +892,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(0, aPackage.getIncluded().size());
       assertNull(aPackage.getData().getRelationships().getAccessType());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -900,7 +900,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndUpdateAccessTypeMapping() throws URISyntaxException, IOException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String currentAccessTypeId = accessTypes.get(0).getId();
       String newAccessTypeId = accessTypes.get(1).getId();
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
@@ -954,7 +954,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(newAccessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(newAccessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -1014,7 +1014,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturn200OnPostPackageWithExistedAccessType() throws URISyntaxException, IOException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       String accessTypeId = accessTypes.get(0).getId();
 
       String packagePostRMAPIRequestFile = "requests/rmapi/packages/post-package.json";
@@ -1035,7 +1035,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(accessTypeId, ((LinkedHashMap) createdPackage.getIncluded().get(0)).get("id"));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -1134,7 +1134,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + query)));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -1142,7 +1142,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesWithAccessTypesOnGetWithResources() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
@@ -1160,7 +1160,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         anyOf(equalTo(STUB_MANAGED_RESOURCE_ID), equalTo(STUB_MANAGED_RESOURCE_ID_2))
       )));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
   }
@@ -1168,7 +1168,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesWithAccessTypesOnGetWithResourcesWithPagination() throws IOException, URISyntaxException {
     try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
+      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
