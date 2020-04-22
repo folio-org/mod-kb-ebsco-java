@@ -35,8 +35,8 @@ import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.userlookup.UserLookUpService;
 
-@Component("oldAccessTypesService")
 @Primary
+@Component("oldAccessTypesService")
 public class AccessTypesServiceOldImpl implements AccessTypesService {
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypesServiceOldImpl.class);

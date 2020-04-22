@@ -1,9 +1,9 @@
 package org.folio.repository.accesstypes;
 
 import static org.folio.repository.SqlQueryHelper.count;
-import static org.folio.repository.SqlQueryHelper.groupBy;
+import static org.folio.repository.SqlQueryHelper.groupByQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
-import static org.folio.repository.SqlQueryHelper.leftJoin;
+import static org.folio.repository.SqlQueryHelper.leftJoinQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
@@ -34,6 +34,7 @@ public class AccessTypesTableConstants {
 
   public static final String SELECT_ALL_ACCESS_TYPES = "SELECT *  FROM %s ;";
   public static final String SELECT_COUNT_ACCESS_TYPES = "SELECT COUNT(*) FROM %s ;";
+
   public static final String INSERT_ACCESS_TYPE_QUERY;
   public static final String SELECT_BY_CREDENTIALS_ID_QUERY;
 
@@ -47,17 +48,11 @@ public class AccessTypesTableConstants {
 
     INSERT_ACCESS_TYPE_QUERY = insertQuery(allColumns) + ";";
     SELECT_BY_CREDENTIALS_ID_QUERY = selectQuery() + " " +
-      leftJoin(
+      leftJoinQuery(
         selectQuery(ACCESS_TYPE_ID_COLUMN, count(ACCESS_TYPE_ID_COLUMN, USAGE_NUMBER_COLUMN)) + " " +
-          groupBy(ACCESS_TYPE_ID_COLUMN), ID_COLUMN, ACCESS_TYPE_ID_COLUMN
+          groupByQuery(ACCESS_TYPE_ID_COLUMN), ID_COLUMN, ACCESS_TYPE_ID_COLUMN
       ) + " " +
       whereQuery(CREDENTIALS_ID_COLUMN) + ";";
-    // SELECT *
-    //	FROM diku_mod_kb_ebsco_java.access_types ats
-    //	JOIN (SELECT access_type_id, COUNT(*) as usageNumber
-    //		  FROM diku_mod_kb_ebsco_java.access_types_mapping
-    //		  GROUP BY access_type_id) as atsm ON ats.id::text = atsm.access_type_id::text;
-    //
   }
 
   private AccessTypesTableConstants() {

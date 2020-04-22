@@ -58,7 +58,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
                                                                      Map<String, String> okapiHeaders) {
     return repository.findByCredentialsId(credentialsId, tenantId(okapiHeaders))
       .thenApply(accessTypes -> mapItems(accessTypes, accessTypeConverter::convert))
-      .thenCombine(mappingService.countRecordsByAccessType(okapiHeaders), this::setEachRecordUsage)
       .thenApply(accessTypeCollectionConverter::convert);
   }
 
@@ -95,13 +94,4 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     throw new UnsupportedOperationException("Not implemented yet");
   }
 
-  private List<AccessType> setEachRecordUsage(List<AccessType> accessTypes,
-                                              Map<String, Integer> accessTypeMappingsCount) {
-    accessTypes.forEach(accessType -> setRecordUsage(accessType, accessTypeMappingsCount));
-    return accessTypes;
-  }
-
-  private void setRecordUsage(AccessType accessType, Map<String, Integer> accessTypeMappingsCount) {
-    accessType.setUsageNumber(accessTypeMappingsCount.getOrDefault(accessType.getId(), 0));
-  }
 }

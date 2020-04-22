@@ -28,7 +28,7 @@ public final class SqlQueryHelper {
     return "DELETE FROM %s";
   }
 
-  public static String leftJoin(String query, String columnT1, String columnT2) {
+  public static String leftJoinQuery(String query, String columnT1, String columnT2) {
     return "LEFT JOIN (" + query + ") t2 ON t1." + columnT1 + " = t2." + columnT2;
   }
 
@@ -36,7 +36,7 @@ public final class SqlQueryHelper {
     return "COUNT(" + expression + ") as " + asColumn;
   }
 
-  public static String groupBy(String... columns) {
+  public static String groupByQuery(String... columns) {
     return "GROUP BY " + joinWithComa(columns);
   }
 
