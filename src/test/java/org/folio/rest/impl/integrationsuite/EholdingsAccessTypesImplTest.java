@@ -141,6 +141,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       ));
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
     }
   }
 
