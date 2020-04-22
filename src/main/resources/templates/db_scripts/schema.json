@@ -77,13 +77,6 @@
       "withAuditing": false
     },
     {
-      "tableName": "access_types_mapping",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.3.0",
-      "withMetadata": false,
-      "withAuditing": false,
-    "customSnippetPath": "create-access-type-mapping-table.sql"
-    },
-    {
       "tableName": "kb_credentials",
       "fromModuleVersion": "mod-kb-ebsco-java-3.3.2",
       "withMetadata": false,
@@ -103,6 +96,13 @@
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-access-types-table.sql"
+    },
+    {
+      "tableName": "access_types_mapping",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.3.0",
+      "withMetadata": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-access-type-mapping-table.sql"
     }
   ],
   "scripts": [

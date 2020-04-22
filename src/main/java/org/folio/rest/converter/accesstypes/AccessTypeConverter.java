@@ -1,5 +1,7 @@
 package org.folio.rest.converter.accesstypes;
 
+import static org.apache.commons.lang3.StringUtils.isAllBlank;
+
 import java.time.Instant;
 import java.util.Date;
 
@@ -24,7 +26,7 @@ public class AccessTypeConverter {
 
     @Override
     public AccessType convert(@NotNull DbAccessType source) {
-      return new AccessType()
+      AccessType accessType = new AccessType()
         .withId(source.getId())
         .withType(AccessType.Type.ACCESS_TYPES)
         .withAttributes(new AccessTypeDataAttributes()
@@ -36,10 +38,6 @@ public class AccessTypeConverter {
           .withFirstName(source.getCreatedByFirstName())
           .withLastName(source.getCreatedByLastName())
           .withMiddleName(source.getCreatedByMiddleName()))
-        .withUpdater(new UserDisplayInfo()
-          .withFirstName(source.getUpdatedByFirstName())
-          .withLastName(source.getUpdatedByLastName())
-          .withMiddleName(source.getUpdatedByMiddleName()))
         .withMetadata(new Metadata()
           .withCreatedByUserId(source.getCreatedByUserId())
           .withCreatedByUsername(source.getCreatedByUsername())
@@ -47,6 +45,14 @@ public class AccessTypeConverter {
           .withUpdatedByUserId(source.getUpdatedByUserId())
           .withUpdatedByUsername(source.getUpdatedByUsername())
           .withUpdatedDate(toDate(source.getUpdatedDate())));
+      if (!isAllBlank(source.getUpdatedByFirstName(), source.getUpdatedByLastName(), source.getUpdatedByMiddleName())) {
+        accessType
+          .withUpdater(new UserDisplayInfo()
+            .withFirstName(source.getUpdatedByFirstName())
+            .withLastName(source.getUpdatedByLastName())
+            .withMiddleName(source.getUpdatedByMiddleName()));
+      }
+      return accessType;
     }
 
     private Date toDate(Instant date) {

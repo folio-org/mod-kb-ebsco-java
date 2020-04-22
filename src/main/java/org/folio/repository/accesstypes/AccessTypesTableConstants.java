@@ -1,7 +1,12 @@
 package org.folio.repository.accesstypes;
 
+import static org.folio.repository.SqlQueryHelper.count;
+import static org.folio.repository.SqlQueryHelper.groupBy;
+import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.SqlQueryHelper.leftJoin;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
 
 public class AccessTypesTableConstants {
 
@@ -24,11 +29,13 @@ public class AccessTypesTableConstants {
   public static final String UPDATED_BY_LAST_NAME_COLUMN = "updated_by_last_name";
   public static final String UPDATED_BY_FIRST_NAME_COLUMN = "updated_by_first_name";
   public static final String UPDATED_BY_MIDDLE_NAME_COLUMN = "updated_by_middle_name";
+
   public static final String USAGE_NUMBER_COLUMN = "usage_number";
 
-  static final String SELECT_ALL_ACCESS_TYPES = "SELECT *  FROM %s ;";
-  static final String SELECT_COUNT_ACCESS_TYPES = "SELECT COUNT(*) FROM %s ;";
-  static final String SELECT_BY_CREDENTIALS_ID_QUERY;
+  public static final String SELECT_ALL_ACCESS_TYPES = "SELECT *  FROM %s ;";
+  public static final String SELECT_COUNT_ACCESS_TYPES = "SELECT COUNT(*) FROM %s ;";
+  public static final String INSERT_ACCESS_TYPE_QUERY;
+  public static final String SELECT_BY_CREDENTIALS_ID_QUERY;
 
   static {
     String[] allColumns = new String[] {
@@ -37,7 +44,14 @@ public class AccessTypesTableConstants {
       UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN, UPDATED_BY_USERNAME_COLUMN, UPDATED_BY_LAST_NAME_COLUMN,
       UPDATED_BY_FIRST_NAME_COLUMN, UPDATED_BY_MIDDLE_NAME_COLUMN
     };
-    SELECT_BY_CREDENTIALS_ID_QUERY = selectQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
+
+    INSERT_ACCESS_TYPE_QUERY = insertQuery(allColumns) + ";";
+    SELECT_BY_CREDENTIALS_ID_QUERY = selectQuery() + " " +
+      leftJoin(
+        selectQuery(ACCESS_TYPE_ID_COLUMN, count(ACCESS_TYPE_ID_COLUMN, USAGE_NUMBER_COLUMN)) + " " +
+          groupBy(ACCESS_TYPE_ID_COLUMN), ID_COLUMN, ACCESS_TYPE_ID_COLUMN
+      ) + " " +
+      whereQuery(CREDENTIALS_ID_COLUMN) + ";";
     // SELECT *
     //	FROM diku_mod_kb_ebsco_java.access_types ats
     //	JOIN (SELECT access_type_id, COUNT(*) as usageNumber

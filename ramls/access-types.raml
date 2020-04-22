@@ -189,11 +189,3 @@ types:
             example:
               strict: false
               value: !include examples/accessTypes/access_type_collection_get_200_response.json
-      404:
-        description: Not Found
-        body:
-          application/vnd.api+json:
-            type: jsonapiError
-            example:
-              strict: false
-              value: !include examples/accessTypes/access_type_collection_get_404_response.json

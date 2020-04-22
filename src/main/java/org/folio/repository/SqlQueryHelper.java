@@ -13,19 +13,31 @@ public final class SqlQueryHelper {
 
   public static String selectQuery(String... columns) {
     if (columns.length == 0) {
-      return "SELECT * FROM %s";
+      return "SELECT * FROM %s t1";
     } else {
-      return "SELECT " + String.join(", ", columns) + " FROM %s";
+      return "SELECT " + joinWithComa(columns) + " FROM %s";
     }
   }
 
   public static String insertQuery(String... columns) {
-    return "INSERT INTO %s (" + String.join(", ", columns) + ") VALUES "
+    return "INSERT INTO %s (" + joinWithComa(columns) + ") VALUES "
       + ListUtils.createInsertPlaceholders(columns.length, 1);
   }
 
   public static String deleteQuery() {
     return "DELETE FROM %s";
+  }
+
+  public static String leftJoin(String query, String columnT1, String columnT2) {
+    return "LEFT JOIN (" + query + ") t2 ON t1." + columnT1 + " = t2." + columnT2;
+  }
+
+  public static String count(String expression, String asColumn) {
+    return "COUNT(" + expression + ") as " + asColumn;
+  }
+
+  public static String groupBy(String... columns) {
+    return "GROUP BY " + joinWithComa(columns);
   }
 
   public static String whereQuery(String... columns) {
@@ -63,5 +75,9 @@ public final class SqlQueryHelper {
 
   private static String assignExcludedColumn(String column) {
     return column + "= EXCLUDED." + column;
+  }
+
+  private static String joinWithComa(String[] columns) {
+    return String.join(", ", columns);
   }
 }

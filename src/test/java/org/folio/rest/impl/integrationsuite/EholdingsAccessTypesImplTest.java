@@ -7,25 +7,34 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.AccessTypesTestUtil.KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT;
+import static org.folio.util.AccessTypesTestUtil.insertAccessType;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
+import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -47,8 +56,8 @@ import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesTableConstants;
 import org.folio.rest.converter.accesstypes.AccessTypeCollectionConverter;
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.util.RestConstants;
@@ -132,6 +141,62 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       assertEquals(expected, actual);
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnAccessTypeCollectionOnGetByCredentialsId() {
+    try {
+      String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      List<AccessType> testAccessTypes = AccessTypesTestUtil.testData(credentialsId);
+      String id0 = insertAccessType(testAccessTypes.get(0), vertx);
+      String id1 = insertAccessType(testAccessTypes.get(1), vertx);
+
+      String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
+      AccessTypeCollection actual = getWithOk(resourcePath).as(AccessTypeCollection.class);
+
+      assertEquals(Integer.valueOf(2), actual.getMeta().getTotalResults());
+      assertEquals(2, actual.getData().size());
+      assertThat(actual.getData().get(0), allOf(
+        hasProperty("id", equalTo(id0)),
+        allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
+      ));
+      assertThat(actual.getData().get(1), allOf(
+        hasProperty("id", equalTo(id1)),
+        allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
+      ));
+
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    }
+  }
+
+  @Test
+  public void shouldReturnAccessTypeCollectionWithUsageNumberOnGetByCredentialsId() {
+    try {
+      String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      List<AccessType> testAccessTypes = AccessTypesTestUtil.testData(credentialsId);
+      String id0 = insertAccessType(testAccessTypes.get(0), vertx);
+      String id1 = insertAccessType(testAccessTypes.get(1), vertx);
+      insertAccessType(testAccessTypes.get(2), vertx);
+
+      insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id0, vertx);
+      insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id0, vertx);
+      insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, id0, vertx);
+      insertAccessTypeMapping("11111111-1114", RecordType.PACKAGE, id1, vertx);
+      insertAccessTypeMapping("11111111-1115", RecordType.PACKAGE, id1, vertx);
+
+      String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
+      AccessTypeCollection actual = getWithOk(resourcePath).as(AccessTypeCollection.class);
+
+      assertThat(actual.getData().get(0).getUsageNumber(), equalTo(3));
+      assertThat(actual.getData().get(1).getUsageNumber(), equalTo(2));
+      assertThat(actual.getData().get(2).getUsageNumber(), equalTo(0));
+    } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
     }
   }
 

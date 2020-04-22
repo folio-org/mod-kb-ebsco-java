@@ -4,12 +4,16 @@ import static org.apache.commons.lang3.StringUtils.join;
 
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_FIELD_LIST;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.INSERT_ACCESS_TYPE_QUERY;
 import static org.folio.repository.holdings.HoldingsTableConstants.JSONB_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,8 +30,9 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
-import org.jetbrains.annotations.NotNull;
+import io.vertx.ext.sql.UpdateResult;
 
+import org.folio.db.DbUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.jaxrs.model.AccessType;
@@ -41,10 +46,12 @@ public class AccessTypesTestUtil {
   public static final String STUB_ACCESS_TYPE_NAME_2 = "Trial";
   public static final String STUB_ACCESS_TYPE_NAME_3 = "Purchased with perpetual access";
 
+  public static final String KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types";
+
   public static List<AccessType> getAccessTypes(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
     CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesTestTable(),
+    PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesTestOldTable(),
       event -> future.complete(event.result().getRows().stream()
         .map(row -> row.getString(JSONB_COLUMN))
         .map(json -> parseAccessType(mapper, json))
@@ -69,7 +76,7 @@ public class AccessTypesTestUtil {
   public static List<AccessType> insertAccessTypes(List<AccessType> items, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String insertStatement = "INSERT INTO " + accessTypesTestTable() +
+    String insertStatement = "INSERT INTO " + accessTypesTestOldTable() +
       "(" + ID_COLUMN + "," + JSONB_COLUMN + ") VALUES " + join(Collections.nCopies(items.size(), "(?,?)"), ",") +
       " RETURNING " + ID_COLUMN;
     JsonArray params = createParams(items);
@@ -82,6 +89,32 @@ public class AccessTypesTestUtil {
       }
     });
     return populateAccessTypesIds(items, future.join().getRows());
+  }
+
+  public static String insertAccessType(AccessType accessType, Vertx vertx) {
+    CompletableFuture<UpdateResult> future = new CompletableFuture<>();
+
+    String query = String.format(INSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
+
+    String id = UUID.randomUUID().toString();
+    JsonArray params = DbUtils.createParams(Arrays.asList(
+      id,
+      accessType.getAttributes().getCredentialsId(),
+      accessType.getAttributes().getName(),
+      accessType.getAttributes().getDescription(),
+      Instant.now().toString(),
+      UUID.randomUUID().toString(),
+      "username",
+      accessType.getCreator().getLastName(),
+      accessType.getCreator().getFirstName(),
+      accessType.getCreator().getMiddleName(),
+      null, null, null, null, null, null
+    ));
+
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    future.join();
+
+    return id;
   }
 
   public static List<AccessTypeMapping> getAccessTypeMappings(Vertx vertx) {
@@ -137,49 +170,50 @@ public class AccessTypesTestUtil {
     }
   }
 
-  private static String accessTypesTestTable() {
+  private static String accessTypesTestOldTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME_OLD;
+  }
+
+  private static String accessTypesTestTable() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME;
   }
 
   private static String accessTypesMappingTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
   }
 
-  @NotNull
   public static List<AccessType> testData() {
+    return testData(null);
+  }
+
+  public static List<AccessType> testData(String credentialsId) {
     AccessType accessType1 = new AccessType()
       .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME)
         .withDescription("Access Type description 1"))
       .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
         .withFirstName("first name")
         .withLastName("last name"));
 
     AccessType accessType2 = new AccessType()
       .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME_2)
         .withDescription("Access Type description 2"))
       .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
         .withFirstName("first name")
         .withLastName("last name"));
 
     AccessType accessType3 = new AccessType()
       .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME_3)
         .withDescription("Access Type description 3"))
       .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
         .withFirstName("first name")
         .withLastName("last name"));
 

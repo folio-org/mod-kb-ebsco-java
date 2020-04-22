@@ -3,7 +3,9 @@ package org.folio.repository.accesstypes;
 import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesOldTableName;
+import static org.folio.repository.DbUtil.getAccessTypesTableName;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
@@ -54,14 +56,15 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<List<DbAccessType>> findByCredentialsId(String credentialsId, String tenantId) {
-    String query = String.format(SELECT_BY_CREDENTIALS_ID_QUERY, getAccessTypesOldTableName(tenantId));
+    String query = String.format(SELECT_BY_CREDENTIALS_ID_QUERY,
+      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
     LOG.info(LOG_SELECT_QUERY, tenantId);
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
 
-    return mapResult(promise.future(), this::readAccessTypes);
+    return mapResult(promise.future(), resultSet -> readAccessTypes(resultSet));
   }
 
   private List<DbAccessType> readAccessTypes(ResultSet resultSet) {
@@ -74,7 +77,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       .credentialsId(row.getString(CREDENTIALS_ID_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .description(row.getString(DESCRIPTION_COLUMN))
-      .usageNumber(row.getInteger(USAGE_NUMBER_COLUMN))
+      .usageNumber(row.getInteger(USAGE_NUMBER_COLUMN, 0))
       .createdDate(row.getInstant(CREATED_DATE_COLUMN))
       .createdByUserId(row.getString(CREATED_BY_USER_ID_COLUMN))
       .createdByUsername(row.getString(CREATED_BY_USERNAME_COLUMN))
