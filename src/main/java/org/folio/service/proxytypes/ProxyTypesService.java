@@ -1,4 +1,4 @@
-package org.folio.service.proxyTypes;
+package org.folio.service.proxytypes;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;

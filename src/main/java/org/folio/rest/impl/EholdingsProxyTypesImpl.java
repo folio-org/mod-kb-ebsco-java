@@ -17,7 +17,7 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdProxyTypes;
 import org.folio.rest.jaxrs.resource.EholdingsProxyTypes;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.service.proxyTypes.ProxyTypesService;
+import org.folio.service.proxytypes.ProxyTypesService;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsProxyTypesImpl implements EholdingsProxyTypes, EholdingsKbCredentialsIdProxyTypes {
