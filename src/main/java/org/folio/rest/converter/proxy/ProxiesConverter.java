@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.Proxies;
 import org.folio.holdingsiq.model.ProxyWithUrl;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.ProxyTypes;
 import org.folio.rest.jaxrs.model.ProxyTypesData;
 import org.folio.rest.jaxrs.model.ProxyTypesDataAttributes;
@@ -22,7 +23,9 @@ public class ProxiesConverter implements Converter<Proxies, ProxyTypes> {
   public ProxyTypes convert(@NonNull Proxies proxies) {
     List<ProxyTypesData> providerList = mapItems(proxies.getProxyList(), this::convertProxy);
 
-    return new ProxyTypes().withJsonapi(RestConstants.JSONAPI).withData(providerList);
+    return new ProxyTypes()
+      .withMeta(new MetaTotalResults().withTotalResults(proxies.getProxyList().size()))
+      .withJsonapi(RestConstants.JSONAPI).withData(providerList);
   }
 
   private ProxyTypesData convertProxy(ProxyWithUrl proxy) {

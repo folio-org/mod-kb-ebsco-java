@@ -1,6 +1,9 @@
 {
   "data": [
   ],
+  "meta": {
+    "totalResults": 0
+  },
   "jsonapi": {
     "version": "1.0"
   }
