@@ -46,7 +46,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @HandleValidationErrors
   public void getEholdingsAccessTypes(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                       Context vertxContext) {
-    oldAccessTypesService.findAll(okapiHeaders)
+    accessTypesService.findByUser(okapiHeaders)
       .thenAccept(accessTypeCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesResponse.respond200WithApplicationVndApiJson(accessTypeCollection))))
       .exceptionally(handleException(asyncResultHandler));

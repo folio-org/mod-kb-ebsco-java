@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
+import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.userlookup.UserLookUpService;
 
 @Component("newAccessTypesService")
@@ -29,7 +31,12 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Autowired
   private AccessTypeMappingsService mappingService;
   @Autowired
+  @Qualifier("nonSecuredCredentialsService")
+  private KbCredentialsService kbCredentialsService;
+
+  @Autowired
   private AccessTypesRepository repository;
+
   @Autowired
   private Converter<List<AccessType>, AccessTypeCollection> accessTypeCollectionConverter;
   @Autowired
@@ -41,8 +48,9 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   private int defaultAccessTypesMaxValue;
 
   @Override
-  public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public CompletableFuture<AccessTypeCollection> findByUser(Map<String, String> okapiHeaders) {
+    return kbCredentialsService.findByUser(okapiHeaders)
+      .thenCompose(kbCredentials -> findByCredentialsId(kbCredentials.getId(), okapiHeaders));
   }
 
   @Override

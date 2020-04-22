@@ -60,7 +60,7 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
   private int defaultAccessTypesMaxValue;
 
   @Override
-  public CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders) {
+  public CompletableFuture<AccessTypeCollection> findByUser(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders))
       .thenCombine(mappingService.countRecordsByAccessType(okapiHeaders), this::setEachRecordUsage)
       .thenApply(accessTypeCollectionConverter::convert);

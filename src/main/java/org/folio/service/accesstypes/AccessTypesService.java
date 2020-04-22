@@ -11,7 +11,7 @@ import org.folio.rest.jaxrs.model.AccessTypeCollection;
 
 public interface AccessTypesService {
 
-  CompletableFuture<AccessTypeCollection> findAll(Map<String, String> okapiHeaders);
+  CompletableFuture<AccessTypeCollection> findByUser(Map<String, String> okapiHeaders);
 
   CompletableFuture<AccessTypeCollection> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders);
 

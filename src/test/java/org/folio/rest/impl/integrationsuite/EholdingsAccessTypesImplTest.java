@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -34,6 +35,7 @@ import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.io.IOException;
@@ -54,7 +56,6 @@ import org.junit.runner.RunWith;
 
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesTableConstants;
-import org.folio.rest.converter.accesstypes.AccessTypeCollectionConverter;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -120,25 +121,24 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnAccessTypeCollectionOnGet() {
     try {
-      List<AccessType> testAccessTypes = testData();
-      List<AccessType> accessTypes = insertAccessTypes(testAccessTypes, vertx);
-      String id0 = accessTypes.get(0).getId();
-      String id1 = accessTypes.get(1).getId();
+      String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      List<AccessType> testAccessTypes = AccessTypesTestUtil.testData(credentialsId);
+      String id0 = insertAccessType(testAccessTypes.get(0), vertx);
+      String id1 = insertAccessType(testAccessTypes.get(1), vertx);
 
-      insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id0, vertx);
-      insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id0, vertx);
-      insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, id0, vertx);
-      insertAccessTypeMapping("11111111-1114", RecordType.PACKAGE, id1, vertx);
-      insertAccessTypeMapping("11111111-1115", RecordType.PACKAGE, id1, vertx);
+      AccessTypeCollection actual = getWithStatus(ACCESS_TYPES_PATH, SC_OK, STUB_TOKEN_HEADER)
+        .as(AccessTypeCollection.class);
 
-      accessTypes.get(0).setUsageNumber(3);
-      accessTypes.get(1).setUsageNumber(2);
-      accessTypes.get(2).setUsageNumber(0);
-
-      AccessTypeCollection expected = new AccessTypeCollectionConverter().convert(accessTypes);
-      AccessTypeCollection actual = getWithOk(ACCESS_TYPES_PATH).as(AccessTypeCollection.class);
-
-      assertEquals(expected, actual);
+      assertEquals(Integer.valueOf(2), actual.getMeta().getTotalResults());
+      assertEquals(2, actual.getData().size());
+      assertThat(actual.getData().get(0), allOf(
+        hasProperty("id", equalTo(id0)),
+        allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
+      ));
+      assertThat(actual.getData().get(1), allOf(
+        hasProperty("id", equalTo(id1)),
+        allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
+      ));
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     }
