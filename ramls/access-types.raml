@@ -12,6 +12,7 @@ documentation:
 types:
   accessType: !include types/accessTypes/accessType.json
   accessTypeCollection: !include types/accessTypes/accessTypesCollection.json
+  accessTypePostRequest: !include types/accessTypes/accessTypePostRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/access-types:
@@ -33,44 +34,6 @@ types:
         body:
           text/plain:
             example: "Internal server error, contact administrator"
-  post:
-    description: Create an access type
-    headers:
-      Content-Type:
-        example: application/vnd.api+json
-    body:
-      application/vnd.api+json:
-        description: Create an access type
-        type: accessType
-        example:
-          strict: false
-          value: !include examples/accessTypes/access_type_post_request.json
-    responses:
-      201:
-        description: OK
-        body:
-          application/vnd.api+json:
-            description: The server has successfully fulfilled the POST request.
-            type: accessType
-            example:
-              strict: false
-              value: !include examples/accessTypes/access_type_post_201_response.json
-      400:
-        description: Bad Request
-        body:
-          application/vnd.api+json:
-            type: jsonapiError
-            example:
-              strict: false
-              value: !include examples/accessTypes/access_type_post_400_response.json
-      422:
-        description: Unprocessable Entity
-        body:
-          application/vnd.api+json:
-            type: jsonapiError
-            example:
-              strict: false
-              value: !include examples/accessTypes/access_type_post_422_response.json
   /{id}:
     displayName: Get Access Type by Id
     description: Instance of a Access Type by given Id
@@ -189,3 +152,45 @@ types:
             example:
               strict: false
               value: !include examples/accessTypes/access_type_collection_get_200_response.json
+  post:
+    description: Create an access type in specific KB Credentials
+    body:
+      application/vnd.api+json:
+        description: Create an access type in specific KB Credentials
+        type: accessTypePostRequest
+        example:
+          strict: false
+          value: !include examples/accessTypes/access_type_post_request.json
+    responses:
+      201:
+        description: Created
+        body:
+          application/vnd.api+json:
+            type: accessType
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_post_201_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_post_400_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_post_404_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/accessTypes/access_type_post_422_response.json
