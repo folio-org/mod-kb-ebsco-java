@@ -9,6 +9,7 @@
     "id": {
       "type": "string",
       "description": "Root Proxy ID",
+      "enum": ["root-proxy"],
       "example": "root-proxy"
     },
     "proxyTypeId": {

@@ -197,6 +197,11 @@
           "permissionsRequired": ["kb-ebsco.root-proxy.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{id}/root-proxy",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.root-proxy.get"]
+        },
+        {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/root-proxy",
           "permissionsRequired": ["kb-ebsco.root-proxy.put"]
@@ -475,6 +480,11 @@
       "description": "Get proxy types"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.root-proxy.get",
+      "displayName": "get root proxy by KB credentials",
+      "description": "Get root proxy by KB credentials"
+    },
+    {
       "permissionName": "kb-ebsco.root-proxy.get",
       "displayName": "get root proxy",
       "description": "Get root proxy"
@@ -587,6 +597,7 @@
         "kb-ebsco.kb-credentials.custom-labels.collection.get",
         "kb-ebsco.kb-credentials.custom-labels.collection.put",
         "kb-ebsco.kb-credentials.proxy-types.collection.get",
+        "kb-ebsco.kb-credentials.root-proxy.get",
         "kb-ebsco.kb-credentials.access-types.collection.get",
         "kb-ebsco.kb-credentials.access-types.collection.post"
       ]
@@ -659,6 +670,7 @@
         "kb-ebsco.kb-credentials.proxy-types.collection.get",
         "kb-ebsco.proxy-types.collection.get",
         "kb-ebsco.root-proxy.get",
+        "kb-ebsco.kb-credentials.root-proxy.get",
         "kb-ebsco.root-proxy.put",
         "kb-ebsco.tags.collection.get",
         "kb-ebsco.unique.tags.collection.get",
