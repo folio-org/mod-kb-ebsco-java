@@ -6,7 +6,7 @@ import lombok.Setter;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Tags;
 
 @Getter
@@ -18,7 +18,7 @@ public class ResourceResult implements Accessible, Tagable {
   private PackageByIdData packageData;
   private boolean includeTitle;
   private Tags tags;
-  private AccessTypeCollectionItem accessType;
+  private AccessType accessType;
 
   public ResourceResult(Title title, VendorById vendor, PackageByIdData packageData, boolean includeTitle) {
     this.title = title;

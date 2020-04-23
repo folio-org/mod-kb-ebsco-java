@@ -17,8 +17,8 @@ import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -84,7 +84,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   private List<String> extractAccessTypeIds(AccessTypeCollection accessTypeCollection) {
     return accessTypeCollection.getData()
       .stream()
-      .map(AccessTypeCollectionItem::getId)
+      .map(AccessType::getId)
       .collect(Collectors.toList());
   }
 

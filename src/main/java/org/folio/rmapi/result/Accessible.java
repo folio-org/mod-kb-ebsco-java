@@ -1,10 +1,10 @@
 package org.folio.rmapi.result;
 
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 
 public interface Accessible {
 
-  AccessTypeCollectionItem getAccessType();
+  AccessType getAccessType();
 
-  void setAccessType(AccessTypeCollectionItem accessType);
+  void setAccessType(AccessType accessType);
 }

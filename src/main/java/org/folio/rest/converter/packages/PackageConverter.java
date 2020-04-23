@@ -18,7 +18,7 @@ import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.HasManyRelationship;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -50,7 +50,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     PackageByIdData packageByIdData = result.getPackageData();
     Titles titles = result.getTitles();
     VendorById vendor = result.getVendor();
-    AccessTypeCollectionItem accessType = result.getAccessType();
+    AccessType accessType = result.getAccessType();
 
     Package packageData = new Package()
       .withData(packageCollectionItemConverter.convert(packageByIdData))
@@ -94,7 +94,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
         .withAccessType(new HasOneRelationship()
           .withData(new RelationshipData()
             .withId(accessType.getId())
-            .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES.value()))
+            .withType(AccessType.Type.ACCESS_TYPES.value()))
           .withMeta(new MetaDataIncluded()
             .withIncluded(true)));
     }

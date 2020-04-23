@@ -5,11 +5,15 @@ import static org.apache.commons.lang3.StringUtils.join;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_FIELD_LIST;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.JSONB_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.INSERT_ACCESS_TYPE_QUERY;
+import static org.folio.repository.holdings.HoldingsTableConstants.JSONB_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,11 +30,12 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
-import org.jetbrains.annotations.NotNull;
+import io.vertx.ext.sql.UpdateResult;
 
+import org.folio.db.DbUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.persist.PostgresClient;
@@ -41,10 +46,12 @@ public class AccessTypesTestUtil {
   public static final String STUB_ACCESS_TYPE_NAME_2 = "Trial";
   public static final String STUB_ACCESS_TYPE_NAME_3 = "Purchased with perpetual access";
 
-  public static List<AccessTypeCollectionItem> getAccessTypes(Vertx vertx) {
+  public static final String KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types";
+
+  public static List<AccessType> getAccessTypes(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
-    CompletableFuture<List<AccessTypeCollectionItem>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesTestTable(),
+    CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesTestOldTable(),
       event -> future.complete(event.result().getRows().stream()
         .map(row -> row.getString(JSONB_COLUMN))
         .map(json -> parseAccessType(mapper, json))
@@ -66,10 +73,10 @@ public class AccessTypesTestUtil {
     future.join();
   }
 
-  public static List<AccessTypeCollectionItem> insertAccessTypes(List<AccessTypeCollectionItem> items, Vertx vertx) {
+  public static List<AccessType> insertAccessTypes(List<AccessType> items, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String insertStatement = "INSERT INTO " + accessTypesTestTable() +
+    String insertStatement = "INSERT INTO " + accessTypesTestOldTable() +
       "(" + ID_COLUMN + "," + JSONB_COLUMN + ") VALUES " + join(Collections.nCopies(items.size(), "(?,?)"), ",") +
       " RETURNING " + ID_COLUMN;
     JsonArray params = createParams(items);
@@ -82,6 +89,32 @@ public class AccessTypesTestUtil {
       }
     });
     return populateAccessTypesIds(items, future.join().getRows());
+  }
+
+  public static String insertAccessType(AccessType accessType, Vertx vertx) {
+    CompletableFuture<UpdateResult> future = new CompletableFuture<>();
+
+    String query = String.format(INSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
+
+    String id = UUID.randomUUID().toString();
+    JsonArray params = DbUtils.createParams(Arrays.asList(
+      id,
+      accessType.getAttributes().getCredentialsId(),
+      accessType.getAttributes().getName(),
+      accessType.getAttributes().getDescription(),
+      Instant.now().toString(),
+      UUID.randomUUID().toString(),
+      "username",
+      accessType.getCreator().getLastName(),
+      accessType.getCreator().getFirstName(),
+      accessType.getCreator().getMiddleName(),
+      null, null, null, null, null, null
+    ));
+
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    future.join();
+
+    return id;
   }
 
   public static List<AccessTypeMapping> getAccessTypeMappings(Vertx vertx) {
@@ -105,9 +138,9 @@ public class AccessTypesTestUtil {
     }
   }
 
-  private static List<AccessTypeCollectionItem> populateAccessTypesIds(List<AccessTypeCollectionItem> items,
+  private static List<AccessType> populateAccessTypesIds(List<AccessType> items,
                                                                        List<JsonObject> rows) {
-    List<AccessTypeCollectionItem> result = new ArrayList<>(items.size());
+    List<AccessType> result = new ArrayList<>(items.size());
 
     for (int i = 0; i < items.size(); i++) {
       result.add(items.get(i)
@@ -117,7 +150,7 @@ public class AccessTypesTestUtil {
     return result;
   }
 
-  private static JsonArray createParams(List<AccessTypeCollectionItem> items) {
+  private static JsonArray createParams(List<AccessType> items) {
     JsonArray params = new JsonArray();
 
     items.forEach(item -> {
@@ -128,13 +161,17 @@ public class AccessTypesTestUtil {
     return params;
   }
 
-  private static AccessTypeCollectionItem parseAccessType(ObjectMapper mapper, String json) {
+  private static AccessType parseAccessType(ObjectMapper mapper, String json) {
     try {
-      return mapper.readValue(json, AccessTypeCollectionItem.class);
+      return mapper.readValue(json, AccessType.class);
     } catch (IOException e) {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse access type", e);
     }
+  }
+
+  private static String accessTypesTestOldTable() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME_OLD;
   }
 
   private static String accessTypesTestTable() {
@@ -145,41 +182,38 @@ public class AccessTypesTestUtil {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
   }
 
-  @NotNull
-  public static List<AccessTypeCollectionItem> testData() {
-    AccessTypeCollectionItem accessType1 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+  public static List<AccessType> testData() {
+    return testData(null);
+  }
+
+  public static List<AccessType> testData(String credentialsId) {
+    AccessType accessType1 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME)
         .withDescription("Access Type description 1"))
       .withCreator(new UserDisplayInfo()
         .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
-        .withFirstName("first name")
         .withLastName("last name"));
 
-    AccessTypeCollectionItem accessType2 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+    AccessType accessType2 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME_2)
         .withDescription("Access Type description 2"))
       .withCreator(new UserDisplayInfo()
         .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
-        .withFirstName("first name")
         .withLastName("last name"));
 
-    AccessTypeCollectionItem accessType3 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+    AccessType accessType3 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME_3)
         .withDescription("Access Type description 3"))
       .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
         .withFirstName("first name")
         .withLastName("last name"));
 

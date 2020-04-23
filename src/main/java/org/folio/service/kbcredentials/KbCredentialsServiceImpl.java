@@ -4,8 +4,8 @@ import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-import static org.folio.common.FutureUtils.failedFuture;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
+import static org.folio.rest.util.TokenUtil.fetchUserInfo;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -16,7 +16,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.Context;
@@ -27,7 +26,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
-import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -35,7 +33,6 @@ import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
-import org.folio.rest.util.TokenUtil;
 import org.folio.rest.util.UserInfo;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPostBodyValidator;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPutBodyValidator;
@@ -43,7 +40,6 @@ import org.folio.service.exc.ServiceExceptions;
 
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
-  private static final String INVALID_TOKEN_MESSAGE = "Invalid token";
   private static final String USER_CREDS_NOT_FOUND_MESSAGE = "User credentials not found: userId = %s";
 
   @Autowired
@@ -70,6 +66,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   public KbCredentialsServiceImpl(
     Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter) {
     this.credentialsFromDBConverter = credentialsFromDBConverter;
+  }
+
+  private static <T> Function<Optional<T>, CompletableFuture<Optional<T>>> ifEmpty(
+    Supplier<CompletableFuture<Optional<T>>> supplier) {
+    return optional -> optional
+      .map(value -> completedFuture(Optional.of(value)))
+      .orElse(supplier.get());
   }
 
   @Override
@@ -145,13 +148,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       });
   }
 
-  private CompletableFuture<UserInfo> fetchUserInfo(Map<String, String> okapiHeaders) {
-    Optional<UserInfo> tokenInfo = TokenUtil.userInfoFromToken(okapiHeaders.get(XOkapiHeaders.TOKEN));
-    return tokenInfo
-      .map(CompletableFuture::completedFuture)
-      .orElse(failedFuture(new NotAuthorizedException(INVALID_TOKEN_MESSAGE)));
-  }
-
   private CompletableFuture<DbKbCredentials> fetchDbKbCredentials(String id, Map<String, String> okapiHeaders) {
     return repository.findById(id, tenantId(okapiHeaders)).thenApply(getCredentialsOrFail(id));
   }
@@ -160,13 +156,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return repository.findByUserId(userInfo.getUserId(), tenant)
       .thenCompose(ifEmpty(() -> findSingleKbCredentials(tenant)))
       .thenApply(getCredentialsOrFailWithUserId(userInfo.getUserId()));
-  }
-
-  private static <T> Function<Optional<T>, CompletableFuture<Optional<T>>> ifEmpty(
-    Supplier<CompletableFuture<Optional<T>>> supplier) {
-    return optional -> optional
-      .map(value -> completedFuture(Optional.of(value)))
-      .orElse(supplier.get());
   }
 
   private CompletableFuture<Optional<DbKbCredentials>> findSingleKbCredentials(String tenant) {
@@ -185,7 +174,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFailWithUserId(String userId) {
     return credentials -> credentials.orElseThrow(
-        () -> new NotFoundException(format(USER_CREDS_NOT_FOUND_MESSAGE, userId)));
+      () -> new NotFoundException(format(USER_CREDS_NOT_FOUND_MESSAGE, userId)));
   }
 
 }
