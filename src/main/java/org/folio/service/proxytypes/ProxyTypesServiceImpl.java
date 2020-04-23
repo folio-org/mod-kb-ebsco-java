@@ -48,7 +48,7 @@ public class ProxyTypesServiceImpl implements ProxyTypesService {
   private CompletableFuture<ProxyTypes> retrieveProxies(KbCredentials kbCredentials) {
     final HoldingsIQServiceImpl holdingsIQService = createHoldingsIQService(kbCredentials);
     return holdingsIQService.retrieveProxies()
-      .thenApply(proxyTypesConverter:: convert)
+      .thenApply(proxyTypesConverter::convert)
       .thenApply(proxyTypes -> setCredentialsId(proxyTypes, kbCredentials.getId()));
   }
 

@@ -48,6 +48,14 @@ types:
             example:
               strict: false
               value: !include examples/proxies/proxy_types_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/proxies/proxy_types_by_credentials_id_get_404_response.json
 /eholdings/root-proxy:
   displayName: Root Proxy
   description: Root Proxy that is currently selected from proxy-type list.

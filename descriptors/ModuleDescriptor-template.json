@@ -575,7 +575,8 @@
         "kb-ebsco.kb-credentials.item.put",
         "kb-ebsco.kb-credentials.item.delete",
         "kb-ebsco.kb-credentials.custom-labels.collection.get",
-        "kb-ebsco.kb-credentials.custom-labels.collection.put"
+        "kb-ebsco.kb-credentials.custom-labels.collection.put",
+        "kb-ebsco.kb-credentials.proxy-types.collection.get"
       ]
     },
     {

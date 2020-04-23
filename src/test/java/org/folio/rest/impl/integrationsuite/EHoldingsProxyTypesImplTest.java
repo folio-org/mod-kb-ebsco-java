@@ -41,10 +41,10 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   private static final String STUB_CREDENTILS_ID = "12312312-1231-1231-a111-111111111111";
   private static final String JOHN_ID = "47d9ca93-9c82-4d6a-8d7f-7a73963086b9";
   private static final String JANE_ID = "781fce7d-5cf5-490d-ad89-a3d192eb526c";
-  private static String johnToken = "eyJhbGciOiJIUzI1NiJ9." +
+  private static final String johnToken = "eyJhbGciOiJIUzI1NiJ9." +
     "eyJzdWIiOiJqb2huX2RvZSIsInVzZXJfaWQiOiI0N2Q5Y2E5My05YzgyLTRkNmEtOGQ3Zi03YTczOTYzMDg2Y" +
     "jkiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImZzIn0.HTx-4aUFIPtEHO-6ZcYML6K3-0VRDGv3KX44JoT3hxg";
-  private static String janeToken = "eyJhbGciOiJIUzI1NiJ9." +
+  private static final String janeToken = "eyJhbGciOiJIUzI1NiJ9." +
     "eyJzdWIiOiJqYW5lX2RvZSIsInVzZXJfaWQiOiI3ODFmY2U3ZC01Y2Y1LTQ5MGQtYWQ4OS1hM2QxOTJlYjUyN" +
     "mMiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImZzIn0.kM0PYy49d92g5qhqPgTFz8aknjO7fQlZ5kljCC_M3-c";
   private static final Header JOHN_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, johnToken);
@@ -179,7 +179,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404WhenRMAPIReturns403ErrorStatus() {
+  public void shouldReturn404WhenCredentialsNotFOund() {
     final String path = String.format(EHOLDINGS_PROXY_TYPES_BY_CREDENTIALS_ID_URL, "11111111-1111-1111-a111-111111111111");
     final JsonapiError error = getWithStatus(path, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
     assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));

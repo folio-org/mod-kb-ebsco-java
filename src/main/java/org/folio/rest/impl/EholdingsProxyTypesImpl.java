@@ -13,6 +13,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdProxyTypes;
 import org.folio.rest.jaxrs.resource.EholdingsProxyTypes;
@@ -43,6 +44,8 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes, EholdingsKb
   }
 
   @Override
+  @Validate
+  @HandleValidationErrors
   public void getEholdingsKbCredentialsProxyTypesById(String id, Map<String, String> okapiHeaders,
                                                       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
