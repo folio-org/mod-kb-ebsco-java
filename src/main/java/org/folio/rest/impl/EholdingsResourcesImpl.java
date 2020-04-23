@@ -53,7 +53,7 @@ import org.folio.repository.tag.TagRepository;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.resources.ResourceRequestConverter;
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollection;
 import org.folio.rest.jaxrs.model.ResourcePostBulkFetchRequest;
@@ -236,7 +236,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     .executeWithResult(ResourceBulkFetchCollection.class);
   }
 
-  private CompletableFuture<AccessTypeCollectionItem> fetchAccessType(ResourcePutRequest entity,
+  private CompletableFuture<AccessType> fetchAccessType(ResourcePutRequest entity,
                                                                       Map<String, String> okapiHeaders) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {
@@ -247,7 +247,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<ResourceResult> updateAccessType(String recordId, Title titleResult,
-                                                             AccessTypeCollectionItem accessType,
+                                                             AccessType accessType,
                                                              Map<String, String> okapiHeaders) {
     return updateRecordMapping(accessType, recordId, okapiHeaders)
       .thenApply(a -> {
@@ -257,7 +257,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       });
   }
 
-  private CompletableFuture<Void> updateRecordMapping(AccessTypeCollectionItem accessType, String recordId,
+  private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       Map<String, String> okapiHeaders) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.RESOURCE, okapiHeaders);
   }

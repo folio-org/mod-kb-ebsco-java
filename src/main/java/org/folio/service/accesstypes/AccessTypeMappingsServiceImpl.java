@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.accesstypes.AccessTypeMappingsRepository;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.model.filter.AccessTypeFilter;
 
 @Component
@@ -46,7 +46,7 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   }
 
   @Override
-  public CompletableFuture<Void> update(AccessTypeCollectionItem accessType, String recordId, RecordType recordType,
+  public CompletableFuture<Void> update(AccessType accessType, String recordId, RecordType recordType,
                                         Map<String, String> okapiHeaders) {
     if (accessType == null) {
       return mappingRepository.deleteByRecord(recordId, recordType, tenantId(okapiHeaders));
@@ -77,7 +77,7 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
       tenantId(okapiHeaders));
   }
 
-  private AccessTypeMapping createAccessTypeMapping(AccessTypeCollectionItem accessType, String recordId,
+  private AccessTypeMapping createAccessTypeMapping(AccessType accessType, String recordId,
                                                     RecordType recordType) {
     return AccessTypeMapping.builder()
       .id(UUID.randomUUID().toString())

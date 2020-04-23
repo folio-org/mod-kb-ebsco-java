@@ -248,6 +248,11 @@
           "permissionsRequired": ["kb-ebsco.access-types.collection.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.collection.get"]
+        },
+        {
           "methods": ["POST"],
           "pathPattern": "/eholdings/access-types",
           "permissionsRequired": ["kb-ebsco.access-types.item.post"],
@@ -510,6 +515,11 @@
       "description": "Get Access Types collection"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.access-types.collection.get",
+      "displayName": "get Access Types collection by kb credentials",
+      "description": "Get Access Types collection KB credentials"
+    },
+    {
       "permissionName": "kb-ebsco.access-types.item.post",
       "displayName": "post Access Type collection item",
       "description": "Post Access Type collection item"
@@ -565,7 +575,8 @@
         "kb-ebsco.kb-credentials.item.put",
         "kb-ebsco.kb-credentials.item.delete",
         "kb-ebsco.kb-credentials.custom-labels.collection.get",
-        "kb-ebsco.kb-credentials.custom-labels.collection.put"
+        "kb-ebsco.kb-credentials.custom-labels.collection.put",
+        "kb-ebsco.kb-credentials.access-types.collection.get"
       ]
     },
     {

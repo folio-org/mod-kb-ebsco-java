@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Access Type object schema for a collection",
   "description": "Access Type object schema for a collection",
-  "javaType": "org.folio.rest.jaxrs.model.AccessTypeCollectionItem",
+  "javaType": "org.folio.rest.jaxrs.model.AccessType",
   "type": "object",
   "additionalProperties": false,
   "properties": {
