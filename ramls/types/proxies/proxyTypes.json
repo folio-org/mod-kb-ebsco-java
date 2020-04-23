@@ -14,6 +14,11 @@
         "$ref": "proxyTypesData.json"
       }
     },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in packages collection",
+      "$ref": "../metaTotalResults.json"
+    },
     "jsonapi": {
       "type": "object",
       "description": "version of json api",
