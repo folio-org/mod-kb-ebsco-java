@@ -99,7 +99,7 @@
     },
     {
       "tableName": "access_types_mapping",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.3.0",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-access-type-mapping-table.sql"
