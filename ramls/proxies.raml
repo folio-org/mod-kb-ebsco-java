@@ -101,3 +101,29 @@ types:
             example:
               strict: false
               value: !include examples/proxies/root_proxy_put_422_response.json
+/eholdings/kb-credentials/{id}/root-proxy:
+  displayName: Root Proxy
+  description: Root Proxy that is currently selected from proxy-type list for KB Credentials.
+  uriParameters:
+    id:
+      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  get:
+    description: Get the ID of root proxy that is currently selected from proxy-type list.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Get the ID of root proxy that is currently selected from proxy-type list.
+            type: rootProxy
+            example:
+              strict: false
+              value: !include examples/proxies/root_proxy_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/proxies/root_proxy_by_credentials_id_get_404_response.json

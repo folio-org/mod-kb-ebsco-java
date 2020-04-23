@@ -9,12 +9,20 @@
     "id": {
       "type": "string",
       "description": "Unique identifier of root proxy",
+      "enum": ["root-proxy"],
       "example": "root-proxy"
     },
     "type": {
       "type": "string",
       "description": "Type of root proxy",
+      "enum": ["rootProxies"],
       "example": "rootProxies"
+    },
+    "credentialsId": {
+      "type": "string",
+      "description": "The UUID of credentials",
+      "$ref": "../../raml-util/schemas/uuid.schema",
+      "examples": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
     },
     "attributes": {
       "type": "object",
