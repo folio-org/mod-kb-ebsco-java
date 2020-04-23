@@ -67,9 +67,12 @@ public class KbCredentialsTestUtil {
     new KbCredentialsConverter.KbCredentialsFromDbNonSecuredConverter(STUB_API_KEY);
 
   public static String insertKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
+    return insertKbCredentials(UUID.randomUUID().toString(), url, name, apiKey, customerId, vertx);
+  }
+
+  public static String insertKbCredentials(String id, String url, String name, String apiKey, String customerId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String id = UUID.randomUUID().toString();
     String insertStatement = String.format(UPSERT_CREDENTIALS_QUERY, kbCredentialsTestTable());
     JsonArray params = DbUtils.createParams(Arrays.asList(id, url, name, apiKey, customerId,
       Instant.now().toString(), STUB_USER_ID, STUB_USERNAME, null, null, null

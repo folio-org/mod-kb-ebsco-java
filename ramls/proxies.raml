@@ -30,6 +30,32 @@ types:
             example:
               strict: false
               value: !include examples/proxies/proxy_types_get_200_response.json
+/eholdings/kb-credentials/{id}/proxy-types:
+  displayName: Proxy Types
+  description: List of supported proxy types.
+  uriParameters:
+    id:
+      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  get:
+    description: Get a list of supported proxy types for KB Credentials.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: List of supported proxy types for a given customer.
+            type: proxyTypes
+            example:
+              strict: false
+              value: !include examples/proxies/proxy_types_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/proxies/proxy_types_by_credentials_id_get_404_response.json
 /eholdings/root-proxy:
   displayName: Root Proxy
   description: Root Proxy that is currently selected from proxy-type list.
