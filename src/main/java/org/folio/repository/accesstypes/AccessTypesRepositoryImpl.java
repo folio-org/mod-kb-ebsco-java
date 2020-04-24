@@ -19,6 +19,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENT
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
@@ -33,6 +34,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_N
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -85,7 +87,21 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
 
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readAccessTypes);
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessTypes);
+  }
+
+  @Override
+  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(String credentialsId,
+                                                                                    String accessTypeId, String tenantId) {
+    String query = String.format(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY,
+      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+
+    LOG.info(LOG_SELECT_QUERY, query);
+
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, createParams(Arrays.asList(accessTypeId, credentialsId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
   }
 
   @Override
@@ -140,8 +156,13 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       rs -> rs.getResults().get(0).getInteger(0));
   }
 
-  private List<DbAccessType> readAccessTypes(ResultSet resultSet) {
+  private List<DbAccessType> mapAccessTypes(ResultSet resultSet) {
     return mapItems(resultSet.getRows(), this::mapAccessType);
+  }
+
+  private Optional<DbAccessType> mapSingleAccessType(ResultSet resultSet) {
+    List<JsonObject> rows = resultSet.getRows();
+    return rows.isEmpty() ? Optional.empty() : Optional.of(mapAccessType(rows.get(0)));
   }
 
   private DbAccessType mapAccessType(JsonObject resultRow) {

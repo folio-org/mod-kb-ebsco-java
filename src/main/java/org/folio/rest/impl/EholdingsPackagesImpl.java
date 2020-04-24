@@ -219,7 +219,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (accessTypeId == null) {
       template.requestAction(context -> postCustomPackage(packagePost, context));
     } else {
-      template.requestAction(context -> accessTypesService.findById(accessTypeId, okapiHeaders)
+      template.requestAction(context -> accessTypesService.findByUserAndId(accessTypeId, okapiHeaders)
         .thenCompose(accessType -> postCustomPackage(packagePost, context)
           .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))));
     }
@@ -407,7 +407,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (accessTypeId == null) {
       return CompletableFuture.completedFuture(null);
     } else {
-      return accessTypesService.findById(accessTypeId, okapiHeaders);
+      return accessTypesService.findByUserAndId(accessTypeId, okapiHeaders);
     }
   }
 

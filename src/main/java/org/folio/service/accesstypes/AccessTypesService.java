@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-
 import org.folio.repository.RecordType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -16,12 +15,15 @@ public interface AccessTypesService {
 
   CompletableFuture<AccessTypeCollection> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders);
 
+  CompletableFuture<AccessType> findByUserAndId(String accessTypeId, Map<String, String> okapiHeaders);
+
+  CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                 Map<String, String> okapiHeaders);
+
   CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames, Map<String, String> okapiHeaders);
 
-  CompletableFuture<AccessType> findById(String id, Map<String, String> okapiHeaders);
-
   CompletableFuture<AccessType> findByRecord(String recordId, RecordType recordType,
-                                                                             Map<String, String> okapiHeaders);
+                                             Map<String, String> okapiHeaders);
 
   CompletableFuture<AccessType> save(String credentialsId, AccessTypePostRequest postRequest,
                                      Map<String, String> okapiHeaders);
