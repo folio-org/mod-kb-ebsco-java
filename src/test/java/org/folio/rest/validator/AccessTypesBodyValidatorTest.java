@@ -18,57 +18,62 @@ public class AccessTypesBodyValidatorTest {
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPutBody() {
-    AccessType postRequest = null;
-    validator.validate(postRequest);
+    validator.validate(null, null);
   }
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenEmptyPostDataAttributes() {
-    AccessType postRequest = new AccessType();
-    postRequest.withAttributes(new AccessTypeDataAttributes());
-    validator.validate(postRequest);
+    final AccessType request = stubAccessType();
+    request.setAttributes((new AccessTypeDataAttributes()));
+    validator.validate(null, request);
   }
 
   @Test
   public void shouldThrowExceptionWhenNameIsTooLong() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid name");
-    final AccessType request = new AccessType()
-      .withAttributes(
-        new AccessTypeDataAttributes().withName(RandomStringUtils.randomAlphanumeric(76)));
-    validator.validate(request);
+    final AccessType request = stubAccessType();
+    request.getAttributes().setName(RandomStringUtils.randomAlphanumeric(76));
+    validator.validate(null, request);
   }
 
   @Test
   public void shouldThrowExceptionWhenDescriptionIsTooLong() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid description");
-    final AccessType request = new AccessType()
-      .withAttributes(
-        new AccessTypeDataAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(75))
-          .withDescription(RandomStringUtils.randomAlphanumeric(151)));
-    validator.validate(request);
+    final AccessType request = stubAccessType();
+    request.getAttributes().setDescription(RandomStringUtils.randomAlphanumeric(151));
+    validator.validate(null, request);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenCredentialsIdNotEquals() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage("Invalid credentialsId");
+    final AccessType request = stubAccessType();
+    request.getAttributes().setCredentialsId("10");
+    validator.validate("1", request);
   }
 
   @Test
   public void shouldNotThrowExceptionWhenDescriptionIsNull() {
-    final AccessType request = new AccessType()
-      .withAttributes(
-        new AccessTypeDataAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(75))
-          .withDescription(null));
-    validator.validate(request);
+    final AccessType request = stubAccessType();
+    request.getAttributes().setDescription(null);
+    validator.validate(null, request);
   }
 
 
   @Test
   public void shouldNotThrowExceptionWhenValidParameters() {
-    final AccessType request = new AccessType()
+    final AccessType request = stubAccessType();
+    validator.validate(null, request);
+  }
+
+  private AccessType stubAccessType() {
+    return new AccessType()
       .withAttributes(
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))
           .withDescription(RandomStringUtils.randomAlphanumeric(150)));
-    validator.validate(request);
   }
 }

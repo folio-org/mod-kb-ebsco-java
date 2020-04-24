@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import org.folio.repository.RecordType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
+import org.folio.rest.jaxrs.model.AccessTypePostRequest;
 
 public interface AccessTypesService {
 
@@ -22,7 +23,8 @@ public interface AccessTypesService {
   CompletableFuture<AccessType> findByRecord(String recordId, RecordType recordType,
                                                                              Map<String, String> okapiHeaders);
 
-  CompletableFuture<AccessType> save(AccessType accessType, Map<String, String> okapiHeaders);
+  CompletableFuture<AccessType> save(String credentialsId, AccessTypePostRequest postRequest,
+                                     Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> update(String id, AccessType accessType, Map<String, String> okapiHeaders);
 
