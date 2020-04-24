@@ -7,15 +7,17 @@ import org.folio.common.ListUtils;
 
 public final class SqlQueryHelper {
 
+  private static final String FROM_KEYWORD = "FROM %s";
+
   private SqlQueryHelper() {
 
   }
 
   public static String selectQuery(String... columns) {
     if (columns.length == 0) {
-      return "SELECT * FROM %s t1";
+      return "SELECT * " + FROM_KEYWORD + " t1";
     } else {
-      return "SELECT " + joinWithComa(columns) + " FROM %s";
+      return "SELECT " + joinWithComa(columns) + " " + FROM_KEYWORD;
     }
   }
 
@@ -25,11 +27,15 @@ public final class SqlQueryHelper {
   }
 
   public static String deleteQuery() {
-    return "DELETE FROM %s";
+    return "DELETE " + FROM_KEYWORD;
   }
 
   public static String leftJoinQuery(String query, String columnT1, String columnT2) {
     return "LEFT JOIN (" + query + ") t2 ON t1." + columnT1 + " = t2." + columnT2;
+  }
+
+  public static String count() {
+    return count("*", "count");
   }
 
   public static String count(String expression, String asColumn) {

@@ -72,7 +72,7 @@ public class UserLookUpTest {
     info.thenCompose(userInfo -> {
       context.assertNotNull(userInfo);
 
-      context.assertEquals("cedrick", userInfo.getUserName());
+      context.assertEquals("cedrick", userInfo.getUsername());
       context.assertEquals("firstname_test", userInfo.getFirstName());
       context.assertNull(userInfo.getMiddleName());
       context.assertEquals("lastname_test", userInfo.getLastName());

@@ -27,6 +27,7 @@ public class ValidatorUtil {
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
+  private static final String MUST_BE_EQUALS = "%s should be equals to '%s' but actual is '%s'";
 
   private ValidatorUtil() {
   }
@@ -40,7 +41,7 @@ public class ValidatorUtil {
   }
 
   public static void checkIsEmpty(String paramName, String value) {
-    if (!StringUtils.isEmpty(value)) {
+    if (StringUtils.isNotEmpty(value)) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_EMPTY_FORMAT, paramName));
@@ -125,17 +126,10 @@ public class ValidatorUtil {
     return LocalDate.parse(date, DATE_PATTERN);
   }
 
-  public static boolean isUrlValid(String url) {
-    try {
-      new URL(url);
-      return true;
-    } catch (MalformedURLException e) {
-      return false;
-    }
-  }
-
   public static void checkUrlFormat(String paramName, String value) {
-    if (!isUrlValid(value)) {
+    try {
+      new URL(value);
+    } catch (MalformedURLException e) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_VALID_URL, paramName));
@@ -148,6 +142,15 @@ public class ValidatorUtil {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_IN_RANGE, paramName, minInclusive, maxInclusive));
+    }
+  }
+
+  public static void checkIsEqual(String paramName, String expected, String actual) {
+    if (!expected.equals(actual)) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_BE_EQUALS, paramName, expected, actual)
+      );
     }
   }
 }

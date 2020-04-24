@@ -17,10 +17,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.AccessTypePostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsAccessTypes;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdAccessTypes;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.rest.validator.AccessTypesBodyValidator;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.spring.SpringContextUtil;
 
@@ -32,8 +32,6 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @Autowired
   @Qualifier("oldAccessTypesService")
   private AccessTypesService oldAccessTypesService;
-  @Autowired
-  private AccessTypesBodyValidator bodyValidator;
   @Autowired
   private ErrorHandler errorHandler;
 
@@ -67,13 +65,13 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @Override
   @Validate
   @HandleValidationErrors
-  public void postEholdingsAccessTypes(String contentType, AccessType entity, Map<String, String> okapiHeaders,
-                                       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-
-    bodyValidator.validate(entity);
-    oldAccessTypesService.save(entity, okapiHeaders)
+  public void postEholdingsKbCredentialsAccessTypesById(String credentialsId, AccessTypePostRequest entity,
+                                                        Map<String, String> okapiHeaders,
+                                                        Handler<AsyncResult<Response>> asyncResultHandler,
+                                                        Context vertxContext) {
+    accessTypesService.save(credentialsId, entity, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
-        PostEholdingsAccessTypesResponse.respond201WithApplicationVndApiJson(accessType))))
+        PostEholdingsKbCredentialsAccessTypesByIdResponse.respond201WithApplicationVndApiJson(accessType))))
       .exceptionally(handleException(asyncResultHandler));
   }
 
@@ -94,7 +92,6 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   public void putEholdingsAccessTypesById(String id, String contentType, AccessType entity,
                                           Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    bodyValidator.validate(entity);
     oldAccessTypesService.update(id, entity, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsAccessTypesByIdResponse.respond204())))
