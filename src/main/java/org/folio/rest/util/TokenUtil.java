@@ -2,15 +2,10 @@ package org.folio.rest.util;
 
 import static org.folio.common.FutureUtils.failedFuture;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.NotAuthorizedException;
 
 import io.vertx.core.json.JsonObject;
@@ -49,25 +44,5 @@ public final class TokenUtil {
     return TokenUtil.userInfoFromToken(okapiHeaders.get(XOkapiHeaders.TOKEN))
       .map(CompletableFuture::completedFuture)
       .orElse(failedFuture(new NotAuthorizedException(INVALID_TOKEN_MESSAGE)));
-  }
-
-  public static String generateToken(String username, String userId) {
-    JsonObject header = new JsonObject().put("alg", "HS256");
-    JsonObject data = new JsonObject().put(USERNAME_KEY, username).put(USER_ID_KEY, userId);
-    byte[] encodedHeader = Base64.getUrlEncoder().encode(header.toString().getBytes());
-    byte[] encodedData = Base64.getUrlEncoder().encode(data.toString().getBytes());
-
-    try {
-      String message = new String(encodedHeader) + "." + new String(encodedData);
-      Mac sha256HMAC = Mac.getInstance("HmacSHA256");
-
-      SecretKeySpec secretKey = new SecretKeySpec("no-secret".getBytes(), "HmacSHA256");
-      sha256HMAC.init(secretKey);
-
-      byte[] signature = Base64.getUrlEncoder().encode(sha256HMAC.doFinal(message.getBytes()));
-      return new String(encodedHeader) + "." + new String(encodedData) + "." + new String(signature);
-    } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-      throw new UnsupportedOperationException(e);
-    }
   }
 }

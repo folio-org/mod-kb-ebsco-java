@@ -77,7 +77,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<List<DbAccessType>> findByCredentialsId(String credentialsId, String tenantId) {
-    String query = String.format(SELECT_BY_CREDENTIALS_ID_QUERY,
+    String query = format(SELECT_BY_CREDENTIALS_ID_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
     LOG.info(LOG_SELECT_QUERY, query);
@@ -90,7 +90,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<DbAccessType> save(DbAccessType accessType, String tenantId) {
-    String query = String.format(UPSERT_ACCESS_TYPE_QUERY, getAccessTypesTableName(tenantId));
+    String query = format(UPSERT_ACCESS_TYPE_QUERY, getAccessTypesTableName(tenantId));
 
     String id = accessType.getId();
     if (StringUtils.isBlank(accessType.getId())) {
@@ -129,7 +129,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<Integer> count(String credentialsId, String tenantId) {
-    String query = String.format(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAccessTypesTableName(tenantId));
+    String query = format(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAccessTypesTableName(tenantId));
 
     LOG.info(LOG_COUNT_QUERY, query);
 

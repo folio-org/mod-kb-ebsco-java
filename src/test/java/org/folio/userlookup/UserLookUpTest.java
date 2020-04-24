@@ -7,6 +7,7 @@ import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
 import static org.folio.rest.util.RestConstants.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.RestConstants.OKAPI_URL_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TokenUtils.generateToken;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -31,7 +32,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.folio.rest.util.TokenUtil;
 import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.userlookup.UserLookUpService;
 import org.folio.test.junit.TestStartLoggingRule;
@@ -59,7 +59,7 @@ public class UserLookUpTest {
   @Test
   public void shouldReturn200WhenUserIdIsValid(TestContext context) throws IOException, URISyntaxException {
     final String stubUserId = "88888888-8888-4888-8888-888888888888";
-    final String stubToken = TokenUtil.generateToken("cedrick", stubUserId);
+    final String stubToken = generateToken("cedrick", stubUserId);
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
@@ -94,7 +94,7 @@ public class UserLookUpTest {
   @Test
   public void shouldReturn401WhenUnauthorizedAccess(TestContext context) {
     final String stubUserId = "a49cefad-7447-4f2f-9004-de32e7a6cc53";
-    final String stubToken = TokenUtil.generateToken("cedrick", stubUserId);
+    final String stubToken = generateToken("cedrick", stubUserId);
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
@@ -122,7 +122,7 @@ public class UserLookUpTest {
   @Test
   public void shouldReturn404WhenUserNotFound(TestContext context) {
     final String stubUserId = "xyz";
-    final String stubToken = TokenUtil.generateToken("cedrick", stubUserId);
+    final String stubToken = generateToken("cedrick", stubUserId);
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 

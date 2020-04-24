@@ -26,7 +26,6 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.rest.util.TokenUtil.generateToken;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
@@ -45,6 +44,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.TokenUtils.generateToken;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -305,6 +305,22 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     JsonapiError errors = postWithStatus(resourcePath, postBody, SC_BAD_REQUEST, USER8_TOKEN).as(JsonapiError.class);
 
     assertEquals("Maximum number of access types allowed is 2", errors.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn400WhenPostAccessTypeWithDuplicateName() throws IOException, URISyntaxException {
+    List<AccessType> accessTypes = testData(credentialsId);
+    insertAccessType(accessTypes.get(0), vertx);
+
+    AccessType accessType = stubbedAccessType();
+    stubbedAccessType().getAttributes().setName(accessTypes.get(0).getAttributes().getName());
+    String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));
+
+    mockValidAccessTypesLimit();
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
+    JsonapiError errors = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN).as(JsonapiError.class);
+
+    assertEquals("Duplicate name", errors.getErrors().get(0).getTitle());
   }
 
   @Test

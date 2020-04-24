@@ -1,11 +1,12 @@
 package org.folio.service.accesstypes;
 
+import static java.lang.String.format;
+
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -14,16 +15,12 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.BadRequestException;
 
-import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.FutureUtils;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.repository.RecordType;
@@ -40,10 +37,7 @@ import org.folio.service.userlookup.UserLookUpService;
 @Component("newAccessTypesService")
 public class AccessTypesServiceImpl implements AccessTypesService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AccessTypesServiceImpl.class);
-
-  private static final String ACCESS_TYPES_LIMIT_PROP = "access.types.number.limit.value";
-  private static final String MAXIMUM_ACCESS_TYPES_MESSAGE = "Maximum number of access types allowed is ";
+  private static final String MAXIMUM_ACCESS_TYPES_MESSAGE = "Maximum number of access types allowed is %s";
 
   @Autowired
   private UserLookUpService userLookUpService;
@@ -70,6 +64,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Value("${kb.ebsco.credentials.access.types.limit}")
   private int accessTypesLimit;
+  @Value("${kb.ebsco.credentials.access.types.configuration.limit.code}")
+  private String configurationLimitCode;
 
   @Override
   public CompletableFuture<AccessTypeCollection> findByUser(Map<String, String> okapiHeaders) {
@@ -109,7 +105,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     bodyValidator.validate(credentialsId, requestData);
     return validateAccessTypeLimit(credentialsId, okapiHeaders)
       .thenCompose(o -> userLookUpService.getUserInfo(okapiHeaders))
-      .thenApply(user -> setMetaInfo(Objects.requireNonNull(accessTypeToDbConverter.convert(requestData)), user))
+      .thenApply(userInfo -> setMetaInfo(Objects.requireNonNull(accessTypeToDbConverter.convert(requestData)), userInfo))
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
       .thenApply(accessTypeFromDbConverter::convert);
   }
@@ -125,34 +121,26 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(String credentialsId, Map<String, String> okapiHeaders) {
-    Future<Integer> configurationLimit = configuration.getInt(ACCESS_TYPES_LIMIT_PROP, accessTypesLimit,
-      new OkapiParams(okapiHeaders));
-    CompletableFuture<Integer> allowed = mapVertxFuture(configurationLimit);
-    CompletableFuture<Integer> stored = repository.count(credentialsId, tenantId(okapiHeaders));
-    return FutureUtils
-      .allOfSucceeded(Arrays.asList(allowed, stored), throwable -> LOG.warn(throwable.getMessage(), throwable))
-      .thenApply(this::checkAccessTypesSize);
+    return mapVertxFuture(configuration.getInt(configurationLimitCode, accessTypesLimit, new OkapiParams(okapiHeaders)))
+      .thenCombine(repository.count(credentialsId, tenantId(okapiHeaders)), this::checkStoredAccessTypesAmount);
   }
 
-  private Void checkAccessTypesSize(List<Integer> futures) {
-    Integer configValue = futures.get(0);
-    //do not allow user set access type more than defaultAccessTypesMaxValue
-    int limit = configValue <= accessTypesLimit ? configValue : accessTypesLimit;
-    Integer stored = futures.get(1);
+  private Void checkStoredAccessTypesAmount(int configLimit, int stored) {
+    int limit = configLimit <= accessTypesLimit ? configLimit : accessTypesLimit;
     if (stored >= limit) {
-      throw new BadRequestException(MAXIMUM_ACCESS_TYPES_MESSAGE + limit);
+      throw new BadRequestException(format(MAXIMUM_ACCESS_TYPES_MESSAGE, limit));
     }
     return null;
   }
 
-  private DbAccessType setMetaInfo(DbAccessType dbAccessType, UserLookUp user) {
+  private DbAccessType setMetaInfo(DbAccessType dbAccessType, UserLookUp userInfo) {
     return dbAccessType.toBuilder()
       .createdDate(Instant.now())
-      .createdByUserId(user.getUserId())
-      .createdByUsername(user.getUsername())
-      .createdByFirstName(user.getFirstName())
-      .createdByLastName(user.getLastName())
-      .createdByMiddleName(user.getMiddleName())
+      .createdByUserId(userInfo.getUserId())
+      .createdByUsername(userInfo.getUsername())
+      .createdByFirstName(userInfo.getFirstName())
+      .createdByLastName(userInfo.getLastName())
+      .createdByMiddleName(userInfo.getMiddleName())
       .build();
   }
 }
