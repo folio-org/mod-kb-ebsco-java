@@ -20,13 +20,11 @@ import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesOldRepository;
-import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
-import org.folio.rest.jaxrs.model.UserDisplayInfo;
+import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.service.exc.ServiceExceptions;
-import org.folio.service.userlookup.UserLookUp;
-import org.folio.service.userlookup.UserLookUpService;
 
 @Primary
 @Component("oldAccessTypesService")
@@ -34,8 +32,6 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
 
   private static final String HAS_ASSIGNED_RECORDS_MESSAGE = "Can't delete access type that has assigned records";
 
-  @Autowired
-  private UserLookUpService userLookUpService;
   @Autowired
   private AccessTypeMappingsService mappingService;
   @Autowired
@@ -53,13 +49,13 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
 
   @Override
   public CompletableFuture<AccessTypeCollection> findByCredentialsId(String credentialsId,
-                                                                               Map<String, String> okapiHeaders) {
+                                                                     Map<String, String> okapiHeaders) {
     return CompletableFuture.completedFuture(null);
   }
 
   @Override
   public CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
-                                                                                  Map<String, String> okapiHeaders) {
+                                                                        Map<String, String> okapiHeaders) {
     return CompletableFuture.completedFuture(null);
   }
 
@@ -82,7 +78,7 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
 
   @Override
   public CompletableFuture<AccessType> findByRecord(String recordId, RecordType recordType,
-                                                                  Map<String, String> okapiHeaders) {
+                                                    Map<String, String> okapiHeaders) {
     return mappingService.findByRecord(recordId, recordType, okapiHeaders)
       .thenCompose(mapping -> {
         CompletableFuture<Optional<AccessType>> future = repository.findById(mapping.getAccessTypeId(),
@@ -99,13 +95,9 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> update(String id, AccessType accessType, Map<String, String> okapiHeaders) {
-    return userLookUpService.getUserInfo(okapiHeaders)
-      .thenCompose(updaterUser -> {
-        accessType.setUpdater(getUserDisplayInfo(updaterUser));
-        accessType.getMetadata().setUpdatedByUsername(updaterUser.getUsername());
-        return repository.update(id, accessType, tenantId(okapiHeaders));
-      });
+  public CompletableFuture<Void> update(String credentialsId, String id, AccessTypePutRequest entity,
+                                        Map<String, String> okapiHeaders) {
+    return CompletableFuture.completedFuture(null);
   }
 
   @Override
@@ -122,14 +114,6 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
   private CompletableFuture<Boolean> hasMappings(String id, Map<String, String> okapiHeaders) {
     return mappingService.findByAccessTypeId(id, okapiHeaders)
       .thenApply(accessTypeMappings -> !accessTypeMappings.isEmpty());
-  }
-
-  private UserDisplayInfo getUserDisplayInfo(UserLookUp userLookUp) {
-    final UserDisplayInfo userDisplayInfo = new UserDisplayInfo();
-    userDisplayInfo.setFirstName(userLookUp.getFirstName());
-    userDisplayInfo.setMiddleName(userLookUp.getMiddleName());
-    userDisplayInfo.setLastName(userLookUp.getLastName());
-    return userDisplayInfo;
   }
 
   private Function<Optional<AccessType>, AccessType> getAccessTypeOrFail(String id) {

@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -30,7 +29,9 @@ import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
+import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
+import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.validator.AccessTypesBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.kbcredentials.KbCredentialsService;
@@ -93,8 +94,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
                                                                         Map<String, String> okapiHeaders) {
-    return repository.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, tenantId(okapiHeaders))
-      .thenApply(getAccessTypeOrFail(accessTypeId))
+    return fetchDbAccessType(credentialsId, accessTypeId, okapiHeaders)
       .thenApply(accessTypeFromDbConverter::convert);
   }
 
@@ -116,20 +116,33 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     AccessType requestData = postRequest.getData();
     bodyValidator.validate(credentialsId, requestData);
     return validateAccessTypeLimit(credentialsId, okapiHeaders)
-      .thenCompose(o -> userLookUpService.getUserInfo(okapiHeaders))
-      .thenApply(userInfo -> setMetaInfo(Objects.requireNonNull(accessTypeToDbConverter.convert(requestData)), userInfo))
+      .thenApply(o -> accessTypeToDbConverter.convert(requestData))
+      .thenCombine(userLookUpService.getUserInfo(okapiHeaders), this::setCreatorMetaInfo)
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
       .thenApply(accessTypeFromDbConverter::convert);
   }
 
   @Override
-  public CompletableFuture<Void> update(String id, AccessType accessType, Map<String, String> okapiHeaders) {
-    throw new UnsupportedOperationException();
+  public CompletableFuture<Void> update(String credentialsId, String accessTypeId, AccessTypePutRequest putRequest,
+                                        Map<String, String> okapiHeaders) {
+    AccessType requestData = putRequest.getData();
+    bodyValidator.validate(credentialsId, accessTypeId, requestData);
+    return fetchDbAccessType(credentialsId, accessTypeId, okapiHeaders)
+      .thenCombine(userLookUpService.getUserInfo(okapiHeaders), this::setUpdaterMetaInfo)
+      .thenApply(accessType -> updateFields(accessType, requestData.getAttributes()))
+      .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
+      .thenApply(accessType -> null);
   }
 
   @Override
   public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
     throw new UnsupportedOperationException();
+  }
+
+  private CompletableFuture<DbAccessType> fetchDbAccessType(String credentialsId, String accessTypeId,
+                                                            Map<String, String> okapiHeaders) {
+    return repository.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, tenantId(okapiHeaders))
+      .thenApply(getAccessTypeOrFail(accessTypeId));
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(String credentialsId, Map<String, String> okapiHeaders) {
@@ -145,7 +158,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return null;
   }
 
-  private DbAccessType setMetaInfo(DbAccessType dbAccessType, UserLookUp userInfo) {
+  private DbAccessType setCreatorMetaInfo(DbAccessType dbAccessType, UserLookUp userInfo) {
     return dbAccessType.toBuilder()
       .createdDate(Instant.now())
       .createdByUserId(userInfo.getUserId())
@@ -153,6 +166,24 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .createdByFirstName(userInfo.getFirstName())
       .createdByLastName(userInfo.getLastName())
       .createdByMiddleName(userInfo.getMiddleName())
+      .build();
+  }
+
+  private DbAccessType setUpdaterMetaInfo(DbAccessType dbAccessType, UserLookUp user) {
+    return dbAccessType.toBuilder()
+      .updatedDate(Instant.now())
+      .updatedByUserId(user.getUserId())
+      .updatedByUsername(user.getUsername())
+      .updatedByFirstName(user.getFirstName())
+      .updatedByLastName(user.getLastName())
+      .updatedByMiddleName(user.getMiddleName())
+      .build();
+  }
+
+  private DbAccessType updateFields(DbAccessType accessType, AccessTypeDataAttributes attributes) {
+    return accessType.toBuilder()
+      .name(attributes.getName())
+      .description(attributes.getDescription())
       .build();
   }
 

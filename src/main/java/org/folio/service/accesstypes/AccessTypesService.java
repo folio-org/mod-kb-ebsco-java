@@ -8,6 +8,7 @@ import org.folio.repository.RecordType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
+import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 
 public interface AccessTypesService {
 
@@ -28,7 +29,8 @@ public interface AccessTypesService {
   CompletableFuture<AccessType> save(String credentialsId, AccessTypePostRequest postRequest,
                                      Map<String, String> okapiHeaders);
 
-  CompletableFuture<Void> update(String id, AccessType accessType, Map<String, String> okapiHeaders);
+  CompletableFuture<Void> update(String credentialsId, String accessTypeId, AccessTypePutRequest entity,
+                                 Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders);
 }

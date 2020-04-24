@@ -23,12 +23,6 @@ public interface AccessTypesOldRepository {
   CompletableFuture<Optional<AccessType>> findById(String id, String tenantId);
 
   /**
-   * Updates access type with given id.
-   * If access type with given id doesn't exist then returns NotFoundException as a cause.
-   */
-  CompletableFuture<Void> update(String id, AccessType accessType, String tenantId);
-
-  /**
    * Delete access type with given id and tenantId
    *
    * @param id of access type to delete
