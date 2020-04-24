@@ -1,7 +1,9 @@
 package org.folio.rest.impl.integrationsuite;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -24,6 +26,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.util.TokenUtil.generateToken;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
@@ -49,7 +52,6 @@ import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
@@ -80,17 +82,10 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   private static final String USER_2 = "22222222-2222-4222-2222-222222222222";
   private static final String USER_3 = "33333333-3333-4333-3333-333333333333";
 
-  private static final Header USER8_TOKEN = new Header(XOkapiHeaders.TOKEN,
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjZWRyaWNrIiwidXNlcl9pZCI6Ijg4ODg4ODg4LTg4ODgtNDg4OC04ODg4LTg4ODg4ODg4ODg4OCIsImlhdCI6MTU4NTg5NTE0NCwidGVuYW50IjoiZGlrdSJ9.xxJIwZRYzYkYjCX1fe-fFaC90iW2GEQotSZNoswXbXg");
-  private static final Header USER9_TOKEN = new Header(XOkapiHeaders.TOKEN,
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huX2RvZSIsInVzZXJfaWQiOiI5OTk5OTk5OS05OTk5LTQ5OTktOTk5OS05OTk5OTk5OTk5OTkiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.lkyJer68DZ2kclmS4z79knVc24UjYeIfAJSAFEX8zNs");
-  private static final Header USER2_TOKEN = new Header(XOkapiHeaders.TOKEN,
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huX2RvZSIsInVzZXJfaWQiOiIyMjIyMjIyMi0yMjIyLTQyMjItMjIyMi0yMjIyMjIyMjIyMjIiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.s9rQ-2NAvAwDRJaGk6k-JeE1cRN9LUOvaEopenKeQGs");
-  private static final Header USER3_TOKEN = new Header(XOkapiHeaders.TOKEN,
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huX2RvZSIsInVzZXJfaWQiOiIzMzMzMzMzMy0zMzMzLTQzMzMtMzMzMy0zMzMzMzMzMzMzMzMiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.7xGCAAwXMD8PrhWulanfSdtRF4A14W8Z2XBpVt9K2e4");
-
-  private static final RegexPattern CONFIG_ACCESS_TYPE_LIMIT_URL_PATTERN =
-    new RegexPattern("/configurations/entries.*");
+  private static final Header USER8_TOKEN = new Header(XOkapiHeaders.TOKEN, generateToken("username", USER_8));
+  private static final Header USER9_TOKEN = new Header(XOkapiHeaders.TOKEN, generateToken("username", USER_9));
+  private static final Header USER2_TOKEN = new Header(XOkapiHeaders.TOKEN, generateToken("username", USER_2));
+  private static final Header USER3_TOKEN = new Header(XOkapiHeaders.TOKEN, generateToken("username", USER_3));
 
   private String credentialsId;
 
@@ -455,8 +450,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   private void mockValidAccessTypesLimit() throws IOException, URISyntaxException {
     stubFor(
-      get(new UrlPathPattern(CONFIG_ACCESS_TYPE_LIMIT_URL_PATTERN, true))
-        .willReturn(new ResponseDefinitionBuilder()
+      get(urlPathMatching("/configurations/entries.*"))
+        .willReturn(aResponse()
           .withStatus(200)
           .withBody(readFile("responses/configuration/access-types-limit.json"))
         ));
@@ -464,8 +459,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   private void mockInvalidAccessTypesLimit() throws IOException, URISyntaxException {
     stubFor(
-      get(new UrlPathPattern(CONFIG_ACCESS_TYPE_LIMIT_URL_PATTERN, true))
-        .willReturn(new ResponseDefinitionBuilder()
+      get(urlPathMatching("/configurations/entries.*"))
+        .willReturn(aResponse()
           .withStatus(200)
           .withBody(readFile("responses/configuration/access-types-limit-invalid.json"))
         ));
