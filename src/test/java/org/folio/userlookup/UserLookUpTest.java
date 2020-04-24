@@ -6,7 +6,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
 import static org.folio.rest.util.RestConstants.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.RestConstants.OKAPI_URL_HEADER;
-import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;
@@ -95,11 +94,12 @@ public class UserLookUpTest {
   @Test
   public void shouldReturn401WhenUnauthorizedAccess(TestContext context) {
     final String stubUserId = "a49cefad-7447-4f2f-9004-de32e7a6cc53";
+    final String stubToken = TokenUtil.generateToken("cedrick", stubUserId);
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
     OKAPI_HEADERS.put(OKAPI_URL_HEADER, getWiremockUrl());
-    OKAPI_HEADERS.put(OKAPI_USER_ID_HEADER, stubUserId);
+    OKAPI_HEADERS.put(OKAPI_TOKEN_HEADER, stubToken);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))

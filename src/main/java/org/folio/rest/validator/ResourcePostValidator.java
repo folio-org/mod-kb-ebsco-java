@@ -1,6 +1,7 @@
 package org.folio.rest.validator;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -15,7 +16,10 @@ public class ResourcePostValidator {
 
   public void validate(ResourcePostRequest request) {
     ResourcePostDataAttributes attributes = request.getData().getAttributes();
-    ValidatorUtil.checkUrlFormat("url", attributes.getUrl());
+    String url = attributes.getUrl();
+    if (StringUtils.isNotEmpty(url)) {
+      ValidatorUtil.checkUrlFormat("Url", attributes.getUrl());
+    }
     ValidatorUtil.checkIsNotEmpty("Package Id", attributes.getPackageId());
     ValidatorUtil.checkIsNotEmpty("Title Id", attributes.getTitleId());
   }
