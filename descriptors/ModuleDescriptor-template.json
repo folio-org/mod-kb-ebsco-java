@@ -280,8 +280,8 @@
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/access-types/{accessTypeId}",
-          "permissionsRequired": ["kb-ebsco.access-types.item.put"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.item.put"],
           "modulePermissions": ["users.item.get"]
         },
         {
@@ -560,7 +560,7 @@
       "description": "Get Access Type collection item"
     },
     {
-      "permissionName": "kb-ebsco.access-types.item.put",
+      "permissionName": "kb-ebsco.kb-credentials.access-types.item.put",
       "displayName": "put Access Type collection item",
       "description": "Put Access Type collection item"
     },
@@ -610,7 +610,8 @@
         "kb-ebsco.kb-credentials.root-proxy.get",
         "kb-ebsco.kb-credentials.access-types.collection.get",
         "kb-ebsco.kb-credentials.access-types.collection.post",
-        "kb-ebsco.kb-credentials.access-types.item.get"
+        "kb-ebsco.kb-credentials.access-types.item.get",
+        "kb-ebsco.kb-credentials.access-types.item.put"
       ]
     },
     {
@@ -689,7 +690,6 @@
         "kb-ebsco.custom-labels.collection.get",
         "kb-ebsco.access-types.collection.get",
         "kb-ebsco.access-types.item.get",
-        "kb-ebsco.access-types.item.put",
         "kb-ebsco.access-types.item.delete"
       ]
     }
