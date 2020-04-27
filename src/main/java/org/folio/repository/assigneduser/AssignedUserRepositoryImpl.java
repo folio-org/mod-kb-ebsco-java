@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
-import javax.ws.rs.BadRequestException;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -41,9 +39,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.repository.DuplicateValueRepositoryException;
+import org.folio.repository.ForeignKeyNotFoundRepositoryException;
+import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
@@ -54,8 +54,6 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {}";
   private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
-
-  private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
 
   @Autowired
   private Vertx vertx;
@@ -93,8 +91,10 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     Future<UpdateResult> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
-      .recover(uniqueConstraintRecover(ID_COLUMN, new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE)))
-      .recover(foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, entity.getCredentialsId())));
+      .recover(uniqueConstraintRecover(ID_COLUMN,
+        new DuplicateValueRepositoryException(AssignedUser.class, ID_COLUMN, entity.getId())))
+      .recover(foreignKeyConstraintRecover(
+        new ForeignKeyNotFoundRepositoryException(KbCredentials.class, entity.getCredentialsId())));
     return mapResult(resultFuture, updateResult -> entity);
   }
 
@@ -137,7 +137,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   @Nullable
   private Void checkUserFound(String userId, UpdateResult updateResult) {
     if (updateResult.getUpdated() == 0) {
-      throw ServiceExceptions.notFound("Assigned User", userId);
+      throw new ForeignKeyNotFoundRepositoryException("Assigned User", userId);
     }
     return null;
   }
