@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static io.vertx.core.Future.succeededFuture;
 
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
 
@@ -49,7 +48,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
     accessTypesService.findByUser(okapiHeaders)
       .thenAccept(accessTypeCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesResponse.respond200WithApplicationVndApiJson(accessTypeCollection))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -61,7 +60,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
     accessTypesService.findByCredentialsId(credentialsId, okapiHeaders)
       .thenAccept(accessTypeCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesResponse.respond200WithApplicationVndApiJson(accessTypeCollection))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -74,7 +73,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
     oldAccessTypesService.save(entity, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsAccessTypesResponse.respond201WithApplicationVndApiJson(accessType))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -85,7 +84,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
     oldAccessTypesService.findById(id, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesByIdResponse.respond200WithApplicationVndApiJson(accessType))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -98,7 +97,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
     oldAccessTypesService.update(id, entity, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsAccessTypesByIdResponse.respond204())))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -108,13 +107,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     oldAccessTypesService.deleteById(id, okapiHeaders)
       .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(DeleteEholdingsAccessTypesByIdResponse.respond204())))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
-  private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
-    return throwable -> {
-      errorHandler.handle(asyncResultHandler, throwable);
-      return null;
-    };
-  }
 }
