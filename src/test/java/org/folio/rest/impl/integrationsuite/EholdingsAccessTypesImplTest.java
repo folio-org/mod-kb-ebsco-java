@@ -308,17 +308,18 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400WhenPostAccessTypeWithDuplicateName() throws IOException, URISyntaxException {
+  public void shouldReturn422WhenPostAccessTypeWithDuplicateName() throws IOException, URISyntaxException {
     List<AccessType> accessTypes = testData(credentialsId);
     insertAccessType(accessTypes.get(0), vertx);
 
     AccessType accessType = stubbedAccessType();
-    stubbedAccessType().getAttributes().setName(accessTypes.get(0).getAttributes().getName());
+    accessType.getAttributes().setName(accessTypes.get(0).getAttributes().getName());
     String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));
 
     mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError errors = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN).as(JsonapiError.class);
+    JsonapiError errors = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN)
+      .as(JsonapiError.class);
 
     assertEquals("Duplicate name", errors.getErrors().get(0).getTitle());
   }

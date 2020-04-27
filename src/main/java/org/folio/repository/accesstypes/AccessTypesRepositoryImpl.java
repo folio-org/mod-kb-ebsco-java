@@ -52,10 +52,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
-import org.folio.rest.exception.InputValidationException;
+import org.folio.repository.DuplicateValueRepositoryException;
+import org.folio.repository.ForeignKeyNotFoundRepositoryException;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class AccessTypesRepositoryImpl implements AccessTypesRepository {
@@ -65,9 +66,6 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   private static final String LOG_SELECT_QUERY = "Do select query = {}";
   private static final String LOG_INSERT_QUERY = "Do insert query = {}";
   private static final String LOG_COUNT_QUERY = "Do count query = {}";
-
-  private static final String NAME_UNIQUENESS_MESSAGE = "Duplicate name";
-  private static final String NAME_UNIQUENESS_DETAILS = "Access type with name '%s' already exist";
 
   @Autowired
   private DBExceptionTranslator excTranslator;
@@ -167,13 +165,11 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   private Function<Throwable, Future<UpdateResult>> uniqueNameConstraintViolation(String value) {
-    return uniqueConstraintRecover(NAME_COLUMN, new InputValidationException(
-      NAME_UNIQUENESS_MESSAGE,
-      format(NAME_UNIQUENESS_DETAILS, value)));
+    return uniqueConstraintRecover(NAME_COLUMN, new DuplicateValueRepositoryException(AccessType.class, NAME_COLUMN, value));
   }
 
   private Function<Throwable, Future<UpdateResult>> credentialsNotFoundConstraintViolation(String credentialsId) {
-    return foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, credentialsId));
+    return foreignKeyConstraintRecover(new ForeignKeyNotFoundRepositoryException(KbCredentials.class, credentialsId));
   }
 
   private Function<UpdateResult, DbAccessType> setId(DbAccessType accessType, String id) {

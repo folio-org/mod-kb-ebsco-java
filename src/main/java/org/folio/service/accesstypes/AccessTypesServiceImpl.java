@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,9 +24,12 @@ import org.springframework.stereotype.Component;
 
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
+import org.folio.repository.DuplicateValueRepositoryException;
+import org.folio.repository.ForeignKeyNotFoundRepositoryException;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.repository.accesstypes.DbAccessType;
+import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
@@ -101,13 +105,22 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessType> save(String credentialsId, AccessTypePostRequest postRequest,
                                             Map<String, String> okapiHeaders) {
+    CompletableFuture<AccessType> resultFuture = new CompletableFuture<>();
     AccessType requestData = postRequest.getData();
     bodyValidator.validate(credentialsId, requestData);
-    return validateAccessTypeLimit(credentialsId, okapiHeaders)
+    validateAccessTypeLimit(credentialsId, okapiHeaders)
       .thenCompose(o -> userLookUpService.getUserInfo(okapiHeaders))
       .thenApply(userInfo -> setMetaInfo(Objects.requireNonNull(accessTypeToDbConverter.convert(requestData)), userInfo))
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
-      .thenApply(accessTypeFromDbConverter::convert);
+      .thenApply(accessTypeFromDbConverter::convert)
+      .whenComplete((accessType, throwable) -> {
+        if (throwable != null) {
+          resultFuture.completeExceptionally(mapException(throwable));
+        } else {
+          resultFuture.complete(accessType);
+        }
+      });
+    return resultFuture;
   }
 
   @Override
@@ -142,5 +155,18 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .createdByLastName(userInfo.getLastName())
       .createdByMiddleName(userInfo.getMiddleName())
       .build();
+  }
+
+  private Throwable mapException(Throwable throwable) {
+    Throwable cause = throwable.getCause();
+
+    Throwable resultException = cause;
+    if (cause instanceof DuplicateValueRepositoryException) {
+      DuplicateValueRepositoryException t = (DuplicateValueRepositoryException) cause;
+      resultException = new InputValidationException(t.getMessage(), t.getDetailedMessage());
+    } else if (cause instanceof ForeignKeyNotFoundRepositoryException) {
+      resultException = new NotFoundException(cause.getMessage());
+    }
+    return resultException;
   }
 }
