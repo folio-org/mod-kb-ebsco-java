@@ -59,4 +59,51 @@ public class AccessTypeConverter {
       return date != null ? Date.from(date) : null;
     }
   }
+
+
+  @Component
+  public static class ToDb implements Converter<AccessType, DbAccessType> {
+
+    @Override
+    public DbAccessType convert(@NotNull AccessType source) {
+      AccessTypeDataAttributes attributes = source.getAttributes();
+      DbAccessType.DbAccessTypeBuilder builder = DbAccessType.builder()
+        .id(source.getId())
+        .name(attributes.getName())
+        .description(attributes.getDescription())
+        .credentialsId(attributes.getCredentialsId());
+
+      UserDisplayInfo creator = source.getCreator();
+      if (creator != null) {
+        builder
+          .createdByFirstName(creator.getFirstName())
+          .createdByMiddleName(creator.getMiddleName())
+          .createdByLastName(creator.getLastName());
+      }
+
+      UserDisplayInfo updater = source.getUpdater();
+      if (updater != null) {
+        builder
+          .updatedByFirstName(updater.getFirstName())
+          .updatedByMiddleName(updater.getMiddleName())
+          .updatedByLastName(updater.getLastName());
+      }
+
+      Metadata metadata = source.getMetadata();
+      if (metadata != null) {
+        builder
+          .createdDate(toInstant(metadata.getCreatedDate()))
+          .createdByUserId(metadata.getCreatedByUserId())
+          .createdByUsername(metadata.getCreatedByUsername())
+          .updatedDate(toInstant(metadata.getUpdatedDate()))
+          .updatedByUserId(metadata.getUpdatedByUserId())
+          .updatedByUsername(metadata.getUpdatedByUsername());
+      }
+      return builder.build();
+    }
+
+    private Instant toInstant(Date date) {
+      return date != null ? date.toInstant() : null;
+    }
+  }
 }

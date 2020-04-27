@@ -5,9 +5,9 @@ import java.util.concurrent.CompletableFuture;
 
 public interface AccessTypesRepository {
 
-  /**
-   * Returns all access types for given credentials and tenant.
-   */
   CompletableFuture<List<DbAccessType>> findByCredentialsId(String credentialsId, String tenantId);
 
+  CompletableFuture<DbAccessType> save(DbAccessType accessType, String tenantId);
+
+  CompletableFuture<Integer> count(String credentialsId, String tenantId);
 }
