@@ -65,6 +65,7 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -315,6 +316,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldCreateNewAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);

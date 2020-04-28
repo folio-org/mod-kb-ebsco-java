@@ -279,7 +279,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'accessTypeId' parameter is incorrect."));
   }
 
   @Test

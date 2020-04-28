@@ -81,6 +81,7 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -234,6 +235,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnPackagesOnSearchByProviderIdAndAccessTypeWithPagination() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -262,6 +264,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);

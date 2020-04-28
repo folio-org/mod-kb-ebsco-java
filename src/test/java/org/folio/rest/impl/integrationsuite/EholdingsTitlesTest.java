@@ -77,6 +77,7 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -177,6 +178,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnTitlesOnSearchByAccessTypes() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -202,6 +204,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnTitleOnSearchByAccessTypesWithPagination() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
