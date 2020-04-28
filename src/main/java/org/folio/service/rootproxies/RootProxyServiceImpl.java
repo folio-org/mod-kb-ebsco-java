@@ -3,11 +3,8 @@ package org.folio.service.rootproxies;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import io.vertx.core.Vertx;
-import org.folio.rest.converter.proxy.RootProxyPutConverter;
-import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -16,8 +13,10 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
+import org.folio.rest.converter.proxy.RootProxyPutConverter;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.RootProxy;
+import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.service.kbcredentials.KbCredentialsService;
 
 @Component
@@ -48,7 +47,7 @@ public class RootProxyServiceImpl implements RootProxyService {
   }
 
   @Override
-  public CompletionStage<RootProxy> updateRootProxy(String credentialsId, RootProxyPutRequest entity, Map<String, String> okapiHeaders) {
+  public CompletableFuture<RootProxy> updateRootProxy(String credentialsId, RootProxyPutRequest entity, Map<String, String> okapiHeaders) {
     return credentialsService.findById(credentialsId, okapiHeaders)
       .thenCompose(kbCredentials -> updateRootProxy(kbCredentials, entity));
   }
