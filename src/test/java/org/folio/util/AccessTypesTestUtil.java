@@ -69,6 +69,7 @@ public class AccessTypesTestUtil {
 
   public static final String ACCESS_TYPES_PATH = "/eholdings/access-types";
   public static final String KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types";
+  public static final String KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types/%s";
 
   private static final Converter<DbAccessType, AccessType> CONVERTER = new AccessTypeConverter.FromDb();
 

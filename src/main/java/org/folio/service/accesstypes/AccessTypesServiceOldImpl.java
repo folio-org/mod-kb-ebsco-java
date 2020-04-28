@@ -58,6 +58,12 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
   }
 
   @Override
+  public CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                                  Map<String, String> okapiHeaders) {
+    return CompletableFuture.completedFuture(null);
+  }
+
+  @Override
   public CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames,
                                                              Map<String, String> okapiHeaders) {
     return repository.findByNames(accessTypeNames, tenantId(okapiHeaders))
@@ -65,10 +71,10 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<AccessType> findById(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, tenantId(okapiHeaders))
-      .thenApply(getAccessTypeOrFail(id))
-      .thenCombine(mappingService.findByAccessTypeId(id, okapiHeaders), (accessType, accessTypeMappings) -> {
+  public CompletableFuture<AccessType> findByUserAndId(String accessTypeId, Map<String, String> okapiHeaders) {
+    return repository.findById(accessTypeId, tenantId(okapiHeaders))
+      .thenApply(getAccessTypeOrFail(accessTypeId))
+      .thenCombine(mappingService.findByAccessTypeId(accessTypeId, okapiHeaders), (accessType, accessTypeMappings) -> {
         accessType.setUsageNumber(accessTypeMappings.size());
         return accessType;
       });

@@ -259,6 +259,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.access-types.item.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types",
           "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.collection.get"]
         },
@@ -270,8 +275,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/access-types/{accessTypeId}",
-          "permissionsRequired": ["kb-ebsco.access-types.item.get"]
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.item.get"]
         },
         {
           "methods": ["PUT"],
@@ -535,6 +540,11 @@
       "description": "Get Access Types collection"
     },
     {
+      "permissionName": "kb-ebsco.access-types.item.get",
+      "displayName": "get Access Type collection item",
+      "description": "Get Access Type collection item"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.access-types.collection.get",
       "displayName": "get Access Types collection by kb credentials",
       "description": "Get Access Types collection KB credentials"
@@ -545,7 +555,7 @@
       "description": "Post Access Type collection item"
     },
     {
-      "permissionName": "kb-ebsco.access-types.item.get",
+      "permissionName": "kb-ebsco.kb-credentials.access-types.item.get",
       "displayName": "get Access Type collection item",
       "description": "Get Access Type collection item"
     },
@@ -599,7 +609,8 @@
         "kb-ebsco.kb-credentials.proxy-types.collection.get",
         "kb-ebsco.kb-credentials.root-proxy.get",
         "kb-ebsco.kb-credentials.access-types.collection.get",
-        "kb-ebsco.kb-credentials.access-types.collection.post"
+        "kb-ebsco.kb-credentials.access-types.collection.post",
+        "kb-ebsco.kb-credentials.access-types.item.get"
       ]
     },
     {

@@ -79,10 +79,24 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @Validate
   @HandleValidationErrors
   public void getEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
-                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    oldAccessTypesService.findById(id, okapiHeaders)
+                                          Handler<AsyncResult<Response>> asyncResultHandler,
+                                          Context vertxContext) {
+    accessTypesService.findByUserAndId(id, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesByIdResponse.respond200WithApplicationVndApiJson(accessType))))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsKbCredentialsAccessTypesByIdAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                      Map<String, String> okapiHeaders,
+                                                                      Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                      Context vertxContext) {
+    accessTypesService.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, okapiHeaders)
+      .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond200WithApplicationVndApiJson(accessType))))
       .exceptionally(handleException(asyncResultHandler));
   }
 

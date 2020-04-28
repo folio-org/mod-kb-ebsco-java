@@ -31,6 +31,7 @@ import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.AccessTypesTestUtil.ACCESS_TYPES_PATH;
 import static org.folio.util.AccessTypesTestUtil.KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT;
+import static org.folio.util.AccessTypesTestUtil.KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT;
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME;
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_3;
 import static org.folio.util.AccessTypesTestUtil.getAccessTypes;
@@ -49,6 +50,7 @@ import static org.folio.util.TokenUtils.generateToken;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -194,34 +196,67 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnAccessTypeOnGet() {
-    List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
+  public void shouldReturnAccessTypeOnGetByIdAndUser() {
+    List<AccessType> accessTypes = testData(credentialsId);
     AccessType expected = accessTypes.get(0);
-    expected.setUsageNumber(3);
+    String id = insertAccessType(expected, vertx);
 
-    insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, expected.getId(), vertx);
-    insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, expected.getId(), vertx);
-    insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, expected.getId(), vertx);
+    insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id, vertx);
+    insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id, vertx);
+    insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, id, vertx);
 
-    AccessType actual = getWithOk(ACCESS_TYPES_PATH + "/" + expected.getId())
-      .as(AccessType.class);
+    String resourcePath = ACCESS_TYPES_PATH + "/" + id;
+    AccessType actual = getWithStatus(resourcePath, SC_OK, STUB_TOKEN_HEADER).as(AccessType.class);
 
-    assertEquals(expected, actual);
+    assertEquals(id, actual.getId());
+    assertEquals(expected.getAttributes(), actual.getAttributes());
+    assertEquals(Integer.valueOf(3), actual.getUsageNumber());
   }
 
   @Test
-  public void shouldReturn404OnGetIfAccessTypeIsMissing() {
+  public void shouldReturnAccessTypeOnGetByIdAndCredentialsId() {
+    List<AccessType> accessTypes = testData(credentialsId);
+    AccessType expected = accessTypes.get(0);
+    String id = insertAccessType(expected, vertx);
+
+    insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id, vertx);
+    insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id, vertx);
+    insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, id, vertx);
+
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
+    AccessType actual = getWithOk(resourcePath).as(AccessType.class);
+
+    assertEquals(id, actual.getId());
+    assertEquals(expected.getAttributes(), actual.getAttributes());
+    assertEquals(Integer.valueOf(3), actual.getUsageNumber());
+  }
+
+  @Test
+  public void shouldReturn404OnGetByIdAndUserIfAccessTypeIsMissing() {
     String id = "11111111-1111-1111-a111-111111111111";
-    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_NOT_FOUND).as(JsonapiError.class);
+    String resourcePath = ACCESS_TYPES_PATH + "/" + id;
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Access type not found by id: %s", id), error.getErrors().get(0).getTitle());
+    assertEquals(String.format("AccessType not found by id: %s", id), error.getErrors().get(0).getTitle());
   }
 
   @Test
-  public void shouldReturn400OnGetIfIdIsInvalid() {
+  public void shouldReturn404OnGetByIdAndCredentialsIfCredentialsIsMissing() {
+    String id = UUID.randomUUID().toString();
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT,
+      UUID.randomUUID().toString(), id);
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertEquals(String.format("AccessType not found by id: %s", id), error.getErrors().get(0).getTitle());
+  }
+
+  @Test
+  public void shouldReturn400OnGetByIdAndUserIfIdIsInvalid() {
     String id = "99999999-9999-2-9999-999999999999";
-    JsonapiError error = getWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
+    String resourcePath = ACCESS_TYPES_PATH + "/" + id;
+    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
     assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));

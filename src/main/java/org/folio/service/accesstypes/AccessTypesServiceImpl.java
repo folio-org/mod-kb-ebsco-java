@@ -11,7 +11,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import javax.ws.rs.BadRequestException;
 
@@ -30,6 +32,7 @@ import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
 import org.folio.rest.validator.AccessTypesBodyValidator;
+import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.userlookup.UserLookUpService;
@@ -82,13 +85,22 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames,
-                                                             Map<String, String> okapiHeaders) {
-    throw new UnsupportedOperationException();
+  public CompletableFuture<AccessType> findByUserAndId(String accessTypeId, Map<String, String> okapiHeaders) {
+    return kbCredentialsService.findByUser(okapiHeaders)
+      .thenCompose(kbCredentials -> findByCredentialsAndAccessTypeId(kbCredentials.getId(), accessTypeId, okapiHeaders));
   }
 
   @Override
-  public CompletableFuture<AccessType> findById(String id, Map<String, String> okapiHeaders) {
+  public CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                        Map<String, String> okapiHeaders) {
+    return repository.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, tenantId(okapiHeaders))
+      .thenApply(getAccessTypeOrFail(accessTypeId))
+      .thenApply(accessTypeFromDbConverter::convert);
+  }
+
+  @Override
+  public CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames,
+                                                             Map<String, String> okapiHeaders) {
     throw new UnsupportedOperationException();
   }
 
@@ -142,5 +154,9 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .createdByLastName(userInfo.getLastName())
       .createdByMiddleName(userInfo.getMiddleName())
       .build();
+  }
+
+  private Function<Optional<DbAccessType>, DbAccessType> getAccessTypeOrFail(String id) {
+    return accessType -> accessType.orElseThrow(() -> ServiceExceptions.notFound(AccessType.class, id));
   }
 }
