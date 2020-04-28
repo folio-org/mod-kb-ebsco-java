@@ -32,5 +32,5 @@ public interface AccessTypesService {
   CompletableFuture<Void> update(String credentialsId, String accessTypeId, AccessTypePutRequest entity,
                                  Map<String, String> okapiHeaders);
 
-  CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders);
+  CompletableFuture<Void> delete(String credentialsId, String accessTypeId, Map<String, String> okapiHeaders);
 }

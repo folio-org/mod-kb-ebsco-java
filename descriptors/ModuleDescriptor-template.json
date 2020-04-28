@@ -565,7 +565,7 @@
       "description": "Put Access Type collection item"
     },
     {
-      "permissionName": "kb-ebsco.access-types.item.delete",
+      "permissionName": "kb-ebsco.kb-credentials.access-types.item.delete",
       "displayName": "delete Access Type collection item",
       "description": "Delete Access Type collection item"
     },
@@ -611,7 +611,8 @@
         "kb-ebsco.kb-credentials.access-types.collection.get",
         "kb-ebsco.kb-credentials.access-types.collection.post",
         "kb-ebsco.kb-credentials.access-types.item.get",
-        "kb-ebsco.kb-credentials.access-types.item.put"
+        "kb-ebsco.kb-credentials.access-types.item.put",
+        "kb-ebsco.kb-credentials.access-types.item.delete"
       ]
     },
     {
@@ -689,8 +690,7 @@
         "kb-ebsco.holdings.load.status.get",
         "kb-ebsco.custom-labels.collection.get",
         "kb-ebsco.access-types.collection.get",
-        "kb-ebsco.access-types.item.get",
-        "kb-ebsco.access-types.item.delete"
+        "kb-ebsco.access-types.item.get"
       ]
     }
   ],

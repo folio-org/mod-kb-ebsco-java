@@ -117,12 +117,16 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @Override
   @Validate
   @HandleValidationErrors
-  public void deleteEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
-                                             Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    oldAccessTypesService.deleteById(id, okapiHeaders)
-      .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(DeleteEholdingsAccessTypesByIdResponse.respond204())))
+  public void deleteEholdingsKbCredentialsAccessTypesByIdAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                                   Map<String, String> okapiHeaders,
+                                                                                   Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                                   Context vertxContext) {
+    accessTypesService.delete(credentialsId, accessTypeId, okapiHeaders)
+      .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(
+        DeleteEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond204())))
       .exceptionally(handleException(asyncResultHandler));
   }
+
 
   private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
     return throwable -> {

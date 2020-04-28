@@ -14,4 +14,6 @@ public interface AccessTypesRepository {
   CompletableFuture<DbAccessType> save(DbAccessType accessType, String tenantId);
 
   CompletableFuture<Integer> count(String credentialsId, String tenantId);
+
+  CompletableFuture<Void> delete(String credentialsId, String accessTypeId, String tenantId);
 }

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
+import org.folio.db.exc.DbExcUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.repository.accesstypes.DbAccessType;
@@ -42,6 +43,7 @@ import org.folio.service.userlookup.UserLookUpService;
 public class AccessTypesServiceImpl implements AccessTypesService {
 
   private static final String MAXIMUM_ACCESS_TYPES_MESSAGE = "Maximum number of access types allowed is %s";
+  private static final String HAS_ASSIGNED_RECORDS_MESSAGE = "Can't delete access type that has assigned records";
 
   @Autowired
   private UserLookUpService userLookUpService;
@@ -135,8 +137,24 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
-    throw new UnsupportedOperationException();
+  public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, Map<String, String> okapiHeaders) {
+    CompletableFuture<Void> resultFuture = new CompletableFuture<>();
+
+    repository.delete(credentialsId, accessTypeId, tenantId(okapiHeaders))
+      .whenComplete((aVoid, throwable) -> {
+        if (throwable != null) {
+          Throwable cause = throwable.getCause();
+          if (DbExcUtils.isFKViolation(throwable)) {
+            resultFuture.completeExceptionally(new BadRequestException(HAS_ASSIGNED_RECORDS_MESSAGE));
+          } else {
+            resultFuture.completeExceptionally(cause);
+          }
+        } else {
+          resultFuture.complete(aVoid);
+        }
+      });
+
+    return resultFuture;
   }
 
   private CompletableFuture<DbAccessType> fetchDbAccessType(String credentialsId, String accessTypeId,

@@ -9,9 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-import javax.ws.rs.BadRequestException;
-
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -29,8 +26,6 @@ import org.folio.service.exc.ServiceExceptions;
 @Primary
 @Component("oldAccessTypesService")
 public class AccessTypesServiceOldImpl implements AccessTypesService {
-
-  private static final String HAS_ASSIGNED_RECORDS_MESSAGE = "Can't delete access type that has assigned records";
 
   @Autowired
   private AccessTypeMappingsService mappingService;
@@ -101,19 +96,8 @@ public class AccessTypesServiceOldImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<Void> deleteById(String id, Map<String, String> okapiHeaders) {
-    return hasMappings(id, okapiHeaders)
-      .thenAccept(hasMappings -> {
-        if (BooleanUtils.isTrue(hasMappings)) {
-          throw new BadRequestException(HAS_ASSIGNED_RECORDS_MESSAGE);
-        }
-      })
-      .thenCompose(aVoid -> repository.delete(id, tenantId(okapiHeaders)));
-  }
-
-  private CompletableFuture<Boolean> hasMappings(String id, Map<String, String> okapiHeaders) {
-    return mappingService.findByAccessTypeId(id, okapiHeaders)
-      .thenApply(accessTypeMappings -> !accessTypeMappings.isEmpty());
+  public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, Map<String, String> okapiHeaders) {
+    return CompletableFuture.completedFuture(null);
   }
 
   private Function<Optional<AccessType>, AccessType> getAccessTypeOrFail(String id) {
