@@ -15,25 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.converter.proxy.RootProxyPutConverter;
-import org.folio.rest.jaxrs.model.RootProxy;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdRootProxy;
 import org.folio.rest.jaxrs.resource.EholdingsRootProxy;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.rest.util.template.RMAPITemplateFactory;
-import org.folio.rest.validator.RootProxyPutBodyValidator;
 import org.folio.service.rootproxies.RootProxyService;
 import org.folio.spring.SpringContextUtil;
 
 public class EHoldingsRootProxyImpl implements EholdingsRootProxy, EholdingsKbCredentialsIdRootProxy {
-
-  @Autowired
-  private RootProxyPutBodyValidator bodyValidator;
-  @Autowired
-  private RMAPITemplateFactory templateFactory;
-  @Autowired
-  private RootProxyPutConverter rootProxyPutRequestConverter;
 
   @Autowired
   private RootProxyService rootProxyService;
@@ -55,29 +44,25 @@ public class EHoldingsRootProxyImpl implements EholdingsRootProxy, EholdingsKbCr
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
-  public void putEholdingsRootProxy(String contentType, RootProxyPutRequest entity, Map<String, String> okapiHeaders,
-                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    bodyValidator.validate(entity);
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getHoldingsService().retrieveRootProxyCustomLabels()
-          .thenCompose(rootProxyCustomLabels -> {
-            rootProxyCustomLabels = rootProxyPutRequestConverter.convertToRootProxyCustomLabels(entity, rootProxyCustomLabels);
-            return context.getHoldingsService().updateRootProxyCustomLabels(rootProxyCustomLabels);
-          })
-      )
-      .executeWithResult(RootProxy.class);
+  public void getEholdingsKbCredentialsRootProxyById(String id, Map<String, String> okapiHeaders,
+                                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    rootProxyService.findByCredentialsId(id, okapiHeaders)
+      .thenAccept(rootProxy -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsKbCredentialsRootProxyByIdResponse.respond200WithApplicationVndApiJson(rootProxy))))
+      .exceptionally(handleException(asyncResultHandler));
   }
 
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsKbCredentialsRootProxyById(String id, Map<String, String> okapiHeaders,
+  public void putEholdingsKbCredentialsRootProxyById(String id, String contentType, RootProxyPutRequest entity,
+                                                     Map<String, String> okapiHeaders,
                                                      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    rootProxyService.findByCredentialsId(id,okapiHeaders)
+    rootProxyService.updateRootProxy(id, entity, okapiHeaders)
       .thenAccept(rootProxy -> asyncResultHandler.handle(succeededFuture(
-        GetEholdingsKbCredentialsRootProxyByIdResponse.respond200WithApplicationVndApiJson(rootProxy))))
+        PutEholdingsKbCredentialsRootProxyByIdResponse.respond200WithApplicationVndApiJson(rootProxy))))
       .exceptionally(handleException(asyncResultHandler));
   }
 

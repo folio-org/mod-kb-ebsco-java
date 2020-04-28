@@ -13,8 +13,10 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
+import org.folio.rest.converter.proxy.RootProxyPutConverter;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.RootProxy;
+import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.service.kbcredentials.KbCredentialsService;
 
 @Component
@@ -27,6 +29,8 @@ public class RootProxyServiceImpl implements RootProxyService {
   private Converter<KbCredentials, Configuration> configurationConverter;
   @Autowired
   private Converter<RootProxyCustomLabels, RootProxy> rootProxyConverter;
+  @Autowired
+  private RootProxyPutConverter putRootProxyConverter;
   @Autowired
   private Vertx vertx;
 
@@ -42,9 +46,27 @@ public class RootProxyServiceImpl implements RootProxyService {
       .thenCompose(this::retrieveRootProxy);
   }
 
+  @Override
+  public CompletableFuture<RootProxy> updateRootProxy(String credentialsId, RootProxyPutRequest entity, Map<String, String> okapiHeaders) {
+    return credentialsService.findById(credentialsId, okapiHeaders)
+      .thenCompose(kbCredentials -> updateRootProxy(kbCredentials, entity));
+  }
+
+  private CompletableFuture<RootProxy> updateRootProxy(KbCredentials kbCredentials, RootProxyPutRequest entity) {
+    final HoldingsIQServiceImpl holdingsIqService = createHoldingsIQService(kbCredentials);
+    return holdingsIqService.retrieveRootProxyCustomLabels()
+      .thenApply(rootProxyLabels -> putRootProxyConverter.convertToRootProxyCustomLabels(entity, rootProxyLabels))
+      .thenCompose(holdingsIqService::updateRootProxyCustomLabels)
+      .thenApply(rootProxyConverter::convert)
+      .thenApply(rootProxy -> {
+        rootProxy.getData().setCredentialsId(kbCredentials.getId());
+        return rootProxy;
+      });
+  }
+
   private CompletableFuture<RootProxy> retrieveRootProxy(KbCredentials kbCredentials) {
-    final HoldingsIQServiceImpl holdingsIQService = createHoldingsIQService(kbCredentials);
-    return holdingsIQService.retrieveRootProxyCustomLabels()
+    final HoldingsIQServiceImpl holdingsIqService = createHoldingsIQService(kbCredentials);
+    return holdingsIqService.retrieveRootProxyCustomLabels()
       .thenApply(rootProxyConverter::convert)
       .thenApply(rootProxy -> {
         rootProxy.getData().setCredentialsId(kbCredentials.getId());
