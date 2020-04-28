@@ -41,4 +41,11 @@ public class AccessTypesBodyValidator {
       ValidatorUtil.checkIsEqual("credentialsId", credentialsId, attributes.getCredentialsId());
     }
   }
+
+  public void validate(String credentialsId, String accessTypeId, AccessType request) {
+    validate(credentialsId, request);
+    if (request.getId() != null) {
+      ValidatorUtil.checkIsEqual("id", accessTypeId, request.getId());
+    }
+  }
 }

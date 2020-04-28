@@ -13,6 +13,7 @@ types:
   accessType: !include types/accessTypes/accessType.json
   accessTypeCollection: !include types/accessTypes/accessTypesCollection.json
   accessTypePostRequest: !include types/accessTypes/accessTypePostRequest.json
+  accessTypePutRequest: !include types/accessTypes/accessTypePutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/access-types:
@@ -75,44 +76,6 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_item_get_422_response.json
-    put:
-      description: Update a Access Type by Id
-      headers:
-        Content-Type:
-          example: application/vnd.api+json
-      body:
-        application/vnd.api+json:
-          type: accessType
-          example:
-            strict: false
-            value: !include examples/accessTypes/access_type_put_request.json
-      responses:
-        204:
-          description: "Item successfully updated"
-        400:
-          description: Bad Request
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/accessTypes/access_type_put_by_id_400_response.json
-        404:
-          description: Not Found
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/accessTypes/access_type_put_by_id_404_response.json
-        422:
-          description: Unprocessable Entity
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/accessTypes/access_type_put_by_id_422_response.json
     delete:
       description: Delete a Access Type by Id
       responses:
@@ -235,3 +198,38 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_item_get_422_response.json
+    put:
+      description: Update a Access Type by Id related to specific KB credentials
+      body:
+        application/vnd.api+json:
+          type: accessTypePutRequest
+          example:
+            strict: false
+            value: !include examples/accessTypes/access_type_put_request.json
+      responses:
+        204:
+          description: "Item successfully updated"
+        400:
+          description: Bad Request
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_put_by_id_400_response.json
+        404:
+          description: Not Found
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_put_by_id_404_response.json
+        422:
+          description: Unprocessable Entity
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/accessTypes/access_type_put_by_id_422_response.json

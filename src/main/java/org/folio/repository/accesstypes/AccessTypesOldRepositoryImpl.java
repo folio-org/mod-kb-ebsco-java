@@ -58,20 +58,6 @@ public class AccessTypesOldRepositoryImpl implements AccessTypesOldRepository {
   }
 
   @Override
-  public CompletableFuture<Void> update(String id, AccessType accessType, String tenantId) {
-    Promise<UpdateResult> promise = Promise.promise();
-
-    pgClient(tenantId).update(ACCESS_TYPES_TABLE_NAME_OLD, accessType, id, promise);
-
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), updateResult -> {
-      if (updateResult.getUpdated() == 0) {
-        throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
-      }
-      return null;
-    });
-  }
-
-  @Override
   public CompletableFuture<Void> delete(String id, String tenantId) {
     Promise<UpdateResult> promise = Promise.promise();
 

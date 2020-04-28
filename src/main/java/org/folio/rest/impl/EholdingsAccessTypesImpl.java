@@ -16,8 +16,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
+import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsAccessTypes;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdAccessTypes;
 import org.folio.rest.util.ErrorHandler;
@@ -103,12 +103,14 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @Override
   @Validate
   @HandleValidationErrors
-  public void putEholdingsAccessTypesById(String id, String contentType, AccessType entity,
-                                          Map<String, String> okapiHeaders,
-                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    oldAccessTypesService.update(id, entity, okapiHeaders)
+  public void putEholdingsKbCredentialsAccessTypesByIdAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                      AccessTypePutRequest entity,
+                                                                      Map<String, String> okapiHeaders,
+                                                                      Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                      Context vertxContext) {
+    accessTypesService.update(credentialsId, accessTypeId, entity, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
-        PutEholdingsAccessTypesByIdResponse.respond204())))
+        PutEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond204())))
       .exceptionally(handleException(asyncResultHandler));
   }
 

@@ -119,11 +119,6 @@
       "run": "after",
       "snippetPath": "holdings_status_history_trigger.sql",
       "fromModuleVersion": "mod-kb-ebsco-java-3.0.2"
-    },
-    {
-      "run": "after",
-      "snippetPath": "access_types_update_metadata_user_info.sql",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0"
     }
   ]
 }

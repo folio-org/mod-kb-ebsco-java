@@ -72,6 +72,7 @@ import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
+import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.util.RestConstants;
@@ -412,7 +413,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn400WhenContentTypeHeaderIsMissing() {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    RestAssured.given()
+    String error = RestAssured.given()
       .spec(givenWithUrl())
       .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
       .body("NOT_JSON")
@@ -421,13 +422,16 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       .then()
       .log().ifValidationFails()
       .statusCode(SC_BAD_REQUEST)
-      .body(containsString("Content-type"));
+      .extract()
+      .asString();
+
+    assertThat(error, containsString("Content-type"));
   }
 
   @Test
   public void shouldReturn400WhenJsonIsInvalid() {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    RestAssured.given()
+    String error = RestAssured.given()
       .spec(givenWithUrl())
       .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
       .header(RestConstants.OKAPI_TOKEN_HEADER, STUB_TOKEN)
@@ -438,57 +442,80 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       .then()
       .log().ifValidationFails()
       .statusCode(SC_BAD_REQUEST)
-      .body(containsString("Json content error"));
+      .extract()
+      .asString();
+
+    assertThat(error, containsString("Json content error"));
   }
 
   @Test
-  public void shouldUpdateAccessTypeWhenValidData() throws IOException, URISyntaxException {
-    mockValidAccessTypesLimit();
-    List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
+  public void shouldReturn204OnPutByCredentialsAndAccessTypeId() {
+    List<AccessType> accessTypes = testData(credentialsId);
+    String id = insertAccessType(accessTypes.get(0), vertx);
 
-    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
-    String accessTypeId = accessTypes.get(0).getId();
-    putWithNoContent(ACCESS_TYPES_PATH + "/" + accessTypeId, putBody, USER9_TOKEN);
+    AccessType accessType = stubbedAccessType();
+    String updatedName = "UpdatedName";
+    String updatedDescription = "UpdatedDescription";
+    accessType.getAttributes().setName(updatedName);
+    accessType.getAttributes().setDescription(updatedDescription);
+
+    String putBody = Json.encode(new AccessTypePutRequest().withData(accessType));
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
+    putWithNoContent(resourcePath, putBody, USER9_TOKEN);
+
+    AccessType actual = getAccessTypes(vertx).get(0);
+    assertEquals(id, actual.getId());
+    assertEquals(updatedName, actual.getAttributes().getName());
+    assertEquals(updatedDescription, actual.getAttributes().getDescription());
+    assertEquals(credentialsId, actual.getAttributes().getCredentialsId());
+    assertNotNull(actual.getCreator());
+    assertNotNull(actual.getUpdater());
+    assertNotNull(actual.getMetadata());
   }
 
   @Test
-  public void shouldReturn404WhenNoAccessType() throws IOException, URISyntaxException {
-    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
-    String accessTypeId = "/33333333-3333-3333-a333-333333333333";
-    final JsonapiError errors = putWithStatus(ACCESS_TYPES_PATH + accessTypeId,
-      putBody.replaceAll("1", "3"), SC_NOT_FOUND, USER9_TOKEN)
-      .as(JsonapiError.class);
+  public void shouldReturn404OnPutByCredentialsAndAccessTypeIdWhenAccessTypeIsMissing() {
+    String putBody = Json.encode(new AccessTypePutRequest().withData(stubbedAccessType()));
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID());
+    JsonapiError errors = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, USER9_TOKEN).as(JsonapiError.class);
+
     assertThat(errors.getErrors().get(0).getTitle(), containsString("not found"));
-
   }
 
   @Test
-  public void shouldReturn401WhenNoUserHeader() throws IOException, URISyntaxException {
-    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
-    String accessTypeId = "/33333333-3333-3333-a333-333333333333";
-    final JsonapiError errors = putWithStatus(ACCESS_TYPES_PATH + accessTypeId,
-      putBody.replaceAll("1", "3"), SC_UNAUTHORIZED)
-      .as(JsonapiError.class);
+  public void shouldReturn401OnPutByCredentialsAndAccessTypeIdWhenNoUserHeader() {
+    List<AccessType> accessTypes = testData(credentialsId);
+    String id = insertAccessType(accessTypes.get(0), vertx);
+
+    String putBody = Json.encode(new AccessTypePutRequest().withData(stubbedAccessType()));
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
+    JsonapiError errors = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED).as(JsonapiError.class);
+
     assertThat(errors.getErrors().get(0).getTitle(), containsString("Unauthorized"));
   }
 
   @Test
-  public void shouldReturn400WhenInvalidId() throws IOException, URISyntaxException {
-    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
-    String accessTypeId = "/c0af6d39-6705-43d7-b91e-c01c3549ddww";
-    final JsonapiError errors = putWithStatus(ACCESS_TYPES_PATH + accessTypeId,
-      putBody, SC_BAD_REQUEST, USER9_TOKEN)
-      .as(JsonapiError.class);
-    assertThat(errors.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+  public void shouldReturn422OnPutByCredentialsAndAccessTypeIdWhenInvalidId() {
+    AccessType accessType = stubbedAccessType();
+    accessType.setId("invalid-id-format");
+
+    String putBody = Json.encode(new AccessTypePutRequest().withData(accessType));
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID().toString());
+    Errors errors = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, USER9_TOKEN).as(Errors.class);
+
+    assertThat(errors.getErrors().get(0).getParameters().get(0).getKey(), equalTo("data.id"));
   }
 
   @Test
-  public void shouldReturn401WhenUnAuthorized() throws IOException, URISyntaxException {
-    List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
+  public void shouldReturn401WhenUnAuthorized()  {
+    List<AccessType> accessTypes = testData(credentialsId);
+    String id = insertAccessType(accessTypes.get(0), vertx);
 
-    String putBody = readFile("requests/kb-ebsco/access-types/access-type-1-updated.json");
-    String accessTypeId = accessTypes.get(0).getId();
-    putWithStatus(ACCESS_TYPES_PATH + "/" + accessTypeId, putBody, SC_UNAUTHORIZED, USER3_TOKEN);
+    String putBody = Json.encode(new AccessTypePutRequest().withData(stubbedAccessType()));
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED, USER3_TOKEN).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized"));
   }
 
   private AccessType stubbedAccessType() {
