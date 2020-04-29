@@ -4,7 +4,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import static org.folio.util.KbCredentialsTestUtil.*;
+import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
+import static org.folio.util.KbCredentialsTestUtil.getCredentials;
+import static org.folio.util.KbCredentialsTestUtil.getCredentialsNoUrl;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +23,7 @@ import org.folio.spring.config.TestConfig;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class KbCredentialsSecuredConverter {
+public class KbCredentialsSecuredConverterTest {
 
   @Autowired
   private KbCredentialsConverter.KbCredentialsFromDbSecuredConverter securedConverter;

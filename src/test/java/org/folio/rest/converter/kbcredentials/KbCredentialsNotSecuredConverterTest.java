@@ -3,23 +3,28 @@ package org.folio.rest.converter.kbcredentials;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import static org.folio.util.KbCredentialsTestUtil.*;
+import static org.folio.util.KbCredentialsTestUtil.STUB_API_KEY;
+import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
+import static org.folio.util.KbCredentialsTestUtil.getCredentials;
+import static org.folio.util.KbCredentialsTestUtil.getCredentialsNoUrl;
 
-import org.folio.spring.config.TestConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-
-import org.folio.repository.kbcredentials.DbKbCredentials;
-import org.folio.rest.jaxrs.model.KbCredentials;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import org.folio.repository.kbcredentials.DbKbCredentials;
+import org.folio.rest.jaxrs.model.KbCredentials;
+import org.folio.spring.config.TestConfig;
+
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class KbCredentialsNotSecuredConverter {
+public class KbCredentialsNotSecuredConverterTest {
 
   @Autowired
   @Qualifier("non-secured")
