@@ -16,6 +16,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
@@ -67,6 +68,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   private static final String LOG_SELECT_QUERY = "Do select query = {}";
   private static final String LOG_INSERT_QUERY = "Do insert query = {}";
   private static final String LOG_COUNT_QUERY = "Do count query = {}";
+  private static final String LOG_DELETE_QUERY = "Do delete query = {}";
 
   private static final String NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String NAME_UNIQUENESS_DETAILS = "Access type with name '%s' already exist";
@@ -154,6 +156,18 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()),
       rs -> rs.getResults().get(0).getInteger(0));
+  }
+
+  @Override
+  public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, String tenantId) {
+    String query = format(DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesTableName(tenantId));
+
+    LOG.info(LOG_DELETE_QUERY, query);
+
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, createParams(Arrays.asList(accessTypeId, credentialsId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), rs -> null);
   }
 
   private List<DbAccessType> mapAccessTypes(ResultSet resultSet) {

@@ -7,6 +7,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
@@ -24,7 +25,6 @@ import static org.junit.Assert.assertNull;
 
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
@@ -35,10 +35,8 @@ import static org.folio.util.AccessTypesTestUtil.KB_CREDENTIALS_ACCESS_TYPE_ID_E
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME;
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_3;
 import static org.folio.util.AccessTypesTestUtil.getAccessTypes;
-import static org.folio.util.AccessTypesTestUtil.getAccessTypesOld;
 import static org.folio.util.AccessTypesTestUtil.insertAccessType;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
-import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
@@ -66,7 +64,6 @@ import org.junit.runner.RunWith;
 
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.RecordType;
-import org.folio.repository.accesstypes.AccessTypesTableConstants;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -127,7 +124,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
-    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME_OLD);
     clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
@@ -265,47 +261,44 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn204OnDelete() {
-    List<AccessType> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
-    String accessTypeIdToDelete = accessTypesBeforeDelete.get(0).getId();
-    deleteWithNoContent(ACCESS_TYPES_PATH + "/" + accessTypeIdToDelete);
+    List<AccessType> accessTypes = testData(credentialsId);
+    String accessTypeIdToDelete = insertAccessType(accessTypes.get(0), vertx);
 
-    List<AccessType> accessTypesAfterDelete = getAccessTypesOld(vertx);
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, accessTypeIdToDelete);
+    deleteWithNoContent(resourcePath);
 
-    assertEquals(accessTypesBeforeDelete.size() - 1, accessTypesAfterDelete.size());
-    assertThat(accessTypesAfterDelete, not(hasItem(
-      hasProperty(AccessTypesTableConstants.ID_COLUMN, equalTo(accessTypeIdToDelete)))));
+    List<AccessType> accessTypesAfterDelete = getAccessTypes(vertx);
+
+    assertEquals(0, accessTypesAfterDelete.size());
+    assertThat(accessTypesAfterDelete, not(hasItem(hasProperty("id", equalTo(accessTypeIdToDelete)))));
   }
 
   @Test
   public void shouldReturn400OnDeleteIfIdIsInvalid() {
-    String id = "99999999-9999-2-9999-999999999999";
-    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, "invalid-id");
+    JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'accessTypeId' parameter is incorrect."));
   }
 
   @Test
-  public void shouldReturn404OnDeleteIfNotFound() {
-    String id = "11111111-1111-1111-a111-111111111111";
-    JsonapiError error = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_NOT_FOUND).as(JsonapiError.class);
+  public void shouldReturn204OnDeleteIfNotFound() {
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID().toString());
+    int statusCode = deleteWithNoContent(resourcePath).response().statusCode();
 
-    assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Access type with id '%s' not found", id), error.getErrors().get(0).getTitle());
+    assertEquals(SC_NO_CONTENT, statusCode);
   }
 
   @Test
   public void shouldReturn400OnDeleteWhenAssignedToRecords() {
-    try {
-      List<AccessType> accessTypesBeforeDelete = insertAccessTypes(testData(), vertx);
-      String id = accessTypesBeforeDelete.get(0).getId();
-      insertAccessTypeMapping("11111111-1111", RecordType.PACKAGE, id, vertx);
+    List<AccessType> accessTypes = testData(credentialsId);
+    String id = insertAccessType(accessTypes.get(0), vertx);
+    insertAccessTypeMapping("11111111-1111", RecordType.PACKAGE, id, vertx);
 
-      JsonapiError errors = deleteWithStatus(ACCESS_TYPES_PATH + "/" + id, SC_BAD_REQUEST).as(JsonapiError.class);
-      assertEquals("Can't delete access type that has assigned records", errors.getErrors().get(0).getTitle());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-    }
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
+    JsonapiError errors = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
+    assertEquals("Can't delete access type that has assigned records", errors.getErrors().get(0).getTitle());
   }
 
   @Test
@@ -354,7 +347,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError errors = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN).as(JsonapiError.class);
+    JsonapiError errors =
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN).as(JsonapiError.class);
 
     assertEquals("Duplicate name", errors.getErrors().get(0).getTitle());
   }
@@ -507,7 +501,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenUnAuthorized()  {
+  public void shouldReturn401WhenUnAuthorized() {
     List<AccessType> accessTypes = testData(credentialsId);
     String id = insertAccessType(accessTypes.get(0), vertx);
 
