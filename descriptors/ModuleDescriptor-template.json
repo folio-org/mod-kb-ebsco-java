@@ -286,8 +286,8 @@
         },
         {
           "methods": ["DELETE"],
-          "pathPattern": "/eholdings/access-types/{accessTypeId}",
-          "permissionsRequired": ["kb-ebsco.access-types.item.delete"]
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.item.delete"]
         }
       ]
     },

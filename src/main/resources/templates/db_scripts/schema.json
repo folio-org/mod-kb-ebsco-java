@@ -98,7 +98,7 @@
       "customSnippetPath": "create-access-types-table.sql"
     },
     {
-      "tableName": "access_types_mapping",
+      "tableName": "access_types_mappings",
       "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
       "withMetadata": false,
       "withAuditing": false,

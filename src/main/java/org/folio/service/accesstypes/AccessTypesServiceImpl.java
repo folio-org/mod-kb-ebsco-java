@@ -117,6 +117,9 @@ public class AccessTypesServiceImpl implements AccessTypesService {
                                             Map<String, String> okapiHeaders) {
     AccessType requestData = postRequest.getData();
     bodyValidator.validate(credentialsId, requestData);
+    if (requestData.getAttributes().getCredentialsId() == null) {
+      requestData.getAttributes().setCredentialsId(credentialsId);
+    }
     return validateAccessTypeLimit(credentialsId, okapiHeaders)
       .thenApply(o -> accessTypeToDbConverter.convert(requestData))
       .thenCombine(userLookUpService.getUserInfo(okapiHeaders), this::setCreatorMetaInfo)
