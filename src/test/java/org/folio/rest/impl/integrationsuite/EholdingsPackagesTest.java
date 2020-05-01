@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -58,11 +59,13 @@ import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME;
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_2;
 import static org.folio.util.AccessTypesTestUtil.getAccessTypeMappings;
+import static org.folio.util.AccessTypesTestUtil.insertAccessType;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.*;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
 import static org.folio.util.ResourcesTestUtil.mockGetTitles;
@@ -83,6 +86,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
+import io.restassured.http.Header;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -96,12 +100,14 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
+import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -114,6 +120,7 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.util.AccessTypesTestUtil;
+import org.folio.util.KbCredentialsTestUtil;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
@@ -1019,16 +1026,17 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  @Ignore
   public void shouldReturn200OnPostPackageWithExistedAccessType() throws URISyntaxException, IOException {
     try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
-      String accessTypeId = accessTypes.get(0).getId();
+      String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      List<AccessType> accessTypes = testData(credentialsId);
+      String accessTypeId = insertAccessType(accessTypes.get(0), vertx);
 
       String packagePostRMAPIRequestFile = "requests/rmapi/packages/post-package.json";
       String requestBody = String.format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"),
         accessTypeId);
-      final Package createdPackage = sendPost(requestBody).as(Package.class);
+      final Package createdPackage = postWithStatus(PACKAGES_ENDPOINT, requestBody, SC_OK, new Header(XOkapiHeaders.TOKEN, STUB_TOKEN))
+        .as(Package.class);
 
       assertTrue(Objects.isNull(createdPackage.getData().getAttributes().getTags()));
       EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRMAPIRequestFile), false, true);

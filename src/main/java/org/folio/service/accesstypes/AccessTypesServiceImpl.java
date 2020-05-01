@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,16 +35,17 @@ import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
 import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.validator.AccessTypesBodyValidator;
-import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.userlookup.UserLookUpService;
 
-@Component("newAccessTypesService")
+@Component
 public class AccessTypesServiceImpl implements AccessTypesService {
 
   private static final String MAXIMUM_ACCESS_TYPES_MESSAGE = "Maximum number of access types allowed is %s";
   private static final String HAS_ASSIGNED_RECORDS_MESSAGE = "Can't delete access type that has assigned records";
+  private static final String NOT_FOUND_BY_ID_MESSAGE = "Access type not found: id = %s";
+  private static final String NOT_FOUND_BY_RECORD_MESSAGE = "Access type not found: recordId = %s, recordType = %s";
 
   @Autowired
   private UserLookUpService userLookUpService;
@@ -102,14 +104,19 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Override
   public CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames,
+                                                             String credentialsId,
                                                              Map<String, String> okapiHeaders) {
-    throw new UnsupportedOperationException();
+    return repository.findByCredentialsAndNames(credentialsId, accessTypeNames, tenantId(okapiHeaders))
+      .thenApply(accessTypes -> mapItems(accessTypes, accessTypeFromDbConverter::convert))
+      .thenApply(accessTypeCollectionConverter::convert);
   }
 
   @Override
   public CompletableFuture<AccessType> findByRecord(String recordId, RecordType recordType,
-                                                    Map<String, String> okapiHeaders) {
-    throw new UnsupportedOperationException();
+                                                    String credentialsId, Map<String, String> okapiHeaders) {
+    return repository.findByCredentialsAndRecord(credentialsId, recordId, recordType, tenantId(okapiHeaders))
+      .thenApply(getAccessTypeOrFail(recordId, recordType))
+      .thenApply(accessTypeFromDbConverter::convert);
   }
 
   @Override
@@ -209,6 +216,14 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   private Function<Optional<DbAccessType>, DbAccessType> getAccessTypeOrFail(String id) {
-    return accessType -> accessType.orElseThrow(() -> ServiceExceptions.notFound(AccessType.class, id));
+    return accessType -> accessType.orElseThrow(() -> new NotFoundException(
+      String.format(NOT_FOUND_BY_ID_MESSAGE, id))
+    );
+  }
+
+  private Function<Optional<DbAccessType>, DbAccessType> getAccessTypeOrFail(String recordId, RecordType recordType) {
+    return accessType -> accessType.orElseThrow(() -> new NotFoundException(
+      String.format(NOT_FOUND_BY_RECORD_MESSAGE, recordId, recordType))
+    );
   }
 }

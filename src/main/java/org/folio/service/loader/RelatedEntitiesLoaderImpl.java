@@ -33,7 +33,7 @@ public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
   public CompletableFuture<Void> loadAccessType(Accessible accessible, RecordKey recordKey,
                                                 Map<String, String> okapiHeaders) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    accessTypesService.findByRecord(recordKey.getRecordId(), recordKey.getRecordType(), okapiHeaders)
+    accessTypesService.findByRecord(recordKey.getRecordId(), recordKey.getRecordType(), "credentialsId", okapiHeaders)
       .thenAccept(accessType -> {
         accessible.setAccessType(accessType);
         future.complete(null);

@@ -21,9 +21,10 @@ public interface AccessTypesService {
   CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
                                                                  Map<String, String> okapiHeaders);
 
-  CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames, Map<String, String> okapiHeaders);
+  CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames, String credentialsId,
+                                                      Map<String, String> okapiHeaders);
 
-  CompletableFuture<AccessType> findByRecord(String recordId, RecordType recordType,
+  CompletableFuture<AccessType> findByRecord(String recordId, RecordType recordType, String credentialsId,
                                              Map<String, String> okapiHeaders);
 
   CompletableFuture<AccessType> save(String credentialsId, AccessTypePostRequest postRequest,

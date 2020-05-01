@@ -27,7 +27,7 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   @Override
   public CompletableFuture<AccessTypeMapping> findByRecord(String recordId, RecordType recordType,
                                                            Map<String, String> okapiHeaders) {
-    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
+    return mappingRepository.findByRecord(recordId, recordType, "credentialsId", tenantId(okapiHeaders))
       .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException(
         String.format("Access type mapping not found: recordId = %s, recordType = %s", recordId, recordType)))
       );
@@ -49,10 +49,10 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   public CompletableFuture<Void> update(AccessType accessType, String recordId, RecordType recordType,
                                         Map<String, String> okapiHeaders) {
     if (accessType == null) {
-      return mappingRepository.deleteByRecord(recordId, recordType, tenantId(okapiHeaders));
+      return mappingRepository.deleteByRecord(recordId, recordType, "credentialsId", tenantId(okapiHeaders));
     }
 
-    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
+    return mappingRepository.findByRecord(recordId, recordType, "credentialsId", tenantId(okapiHeaders))
       .thenCompose(dbMapping -> {
         AccessTypeMapping mapping;
         if (dbMapping.isPresent()) {
@@ -65,15 +65,10 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countRecordsByAccessType(Map<String, String> okapiHeaders) {
-    return mappingRepository.countRecordsByAccessType(tenantId(okapiHeaders));
-  }
-
-  @Override
   public CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordPrefix(String recordIdPrefix,
                                                                                          RecordType recordType,
                                                                                          Map<String, String> okapiHeaders) {
-    return mappingRepository.countRecordsByAccessTypeAndRecordIdPrefix(recordIdPrefix, recordType,
+    return mappingRepository.countRecordsByAccessTypeAndRecordIdPrefix(recordIdPrefix, recordType, "credentialsId",
       tenantId(okapiHeaders));
   }
 

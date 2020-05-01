@@ -220,8 +220,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       template.requestAction(context -> postCustomPackage(packagePost, context));
     } else {
       template.requestAction(context -> accessTypesService.findByUserAndId(accessTypeId, okapiHeaders)
-        .thenCompose(accessType -> postCustomPackage(packagePost, context)
-          .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))));
+        .thenCombine(postCustomPackage(packagePost, context),
+          (accessType, packageResult) -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders)));
     }
 
     template
@@ -323,7 +323,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       accessTypeFilter.setPage(page);
       template.requestAction(context ->
         filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders)
-        .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
+          .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
       );
     } else {
       PackageId parsedPackageId = parsePackageId(packageId);
@@ -378,7 +378,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @Override
   public void postEholdingsPackagesBulkFetch(String contentType, PackagePostBulkFetchRequest entity,
-      Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                             Map<String, String> okapiHeaders,
+                                             Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
     template.requestAction(context -> context.getPackagesService().retrievePackagesBulk(entity.getPackages()))
@@ -402,7 +403,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<AccessType> fetchAccessType(PackagePutRequest entity,
-                                                                      Map<String, String> okapiHeaders) {
+                                                        Map<String, String> okapiHeaders) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {
       return CompletableFuture.completedFuture(null);

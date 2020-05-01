@@ -65,7 +65,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     RecordType recordType = accessTypeFilter.getRecordType();
     String recordIdPrefix = createRecordIdPrefix(accessTypeFilter);
     accessTypeFilter.setRecordIdPrefix(recordIdPrefix);
-    return accessTypesService.findByNames(accessTypeFilter.getAccessTypeNames(), okapiHeaders)
+    return accessTypesService.findByNames(accessTypeFilter.getAccessTypeNames(), "credentialsId", okapiHeaders)
       .thenApply(this::extractAccessTypeIds)
       .thenCompose(accessTypeIds ->
         accessTypeMappingsService.countRecordsByAccessTypeAndRecordPrefix(recordIdPrefix, recordType, okapiHeaders)
