@@ -5,7 +5,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
-import static org.folio.rest.util.TokenUtil.fetchUserInfo;
+import static org.folio.util.TokenUtils.fetchUserInfo;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.Configuration;
+import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.repository.kbcredentials.DbKbCredentials;
@@ -33,10 +34,10 @@ import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
-import org.folio.rest.util.UserInfo;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPostBodyValidator;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPutBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
+import org.folio.util.UserInfo;
 
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
@@ -104,7 +105,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .toBuilder()
         .createdDate(Instant.now())
         .createdByUserId(userInfo.getUserId())
-        .createdByUserName(userInfo.getUsername())
+        .createdByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
       .thenApply(credentialsFromDBConverter::convert);
@@ -124,7 +125,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .customerId(attributes.getCustomerId())
         .updatedDate(Instant.now())
         .updatedByUserId(userInfo.getUserId())
-        .updatedByUserName(userInfo.getUsername())
+        .updatedByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
       .thenApply(dbKbCredentials -> null);
@@ -137,7 +138,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
     Configuration configuration = configurationConverter.convert(kbCredentials);
-    return configurationService.verifyCredentials(configuration, context, tenantId(okapiHeaders))
+    return configurationService.verifyCredentials(configuration, context, new OkapiData(okapiHeaders))
       .thenCompose(errors -> {
         if (!errors.isEmpty()) {
           CompletableFuture<Void> future = new CompletableFuture<>();

@@ -2,7 +2,6 @@ package org.folio.repository.resources;
 
 import static java.util.stream.Collectors.groupingBy;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
@@ -15,6 +14,7 @@ import static org.folio.repository.resources.ResourceTableConstants.SELECT_RESOU
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.ID_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.NAME_COLUMN;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collections;
@@ -36,8 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.ResourceId;
-import org.folio.rest.util.IdParser;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.util.IdParser;
 
 @Component
 public class ResourceRepositoryImpl implements ResourceRepository {

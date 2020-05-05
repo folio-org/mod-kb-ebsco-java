@@ -43,15 +43,14 @@ import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
-import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
-import org.folio.holdingsiq.service.impl.ConfigurationServiceImpl;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.util.ErrorHandler;
+import org.folio.rmapi.ConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.cache.TitleCacheKey;
@@ -63,7 +62,6 @@ import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 @Configuration
 @ComponentScan(basePackages = {
   "org.folio.rest.converter",
-  "org.folio.rest.parser",
   "org.folio.rest.validator",
   "org.folio.rest.util.template",
   "org.folio.repository",
@@ -125,7 +123,7 @@ public class ApplicationConfig {
   public ConfigurationService configurationService(Vertx vertx,
                                                    @Value("${configuration.cache.expire}") long expirationTime) {
     return new ConfigurationServiceCache(
-      new ConfigurationServiceImpl(new ConfigurationClientProvider()),
+      new ConfigurationServiceImpl(vertx),
       new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache")
     );
   }

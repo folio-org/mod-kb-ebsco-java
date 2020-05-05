@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getTagsTableName;
@@ -22,6 +21,7 @@ import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_T
 import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RESOURCE_IDS;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collections;
@@ -49,10 +49,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.FutureUtils;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.util.FutureUtils;
 
 @Component
 class TagRepositoryImpl implements TagRepository {

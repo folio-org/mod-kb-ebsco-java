@@ -1,6 +1,5 @@
 package org.folio.repository.holdings.status;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
@@ -10,6 +9,7 @@ import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.UPDATE_IMPORTED_COUNT;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.UPDATE_LOADING_STATUS;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.UUID;

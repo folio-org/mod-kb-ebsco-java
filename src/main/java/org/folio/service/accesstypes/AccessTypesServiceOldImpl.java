@@ -22,18 +22,18 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.FutureUtils;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesOldRepository;
-import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.userlookup.UserLookUp;
 import org.folio.service.userlookup.UserLookUpService;
+import org.folio.util.FutureUtils;
 
 @Primary
 @Component("oldAccessTypesService")

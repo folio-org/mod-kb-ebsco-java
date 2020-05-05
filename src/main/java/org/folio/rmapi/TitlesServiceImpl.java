@@ -6,17 +6,17 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 import org.folio.cache.VertxCache;
-import org.folio.common.FutureUtils;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.impl.TitlesHoldingsIQServiceImpl;
 import org.folio.rmapi.cache.TitleCacheKey;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.folio.util.FutureUtils;
 
 public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
 

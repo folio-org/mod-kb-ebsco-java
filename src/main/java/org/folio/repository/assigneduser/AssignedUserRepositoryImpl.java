@@ -2,7 +2,6 @@ package org.folio.repository.assigneduser;
 
 import static java.lang.String.format;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
@@ -17,6 +16,7 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GR
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.UPDATE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
+import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Arrays;
 import java.util.Collection;

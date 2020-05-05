@@ -1,6 +1,5 @@
 package org.folio.repository.accesstypes;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
@@ -23,6 +22,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
+import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collections;
 import java.util.List;
