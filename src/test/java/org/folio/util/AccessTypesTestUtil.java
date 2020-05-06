@@ -6,8 +6,24 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USERNAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_DATE_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.INSERT_ACCESS_TYPE_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USERNAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.JSONB_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
@@ -31,10 +47,15 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.core.convert.converter.Converter;
 
 import org.folio.db.DbUtils;
 import org.folio.repository.RecordType;
+import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.repository.accesstypes.DbAccessType;
+import org.folio.rest.converter.accesstypes.AccessTypeConverter;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
@@ -46,15 +67,29 @@ public class AccessTypesTestUtil {
   public static final String STUB_ACCESS_TYPE_NAME_2 = "Trial";
   public static final String STUB_ACCESS_TYPE_NAME_3 = "Purchased with perpetual access";
 
+  public static final String ACCESS_TYPES_PATH = "/eholdings/access-types";
   public static final String KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types";
+  public static final String KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types/%s";
 
-  public static List<AccessType> getAccessTypes(Vertx vertx) {
+  private static final Converter<DbAccessType, AccessType> CONVERTER = new AccessTypeConverter.FromDb();
+
+  public static List<AccessType> getAccessTypesOld(Vertx vertx) {
     ObjectMapper mapper = new ObjectMapper();
     CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesTestOldTable(),
       event -> future.complete(event.result().getRows().stream()
         .map(row -> row.getString(JSONB_COLUMN))
         .map(json -> parseAccessType(mapper, json))
+        .collect(Collectors.toList())));
+    return future.join();
+  }
+
+  public static List<AccessType> getAccessTypes(Vertx vertx) {
+    CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).select(String.format(SqlQueryHelper.selectQuery(), accessTypesTestTable()),
+      event -> future.complete(event.result().getRows().stream()
+        .map(AccessTypesTestUtil::mapAccessType)
+        .map(CONVERTER::convert)
         .collect(Collectors.toList())));
     return future.join();
   }
@@ -94,7 +129,7 @@ public class AccessTypesTestUtil {
   public static String insertAccessType(AccessType accessType, Vertx vertx) {
     CompletableFuture<UpdateResult> future = new CompletableFuture<>();
 
-    String query = String.format(INSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
+    String query = String.format(UPSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
 
     String id = UUID.randomUUID().toString();
     JsonArray params = DbUtils.createParams(Arrays.asList(
@@ -139,7 +174,7 @@ public class AccessTypesTestUtil {
   }
 
   private static List<AccessType> populateAccessTypesIds(List<AccessType> items,
-                                                                       List<JsonObject> rows) {
+                                                         List<JsonObject> rows) {
     List<AccessType> result = new ArrayList<>(items.size());
 
     for (int i = 0; i < items.size(); i++) {
@@ -180,6 +215,28 @@ public class AccessTypesTestUtil {
 
   private static String accessTypesMappingTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
+  }
+
+  private static DbAccessType mapAccessType(JsonObject resultRow) {
+    return DbAccessType.builder()
+      .id(resultRow.getString(ID_COLUMN))
+      .credentialsId(resultRow.getString(CREDENTIALS_ID_COLUMN))
+      .name(resultRow.getString(NAME_COLUMN))
+      .description(resultRow.getString(DESCRIPTION_COLUMN))
+      .usageNumber(ObjectUtils.defaultIfNull(resultRow.getInteger(USAGE_NUMBER_COLUMN), 0))
+      .createdDate(resultRow.getInstant(CREATED_DATE_COLUMN))
+      .createdByUserId(resultRow.getString(CREATED_BY_USER_ID_COLUMN))
+      .createdByUsername(resultRow.getString(CREATED_BY_USERNAME_COLUMN))
+      .createdByLastName(resultRow.getString(CREATED_BY_LAST_NAME_COLUMN))
+      .createdByFirstName(resultRow.getString(CREATED_BY_FIRST_NAME_COLUMN))
+      .createdByMiddleName(resultRow.getString(CREATED_BY_MIDDLE_NAME_COLUMN))
+      .updatedDate(resultRow.getInstant(UPDATED_DATE_COLUMN))
+      .updatedByUserId(resultRow.getString(UPDATED_BY_USER_ID_COLUMN))
+      .updatedByUsername(resultRow.getString(UPDATED_BY_USERNAME_COLUMN))
+      .updatedByLastName(resultRow.getString(UPDATED_BY_LAST_NAME_COLUMN))
+      .updatedByFirstName(resultRow.getString(UPDATED_BY_FIRST_NAME_COLUMN))
+      .updatedByMiddleName(resultRow.getString(UPDATED_BY_MIDDLE_NAME_COLUMN))
+      .build();
   }
 
   public static List<AccessType> testData() {

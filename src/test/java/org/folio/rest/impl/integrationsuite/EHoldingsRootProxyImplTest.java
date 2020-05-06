@@ -6,14 +6,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
+import static org.folio.test.util.TestUtil.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
@@ -23,21 +18,20 @@ import static org.folio.rest.impl.ProxiesTestData.JOHN_ID;
 import static org.folio.rest.impl.ProxiesTestData.JOHN_TOKEN_HEADER;
 import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL;
-import static org.folio.test.util.TestUtil.mockGet;
-import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+import com.github.tomakehurst.wiremock.common.Json;
+import com.github.tomakehurst.wiremock.matching.*;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -175,27 +169,19 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException {
+    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-updated-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), stubResponseFile);
+    mockPut(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_NO_CONTENT);
 
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), true))
-        .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
+    String expected = readFile("responses/kb-ebsco/root-proxy/put-root-proxy-response-updated.json");
 
-    stubFor(
-      put(new UrlPathPattern(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(HttpStatus.SC_NO_CONTENT)));
+    final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTILS_ID);
 
-    RootProxy expected = getUpdatedRootProxy();
+    String actual = putWithOk(path, readFile("requests/kb-ebsco/put-root-proxy.json")).asString();
 
-    RootProxy rootProxy = putWithOk(EHOLDINGS_ROOT_PROXY_URL, readFile("requests/kb-ebsco/put-root-proxy.json"))
-      .as(RootProxy.class);
-
-    assertThat(rootProxy.getData().getId(), equalTo(expected.getData().getId()));
-    assertThat(rootProxy.getData().getType(), equalTo(expected.getData().getType()));
-    assertThat(rootProxy.getData().getAttributes().getId(), equalTo(expected.getData().getAttributes().getId()));
-    assertThat(rootProxy.getData().getAttributes().getProxyTypeId(), equalTo(expected.getData().getAttributes().getProxyTypeId()));
+    JSONAssert.assertEquals(expected, actual, true);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), true))
       .withRequestBody(equalToJson(readFile("requests/rmapi/proxiescustomlabels/put-root-proxy.json"))));
@@ -206,31 +192,45 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     String stubGetResponseFile = "responses/rmapi/proxiescustomlabels/get-updated-response.json";
     String stubPutResponseFile = "responses/rmapi/proxiescustomlabels/put-400-error-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
+    mockGet(new EqualToPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), stubGetResponseFile);
     stubFor(
-        get(new UrlPathPattern(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), true))
-          .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubGetResponseFile))));
-
-    stubFor(
-      put(new UrlPathPattern(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), true))
+      put(new UrlPathPattern(new EqualToPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), false))
         .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubPutResponseFile)).withStatus(SC_BAD_REQUEST)));
 
-    JsonapiError error = putWithStatus(EHOLDINGS_ROOT_PROXY_URL,
-      readFile("requests/kb-ebsco/put-root-proxy.json"), SC_BAD_REQUEST).as(JsonapiError.class);
+    final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTILS_ID);
+    JsonapiError error = putWithStatus(path, readFile("requests/kb-ebsco/put-root-proxy.json"), SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Invalid Proxy ID"));
   }
 
-  private RootProxy getUpdatedRootProxy() {
-    return new RootProxy()
-      .withData(new RootProxyData()
-          .withId(RootProxyData.Id.ROOT_PROXY)
-          .withType(RootProxyData.Type.ROOT_PROXIES)
-          .withAttributes(new RootProxyDataAttributes()
-              .withId(RootProxyDataAttributes.Id.ROOT_PROXY)
-              .withProxyTypeId("Test-Proxy-ID-123")))
-      .withJsonapi(RestConstants.JSONAPI);
+  @Test
+  public void shouldReturnNotFoundWhenNoKbCredentialsStored() throws IOException, URISyntaxException {
+    final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTILS_ID);
+    JsonapiError error = putWithStatus(path, readFile("requests/kb-ebsco/put-root-proxy.json"), SC_NOT_FOUND).as(JsonapiError.class);
+    assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
   }
+
+  @Test
+  public void shouldReturn401WhenRMAPIReturns401() {
+    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_UNAUTHORIZED);
+    final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTILS_ID);
+    final JsonapiError error = getWithStatus(path, SC_UNAUTHORIZED, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    Assert.assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
+  }
+
+  @Test
+  public void shouldReturn403WhenRMAPIReturns403() {
+    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_FORBIDDEN);
+    final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTILS_ID);
+    final JsonapiError error = getWithStatus(path, SC_FORBIDDEN, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    Assert.assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized"));
+  }
+
 }
 

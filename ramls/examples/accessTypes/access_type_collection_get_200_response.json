@@ -6,18 +6,19 @@
       "attributes": {
         "name": "my custom type 1",
         "description": "Description 1",
-        "metadata": {
-          "createdDate": "2020-02-03T13:23:56.784",
-          "updatedDate": "2020-02-03T13:23:56.784+0000",
-          "createdByUserId": "22222222-2222-2222-a222-222222222222",
-          "updatedByUserId": "22222222-2222-2222-a222-222222222222",
-          "createdByUsername": "john_doe"
-        }
+        "credentialsId": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
       },
       "creator": {
         "lastName": "Doe",
         "firstName": "John",
         "middleName": "Joseph"
+      },
+      "metadata": {
+        "createdDate": "2020-02-03T13:23:56.784",
+        "updatedDate": "2020-02-03T13:23:56.784+0000",
+        "createdByUserId": "22222222-2222-2222-a222-222222222222",
+        "updatedByUserId": "22222222-2222-2222-a222-222222222222",
+        "createdByUsername": "john_doe"
       }
     },
     {
@@ -26,14 +27,7 @@
       "attributes": {
         "name": "my custom type 2",
         "description": "Description 2",
-        "metadata": {
-          "createdDate": "2020-02-03T13:23:56.784+0000",
-          "updatedDate": "2020-02-03T14:36:06.234+0000",
-          "createdByUserId": "22222222-2222-2222-a222-222222222222",
-          "updatedByUserId": "33333333-3333-3333-a333-333333333333",
-          "createdByUsername": "john_doe",
-          "updatedByUsername": "jane_doe"
-        }
+        "credentialsId": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
       },
       "creator": {
         "lastName": "Doe",
@@ -44,6 +38,14 @@
         "lastName": "Doe",
         "firstName": "Jane",
         "middleName": "Rosemary"
+      },
+      "metadata": {
+        "createdDate": "2020-02-03T13:23:56.784+0000",
+        "updatedDate": "2020-02-03T14:36:06.234+0000",
+        "createdByUserId": "22222222-2222-2222-a222-222222222222",
+        "updatedByUserId": "33333333-3333-3333-a333-333333333333",
+        "createdByUsername": "john_doe",
+        "updatedByUsername": "jane_doe"
       }
     }
   ],

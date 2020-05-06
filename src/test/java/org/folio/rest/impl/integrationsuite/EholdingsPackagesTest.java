@@ -87,6 +87,7 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -232,6 +233,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnPackagesOnSearchByAccessTypeWithPagination() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -256,6 +258,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -328,6 +331,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnPackageWithAccessTypeOnGetById() throws IOException, URISyntaxException {
     try {
       final List<AccessType> accessTypes = testData();
@@ -614,6 +618,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldUpdateAllAttributesInSelectedPackageAndCreateNewAccessTypeMapping() throws URISyntaxException, IOException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -779,6 +784,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldUpdateAllAttributesInCustomPackageAndCreateNewAccessTypeMapping() throws URISyntaxException, IOException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -898,6 +904,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldUpdateAllAttributesInCustomPackageAndUpdateAccessTypeMapping() throws URISyntaxException, IOException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -1012,6 +1019,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturn200OnPostPackageWithExistedAccessType() throws URISyntaxException, IOException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -1140,6 +1148,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnResourcesWithAccessTypesOnGetWithResources() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);
@@ -1166,6 +1175,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldReturnResourcesWithAccessTypesOnGetWithResourcesWithPagination() throws IOException, URISyntaxException {
     try {
       List<AccessType> accessTypes = insertAccessTypes(testData(), vertx);

@@ -25,7 +25,7 @@ public class AccessTypesBodyValidator {
   /**
    * @throws InputValidationException  if validation of attributes fails
    */
-  public void validate(AccessType request) {
+  public void validate(String credentialsId, AccessType request) {
     if (request == null || request.getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
@@ -35,6 +35,17 @@ public class AccessTypesBodyValidator {
 
     if (attributes.getDescription() != null) {
       ValidatorUtil.checkMaxLength("description", attributes.getDescription(), maxDescriptionLength);
+    }
+
+    if (attributes.getCredentialsId() != null) {
+      ValidatorUtil.checkIsEqual("credentialsId", credentialsId, attributes.getCredentialsId());
+    }
+  }
+
+  public void validate(String credentialsId, String accessTypeId, AccessType request) {
+    validate(credentialsId, request);
+    if (request.getId() != null) {
+      ValidatorUtil.checkIsEqual("id", accessTypeId, request.getId());
     }
   }
 }

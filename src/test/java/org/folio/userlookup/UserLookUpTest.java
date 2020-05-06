@@ -4,9 +4,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
+import static org.folio.rest.util.RestConstants.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.RestConstants.OKAPI_URL_HEADER;
-import static org.folio.rest.util.RestConstants.OKAPI_USER_ID_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TokenUtils.generateToken;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -38,12 +39,14 @@ import org.folio.test.util.TestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class UserLookUpTest {
-  private final String GET_USER_ENDPOINT = "/users/";
-  private static final String host = "http://127.0.0.1";
-  private static Map<String, String> okapiHeaders = new HashMap<>();
 
-  private UserLookUpService userLookUpService = new UserLookUpService();
+  private static final String HOST = "http://127.0.0.1";
   private static final String USER_INFO_STUB_FILE = "responses/userlookup/mock_user_response_200.json";
+
+  private static final Map<String, String> OKAPI_HEADERS = new HashMap<>();
+
+  private final String GET_USER_ENDPOINT = "/users/";
+  private final UserLookUpService userLookUpService = new UserLookUpService();
 
   @Rule
   public TestRule watcher = TestStartLoggingRule.instance();
@@ -55,24 +58,25 @@ public class UserLookUpTest {
 
   @Test
   public void shouldReturn200WhenUserIdIsValid(TestContext context) throws IOException, URISyntaxException {
-    final String stubUserId = "a49cefad-7447-4f2f-9004-de32e7a6cc53";
+    final String stubUserId = "88888888-8888-4888-8888-888888888888";
+    final String stubToken = generateToken("cedrick", stubUserId);
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
-    okapiHeaders.put(OKAPI_TENANT_HEADER, STUB_TENANT);
-    okapiHeaders.put(OKAPI_URL_HEADER, getWiremockUrl());
-    okapiHeaders.put(OKAPI_USER_ID_HEADER, stubUserId);
+    OKAPI_HEADERS.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    OKAPI_HEADERS.put(OKAPI_URL_HEADER, getWiremockUrl());
+    OKAPI_HEADERS.put(OKAPI_TOKEN_HEADER, stubToken);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(USER_INFO_STUB_FILE))));
 
-    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(okapiHeaders);
+    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(OKAPI_HEADERS);
     info.thenCompose(userInfo -> {
       context.assertNotNull(userInfo);
 
-      context.assertEquals("cedrick", userInfo.getUserName());
+      context.assertEquals("cedrick", userInfo.getUsername());
       context.assertEquals("firstname_test", userInfo.getFirstName());
       context.assertNull(userInfo.getMiddleName());
       context.assertEquals("lastname_test", userInfo.getLastName());
@@ -88,13 +92,14 @@ public class UserLookUpTest {
   }
 
   @Test
-  public void ShouldReturn401WhenUnauthorizedAccess(TestContext context) {
+  public void shouldReturn401WhenUnauthorizedAccess(TestContext context) {
     final String stubUserId = "a49cefad-7447-4f2f-9004-de32e7a6cc53";
+    final String stubToken = generateToken("cedrick", stubUserId);
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
-    okapiHeaders.put(OKAPI_URL_HEADER, getWiremockUrl());
-    okapiHeaders.put(OKAPI_USER_ID_HEADER, stubUserId);
+    OKAPI_HEADERS.put(OKAPI_URL_HEADER, getWiremockUrl());
+    OKAPI_HEADERS.put(OKAPI_TOKEN_HEADER, stubToken);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
@@ -102,7 +107,7 @@ public class UserLookUpTest {
           .withStatus(401)
           .withStatusMessage("Authorization Failure")));
 
-    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(okapiHeaders);
+    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(OKAPI_HEADERS);
     info.thenCompose(result -> {
       context.assertNull(result);
       async.complete();
@@ -115,14 +120,15 @@ public class UserLookUpTest {
   }
 
   @Test
-  public void ShouldReturn404WhenUserNotFound(TestContext context) {
+  public void shouldReturn404WhenUserNotFound(TestContext context) {
     final String stubUserId = "xyz";
+    final String stubToken = generateToken("cedrick", stubUserId);
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
-    okapiHeaders.put(OKAPI_TENANT_HEADER, STUB_TENANT);
-    okapiHeaders.put(OKAPI_URL_HEADER, getWiremockUrl());
-    okapiHeaders.put(OKAPI_USER_ID_HEADER, stubUserId);
+    OKAPI_HEADERS.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    OKAPI_HEADERS.put(OKAPI_URL_HEADER, getWiremockUrl());
+    OKAPI_HEADERS.put(OKAPI_TOKEN_HEADER, stubToken);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
@@ -130,7 +136,7 @@ public class UserLookUpTest {
           .withStatus(404)
           .withStatusMessage("User Not Found")));
 
-    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(okapiHeaders);
+    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(OKAPI_HEADERS);
     info.thenCompose(result -> {
       context.assertNull(result);
       async.complete();
@@ -143,12 +149,12 @@ public class UserLookUpTest {
   }
 
   @Test
-  public void missingOkapiURLHeaderShouldReturn500Test(TestContext context) {
+  public void shouldReturn500WhenMissingOkapiURLHeader(TestContext context) {
     Async async = context.async();
 
-    okapiHeaders.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    OKAPI_HEADERS.put(OKAPI_TENANT_HEADER, STUB_TENANT);
 
-    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(okapiHeaders);
+    CompletableFuture<UserLookUp> info = userLookUpService.getUserInfo(OKAPI_HEADERS);
     info.thenCompose(result -> {
       context.assertNull(result);
       async.complete();
@@ -161,6 +167,6 @@ public class UserLookUpTest {
   }
 
   private String getWiremockUrl() {
-    return host + ":" + userMockServer.port();
+    return HOST + ":" + userMockServer.port();
   }
 }

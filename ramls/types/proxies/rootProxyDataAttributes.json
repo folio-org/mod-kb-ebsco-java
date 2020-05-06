@@ -17,5 +17,9 @@
       "description": "Proxy Type Id",
       "example": "EZProxy"
     }
-  }
+  },
+  "required": [
+    "id",
+    "proxyTypeId"
+  ]
 }

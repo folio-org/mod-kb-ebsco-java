@@ -10,11 +10,6 @@ import org.folio.rest.jaxrs.model.AccessType;
 public interface AccessTypesOldRepository {
 
   /**
-   * Returns all access types for given tenantId.
-   */
-  CompletableFuture<List<AccessType>> findAll(String tenantId);
-
-  /**
    * Returns all access types for given accessTypeNames and tenantId.
    */
   CompletableFuture<List<AccessType>> findByNames(Collection<String> accessTypeNames, String tenantId);
@@ -26,21 +21,6 @@ public interface AccessTypesOldRepository {
    * @param id id of access type to get
    */
   CompletableFuture<Optional<AccessType>> findById(String id, String tenantId);
-
-  /**
-   * Saves a new access type record to the database
-   *
-   * @param accessType - current AccessType  {@link AccessType} object to save
-   */
-  CompletableFuture<AccessType> save(AccessType accessType, String tenantId);
-
-  /**
-   * Updates access type with given id.
-   * If access type with given id doesn't exist then returns NotFoundException as a cause.
-   */
-  CompletableFuture<Void> update(String id, AccessType accessType, String tenantId);
-
-  CompletableFuture<Integer> count(String tenantId);
 
   /**
    * Delete access type with given id and tenantId

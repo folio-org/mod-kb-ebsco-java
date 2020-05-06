@@ -1,10 +1,13 @@
 package org.folio.repository.accesstypes;
 
 import static org.folio.repository.SqlQueryHelper.count;
+import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.groupByQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.SqlQueryHelper.leftJoinQuery;
+import static org.folio.repository.SqlQueryHelper.limitQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
+import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
 
@@ -32,11 +35,11 @@ public class AccessTypesTableConstants {
 
   public static final String USAGE_NUMBER_COLUMN = "usage_number";
 
-  public static final String SELECT_ALL_ACCESS_TYPES = "SELECT *  FROM %s ;";
-  public static final String SELECT_COUNT_ACCESS_TYPES = "SELECT COUNT(*) FROM %s ;";
-
-  public static final String INSERT_ACCESS_TYPE_QUERY;
+  public static final String UPSERT_ACCESS_TYPE_QUERY;
   public static final String SELECT_BY_CREDENTIALS_ID_QUERY;
+  public static final String SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
+  public static final String SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
+  public static final String DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
 
   static {
     String[] allColumns = new String[] {
@@ -46,13 +49,17 @@ public class AccessTypesTableConstants {
       UPDATED_BY_FIRST_NAME_COLUMN, UPDATED_BY_MIDDLE_NAME_COLUMN
     };
 
-    INSERT_ACCESS_TYPE_QUERY = insertQuery(allColumns) + ";";
-    SELECT_BY_CREDENTIALS_ID_QUERY = selectQuery() + " " +
+    String selectWithCountUsage = selectQuery() + " " +
       leftJoinQuery(
         selectQuery(ACCESS_TYPE_ID_COLUMN, count(ACCESS_TYPE_ID_COLUMN, USAGE_NUMBER_COLUMN)) + " " +
           groupByQuery(ACCESS_TYPE_ID_COLUMN), ID_COLUMN, ACCESS_TYPE_ID_COLUMN
-      ) + " " +
-      whereQuery(CREDENTIALS_ID_COLUMN) + ";";
+      );
+    SELECT_BY_CREDENTIALS_ID_QUERY = selectWithCountUsage + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
+    SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY = selectWithCountUsage + " " +
+      whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
+    SELECT_COUNT_BY_CREDENTIALS_ID_QUERY = selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
+    UPSERT_ACCESS_TYPE_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
+    DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY = deleteQuery() + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
   }
 
   private AccessTypesTableConstants() {

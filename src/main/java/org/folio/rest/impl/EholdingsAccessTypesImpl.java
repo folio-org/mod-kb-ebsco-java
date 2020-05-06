@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static io.vertx.core.Future.succeededFuture;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
 
@@ -15,11 +16,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
-import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.AccessTypePostRequest;
+import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsAccessTypes;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdAccessTypes;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.rest.validator.AccessTypesBodyValidator;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.spring.SpringContextUtil;
 
@@ -31,8 +32,6 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @Autowired
   @Qualifier("oldAccessTypesService")
   private AccessTypesService oldAccessTypesService;
-  @Autowired
-  private AccessTypesBodyValidator bodyValidator;
   @Autowired
   private ErrorHandler errorHandler;
 
@@ -48,7 +47,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
     accessTypesService.findByUser(okapiHeaders)
       .thenAccept(accessTypeCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesResponse.respond200WithApplicationVndApiJson(accessTypeCollection))))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+      .exceptionally(handleException(asyncResultHandler));
   }
 
   @Override
@@ -60,54 +59,79 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
     accessTypesService.findByCredentialsId(credentialsId, okapiHeaders)
       .thenAccept(accessTypeCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesResponse.respond200WithApplicationVndApiJson(accessTypeCollection))))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+      .exceptionally(handleException(asyncResultHandler));
   }
 
   @Override
   @Validate
   @HandleValidationErrors
-  public void postEholdingsAccessTypes(String contentType, AccessType entity, Map<String, String> okapiHeaders,
-                                       Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-
-    bodyValidator.validate(entity);
-    oldAccessTypesService.save(entity, okapiHeaders)
+  public void postEholdingsKbCredentialsAccessTypesById(String credentialsId, AccessTypePostRequest entity,
+                                                        Map<String, String> okapiHeaders,
+                                                        Handler<AsyncResult<Response>> asyncResultHandler,
+                                                        Context vertxContext) {
+    accessTypesService.save(credentialsId, entity, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
-        PostEholdingsAccessTypesResponse.respond201WithApplicationVndApiJson(accessType))))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+        PostEholdingsKbCredentialsAccessTypesByIdResponse.respond201WithApplicationVndApiJson(accessType))))
+      .exceptionally(handleException(asyncResultHandler));
   }
 
   @Override
   @Validate
   @HandleValidationErrors
   public void getEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
-                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    oldAccessTypesService.findById(id, okapiHeaders)
+                                          Handler<AsyncResult<Response>> asyncResultHandler,
+                                          Context vertxContext) {
+    accessTypesService.findByUserAndId(id, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsAccessTypesByIdResponse.respond200WithApplicationVndApiJson(accessType))))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+      .exceptionally(handleException(asyncResultHandler));
   }
 
   @Override
   @Validate
   @HandleValidationErrors
-  public void putEholdingsAccessTypesById(String id, String contentType, AccessType entity,
-                                          Map<String, String> okapiHeaders,
-                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    bodyValidator.validate(entity);
-    oldAccessTypesService.update(id, entity, okapiHeaders)
+  public void getEholdingsKbCredentialsAccessTypesByIdAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                      Map<String, String> okapiHeaders,
+                                                                      Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                      Context vertxContext) {
+    accessTypesService.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
-        PutEholdingsAccessTypesByIdResponse.respond204())))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+        GetEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond200WithApplicationVndApiJson(accessType))))
+      .exceptionally(handleException(asyncResultHandler));
   }
 
   @Override
   @Validate
   @HandleValidationErrors
-  public void deleteEholdingsAccessTypesById(String id, Map<String, String> okapiHeaders,
-                                             Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    oldAccessTypesService.deleteById(id, okapiHeaders)
-      .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(DeleteEholdingsAccessTypesByIdResponse.respond204())))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+  public void putEholdingsKbCredentialsAccessTypesByIdAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                      AccessTypePutRequest entity,
+                                                                      Map<String, String> okapiHeaders,
+                                                                      Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                      Context vertxContext) {
+    accessTypesService.update(credentialsId, accessTypeId, entity, okapiHeaders)
+      .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
+        PutEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond204())))
+      .exceptionally(handleException(asyncResultHandler));
   }
 
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void deleteEholdingsKbCredentialsAccessTypesByIdAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                                   Map<String, String> okapiHeaders,
+                                                                                   Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                                   Context vertxContext) {
+    accessTypesService.delete(credentialsId, accessTypeId, okapiHeaders)
+      .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(
+        DeleteEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond204())))
+      .exceptionally(handleException(asyncResultHandler));
+  }
+
+
+  private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
+    return throwable -> {
+      errorHandler.handle(asyncResultHandler, throwable);
+      return null;
+    };
+  }
 }

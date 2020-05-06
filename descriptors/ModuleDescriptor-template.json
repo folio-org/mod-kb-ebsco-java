@@ -203,8 +203,8 @@
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/root-proxy",
-          "permissionsRequired": ["kb-ebsco.root-proxy.put"]
+          "pathPattern": "/eholdings/kb-credentials/{id}/root-proxy",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.root-proxy.put"]
         },
         {
           "methods": ["GET"],
@@ -259,30 +259,35 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.access-types.item.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types",
           "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.collection.get"]
         },
         {
           "methods": ["POST"],
-          "pathPattern": "/eholdings/access-types",
-          "permissionsRequired": ["kb-ebsco.access-types.item.post"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.collection.post"],
           "modulePermissions": ["users.item.get"]
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/eholdings/access-types/{accessTypeId}",
-          "permissionsRequired": ["kb-ebsco.access-types.item.get"]
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.item.get"]
         },
         {
           "methods": ["PUT"],
-          "pathPattern": "/eholdings/access-types/{accessTypeId}",
-          "permissionsRequired": ["kb-ebsco.access-types.item.put"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.item.put"],
           "modulePermissions": ["users.item.get"]
         },
         {
           "methods": ["DELETE"],
-          "pathPattern": "/eholdings/access-types/{accessTypeId}",
-          "permissionsRequired": ["kb-ebsco.access-types.item.delete"]
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types/{accessTypeId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.item.delete"]
         }
       ]
     },
@@ -490,9 +495,9 @@
       "description": "Get root proxy"
     },
     {
-      "permissionName": "kb-ebsco.root-proxy.put",
-      "displayName": "put root proxy",
-      "description": "Put root proxy"
+      "permissionName": "kb-ebsco.kb-credentials.root-proxy.put",
+      "displayName": "put root proxy by KB credentials",
+      "description": "Put root proxy by KB credentials"
     },
     {
       "permissionName": "kb-ebsco.tags.collection.get",
@@ -535,27 +540,32 @@
       "description": "Get Access Types collection"
     },
     {
-      "permissionName": "kb-ebsco.kb-credentials.access-types.collection.get",
-      "displayName": "get Access Types collection by kb credentials",
-      "description": "Get Access Types collection KB credentials"
-    },
-    {
-      "permissionName": "kb-ebsco.access-types.item.post",
-      "displayName": "post Access Type collection item",
-      "description": "Post Access Type collection item"
-    },
-    {
       "permissionName": "kb-ebsco.access-types.item.get",
       "displayName": "get Access Type collection item",
       "description": "Get Access Type collection item"
     },
     {
-      "permissionName": "kb-ebsco.access-types.item.put",
+      "permissionName": "kb-ebsco.kb-credentials.access-types.collection.get",
+      "displayName": "get Access Types collection by kb credentials",
+      "description": "Get Access Types collection KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.access-types.collection.post",
+      "displayName": "post Access Type collection item",
+      "description": "Post Access Type collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.access-types.item.get",
+      "displayName": "get Access Type collection item",
+      "description": "Get Access Type collection item"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.access-types.item.put",
       "displayName": "put Access Type collection item",
       "description": "Put Access Type collection item"
     },
     {
-      "permissionName": "kb-ebsco.access-types.item.delete",
+      "permissionName": "kb-ebsco.kb-credentials.access-types.item.delete",
       "displayName": "delete Access Type collection item",
       "description": "Delete Access Type collection item"
     },
@@ -598,7 +608,12 @@
         "kb-ebsco.kb-credentials.custom-labels.collection.put",
         "kb-ebsco.kb-credentials.proxy-types.collection.get",
         "kb-ebsco.kb-credentials.root-proxy.get",
-        "kb-ebsco.kb-credentials.access-types.collection.get"
+        "kb-ebsco.kb-credentials.root-proxy.put",
+        "kb-ebsco.kb-credentials.access-types.collection.get",
+        "kb-ebsco.kb-credentials.access-types.collection.post",
+        "kb-ebsco.kb-credentials.access-types.item.get",
+        "kb-ebsco.kb-credentials.access-types.item.put",
+        "kb-ebsco.kb-credentials.access-types.item.delete"
       ]
     },
     {
@@ -666,20 +681,14 @@
         "kb-ebsco.resources.item.put",
         "kb-ebsco.resources.item.delete",
         "kb-ebsco.resource-tags.put",
-        "kb-ebsco.kb-credentials.proxy-types.collection.get",
         "kb-ebsco.proxy-types.collection.get",
         "kb-ebsco.root-proxy.get",
-        "kb-ebsco.kb-credentials.root-proxy.get",
-        "kb-ebsco.root-proxy.put",
         "kb-ebsco.tags.collection.get",
         "kb-ebsco.unique.tags.collection.get",
         "kb-ebsco.holdings.load.status.get",
         "kb-ebsco.custom-labels.collection.get",
         "kb-ebsco.access-types.collection.get",
-        "kb-ebsco.access-types.item.post",
-        "kb-ebsco.access-types.item.get",
-        "kb-ebsco.access-types.item.put",
-        "kb-ebsco.access-types.item.delete"
+        "kb-ebsco.access-types.item.get"
       ]
     }
   ],

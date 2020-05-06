@@ -1,18 +1,16 @@
 package org.folio.service.userlookup;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Getter;
 
-/**
- * Retrieves user information from mod-users /users/{userId} endpoint.
- */
-@Value
+@Getter
 @Builder(toBuilder = true)
 public class UserLookUp {
 
-  private String userName;
-  private String firstName;
-  private String middleName;
-  private String lastName;
+  private final String userId;
+  private final String username;
+  private final String firstName;
+  private final String middleName;
+  private final String lastName;
 
 }

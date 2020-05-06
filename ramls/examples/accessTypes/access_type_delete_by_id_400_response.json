@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Can't delete access type that has assigned records"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
