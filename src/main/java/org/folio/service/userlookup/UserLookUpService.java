@@ -25,8 +25,8 @@ import org.folio.rest.tools.client.HttpClientFactory;
 import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.client.interfaces.HttpClientInterface;
 import org.folio.rest.tools.utils.TenantTool;
-import org.folio.rest.util.TokenUtil;
-import org.folio.rest.util.UserInfo;
+import org.folio.util.TokenUtils;
+import org.folio.util.UserInfo;
 
 /**
  * Retrieves user information from mod-users /users/{userId} endpoint.
@@ -52,7 +52,7 @@ public class UserLookUpService {
     headers.addAll(okapiHeaders);
 
     String tenantId = TenantTool.calculateTenantId(headers.get(XOkapiHeaders.TENANT));
-    Optional<UserInfo> userInfo = TokenUtil.userInfoFromToken(headers.get(XOkapiHeaders.TOKEN));
+    Optional<UserInfo> userInfo = TokenUtils.userInfoFromToken(headers.get(XOkapiHeaders.TOKEN));
 
     CompletableFuture<UserLookUp> future = new CompletableFuture<>();
     if (!userInfo.isPresent()) {
