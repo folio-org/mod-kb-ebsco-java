@@ -9,9 +9,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 import io.vertx.core.json.JsonObject;
 
-public final class TokenUtils {
+public final class TokenTestUtils {
 
-  private TokenUtils() {
+  private TokenTestUtils() {
 
   }
 

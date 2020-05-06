@@ -7,7 +7,7 @@ import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
 import static org.folio.rest.util.RestConstants.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.RestConstants.OKAPI_URL_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.util.TokenUtils.generateToken;
+import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
