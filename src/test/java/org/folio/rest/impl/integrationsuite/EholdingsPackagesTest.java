@@ -33,6 +33,7 @@ import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
@@ -62,7 +63,8 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
 import static org.folio.util.ResourcesTestUtil.mockGetTitles;
@@ -87,6 +89,7 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -149,11 +152,17 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private static final String STUB_TITLE_NAME = "Activity Theory Perspectives on Technology in Higher Education";
   private ObjectMapper mapper = new ObjectMapper();
 
+
+  @After
+  public void tearDown() {
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+  }
+
   @Test
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/packages/get-packages-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/packages.*"), stubResponseFile);
 
     String packages = getWithOk(PACKAGES_ENDPOINT + "?q=American&filter[type]=abstractandindex&count=5")
@@ -194,7 +203,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
@@ -265,7 +274,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(0).getId(), vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
@@ -287,7 +296,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packagesStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
     String providerIdByCustIdStubResponseFile = "responses/rmapi/proxiescustomlabels/get-success-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), providerIdByCustIdStubResponseFile);
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"),
@@ -302,7 +311,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnPackagesOnGetById() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
@@ -316,7 +325,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     try {
       String packageId = FULL_PACKAGE_ID;
       TagsTestUtil.insertTag(vertx, packageId, PACKAGE, STUB_TAG_VALUE);
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
@@ -338,7 +347,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       insertAccessTypes(accessTypes, vertx);
       final String expectedAccessTypeId = accessTypes.get(0).getId();
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
       Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID).as(Package.class);
@@ -427,7 +436,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldDeletePackageTagsOnDelete() throws IOException, URISyntaxException {
     TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
@@ -445,7 +454,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       String accessTypeId = insertAccessTypes(testData(), vertx).get(0).getId();
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
       mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
       EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
@@ -476,7 +485,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404WhenPackageIsNotFoundOnRMAPI() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), SC_NOT_FOUND);
 
@@ -485,7 +494,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesWhenIncludedFlagIsSetToResources() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
@@ -501,7 +510,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProviderWhenIncludedFlagIsSetToProvider() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID),
@@ -520,7 +529,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldSendDeleteRequestForPackage() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
 
@@ -541,7 +550,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenPackageIsNotCustom() throws URISyntaxException, IOException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     PackageData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class)
       .toBuilder().isCustom(false).build();
@@ -558,7 +567,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturn200WhenSelectingPackage() throws URISyntaxException, IOException {
     boolean updatedIsSelected = true;
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
@@ -584,7 +593,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedBeginCoverage = "2003-01-01";
     String updatedEndCoverage = "2004-01-01";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
@@ -630,7 +639,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       String updatedBeginCoverage = "2003-01-01";
       String updatedEndCoverage = "2004-01-01";
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
@@ -684,7 +693,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       String newAccessTypeId = accessTypes.get(1).getId();
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       PackageByIdData packageData = mapper
         .readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class)
@@ -723,7 +732,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldPassIsFullPackageAttributeToRMAPI() throws URISyntaxException, IOException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     PackageByIdData updatedPackage = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class)
                                     .toByIdBuilder().isSelected(true).build();
@@ -749,7 +758,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedEndCoverage = "2004-01-01";
     String updatedPackageName = "name of the ages forever and ever";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    //setupDefaultKBConfiguration(vertx);
+    setupDefaultKBConfiguration(vertx);
 
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
 
@@ -770,7 +780,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     Package aPackage = putWithOk(
       PACKAGES_PATH,
-      readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json")).as(Package.class);
+      readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json"),
+      STUB_TOKEN_HEADER).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
       .withRequestBody(putBodyPattern));
@@ -796,7 +807,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       String updatedEndCoverage = "2004-01-01";
       String updatedPackageName = "name of the ages forever and ever";
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       EqualToJsonPattern putBodyPattern =
         new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
@@ -858,7 +869,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       String updatedEndCoverage = "2004-01-01";
       String updatedPackageName = "name of the ages forever and ever";
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       EqualToJsonPattern putBodyPattern =
         new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
@@ -918,7 +929,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       String updatedEndCoverage = "2004-01-01";
       String updatedPackageName = "name of the ages forever and ever";
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       EqualToJsonPattern putBodyPattern =
         new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
@@ -968,7 +979,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnPutPackageWithNotExistedAccessType() throws URISyntaxException, IOException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     String requestBody = readFile("requests/kb-ebsco/package/put-package-with-not-existed-access-type.json");
 
@@ -981,7 +992,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutPackageWithInvalidAccessTypeId() throws URISyntaxException, IOException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     String requestBody = readFile("requests/kb-ebsco/package/put-package-with-invalid-access-type.json");
 
@@ -997,7 +1008,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturn400WhenRMAPIReturns400() throws URISyntaxException, IOException {
     EqualToPattern urlPattern = new EqualToPattern(PACKAGE_BY_ID_URL);
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(urlPattern, PACKAGE_STUB_FILE);
 
@@ -1050,7 +1061,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnPostPackageWithNotExistedAccessType() throws URISyntaxException, IOException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     String requestBody = readFile("requests/kb-ebsco/package/post-package-with-not-existed-access-type-request.json");
 
@@ -1063,7 +1074,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPostPackageWithInvalidAccessTypeId() throws URISyntaxException, IOException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     String requestBody = readFile("requests/kb-ebsco/package/post-package-with-invalid-access-type-request.json");
 
@@ -1081,7 +1092,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packagePostStubRequestFile = "requests/kb-ebsco/package/post-package-request.json";
     String response = "responses/rmapi/packages/post-package-400-error-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern("{\n  \"contentType\" : 1,\n  \"packageName\" : \"TEST_NAME\",\n  \"customCoverage\" : {\n    \"beginCoverage\" : \"2017-12-23\",\n    \"endCoverage\" : \"2018-03-30\"\n  }\n}", false, true);
 
@@ -1113,7 +1124,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyListWhenResourcesAreNotFound() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_STUB_FILE);
 
@@ -1131,7 +1142,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       String query = "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
 
       mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
@@ -1155,7 +1166,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
       mockGetTitles();
 
       String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources"
@@ -1182,7 +1193,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
       mockGetTitles();
 
       String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources?page=2&count=1&"
@@ -1200,7 +1211,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnFilteredResourcesWithNonEmptyCustomerResourceList() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
     mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_CUSTOMER_RESOURCE_LIST_STUB_FILE);
     final ResourceCollection resourceCollection = getWithOk(PACKAGE_RESOURCES_PATH).as(ResourceCollection.class);
 
@@ -1211,7 +1222,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesWithOnSearchByTags() throws IOException, URISyntaxException {
     try {
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(vertx);
       mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
 
       ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(
@@ -1233,7 +1244,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404OnGetWithResourcesWhenPackageNotFound() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(RESOURCES_BY_PACKAGE_ID_URL + ".*"), SC_NOT_FOUND);
 
@@ -1244,7 +1255,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnGetWithResourcesWhenCountOutOfRange() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?count=500";
 
@@ -1255,7 +1266,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturn400OnGetWithResourcesWhenRMAPI400() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/packages/get-package-resources-400-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     stubFor(
       get(
@@ -1273,7 +1284,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnUnauthorizedOnGetWithResourcesWhenRMAPI401() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL + "/titles.*" ), HttpStatus.SC_UNAUTHORIZED);
 
@@ -1283,7 +1294,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnUnauthorizedOnGetWithResourcesWhenRMAPI403() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL + "/titles.*" ), SC_FORBIDDEN);
 
@@ -1293,7 +1304,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldFetchPackagesInBulk() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
     mockGet(new RegexPattern(PACKAGE_BY_ID_2_URL), PACKAGE_2_STUB_FILE);
@@ -1307,7 +1318,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnFetchPackagesInBulkWithInvalidIdFormat() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     String postBody = readFile("requests/kb-ebsco/package/post-packages-bulk-with-invalid-id-format.json");
 
@@ -1318,7 +1329,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnPackagesAndFailedIdsOnFetchPackagesInBulk() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
     mockGet(new RegexPattern(PACKAGE_BY_ID_2_URL), PACKAGE_2_STUB_FILE);
@@ -1339,7 +1350,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyPackagesOnFetchPackagesInBulkIfNoPackageIds() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     String postBody = readFile("requests/kb-ebsco/package/post-packages-bulk-empty.json");
     final String actualResponse = postWithOk(PACKAGES_BULK_FETCH_PATH, postBody).asString();
@@ -1349,7 +1360,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   private void shouldReturnResourcesOnGetWithResources(String getURL, String rmAPIQuery) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
@@ -1392,7 +1403,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   private Package sendPut(String mockUpdatedPackage) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), mockUpdatedPackage);
 
@@ -1416,7 +1427,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String providerStubResponseFile = "responses/rmapi/packages/get-package-provider-by-id.json";
     String packageCreatedIdStubResponseFile = "responses/rmapi/packages/post-package-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(vertx);
 
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/"), providerStubResponseFile);
     mockPost(new EqualToPattern(PACKAGES_STUB_URL), new AnythingPattern(), packageCreatedIdStubResponseFile, SC_OK);

@@ -16,8 +16,6 @@ import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import org.apache.http.protocol.HTTP;
 import org.junit.Before;
@@ -95,6 +93,10 @@ public abstract class WireMockTestBase extends TestBase {
 
   protected ExtractableResponse<Response> putWithOk(String endpoint, String putBody) {
     return putWithStatus(endpoint, putBody, SC_OK, CONTENT_TYPE_HEADER);
+  }
+
+  protected ExtractableResponse<Response> putWithOk(String endpoint, String putBody, Header... headers) {
+    return super.putWithStatus(endpoint, putBody, SC_OK, addContentHeader(headers));
   }
 
   protected ExtractableResponse<Response> postWithOk(String endpoint, String postBody) {

@@ -45,7 +45,7 @@ public class KbCredentialsTestUtil {
 
   public static final String STUB_CREDENTIALS_NAME = "TEST_NAME";
   public static final String STUB_API_KEY = "TEST_API_KEY";
-  public static final String STUB_API_URL = "http://api.url.com";
+  public static final String STUB_API_URL = "https://api.ebsco.io";
   public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
 
   public static final String STUB_USERNAME = "TEST_USER_NAME";
