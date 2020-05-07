@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -17,6 +18,7 @@ import io.restassured.http.Headers;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.TestContext;
+import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -78,6 +80,10 @@ public abstract class WireMockTestBase extends TestBase {
     titleCache.invalidateAll();
   }
 
+  protected ExtractableResponse<Response> getWithOk(String endpoint, Header... headers) {
+    return getWithStatus(endpoint, HttpStatus.SC_OK, headers);
+  }
+
   protected ExtractableResponse<Response> getWithStatus(String endpoint, int code, Header... headers) {
     return RestAssured.given()
       .spec(this.getRequestSpecification())
@@ -103,6 +109,10 @@ public abstract class WireMockTestBase extends TestBase {
     return postWithStatus(endpoint, postBody, SC_OK, CONTENT_TYPE_HEADER);
   }
 
+  protected ExtractableResponse<Response> postWithOk(String endpoint, String postBody, Header... headers) {
+    return postWithStatus(endpoint, postBody, SC_OK, addContentHeader(headers));
+  }
+
   protected ExtractableResponse<Response> postWithCreated(String endpoint, String postBody) {
     return postWithStatus(endpoint, postBody, SC_CREATED, CONTENT_TYPE_HEADER);
   }
@@ -122,6 +132,22 @@ public abstract class WireMockTestBase extends TestBase {
   protected ExtractableResponse<Response> postWithStatus(String resourcePath, String postBody, int expectedStatus,
                                                          Header... headers) {
     return super.postWithStatus(resourcePath, postBody, expectedStatus, addContentHeader(headers));
+  }
+
+  protected ExtractableResponse<Response> deleteWithNoContent(String resourcePath, Header... headers) {
+    return deleteWithStatus(resourcePath, HttpStatus.SC_NO_CONTENT, headers);
+  }
+
+  protected ExtractableResponse<Response> deleteWithStatus(String resourcePath, int expectedStatus, Header... headers) {
+    return given()
+      .spec(getRequestSpecification())
+      .headers(new Headers(headers))
+      .when()
+      .delete(resourcePath)
+      .then()
+      .log().ifValidationFails()
+      .statusCode(expectedStatus)
+      .extract();
   }
 
   protected void checkResponseNotEmptyWhenStatusIs400(String path) {

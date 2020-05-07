@@ -6,7 +6,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.getFile;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_KEY;
-import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
@@ -78,8 +77,8 @@ public final class KBTestUtil {
     mockConfiguration(configurationsFile, wiremockUrl);
   }
 
-  public static void setupDefaultKBConfiguration(Vertx vertx) {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public static void setupDefaultKBConfiguration(String wiremockUrl, Vertx vertx) {
+    insertKbCredentials(wiremockUrl, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
   }
 
   public static void clearDataFromTable(Vertx vertx, String tableName) {
