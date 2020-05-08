@@ -13,7 +13,6 @@ import org.folio.rest.impl.integrationsuite.EHoldingsProxyTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EHoldingsRootProxyImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsAccessTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsAssignedUsersImplTest;
-import org.folio.rest.impl.integrationsuite.EholdingsCacheImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCustomLabelsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsKbCredentialsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsPackagesTest;
@@ -27,7 +26,6 @@ import org.folio.rest.impl.integrationsuite.TransactionLoadServiceFacadeTest;
 import org.folio.test.util.TestSetUpHelper;
 
 @Suite.SuiteClasses({
-  EholdingsCacheImplTest.class,
   EholdingsPackagesTest.class,
   EholdingsProvidersImplTest.class,
   EHoldingsProxyTypesImplTest.class,
