@@ -1,7 +1,7 @@
 package org.folio.repository.accesstypes;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
+import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,9 +20,9 @@ import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.persist.Criteria.Criteria;
 import org.folio.rest.persist.Criteria.Criterion;
-import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.persist.interfaces.Results;
 
 @Component

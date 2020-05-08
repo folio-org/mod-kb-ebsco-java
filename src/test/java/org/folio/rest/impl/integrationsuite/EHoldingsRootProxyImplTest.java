@@ -1,14 +1,19 @@
 package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-import static org.apache.http.HttpStatus.*;
-import static org.folio.test.util.TestUtil.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
@@ -18,22 +23,23 @@ import static org.folio.rest.impl.ProxiesTestData.JOHN_ID;
 import static org.folio.rest.impl.ProxiesTestData.JOHN_TOKEN_HEADER;
 import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL;
+import static org.folio.test.util.TestUtil.mockGet;
+import static org.folio.test.util.TestUtil.mockPut;
+import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
-import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.common.Json;
-import com.github.tomakehurst.wiremock.matching.*;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,10 +48,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.RootProxy;
-import org.folio.rest.jaxrs.model.RootProxyData;
-import org.folio.rest.jaxrs.model.RootProxyDataAttributes;
-import org.folio.rest.util.RestConstants;
 
 @RunWith(VertxUnitRunner.class)
 public class EHoldingsRootProxyImplTest extends WireMockTestBase {
@@ -100,8 +102,9 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn401WhenNoTokenHeader(){
-    JsonapiError error = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER).as(JsonapiError.class);
-    Assert.assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized"));
+    JsonapiError error = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER)
+      .as(JsonapiError.class);
+    Assert.assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid token"));
   }
 
   @Test

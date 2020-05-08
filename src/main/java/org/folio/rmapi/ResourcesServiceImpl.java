@@ -18,7 +18,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import org.folio.cache.VertxCache;
-import org.folio.common.FutureUtils;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
@@ -32,6 +31,7 @@ import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.result.ResourceBulkResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
+import org.folio.util.FutureUtils;
 
 public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
 

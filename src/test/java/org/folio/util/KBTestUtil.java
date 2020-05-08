@@ -5,6 +5,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.util.KbCredentialsTestUtil.STUB_API_KEY;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
+import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -71,6 +75,10 @@ public final class KBTestUtil {
   public static void mockDefaultConfiguration(String wiremockUrl) throws IOException, URISyntaxException {
     String configurationsFile = "responses/kb-ebsco/configuration/get-configuration.json";
     mockConfiguration(configurationsFile, wiremockUrl);
+  }
+
+  public static void setupDefaultKBConfiguration(String wiremockUrl, Vertx vertx) {
+    insertKbCredentials(wiremockUrl, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
   }
 
   public static void clearDataFromTable(Vertx vertx, String tableName) {

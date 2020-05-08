@@ -389,7 +389,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized"));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid token"));
   }
 
   @Test

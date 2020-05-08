@@ -10,64 +10,9 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 types:
-  configuration: !include types/configuration/configuration.json
-  configurationPutRequest: !include types/configuration/configurationPutRequest.json
-  jsonapiError: !include types/jsonapiError.json
   configurationStatus: !include types/status/status.json
   holdingsLoadingStatus: !include types/loadHoldings/loadingHoldingsStatus.json
 
-/eholdings/configuration:
-  displayName: Configuration
-  description: Setup KB Configuration.
-  get:
-    description: Details of KB configuration currently being used.
-    responses:
-      200:
-        description: OK
-        body:
-          application/vnd.api+json:
-            description: Details of KB configuration currently being used.
-            type: configuration
-            example:
-              strict: false
-              value: !include examples/configuration/kb_configuration_get_200_response.json
-      500:
-        description: "Internal server error"
-        body:
-          text/plain:
-            example: "Internal server error, contact administrator"
-  put:
-    description: |
-      Update the currently set KB configuration.
-    headers:
-      Content-Type:
-        example: application/vnd.api+json
-    body:
-      application/vnd.api+json:
-        type: configurationPutRequest
-        example: !include examples/configuration/kb_configuration_put_request.json
-    responses:
-      200:
-        description: OK
-        body:
-          application/vnd.api+json:
-            type: configuration
-            example:
-              strict: false
-              value: !include examples/configuration/kb_configuration_put_200_response.json
-      422:
-        description: Unprocessable Entity
-        body:
-          application/vnd.api+json:
-            type: jsonapiError
-            example:
-              strict: false
-              value: !include examples/configuration/kb_configuration_put_422_response.json
-      500:
-        description: "Internal server error"
-        body:
-          text/plain:
-            example: "Internal server error, contact administrator"
 /eholdings/status:
   displayName: Status
   description: Gives status of currently set KB configuration.

@@ -2,7 +2,6 @@ package org.folio.repository.packages;
 
 import static java.util.stream.Collectors.groupingBy;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.getPackagesTableName;
@@ -16,6 +15,7 @@ import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGE
 import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS_BY_IDS;
 import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGE_IDS_BY_TAG;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collections;
@@ -37,8 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.PackageId;
-import org.folio.rest.util.IdParser;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.util.IdParser;
 
 @Component
 public class PackageRepositoryImpl implements PackageRepository {

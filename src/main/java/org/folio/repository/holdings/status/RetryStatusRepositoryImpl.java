@@ -1,6 +1,5 @@
 package org.folio.repository.holdings.status;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.DELETE_RETRY_STATUS;
@@ -9,6 +8,7 @@ import static org.folio.repository.holdings.status.RetryStatusTableConstants.INS
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.RETRIES_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.TIMER_ID_COLUMN;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.UPDATE_RETRY_STATUS;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.UUID;

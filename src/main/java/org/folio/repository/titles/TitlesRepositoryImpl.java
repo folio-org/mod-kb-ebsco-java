@@ -1,6 +1,5 @@
 package org.folio.repository.titles;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
@@ -12,6 +11,7 @@ import static org.folio.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_R
 import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collections;

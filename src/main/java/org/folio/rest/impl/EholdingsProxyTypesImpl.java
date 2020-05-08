@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static io.vertx.core.Future.succeededFuture;
 
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
 
@@ -40,7 +39,7 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes, EholdingsKb
     proxyTypesService.findByUser(okapiHeaders)
       .thenAccept(proxyTypes -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsProxyTypesResponse.respond200WithApplicationVndApiJson(proxyTypes))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -52,13 +51,7 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes, EholdingsKb
     proxyTypesService.findByCredentialsId(id,okapiHeaders)
       .thenAccept(proxyTypes -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsProxyTypesByIdResponse.respond200WithApplicationVndApiJson(proxyTypes))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
-  private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
-    return throwable -> {
-      errorHandler.handle(asyncResultHandler, throwable);
-      return null;
-    };
-  }
 }

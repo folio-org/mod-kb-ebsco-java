@@ -27,7 +27,7 @@ import org.folio.spring.config.TestConfig;
 public class KbCredentialsNotSecuredConverterTest {
 
   @Autowired
-  @Qualifier("non-secured")
+  @Qualifier("nonSecured")
   private KbCredentialsConverter.KbCredentialsFromDbNonSecuredConverter notSecuredConverter;
   @Value("${kb.ebsco.credentials.url.default}")
   private String defaultUrl;

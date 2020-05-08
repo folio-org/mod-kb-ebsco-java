@@ -43,7 +43,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
-import static org.folio.util.TokenUtils.generateToken;
+import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.io.IOException;
 import java.net.URISyntaxException;

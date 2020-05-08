@@ -30,6 +30,7 @@ import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME_OLD;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
@@ -55,7 +56,8 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.ResourcesTestUtil.mockGetTitles;
 
 import java.io.IOException;
@@ -77,6 +79,7 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,11 +106,17 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   public static final String EHOLDINGS_TITLES_PATH = "eholdings/titles";
 
+
+  @After
+  public void tearDown() {
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+  }
+
   @Test
   public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/searchTitles.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
@@ -115,6 +124,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String actualResponse = RestAssured.given()
       .spec(getRequestSpecification())
+      .header(STUB_TOKEN_HEADER)
       .when()
       .get(EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name")
       .then()
@@ -139,6 +149,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
       String actualResponse = RestAssured.given()
         .spec(getRequestSpecification())
+        .header(STUB_TOKEN_HEADER)
         .when()
         .get(EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
         .then()
@@ -166,6 +177,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
       TitleCollection response = RestAssured.given()
         .spec(getRequestSpecification())
+        .header(STUB_TOKEN_HEADER)
         .when()
         .get(EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
         .then()
@@ -185,11 +197,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(getWiremockUrl(), vertx);
       mockGetTitles();
 
       String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-      TitleCollection titleCollection = getWithOk(resourcePath).as(TitleCollection.class);
+      TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
       List<Titles> titles = titleCollection.getData();
 
       assertThat(titles, hasSize(2));
@@ -211,12 +223,12 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(getWiremockUrl(), vertx);
       mockGetTitles();
 
       String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[access-type]="
         + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-      TitleCollection titleCollection = getWithOk(resourcePath).as(TitleCollection.class);
+      TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
       List<Titles> titles = titleCollection.getData();
 
       assertThat(titles, hasSize(1));
@@ -235,11 +247,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(getWiremockUrl(), vertx);
       mockGetTitles();
 
       String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=Not Exist";
-      TitleCollection titleCollection = getWithOk(resourcePath).as(TitleCollection.class);
+      TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
       List<Titles> titles = titleCollection.getData();
 
       assertThat(titles, hasSize(0));
@@ -252,24 +264,25 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400IfCountOutOfRange() {
-    getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST);
+    getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST,
+      STUB_TOKEN_HEADER);
   }
 
   @Test
-  public void shouldReturn500WhenRMApiReturns500Error() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+  public void shouldReturn500WhenRMApiReturns500Error() {
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
-    getWithStatus(EHOLDINGS_TITLES_PATH + "?filter[name]=news", SC_INTERNAL_SERVER_ERROR);
+    getWithStatus(EHOLDINGS_TITLES_PATH + "?filter[name]=news", SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER);
   }
 
   @Test
   public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
-    String actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID).asString();
+    String actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_TOKEN_HEADER).asString();
     JSONAssert.assertEquals(
       readFile("responses/kb-ebsco/titles/expected-title-by-id.json"), actualResponse, false);
   }
@@ -279,13 +292,13 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     try {
       String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
       TagsTestUtil.insertTag(vertx, STUB_MANAGED_TITLE_ID, RecordType.TITLE, STUB_TAG_VALUE);
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(getWiremockUrl(), vertx);
       stubFor(
         get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
           .willReturn(new ResponseDefinitionBuilder()
             .withBody(readFile(stubResponseFile))));
 
-      Title actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID).as(Title.class);
+      Title actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_TOKEN_HEADER).as(Title.class);
 
       assertTrue(actualResponse.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
     } finally {
@@ -298,38 +311,38 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturn404WhenRMAPINotFoundOnTitleGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-not-found-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))
           .withStatus(404)));
 
-    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_NOT_FOUND)
+    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_NOT_FOUND, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Title not found"));
   }
 
   @Test
-  public void shouldReturn400WhenValidationErrorOnTitleGet() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+  public void shouldReturn400WhenValidationErrorOnTitleGet() {
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
-    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/12345aaa", SC_BAD_REQUEST)
+    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/12345aaa", SC_BAD_REQUEST, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Title id is invalid - 12345aaa"));
   }
 
   @Test
-  public void shouldReturn500WhenRMApiReturns500ErrorOnTitleGet() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+  public void shouldReturn500WhenRMApiReturns500ErrorOnTitleGet() {
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
-    getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR);
+    getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER);
   }
 
   @Test
@@ -337,10 +350,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response-with-resources.json";
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
 
-    String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK).asString();
+    String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK,
+      STUB_TOKEN_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
 
     JSONAssert.assertEquals(expected, actual, true);
@@ -354,11 +368,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
       String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(getWiremockUrl(), vertx);
       mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
 
       String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources",
-        SC_OK).asString();
+        SC_OK, STUB_TOKEN_HEADER).asString();
       String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-with-tags-response.json");
 
       JSONAssert.assertEquals(expected, actual, false);
@@ -373,10 +387,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
 
-    String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=badValue", SC_OK).asString();
+    String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=badValue", SC_OK,
+      STUB_TOKEN_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-invalid-include-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
@@ -427,7 +442,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}",
       true, true);
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     stubFor(
       post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
@@ -437,7 +452,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withBody(readFile(errorResponse))
           .withStatus(SC_BAD_REQUEST)));
 
-    postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST);
+    postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST, STUB_TOKEN_HEADER);
 
   }
 
@@ -478,13 +493,13 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
       request.getData().getAttributes().setTags(new Tags().withTagList(newTags));
 
-      mockDefaultConfiguration(getWiremockUrl());
+      setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
       stubFor(
         get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
           .willReturn(new ResponseDefinitionBuilder().withBody(readFile(resourceResponse))));
 
-      putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request));
+      putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request), STUB_TOKEN_HEADER);
 
       List<String> tags = TagsTestUtil.getTags(vertx);
       assertThat(tags, containsInAnyOrder(newTags.toArray()));
@@ -536,7 +551,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
           .willReturn(new ResponseDefinitionBuilder().withBody(readFile(updatedResponse))));
 
-      putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request));
+      putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request), STUB_TOKEN_HEADER);
 
       List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
       assertEquals(1, titles.size());
@@ -550,9 +565,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422WhenNameIsNotProvided() throws URISyntaxException, IOException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     putWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID,
-      readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY);
+      readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER);
   }
 
   private String putTitle(List<String> tags) throws IOException, URISyntaxException {
@@ -561,7 +576,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   private String putTitle(String updatedResourceResponse, List<String> tags) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
@@ -581,8 +596,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .withTagList(tags));
     }
 
-    return putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(titleToBeUpdated))
-      .asString();
+    return putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(titleToBeUpdated),
+      STUB_TOKEN_HEADER).asString();
   }
 
   private ExtractableResponse<Response> postTitle(List<String> tags) throws IOException, URISyntaxException {
@@ -590,7 +605,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
     String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
       "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n} \"userDefinedField2\": \"test 2\",\n\"userDefinedField3\": \"\",\n\"userDefinedField4\" : null,\n\"userDefinedField5\": \"test 5\"",
       true, true);
@@ -613,12 +628,12 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     TitlePostRequest request = mapper.readValue(readFile(titlePostStubRequestFile), TitlePostRequest.class);
     request.getData().getAttributes().setTags(new Tags().withTagList(tags));
 
-    return postWithOk(EHOLDINGS_TITLES_PATH, mapper.writeValueAsString(request));
+    return postWithOk(EHOLDINGS_TITLES_PATH, mapper.writeValueAsString(request), STUB_TOKEN_HEADER);
   }
 
   private void mockGetManagedTitleById() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
