@@ -98,8 +98,9 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn401WhenNoTokenHeader(){
-    JsonapiError error = getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized"));
+    JsonapiError error = getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER)
+      .as(JsonapiError.class);
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid token"));
   }
 
   @Test
