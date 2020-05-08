@@ -16,9 +16,9 @@ import org.apache.http.protocol.HTTP;
 import org.springframework.core.convert.ConversionService;
 
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
+import org.folio.service.kbcredentials.UserKbCredentialsService;
 
 /**
  * Provides a common template for asynchronous interaction with Holdings services,
@@ -39,7 +39,7 @@ import org.folio.rest.validator.HeaderValidator;
  */
 public class RMAPITemplate {
 
-  private ConfigurationService configurationService;
+  private UserKbCredentialsService userKbCredentialsService;
   private ConversionService conversionService;
   private HeaderValidator headerValidator;
   private RMAPITemplateContextBuilder contextBuilder;
@@ -52,11 +52,11 @@ public class RMAPITemplate {
   private ErrorHandler errorHandler = new ErrorHandler();
 
 
-  public RMAPITemplate(ConfigurationService configurationService, ConversionService conversionService,
+  public RMAPITemplate(UserKbCredentialsService userKbCredentialsService, ConversionService conversionService,
                        HeaderValidator headerValidator, RMAPITemplateContextBuilder contextBuilder,
                        Map<String, String> okapiHeaders,
                        Handler<AsyncResult<Response>> asyncResultHandler) {
-    this.configurationService = configurationService;
+    this.userKbCredentialsService = userKbCredentialsService;
     this.conversionService = conversionService;
     this.headerValidator = headerValidator;
     this.okapiHeaders = okapiHeaders;
@@ -118,9 +118,9 @@ public class RMAPITemplate {
       .thenCompose(o -> {
         OkapiData okapiData = new OkapiData(okapiHeaders);
         contextBuilder.okapiData(okapiData);
-        return configurationService.retrieveConfiguration(okapiData);
+        return userKbCredentialsService.findByUser(okapiHeaders);
       })
-      .thenAccept(contextBuilder::configuration)
+      .thenAccept(contextBuilder::kbCredentials)
       .thenCompose(o -> requestAction.apply(contextBuilder.build()))
       .thenAccept(result -> asyncResultHandler.handle(Future.succeededFuture(successHandler.apply(result))))
       .exceptionally(e -> {

@@ -18,7 +18,7 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -90,7 +89,7 @@ public class PackagesTestUtil {
     setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
     setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID_2, STUB_PACKAGE_NAME_2);
     setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
-    mockDefaultConfiguration(wiremockUrl);
+    setupDefaultKBConfiguration(wiremockUrl, vertx);
   }
 
   public static void setUpPackage(Vertx vertx, String stubPackageId, String stubVendorId, String stubPackageName) throws IOException, URISyntaxException {

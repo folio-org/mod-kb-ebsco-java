@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static io.vertx.core.Future.succeededFuture;
 
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
 
@@ -48,7 +47,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
     securedCredentialsService.findAll(okapiHeaders)
       .thenAccept(kbCredentialsCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsResponse.respond200WithApplicationVndApiJson(kbCredentialsCollection))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
 
   }
 
@@ -61,7 +60,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
     securedCredentialsService.save(entity, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsKbCredentialsResponse.respond201WithApplicationVndApiJson(kbCredentials))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -73,7 +72,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
     securedCredentialsService.findById(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsByIdResponse.respond200WithApplicationVndApiJson(kbCredentials))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -85,7 +84,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
     securedCredentialsService.update(id, entity, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsKbCredentialsByIdResponse.respond204())))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -97,7 +96,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
     securedCredentialsService.delete(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         DeleteEholdingsKbCredentialsByIdResponse.respond204())))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -109,14 +108,7 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
     nonSecuredCredentialsService.findByUser(okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsUserKbCredentialResponse.respond200WithApplicationVndApiJson(kbCredentials))))
-      .exceptionally(handleException(asyncResultHandler));
-  }
-
-  private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
-    return throwable -> {
-      errorHandler.handle(asyncResultHandler, throwable);
-      return null;
-    };
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
 }

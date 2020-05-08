@@ -43,12 +43,13 @@ public class KbCredentialsTestUtil {
   public static final String USER_KB_CREDENTIAL_ENDPOINT = "/eholdings/user-kb-credential";
   public static final String KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/custom-labels";
 
+  public static final String STUB_CREDENTIALS_NAME = "TEST_NAME";
   public static final String STUB_API_KEY = "TEST_API_KEY";
+  public static final String STUB_API_URL = "https://api.ebsco.io";
+  public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
+
   public static final String STUB_USERNAME = "TEST_USER_NAME";
   public static final String STUB_USER_ID = "88888888-8888-4888-8888-888888888888";
-  public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
-  public static final String STUB_API_URL = "http://api.url.com";
-  public static final String STUB_CREDENTIALS_NAME = "TEST_NAME";
   public static final String STUB_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
     + "eyJzdWIiOiJURVNUX1VTRVJfTkFNRSIsInVzZXJfaWQiOiI4ODg4ODg4OC04ODg4LTQ4ODgtODg4OC04O"
     + "Dg4ODg4ODg4ODgiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
@@ -121,5 +122,19 @@ public class KbCredentialsTestUtil {
 
   private static String kbCredentialsTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + KB_CREDENTIALS_TABLE_NAME;
+  }
+
+  public static DbKbCredentials getCredentialsNoUrl() {
+    return DbKbCredentials.builder()
+      .name(STUB_CREDENTIALS_NAME)
+      .customerId(STUB_CUSTOMER_ID)
+      .apiKey(STUB_API_KEY).build();
+  }
+  public static DbKbCredentials getCredentials() {
+    return DbKbCredentials.builder()
+      .name(STUB_CREDENTIALS_NAME)
+      .customerId(STUB_CUSTOMER_ID)
+      .apiKey(STUB_API_KEY)
+      .url(STUB_API_URL).build();
   }
 }

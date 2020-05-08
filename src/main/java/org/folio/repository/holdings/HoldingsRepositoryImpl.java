@@ -1,6 +1,5 @@
 package org.folio.repository.holdings;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.createInsertPlaceholders;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
@@ -11,6 +10,7 @@ import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_HOLDIN
 import static org.folio.repository.holdings.HoldingsTableConstants.GET_HOLDINGS_BY_IDS;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS_STATEMENT;
 import static org.folio.repository.holdings.HoldingsTableConstants.REMOVE_FROM_HOLDINGS;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.Instant;

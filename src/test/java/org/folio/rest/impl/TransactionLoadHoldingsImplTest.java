@@ -16,6 +16,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.repository.holdings.status.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
@@ -27,9 +28,11 @@ import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -51,7 +54,6 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.json.Json;
@@ -59,7 +61,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -161,11 +162,13 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     if (interceptor != null) {
       vertx.eventBus().removeOutboundInterceptor(interceptor);
     }
+
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
   @Test
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     runPostHoldingsWithMocks(context);
 
@@ -175,7 +178,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldSaveHoldingsWhenPreviousTransactionExpired(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     TransactionIdTestUtil.addTransactionId(vertx, PREVIOUS_TRANSACTION_ID);
     runPostHoldingsWithMocks(context);
@@ -186,7 +189,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateHoldingsWithDeltas(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now());
     HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"), HoldingInfoInDB.class), Instant.now());
     TransactionIdTestUtil.addTransactionId(vertx, PREVIOUS_TRANSACTION_ID);
@@ -206,7 +209,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
 
@@ -229,7 +232,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryCreationOfSnapshotWhenItFails(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
 
     stubFor(
@@ -249,7 +252,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -257,7 +260,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldStopRetryingAfterMultipleFailures(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
     mockGet(new EqualToPattern(getStatusEndpoint()), "responses/rmapi/holdings/status/get-transaction-status-completed.json");
 
@@ -271,7 +274,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, o -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
 
@@ -291,7 +294,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
     mockGet(new EqualToPattern(getStatusEndpoint()), "responses/rmapi/holdings/status/get-transaction-status-completed.json");
 
@@ -318,7 +321,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -349,7 +352,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingPageWhenPageFails(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
@@ -361,7 +364,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
       new ResponseDefinitionBuilder()
         .withBody(readFile("responses/rmapi/holdings/holdings/get-holdings.json"))
     );
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
   }
@@ -375,7 +378,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     mockPostHoldings();
     mockGet(new RegexPattern(getHoldingsEndpoint()), "responses/rmapi/holdings/holdings/get-holdings.json");
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
   }

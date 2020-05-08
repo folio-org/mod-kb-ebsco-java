@@ -21,6 +21,7 @@ import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
@@ -34,9 +35,11 @@ import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.HoldingsStatusUtil.PROCESS_ID;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -56,14 +59,12 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -139,11 +140,13 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     if (interceptor != null) {
       vertx.eventBus().removeOutboundInterceptor(interceptor);
     }
+
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
   @Test
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     runPostHoldingsWithMocks(context);
 
@@ -155,15 +158,15 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   public void shouldNotStartLoadingWhenStatusInProgress() throws IOException, URISyntaxException {
     KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatus(vertx, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID);
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_CONFLICT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_CONFLICT, STUB_TOKEN_HEADER);
   }
 
   @Test
   public void shouldSaveStatusChangesToAuditTable(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     runPostHoldingsWithMocks(context);
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
       .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
@@ -181,13 +184,13 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldClearOldStatusChangeRecords() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
     HoldingsStatusAuditTestUtil.insertStatus(vertx, getStatusCompleted(1000), Instant.now().minus(60, ChronoUnit.DAYS));
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
       .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
@@ -205,15 +208,15 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     status.getData().getAttributes()
       .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().minus(10, ChronoUnit.DAYS).atZone(ZoneId.systemDefault())));
     HoldingsStatusUtil.insertStatus(vertx, status, PROCESS_ID);
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
   }
 
   @Test
   public void shouldRetryCreationOfSnapshotWhenItFails(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     stubFor(
       post(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false))
@@ -232,7 +235,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -240,7 +243,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldStopRetryingAfterMultipleFailures(TestContext context) throws IOException, URISyntaxException{
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
 
     UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false);
@@ -253,7 +256,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, o -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
 
@@ -273,7 +276,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
 
     stubFor(
@@ -299,7 +302,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -329,7 +332,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingPageWhenPageFails(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
     mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
@@ -340,7 +343,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       new ResponseDefinitionBuilder()
         .withBody(readFile("responses/rmapi/holdings/holdings/get-holdings.json"))
     );
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
   }
@@ -353,7 +356,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     mockPostHoldings();
     mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
   }

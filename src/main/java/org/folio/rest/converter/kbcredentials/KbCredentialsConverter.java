@@ -41,7 +41,7 @@ public class KbCredentialsConverter {
 
   }
 
-  @Component("non-secured")
+  @Component("nonSecured")
   public static class KbCredentialsFromDbNonSecuredConverter implements Converter<DbKbCredentials, KbCredentials> {
 
     private final String defaultUrl;

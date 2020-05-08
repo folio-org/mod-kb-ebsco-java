@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static io.vertx.core.Future.succeededFuture;
 
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.ws.rs.core.Response;
 
@@ -56,7 +55,7 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels, Eholdin
     customLabelsService.fetch(credentialsId, okapiHeaders)
       .thenAccept(customLabelsCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsCustomLabelsByIdResponse.respond200WithApplicationVndApiJson(customLabelsCollection))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
@@ -69,13 +68,7 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels, Eholdin
     customLabelsService.update(credentialsId, putRequest, okapiHeaders)
       .thenAccept(customLabelsCollection -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsKbCredentialsCustomLabelsByIdResponse.respond200WithApplicationVndApiJson(customLabelsCollection))))
-      .exceptionally(handleException(asyncResultHandler));
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
-  private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
-    return throwable -> {
-      errorHandler.handle(asyncResultHandler, throwable);
-      return null;
-    };
-  }
 }

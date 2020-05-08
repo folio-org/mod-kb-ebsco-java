@@ -1,6 +1,5 @@
 package org.folio.service.holdings;
 
-import static org.folio.common.FutureUtils.failedFuture;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_ADDED;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_DELETED;
@@ -12,6 +11,7 @@ import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusPopulatingStagingArea;
 import static org.folio.rest.util.ErrorUtil.createError;
+import static org.folio.util.FutureUtils.failedFuture;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.Instant;

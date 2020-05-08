@@ -3,7 +3,6 @@ package org.folio.repository.kbcredentials;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
@@ -26,6 +25,7 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPD
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
+import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
 import java.util.Collections;

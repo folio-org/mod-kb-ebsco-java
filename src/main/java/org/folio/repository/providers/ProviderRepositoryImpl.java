@@ -1,6 +1,5 @@
 package org.folio.repository.providers;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
@@ -9,6 +8,7 @@ import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.providers.ProviderTableConstants.DELETE_PROVIDER_STATEMENT;
 import static org.folio.repository.providers.ProviderTableConstants.INSERT_OR_UPDATE_PROVIDER_STATEMENT;
 import static org.folio.repository.providers.ProviderTableConstants.SELECT_TAGGED_PROVIDERS;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collections;

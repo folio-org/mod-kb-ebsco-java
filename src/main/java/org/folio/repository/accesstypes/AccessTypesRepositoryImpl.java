@@ -2,7 +2,6 @@ package org.folio.repository.accesstypes;
 
 import static java.lang.String.format;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
@@ -33,6 +32,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
+import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Arrays;
 import java.util.Collection;

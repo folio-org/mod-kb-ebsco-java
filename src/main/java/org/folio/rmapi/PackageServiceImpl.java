@@ -2,7 +2,7 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-import static org.folio.common.FutureUtils.allOfSucceeded;
+import static org.folio.util.FutureUtils.allOfSucceeded;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +23,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import org.folio.cache.VertxCache;
-import org.folio.common.FutureUtils;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -115,7 +114,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
       }
     });
 
-    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToPackageBulk);
   }
 
