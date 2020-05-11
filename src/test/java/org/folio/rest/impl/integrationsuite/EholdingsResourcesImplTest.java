@@ -588,8 +588,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       List<AccessTypeMapping> actualMappings = getAccessTypeMappings(vertx);
       assertThat(actualMappings, empty());
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     }
   }
 

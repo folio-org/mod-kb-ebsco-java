@@ -574,7 +574,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
     packageData = packageData.toByIdBuilder().isSelected(updatedIsSelected).build();
     String updatedPackageValue = mapper.writeValueAsString(packageData);
-    mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), updatedPackageValue);
+    mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
 
     Package aPackage = putWithOk(PACKAGES_PATH, readFile("requests/kb-ebsco/package/put-package-selected.json"),
       STUB_TOKEN_HEADER).as(Package.class);
@@ -609,7 +609,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
-    mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), updatedPackageValue);
+    mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
 
     Package aPackage = putWithOk(
       PACKAGES_PATH,
@@ -654,7 +654,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .build();
 
       String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), updatedPackageValue);
+      mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
 
       String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-selected-with-access-type.json"),
         accessTypeId);
@@ -698,7 +698,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .build();
 
       String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
       stubFor(get(PACKAGE_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withStatus(SC_NOT_FOUND)));
 
       String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
@@ -730,7 +730,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     PackageByIdData updatedPackage = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class)
       .toByIdBuilder().isSelected(true).build();
 
-    mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), mapper.writeValueAsString(updatedPackage));
+    mockUpdateScenario(readFile(PACKAGE_STUB_FILE), mapper.writeValueAsString(updatedPackage));
 
     PackagePutRequest request =
       mapper.readValue(readFile("requests/kb-ebsco/package/put-package-selected.json"), PackagePutRequest.class);
@@ -769,7 +769,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .contentType("AggregatedFullText").build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
-    mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+    mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
     Package aPackage = putWithOk(
       PACKAGES_PATH,
@@ -816,7 +816,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .contentType("AggregatedFullText").build();
 
       String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
       String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
         accessTypeId);
@@ -876,7 +876,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .contentType("AggregatedFullText").build();
 
       String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
       String putBody = readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json");
       Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
@@ -933,7 +933,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .contentType("AggregatedFullText").build();
 
       String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
       String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
         newAccessTypeId);
@@ -1131,8 +1131,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + query)));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     }
   }
 
@@ -1156,8 +1156,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         anyOf(equalTo(STUB_MANAGED_RESOURCE_ID), equalTo(STUB_MANAGED_RESOURCE_ID_2))
       )));
     } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     }
   }
 
@@ -1333,26 +1333,26 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGet(new RegexPattern(RESOURCES_BY_PACKAGE_ID_URL + ".*"), stubFile);
   }
 
-  private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage, String updatedPackage) {
-    mockUpdateScenario(urlPattern, initialPackage);
+  private void mockUpdateScenario(String initialPackage, String updatedPackage) {
+    mockUpdateScenario(initialPackage);
 
     stubFor(
-      get(urlPattern)
+      get(PACKAGE_URL_PATTERN)
         .inScenario(GET_PACKAGE_SCENARIO)
         .whenScenarioStateIs(PACKAGE_UPDATED_STATE)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(updatedPackage)));
   }
 
-  private void mockUpdateScenario(UrlPathPattern urlPattern, String initialPackage) {
+  private void mockUpdateScenario(String initialPackage) {
     stubFor(
-      get(urlPattern)
+      get(PACKAGE_URL_PATTERN)
         .inScenario(GET_PACKAGE_SCENARIO)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(initialPackage)));
 
     stubFor(
-      put(urlPattern)
+      put(PACKAGE_URL_PATTERN)
         .inScenario(GET_PACKAGE_SCENARIO)
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(SC_NO_CONTENT))
@@ -1360,7 +1360,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   private Package sendPut(String mockUpdatedPackage) throws IOException, URISyntaxException {
-    mockUpdateScenario(PACKAGE_URL_PATTERN, readFile(PACKAGE_STUB_FILE), mockUpdatedPackage);
+    mockUpdateScenario(readFile(PACKAGE_STUB_FILE), mockUpdatedPackage);
 
     PackagePutRequest packageToBeUpdated =
       mapper.readValue(getFile("requests/kb-ebsco/package/put-package-selected.json"), PackagePutRequest.class);
