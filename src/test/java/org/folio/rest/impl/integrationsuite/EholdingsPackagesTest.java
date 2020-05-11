@@ -971,7 +971,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       .as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals("Access type not found by id: 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
+    assertEquals("Access type not found: id = 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
   }
 
   @Test
@@ -1230,7 +1230,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(packageResourcesUrl, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), is("Package not found"));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("is not valid"));
   }
 
   @Test

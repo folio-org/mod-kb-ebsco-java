@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordType;
@@ -19,8 +18,11 @@ import org.folio.rest.model.filter.AccessTypeFilter;
 @Component
 public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService {
 
-  @Autowired
-  private AccessTypeMappingsRepository mappingRepository;
+  private final AccessTypeMappingsRepository mappingRepository;
+
+  public AccessTypeMappingsServiceImpl(AccessTypeMappingsRepository mappingRepository) {
+    this.mappingRepository = mappingRepository;
+  }
 
   @Override
   public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,

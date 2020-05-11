@@ -235,7 +235,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("AccessType not found by id: %s", id), error.getErrors().get(0).getTitle());
+    assertEquals(String.format("Access type not found: id = %s", id), error.getErrors().get(0).getTitle());
   }
 
   @Test
@@ -246,7 +246,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("AccessType not found by id: %s", id), error.getErrors().get(0).getTitle());
+    assertEquals(String.format("Access type not found: id = %s", id), error.getErrors().get(0).getTitle());
   }
 
   @Test
