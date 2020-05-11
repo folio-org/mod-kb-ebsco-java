@@ -1,7 +1,6 @@
 package org.folio.service.loader;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.NotFoundException;
@@ -14,7 +13,7 @@ import org.folio.repository.RecordKey;
 import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rest.tools.utils.TenantTool;
+import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rmapi.result.Accessible;
 import org.folio.rmapi.result.Tagable;
 import org.folio.service.accesstypes.AccessTypesService;
@@ -30,30 +29,23 @@ public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
   private AccessTypesService accessTypesService;
 
   @Override
-  public CompletableFuture<Void> loadAccessType(Accessible accessible, RecordKey recordKey,
-                                                Map<String, String> okapiHeaders) {
+  public CompletableFuture<Void> loadAccessType(Accessible accessible, RecordKey recordKey, RMAPITemplateContext context) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    accessTypesService.findByRecord(recordKey.getRecordId(), recordKey.getRecordType(), "credentialsId", okapiHeaders)
-      .thenAccept(accessType -> {
-        accessible.setAccessType(accessType);
-        future.complete(null);
-      })
-      .exceptionally(throwable -> {
-        Throwable cause = throwable.getCause();
-        if (cause instanceof NotFoundException) {
-          accessible.setAccessType(null);
-          future.complete(null);
+    accessTypesService.findByRecord(recordKey, context.getCredentialsId(), context.getOkapiData().getOkapiHeaders())
+      .whenComplete((accessType, throwable) -> {
+        if (throwable != null && !(throwable.getCause() instanceof NotFoundException)) {
+          future.completeExceptionally(throwable.getCause());
         } else {
-          future.completeExceptionally(cause);
+          accessible.setAccessType(accessType);
+          future.complete(null);
         }
-        return null;
       });
     return future;
   }
 
   @Override
-  public CompletableFuture<Void> loadTags(Tagable tagable, RecordKey recordKey, Map<String, String> okapiHeaders) {
-    return tagRepository.findByRecord(TenantTool.tenantId(okapiHeaders), recordKey.getRecordId(), recordKey.getRecordType())
+  public CompletableFuture<Void> loadTags(Tagable tagable, RecordKey recordKey, RMAPITemplateContext context) {
+    return tagRepository.findByRecord(context.getOkapiData().getTenant(), recordKey.getRecordId(), recordKey.getRecordType())
       .thenApply(tags -> {
         tagable.setTags(tagsConverter.convert(tags));
         return null;

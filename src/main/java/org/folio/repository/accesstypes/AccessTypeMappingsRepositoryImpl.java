@@ -2,7 +2,6 @@ package org.folio.repository.accesstypes;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
@@ -10,14 +9,13 @@ import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_BY_ACCESS_TYPE_AND_RECORD_QUERY;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_BY_RECORD_ID_PREFIX_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.DELETE_BY_RECORD_ID_AND_RECORD_TYPE_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE_QUERY;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_ACCESS_TYPE_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_RECORD_ID_AND_RECORD_TYPE_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.UPSERT_QUERY;
 import static org.folio.util.FutureUtils.mapResult;
@@ -78,18 +76,6 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   }
 
   @Override
-  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId, String tenantId) {
-    JsonArray params = createParams(singletonList(accessTypeId));
-    String query = format(SELECT_BY_ACCESS_TYPE_ID_QUERY, getAccessTypesMappingTableName(tenantId));
-
-    LOG.info(SELECT_LOG_MESSAGE, query);
-    Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
-
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessItemCollection);
-  }
-
-  @Override
   public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                                  String tenantId) {
     List<String> accessTypeIds = accessTypeFilter.getAccessTypeIds();
@@ -145,11 +131,11 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordIdPrefix(String recordIdPrefix,
-                                                                                           RecordType recordType,
-                                                                                           String credentialsId,
-                                                                                           String tenantId) {
-    String query = format(COUNT_BY_ACCESS_TYPE_AND_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
+  public CompletableFuture<Map<String, Integer>> countByRecordIdPrefix(String recordIdPrefix,
+                                                                       RecordType recordType,
+                                                                       String credentialsId,
+                                                                       String tenantId) {
+    String query = format(COUNT_BY_RECORD_ID_PREFIX_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
     LOG.info(SELECT_LOG_MESSAGE, query);

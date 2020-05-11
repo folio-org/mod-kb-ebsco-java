@@ -18,7 +18,6 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -38,7 +37,8 @@ import org.folio.rest.persist.PostgresClient;
 
 public class PackagesTestUtil {
 
-  private PackagesTestUtil() {}
+  private PackagesTestUtil() {
+  }
 
   public static List<DbPackage> getPackages(Vertx vertx) {
     CompletableFuture<List<DbPackage>> future = new CompletableFuture<>();
@@ -69,8 +69,10 @@ public class PackagesTestUtil {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + PACKAGES_TABLE_NAME;
   }
 
-  public static String getPackageResponse(String packageName, String packageId, String stubProviderId) throws IOException, URISyntaxException {
-    PackageByIdData packageData = Json.decodeValue(readFile("responses/rmapi/packages/get-package-by-id-response.json"), PackageByIdData.class);
+  public static String getPackageResponse(String packageName, String packageId, String stubProviderId)
+    throws IOException, URISyntaxException {
+    PackageByIdData packageData =
+      Json.decodeValue(readFile("responses/rmapi/packages/get-package-by-id-response.json"), PackageByIdData.class);
     return Json.encode(packageData.toByIdBuilder()
       .packageName(packageName)
       .packageId(Integer.parseInt(packageId))
@@ -85,26 +87,28 @@ public class PackagesTestUtil {
       .contentType(STUB_PACKAGE_CONTENT_TYPE).build();
   }
 
-  public static void setUpPackages(Vertx vertx, String wiremockUrl) throws IOException, URISyntaxException {
+  public static void setUpPackages(Vertx vertx) throws IOException, URISyntaxException {
     setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
     setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID_2, STUB_PACKAGE_NAME_2);
     setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
-    setupDefaultKBConfiguration(wiremockUrl, vertx);
   }
 
-  public static void setUpPackage(Vertx vertx, String stubPackageId, String stubVendorId, String stubPackageName) throws IOException, URISyntaxException {
+  public static void setUpPackage(Vertx vertx, String stubPackageId, String stubVendorId, String stubPackageName)
+    throws IOException, URISyntaxException {
     PackagesTestUtil.addPackage(vertx, buildDbPackage(stubVendorId + "-" + stubPackageId, stubPackageName));
     mockPackageWithName(stubPackageId, stubVendorId, stubPackageName);
   }
 
-  public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName) throws IOException, URISyntaxException {
+  public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName)
+    throws IOException, URISyntaxException {
     mockGetWithBody(new RegexPattern(".*vendors/" + stubProviderId + "/packages/" + stubPackageId),
       getPackageResponse(stubPackageName, stubPackageId, stubProviderId));
   }
 
   @Value
   @Builder(toBuilder = true)
- public static class DbPackage {
+  public static class DbPackage {
+
     private String id;
     private String name;
     private String contentType;

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.db.exc.DbExcUtils;
+import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesRepository;
 import org.folio.repository.accesstypes.DbAccessType;
@@ -112,8 +113,10 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletableFuture<AccessType> findByRecord(String recordId, RecordType recordType,
-                                                    String credentialsId, Map<String, String> okapiHeaders) {
+  public CompletableFuture<AccessType> findByRecord(RecordKey recordKey, String credentialsId,
+                                                    Map<String, String> okapiHeaders) {
+    String recordId = recordKey.getRecordId();
+    RecordType recordType = recordKey.getRecordType();
     return repository.findByCredentialsAndRecord(credentialsId, recordId, recordType, tenantId(okapiHeaders))
       .thenApply(getAccessTypeOrFail(recordId, recordType))
       .thenApply(accessTypeFromDbConverter::convert);

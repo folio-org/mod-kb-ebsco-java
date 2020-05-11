@@ -66,7 +66,6 @@ import org.folio.rest.jaxrs.model.ResourceTagsItem;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
-import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -159,7 +158,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getResourcesService().retrieveResource(parsedResourceId, includedObjects)
-          .thenCompose(result -> loadRelatedEntities(result, okapiHeaders))
+          .thenCompose(result -> loadRelatedEntities(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, error404ResourceNotFoundMapper())
       .executeWithResult(Resource.class);
@@ -172,9 +171,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     ResourceId parsedResourceId = parseResourceId(resourceId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> fetchAccessType(entity, okapiHeaders)
+      .requestAction(context -> fetchAccessType(entity, context)
         .thenCompose(accessType -> processResourceUpdate(entity, parsedResourceId, context)
-          .thenCompose(resourceResult -> updateAccessType(resourceId, resourceResult, accessType, okapiHeaders))
+          .thenCompose(resourceResult -> updateAccessType(resourceId, resourceResult, accessType, context))
         ))
       .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .addErrorMapper(ResourceNotFoundException.class, error404ResourceNotFoundMapper())
@@ -197,7 +196,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
             }
             return context.getResourcesService().deleteResource(parsedResourceId);
           })
-          .thenCompose(o -> deleteAssignedResources(resourceId, okapiHeaders))
+          .thenCompose(o -> deleteAssignedResources(resourceId, context))
       )
       .execute();
   }
@@ -233,23 +232,24 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
     final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template.requestAction(context -> context.getResourcesService().retrieveResourcesBulk(entity.getResources()))
-    .executeWithResult(ResourceBulkFetchCollection.class);
+      .executeWithResult(ResourceBulkFetchCollection.class);
   }
 
   private CompletableFuture<AccessType> fetchAccessType(ResourcePutRequest entity,
-                                                                      Map<String, String> okapiHeaders) {
+                                                        RMAPITemplateContext context) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {
       return CompletableFuture.completedFuture(null);
     } else {
-      return accessTypesService.findByUserAndId(accessTypeId, okapiHeaders);
+      return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId,
+        context.getOkapiData().getOkapiHeaders());
     }
   }
 
   private CompletableFuture<ResourceResult> updateAccessType(String recordId, Title titleResult,
                                                              AccessType accessType,
-                                                             Map<String, String> okapiHeaders) {
-    return updateRecordMapping(accessType, recordId, okapiHeaders)
+                                                             RMAPITemplateContext context) {
+    return updateRecordMapping(accessType, recordId, context)
       .thenApply(a -> {
         ResourceResult resourceResult = new ResourceResult(titleResult, null, null, false);
         resourceResult.setAccessType(accessType);
@@ -258,16 +258,17 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
-                                                      Map<String, String> okapiHeaders) {
-    return accessTypeMappingsService.update(accessType, recordId, RecordType.RESOURCE, okapiHeaders);
+                                                      RMAPITemplateContext context) {
+    return accessTypeMappingsService.update(accessType, recordId, RecordType.RESOURCE, context.getCredentialsId(),
+      context.getOkapiData().getOkapiHeaders());
   }
 
-  private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, Map<String, String> okapiHeaders) {
+  private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RMAPITemplateContext context) {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
     RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resource)).recordType(RecordType.RESOURCE).build();
     return CompletableFuture.allOf(
-      relatedEntitiesLoader.loadAccessType(result, recordKey, okapiHeaders),
-      relatedEntitiesLoader.loadTags(result, recordKey, okapiHeaders))
+      relatedEntitiesLoader.loadAccessType(result, recordKey, context),
+      relatedEntitiesLoader.loadTags(result, recordKey, context))
       .thenApply(aVoid -> result);
   }
 
@@ -279,9 +280,9 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .withJsonapi(JSONAPI);
   }
 
-  private CompletableFuture<Void> deleteAssignedResources(String resourceId, Map<String, String> okapiHeaders) {
-    CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, resourceId, okapiHeaders);
-    CompletableFuture<Void> deleteTags = deleteTags(resourceId, TenantTool.tenantId(okapiHeaders));
+  private CompletableFuture<Void> deleteAssignedResources(String resourceId, RMAPITemplateContext context) {
+    CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, resourceId, context);
+    CompletableFuture<Void> deleteTags = deleteTags(resourceId, context.getOkapiData().getTenant());
 
     return CompletableFuture.allOf(deleteAccessMapping, deleteTags);
   }

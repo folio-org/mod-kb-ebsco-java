@@ -37,7 +37,7 @@ public class AccessTypeMappingsTableConstants {
   public static final String SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY;
 
   public static final String COUNT_BY_ACCESS_TYPE_ID_QUERY;
-  public static final String COUNT_BY_ACCESS_TYPE_AND_RECORD_QUERY;
+  public static final String COUNT_BY_RECORD_ID_PREFIX_QUERY;
 
 
   static {
@@ -50,7 +50,7 @@ public class AccessTypeMappingsTableConstants {
 
     UPSERT_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, ACCESS_TYPE_ID_COLUMN) + ";";
 
-    SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN) +
+    SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN) + " " +
       whereQuery(RECORD_ID_COLUMN, RECORD_TYPE_COLUMN);
     SELECT_BY_ACCESS_TYPE_ID_QUERY = selectQuery() + " " + whereQuery(ACCESS_TYPE_ID_COLUMN) + ";";
     SELECT_BY_RECORD_ID_AND_RECORD_TYPE_QUERY = selectQuery() + " " + whereRecordAndAccessIds + " " + limitQuery(1) + ";";
@@ -59,7 +59,7 @@ public class AccessTypeMappingsTableConstants {
     ) + " " + orderByQuery(RECORD_ID_COLUMN) + " " + offsetQuery() + " " + limitQuery() + ";";
 
     COUNT_BY_ACCESS_TYPE_ID_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN, count()) + groupByQuery(ACCESS_TYPE_ID_COLUMN) + ";";
-    COUNT_BY_ACCESS_TYPE_AND_RECORD_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN, count()) + " " + whereConditionsQuery(
+    COUNT_BY_RECORD_ID_PREFIX_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN, count()) + " " + whereConditionsQuery(
       likeCondition(RECORD_ID_COLUMN),
       equalCondition(RECORD_TYPE_COLUMN),
       inCondition(ACCESS_TYPE_ID_COLUMN, AccessTypesTableConstants.SELECT_IDS_BY_CREDENTIALS_ID_QUERY)

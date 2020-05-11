@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import javax.ws.rs.NotFoundException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,21 +23,6 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   private AccessTypeMappingsRepository mappingRepository;
 
   @Override
-  public CompletableFuture<AccessTypeMapping> findByRecord(String recordId, RecordType recordType,
-                                                           Map<String, String> okapiHeaders) {
-    return mappingRepository.findByRecord(recordId, recordType, "credentialsId", tenantId(okapiHeaders))
-      .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException(
-        String.format("Access type mapping not found: recordId = %s, recordType = %s", recordId, recordType)))
-      );
-  }
-
-  @Override
-  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId,
-                                                                             Map<String, String> okapiHeaders) {
-    return mappingRepository.findByAccessTypeId(accessTypeId, tenantId(okapiHeaders));
-  }
-
-  @Override
   public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                                  Map<String, String> okapiHeaders) {
     return mappingRepository.findByAccessTypeFilter(accessTypeFilter, tenantId(okapiHeaders));
@@ -47,12 +30,12 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
 
   @Override
   public CompletableFuture<Void> update(AccessType accessType, String recordId, RecordType recordType,
-                                        Map<String, String> okapiHeaders) {
+                                        String credentialsId, Map<String, String> okapiHeaders) {
     if (accessType == null) {
-      return mappingRepository.deleteByRecord(recordId, recordType, "credentialsId", tenantId(okapiHeaders));
+      return mappingRepository.deleteByRecord(recordId, recordType, credentialsId, tenantId(okapiHeaders));
     }
 
-    return mappingRepository.findByRecord(recordId, recordType, "credentialsId", tenantId(okapiHeaders))
+    return mappingRepository.findByRecord(recordId, recordType, credentialsId, tenantId(okapiHeaders))
       .thenCompose(dbMapping -> {
         AccessTypeMapping mapping;
         if (dbMapping.isPresent()) {
@@ -65,15 +48,14 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordPrefix(String recordIdPrefix,
-                                                                                         RecordType recordType,
-                                                                                         Map<String, String> okapiHeaders) {
-    return mappingRepository.countRecordsByAccessTypeAndRecordIdPrefix(recordIdPrefix, recordType, "credentialsId",
-      tenantId(okapiHeaders));
+  public CompletableFuture<Map<String, Integer>> countByRecordPrefix(String recordPrefix,
+                                                                     RecordType recordType,
+                                                                     String credentialsId,
+                                                                     Map<String, String> okapiHeaders) {
+    return mappingRepository.countByRecordIdPrefix(recordPrefix, recordType, credentialsId, tenantId(okapiHeaders));
   }
 
-  private AccessTypeMapping createAccessTypeMapping(AccessType accessType, String recordId,
-                                                    RecordType recordType) {
+  private AccessTypeMapping createAccessTypeMapping(AccessType accessType, String recordId, RecordType recordType) {
     return AccessTypeMapping.builder()
       .id(UUID.randomUUID().toString())
       .accessTypeId(accessType.getId())

@@ -13,8 +13,6 @@ public interface AccessTypeMappingsRepository {
   CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType, String credentialsId,
                                                               String tenantId);
 
-  CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId, String tenantId);
-
   CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                           String tenantId);
 
@@ -22,7 +20,6 @@ public interface AccessTypeMappingsRepository {
 
   CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, String credentialsId, String tenantId);
 
-  CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordIdPrefix(String recordIdPrefix,
-                                                                                    RecordType recordType,
-                                                                                    String credentialsId, String tenantId);
+  CompletableFuture<Map<String, Integer>> countByRecordIdPrefix(String recordIdPrefix, RecordType recordType,
+                                                                String credentialsId, String tenantId);
 }

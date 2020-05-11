@@ -16,7 +16,6 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 
 public class AccessTypesTableConstants {
 
-  public static final String ACCESS_TYPES_TABLE_NAME_OLD = "access_types_old";
   public static final String ACCESS_TYPES_TABLE_NAME = "access_types";
 
   public static final String ID_COLUMN = "id";
@@ -69,7 +68,7 @@ public class AccessTypesTableConstants {
     SELECT_COUNT_BY_CREDENTIALS_ID_QUERY = selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
     SELECT_BY_CREDENTIALS_AND_RECORD_QUERY = selectQuery() + " " + whereConditionsQuery(
       equalCondition(CREDENTIALS_ID_COLUMN),
-      inCondition(AccessTypeMappingsTableConstants.SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY)
+      inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY)
     ) + " " + limitQuery(1) + ";";
 
     UPSERT_ACCESS_TYPE_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";

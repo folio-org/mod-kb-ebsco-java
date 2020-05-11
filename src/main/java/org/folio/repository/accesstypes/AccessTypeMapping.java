@@ -9,9 +9,9 @@ import org.folio.repository.RecordType;
 @Builder(toBuilder = true)
 public class AccessTypeMapping {
 
-  private String id;
-  private String recordId;
-  private RecordType recordType;
-  private String accessTypeId;
+  String id;
+  String recordId;
+  RecordType recordType;
+  String accessTypeId;
 
 }

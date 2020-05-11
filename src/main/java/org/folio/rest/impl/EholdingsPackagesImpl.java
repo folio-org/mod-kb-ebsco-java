@@ -36,7 +36,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -87,7 +86,6 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.model.filter.AccessTypeFilter;
-import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
@@ -179,8 +177,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       accessTypeFilter.setRecordType(RecordType.PACKAGE);
       accessTypeFilter.setCount(count);
       accessTypeFilter.setPage(page);
-      template.requestAction(context -> filteredEntitiesLoader
-        .fetchPackagesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders));
+      template.requestAction(context -> filteredEntitiesLoader.fetchPackagesByAccessTypeFilter(accessTypeFilter, context));
     } else {
       if (Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)) {
         throw new ValidationException("Invalid Query Parameter for filter[custom]");
@@ -219,9 +216,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (accessTypeId == null) {
       template.requestAction(context -> postCustomPackage(packagePost, context));
     } else {
-      template.requestAction(context -> accessTypesService.findByUserAndId(accessTypeId, okapiHeaders)
-        .thenCombine(postCustomPackage(packagePost, context),
-          (accessType, packageResult) -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders)));
+      template.requestAction(context -> accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(),
+        accessTypeId, okapiHeaders)
+        .thenCompose(accessType -> postCustomPackage(packagePost, context)
+          .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))));
     }
 
     template
@@ -245,8 +243,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
               .recordType(RecordType.PACKAGE)
               .build();
             return CompletableFuture.allOf(
-              relatedEntitiesLoader.loadAccessType(packageResult, recordKey, okapiHeaders),
-              relatedEntitiesLoader.loadTags(packageResult, recordKey, okapiHeaders))
+              relatedEntitiesLoader.loadAccessType(packageResult, recordKey, context),
+              relatedEntitiesLoader.loadTags(packageResult, recordKey, context))
               .thenApply(aVoid -> packageResult);
           })
       ))
@@ -263,14 +261,14 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     } else {
       PackageId parsedPackageId = parsePackageId(packageId);
       templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-        .requestAction(context -> fetchAccessType(entity, okapiHeaders)
+        .requestAction(context -> fetchAccessType(entity, context)
           .thenCompose(accessType -> processUpdateRequest(entity, parsedPackageId, context)
             .thenCompose(o -> {
               CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
-              return handleDeletedPackage(future, parsedPackageId, okapiHeaders);
+              return handleDeletedPackage(future, parsedPackageId, context);
             })
             .thenApply(packageById -> new PackageResult(packageById, null, null))
-            .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, okapiHeaders))
+            .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))
           )
         )
         .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
@@ -292,7 +290,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
             return context.getPackagesService().deletePackage(parsedPackageId)
-              .thenCompose(aVoid -> deleteAssignedResources(parsedPackageId, okapiHeaders));
+              .thenCompose(aVoid -> deleteAssignedResources(parsedPackageId, context));
           }))
       .execute();
   }
@@ -322,7 +320,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       accessTypeFilter.setCount(count);
       accessTypeFilter.setPage(page);
       template.requestAction(context ->
-        filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders)
+        filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context)
           .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
       );
     } else {
@@ -388,9 +386,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessType accessType,
                                                                    PackageResult packageResult,
-                                                                   Map<String, String> okapiHeaders) {
+                                                                   RMAPITemplateContext context) {
     String recordId = packageResult.getPackageData().getFullPackageId();
-    return updateRecordMapping(accessType, recordId, okapiHeaders)
+    return updateRecordMapping(accessType, recordId, context)
       .thenApply(a -> {
         packageResult.setAccessType(accessType);
         return packageResult;
@@ -398,17 +396,19 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
-                                                      Map<String, String> okapiHeaders) {
-    return accessTypeMappingsService.update(accessType, recordId, RecordType.PACKAGE, okapiHeaders);
+                                                      RMAPITemplateContext context) {
+    return accessTypeMappingsService.update(accessType, recordId, RecordType.PACKAGE, context.getCredentialsId(),
+      context.getOkapiData().getOkapiHeaders());
   }
 
   private CompletableFuture<AccessType> fetchAccessType(PackagePutRequest entity,
-                                                        Map<String, String> okapiHeaders) {
+                                                        RMAPITemplateContext context) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {
       return CompletableFuture.completedFuture(null);
     } else {
-      return accessTypesService.findByUserAndId(accessTypeId, okapiHeaders);
+      return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId,
+        context.getOkapiData().getOkapiHeaders());
     }
   }
 
@@ -594,22 +594,20 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
    * @return future with initial result, or exceptionally completed future if deletion of tags failed
    */
   private CompletableFuture<PackageByIdData> handleDeletedPackage(CompletableFuture<PackageByIdData> future,
-                                                                  PackageId packageId, Map<String, String> okapiHeaders) {
+                                                                  PackageId packageId, RMAPITemplateContext context) {
     CompletableFuture<Void> deleteFuture = new CompletableFuture<>();
     return future.whenComplete((packageById, e) -> {
       if (e instanceof ResourceNotFoundException) {
-        deleteAssignedResources(packageId, okapiHeaders)
-          .thenAccept(o -> deleteFuture.complete(null));
+        deleteAssignedResources(packageId, context).thenAccept(o -> deleteFuture.complete(null));
       } else {
         deleteFuture.complete(null);
       }
     }).thenCombine(deleteFuture, (o, aBoolean) -> future.join());
   }
 
-  @NotNull
-  private CompletableFuture<Void> deleteAssignedResources(PackageId packageId, Map<String, String> okapiHeaders) {
-    CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, packageIdToString(packageId), okapiHeaders);
-    CompletableFuture<Void> deleteTags = deleteTags(packageId, TenantTool.tenantId(okapiHeaders));
+  private CompletableFuture<Void> deleteAssignedResources(PackageId packageId, RMAPITemplateContext context) {
+    CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, packageIdToString(packageId), context);
+    CompletableFuture<Void> deleteTags = deleteTags(packageId, context.getOkapiData().getTenant());
 
     return CompletableFuture.allOf(deleteAccessMapping, deleteTags);
   }

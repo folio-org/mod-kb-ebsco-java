@@ -50,7 +50,6 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.filter.AccessTypeFilter;
-import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.RestConstants;
@@ -111,9 +110,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       accessTypeFilter.setRecordType(RecordType.RESOURCE);
       accessTypeFilter.setCount(count);
       accessTypeFilter.setPage(page);
-      template.requestAction(
-        context -> filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders)
-      );
+      template.requestAction(context -> filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context));
     } else {
       FilterQuery fq = FilterQuery.builder()
         .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
@@ -192,7 +189,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(titleIdLong)
           .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, includeResource)))
-          .thenCompose(result -> loadTags(result, okapiHeaders))
+          .thenCompose(result -> loadTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsTitlesByTitleIdResponse
@@ -244,7 +241,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result,
-                                                  Map<String, String> okapiHeaders) {
+                                                  RMAPITemplateContext context) {
     RecordKey recordKey = RecordKey.builder()
       .recordType(RecordType.TITLE)
       .recordId(String.valueOf(result.getTitle().getTitleId()))
@@ -255,16 +252,16 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         .stream()
         .map(IdParser::getResourceId)
         .collect(Collectors.toList());
-      return tagRepository.findByRecordByIds(TenantTool.tenantId(okapiHeaders), resourceIds, RecordType.RESOURCE)
+      return tagRepository.findByRecordByIds(context.getOkapiData().getTenant(), resourceIds, RecordType.RESOURCE)
         .thenApply(tags -> {
           result.setResourceTagList(tags);
           return result;
         })
-        .thenCompose(titleResult -> relatedEntitiesLoader.loadTags(titleResult, recordKey, okapiHeaders)
+        .thenCompose(titleResult -> relatedEntitiesLoader.loadTags(titleResult, recordKey, context)
           .thenApply(aVoid -> titleResult)
         );
     } else {
-      return relatedEntitiesLoader.loadTags(result, recordKey, okapiHeaders).thenApply(aVoid -> result);
+      return relatedEntitiesLoader.loadTags(result, recordKey, context).thenApply(aVoid -> result);
     }
   }
 
