@@ -396,7 +396,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     verify(0, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)));
 
     assertEquals(1, error.getErrors().size());
-    assertEquals("Access type not found by id: 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
+    assertEquals("Access type not found: id = 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
   }
 
   @Test

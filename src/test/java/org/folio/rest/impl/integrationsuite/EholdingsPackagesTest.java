@@ -360,9 +360,9 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
       assertEquals(expectedAccessTypeId, ((LinkedHashMap) packageData.getIncluded().get(0)).get("id"));
     } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+      clearDataFromTable(vertx, TAGS_TABLE_NAME);
       clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     }
   }
@@ -472,6 +472,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       List<AccessTypeMapping> mappingsAfterRequest = AccessTypesTestUtil.getAccessTypeMappings(vertx);
       assertThat(mappingsAfterRequest, empty());
     } finally {
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     }
   }
@@ -1260,7 +1261,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUnauthorizedOnGetWithResourcesWhenRMAPI403() throws IOException, URISyntaxException {
+  public void shouldReturnUnauthorizedOnGetWithResourcesWhenRMAPI403() {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL + "/titles.*"), SC_FORBIDDEN);
 
     JsonapiError error = getWithStatus(PACKAGE_RESOURCES_PATH, SC_FORBIDDEN, STUB_TOKEN_HEADER).as(JsonapiError.class);
