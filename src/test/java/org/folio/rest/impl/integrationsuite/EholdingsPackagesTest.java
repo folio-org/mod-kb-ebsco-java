@@ -1180,7 +1180,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(1, resources.size());
       assertThat(resources, everyItem(hasProperty("id", equalTo(STUB_MANAGED_RESOURCE_ID))));
     } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     }
   }
 
