@@ -11,12 +11,12 @@ import static org.folio.repository.DbUtil.getAccessTypesTableName;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_BY_RECORD_ID_PREFIX_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.DELETE_BY_RECORD_ID_AND_RECORD_TYPE_QUERY;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.DELETE_BY_RECORD_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE_QUERY;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_RECORD_ID_AND_RECORD_TYPE_QUERY;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_RECORD_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.UPSERT_QUERY;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
@@ -63,7 +63,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType,
                                                                      String credentialsId, String tenantId) {
-    String query = format(SELECT_BY_RECORD_ID_AND_RECORD_TYPE_QUERY, getAccessTypesMappingTableName(tenantId),
+    String query = format(SELECT_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
@@ -92,7 +92,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     params.add(offset);
     params.add(count);
 
-    String query = format(SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE_QUERY, getAccessTypesMappingTableName(tenantId),
+    String query = format(SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       createPlaceholders(accessTypeIds.size()));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
@@ -104,9 +104,14 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   @Override
   public CompletableFuture<AccessTypeMapping> save(AccessTypeMapping mapping, String tenantId) {
-
-    JsonArray params = createUpsertParams(mapping);
     String query = format(UPSERT_QUERY, getAccessTypesMappingTableName(tenantId));
+
+    JsonArray params = createParams(asList(
+      mapping.getId(),
+      mapping.getRecordId(),
+      mapping.getRecordType().getValue(),
+      mapping.getAccessTypeId()
+    ));
 
     LOG.info(INSERT_LOG_MESSAGE, query);
     Promise<UpdateResult> promise = Promise.promise();
@@ -118,7 +123,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, String credentialsId,
                                                 String tenantId) {
-    String query = format(DELETE_BY_RECORD_ID_AND_RECORD_TYPE_QUERY, getAccessTypesMappingTableName(tenantId),
+    String query = format(DELETE_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
     LOG.info(DELETE_LOG_MESSAGE, query);
@@ -131,10 +136,8 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countByRecordIdPrefix(String recordIdPrefix,
-                                                                       RecordType recordType,
-                                                                       String credentialsId,
-                                                                       String tenantId) {
+  public CompletableFuture<Map<String, Integer>> countByRecordIdPrefix(String recordIdPrefix, RecordType recordType,
+                                                                       String credentialsId, String tenantId) {
     String query = format(COUNT_BY_RECORD_ID_PREFIX_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
@@ -169,15 +172,6 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
       .recordId(row.getString(RECORD_ID_COLUMN))
       .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN)))
       .build();
-  }
-
-  private JsonArray createUpsertParams(AccessTypeMapping mapping) {
-    return createParams(asList(
-      mapping.getId(),
-      mapping.getRecordId(),
-      mapping.getRecordType().getValue(),
-      mapping.getAccessTypeId()
-    ));
   }
 
   private PostgresClient pgClient(String tenantId) {

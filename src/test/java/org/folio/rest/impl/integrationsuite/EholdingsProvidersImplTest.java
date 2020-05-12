@@ -615,7 +615,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404WhenNonProviderIdNotFound() throws IOException, URISyntaxException {
+  public void shouldReturn404WhenNonProviderIdNotFound() {
     String rmapiInvalidProviderIdUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/191919/packages";
 
     mockGet(new RegexPattern(rmapiInvalidProviderIdUrl), SC_NOT_FOUND);

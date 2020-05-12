@@ -17,6 +17,7 @@ import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
@@ -90,6 +91,7 @@ import org.folio.repository.RecordType;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.Tags;
@@ -268,8 +270,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400IfCountOutOfRange() {
-    getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST,
-      STUB_TOKEN_HEADER);
+    JsonapiError error =
+      getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST,
+        STUB_TOKEN_HEADER).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("parameter value {1000} is not valid"));
   }
 
   @Test
@@ -279,7 +284,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
-    getWithStatus(EHOLDINGS_TITLES_PATH + "?filter[name]=news", SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER);
+    JsonapiError error =
+      getWithStatus(EHOLDINGS_TITLES_PATH + "?filter[name]=news", SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER)
+        .as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid RMAPI response"));
   }
 
   @Test
@@ -341,7 +350,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(500)));
 
-    getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER);
+    JsonapiError error =
+      getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER)
+        .as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid RMAPI response"));
   }
 
   @Test
@@ -445,8 +458,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withBody(readFile(errorResponse))
           .withStatus(SC_BAD_REQUEST)));
 
-    postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST, STUB_TOKEN_HEADER);
+    JsonapiError error =
+      postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST, STUB_TOKEN_HEADER)
+        .as(JsonapiError.class);
 
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Package with the provided name already exists"));
   }
 
   @Test
@@ -554,8 +570,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422WhenNameIsNotProvided() throws URISyntaxException, IOException {
-    putWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID,
-      readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER);
+    Errors error = putWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID,
+      readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(Errors.class);
+
+    assertThat(error.getErrors().get(0).getMessage(), containsString("may not be null"));
   }
 
   private String putTitle(List<String> tags) throws IOException, URISyntaxException {

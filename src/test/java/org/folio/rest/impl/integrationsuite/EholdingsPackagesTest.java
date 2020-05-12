@@ -358,7 +358,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
       assertNotNull(packageData.getIncluded());
       assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(expectedAccessTypeId, ((LinkedHashMap) packageData.getIncluded().get(0)).get("id"));
+      assertEquals(expectedAccessTypeId, ((LinkedHashMap<?, ?>) packageData.getIncluded().get(0)).get("id"));
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
@@ -677,7 +677,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
       assertNotNull(aPackage.getIncluded());
       assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
+      assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
@@ -840,7 +840,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
       assertNotNull(aPackage.getIncluded());
       assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(accessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
+      assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
@@ -957,7 +957,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
       assertNotNull(aPackage.getIncluded());
       assertEquals(newAccessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(newAccessTypeId, ((LinkedHashMap) aPackage.getIncluded().get(0)).get("id"));
+      assertEquals(newAccessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
@@ -1035,7 +1035,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
       assertNotNull(createdPackage.getIncluded());
       assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(accessTypeId, ((LinkedHashMap) createdPackage.getIncluded().get(0)).get("id"));
+      assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) createdPackage.getIncluded().get(0)).get("id"));
     } finally {
       clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
       clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);

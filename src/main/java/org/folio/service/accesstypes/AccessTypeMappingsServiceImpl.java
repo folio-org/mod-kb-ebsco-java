@@ -39,29 +39,30 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
 
     return mappingRepository.findByRecord(recordId, recordType, credentialsId, tenantId(okapiHeaders))
       .thenCompose(dbMapping -> {
+        String accessTypeId = accessType.getId();
         AccessTypeMapping mapping;
         if (dbMapping.isPresent()) {
-          mapping = dbMapping.get().toBuilder().accessTypeId(accessType.getId()).build();
+          mapping = dbMapping.get().toBuilder().accessTypeId(accessTypeId).build();
         } else {
-          mapping = createAccessTypeMapping(accessType, recordId, recordType);
+          mapping = createAccessTypeMapping(recordId, recordType, accessTypeId);
         }
         return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
       });
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countByRecordPrefix(String recordPrefix,
-                                                                     RecordType recordType,
+  public CompletableFuture<Map<String, Integer>> countByRecordPrefix(String recordPrefix, RecordType recordType,
                                                                      String credentialsId,
                                                                      Map<String, String> okapiHeaders) {
     return mappingRepository.countByRecordIdPrefix(recordPrefix, recordType, credentialsId, tenantId(okapiHeaders));
   }
 
-  private AccessTypeMapping createAccessTypeMapping(AccessType accessType, String recordId, RecordType recordType) {
+  private AccessTypeMapping createAccessTypeMapping(String recordId, RecordType recordType, String accessTypeId) {
     return AccessTypeMapping.builder()
       .id(UUID.randomUUID().toString())
-      .accessTypeId(accessType.getId())
+      .accessTypeId(accessTypeId)
       .recordId(recordId)
-      .recordType(recordType).build();
+      .recordType(recordType)
+      .build();
   }
 }

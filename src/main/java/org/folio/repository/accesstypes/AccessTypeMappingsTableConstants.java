@@ -25,20 +25,16 @@ public class AccessTypeMappingsTableConstants {
   public static final String RECORD_TYPE_COLUMN = "record_type";
   public static final String ACCESS_TYPE_ID_COLUMN = "access_type_id";
 
-  public static final String ACCESS_TYPES_MAPPING_FIELD_LIST = String.format("%s, %s, %s, %s",
-    ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, ACCESS_TYPE_ID_COLUMN);
-
   public static final String UPSERT_QUERY;
-  public static final String DELETE_BY_RECORD_ID_AND_RECORD_TYPE_QUERY;
+  public static final String DELETE_BY_RECORD_QUERY;
 
+  public static final String SELECT_BY_RECORD_QUERY;
   public static final String SELECT_BY_ACCESS_TYPE_ID_QUERY;
-  public static final String SELECT_BY_RECORD_ID_AND_RECORD_TYPE_QUERY;
-  public static final String SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE_QUERY;
+  public static final String SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY;
   public static final String SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY;
 
   public static final String COUNT_BY_ACCESS_TYPE_ID_QUERY;
   public static final String COUNT_BY_RECORD_ID_PREFIX_QUERY;
-
 
   static {
     String[] allColumns = new String[] {ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, ACCESS_TYPE_ID_COLUMN};
@@ -53,8 +49,8 @@ public class AccessTypeMappingsTableConstants {
     SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN) + " " +
       whereQuery(RECORD_ID_COLUMN, RECORD_TYPE_COLUMN);
     SELECT_BY_ACCESS_TYPE_ID_QUERY = selectQuery() + " " + whereQuery(ACCESS_TYPE_ID_COLUMN) + ";";
-    SELECT_BY_RECORD_ID_AND_RECORD_TYPE_QUERY = selectQuery() + " " + whereRecordAndAccessIds + " " + limitQuery(1) + ";";
-    SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_TYPE_QUERY = selectQuery() + " " + whereConditionsQuery(
+    SELECT_BY_RECORD_QUERY = selectQuery() + " " + whereRecordAndAccessIds + " " + limitQuery(1) + ";";
+    SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY = selectQuery() + " " + whereConditionsQuery(
       inCondition(ACCESS_TYPE_ID_COLUMN), equalCondition(RECORD_TYPE_COLUMN), likeCondition(RECORD_ID_COLUMN)
     ) + " " + orderByQuery(RECORD_ID_COLUMN) + " " + offsetQuery() + " " + limitQuery() + ";";
 
@@ -65,9 +61,8 @@ public class AccessTypeMappingsTableConstants {
       inCondition(ACCESS_TYPE_ID_COLUMN, AccessTypesTableConstants.SELECT_IDS_BY_CREDENTIALS_ID_QUERY)
     ) + " " + groupByQuery(ACCESS_TYPE_ID_COLUMN) + ";";
 
-    DELETE_BY_RECORD_ID_AND_RECORD_TYPE_QUERY = deleteQuery() + " " + whereRecordAndAccessIds + ";";
+    DELETE_BY_RECORD_QUERY = deleteQuery() + " " + whereRecordAndAccessIds + ";";
   }
-
 
   private AccessTypeMappingsTableConstants() {
   }

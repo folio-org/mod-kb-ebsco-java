@@ -86,10 +86,6 @@ public class DbUtil {
     return getTableName(tenantId, TRANSACTION_ID_TABLE);
   }
 
-  public static String getAccessTypesOldTableName(String tenantId) {
-    return getTableName(tenantId, ACCESS_TYPES_TABLE_NAME);
-  }
-
   public static String getAccessTypesTableName(String tenantId) {
     return getTableName(tenantId, ACCESS_TYPES_TABLE_NAME);
   }

@@ -540,7 +540,10 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), SC_NOT_FOUND);
     mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT), SC_NOT_FOUND);
 
-    postWithStatus("eholdings/resources", readFile(postStubRequest), SC_NOT_FOUND, STUB_TOKEN_HEADER);
+    JsonapiError error = postWithStatus("eholdings/resources", readFile(postStubRequest), SC_NOT_FOUND, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("not found"));
   }
 
   @Test
@@ -554,7 +557,11 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockPackage(stubPackageResponseFile);
     mockTitle(stubTitleResponseFile);
 
-    postWithStatus("eholdings/resources", readFile(postStubRequest), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER);
+    JsonapiError error =
+      postWithStatus("eholdings/resources", readFile(postStubRequest), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+        .as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid PackageId"));
   }
 
   @Test
@@ -595,7 +602,10 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenResourceIdIsInvalid() {
-    deleteWithStatus("eholdings/resources/abc-def", SC_BAD_REQUEST, STUB_TOKEN_HEADER);
+    JsonapiError error =
+      deleteWithStatus("eholdings/resources/abc-def", SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Resource id is invalid"));
   }
 
   @Test
@@ -604,7 +614,10 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
 
     mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), stubResponseFile);
-    deleteWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_BAD_REQUEST, STUB_TOKEN_HEADER);
+    JsonapiError error =
+      deleteWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Resource cannot be deleted"));
   }
 
   @Test
