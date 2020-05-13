@@ -7,9 +7,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import javax.ws.rs.NotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordType;
@@ -21,22 +18,10 @@ import org.folio.rest.model.filter.AccessTypeFilter;
 @Component
 public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService {
 
-  @Autowired
-  private AccessTypeMappingsRepository mappingRepository;
+  private final AccessTypeMappingsRepository mappingRepository;
 
-  @Override
-  public CompletableFuture<AccessTypeMapping> findByRecord(String recordId, RecordType recordType,
-                                                           Map<String, String> okapiHeaders) {
-    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
-      .thenApply(mapping -> mapping.orElseThrow(() -> new NotFoundException(
-        String.format("Access type mapping not found: recordId = %s, recordType = %s", recordId, recordType)))
-      );
-  }
-
-  @Override
-  public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeId(String accessTypeId,
-                                                                             Map<String, String> okapiHeaders) {
-    return mappingRepository.findByAccessTypeId(accessTypeId, tenantId(okapiHeaders));
+  public AccessTypeMappingsServiceImpl(AccessTypeMappingsRepository mappingRepository) {
+    this.mappingRepository = mappingRepository;
   }
 
   @Override
@@ -47,42 +32,37 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
 
   @Override
   public CompletableFuture<Void> update(AccessType accessType, String recordId, RecordType recordType,
-                                        Map<String, String> okapiHeaders) {
+                                        String credentialsId, Map<String, String> okapiHeaders) {
     if (accessType == null) {
-      return mappingRepository.deleteByRecord(recordId, recordType, tenantId(okapiHeaders));
+      return mappingRepository.deleteByRecord(recordId, recordType, credentialsId, tenantId(okapiHeaders));
     }
 
-    return mappingRepository.findByRecord(recordId, recordType, tenantId(okapiHeaders))
+    return mappingRepository.findByRecord(recordId, recordType, credentialsId, tenantId(okapiHeaders))
       .thenCompose(dbMapping -> {
+        String accessTypeId = accessType.getId();
         AccessTypeMapping mapping;
         if (dbMapping.isPresent()) {
-          mapping = dbMapping.get().toBuilder().accessTypeId(accessType.getId()).build();
+          mapping = dbMapping.get().toBuilder().accessTypeId(accessTypeId).build();
         } else {
-          mapping = createAccessTypeMapping(accessType, recordId, recordType);
+          mapping = createAccessTypeMapping(recordId, recordType, accessTypeId);
         }
         return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
       });
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countRecordsByAccessType(Map<String, String> okapiHeaders) {
-    return mappingRepository.countRecordsByAccessType(tenantId(okapiHeaders));
+  public CompletableFuture<Map<String, Integer>> countByRecordPrefix(String recordPrefix, RecordType recordType,
+                                                                     String credentialsId,
+                                                                     Map<String, String> okapiHeaders) {
+    return mappingRepository.countByRecordIdPrefix(recordPrefix, recordType, credentialsId, tenantId(okapiHeaders));
   }
 
-  @Override
-  public CompletableFuture<Map<String, Integer>> countRecordsByAccessTypeAndRecordPrefix(String recordIdPrefix,
-                                                                                         RecordType recordType,
-                                                                                         Map<String, String> okapiHeaders) {
-    return mappingRepository.countRecordsByAccessTypeAndRecordIdPrefix(recordIdPrefix, recordType,
-      tenantId(okapiHeaders));
-  }
-
-  private AccessTypeMapping createAccessTypeMapping(AccessType accessType, String recordId,
-                                                    RecordType recordType) {
+  private AccessTypeMapping createAccessTypeMapping(String recordId, RecordType recordType, String accessTypeId) {
     return AccessTypeMapping.builder()
       .id(UUID.randomUUID().toString())
-      .accessTypeId(accessType.getId())
+      .accessTypeId(accessTypeId)
       .recordId(recordId)
-      .recordType(recordType).build();
+      .recordType(recordType)
+      .build();
   }
 }

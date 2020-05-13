@@ -46,11 +46,19 @@ public final class SqlQueryHelper {
     return "GROUP BY " + joinWithComa(columns);
   }
 
+  public static String orderByQuery(String... columns) {
+    return "ORDER BY " + joinWithComa(columns);
+  }
+
   public static String whereQuery(String... columns) {
     String whereQuery = Arrays.stream(columns)
-      .map(SqlQueryHelper::assignParameter)
+      .map(SqlQueryHelper::equalCondition)
       .collect(Collectors.joining(" AND "));
     return "WHERE " + whereQuery;
+  }
+
+  public static String whereConditionsQuery(String... conditions) {
+    return "WHERE " + String.join(" AND ", conditions);
   }
 
   public static String updateQuery(String... columns) {
@@ -65,18 +73,42 @@ public final class SqlQueryHelper {
     return "ON CONFLICT(" + idColumnName + ") DO UPDATE SET " + updateColumns;
   }
 
+  public static String limitQuery() {
+    return limit("?");
+  }
+
   public static String limitQuery(int limit) {
-    return "LIMIT " + limit;
+    return limit(String.valueOf(limit));
+  }
+
+  public static String offsetQuery() {
+    return offset("?");
+  }
+
+  public static String offsetQuery(int offset) {
+    return offset(String.valueOf(offset));
+  }
+
+  public static String equalCondition(String column) {
+    return column + " = ?";
+  }
+
+  public static String likeCondition(String column) {
+    return column + " LIKE ?";
+  }
+
+  public static String inCondition(String column) {
+    return inCondition(column, "%s");
+  }
+
+  public static String inCondition(String column, String query) {
+    return column + " IN (" + query + ")";
   }
 
   private static String assignParameters(String[] columns) {
     return Arrays.stream(columns)
-      .map(SqlQueryHelper::assignParameter)
+      .map(SqlQueryHelper::equalCondition)
       .collect(Collectors.joining(", "));
-  }
-
-  private static String assignParameter(String column) {
-    return column + " = ?";
   }
 
   private static String assignExcludedColumn(String column) {
@@ -85,5 +117,13 @@ public final class SqlQueryHelper {
 
   private static String joinWithComa(String[] columns) {
     return String.join(", ", columns);
+  }
+
+  private static String offset(String offset) {
+    return "OFFSET " + offset;
+  }
+
+  private static String limit(String limit) {
+    return "LIMIT " + limit;
   }
 }

@@ -15,3 +15,5 @@ ADD COLUMN IF NOT EXISTS updated_by_username VARCHAR (100),
 ADD COLUMN IF NOT EXISTS updated_by_last_name VARCHAR (100),
 ADD COLUMN IF NOT EXISTS updated_by_first_name VARCHAR (100),
 ADD COLUMN IF NOT EXISTS updated_by_middle_name VARCHAR (100);
+
+CREATE INDEX IF NOT EXISTS name_index ON access_types (name);

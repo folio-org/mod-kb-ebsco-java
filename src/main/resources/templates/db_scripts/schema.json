@@ -71,12 +71,6 @@
       "customSnippetPath": "create-transaction-ids-table.sql"
     },
     {
-      "tableName": "access_types_old",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.2.0",
-      "withMetadata": true,
-      "withAuditing": false
-    },
-    {
       "tableName": "kb_credentials",
       "fromModuleVersion": "mod-kb-ebsco-java-3.3.2",
       "withMetadata": false,

@@ -20,7 +20,9 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIP
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_ID_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_NAMES_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_RECORD_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
@@ -33,6 +35,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_N
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +57,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.common.ListUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.repository.RecordType;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
@@ -81,7 +86,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<List<DbAccessType>> findByCredentialsId(String credentialsId, String tenantId) {
-    String query = format(SELECT_BY_CREDENTIALS_ID_QUERY,
+    String query = format(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
     LOG.info(LOG_SELECT_QUERY, query);
@@ -102,6 +107,39 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, createParams(Arrays.asList(accessTypeId, credentialsId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
+  }
+
+  @Override
+  public CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(String credentialsId,
+                                                                       Collection<String> accessTypeNames, String tenantId) {
+    String query = format(SELECT_BY_CREDENTIALS_AND_NAMES_QUERY,
+      getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(accessTypeNames.size()));
+
+    LOG.info(LOG_SELECT_QUERY, query);
+
+    JsonArray params = createParams(Collections.singleton(credentialsId));
+    accessTypeNames.forEach(params::add);
+
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessTypes);
+  }
+
+  @Override
+  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndRecord(String credentialsId, String recordId,
+                                                                              RecordType recordType,
+                                                                              String tenantId) {
+    String query = String.format(SELECT_BY_CREDENTIALS_AND_RECORD_QUERY,
+      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+
+    LOG.info(LOG_SELECT_QUERY, query);
+
+    JsonArray params = createParams(Arrays.asList(credentialsId, recordId, recordType.getValue()));
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
   }

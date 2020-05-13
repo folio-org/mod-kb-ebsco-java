@@ -136,9 +136,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getProvidersService().retrieveProvider(providerIdLong, include)
-          .thenCompose(result ->
-            loadTags(result, okapiHeaders)
-          )
+          .thenCompose(result -> loadTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersByProviderIdResponse.respond404WithApplicationVndApiJson(
@@ -206,7 +204,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       template.requestAction(context -> getPackagesByTagsAndProvider(tags, providerId, page, count, context));
     } else if (isAccessTypeSearch(filterAccessType, q, filterSelected, filterTags)) {
       template.requestAction(context -> getPackagesByAccessTypesAndProvider(filterAccessType, providerId, page, count,
-        context, okapiHeaders));
+        context));
     } else {
       String selected = convertToHoldingsSelected(filterSelected);
       parametersValidator.validate(selected, filterType, sort, q);
@@ -274,15 +272,14 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private CompletableFuture<PackageCollectionResult> getPackagesByAccessTypesAndProvider(List<String> accessTypeNames,
                                                                                          String providerId,
                                                                                          int page, int count,
-                                                                                         RMAPITemplateContext context,
-                                                                                         Map<String, String> okapiHeaders) {
+                                                                                         RMAPITemplateContext context) {
     AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
     accessTypeFilter.setAccessTypeNames(accessTypeNames);
     accessTypeFilter.setRecordIdPrefix(providerId);
     accessTypeFilter.setRecordType(RecordType.PACKAGE);
     accessTypeFilter.setCount(count);
     accessTypeFilter.setPage(page);
-    return filteredEntitiesLoader.fetchPackagesByAccessTypeFilter(accessTypeFilter, context, okapiHeaders)
+    return filteredEntitiesLoader.fetchPackagesByAccessTypeFilter(accessTypeFilter, context)
       .thenApply(packages -> new PackageCollectionResult(packages, emptyList()));
   }
 
@@ -309,13 +306,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     }
   }
 
-  private CompletableFuture<VendorResult> loadTags(VendorResult result, Map<String, String> okapiHeaders) {
+  private CompletableFuture<VendorResult> loadTags(VendorResult result, RMAPITemplateContext context) {
     RecordKey recordKey = RecordKey.builder()
       .recordId(String.valueOf(result.getVendor().getVendorId()))
       .recordType(RecordType.PROVIDER)
       .build();
-    return relatedEntitiesLoader.loadTags(result, recordKey, okapiHeaders)
-      .thenApply(aVoid -> result);
+    return relatedEntitiesLoader.loadTags(result, recordKey, context).thenApply(aVoid -> result);
   }
 
   private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, String tenant) {

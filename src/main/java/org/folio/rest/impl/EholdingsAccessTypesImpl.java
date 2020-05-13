@@ -12,7 +12,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -27,11 +26,7 @@ import org.folio.spring.SpringContextUtil;
 public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, EholdingsKbCredentialsIdAccessTypes {
 
   @Autowired
-  @Qualifier("newAccessTypesService")
   private AccessTypesService accessTypesService;
-  @Autowired
-  @Qualifier("oldAccessTypesService")
-  private AccessTypesService oldAccessTypesService;
   @Autowired
   private ErrorHandler errorHandler;
 
@@ -118,9 +113,9 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
   @Validate
   @HandleValidationErrors
   public void deleteEholdingsKbCredentialsAccessTypesByIdAndAccessTypeId(String credentialsId, String accessTypeId,
-                                                                                   Map<String, String> okapiHeaders,
-                                                                                   Handler<AsyncResult<Response>> asyncResultHandler,
-                                                                                   Context vertxContext) {
+                                                                         Map<String, String> okapiHeaders,
+                                                                         Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                         Context vertxContext) {
     accessTypesService.delete(credentialsId, accessTypeId, okapiHeaders)
       .thenAccept(aVoid -> asyncResultHandler.handle(succeededFuture(
         DeleteEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond204())))
