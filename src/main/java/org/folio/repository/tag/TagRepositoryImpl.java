@@ -133,7 +133,7 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, String tenantId, RecordType recordType) {
+  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, RecordType recordType, String credentialsId, String tenantId) {
     return countRecordsByTagsAndPrefix(tags, "", tenantId, recordType);
   }
 

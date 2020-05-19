@@ -2,7 +2,6 @@ package org.folio.repository;
 
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
@@ -31,6 +30,10 @@ import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class DbUtil {
+
+  public static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
+  public static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
+  public static final String SELECT_LOG_MESSAGE = "Do select query = {}";
 
   private DbUtil() {
   }

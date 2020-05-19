@@ -214,7 +214,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       template
         .requestAction(context ->
           context.getPackagesService().retrievePackages(selected, filterType, providerIdLong, q, page, count, nameSort)
-            .thenCompose(packages -> loadTags(packages, context.getOkapiData().getTenant()))
+            .thenCompose(packages -> loadTags(packages, context))
         );
     }
     template
@@ -229,8 +229,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
+    String credentialsId = context.getCredentialsId();
+
     return tagRepository
-      .countRecordsByTags(tags, tenant, RecordType.PROVIDER)
+      .countRecordsByTags(tags, RecordType.PROVIDER, credentialsId, tenant)
       .thenCompose(providerCount -> {
         totalResults.setValue(providerCount);
         return providerRepository.findIdsByTagName(tags, page, count, tenant);
@@ -254,7 +256,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.findByTagNameAndProvider(tags, providerId, page, count, tenant);
+        return packageRepository.findByTagNameAndProvider(tags, providerId, page, count, context.getCredentialsId(),
+          tenant);
       })
       .thenCompose(dbPackages -> {
         mutableDbPackages.setValue(dbPackages);
@@ -314,8 +317,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     return relatedEntitiesLoader.loadTags(result, recordKey, context).thenApply(aVoid -> result);
   }
 
-  private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, String tenant) {
-    return packageRepository.findAllById(getPackageIds(packages), tenant)
+  private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, RMAPITemplateContext context) {
+    String credentialsId = context.getCredentialsId();
+    String tenant = context.getOkapiData().getTenant();
+    return packageRepository.findByIds(getPackageIds(packages), credentialsId, tenant)
       .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 

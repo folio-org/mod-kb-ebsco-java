@@ -26,7 +26,7 @@ public class TagRepositoryImplTest {
   TagRepository repository;
   @Test
   public void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTags() {
-    int count = repository.countRecordsByTags(Collections.emptyList(), STUB_TENANT, RecordType.RESOURCE).join();
+    int count = repository.countRecordsByTags(Collections.emptyList(), RecordType.RESOURCE, "????", STUB_TENANT).join();
     assertEquals(0, count);
   }
 
