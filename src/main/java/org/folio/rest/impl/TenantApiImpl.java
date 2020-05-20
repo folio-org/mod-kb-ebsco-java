@@ -1,14 +1,10 @@
 package org.folio.rest.impl;
 
-import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import javax.ws.rs.core.Response;
 
@@ -23,11 +19,10 @@ import io.vertx.core.logging.LoggerFactory;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.folio.repository.holdings.status.RetryStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.repository.holdings.status.HoldingsStatusRepository;
-import org.folio.repository.holdings.status.RetryStatus;
-import org.folio.repository.holdings.status.RetryStatusRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.persist.PostgresClient;
@@ -61,33 +56,7 @@ public class TenantApiImpl extends TenantAPI {
     super.postTenant(entity, headers, promise, context);
 
     promise.future().compose(response -> setupTestData(headers, context).map(response))
-      .compose(response -> setLoadingStatus(headers).map(response))
       .setHandler(handlers);
-  }
-
-
-
-  private Future<Void> setLoadingStatus(Map<String, String> headers) {
-
-    Promise<Void> promise = Promise.promise();
-    String tenantId = TenantTool.tenantId(headers);
-    setStatusNotStarted(tenantId)
-      .thenCompose(o -> resetRetryStatus(tenantId))
-      .thenAccept(promise::complete)
-      .exceptionally(e -> {
-        promise.fail(e.getCause());
-        return null;
-      });
-    return promise.future();
-  }
-
-  private CompletionStage<Void> resetRetryStatus(String tenantId) {
-    return retryStatusRepository.delete(tenantId)
-      .thenCompose(o -> retryStatusRepository.save(new RetryStatus(0, null), tenantId));
-  }
-
-  private CompletableFuture<Void> setStatusNotStarted(String tenantId) {
-    return holdingsStatusRepository.save(getStatusNotStarted(), tenantId);
   }
 
   private Future<List<String>> setupTestData(Map<String, String> headers, Context context) {

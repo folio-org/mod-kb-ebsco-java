@@ -114,28 +114,6 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldNotOverrideStatusOnSecondCallToTenantAPI(TestContext context) {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
-    HoldingsStatusUtil.insertStatus(vertx, getStatusCompleted(1000), PROCESS_ID);
-
-    Async async = context.async();
-    TenantClient tenantClient = new TenantClient(host + ":" + port, STUB_TENANT, STUB_TOKEN);
-    try {
-      TenantAttributes tenantAttributes = new TenantAttributes() ;
-      tenantAttributes.setModuleTo(PomReader.INSTANCE.getVersion());
-      tenantClient.postTenant(tenantAttributes, res2 -> async.complete());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    async.awaitSuccess();
-
-    final HoldingsLoadingStatus status = getWithOk(HOLDINGS_STATUS_ENDPOINT, STUB_TOKEN_HEADER).body()
-      .as(HoldingsLoadingStatus.class);
-    assertThat(status.getData().getAttributes().getStatus().getName().value(), equalToIgnoringWhiteSpace("Completed"));
-  }
-
-  @Test
   public void shouldReturnStatusPopulatingStagingArea(TestContext context) throws IOException, URISyntaxException {
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
