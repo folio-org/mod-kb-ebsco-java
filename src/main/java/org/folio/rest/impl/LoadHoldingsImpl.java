@@ -12,21 +12,21 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import org.folio.rest.jaxrs.resource.EholdingsLoadingKbCredentialsId;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.resource.LoadHoldings;
 import org.folio.rest.tools.utils.TenantTool;
-import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.holdings.HoldingsStatusAuditService;
-import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.spring.SpringContextUtil;
+import static io.vertx.core.Future.succeededFuture;
 
-public class LoadHoldingsImpl implements LoadHoldings {
+public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredentialsId {
 
   private static final Logger logger = LoggerFactory.getLogger(LoadHoldingsImpl.class);
   @Autowired
@@ -47,26 +47,24 @@ public class LoadHoldingsImpl implements LoadHoldings {
   public void postLoadHoldings(String contentType, Map<String, String> okapiHeaders,
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Received signal to start scheduled loading of holdings");
-    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    template.requestAction(context ->
-        holdingsStatusAuditService.clearExpiredRecords(context.getOkapiData().getTenant()).thenCompose(o ->
-          holdingsService.loadHoldings(context)
-        )
-    )
-      .addErrorMapper(ProcessInProgressException.class,
-        e -> PostLoadHoldingsResponse.respond409WithTextPlain(ErrorUtil.createError(e.getMessage())))
-    .execute();
+    asyncResultHandler.handle(succeededFuture(Response.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 
   @Override
   public void getLoadHoldingsStatus(String contentType, Map<String, String> okapiHeaders,
                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Getting holdings loading status");
-    String tenantId = TenantTool.tenantId(okapiHeaders);
-    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    template
-      .requestAction(context -> holdingsStatusRepository.get(tenantId))
-      .executeWithResult(HoldingsLoadingStatus.class);
+    asyncResultHandler.handle(succeededFuture(Response.status(Response.Status.NOT_IMPLEMENTED).build()));
+//    String tenantId = TenantTool.tenantId(okapiHeaders);
+//    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+//    template
+//      .requestAction(context -> holdingsStatusRepository.get(tenantId))
+//      .executeWithResult(HoldingsLoadingStatus.class);
+  }
+
+  @Override
+  public void postEholdingsLoadingKbCredentialsById(String id, String contentType, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    asyncResultHandler.handle(succeededFuture(Response.status(Response.Status.NOT_IMPLEMENTED).build()));
   }
 }
 

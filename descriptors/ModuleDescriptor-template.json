@@ -243,6 +243,11 @@
           "permissionsRequired": ["kb-ebsco.holdings.load.post"]
         },
         {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/loading/kb-credentials/{id}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.holdings-load.post"]
+        },
+        {
           "methods": ["GET"],
           "pathPattern": "/loadHoldings/status",
           "permissionsRequired": ["kb-ebsco.holdings.load.status.get"]
@@ -512,7 +517,12 @@
     {
       "permissionName": "kb-ebsco.holdings.load.post",
       "displayName": "permission to run load of holdings",
-      "description": "One-time run load of holdings"
+      "description": "One-time load of holdings"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.holdings-load.post",
+      "displayName": "permission to run load of holdings for certain credentials",
+      "description": "One-time load of holdings based on credentials"
     },
     {
       "permissionName": "kb-ebsco.holdings.load.status.get",
