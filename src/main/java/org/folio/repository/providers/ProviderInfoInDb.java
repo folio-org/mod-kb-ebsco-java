@@ -7,6 +7,7 @@ import lombok.Value;
 @Builder
 public class ProviderInfoInDb {
   private String id;
+  private String credentialsId;
   private String name;
 }
 

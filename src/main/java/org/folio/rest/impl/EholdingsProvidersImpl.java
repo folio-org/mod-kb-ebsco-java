@@ -27,6 +27,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.OkapiData;
@@ -69,6 +70,7 @@ import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rest.validator.ProviderTagsPutBodyValidator;
 import org.folio.rmapi.result.PackageCollectionResult;
 import org.folio.rmapi.result.VendorResult;
+import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
@@ -97,6 +99,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private RelatedEntitiesLoader relatedEntitiesLoader;
   @Autowired
   private FilteredEntitiesLoader filteredEntitiesLoader;
+  @Autowired
+  @Qualifier("securedUserCredentialsService")
+  private UserKbCredentialsService userKbCredentialsService;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -168,12 +173,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                     Context vertxContext) {
     final Tags tags = entity.getData().getAttributes().getTags();
 
-    completedFuture(null)
-      .thenCompose(o -> {
+    userKbCredentialsService.findByUser(okapiHeaders)
+      .thenCompose(creds -> {
         ProviderTagsDataAttributes attributes = entity.getData().getAttributes();
         providerTagsPutBodyValidator.validate(entity, attributes);
-        return updateTags(createDbProvider(providerId, entity.getData().getAttributes()), tags,
-          new OkapiData(okapiHeaders).getTenant())
+        return updateTags(createDbProvider(providerId, creds.getId(), entity.getData().getAttributes()), tags,
+                    new OkapiData(okapiHeaders).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
             Future.succeededFuture(PutEholdingsProvidersTagsByProviderIdResponse.respond200WithApplicationVndApiJson(
               convertToProviderTags(attributes)
@@ -235,7 +240,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .countRecordsByTags(tags, RecordType.PROVIDER, credentialsId, tenant)
       .thenCompose(providerCount -> {
         totalResults.setValue(providerCount);
-        return providerRepository.findIdsByTagName(tags, page, count, tenant);
+        return providerRepository.findIdsByTagName(tags, page, count, credentialsId, tenant);
       })
       .thenCompose(providerIds ->
         context.getProvidersService().retrieveProviders(providerIds))
@@ -343,9 +348,11 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .withJsonapi(JSONAPI);
   }
 
-  private ProviderInfoInDb createDbProvider(String providerId, ProviderTagsDataAttributes attributes) {
+  private ProviderInfoInDb createDbProvider(String providerId, String credentialsId,
+      ProviderTagsDataAttributes attributes) {
     return ProviderInfoInDb.builder()
       .id(providerId)
+      .credentialsId(credentialsId)
       .name(attributes.getName())
       .build();
   }
@@ -354,7 +361,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     if (!tags.getTagList().isEmpty()) {
       return providerRepository.save(provider, tenant);
     }
-    return providerRepository.delete(provider.getId(), tenant);
+    return providerRepository.delete(provider.getId(), provider.getCredentialsId(), tenant);
   }
 
   private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, long providerIdLong,

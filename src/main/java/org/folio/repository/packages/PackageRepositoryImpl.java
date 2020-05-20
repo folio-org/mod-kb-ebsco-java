@@ -8,10 +8,12 @@ import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getPackagesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.DELETE_STATEMENT;
 import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.INSERT_OR_UPDATE_STATEMENT;
@@ -53,15 +55,15 @@ public class PackageRepositoryImpl implements PackageRepository {
   private Vertx vertx;
 
   @Override
-  public CompletableFuture<Void> save(PackageInfoInDB packageData, String credentialsId, String tenantId){
+  public CompletableFuture<Void> save(PackageInfoInDB packageData, String tenantId){
     JsonArray parameters = createInsertOrUpdateParameters(IdParser.packageIdToString(packageData.getId()),
-      credentialsId, packageData.getName(), packageData.getContentType());
+      packageData.getCredentialsId(), packageData.getName(), packageData.getContentType());
 
     final String query = String.format(INSERT_OR_UPDATE_STATEMENT, getPackagesTableName(tenantId));
 
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    LOG.info(INSERT_LOG_MESSAGE, query);
 
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(query, parameters, promise);
@@ -174,6 +176,7 @@ public class PackageRepositoryImpl implements PackageRepository {
       .collect(Collectors.toList());
     return new PackageInfoInDB.PackageInfoInDBBuilder()
       .id(packageId)
+      .credentialsId(firstRow.getString(CREDENTIALS_ID_COLUMN))
       .contentType(firstRow.getString(CONTENT_TYPE_COLUMN))
       .name(firstRow.getString(NAME_COLUMN))
       .tags(tags)

@@ -25,7 +25,7 @@ public class ProviderRepositoryImplTest {
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<Long> providerIds = repository.findIdsByTagName(Collections.emptyList(), 1, 25, STUB_TENANT).join();
+    List<Long> providerIds = repository.findIdsByTagName(Collections.emptyList(), 1, 25, null, STUB_TENANT).join();
     assertThat(providerIds, empty());
   }
 }

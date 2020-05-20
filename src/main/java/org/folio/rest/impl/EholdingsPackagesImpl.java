@@ -365,7 +365,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
         PackageTagsDataAttributes attributes = entity.getData().getAttributes();
 
-        return updateTags(attributes.getTags(), createDbPackage(packageId, attributes), creds.getId(),
+        return updateTags(attributes.getTags(), createDbPackage(packageId, creds.getId(), attributes),
           new OkapiData(okapiHeaders).getTenant())
           .thenAccept(o2 ->
             asyncResultHandler
@@ -425,11 +425,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenApply(packageById -> new PackageResult(packageById, null, null));
   }
 
-  private PackageInfoInDB createDbPackage(String packageId, PackageTagsDataAttributes attributes) {
+  private PackageInfoInDB createDbPackage(String packageId, String credentialsId, PackageTagsDataAttributes attributes) {
     return PackageInfoInDB.builder()
-      .contentType(ConverterConsts.contentTypes.inverseBidiMap().get(attributes.getContentType()))
-      .name(attributes.getName())
       .id(parsePackageId(packageId))
+      .credentialsId(credentialsId)
+      .name(attributes.getName())
+      .contentType(ConverterConsts.contentTypes.inverseBidiMap().get(attributes.getContentType()))
       .build();
   }
 
@@ -554,24 +555,23 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenCompose(aBoolean -> completedFuture(null));
   }
 
-  private CompletableFuture<Void> updateTags(Tags tags, PackageInfoInDB packages, String credentialsId, String tenant) {
+  private CompletableFuture<Void> updateTags(Tags tags, PackageInfoInDB pkg, String tenant) {
     if (tags == null) {
       return completedFuture(null);
     } else {
-      PackageId id = packages.getId();
-      return updateStoredPackage(tags, packages, credentialsId, tenant)
+      PackageId id = pkg.getId();
+      return updateStoredPackage(tags, pkg, tenant)
         .thenCompose(
           o -> tagRepository.updateRecordTags(tenant, packageIdToString(id), RecordType.PACKAGE, tags.getTagList()))
         .thenApply(updated -> null);
     }
   }
 
-  private CompletableFuture<Void> updateStoredPackage(Tags tags, PackageInfoInDB pkg, String credentialsId,
-      String tenant) {
+  private CompletableFuture<Void> updateStoredPackage(Tags tags, PackageInfoInDB pkg, String tenant) {
     if (!tags.getTagList().isEmpty()) {
-      return packageRepository.save(pkg, credentialsId, tenant);
+      return packageRepository.save(pkg, tenant);
     }
-    return packageRepository.delete(pkg.getId(), credentialsId, tenant);
+    return packageRepository.delete(pkg.getId(), pkg.getCredentialsId(), tenant);
   }
 
   private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId,

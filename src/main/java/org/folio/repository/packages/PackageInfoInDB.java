@@ -11,6 +11,7 @@ import org.folio.holdingsiq.model.PackageId;
 @Builder
 public class PackageInfoInDB {
   private PackageId id;
+  private String credentialsId;
   private String name;
   private String contentType;
   private List<String> tags;

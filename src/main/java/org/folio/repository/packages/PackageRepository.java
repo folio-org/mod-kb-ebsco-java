@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import org.folio.holdingsiq.model.PackageId;
 
 public interface PackageRepository {
-  CompletableFuture<Void> save(PackageInfoInDB packageData, String credentialsId, String tenantId);
+  CompletableFuture<Void> save(PackageInfoInDB packageData, String tenantId);
 
   CompletableFuture<Void> delete(PackageId packageId, String credentialsId, String tenantId);
 
