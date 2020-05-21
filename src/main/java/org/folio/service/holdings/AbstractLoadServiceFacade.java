@@ -20,7 +20,6 @@ import java.util.stream.IntStream;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.Producer;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +29,7 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
 import org.folio.repository.holdings.LoadStatus;
+import org.folio.service.holdings.message.ConfigurationMessage;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
@@ -74,12 +74,12 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> populateHoldingsIfNecessary(loadingService))
       .thenAccept(status -> holdingsService.snapshotCreated(new SnapshotCreatedMessage(message.getConfiguration(), status.getTransactionId(),
-        status.getTotalCount(), getRequestCount(status.getTotalCount(), getMaxPageSize()), message.getTenantId())))
+        status.getTotalCount(), getRequestCount(status.getTotalCount(), getMaxPageSize()), message.getCredentialsId(), message.getTenantId())))
       .whenComplete((o, throwable) -> {
         if (throwable != null) {
           logger.error("Failed to create snapshot", throwable);
           holdingsService.snapshotFailed(
-            new SnapshotFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getTenantId()));
+            new SnapshotFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getCredentialsId(), message.getTenantId()));
         }
       });
   }
@@ -93,7 +93,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
         if (throwable != null) {
           logger.error("Failed to load holdings", throwable);
           holdingsService.loadingFailed(new LoadFailedMessage(
-            message.getConfiguration(), throwable.getMessage(), message.getTenantId(), message.getCurrentTransactionId(), message.getTotalCount(), message.getTotalPages()));
+            message.getConfiguration(), throwable.getMessage(), message.getCredentialsId(), message.getTenantId(), message.getCurrentTransactionId(), message.getTotalCount(), message.getTotalPages()));
         }
       });
   }

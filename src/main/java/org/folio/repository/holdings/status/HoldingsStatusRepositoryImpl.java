@@ -1,17 +1,21 @@
 package org.folio.repository.holdings.status;
 
+import static java.util.Arrays.asList;
+
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
 import static org.folio.repository.DbUtil.mapColumn;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.DELETE_LOADING_STATUS;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUS;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUS_BY_ID;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.UPDATE_IMPORTED_COUNT;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.UPDATE_LOADING_STATUS;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -48,70 +52,66 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   }
 
   @Override
-  public CompletableFuture<HoldingsLoadingStatus> get(String tenantId) {
-    return get(tenantId, null);
+  public CompletableFuture<HoldingsLoadingStatus> findByCredentialsId(String credentialsId, String tenantId) {
+    return get(credentialsId, tenantId,null);
   }
 
   @Override
-  public CompletableFuture<Void> save(HoldingsLoadingStatus status, String tenantId) {
-
-    final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(3));
-    JsonArray parameters = new JsonArray().add(UUID.randomUUID().toString()).add(Json.encode(status)).add(vertxIdProvider.getVertxId());
+  public CompletableFuture<Void> save(HoldingsLoadingStatus status, String credentialsId, String tenantId) {
+    final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(4));
+    final JsonArray parameters = createParams(asList(UUID.randomUUID().toString(), credentialsId, Json.encode(status), vertxIdProvider.getVertxId()));
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, parameters, promise);
+    pgClient(tenantId).execute(query, parameters, promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
-  public CompletableFuture<Void> update(HoldingsLoadingStatus status, String tenantId) {
+  public CompletableFuture<Void> update(HoldingsLoadingStatus status, String credentialsId, String tenantId) {
     final String query = String.format(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
     String vertxId = vertxIdProvider.getVertxId();
-    JsonArray parameters = new JsonArray().add(Json.encode(status)).add(vertxId);
+    final JsonArray parameters = createParams(asList(Json.encode(status), vertxId, credentialsId));
     LOG.info("Do update query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, parameters, promise);
-    return mapVertxFuture(promise.future())
-      .thenApply(this::assertUpdated);
+    pgClient(tenantId).execute(query, parameters, promise);
+    return mapVertxFuture(promise.future()).thenApply(this::assertUpdated);
   }
 
   @Override
-  public CompletableFuture<Void> delete(String tenantId) {
+  public CompletableFuture<Void> delete(String credentialsId, String tenantId) {
     final String query = String.format(DELETE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
     LOG.info("Do delete query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, promise);
+    final JsonArray params = createParams(Collections.singleton(credentialsId));
+    pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
-  public CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount, String tenantId) {
+  public CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount,
+                                                                        String credentialsId, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
       final String query = String.format(UPDATE_IMPORTED_COUNT, getHoldingsStatusTableName(tenantId), holdingsAmount, pageAmount);
-      String vertxId = vertxIdProvider.getVertxId();
-      JsonArray parameters = new JsonArray().add(vertxId);
+      final String vertxId = vertxIdProvider.getVertxId();
+      final JsonArray parameters = new JsonArray().add(vertxId).add(credentialsId);
       LOG.info("Increment imported count query = " + query);
       Promise<UpdateResult> promise = Promise.promise();
       postgresClient.execute(connection, query, parameters, promise);
       return mapVertxFuture(promise.future())
         .thenApply(this::assertUpdated)
-        .thenCompose(o -> get(tenantId, connection));
+        .thenCompose(o -> get(credentialsId, tenantId, connection));
     });
   }
 
-  private CompletableFuture<HoldingsLoadingStatus> get(String tenantId, @Nullable  AsyncResult<SQLConnection> connection) {
-    final String query = String.format(GET_HOLDINGS_STATUS, getHoldingsStatusTableName(tenantId));
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+  private CompletableFuture<HoldingsLoadingStatus> get(String credentialsId, String tenantId, @Nullable  AsyncResult<SQLConnection> connection) {
+    final String query = String.format(GET_HOLDINGS_STATUS_BY_ID, getHoldingsStatusTableName(tenantId));
     LOG.info("Select holdings loading status = " + query);
+    final JsonArray params = createParams(Collections.singleton(credentialsId));
     Promise<ResultSet> promise = Promise.promise();
     if(connection != null) {
-      postgresClient.select(connection, query, promise);
-    }
-    else{
-      postgresClient.select(query, promise);
+      pgClient(tenantId).select(connection, query, params, promise);
+    } else{
+      pgClient(tenantId).select(query, params, promise);
     }
     return mapResult(promise.future(), this::mapStatus);
   }
@@ -125,5 +125,9 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   private HoldingsLoadingStatus mapStatus(ResultSet resultSet) {
     return mapColumn(resultSet.getRows().get(0), "jsonb", HoldingsLoadingStatus.class).orElse(null);
+  }
+
+  private PostgresClient pgClient(String tenantId) {
+    return PostgresClient.getInstance(vertx, tenantId);
   }
 }

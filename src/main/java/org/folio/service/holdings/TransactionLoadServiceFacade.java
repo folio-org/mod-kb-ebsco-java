@@ -32,6 +32,8 @@ import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.repository.holdings.ReportStatus;
 import org.folio.service.holdings.message.DeltaReportCreatedMessage;
+import org.folio.service.holdings.message.DeltaReportMessage;
+import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @Component("TransactionLoadServiceFacade")
@@ -94,7 +96,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
         if (!previousTransactionExists) {
           return loadWithPagination(message.getTotalPages(), page ->
             loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
-              .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), message.getCurrentTransactionId()))));
+              .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), message.getCurrentTransactionId(), message.getCredentialsId()))));
         } else {
           MutableObject<String> deltaReportId = new MutableObject<>();
           MutableObject<DeltaReportStatus> deltaReportStatus = new MutableObject<>();
@@ -113,7 +115,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
                 page ->
                   loadingService.loadDeltaReport(deltaReportId.getValue(), DELTA_REPORT_MAX_SIZE, page)
                     .thenAccept(holdings -> holdingsService.processChanges(new DeltaReportMessage(holdings.getHoldings(),
-                      message.getTenantId(), message.getCurrentTransactionId()))));
+                      message.getTenantId(), message.getCurrentTransactionId(), message.getCredentialsId()))));
             });
         }
       });
@@ -133,7 +135,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
     Promise<Void> promise = Promise.promise();
     Integer totalCount = Integer.parseInt(status.getTotalCount());
     holdingsService.deltaReportCreated(new DeltaReportCreatedMessage(message.getConfiguration(),
-      totalCount, getRequestCount(totalCount, DELTA_REPORT_MAX_SIZE), message.getTenantId()), promise);
+      totalCount, getRequestCount(totalCount, DELTA_REPORT_MAX_SIZE), message.getTenantId(), message.getCredentialsId()), promise);
     return mapVertxFuture(promise.future());
   }
 

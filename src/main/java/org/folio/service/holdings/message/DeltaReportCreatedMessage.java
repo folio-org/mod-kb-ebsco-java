@@ -3,7 +3,6 @@ package org.folio.service.holdings.message;
 import static io.vertx.core.json.JsonObject.mapFrom;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
@@ -13,9 +12,7 @@ import lombok.Setter;
 import org.folio.holdingsiq.model.Configuration;
 
 
-@JsonIgnoreProperties(
-  ignoreUnknown = true
-)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
 @Setter
 @AllArgsConstructor
@@ -25,6 +22,7 @@ public class DeltaReportCreatedMessage {
   private Integer totalCount;
   private Integer totalPages;
   private String tenantId;
+  private String credentialsId;
 
   public DeltaReportCreatedMessage() {
   }
@@ -35,6 +33,7 @@ public class DeltaReportCreatedMessage {
     this.totalPages = message.getTotalPages();
     this.tenantId = message.getTenantId();
     this.configuration = message.getConfiguration();
+    this.credentialsId = message.getCredentialsId();
   }
 
   public JsonObject toJson() {

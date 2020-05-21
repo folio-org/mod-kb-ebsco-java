@@ -1,13 +1,13 @@
-package org.folio.repository.holdings.status;
+package org.folio.repository.holdings.status.retry;
 
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
-import static org.folio.repository.holdings.status.RetryStatusTableConstants.DELETE_RETRY_STATUS;
-import static org.folio.repository.holdings.status.RetryStatusTableConstants.GET_RETRY_STATUS;
-import static org.folio.repository.holdings.status.RetryStatusTableConstants.INSERT_RETRY_STATUS;
-import static org.folio.repository.holdings.status.RetryStatusTableConstants.RETRIES_LEFT_COLUMN;
-import static org.folio.repository.holdings.status.RetryStatusTableConstants.TIMER_ID_COLUMN;
-import static org.folio.repository.holdings.status.RetryStatusTableConstants.UPDATE_RETRY_STATUS;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.DELETE_RETRY_STATUS;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.GET_RETRY_STATUS_BY_CREDENTIALS;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.INSERT_RETRY_STATUS;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRIES_LEFT_COLUMN;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.TIMER_ID_COLUMN;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.UPDATE_RETRY_STATUS;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
@@ -38,65 +38,63 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   }
 
   @Override
-  public CompletableFuture<RetryStatus> get(String tenantId) {
-    final String query = String.format(GET_RETRY_STATUS, getRetryStatusTableName(tenantId));
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+  public CompletableFuture<RetryStatus> findByCredentialsId(String credentialsId, String tenantId) {
+    final String query = String.format(GET_RETRY_STATUS_BY_CREDENTIALS, getRetryStatusTableName(tenantId));
     LOG.info("Select retry status = " + query);
     Promise<ResultSet> promise = Promise.promise();
-      postgresClient.select(query, promise);
+    pgClient(tenantId).select(query, new JsonArray().add(credentialsId), promise);
+
     return mapResult(promise.future(), this::mapStatus);
   }
 
   @Override
-  public CompletableFuture<Void> save(RetryStatus status, String tenantId) {
-    final String query = String.format(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId), createPlaceholders(3));
+  public CompletableFuture<Void> save(RetryStatus status, String credentialsId, String tenantId) {
+    final String query = String.format(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId), createPlaceholders(4));
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, createInsertParameters(status), promise);
+    pgClient(tenantId).execute(query, createInsertParameters(credentialsId, status), promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
-  public CompletableFuture<Void> update(RetryStatus retryStatus, String tenantId) {
+  public CompletableFuture<Void> update(RetryStatus retryStatus, String credentialsId, String tenantId) {
     final String query = String.format(UPDATE_RETRY_STATUS, getRetryStatusTableName(tenantId));
-    JsonArray parameters = createUpdateParameters(retryStatus);
+    final JsonArray parameters = createUpdateParameters(credentialsId, retryStatus);
     LOG.info("Do update query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, parameters, promise);
-    return mapVertxFuture(promise.future())
-      .thenApply(result -> null);
+    pgClient(tenantId).execute(query, parameters, promise);
+    return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
   @Override
-  public CompletableFuture<Void> delete(String tenantId) {
+  public CompletableFuture<Void> delete(String credentialsId, String tenantId) {
     final String query = String.format(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
     LOG.info("Do delete query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, promise);
+    pgClient(tenantId).execute(query, new JsonArray().add(credentialsId), promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
-  private JsonArray createInsertParameters(RetryStatus retryStatus) {
+  private JsonArray createInsertParameters(String credentialsId, RetryStatus retryStatus) {
     JsonArray parameters = new JsonArray()
       .add(UUID.randomUUID().toString())
+      .add(credentialsId)
       .add(retryStatus.getRetryAttemptsLeft());
     if(retryStatus.getTimerId() != null){
       parameters.add(retryStatus.getTimerId());
-    }else{
+    } else {
       parameters.addNull();
     }
     return parameters;
   }
 
-  private JsonArray createUpdateParameters(RetryStatus retryStatus) {
+  private JsonArray createUpdateParameters(String credentialsId, RetryStatus retryStatus) {
     JsonArray parameters = new JsonArray()
+      .add(credentialsId)
       .add(retryStatus.getRetryAttemptsLeft());
     if(retryStatus.getTimerId() != null){
       parameters.add(retryStatus.getTimerId());
-    }else{
+    } else {
       parameters.addNull();
     }
     return parameters;
@@ -104,7 +102,12 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
 
   private RetryStatus mapStatus(ResultSet resultSet) {
     JsonObject row = resultSet.getRows().get(0);
-    return new RetryStatus(row.getInteger(RETRIES_LEFT_COLUMN),
+    return new RetryStatus(
+      row.getInteger(RETRIES_LEFT_COLUMN),
       row.getLong(TIMER_ID_COLUMN));
+  }
+
+  private PostgresClient pgClient(String tenantId) {
+    return PostgresClient.getInstance(vertx, tenantId);
   }
 }

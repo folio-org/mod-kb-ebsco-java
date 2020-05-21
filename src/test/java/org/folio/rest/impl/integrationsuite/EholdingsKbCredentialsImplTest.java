@@ -18,6 +18,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
@@ -58,6 +61,9 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @After
   public void tearDown() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    clearDataFromTable(vertx, RETRY_STATUS_TABLE);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 

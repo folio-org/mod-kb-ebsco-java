@@ -4,7 +4,17 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 
+import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
+import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
+import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
 import static org.folio.service.holdings.AbstractLoadServiceFacade.HOLDINGS_STATUS_TIME_FORMATTER;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
@@ -13,8 +23,12 @@ import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
+import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
+import static org.folio.util.HoldingsStatusUtil.insertStatusNotStarted;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndStop;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,14 +39,12 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,32 +54,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.service.holdings.ConfigurationMessage;
 import org.folio.service.holdings.DefaultLoadServiceFacade;
+import org.folio.service.holdings.message.ConfigurationMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
 
-  static final String HOLDINGS_STATUS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings/status";
-  static final String HOLDINGS_POST_HOLDINGS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
   private static final int TIMEOUT = 180000;
 
   @Autowired
   DefaultLoadServiceFacade loadServiceFacade;
-
-  private Configuration stubConfiguration;
-
+  private Configuration configuration;
   private Handler<DeliveryContext<LoadHoldingsMessage>> interceptor;
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    stubConfiguration = Configuration.builder()
+    configuration = Configuration.builder()
       .apiKey(STUB_API_KEY)
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
+    setupDefaultLoadKBConfiguration();
   }
 
   @After
@@ -75,15 +84,14 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
     if (interceptor != null) {
       vertx.eventBus().removeOutboundInterceptor(interceptor);
     }
+    tearDownHoldingsData();
   }
 
   @Test
   public void shouldCreateSnapshotOnInitialStatusNone(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
-
     Async async = context.async();
 
-    mockResponseList(new UrlPathPattern(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT),false),
+    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL),false),
       new ResponseDefinitionBuilder().withBody(readFile("responses/rmapi/holdings/status/get-status-none.json")),
       new ResponseDefinitionBuilder().withBody(readFile("responses/rmapi/holdings/status/get-status-completed.json"))
     );
@@ -93,7 +101,7 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(configuration, STUB_CREDENTILS_ID, STUB_TENANT));
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -101,29 +109,43 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
 
   @Test
   public void shouldNotCreateSnapshotIfItWasRecentlyCreated(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
     Async async = context.async();
 
     String now = HOLDINGS_STATUS_TIME_FORMATTER.format(LocalDateTime.now(ZoneOffset.UTC));
     HoldingsLoadStatus status = readJsonFile("responses/rmapi/holdings/status/get-status-completed.json", HoldingsLoadStatus.class)
       .toBuilder().created(now).build();
-    mockGetWithBody(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), Json.encode(status));
+    mockGetWithBody(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), Json.encode(status));
     mockPostHoldings();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(configuration, anyString(), STUB_TENANT));
 
     async.await(TIMEOUT);
 
-    WireMock.verify(0, postRequestedFor(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false)));
+    WireMock.verify(0, postRequestedFor(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false)));
   }
 
   private void mockPostHoldings() {
-    stubFor(post(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false))
+    stubFor(post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false))
       .willReturn(new ResponseDefinitionBuilder()
         .withBody("")
         .withStatus(202)));
+  }
+
+  public void setupDefaultLoadKBConfiguration() {
+    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertStatusNotStarted(STUB_CREDENTILS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+  }
+
+  private void tearDownHoldingsData() {
+    clearDataFromTable(vertx, HOLDINGS_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    clearDataFromTable(vertx, RETRY_STATUS_TABLE);
+    clearDataFromTable(vertx, TRANSACTION_ID_TABLE);
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 }

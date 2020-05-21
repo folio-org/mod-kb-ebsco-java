@@ -16,13 +16,12 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.folio.repository.holdings.status.RetryStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.repository.holdings.status.HoldingsStatusRepository;
+import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.persist.PostgresClient;

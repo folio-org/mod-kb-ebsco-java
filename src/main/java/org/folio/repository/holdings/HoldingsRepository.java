@@ -7,11 +7,11 @@ import java.util.concurrent.CompletableFuture;
 
 public interface HoldingsRepository {
 
-  CompletableFuture<Void> saveAll(Set<HoldingInfoInDB> holding, Instant updatedAt, String tenantId);
+  CompletableFuture<Void> saveAll(Set<HoldingInfoInDB> holding, Instant updatedAt, String credentialsId, String tenantId);
 
-  CompletableFuture<Void> deleteBeforeTimestamp(Instant timestamp, String tenantId);
+  CompletableFuture<Void> deleteBeforeTimestamp(Instant timestamp, String credentialsId, String tenantId);
 
-  CompletableFuture<List<HoldingInfoInDB>> findAllById(List<String> resourceIds, String tenantId);
+  CompletableFuture<List<HoldingInfoInDB>> findAllById(List<String> resourceIds, String credentialsId, String tenantId);
 
-  CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, String tenantId);
+  CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, String credentialsId, String tenantId);
 }
