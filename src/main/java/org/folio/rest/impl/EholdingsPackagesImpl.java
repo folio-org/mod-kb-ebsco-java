@@ -59,9 +59,9 @@ import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.holdings.HoldingInfoInDB;
-import org.folio.repository.packages.PackageInfoInDB;
+import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
-import org.folio.repository.resources.ResourceInfoInDB;
+import org.folio.repository.resources.DbResource;
 import org.folio.repository.resources.ResourceRepository;
 import org.folio.repository.tag.Tag;
 import org.folio.repository.tag.TagRepository;
@@ -425,8 +425,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenApply(packageById -> new PackageResult(packageById, null, null));
   }
 
-  private PackageInfoInDB createDbPackage(String packageId, String credentialsId, PackageTagsDataAttributes attributes) {
-    return PackageInfoInDB.builder()
+  private DbPackage createDbPackage(String packageId, String credentialsId, PackageTagsDataAttributes attributes) {
+    return DbPackage.builder()
       .id(parsePackageId(packageId))
       .credentialsId(credentialsId)
       .name(attributes.getName())
@@ -478,15 +478,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                                                   RMAPITemplateContext context) {
 
     MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<ResourceInfoInDB>> mutableDbTitles = new MutableObject<>();
+    MutableObject<List<DbResource>> mutableDbTitles = new MutableObject<>();
     MutableObject<List<HoldingInfoInDB>> mutableDbHoldings = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
+    String credentialsId = context.getCredentialsId();
 
     return tagRepository
       .countRecordsByTagsAndPrefix(tags, packageId + "-", tenant, RecordType.RESOURCE)
       .thenCompose(resourceCount -> {
         totalResults.setValue(resourceCount);
-        return resourceRepository.findByTagNameAndPackageId(tags, packageId, page, count, tenant);
+        return resourceRepository.findByTagNameAndPackageId(tags, packageId, page, count, credentialsId, tenant);
       })
       .thenCompose(resourcesResult -> {
         mutableDbTitles.setValue(resourcesResult);
@@ -502,7 +503,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       );
   }
 
-  private List<ResourceId> getRemainingResourceIds(List<HoldingInfoInDB> holdings, List<ResourceInfoInDB> resourcesResult) {
+  private List<ResourceId> getRemainingResourceIds(List<HoldingInfoInDB> holdings, List<DbResource> resourcesResult) {
     final List<ResourceId> resourceIds = getTitleIds(resourcesResult);
     resourceIds.removeIf(dbResource -> getResourceIds(holdings).contains(dbResource));
     return resourceIds;
@@ -555,7 +556,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenCompose(aBoolean -> completedFuture(null));
   }
 
-  private CompletableFuture<Void> updateTags(Tags tags, PackageInfoInDB pkg, String tenant) {
+  private CompletableFuture<Void> updateTags(Tags tags, DbPackage pkg, String tenant) {
     if (tags == null) {
       return completedFuture(null);
     } else {
@@ -567,7 +568,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     }
   }
 
-  private CompletableFuture<Void> updateStoredPackage(Tags tags, PackageInfoInDB pkg, String tenant) {
+  private CompletableFuture<Void> updateStoredPackage(Tags tags, DbPackage pkg, String tenant) {
     if (!tags.getTagList().isEmpty()) {
       return packageRepository.save(pkg, tenant);
     }

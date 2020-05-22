@@ -109,8 +109,8 @@ public class PackagesTestUtil {
   @Builder(toBuilder = true)
   public static class DbPackage {
 
-    private String id;
-    private String name;
-    private String contentType;
+    String id;
+    String name;
+    String contentType;
   }
 }

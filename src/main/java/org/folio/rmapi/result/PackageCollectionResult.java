@@ -6,11 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 
 import org.folio.holdingsiq.model.Packages;
-import org.folio.repository.packages.PackageInfoInDB;
+import org.folio.repository.packages.DbPackage;
 
 @Value
 @AllArgsConstructor
 public class PackageCollectionResult {
-  private Packages packages;
-  private List<PackageInfoInDB> dbPackages;
+  Packages packages;
+  List<DbPackage> dbPackages;
 }

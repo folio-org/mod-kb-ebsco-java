@@ -53,7 +53,7 @@ public class ProvidersTestUtil {
   @Value
   @Builder(toBuilder = true)
  public static class DbProviders {
-    private String id;
-    private String name;
+    String id;
+    String name;
   }
 }

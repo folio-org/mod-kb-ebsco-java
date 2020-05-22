@@ -9,6 +9,6 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class TitleCollectionResult {
 
-  private List<TitleResult> titleResults;
-  private Integer totalResults;
+  List<TitleResult> titleResults;
+  Integer totalResults;
 }

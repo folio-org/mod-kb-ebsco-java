@@ -1,5 +1,6 @@
 package org.folio.repository.holdings;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createInsertPlaceholders;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
@@ -62,7 +63,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
@@ -72,7 +73,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(query, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
@@ -101,7 +102,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     LOG.info("Do delete query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   /**

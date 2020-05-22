@@ -80,7 +80,7 @@ public class ResourcesTestUtil {
   @Value
   @Builder(toBuilder = true)
   public static class DbResources {
-    private String id;
-    private String name;
+    String id;
+    String name;
   }
 }

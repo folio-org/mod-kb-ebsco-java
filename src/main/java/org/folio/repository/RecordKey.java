@@ -7,6 +7,6 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class RecordKey {
 
-  private String recordId;
-  private RecordType recordType;
+  String recordId;
+  RecordType recordType;
 }

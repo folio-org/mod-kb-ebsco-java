@@ -1,5 +1,6 @@
 package org.folio.repository.holdings.status;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
 import static org.folio.repository.holdings.status.RetryStatusTableConstants.DELETE_RETRY_STATUS;
@@ -54,7 +55,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     postgresClient.execute(query, createInsertParameters(status), promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
@@ -66,7 +67,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     postgresClient.execute(query, parameters, promise);
     return mapVertxFuture(promise.future())
-      .thenApply(result -> null);
+      .thenApply(nothing());
   }
 
   @Override
@@ -76,7 +77,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     postgresClient.execute(query, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   private JsonArray createInsertParameters(RetryStatus retryStatus) {

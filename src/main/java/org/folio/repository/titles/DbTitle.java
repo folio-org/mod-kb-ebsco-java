@@ -11,9 +11,11 @@ import org.folio.holdingsiq.model.Title;
 @Builder
 public class DbTitle {
   @NonNull
-  private Long id;
+  Long id;
   @NonNull
-  private String name;
+  String credentialsId;
+  @NonNull
+  String name;
   @Nullable
-  private Title title;
+  Title title;
 }

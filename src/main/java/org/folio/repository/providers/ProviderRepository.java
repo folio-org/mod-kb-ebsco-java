@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ProviderRepository {
 
-  CompletableFuture<Void> save(ProviderInfoInDb provider, String tenantId);
+  CompletableFuture<Void> save(DbProvider provider, String tenantId);
 
   CompletableFuture<Void> delete(String vendorId, String credentialsId, String tenantId);
 

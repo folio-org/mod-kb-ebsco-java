@@ -9,9 +9,9 @@ import org.folio.repository.RecordType;
 @Builder(toBuilder = true)
 public class Tag {
 
-  private String id;
-  private String recordId;
-  private RecordType recordType;
-  private String value;
+  String id;
+  String recordId;
+  RecordType recordType;
+  String value;
 
 }

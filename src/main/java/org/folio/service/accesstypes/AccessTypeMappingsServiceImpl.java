@@ -1,5 +1,6 @@
 package org.folio.service.accesstypes;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.util.Collection;
@@ -46,7 +47,7 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
         } else {
           mapping = createAccessTypeMapping(recordId, recordType, accessTypeId);
         }
-        return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(result -> null);
+        return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(nothing());
       });
   }
 

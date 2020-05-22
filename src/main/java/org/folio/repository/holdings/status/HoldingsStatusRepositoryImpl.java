@@ -1,5 +1,6 @@
 package org.folio.repository.holdings.status;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
@@ -61,7 +62,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     postgresClient.execute(query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
@@ -84,7 +85,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     Promise<UpdateResult> promise = Promise.promise();
     PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     postgresClient.execute(query, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override

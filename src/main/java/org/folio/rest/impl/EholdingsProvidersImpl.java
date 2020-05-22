@@ -40,9 +40,9 @@ import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
-import org.folio.repository.packages.PackageInfoInDB;
+import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
-import org.folio.repository.providers.ProviderInfoInDb;
+import org.folio.repository.providers.DbProvider;
 import org.folio.repository.providers.ProviderRepository;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
@@ -255,7 +255,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                                                   int page, int count,
                                                                                   RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<PackageInfoInDB>> mutableDbPackages = new MutableObject<>();
+    MutableObject<List<DbPackage>> mutableDbPackages = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     return tagRepository
       .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
@@ -329,7 +329,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 
-  private CompletableFuture<Void> updateTags(ProviderInfoInDb provider, Tags tags, String tenant) {
+  private CompletableFuture<Void> updateTags(DbProvider provider, Tags tags, String tenant) {
     if (Objects.isNull(tags)) {
       return completedFuture(null);
     } else {
@@ -348,16 +348,16 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .withJsonapi(JSONAPI);
   }
 
-  private ProviderInfoInDb createDbProvider(String providerId, String credentialsId,
+  private DbProvider createDbProvider(String providerId, String credentialsId,
       ProviderTagsDataAttributes attributes) {
-    return ProviderInfoInDb.builder()
+    return DbProvider.builder()
       .id(providerId)
       .credentialsId(credentialsId)
       .name(attributes.getName())
       .build();
   }
 
-  private CompletableFuture<Void> updateStoredProvider(ProviderInfoInDb provider, Tags tags, String tenant) {
+  private CompletableFuture<Void> updateStoredProvider(DbProvider provider, Tags tags, String tenant) {
     if (!tags.getTagList().isEmpty()) {
       return providerRepository.save(provider, tenant);
     }

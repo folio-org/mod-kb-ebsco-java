@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ListUtils {
+public final class ListUtils {
 
   private ListUtils() {
   }

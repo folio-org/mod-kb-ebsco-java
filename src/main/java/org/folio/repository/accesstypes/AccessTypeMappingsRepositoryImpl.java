@@ -3,6 +3,7 @@ package org.folio.repository.accesstypes;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
@@ -132,7 +133,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
-    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> null);
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 
   @Override

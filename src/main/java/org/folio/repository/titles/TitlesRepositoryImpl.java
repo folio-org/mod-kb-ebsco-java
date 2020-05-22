@@ -1,6 +1,12 @@
 package org.folio.repository.titles;
 
+import static java.util.Arrays.asList;
+
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.getResourcesTableName;
@@ -12,7 +18,6 @@ import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STAT
 import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
 import static org.folio.util.FutureUtils.mapResult;
-import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +36,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.Title;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.resources.ResourceTableConstants;
@@ -41,41 +47,40 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(TitlesRepositoryImpl.class);
 
-  private Vertx vertx;
-
   @Autowired
-  public TitlesRepositoryImpl(Vertx vertx) {
-    this.vertx = vertx;
-  }
+  private Vertx vertx;
+  @Autowired
+  private DBExceptionTranslator excTranslator;
+
 
   @Override
-  public CompletableFuture<Void> saveTitle(Title title, String tenantId) {
-    JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(title.getTitleId()), title.getTitleName());
+  public CompletableFuture<Void> save(DbTitle title, String tenantId) {
+    JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(title.getId()), title.getCredentialsId(),
+      title.getName());
 
     final String query = String.format(INSERT_OR_UPDATE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+    LOG.info(INSERT_LOG_MESSAGE, query);
 
-    LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    postgresClient.execute(query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    pgClient(tenantId).execute(query, parameters, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
-  public CompletableFuture<Void> deleteTitle(String titleId, String tenantId) {
-    JsonArray parameter = new JsonArray(Collections.singletonList(titleId));
+  public CompletableFuture<Void> delete(Long titleId, String credentialsId, String tenantId) {
+    JsonArray parameter = createParams(asList(String.valueOf(titleId), credentialsId));
 
     final String query = String.format(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+    LOG.info(DELETE_LOG_MESSAGE, query);
 
-    LOG.info("Do delete query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    postgresClient.execute(query, parameter, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
-  }
+    pgClient(tenantId).execute(query, parameter, promise);
 
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
+  }
 
   @Override
   public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenantId) {
@@ -93,13 +98,12 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     final String query = String.format(SELECT_TITLES_BY_RESOURCE_TAGS,
       getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId), createPlaceholders(tags.size()));
 
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-
     LOG.info("Select titles by resource tags = " + query);
-    Promise<ResultSet> promise = Promise.promise();
-    postgresClient.select(query, parameters, promise);
 
-    return mapResult(promise.future(), this::mapTitles);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, parameters, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapTitles);
   }
 
   @Override
@@ -111,13 +115,12 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     tags.forEach(parameters::add);
     final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS, getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-
     LOG.info("Select packages by tags = " + query);
-    Promise<ResultSet> promise = Promise.promise();
-    postgresClient.select(query, parameters, promise);
 
-    return mapResult(promise.future(), this::readTagCount);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, parameters, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
   }
 
   private String createPlaceholders(int size) {
@@ -161,5 +164,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .build();
   }
 
-
+  private PostgresClient pgClient(String tenantId) {
+    return PostgresClient.getInstance(vertx, tenantId);
+  }
 }
