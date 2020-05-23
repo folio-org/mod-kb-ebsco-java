@@ -1,12 +1,15 @@
 package org.folio.repository.titles;
 
 import static java.util.Arrays.asList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.getResourcesTableName;
@@ -83,22 +86,26 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count, String tenantId) {
+  public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count,
+      String credentialsId, String tenantId) {
+
     if(CollectionUtils.isEmpty(tags)){
-      return CompletableFuture.completedFuture(Collections.emptyList());
+      return completedFuture(Collections.emptyList());
     }
     int offset = (page - 1) * count;
 
     JsonArray parameters = new JsonArray();
     tags.forEach(parameters::add);
     parameters
+      .add(credentialsId)
       .add(offset)
       .add(count);
 
     final String query = String.format(SELECT_TITLES_BY_RESOURCE_TAGS,
-      getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId), createPlaceholders(tags.size()));
+      getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId),
+      createPlaceholders(tags.size()));
 
-    LOG.info("Select titles by resource tags = " + query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -107,24 +114,26 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String tenantId) {
+  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String credentialsId,
+      String tenantId) {
+
     if(CollectionUtils.isEmpty(tags)){
-      return CompletableFuture.completedFuture(0);
+      return completedFuture(0);
     }
+
     JsonArray parameters = new JsonArray();
     tags.forEach(parameters::add);
-    final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS, getTagsTableName(tenantId), createPlaceholders(tags.size()));
+    parameters.add(credentialsId);
 
-    LOG.info("Select packages by tags = " + query);
+    final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS,
+      getResourcesTableName(tenantId), getTagsTableName(tenantId), createPlaceholders(tags.size()));
+
+    LOG.info(SELECT_LOG_MESSAGE, query);
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
-  }
-
-  private String createPlaceholders(int size) {
-    return String.join(",", Collections.nCopies(size, "?"));
   }
 
   private Integer readTagCount(ResultSet resultSet) {
@@ -140,19 +149,19 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .map(this::mapHoldingToTitle)
       .orElse(null);
     return DbTitle.builder()
-      .id(Long.parseLong(row.getString("id")))
+      .id(Long.parseLong(row.getString(ResourceTableConstants.ID_COLUMN)))
+      .name(row.getString(ResourceTableConstants.CREDENTIALS_ID_COLUMN))
       .name(row.getString(ResourceTableConstants.NAME_COLUMN))
       .title(title)
       .build();
   }
 
-  private Optional<HoldingInfoInDB> readHolding(JsonObject row){
-      if(row.getString("holding") != null) {
-        return mapColumn(row, "holding", HoldingInfoInDB.class);
-      }
-      else{
-        return Optional.empty();
-      }
+  private Optional<HoldingInfoInDB> readHolding(JsonObject row) {
+    if (row.getString("holding") != null) {
+      return mapColumn(row, "holding", HoldingInfoInDB.class);
+    } else {
+      return Optional.empty();
+    }
   }
 
   private Title mapHoldingToTitle(HoldingInfoInDB holding) {

@@ -204,11 +204,12 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
 
     String tenant = context.getOkapiData().getTenant();
+    String credentialsId = context.getCredentialsId();
 
-    return titlesRepository.countTitlesByResourceTags(tags, tenant)
+    return titlesRepository.countTitlesByResourceTags(tags, credentialsId, tenant)
       .thenCompose(resultsCount -> {
         totalResults.setValue(resultsCount);
-        return titlesRepository.getTitlesByResourceTags(tags, page, count, tenant);
+        return titlesRepository.getTitlesByResourceTags(tags, page, count, credentialsId, tenant);
       })
       .thenCompose(dbTitles -> {
         mutableDbTitles.setValue(dbTitles);

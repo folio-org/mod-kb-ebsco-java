@@ -31,7 +31,7 @@ public class TitleRepositoryImplTest {
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<DbTitle> titles = repository.getTitlesByResourceTags(Collections.emptyList(), 1, 25, STUB_TENANT).join();
+    List<DbTitle> titles = repository.getTitlesByResourceTags(Collections.emptyList(), 1, 25, null, STUB_TENANT).join();
     assertThat(titles, empty());
   }
 }
