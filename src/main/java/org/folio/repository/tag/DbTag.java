@@ -7,7 +7,7 @@ import org.folio.repository.RecordType;
 
 @Value
 @Builder(toBuilder = true)
-public class Tag {
+public class DbTag {
 
   String id;
   String recordId;

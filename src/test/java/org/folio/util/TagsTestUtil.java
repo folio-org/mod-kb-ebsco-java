@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.rest.persist.PostgresClient;
 
 public class TagsTestUtil {
@@ -43,7 +43,7 @@ public class TagsTestUtil {
     future.join();
   }
 
-  public static List<Tag> insertTags(List<Tag> tags, Vertx vertx) {
+  public static List<DbTag> insertTags(List<DbTag> tags, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = "INSERT INTO " + tagTestTable() +
@@ -62,8 +62,8 @@ public class TagsTestUtil {
     return populateTagIds(tags, future.join().getRows());
   }
 
-  private static List<Tag> populateTagIds(List<Tag> tags, List<JsonObject> keys) {
-    List<Tag> result = new ArrayList<>(tags.size());
+  private static List<DbTag> populateTagIds(List<DbTag> tags, List<JsonObject> keys) {
+    List<DbTag> result = new ArrayList<>(tags.size());
 
     for (int i = 0; i < tags.size(); i++) {
       result.add(tags.get(i).toBuilder()
@@ -96,7 +96,7 @@ public class TagsTestUtil {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + TAGS_TABLE_NAME;
   }
 
-  private static JsonArray createParams(List<Tag> tags) {
+  private static JsonArray createParams(List<DbTag> tags) {
     JsonArray params = new JsonArray();
 
     tags.forEach(tag -> {

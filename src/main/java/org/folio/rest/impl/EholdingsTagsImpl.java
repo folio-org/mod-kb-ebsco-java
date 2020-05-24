@@ -22,7 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -46,7 +46,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
   @Autowired
   private Converter<List<String>, Set<org.folio.repository.RecordType>> recordTypesConverter;
   @Autowired
-  private Converter<List<Tag>, TagCollection> tagsConverter;
+  private Converter<List<DbTag>, TagCollection> tagsConverter;
   @Autowired
   private Converter<List<String>, TagUniqueCollection> uniqueTagsConverter;
 
@@ -100,7 +100,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
     }
   }
 
-  private CompletableFuture<List<Tag>> findTags(List<String> filterRectypes, String tenantId) {
+  private CompletableFuture<List<DbTag>> findTags(List<String> filterRectypes, String tenantId) {
     log.info("Retrieving tags: tenantId = {}, recordTypes = {}", tenantId, filterRectypes);
 
     if (CollectionUtils.isEmpty(filterRectypes)) {
@@ -110,7 +110,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
     }
   }
 
-  private void successfulGetTags(List<Tag> tags, Handler<AsyncResult<Response>> handler) {
+  private void successfulGetTags(List<DbTag> tags, Handler<AsyncResult<Response>> handler) {
     handler.handle(succeededFuture(GetEholdingsTagsResponse.respond200WithApplicationVndApiJson(
       tagsConverter.convert(tags))));
   }

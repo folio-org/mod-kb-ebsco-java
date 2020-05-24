@@ -23,7 +23,7 @@ import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.Subject;
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Data;
@@ -55,7 +55,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   @Autowired
   private Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
   @Autowired
-  private Converter<List<Tag>, Tags> tagsConverter;
+  private Converter<List<DbTag>, Tags> tagsConverter;
 
   @Override
   public Title convert(@NonNull TitleResult titleResult) {
@@ -96,7 +96,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
         title.getIncluded()
           .forEach(resourceCollectionItem -> {
 
-            List<Tag> tags = titleResult.getResourceTagList()
+            List<DbTag> tags = titleResult.getResourceTagList()
               .stream().filter(tag ->
                 resourceCollectionItem.getId().equals(tag.getRecordId()))
               .collect(Collectors.toList());

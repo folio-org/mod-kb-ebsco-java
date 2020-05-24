@@ -10,7 +10,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.TagCollection;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
@@ -26,29 +26,29 @@ public class TagsConverters  {
   }
 
   @Component
-  public static class ToTags implements Converter<List<Tag>, Tags> {
+  public static class ToTags implements Converter<List<DbTag>, Tags> {
 
     @Override
-    public Tags convert(@NonNull List<Tag> source) {
-      return new Tags().withTagList(mapItems(source, Tag::getValue));
+    public Tags convert(@NonNull List<DbTag> source) {
+      return new Tags().withTagList(mapItems(source, DbTag::getValue));
     }
 
   }
 
   @Component
-  public static class ToTagCollection implements Converter<List<Tag>, TagCollection> {
+  public static class ToTagCollection implements Converter<List<DbTag>, TagCollection> {
 
     @Autowired
-    private Converter<Tag, TagCollectionItem> tagConverter;
+    private Converter<DbTag, TagCollectionItem> tagConverter;
 
     @Override
-    public TagCollection convert(@NonNull List<Tag> source) {
+    public TagCollection convert(@NonNull List<DbTag> source) {
       return new TagCollection()
                   .withData(mapItems(source, tagConverter::convert))
                   .withJsonapi(RestConstants.JSONAPI)
                   .withMeta(new MetaTotalResults().withTotalResults(source.size()));
     }
-    
+
   }
 
   @Component

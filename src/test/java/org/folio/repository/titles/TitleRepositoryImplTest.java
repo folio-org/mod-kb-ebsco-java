@@ -25,7 +25,7 @@ public class TitleRepositoryImplTest {
 
   @Test
   public void shouldReturnZeroWhenTagListIsEmpty() {
-    int count = repository.countTitlesByResourceTags(Collections.emptyList(), STUB_TENANT).join();
+    int count = repository.countTitlesByResourceTags(Collections.emptyList(), null, STUB_TENANT).join();
     assertEquals(0, count);
   }
 

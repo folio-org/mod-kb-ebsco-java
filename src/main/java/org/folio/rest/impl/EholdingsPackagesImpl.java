@@ -63,7 +63,7 @@ import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
 import org.folio.repository.resources.DbResource;
 import org.folio.repository.resources.ResourceRepository;
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -457,7 +457,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     };
   }
 
-  private void populateResourceTags(Map<String, TitleResult> resourceIdToTitle, Map<String, List<Tag>> tagMap) {
+  private void populateResourceTags(Map<String, TitleResult> resourceIdToTitle, Map<String, List<DbTag>> tagMap) {
     tagMap.forEach((id, tags) -> {
       TitleResult titleResult = resourceIdToTitle.get(id);
       titleResult.setResourceTagList(tags);

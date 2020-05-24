@@ -20,7 +20,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -46,23 +45,23 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   private static final String TITLE_ID = "12345";
   private static final String RESOURCE_ID = PACKAGE_ID + "-" + TITLE_ID;
 
-  private static final Tag PROVIDER_TAG = tag(PROVIDER_ID, RecordType.PROVIDER, "provider-tag");
-  private static final Tag PACKAGE_TAG = tag(PACKAGE_ID, RecordType.PACKAGE, "package-tag");
-  private static final Tag TITLE_TAG = tag(TITLE_ID, RecordType.TITLE, "title-tag");
-  private static final Tag RESOURCE_TAG = tag(RESOURCE_ID, RecordType.RESOURCE, "resource-tag");
+  private static final DbTag PROVIDER_TAG = tag(PROVIDER_ID, RecordType.PROVIDER, "provider-tag");
+  private static final DbTag PACKAGE_TAG = tag(PACKAGE_ID, RecordType.PACKAGE, "package-tag");
+  private static final DbTag TITLE_TAG = tag(TITLE_ID, RecordType.TITLE, "title-tag");
+  private static final DbTag RESOURCE_TAG = tag(RESOURCE_ID, RecordType.RESOURCE, "resource-tag");
 
-  private static final List<Tag> ALL_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG);
-  private static final List<Tag> UNIQUE_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG,
+  private static final List<DbTag> ALL_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG);
+  private static final List<DbTag> UNIQUE_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG,
     RESOURCE_TAG);
 
   @Autowired
-  private Converter<Tag, TagCollectionItem> tagConverter;
+  private Converter<DbTag, TagCollectionItem> tagConverter;
   @Autowired
   private Converter<String, TagUniqueCollectionItem> tagUniqueConverter;
 
   @Test
   public void shouldReturnAllTagsSortedIfNotFilteredOnGet() {
-    List<Tag> tags = insertTags(ALL_TAGS, vertx);
+    List<DbTag> tags = insertTags(ALL_TAGS, vertx);
 
     try {
       TagCollection col = getWithOk("eholdings/tags").as(TagCollection.class);
@@ -84,7 +83,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldFilterByRecordTypeOnGet() {
-    List<Tag> tags = insertTags(ALL_TAGS, vertx);
+    List<DbTag> tags = insertTags(ALL_TAGS, vertx);
 
     try {
       TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider").as(TagCollection.class);
@@ -98,7 +97,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldFilterBySeveralRecordTypesOnGet() {
-    List<Tag> tags = insertTags(ALL_TAGS, vertx);
+    List<DbTag> tags = insertTags(ALL_TAGS, vertx);
 
     try {
       TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider&filter[rectype]=title")
@@ -136,7 +135,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnAllUniqueTags() {
-    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     try {
       TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
@@ -163,7 +162,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnListOfUniqueTagsWithParamsResources() {
-    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     try {
       TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
@@ -179,7 +178,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnListOfUniqueTagsWithMultipleParams() {
-    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), Tag::getValue);
+    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     try {
       TagUniqueCollection col = getWithOk(
@@ -206,14 +205,14 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
       tagUniqueCollectionItem -> tagUniqueCollectionItem.getAttributes().getValue()));
   }
 
-  private static Tag tag(String recordId, RecordType recordType, String value) {
-    return Tag.builder()
+  private static DbTag tag(String recordId, RecordType recordType, String value) {
+    return DbTag.builder()
               .recordId(recordId)
               .recordType(recordType)
               .value(value).build();
   }
 
-  private List<TagCollectionItem> toTagCollectionItems(List<Tag> tags) {
+  private List<TagCollectionItem> toTagCollectionItems(List<DbTag> tags) {
     return mapItems(tags, tagConverter::convert);
   }
 
@@ -223,15 +222,15 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     return result;
   }
 
-  private TagCollection buildTagCollection(List<Tag> tags) {
+  private TagCollection buildTagCollection(List<DbTag> tags) {
     return new TagCollection()
       .withData(sort(toTagCollectionItems(tags)))
       .withMeta(new MetaTotalResults().withTotalResults(tags.size()))
       .withJsonapi(RestConstants.JSONAPI);
   }
 
-  private List<Tag> filter(List<Tag> tags, Predicate<Tag> filter) {
-    List<Tag> found = tags.stream().filter(filter).collect(Collectors.toList());
+  private List<DbTag> filter(List<DbTag> tags, Predicate<DbTag> filter) {
+    List<DbTag> found = tags.stream().filter(filter).collect(Collectors.toList());
 
     if (CollectionUtils.isEmpty(found)) {
       throw new IllegalArgumentException("Cannot find any tag matching the filter predicate");
@@ -240,7 +239,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     }
   }
 
-  private Predicate<Tag> similarTo(Tag expected) {
+  private Predicate<DbTag> similarTo(DbTag expected) {
     return tag -> expected.getValue().equals(tag.getValue()) &&
       expected.getRecordId().equals(tag.getRecordId()) &&
       expected.getRecordType().equals(tag.getRecordType());

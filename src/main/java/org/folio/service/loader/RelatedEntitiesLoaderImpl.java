@@ -10,7 +10,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordKey;
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -24,7 +24,7 @@ public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
   @Autowired
   private TagRepository tagRepository;
   @Autowired
-  private Converter<List<Tag>, Tags> tagsConverter;
+  private Converter<List<DbTag>, Tags> tagsConverter;
   @Autowired
   private AccessTypesService accessTypesService;
 
