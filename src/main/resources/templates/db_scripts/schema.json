@@ -101,6 +101,11 @@
   ],
   "scripts": [
     {
+      "run": "before",
+      "snippetPath": "multiply-credentials-migration.sql",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.5.0"
+    },
+    {
       "run": "after",
       "snippetPath": "update_started_date_before_insertion.sql",
       "fromModuleVersion": "mod-kb-ebsco-java-3.0.1"

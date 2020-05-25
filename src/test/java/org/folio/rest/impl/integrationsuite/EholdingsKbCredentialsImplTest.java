@@ -40,7 +40,7 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import joptsimple.internal.Strings;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,8 +55,8 @@ import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
-  @After
-  public void tearDown() {
+  @Before
+  public void setUp() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
