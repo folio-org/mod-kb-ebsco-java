@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.util.IdParser;
 
 @Component
 public class HoldingsRepositoryImpl implements HoldingsRepository {
@@ -71,10 +72,9 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   public CompletableFuture<Void> deleteBeforeTimestamp(Instant timestamp, String credentialsId, String tenantId){
     final String query = String.format(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId), timestamp.toString());
     LOG.info("Do delete query = " + query);
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     Promise<UpdateResult> promise = Promise.promise();
     final JsonArray params = createParams(singleton(credentialsId));
-    postgresClient.execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
   }
 
@@ -83,8 +83,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     if(resourceIds.isEmpty()){
       return CompletableFuture.completedFuture(new ArrayList<>());
     }
-    final String resourceIdString = resourceIds.stream()
-      .map(id -> "('" + credentialsId + "', '"+ id.concat("')")).collect(Collectors.joining(","));
+    final String resourceIdString = getHoldingsPkKeys(credentialsId, resourceIds);
     final String query = String.format(GET_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), resourceIdString);
     LOG.info("Do select query = " + query);
     Promise<ResultSet> promise = Promise.promise();
@@ -100,7 +99,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   private CompletableFuture<Void> deleteHoldings(List<HoldingsId> holdings, String credentialsId, String tenantId,
                                                AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
-    final String parameters = createHoldingsIdParameters(credentialsId, holdings);
+    final String parameters = getHoldingsPkKeys(credentialsId, mapItems(holdings, IdParser::getResourceId));
     final String query = String.format(DELETE_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), parameters);
     LOG.info("Do delete query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
@@ -147,10 +146,10 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     });
     return params;
   }
-  private String createHoldingsIdParameters(String credentialsId, List<HoldingsId> ids) {
-    return
-      ids.stream()
-      .map(id -> "('" + credentialsId + "', '" + id.getVendorId() + "-" + id.getPackageId() + "-" + id.getTitleId() + "')")
+
+  private String getHoldingsPkKeys(String credentialsId, List<String> resourceIds) {
+    return resourceIds.stream()
+      .map(id -> "('" + credentialsId + "', '"+ id.concat("')"))
       .collect(Collectors.joining(","));
   }
 

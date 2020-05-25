@@ -146,8 +146,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   private Optional<HoldingInfoInDB> readHolding(JsonObject row){
       if(row.getString("credentials_id") != null && row.getString("h_id") != null) {
         return mapRow(row, HoldingInfoInDB.class);
-      }
-      else{
+      } else {
         return Optional.empty();
       }
   }

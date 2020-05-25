@@ -66,8 +66,7 @@ public class AccessTypesTestUtil {
 
   private static final Converter<DbAccessType, AccessType> CONVERTER = new AccessTypeConverter.FromDb();
 
-  public static void insertAccessTypeMapping(String recordId, RecordType recordType, String accessTypeId,
-                                             Vertx vertx) {
+  public static void insertAccessTypeMapping(String recordId, RecordType recordType, String accessTypeId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = String.format(AccessTypeMappingsTableConstants.UPSERT_QUERY, accessTypesMappingTestTable());

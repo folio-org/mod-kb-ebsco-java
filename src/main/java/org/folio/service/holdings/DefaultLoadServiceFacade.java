@@ -43,8 +43,8 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService) {
-    return loadWithPagination(message.getTotalPages(), page ->
-      loadingService.loadHoldings(getMaxPageSize(), page)
+    return
+      loadWithPagination(message.getTotalPages(), page -> loadingService.loadHoldings(getMaxPageSize(), page)
         .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null, message.getCredentialsId()))));
   }
 
@@ -53,7 +53,7 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
     return MAX_COUNT;
   }
 
-  protected HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
+  private HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
     return HoldingsStatus.builder()
       .created(status.getCreated())
       .status(LoadStatus.fromValue(status.getStatus()))

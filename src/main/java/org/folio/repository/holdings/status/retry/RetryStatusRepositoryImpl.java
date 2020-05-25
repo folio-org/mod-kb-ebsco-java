@@ -1,6 +1,9 @@
 package org.folio.repository.holdings.status.retry;
 
+import static java.util.Collections.singletonList;
+
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.DELETE_RETRY_STATUS;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.GET_RETRY_STATUS_BY_CREDENTIALS;
@@ -42,8 +45,8 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     final String query = String.format(GET_RETRY_STATUS_BY_CREDENTIALS, getRetryStatusTableName(tenantId));
     LOG.info("Select retry status = " + query);
     Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenantId).select(query, new JsonArray().add(credentialsId), promise);
-
+    final JsonArray parameters = createParams(singletonList(credentialsId));
+    pgClient(tenantId).select(query, parameters, promise);
     return mapResult(promise.future(), this::mapStatus);
   }
 

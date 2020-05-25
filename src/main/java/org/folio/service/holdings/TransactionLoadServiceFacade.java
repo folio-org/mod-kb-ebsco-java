@@ -3,6 +3,9 @@ package org.folio.service.holdings;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.FAILED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
+import static org.folio.service.holdings.message.MessageFactory.getDeltaReportCreatedMessage;
+import static org.folio.service.holdings.message.MessageFactory.getDeltaReportMessage;
+import static org.folio.service.holdings.message.MessageFactory.getHoldingsMessage;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.LocalDateTime;
@@ -31,9 +34,6 @@ import org.folio.holdingsiq.model.TransactionId;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.repository.holdings.ReportStatus;
-import org.folio.service.holdings.message.DeltaReportCreatedMessage;
-import org.folio.service.holdings.message.DeltaReportMessage;
-import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @Component("TransactionLoadServiceFacade")
@@ -94,9 +94,9 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
     return transactionExists(message.getPreviousTransactionId(), loadingService)
       .thenCompose(previousTransactionExists -> {
         if (!previousTransactionExists) {
-          return loadWithPagination(message.getTotalPages(), page ->
-            loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
-              .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), message.getCurrentTransactionId(), message.getCredentialsId()))));
+          return loadWithPagination(message.getTotalPages(),
+            page -> loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
+              .thenAccept(holdings -> holdingsService.saveHolding(getHoldingsMessage(message, holdings))));
         } else {
           MutableObject<String> deltaReportId = new MutableObject<>();
           MutableObject<DeltaReportStatus> deltaReportStatus = new MutableObject<>();
@@ -112,10 +112,8 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
             .thenCompose(o -> {
               int totalPages = getRequestCount(Integer.valueOf(deltaReportStatus.getValue().getTotalCount()), DELTA_REPORT_MAX_SIZE);
               return loadWithPagination(totalPages,
-                page ->
-                  loadingService.loadDeltaReport(deltaReportId.getValue(), DELTA_REPORT_MAX_SIZE, page)
-                    .thenAccept(holdings -> holdingsService.processChanges(new DeltaReportMessage(holdings.getHoldings(),
-                      message.getTenantId(), message.getCurrentTransactionId(), message.getCredentialsId()))));
+                page -> loadingService.loadDeltaReport(deltaReportId.getValue(), DELTA_REPORT_MAX_SIZE, page)
+                  .thenAccept(holdings -> holdingsService.processChanges(getDeltaReportMessage(message, holdings))));
             });
         }
       });
@@ -133,9 +131,9 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
   @NotNull
   private CompletionStage<Void> sendDeltaReportCreatedMessage(LoadHoldingsMessage message, DeltaReportStatus status) {
     Promise<Void> promise = Promise.promise();
-    Integer totalCount = Integer.parseInt(status.getTotalCount());
-    holdingsService.deltaReportCreated(new DeltaReportCreatedMessage(message.getConfiguration(),
-      totalCount, getRequestCount(totalCount, DELTA_REPORT_MAX_SIZE), message.getTenantId(), message.getCredentialsId()), promise);
+    int totalCount = Integer.parseInt(status.getTotalCount());
+    holdingsService.deltaReportCreated(
+      getDeltaReportCreatedMessage(message, totalCount, getRequestCount(totalCount, DELTA_REPORT_MAX_SIZE)), promise);
     return mapVertxFuture(promise.future());
   }
 

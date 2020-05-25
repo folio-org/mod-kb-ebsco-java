@@ -58,8 +58,8 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<Void> save(HoldingsLoadingStatus status, String credentialsId, String tenantId) {
-    final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(4));
     final JsonArray parameters = createParams(asList(UUID.randomUUID().toString(), credentialsId, Json.encode(status), vertxIdProvider.getVertxId()));
+    final String query = String.format(INSERT_LOADING_STATUS, getHoldingsStatusTableName(tenantId), createPlaceholders(parameters.size()));
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -69,7 +69,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   @Override
   public CompletableFuture<Void> update(HoldingsLoadingStatus status, String credentialsId, String tenantId) {
     final String query = String.format(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
-    String vertxId = vertxIdProvider.getVertxId();
+    final String vertxId = vertxIdProvider.getVertxId();
     final JsonArray parameters = createParams(asList(Json.encode(status), vertxId, credentialsId));
     LOG.info("Do update query = " + query);
     Promise<UpdateResult> promise = Promise.promise();

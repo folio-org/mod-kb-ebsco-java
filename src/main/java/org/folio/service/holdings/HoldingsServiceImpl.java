@@ -6,6 +6,7 @@ import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_DELETED;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_UPDATED;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_UPDATED_ADDED_COVERAGE;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_UPDATED_DELETED_COVERAGE;
+import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getLoadHoldingsMessage;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getLoadStatusFailed;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
@@ -67,7 +68,6 @@ import org.folio.service.holdings.message.DeltaReportCreatedMessage;
 import org.folio.service.holdings.message.DeltaReportMessage;
 import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadFailedMessage;
-import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
 
@@ -130,9 +130,9 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   @Override
   public CompletableFuture<Void> loadHoldingsById(String credentialsId, RMAPITemplateContext context) {
-    String tenantId = context.getOkapiData().getTenant();
+    final String tenantId = context.getOkapiData().getTenant();
     Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
-      tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea(), credentialsId)
+      tryChangingStatusToInProgress(getStatusPopulatingStagingArea(), credentialsId, tenantId)
         .thenCompose(o -> resetRetries(credentialsId, tenantId, snapshotRetryCount - 1))
         .thenAccept(o -> loadServiceFacade.createSnapshot(new ConfigurationMessage(context.getConfiguration(), credentialsId, tenantId)))
     );
@@ -146,15 +146,15 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   @Override
   public void saveHolding(HoldingsMessage holdings) {
-    String tenantId = holdings.getTenantId();
-    String credentialsId = holdings.getCredentialsId();
+    final String tenantId = holdings.getTenantId();
+    final String credentialsId = holdings.getCredentialsId();
     saveHoldings(holdings.getHoldingList(), Instant.now(), credentialsId, tenantId)
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(), 1, credentialsId, tenantId))
       .thenCompose(status -> {
           LoadStatusAttributes attributes = status.getData().getAttributes();
-          if (hasLoadedLastPage(attributes, attributes.getImportedPages(), attributes.getTotalPages())) {
+          if (hasLoadedLastPage(attributes)) {
             return
-              holdingsRepository.deleteBeforeTimestamp(ZonedDateTime.parse(status.getData().getAttributes().getStarted(), POSTGRES_TIMESTAMP_FORMATTER).toInstant(), credentialsId, tenantId)
+              holdingsRepository.deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()).toInstant(), credentialsId, tenantId)
                 .thenCompose(o -> holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId))
                 .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
           }
@@ -169,13 +169,13 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   @Override
   public void processChanges(DeltaReportMessage holdings) {
-    String tenantId = holdings.getTenantId();
-    String credentialsId = holdings.getCredentialsId();
+    final String tenantId = holdings.getTenantId();
+    final String credentialsId = holdings.getCredentialsId();
     processChanges(holdings.getHoldingList(), Instant.now(), credentialsId, tenantId)
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(), 1, credentialsId, tenantId))
       .thenCompose(status -> {
           LoadStatusAttributes attributes = status.getData().getAttributes();
-          if (hasLoadedLastPage(attributes, attributes.getImportedPages(), attributes.getTotalPages())) {
+          if (hasLoadedLastPage(attributes)) {
             return
               holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
                 .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
@@ -189,15 +189,17 @@ public class HoldingsServiceImpl implements HoldingsService {
       });
   }
 
-  private boolean hasLoadedLastPage(LoadStatusAttributes attributes, Integer importedPages, Integer totalPages) {
+  private boolean hasLoadedLastPage(LoadStatusAttributes attributes) {
+    final Integer importedPages = attributes.getImportedPages();
+    final Integer totalPages = attributes.getTotalPages();
     return attributes.getStatus().getName() == LoadStatusNameEnum.IN_PROGRESS &&
       importedPages.equals(totalPages);
   }
 
   @Override
   public void snapshotCreated(SnapshotCreatedMessage message) {
-    String tenantId = message.getTenantId();
-    String credentialsId = message.getCredentialsId();
+    final String tenantId = message.getTenantId();
+    final String credentialsId = message.getCredentialsId();
     transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
       .thenApply(previousTransactionId -> {
         boolean transactionIsAlreadyLoaded =
@@ -206,13 +208,12 @@ public class HoldingsServiceImpl implements HoldingsService {
           holdingsStatusRepository.update(getStatusLoadingHoldings(
             message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
             .thenCompose(o -> resetRetries(credentialsId, tenantId, loadHoldingsRetryCount - 1))
-            .thenAccept(o -> loadServiceFacade.loadHoldings(new LoadHoldingsMessage(message.getConfiguration(), credentialsId, tenantId,
-              message.getTotalCount(), message.getTotalPages(), message.getTransactionId(), previousTransactionId)))
+            .thenAccept(o -> loadServiceFacade.loadHoldings(getLoadHoldingsMessage(message, previousTransactionId)))
             .exceptionally(e -> {
               logger.error("Failed to create snapshot", e);
               return null;
             });
-        }else{
+        } else {
           logger.info("Skipping loading snapshot, because transaction with id {} is already loaded", message.getTransactionId());
           holdingsStatusRepository.update(getStatusCompleted(0), credentialsId, tenantId);
         }
@@ -222,13 +223,13 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   @Override
   public void snapshotFailed(SnapshotFailedMessage message) {
-    String tenantId = message.getTenantId();
-    String credentialsId = message.getCredentialsId();
+    final String tenantId = message.getTenantId();
+    final String credentialsId = message.getCredentialsId();
     setStatusToFailed(credentialsId, tenantId, message.getErrorMessage())
       .thenAccept(o ->
         retryAfterDelayIfAttemptsLeft(credentialsId, tenantId, snapshotRetryDelay, o2 ->
           executeWithLock(START_LOADING_LOCK, () ->
-            tryChangingStatusToInProgress(tenantId, getStatusPopulatingStagingArea(), credentialsId)
+            tryChangingStatusToInProgress(getStatusPopulatingStagingArea(), credentialsId, tenantId)
               .thenAccept(o3 -> loadServiceFacade.createSnapshot(new ConfigurationMessage(message.getConfiguration(), credentialsId, tenantId)))
               .exceptionally(e -> {
                 logger.error("Failed to retry creating snapshot", e);
@@ -238,8 +239,10 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   @Override
   public void deltaReportCreated(DeltaReportCreatedMessage message, Handler<AsyncResult<Void>> handler) {
+    final String credentialsId = message.getCredentialsId();
+    final String tenantId = message.getTenantId();
     holdingsStatusRepository.update(getStatusLoadingHoldings(
-      message.getTotalCount(), 0, message.getTotalPages(), 0), message.getCredentialsId(), message.getTenantId())
+      message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
       .thenAccept(o -> handler.handle(Future.succeededFuture(null)))
       .exceptionally(e -> {
         logger.error("Failed to create snapshot", e);
@@ -250,22 +253,24 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   @Override
   public void loadingFailed(LoadFailedMessage message) {
-    String tenantId = message.getTenantId();
-    String credentialsId = message.getCredentialsId();
+    final String credentialsId = message.getCredentialsId();
+    final String tenantId = message.getTenantId();
     setStatusToFailed(credentialsId, tenantId, message.getErrorMessage())
       .thenAccept(o ->
         retryAfterDelayIfAttemptsLeft(credentialsId, tenantId, loadHoldingsRetryDelay, o2 ->
           executeWithLock(START_LOADING_LOCK, () ->
-            tryChangingStatusToInProgress(tenantId, getStatusLoadingHoldings(
-              message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId)
-              .thenCompose(o3 ->
+            {
+              final Integer totalCount = message.getTotalCount();
+              final Integer totalPages = message.getTotalPages();
+              return tryChangingStatusToInProgress(getStatusLoadingHoldings(totalCount, 0, totalPages, 0), credentialsId, tenantId)
+                .thenCompose(o3 ->
                   transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
-                    .thenAccept(previousTransactionId -> loadServiceFacade.loadHoldings(new LoadHoldingsMessage(message.getConfiguration(), credentialsId, tenantId,
-                      message.getTotalCount(), message.getTotalPages(), message.getTransactionId(), previousTransactionId))))
-            .exceptionally(e -> {
-              logger.error("Failed to retry loading holdings", e);
-              return null;
-            })
+                    .thenAccept(previousTransactionId -> loadServiceFacade.loadHoldings(getLoadHoldingsMessage(message, previousTransactionId))))
+                .exceptionally(e -> {
+                  logger.error("Failed to retry loading holdings", e);
+                  return null;
+                });
+            }
           )));
   }
 
@@ -276,10 +281,11 @@ public class HoldingsServiceImpl implements HoldingsService {
         if(status.getTimerId() != null) {
           vertx.cancelTimer(status.getTimerId());
         }
-        return retryStatusRepository.update(new RetryStatus(retryCount, null), credentialsId, tenantId);
+        return retryStatusRepository.update(new RetryStatus(retryCount, null), credentialsId,  tenantId);
       });
   }
-  private CompletableFuture<Void> tryChangingStatusToInProgress(String tenantId, HoldingsLoadingStatus newStatus, String credentialsId){
+
+  private CompletableFuture<Void> tryChangingStatusToInProgress(HoldingsLoadingStatus newStatus, String credentialsId, String tenantId) {
     return holdingsStatusRepository.findByCredentialsId(credentialsId, tenantId)
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
@@ -400,8 +406,11 @@ public class HoldingsServiceImpl implements HoldingsService {
     if(StringUtils.isEmpty(updatedString)){
       return true;
     }
-    ZonedDateTime updated = ZonedDateTime.parse(updatedString, POSTGRES_TIMESTAMP_FORMATTER);
+    ZonedDateTime updated = getZonedDateTime(updatedString);
     return ZonedDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
+  }
 
+  private ZonedDateTime getZonedDateTime(String stringToParse) {
+    return ZonedDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_FORMATTER);
   }
 }

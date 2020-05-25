@@ -18,10 +18,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import org.folio.repository.holdings.status.HoldingsStatusRepository;
-import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.persist.PostgresClient;
@@ -35,11 +32,6 @@ public class TenantApiImpl extends TenantAPI {
   private static final String MODULE_PLACEHOLDER = "${mymodule}";
   private static final String TEST_MODE = "test.mode";
   private final Logger logger = LoggerFactory.getLogger(TenantApiImpl.class);
-
-  @Autowired
-  private HoldingsStatusRepository holdingsStatusRepository;
-  @Autowired
-  private RetryStatusRepository retryStatusRepository;
 
   public TenantApiImpl() {
     super();

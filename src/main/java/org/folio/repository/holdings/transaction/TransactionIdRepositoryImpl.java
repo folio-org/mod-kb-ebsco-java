@@ -37,10 +37,10 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
 
   @Override
   public CompletableFuture<Void> save(String credentialsId, String transactionId, String tenantId) {
-    final String query = String.format(INSERT_TRANSACTION_ID, getTransactionIdTableName(tenantId), createPlaceholders(2));
+    final JsonArray params = createParams(asList(credentialsId, transactionId));
+    final String query = String.format(INSERT_TRANSACTION_ID, getTransactionIdTableName(tenantId), createPlaceholders(params.size()));
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    final JsonArray params = createParams(asList(credentialsId, transactionId));
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(result -> null);
   }

@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
@@ -110,7 +109,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, anyString(), STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT));
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -131,7 +130,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, anyString(), STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT));
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -154,7 +153,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, anyString(), STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT));
 
     async.await(TIMEOUT);
 

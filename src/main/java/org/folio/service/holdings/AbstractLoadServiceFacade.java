@@ -1,5 +1,8 @@
 package org.folio.service.holdings;
 
+import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getLoadFailedMessage;
+import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSnapshotCreatedMessage;
+import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSnapshotFailedMessage;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
@@ -30,10 +33,7 @@ import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.service.holdings.message.ConfigurationMessage;
-import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
-import org.folio.service.holdings.message.SnapshotCreatedMessage;
-import org.folio.service.holdings.message.SnapshotFailedMessage;
 
 @Component
 public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
@@ -71,15 +71,13 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   @Override
   public void createSnapshot(ConfigurationMessage message) {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
-    CompletableFuture.completedFuture(null)
-      .thenCompose(o -> populateHoldingsIfNecessary(loadingService))
-      .thenAccept(status -> holdingsService.snapshotCreated(new SnapshotCreatedMessage(message.getConfiguration(), status.getTransactionId(),
-        status.getTotalCount(), getRequestCount(status.getTotalCount(), getMaxPageSize()), message.getCredentialsId(), message.getTenantId())))
+    populateHoldingsIfNecessary(loadingService)
+      .thenAccept(status -> holdingsService.snapshotCreated(
+        getSnapshotCreatedMessage(message, status, getRequestCount(status.getTotalCount(), getMaxPageSize()))))
       .whenComplete((o, throwable) -> {
         if (throwable != null) {
           logger.error("Failed to create snapshot", throwable);
-          holdingsService.snapshotFailed(
-            new SnapshotFailedMessage(message.getConfiguration(), throwable.getMessage(), message.getCredentialsId(), message.getTenantId()));
+          holdingsService.snapshotFailed(getSnapshotFailedMessage(message, throwable));
         }
       });
   }
@@ -87,13 +85,11 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   @Override
   public void loadHoldings(LoadHoldingsMessage message) {
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
-    CompletableFuture.completedFuture(null)
-      .thenCompose(o -> loadHoldings(message, loadingService))
+    loadHoldings(message, loadingService)
       .whenComplete((result, throwable) -> {
         if (throwable != null) {
           logger.error("Failed to load holdings", throwable);
-          holdingsService.loadingFailed(new LoadFailedMessage(
-            message.getConfiguration(), throwable.getMessage(), message.getCredentialsId(), message.getTenantId(), message.getCurrentTransactionId(), message.getTotalCount(), message.getTotalPages()));
+          holdingsService.loadingFailed(getLoadFailedMessage(message, throwable));
         }
       });
   }
@@ -102,8 +98,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     return getLastLoadingStatus(loadingService).thenCompose(loadStatus -> {
       if (IN_PROGRESS.equals(loadStatus.getStatus())) {
         return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
-      }
-      else if (snapshotCreatedRecently(loadStatus)) {
+      } else if (snapshotCreatedRecently(loadStatus)) {
         return CompletableFuture.completedFuture(loadStatus);
       } else {
         logger.info("Start populating holdings to stage environment.");
@@ -113,13 +108,13 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     });
   }
 
-  public CompletableFuture<HoldingsStatus> waitForCompleteStatus(int retryCount, String transactionId, LoadService loadingService) {
+  private CompletableFuture<HoldingsStatus> waitForCompleteStatus(int retryCount, String transactionId, LoadService loadingService) {
     CompletableFuture<HoldingsStatus> future = new CompletableFuture<>();
     waitForCompleteStatus(retryCount, transactionId, future, loadingService);
     return future;
   }
 
-  public void waitForCompleteStatus(int retries, String transactionId, CompletableFuture<HoldingsStatus> future, LoadService loadingService) {
+  private void waitForCompleteStatus(int retries, String transactionId, CompletableFuture<HoldingsStatus> future, LoadService loadingService) {
     vertx.setTimer(statusRetryDelay, timerId -> getLoadingStatus(loadingService, transactionId)
       .thenAccept(loadStatus -> {
         final LoadStatus status = loadStatus.getStatus();
@@ -149,7 +144,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
    * @param futureProducer provides an asynchronous action
    * @return future returned by
    */
-  public <T> CompletableFuture<T> retryOnFailure(int retries, long delay, Producer<CompletableFuture<T>> futureProducer) {
+  private <T> CompletableFuture<T> retryOnFailure(int retries, long delay, Producer<CompletableFuture<T>> futureProducer) {
     CompletableFuture<T> future = new CompletableFuture<>();
     retryOnFailure(retries, delay, future, futureProducer);
     return future;
@@ -175,15 +170,15 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     doUntilResultMatches(retries, delay, future, futureProducer, matcher);
     return future;
   }
-  protected <T> void doUntilResultMatches(int retries, long delay, CompletableFuture<T> future, Producer<CompletableFuture<T>> futureProducer, BiPredicate<T, Throwable> matcher) {
+  private <T> void doUntilResultMatches(int retries, long delay, CompletableFuture<T> future,
+                                        Producer<CompletableFuture<T>> futureProducer, BiPredicate<T, Throwable> matcher) {
     futureProducer.call()
       .handle((result, ex) -> {
         if(matcher.test(result, ex)){
           future.complete(result);
         }else{
           if (retries > 1) {
-            vertx.setTimer(delay, timerId -> doUntilResultMatches(retries - 1, delay, future, futureProducer, matcher)
-            );
+            vertx.setTimer(delay, timerId -> doUntilResultMatches(retries - 1, delay, future, futureProducer, matcher));
           }
           else{
             future.completeExceptionally(ex != null ? ex : new IllegalStateException("Action failed with result " +  result));
