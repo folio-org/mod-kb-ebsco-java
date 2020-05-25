@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
@@ -36,11 +37,12 @@ public class ResourcesTestUtil {
   public static List<ResourcesTestUtil.DbResources> getResources(Vertx vertx) {
     CompletableFuture<List<ResourcesTestUtil.DbResources>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
-      "SELECT " + NAME_COLUMN + ", " + ID_COLUMN + " FROM " + resourceTestTable(),
+      "SELECT " + NAME_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + ID_COLUMN + " FROM " + resourceTestTable(),
       event -> future.complete(mapItems(event.result().getRows(),
         row ->
-          ResourcesTestUtil.DbResources.builder()
+          DbResources.builder()
             .id(row.getString(ID_COLUMN))
+            .credentialsId(row.getString(CREDENTIALS_ID_COLUMN))
             .name(row.getString(NAME_COLUMN))
             .build()
       )));
@@ -51,8 +53,9 @@ public class ResourcesTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + resourceTestTable() +
-        "(" + ID_COLUMN + ", " + NAME_COLUMN + ") VALUES(?,?)",
-      new JsonArray(Arrays.asList(dbResource.getId(), dbResource.getName() )),
+        "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ") " +
+        "VALUES(?,?,?)",
+      new JsonArray(Arrays.asList(dbResource.getId(), dbResource.getCredentialsId(), dbResource.getName() )),
       event -> future.complete(null));
     future.join();
   }
@@ -81,6 +84,7 @@ public class ResourcesTestUtil {
   @Builder(toBuilder = true)
   public static class DbResources {
     String id;
+    String credentialsId;
     String name;
   }
 }

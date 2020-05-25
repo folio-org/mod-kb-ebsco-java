@@ -152,9 +152,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now());
 
       ResourcesTestUtil.addResource(vertx,
-        ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
+        buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
       ResourcesTestUtil.addResource(vertx,
-        ResourcesTestUtil.DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());
+        buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));
       TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
@@ -180,9 +180,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now());
 
       ResourcesTestUtil.addResource(vertx,
-        ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
+        buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
       ResourcesTestUtil.addResource(vertx,
-        ResourcesTestUtil.DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());
+        buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));
       TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
@@ -198,6 +198,13 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     } finally {
       clearDataFromTable(vertx, HOLDINGS_TABLE);
     }
+  }
+
+  private ResourcesTestUtil.DbResources buildResource(String id, String credentialsId, String name) {
+    return ResourcesTestUtil.DbResources.builder()
+      .id(id)
+      .credentialsId(credentialsId)
+      .name(name).build();
   }
 
   @Test

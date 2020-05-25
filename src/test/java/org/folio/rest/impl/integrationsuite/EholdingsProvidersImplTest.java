@@ -308,8 +308,9 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnEmptyResponseWhenProvidersReturnedWithErrorOnSearchByTags() {
     try {
-      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
-      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
+      String credentialsId = configuration.getId();
+      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME));
+      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, credentialsId, STUB_VENDOR_NAME_2));
 
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
@@ -654,16 +655,18 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .build());
   }
 
-  private ProvidersTestUtil.DbProviders buildDbProvider(String id, String name) {
+  private ProvidersTestUtil.DbProviders buildDbProvider(String id, String credentialsId, String name) {
     return ProvidersTestUtil.DbProviders.builder()
       .id(String.valueOf(id))
+      .credentialsId(credentialsId)
       .name(name).build();
   }
 
   private void setUpTaggedProviders() {
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, STUB_VENDOR_NAME_3));
+    String credentialsId = configuration.getId();
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, credentialsId, STUB_VENDOR_NAME_2));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, credentialsId, STUB_VENDOR_NAME_3));
 
     mockProviderWithName(STUB_VENDOR_ID, STUB_VENDOR_NAME);
     mockProviderWithName(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2);

@@ -1200,8 +1200,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     try {
       mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
 
-      ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(
-        STUB_TITLE_NAME).build());
+      ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID)
+        .credentialsId(configuration.getId()).name(STUB_TITLE_NAME).build());
 
       TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RESOURCE, STUB_TAG_VALUE);
 
