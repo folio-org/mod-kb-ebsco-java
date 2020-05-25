@@ -21,7 +21,7 @@ public class ResourceTableConstants {
       "AND " + CREDENTIALS_ID_COLUMN + "=?";
 
   public static final String SELECT_RESOURCES_WITH_TAGS =
-    "SELECT resources.id as id, resources.credentialsId as credentialsId, " +
+    "SELECT resources.id as id, resources.credentials_id as credentials_id, " +
           "resources.name as name, tags.tag as tag " +
       "FROM %s " +
       "INNER JOIN %s as tags ON " +

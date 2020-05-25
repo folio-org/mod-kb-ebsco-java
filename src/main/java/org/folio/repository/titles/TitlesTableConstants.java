@@ -32,7 +32,7 @@ public class TitlesTableConstants {
 
   public static final String SELECT_TITLES_BY_RESOURCE_TAGS =
     "SELECT DISTINCT (regexp_split_to_array(resources.id, '-'))[3] as id, " +
-          "resources.credentialsId as credentialsId, " +
+          "resources.credentials_id as credentials_id, " +
           "resources.name as name, holdings.jsonb as holding " +
       "FROM %s as resources " +
       "INNER JOIN %s as tags ON " +

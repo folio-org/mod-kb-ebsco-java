@@ -195,7 +195,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE_2);
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_3);
 
-      setUpPackages(vertx);
+      setUpPackages(vertx, configuration.getId());
 
       PackageCollection packageCollection = getWithOk(
         PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
@@ -215,8 +215,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByTags() {
     try {
-      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, STUB_PACKAGE_NAME));
-      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, STUB_PACKAGE_NAME_2));
+      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, configuration.getId(), STUB_PACKAGE_NAME));
+      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, configuration.getId(), STUB_PACKAGE_NAME_2));
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
 
@@ -241,7 +241,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
       TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE);
 
-      setUpPackages(vertx);
+      setUpPackages(vertx, configuration.getId());
 
       PackageCollection packageCollection = getWithOk(
         PACKAGES_ENDPOINT + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE, STUB_TOKEN_HEADER)
@@ -265,7 +265,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
       insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(1).getId(), vertx);
 
-      setUpPackages(vertx);
+      setUpPackages(vertx, configuration.getId());
 
       String resourcePath = PACKAGES_ENDPOINT + "?page=2&count=1&filter[access-type]="
         + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
