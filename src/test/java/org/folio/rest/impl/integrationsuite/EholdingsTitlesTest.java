@@ -36,7 +36,6 @@ import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
-import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_2;
@@ -60,9 +59,8 @@ import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.HoldingsTestUtil.addHolding;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
-import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 import static org.folio.util.ResourcesTestUtil.addResource;
 import static org.folio.util.ResourcesTestUtil.mockGetTitles;
 import static org.folio.util.TagsTestUtil.insertTag;
@@ -119,7 +117,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Override @Before
   public void setUp() throws Exception {
     super.setUp();
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
   }
 
@@ -152,7 +150,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException {
     try {
       mockGetManagedTitleById();
-      addHolding(STUB_CREDENTILS_ID,
+      addHolding(configuration.getId(),
         Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now(), vertx);
 
       addResource(vertx, DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
@@ -178,7 +176,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
     try {
       mockGetManagedTitleById();
-      addHolding(STUB_CREDENTILS_ID,
+      final String credentialsId = configuration.getId();
+      addHolding(credentialsId,
         Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now(), vertx);
 
       addResource(vertx, DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());

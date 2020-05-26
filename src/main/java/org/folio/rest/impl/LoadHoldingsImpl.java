@@ -67,10 +67,7 @@ public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredent
     String tenantId = TenantTool.tenantId(okapiHeaders);
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template
-      .requestAction(context ->
-        credentialsService.findByUser(okapiHeaders)
-          .thenCompose(kbCredentials -> holdingsStatusRepository.findByCredentialsId(kbCredentials.getId(), tenantId))
-      )
+      .requestAction(context -> holdingsStatusRepository.findByCredentialsId(context.getCredentialsId(), tenantId))
       .executeWithResult(HoldingsLoadingStatus.class);
   }
 
@@ -81,10 +78,8 @@ public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredent
                                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Start loading of holdings for credentials: " + id);
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    template.requestAction(context ->
-      credentialsService.findById(id, okapiHeaders)
-        .thenAccept(kbCredentials -> holdingsStatusAuditService.clearExpiredRecords(id, context.getOkapiData().getTenant()))
-        .thenCompose(o -> holdingsService.loadHoldingsById(id, context))
+    template.requestAction(context -> holdingsStatusAuditService.clearExpiredRecords(id, context.getOkapiData().getTenant())
+      .thenCompose(o -> holdingsService.loadHoldingsById(id, context))
     )
       .addErrorMapper(ProcessInProgressException.class,
         e -> PostEholdingsLoadingKbCredentialsByIdResponse.respond409WithTextPlain(ErrorUtil.createError(e.getMessage())))

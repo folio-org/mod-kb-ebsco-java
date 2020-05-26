@@ -106,7 +106,7 @@ import org.folio.util.HoldingsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
-  static final String HOLDINGS_LOAD_URL = "/eholdings/loading/kb-credentials";
+  public static final String HOLDINGS_LOAD_URL = "/eholdings/loading/kb-credentials";
   public static final String HOLDINGS_LOAD_BY_ID_URL = HOLDINGS_LOAD_URL + "/" + STUB_CREDENTILS_ID;
   private static final int TIMEOUT = 180000;
   private static final int EXPECTED_LOADED_PAGES = 2;
@@ -134,7 +134,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   public void setUp() throws Exception {
     super.setUp();
     MockitoAnnotations.initMocks(this);
-//    stubConfiguration = getDefaultKbConfiguration(vertx);
     stubConfiguration = Configuration.builder()
       .apiKey(STUB_API_KEY)
       .customerId(STUB_CUSTOMER_ID)
@@ -402,10 +401,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertStatusNotStarted(STUB_CREDENTILS_ID, vertx);
     insertRetryStatus(STUB_CREDENTILS_ID, vertx);
-  }
-
-  private void m (){
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
   }
 
   private void tearDownHoldingsData() {
