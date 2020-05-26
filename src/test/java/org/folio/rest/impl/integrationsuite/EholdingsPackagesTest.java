@@ -67,9 +67,11 @@ import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.PackagesTestUtil.addPackage;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
 import static org.folio.util.ResourcesTestUtil.mockGetTitles;
+import static org.folio.util.TagsTestUtil.insertTag;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -172,6 +174,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
+    clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+    clearDataFromTable(vertx, TAGS_TABLE_NAME);
+    clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
+    clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
@@ -189,120 +196,93 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnPackagesOnSearchByTagsOnly() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE_2);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_3);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE_2);
+    insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_3);
 
-      setUpPackages(vertx, configuration.getId());
+    setUpPackages(vertx, configuration.getId());
 
-      PackageCollection packageCollection = getWithOk(
-        PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
-        .as(PackageCollection.class);
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    PackageCollection packageCollection = getWithOk(
+      PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
+      .as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(2, packages.size());
-      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
-      assertEquals(STUB_PACKAGE_NAME_2, packages.get(1).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(2, packages.size());
+    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+    assertEquals(STUB_PACKAGE_NAME_2, packages.get(1).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByTags() {
-    try {
-      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, configuration.getId(), STUB_PACKAGE_NAME));
-      PackagesTestUtil.addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, configuration.getId(), STUB_PACKAGE_NAME_2));
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, configuration.getId(), STUB_PACKAGE_NAME));
+    addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, configuration.getId(), STUB_PACKAGE_NAME_2));
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
 
-      mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+    mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
-      PackageCollection packageCollection = getWithOk(PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE,
-        STUB_TOKEN_HEADER).as(PackageCollection.class);
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    PackageCollection packageCollection = getWithOk(PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE,
+      STUB_TOKEN_HEADER).as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(0, packages.size());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(0, packages.size());
   }
 
   @Test
   public void shouldReturnPackagesOnSearchWithPagination() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE);
 
-      setUpPackages(vertx, configuration.getId());
+    setUpPackages(vertx, configuration.getId());
 
-      PackageCollection packageCollection = getWithOk(
-        PACKAGES_ENDPOINT + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE, STUB_TOKEN_HEADER)
-        .as(PackageCollection.class);
+    PackageCollection packageCollection = getWithOk(
+      PACKAGES_ENDPOINT + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE, STUB_TOKEN_HEADER)
+      .as(PackageCollection.class);
 
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnPackagesOnSearchByAccessTypeWithPagination() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(1).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(1).getId(), vertx);
 
-      setUpPackages(vertx, configuration.getId());
+    setUpPackages(vertx, configuration.getId());
 
-      String resourcePath = PACKAGES_ENDPOINT + "?page=2&count=1&filter[access-type]="
-        + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-      PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    String resourcePath = PACKAGES_ENDPOINT + "?page=2&count=1&filter[access-type]="
+      + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
 
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(0).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(0).getId(), vertx);
 
-      mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
+    mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
-      String resourcePath = PACKAGES_ENDPOINT + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-      PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    String resourcePath = PACKAGES_ENDPOINT + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(0, packages.size());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(0, packages.size());
   }
 
   @Test
@@ -332,90 +312,63 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnPackageWithTagOnGetById() throws IOException, URISyntaxException {
-    try {
-      String packageId = FULL_PACKAGE_ID;
-      TagsTestUtil.insertTag(vertx, packageId, PACKAGE, STUB_TAG_VALUE);
-      mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+    String packageId = FULL_PACKAGE_ID;
+    insertTag(vertx, packageId, PACKAGE, STUB_TAG_VALUE);
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
-      Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + packageId, STUB_TOKEN_HEADER).as(Package.class);
+    Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + packageId, STUB_TOKEN_HEADER).as(Package.class);
 
-      assertTrue(packageData.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertTrue(packageData.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
 
   @Test
   public void shouldReturnPackageWithAccessTypeOnGetById() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String expectedAccessTypeId = accessTypes.get(0).getId();
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String expectedAccessTypeId = accessTypes.get(0).getId();
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
 
-      mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
-      Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID, STUB_TOKEN_HEADER).as(Package.class);
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+    Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID, STUB_TOKEN_HEADER).as(Package.class);
 
-      assertNotNull(packageData.getIncluded());
-      assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(expectedAccessTypeId, ((LinkedHashMap<?, ?>) packageData.getIncluded().get(0)).get("id"));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertNotNull(packageData.getIncluded());
+    assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
+    assertEquals(expectedAccessTypeId, ((LinkedHashMap<?, ?>) packageData.getIncluded().get(0)).get("id"));
   }
 
   @Test
   public void shouldAddPackageTagsOnPutTagsWhenPackageAlreadyHasTags() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
+    assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
   }
 
   @Test
   public void shouldAddPackageDataOnPutTags() throws IOException, URISyntaxException {
-    try {
-      List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
-      sendPutTags(tags);
-      List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
-      assertEquals(1, packages.size());
-      assertEquals(FULL_PACKAGE_ID, packages.get(0).getId());
-      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getName());
-      assertThat(packages.get(0).getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
+    sendPutTags(tags);
+    List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+    assertEquals(1, packages.size());
+    assertEquals(FULL_PACKAGE_ID, packages.get(0).getId());
+    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getName());
+    assertThat(packages.get(0).getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
   }
 
   @Test
   public void shouldUpdateTagsOnlyOnPutPackageTagsEndpoint() throws IOException, URISyntaxException {
-    try {
-      List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
-      sendPutTags(tags);
-      final Package updatedPackage = sendPut(readFile(PACKAGE_STUB_FILE));
+    List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
+    sendPutTags(tags);
+    final Package updatedPackage = sendPut(readFile(PACKAGE_STUB_FILE));
 
-      List<String> packageTags = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
-      assertThat(packageTags, is(tags));
-      assertTrue(Objects.isNull(updatedPackage.getData().getAttributes().getTags()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    List<String> packageTags = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
+    assertThat(packageTags, is(tags));
+    assertTrue(Objects.isNull(updatedPackage.getData().getAttributes().getTags()));
   }
 
   @Test
   public void shouldDeleteAllPackageTagsOnPutTagsWhenRequestHasEmptyListOfTags() throws IOException, URISyntaxException {
-    TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
     sendPutTags(Collections.emptyList());
     List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
     assertThat(tagsAfterRequest, empty());
@@ -443,7 +396,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldDeletePackageTagsOnDelete() throws IOException, URISyntaxException {
-    TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
 
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
@@ -458,23 +411,18 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldDeletePackageAccessTypeMappingOnDelete() throws IOException, URISyntaxException {
-    try {
-      String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).get(0).getId();
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
+    String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).get(0).getId();
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
 
-      mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+    mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
-      EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
-      mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), putBodyPattern, SC_NO_CONTENT);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+    mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), putBodyPattern, SC_NO_CONTENT);
 
-      deleteWithNoContent(PACKAGES_PATH, STUB_TOKEN_HEADER);
+    deleteWithNoContent(PACKAGES_PATH, STUB_TOKEN_HEADER);
 
-      List<AccessTypeMapping> mappingsAfterRequest = AccessTypesTestUtil.getAccessTypeMappings(vertx);
-      assertThat(mappingsAfterRequest, empty());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> mappingsAfterRequest = AccessTypesTestUtil.getAccessTypeMappings(vertx);
+    assertThat(mappingsAfterRequest, empty());
   }
 
   @Test
@@ -628,90 +576,80 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateAllAttributesInSelectedPackageAndCreateNewAccessTypeMapping()
-    throws URISyntaxException, IOException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String accessTypeId = accessTypes.get(0).getId();
+      throws URISyntaxException, IOException {
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String accessTypeId = accessTypes.get(0).getId();
 
-      boolean updatedSelected = true;
-      boolean updatedAllowEbscoToAddTitles = true;
-      boolean updatedHidden = true;
-      String updatedBeginCoverage = "2003-01-01";
-      String updatedEndCoverage = "2004-01-01";
+    boolean updatedSelected = true;
+    boolean updatedAllowEbscoToAddTitles = true;
+    boolean updatedHidden = true;
+    String updatedBeginCoverage = "2003-01-01";
+    String updatedEndCoverage = "2004-01-01";
 
-      EqualToJsonPattern putBodyPattern =
-        new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
+    EqualToJsonPattern putBodyPattern =
+      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
 
-      PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
+    PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
 
-      packageData = packageData.toByIdBuilder()
-        .isSelected(updatedSelected)
-        .customCoverage(CoverageDates.builder()
-          .beginCoverage(updatedBeginCoverage)
-          .endCoverage(updatedEndCoverage)
-          .build())
-        .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
-        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-        .build();
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .build();
 
-      String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
 
-      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-selected-with-access-type.json"),
-        accessTypeId);
-      Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
+    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-selected-with-access-type.json"),
+      accessTypeId);
+    Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
 
-      verify(putRequestedFor(PACKAGE_URL_PATTERN)
-        .withRequestBody(putBodyPattern));
+    verify(putRequestedFor(PACKAGE_URL_PATTERN)
+      .withRequestBody(putBodyPattern));
 
-      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
-      assertEquals(updatedAllowEbscoToAddTitles, aPackage.getData().getAttributes().getAllowKbToAddTitles());
-      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
-      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
-      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+    assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+    assertEquals(updatedAllowEbscoToAddTitles, aPackage.getData().getAttributes().getAllowKbToAddTitles());
+    assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+    assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+    assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(1, accessTypeMappingsInDB.size());
-      assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
-      assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
-      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
-      assertNotNull(aPackage.getIncluded());
-      assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(1, accessTypeMappingsInDB.size());
+    assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
+    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+    assertNotNull(aPackage.getIncluded());
+    assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
+    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
   }
 
   @Test
   public void shouldDeleteAccessTypeMappingWhenRMAPIsend404() throws URISyntaxException, IOException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String currentAccessTypeId = accessTypes.get(0).getId();
-      String newAccessTypeId = accessTypes.get(1).getId();
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String currentAccessTypeId = accessTypes.get(0).getId();
+    String newAccessTypeId = accessTypes.get(1).getId();
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
 
-      PackageByIdData packageData = mapper
-        .readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class)
-        .toByIdBuilder()
-        .contentType("AggregatedFullText")
-        .build();
+    PackageByIdData packageData = mapper
+      .readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class)
+      .toByIdBuilder()
+      .contentType("AggregatedFullText")
+      .build();
 
-      String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
-      stubFor(get(PACKAGE_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withStatus(SC_NOT_FOUND)));
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+    stubFor(get(PACKAGE_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withStatus(SC_NOT_FOUND)));
 
-      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
-        newAccessTypeId);
-      putWithStatus(PACKAGES_PATH, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER);
+    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+      newAccessTypeId);
+    putWithStatus(PACKAGES_PATH, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER);
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(0, accessTypeMappingsInDB.size());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(0, accessTypeMappingsInDB.size());
   }
 
   @Test
@@ -790,178 +728,163 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndCreateNewAccessTypeMapping()
-    throws URISyntaxException, IOException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String accessTypeId = accessTypes.get(0).getId();
+      throws URISyntaxException, IOException {
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String accessTypeId = accessTypes.get(0).getId();
 
-      boolean updatedSelected = true;
-      boolean updatedHidden = true;
-      String updatedBeginCoverage = "2003-01-01";
-      String updatedEndCoverage = "2004-01-01";
-      String updatedPackageName = "name of the ages forever and ever";
+    boolean updatedSelected = true;
+    boolean updatedHidden = true;
+    String updatedBeginCoverage = "2003-01-01";
+    String updatedEndCoverage = "2004-01-01";
+    String updatedPackageName = "name of the ages forever and ever";
 
-      EqualToJsonPattern putBodyPattern =
-        new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
+    EqualToJsonPattern putBodyPattern =
+      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
 
-      PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
 
-      packageData = packageData.toByIdBuilder()
-        .isSelected(updatedSelected)
-        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-        .customCoverage(CoverageDates.builder()
-          .beginCoverage(updatedBeginCoverage)
-          .endCoverage(updatedEndCoverage)
-          .build())
-        .packageName(updatedPackageName)
-        .contentType("AggregatedFullText").build();
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .packageName(updatedPackageName)
+      .contentType("AggregatedFullText").build();
 
-      String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
-      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
-        accessTypeId);
-      Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
+    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+      accessTypeId);
+    Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
 
-      verify(putRequestedFor(PACKAGE_URL_PATTERN)
-        .withRequestBody(putBodyPattern));
+    verify(putRequestedFor(PACKAGE_URL_PATTERN)
+      .withRequestBody(putBodyPattern));
 
-      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
-      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
-      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
-      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
-      assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
-      assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+    assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+    assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+    assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+    assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+    assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
+    assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(1, accessTypeMappingsInDB.size());
-      assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
-      assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
-      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
-      assertNotNull(aPackage.getIncluded());
-      assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(1, accessTypeMappingsInDB.size());
+    assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
+    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+    assertNotNull(aPackage.getIncluded());
+    assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
+    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
   }
 
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndDeleteAccessTypeMapping() throws URISyntaxException, IOException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String accessTypeId = accessTypes.get(0).getId();
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String accessTypeId = accessTypes.get(0).getId();
 
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
 
-      boolean updatedSelected = true;
-      boolean updatedHidden = true;
-      String updatedBeginCoverage = "2003-01-01";
-      String updatedEndCoverage = "2004-01-01";
-      String updatedPackageName = "name of the ages forever and ever";
+    boolean updatedSelected = true;
+    boolean updatedHidden = true;
+    String updatedBeginCoverage = "2003-01-01";
+    String updatedEndCoverage = "2004-01-01";
+    String updatedPackageName = "name of the ages forever and ever";
 
-      EqualToJsonPattern putBodyPattern =
-        new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
+    EqualToJsonPattern putBodyPattern =
+      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
 
-      PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
 
-      packageData = packageData.toByIdBuilder()
-        .isSelected(updatedSelected)
-        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-        .customCoverage(CoverageDates.builder()
-          .beginCoverage(updatedBeginCoverage)
-          .endCoverage(updatedEndCoverage)
-          .build())
-        .packageName(updatedPackageName)
-        .contentType("AggregatedFullText").build();
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .packageName(updatedPackageName)
+      .contentType("AggregatedFullText").build();
 
-      String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
-      String putBody = readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json");
-      Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
+    String putBody = readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json");
+    Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
 
-      verify(putRequestedFor(PACKAGE_URL_PATTERN)
-        .withRequestBody(putBodyPattern));
+    verify(putRequestedFor(PACKAGE_URL_PATTERN)
+      .withRequestBody(putBodyPattern));
 
-      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
-      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
-      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
-      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
-      assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
-      assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+    assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+    assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+    assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+    assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+    assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
+    assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(0, accessTypeMappingsInDB.size());
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(0, accessTypeMappingsInDB.size());
 
-      assertNotNull(aPackage.getIncluded());
-      assertEquals(0, aPackage.getIncluded().size());
-      assertNull(aPackage.getData().getRelationships().getAccessType());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    assertNotNull(aPackage.getIncluded());
+    assertEquals(0, aPackage.getIncluded().size());
+    assertNull(aPackage.getData().getRelationships().getAccessType());
   }
 
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndUpdateAccessTypeMapping() throws URISyntaxException, IOException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String currentAccessTypeId = accessTypes.get(0).getId();
-      String newAccessTypeId = accessTypes.get(1).getId();
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String currentAccessTypeId = accessTypes.get(0).getId();
+    String newAccessTypeId = accessTypes.get(1).getId();
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
 
-      boolean updatedSelected = true;
-      boolean updatedHidden = true;
-      String updatedBeginCoverage = "2003-01-01";
-      String updatedEndCoverage = "2004-01-01";
-      String updatedPackageName = "name of the ages forever and ever";
+    boolean updatedSelected = true;
+    boolean updatedHidden = true;
+    String updatedBeginCoverage = "2003-01-01";
+    String updatedEndCoverage = "2004-01-01";
+    String updatedPackageName = "name of the ages forever and ever";
 
-      EqualToJsonPattern putBodyPattern =
-        new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
+    EqualToJsonPattern putBodyPattern =
+      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
 
-      PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
 
-      packageData = packageData.toByIdBuilder()
-        .isSelected(updatedSelected)
-        .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-        .customCoverage(CoverageDates.builder()
-          .beginCoverage(updatedBeginCoverage)
-          .endCoverage(updatedEndCoverage)
-          .build())
-        .packageName(updatedPackageName)
-        .contentType("AggregatedFullText").build();
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .packageName(updatedPackageName)
+      .contentType("AggregatedFullText").build();
 
-      String updatedPackageValue = mapper.writeValueAsString(packageData);
-      mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
+    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
-      String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
-        newAccessTypeId);
-      Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
+    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+      newAccessTypeId);
+    Package aPackage = putWithOk(PACKAGES_PATH, putBody, STUB_TOKEN_HEADER).as(Package.class);
 
-      verify(putRequestedFor(PACKAGE_URL_PATTERN)
-        .withRequestBody(putBodyPattern));
+    verify(putRequestedFor(PACKAGE_URL_PATTERN)
+      .withRequestBody(putBodyPattern));
 
-      assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
-      assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
-      assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
-      assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
-      assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
-      assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+    assertEquals(updatedSelected, aPackage.getData().getAttributes().getIsSelected());
+    assertEquals(updatedHidden, aPackage.getData().getAttributes().getVisibilityData().getIsHidden());
+    assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
+    assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
+    assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
+    assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(1, accessTypeMappingsInDB.size());
-      assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
-      assertEquals(newAccessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
-      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
-      assertNotNull(aPackage.getIncluded());
-      assertEquals(newAccessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(newAccessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(1, accessTypeMappingsInDB.size());
+    assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
+    assertEquals(newAccessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+    assertNotNull(aPackage.getIncluded());
+    assertEquals(newAccessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
+    assertEquals(newAccessTypeId, ((LinkedHashMap<?, ?>) aPackage.getIncluded().get(0)).get("id"));
   }
 
   @Test
@@ -1016,30 +939,25 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200OnPostPackageWithExistedAccessType() throws URISyntaxException, IOException {
-    try {
-      String accessTypeId = insertAccessType(testData(configuration.getId()).get(0), vertx);
+    String accessTypeId = insertAccessType(testData(configuration.getId()).get(0), vertx);
 
-      String packagePostRMAPIRequestFile = "requests/rmapi/packages/post-package.json";
-      String requestBody = String.format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"),
-        accessTypeId);
-      Package createdPackage = sendPost(requestBody).as(Package.class);
+    String packagePostRMAPIRequestFile = "requests/rmapi/packages/post-package.json";
+    String requestBody = String.format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"),
+      accessTypeId);
+    Package createdPackage = sendPost(requestBody).as(Package.class);
 
-      assertTrue(Objects.isNull(createdPackage.getData().getAttributes().getTags()));
-      EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRMAPIRequestFile), false, true);
-      verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
-        .withRequestBody(postBodyPattern));
+    assertTrue(Objects.isNull(createdPackage.getData().getAttributes().getTags()));
+    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRMAPIRequestFile), false, true);
+    verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
+      .withRequestBody(postBodyPattern));
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(1, accessTypeMappingsInDB.size());
-      assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
-      assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
-      assertNotNull(createdPackage.getIncluded());
-      assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
-      assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) createdPackage.getIncluded().get(0)).get("id"));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(1, accessTypeMappingsInDB.size());
+    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
+    assertNotNull(createdPackage.getIncluded());
+    assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
+    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) createdPackage.getIncluded().get(0)).get("id"));
   }
 
   @Test
@@ -1115,74 +1033,60 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesWithTagsOnGetWithResources() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, "295-2545963-2099944", RESOURCE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_2);
-      TagsTestUtil.insertTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_3);
+    insertTag(vertx, "295-2545963-2099944", RESOURCE, STUB_TAG_VALUE);
+    insertTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_2);
+    insertTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_3);
 
-      String query =
-        "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
+    String query =
+      "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
 
-      mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
-      String actual = getWithOk(PACKAGE_RESOURCES_PATH, STUB_TOKEN_HEADER).asString();
-      String expected = readFile(EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE);
+    String actual = getWithOk(PACKAGE_RESOURCES_PATH, STUB_TOKEN_HEADER).asString();
+    String expected = readFile(EXPECTED_RESOURCES_WITH_TAGS_STUB_FILE);
 
-      JSONAssert.assertEquals(expected, actual, false);
+    JSONAssert.assertEquals(expected, actual, false);
 
-      verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + query)));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    verify(1, getRequestedFor(urlEqualTo(RESOURCES_BY_PACKAGE_ID_URL + query)));
   }
 
   @Test
   public void shouldReturnResourcesWithAccessTypesOnGetWithResources() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
-      mockGetTitles();
+    mockGetTitles();
 
-      String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources"
-        + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-      ResourceCollection resourceCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(ResourceCollection.class);
-      List<ResourceCollectionItem> resources = resourceCollection.getData();
+    String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources"
+      + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+    ResourceCollection resourceCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(ResourceCollection.class);
+    List<ResourceCollectionItem> resources = resourceCollection.getData();
 
-      assertEquals(2, (int) resourceCollection.getMeta().getTotalResults());
-      assertEquals(2, resources.size());
-      assertThat(resources, everyItem(hasProperty("id",
-        anyOf(equalTo(STUB_MANAGED_RESOURCE_ID), equalTo(STUB_MANAGED_RESOURCE_ID_2))
-      )));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    assertEquals(2, (int) resourceCollection.getMeta().getTotalResults());
+    assertEquals(2, resources.size());
+    assertThat(resources, everyItem(hasProperty("id",
+      anyOf(equalTo(STUB_MANAGED_RESOURCE_ID), equalTo(STUB_MANAGED_RESOURCE_ID_2))
+    )));
   }
 
   @Test
-  public void shouldReturnResourcesWithAccessTypesOnGetWithResourcesWithPagination() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
+  public void shouldReturnResourcesWithAccessTypesOnGetWithResourcesWithPagination() throws IOException,
+      URISyntaxException {
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-      mockGetTitles();
+    mockGetTitles();
 
-      String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources?page=2&count=1&"
+    String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources?page=2&count=1&"
         + "filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-      ResourceCollection resourceCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(ResourceCollection.class);
-      List<ResourceCollectionItem> resources = resourceCollection.getData();
+    ResourceCollection resourceCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(ResourceCollection.class);
+    List<ResourceCollectionItem> resources = resourceCollection.getData();
 
-      assertEquals(2, (int) resourceCollection.getMeta().getTotalResults());
-      assertEquals(1, resources.size());
-      assertThat(resources, everyItem(hasProperty("id", equalTo(STUB_MANAGED_RESOURCE_ID))));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    assertEquals(2, (int) resourceCollection.getMeta().getTotalResults());
+    assertEquals(1, resources.size());
+    assertThat(resources, everyItem(hasProperty("id", equalTo(STUB_MANAGED_RESOURCE_ID))));
   }
 
   @Test
@@ -1197,24 +1101,19 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesWithOnSearchByTags() throws IOException, URISyntaxException {
-    try {
-      mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
+    mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
 
-      ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID)
+    ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID)
         .credentialsId(configuration.getId()).name(STUB_TITLE_NAME).build());
 
-      TagsTestUtil.insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RESOURCE, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RESOURCE, STUB_TAG_VALUE);
 
-      String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?filter[tags]=" + STUB_TAG_VALUE;
+    String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?filter[tags]=" + STUB_TAG_VALUE;
 
-      String actualResponse = getWithOk(packageResourcesUrl, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(packageResourcesUrl, STUB_TOKEN_HEADER).asString();
 
-      JSONAssert.assertEquals(readFile("responses/kb-ebsco/resources/expected-tagged-resources.json"), actualResponse,
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/resources/expected-tagged-resources.json"), actualResponse,
         false);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
-    }
   }
 
   @Test

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.collections4.CollectionUtils;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,18 +60,19 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   @Autowired
   private Converter<String, TagUniqueCollectionItem> tagUniqueConverter;
 
+  @After
+  public void tearDown() {
+    clearDataFromTable(vertx, TAGS_TABLE_NAME);
+  }
+
   @Test
   public void shouldReturnAllTagsSortedIfNotFilteredOnGet() {
     List<DbTag> tags = insertTags(ALL_TAGS, vertx);
 
-    try {
-      TagCollection col = getWithOk("eholdings/tags").as(TagCollection.class);
+    TagCollection col = getWithOk("eholdings/tags").as(TagCollection.class);
 
-      TagCollection expected = buildTagCollection(tags);
-      assertEquals(expected, col);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    TagCollection expected = buildTagCollection(tags);
+    assertEquals(expected, col);
   }
 
   @Test
@@ -85,44 +87,31 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   public void shouldFilterByRecordTypeOnGet() {
     List<DbTag> tags = insertTags(ALL_TAGS, vertx);
 
-    try {
-      TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider").as(TagCollection.class);
+    TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider").as(TagCollection.class);
 
-      TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG)));
-      assertEquals(expected, col);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG)));
+    assertEquals(expected, col);
   }
 
   @Test
   public void shouldFilterBySeveralRecordTypesOnGet() {
     List<DbTag> tags = insertTags(ALL_TAGS, vertx);
 
-    try {
-      TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider&filter[rectype]=title")
-          .as(TagCollection.class);
+    TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider&filter[rectype]=title").as(
+        TagCollection.class);
 
-      TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG).or(similarTo(TITLE_TAG))));
-      assertEquals(expected, col);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG).or(similarTo(TITLE_TAG))));
+    assertEquals(expected, col);
   }
 
   @Test
   public void shouldReturnEmptyCollectionIfFilteredOutOnGet() {
     insertTags(asList(PROVIDER_TAG, PACKAGE_TAG), vertx);
 
-    try {
-      TagCollection col = getWithOk("eholdings/tags?filter[rectype]=title")
-        .as(TagCollection.class);
+    TagCollection col = getWithOk("eholdings/tags?filter[rectype]=title").as(TagCollection.class);
 
-      TagCollection expected = buildTagCollection(Collections.emptyList());
-      assertEquals(expected, col);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    TagCollection expected = buildTagCollection(Collections.emptyList());
+    assertEquals(expected, col);
   }
 
   @Test
@@ -137,59 +126,43 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   public void shouldReturnAllUniqueTags() {
     List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
-    try {
-      TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
+    TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
 
-      assertEquals(4, col.getData().size());
-      assertEquals(Integer.valueOf(4), col.getMeta().getTotalResults());
-      assertTrue(checkContainingOfUniqueTags(tags, col));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    assertEquals(4, col.getData().size());
+    assertEquals(Integer.valueOf(4), col.getMeta().getTotalResults());
+    assertTrue(checkContainingOfUniqueTags(tags, col));
   }
 
   @Test
   public void shouldReturnEmptyUniqueTagsCollection() {
-    try {
-      TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
+    TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
 
-      assertEquals(0, col.getData().size());
-      assertEquals(Integer.valueOf(0), col.getMeta().getTotalResults());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    assertEquals(0, col.getData().size());
+    assertEquals(Integer.valueOf(0), col.getMeta().getTotalResults());
   }
 
   @Test
   public void shouldReturnListOfUniqueTagsWithParamsResources() {
     List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
-    try {
-      TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
+    TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
         TagUniqueCollection.class);
 
-      assertEquals(1, col.getData().size());
-      assertEquals(Integer.valueOf(1), col.getMeta().getTotalResults());
-      assertTrue(checkContainingOfUniqueTags(tags, col));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    assertEquals(1, col.getData().size());
+    assertEquals(Integer.valueOf(1), col.getMeta().getTotalResults());
+    assertTrue(checkContainingOfUniqueTags(tags, col));
   }
 
   @Test
   public void shouldReturnListOfUniqueTagsWithMultipleParams() {
     List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
-    try {
-      TagUniqueCollection col = getWithOk(
-        "eholdings/tags/summary?filter[rectype]=resource&filter[rectype]=provider").as(TagUniqueCollection.class);
+    TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource&filter[rectype]=provider").as(
+        TagUniqueCollection.class);
 
-      assertEquals(2, col.getData().size());
-      assertEquals(Integer.valueOf(2), col.getMeta().getTotalResults());
-      assertTrue(checkContainingOfUniqueTags(tags, col));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    assertEquals(2, col.getData().size());
+    assertEquals(Integer.valueOf(2), col.getMeta().getTotalResults());
+    assertTrue(checkContainingOfUniqueTags(tags, col));
   }
 
   @Test
