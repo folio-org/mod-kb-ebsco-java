@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -118,7 +119,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(403)
         ));
-
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
     credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
   }
 
@@ -126,7 +127,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void tearDown() {
     clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
   @Test
@@ -140,14 +140,14 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     assertEquals(Integer.valueOf(2), actual.getMeta().getTotalResults());
     assertEquals(2, actual.getData().size());
-    assertThat(actual.getData().get(0), allOf(
+    assertThat(actual.getData(), hasItem(allOf(
       hasProperty("id", equalTo(id0)),
       allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
-    ));
-    assertThat(actual.getData().get(1), allOf(
+    )));
+    assertThat(actual.getData(), hasItem(allOf(
       hasProperty("id", equalTo(id1)),
       allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
-    ));
+    )));
   }
 
   @Test
@@ -161,14 +161,14 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     assertEquals(Integer.valueOf(2), actual.getMeta().getTotalResults());
     assertEquals(2, actual.getData().size());
-    assertThat(actual.getData().get(0), allOf(
+    assertThat(actual.getData(), hasItem(allOf(
       hasProperty("id", equalTo(id0)),
       allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
-    ));
-    assertThat(actual.getData().get(1), allOf(
+    )));
+    assertThat(actual.getData(), hasItem(allOf(
       hasProperty("id", equalTo(id1)),
       allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
-    ));
+    )));
   }
 
   @Test

@@ -8,6 +8,7 @@ import static org.folio.repository.SqlQueryHelper.inCondition;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.SqlQueryHelper.leftJoinQuery;
 import static org.folio.repository.SqlQueryHelper.limitQuery;
+import static org.folio.repository.SqlQueryHelper.orderByQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereConditionsQuery;
@@ -60,7 +61,8 @@ public class AccessTypesTableConstants {
           groupByQuery(ACCESS_TYPE_ID_COLUMN), ID_COLUMN, ACCESS_TYPE_ID_COLUMN
       );
     SELECT_IDS_BY_CREDENTIALS_ID_QUERY = selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
-    SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY = selectWithCountUsage + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
+    SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY = selectWithCountUsage + " " + whereQuery(CREDENTIALS_ID_COLUMN) + " "
+      + orderByQuery(CREATED_DATE_COLUMN)+";";
     SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY = selectWithCountUsage + " " +
       whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
     SELECT_BY_CREDENTIALS_AND_NAMES_QUERY = selectQuery() + " "+ whereConditionsQuery(
