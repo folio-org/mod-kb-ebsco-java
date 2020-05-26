@@ -8,4 +8,4 @@ ALTER TABLE transaction_ids
 
 ALTER TABLE transaction_ids
   DROP CONSTRAINT IF EXISTS fk_transaction_ids_kb_credentials,
-  ADD CONSTRAINT fk_transaction_ids_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id);
+  ADD CONSTRAINT fk_transaction_ids_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id) ON DELETE CASCADE;

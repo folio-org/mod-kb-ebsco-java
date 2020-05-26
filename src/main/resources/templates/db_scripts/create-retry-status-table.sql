@@ -6,4 +6,4 @@ ALTER TABLE retry_status
 
 ALTER TABLE retry_status
   DROP CONSTRAINT IF EXISTS fk_retry_status_kb_credentials,
-  ADD CONSTRAINT fk_retry_status_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id);
+  ADD CONSTRAINT fk_retry_status_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id) ON DELETE CASCADE;

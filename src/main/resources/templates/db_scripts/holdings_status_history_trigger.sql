@@ -5,11 +5,15 @@ CREATE OR REPLACE FUNCTION process_holdings_status_audit() RETURNS TRIGGER AS $$
     BEGIN
         PERFORM set_config('search_path', TG_TABLE_SCHEMA, true);
         IF (TG_OP = 'DELETE') THEN
+          IF EXISTS (SELECT 1 FROM kb_credentials c WHERE c.id = OLD.credentials_id) THEN
             INSERT INTO holdings_status_audit(operation, updated_at, jsonb, credentials_id) SELECT 'DELETE', now(), OLD.jsonb, OLD.credentials_id;
+          END IF;
         ELSIF (TG_OP = 'UPDATE') THEN
             INSERT INTO holdings_status_audit(operation, updated_at, jsonb, credentials_id) SELECT 'UPDATE', now(), NEW.jsonb, NEW.credentials_id;
         ELSIF (TG_OP = 'INSERT') THEN
+          IF EXISTS (SELECT 1 FROM kb_credentials c WHERE c.id = NEW.credentials_id) THEN
             INSERT INTO holdings_status_audit(operation, updated_at, jsonb, credentials_id) SELECT 'INSERT', now(), NEW.jsonb, NEW.credentials_id;
+          END IF;
         END IF;
 		    PERFORM set_config('search_path', previous_search_path, true);
         RETURN NULL;

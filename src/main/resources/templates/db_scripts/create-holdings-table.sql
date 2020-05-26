@@ -17,4 +17,4 @@ ALTER TABLE holdings
 
 ALTER TABLE holdings
   DROP CONSTRAINT IF EXISTS fk_holdings_kb_credentials,
-  ADD CONSTRAINT fk_holdings_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id);
+  ADD CONSTRAINT fk_holdings_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id) ON DELETE CASCADE;

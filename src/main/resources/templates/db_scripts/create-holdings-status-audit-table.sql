@@ -6,6 +6,6 @@ ALTER TABLE holdings_status_audit
 
 ALTER TABLE holdings_status_audit
   DROP CONSTRAINT IF EXISTS fk_holdings_status_audit_kb_credentials,
-  ADD CONSTRAINT fk_holdings_status_audit_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id);
+  ADD CONSTRAINT fk_holdings_status_audit_kb_credentials FOREIGN KEY (credentials_id) REFERENCES kb_credentials (id) ON DELETE CASCADE;
 
 CREATE INDEX IF NOT EXISTS idx_holdings_status_audit_kb_credentialsid ON holdings_status_audit (credentials_id);

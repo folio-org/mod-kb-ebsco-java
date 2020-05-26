@@ -11,11 +11,6 @@ import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertTrue;
 
-import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
-import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
@@ -193,11 +188,6 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   }
 
   private void tearDownHoldingsData() {
-    clearDataFromTable(vertx, HOLDINGS_TABLE);
-    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
-    clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
-    clearDataFromTable(vertx, RETRY_STATUS_TABLE);
-    clearDataFromTable(vertx, TRANSACTION_ID_TABLE);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 }
