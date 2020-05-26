@@ -560,7 +560,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteAccessTypeOnDeleteRequest() throws IOException, URISyntaxException {
-    String accessTypeId = insertAccessTypes(testData(), vertx).get(0).getId();
+    String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).get(0).getId();
     insertAccessTypeMapping(STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, accessTypeId, vertx);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
     deleteResource(putBodyPattern);

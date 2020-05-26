@@ -28,6 +28,7 @@ import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.HoldingsTestUtil.addHolding;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
@@ -87,7 +88,6 @@ import org.folio.service.holdings.LoadServiceFacade;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.HoldingsTestUtil;
-import org.folio.util.KBTestUtil;
 import org.folio.util.TransactionIdTestUtil;
 
 @RunWith(VertxUnitRunner.class)
@@ -106,7 +106,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   private static final String DELETED_HOLDING_ID = "123356-3157070-19412030";
   private static final String UPDATED_HOLDING_ID = "123357-3157072-19412032";
   private static final String ADDED_HOLDING_ID = "36-7191-2435667";
-  private static final int TIMEOUT = 180000;
+  private static final int TIMEOUT = 60000;
   private static final int EXPECTED_LOADED_PAGES = 2;
   private static final int TEST_SNAPSHOT_RETRY_COUNT = 2;
   private static final String STUB_HOLDINGS_TITLE = "java-test-one";
@@ -151,10 +151,15 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatusNotStarted(vertx);
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
-    KBTestUtil.clearDataFromTable(vertx, TRANSACTION_ID_TABLE);
+
+    clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    clearDataFromTable(vertx, TRANSACTION_ID_TABLE);
+
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
   }
 
   @After
@@ -162,14 +167,10 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     if (interceptor != null) {
       vertx.eventBus().removeOutboundInterceptor(interceptor);
     }
-
-    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
   @Test
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
-
     runPostHoldingsWithMocks(context);
 
     final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
@@ -178,8 +179,6 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldSaveHoldingsWhenPreviousTransactionExpired(TestContext context) throws IOException, URISyntaxException {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
-
     TransactionIdTestUtil.addTransactionId(vertx, PREVIOUS_TRANSACTION_ID);
     runPostHoldingsWithMocks(context);
 
@@ -189,21 +188,23 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateHoldingsWithDeltas(TestContext context) throws IOException, URISyntaxException {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
-    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now());
-    HoldingsTestUtil.addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"), HoldingInfoInDB.class), Instant.now());
+    addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
+        HoldingInfoInDB.class), Instant.now());
+    addHolding(vertx, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"),
+        HoldingInfoInDB.class), Instant.now());
     TransactionIdTestUtil.addTransactionId(vertx, PREVIOUS_TRANSACTION_ID);
 
-    HoldingsDownloadTransaction previousTransaction = HoldingsDownloadTransaction.builder()
-      .creationDate(Instant.now().minus(500, ChronoUnit.HOURS).toString())
-      .transactionId(PREVIOUS_TRANSACTION_ID)
-      .build();
+    HoldingsDownloadTransaction previousTransaction = HoldingsDownloadTransaction.builder().creationDate(Instant.now()
+        .minus(500, ChronoUnit.HOURS).toString()).transactionId(PREVIOUS_TRANSACTION_ID).build();
     mockTransactionList(Collections.singletonList(previousTransaction));
     mockPostHoldings();
-    mockGet(new EqualToPattern(getStatusEndpoint(PREVIOUS_TRANSACTION_ID)), "responses/rmapi/holdings/status/get-transaction-status-completed.json");
-    mockGet(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), "responses/rmapi/holdings/status/get-transaction-status-completed.json");
+    mockGet(new EqualToPattern(getStatusEndpoint(PREVIOUS_TRANSACTION_ID)),
+        "responses/rmapi/holdings/status/get-transaction-status-completed.json");
+    mockGet(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)),
+        "responses/rmapi/holdings/status/get-transaction-status-completed.json");
     mockPostDeltaReport();
-    mockGet(new EqualToPattern(getDeltaReportStatusEndpoint()), "responses/rmapi/holdings/status/get-delta-report-status-completed.json");
+    mockGet(new EqualToPattern(getDeltaReportStatusEndpoint()),
+        "responses/rmapi/holdings/status/get-delta-report-status-completed.json");
     mockGet(new EqualToPattern(getDeltaEndpoint()), "responses/rmapi/holdings/delta/get-delta.json");
 
     Async async = context.async();
@@ -213,26 +214,24 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
     async.await(TIMEOUT);
 
-    Map<String, HoldingInfoInDB> holdings = HoldingsTestUtil.getHoldings(vertx)
-      .stream()
-      .collect(Collectors.toMap(this::getHoldingsId, Function.identity()));
+    Map<String, HoldingInfoInDB> holdings = HoldingsTestUtil.getHoldings(vertx).stream().collect(Collectors.toMap(
+        this::getHoldingsId, Function.identity()));
 
     assertFalse(holdings.containsKey(DELETED_HOLDING_ID));
 
     HoldingInfoInDB updatedHolding = holdings.get(UPDATED_HOLDING_ID);
-    assertEquals("Test Title Updated" ,updatedHolding.getPublicationTitle());
+    assertEquals("Test Title Updated", updatedHolding.getPublicationTitle());
     assertEquals("Test one Press Updated", updatedHolding.getPublisherName());
     assertEquals("Book", updatedHolding.getResourceType());
 
     HoldingInfoInDB addedHolding = holdings.get(ADDED_HOLDING_ID);
-    assertEquals("Added test title" ,addedHolding.getPublicationTitle());
+    assertEquals("Added test title", addedHolding.getPublicationTitle());
     assertEquals("Added test publisher", addedHolding.getPublisherName());
     assertEquals("Book", addedHolding.getResourceType());
   }
 
   @Test
   public void shouldRetryCreationOfSnapshotWhenItFails(TestContext context) throws IOException, URISyntaxException {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
 
     stubFor(
@@ -260,7 +259,6 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldStopRetryingAfterMultipleFailures(TestContext context) throws IOException, URISyntaxException {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
     mockGet(new EqualToPattern(getStatusEndpoint()), "responses/rmapi/holdings/status/get-transaction-status-completed.json");
 
@@ -294,7 +292,6 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context) throws IOException, URISyntaxException {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
     mockGet(new EqualToPattern(getStatusEndpoint()), "responses/rmapi/holdings/status/get-transaction-status-completed.json");
 
@@ -352,11 +349,11 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingPageWhenPageFails(TestContext context) throws IOException, URISyntaxException {
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     mockEmptyTransactionList();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
-    mockGet(new EqualToPattern(getStatusEndpoint()), "responses/rmapi/holdings/status/get-transaction-status-completed-one-page.json");
+    mockGet(new EqualToPattern(getStatusEndpoint()),
+      "responses/rmapi/holdings/status/get-transaction-status-completed-one-page.json");
 
     mockPostHoldings();
     mockResponseList(new UrlPathPattern(new EqualToPattern(getHoldingsEndpoint()), false),

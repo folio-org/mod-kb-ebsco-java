@@ -26,14 +26,12 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +55,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   static final String HOLDINGS_POST_HOLDINGS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/reports/holdings";
   static final String HOLDINGS_TRANSACTIONS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/reports/holdings/transactions";
   private static final String TRANSACTION_ID = "84113ab0-da4b-4a1f-a004-a9d686e54811";
-  private static final int TIMEOUT = 180000;
+  private static final int TIMEOUT = 60000;
 
   @Autowired
   TransactionLoadServiceFacade loadServiceFacade;

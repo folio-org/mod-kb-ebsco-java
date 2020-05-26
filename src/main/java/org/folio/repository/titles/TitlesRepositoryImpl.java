@@ -150,7 +150,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .orElse(null);
     return DbTitle.builder()
       .id(Long.parseLong(row.getString(ResourceTableConstants.ID_COLUMN)))
-      .name(row.getString(ResourceTableConstants.CREDENTIALS_ID_COLUMN))
+      .credentialsId(row.getString(ResourceTableConstants.CREDENTIALS_ID_COLUMN))
       .name(row.getString(ResourceTableConstants.NAME_COLUMN))
       .title(title)
       .build();

@@ -93,7 +93,6 @@ import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.util.HoldingsStatusAuditTestUtil;
 import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.HoldingsTestUtil;
-import org.folio.util.KBTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
@@ -101,7 +100,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   static final String HOLDINGS_POST_HOLDINGS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
   static final String HOLDINGS_GET_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
   static final String LOAD_HOLDINGS_ENDPOINT = "loadHoldings";
-  private static final int TIMEOUT = 180000;
+  private static final int TIMEOUT = 60000;
   private static final int EXPECTED_LOADED_PAGES = 2;
   private static final int TEST_SNAPSHOT_RETRY_COUNT = 2;
   private static final String STUB_HOLDINGS_TITLE = "java-test-one";
@@ -130,9 +129,9 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatusNotStarted(vertx);
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
   }
 
   @After
@@ -156,7 +155,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldNotStartLoadingWhenStatusInProgress() throws IOException, URISyntaxException {
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsStatusUtil.insertStatus(vertx, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID);
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
@@ -185,7 +184,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   @Test
   public void shouldClearOldStatusChangeRecords() throws IOException, URISyntaxException {
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
     HoldingsStatusAuditTestUtil.insertStatus(vertx, getStatusCompleted(1000), Instant.now().minus(60, ChronoUnit.DAYS));
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
@@ -203,7 +202,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldStartLoadingWhenStatusInProgressAndProcessTimedOut() throws IOException, URISyntaxException {
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
     HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
     status.getData().getAttributes()
       .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().minus(10, ChronoUnit.DAYS).atZone(ZoneId.systemDefault())));
