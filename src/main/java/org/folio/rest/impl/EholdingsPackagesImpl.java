@@ -482,7 +482,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       })
       .thenCompose(resourcesResult -> {
         mutableDbTitles.setValue(resourcesResult);
-        return holdingsService.getHoldingsByIds(resourcesResult, tenant);
+        return holdingsService.getHoldingsByIds(resourcesResult, context.getCredentialsId(), tenant);
       }).thenCompose(dbHoldings -> {
         mutableDbHoldings.setValue(dbHoldings);
         return context.getResourcesService()

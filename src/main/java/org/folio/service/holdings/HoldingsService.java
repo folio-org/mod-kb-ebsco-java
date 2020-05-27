@@ -14,6 +14,8 @@ import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.resources.ResourceInfoInDB;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.message.DeltaReportCreatedMessage;
+import org.folio.service.holdings.message.DeltaReportMessage;
+import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
@@ -39,7 +41,13 @@ public interface HoldingsService {
   }
 
   @GenIgnore
-  default CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<ResourceInfoInDB> resourcesResult, String tenant) {
+  default CompletableFuture<Void> loadHoldingsById(String credentialsId, RMAPITemplateContext context) {
+    //Default implementation is necessary for automatically generated vertx proxy
+    throw new UnsupportedOperationException();
+  }
+
+  @GenIgnore
+  default CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<ResourceInfoInDB> resourcesResult, String credentialsId, String tenant) {
     throw new UnsupportedOperationException();
   }
 

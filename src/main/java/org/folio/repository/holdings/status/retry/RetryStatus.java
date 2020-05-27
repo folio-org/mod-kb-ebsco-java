@@ -1,4 +1,4 @@
-package org.folio.repository.holdings.status;
+package org.folio.repository.holdings.status.retry;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

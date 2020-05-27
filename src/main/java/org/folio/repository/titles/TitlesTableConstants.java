@@ -19,7 +19,9 @@ public class TitlesTableConstants {
       "FROM %s WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "='resource'";
 
   public static final String SELECT_TITLES_BY_RESOURCE_TAGS =
-    "SELECT DISTINCT (regexp_split_to_array(resources.id, '-'))[3] as id, resources.name as name, holdings.jsonb as holding " +
+    "SELECT DISTINCT (regexp_split_to_array(resources.id, '-'))[3] as id, resources.name as name, " +
+      "holdings.id as h_id, holdings.credentials_id, holdings.vendor_id, holdings.package_id, holdings.title_id, " +
+      "holdings.resource_type, holdings.publisher_name, holdings.publication_title " +
       "FROM %s as resources " +
       "LEFT JOIN %s as tags ON " +
       "tags.record_id = resources.id " +

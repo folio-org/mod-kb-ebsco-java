@@ -1,10 +1,9 @@
 package org.folio.util;
 
-import static org.folio.repository.holdings.HoldingsTableConstants.JSONB_COLUMN;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.ID_COLUMN;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.PROCESS_ID_COLUMN;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.Arrays;
@@ -21,15 +20,15 @@ import org.folio.rest.persist.PostgresClient;
 public class HoldingsStatusUtil {
 
   public static String PROCESS_ID = "926223cc-bd21-4fe2-af75-b8e82cfecad3";
-  public static HoldingsLoadingStatus insertStatusNotStarted(Vertx vertx) {
-    return insertStatus(vertx, getStatusNotStarted(), PROCESS_ID );
+  public static HoldingsLoadingStatus insertStatusNotStarted(String credentialsId, Vertx vertx) {
+    return insertStatus(credentialsId, getStatusNotStarted(), PROCESS_ID, vertx);
   }
 
-  public static HoldingsLoadingStatus insertStatus(Vertx vertx, HoldingsLoadingStatus status, String processId) {
+  public static HoldingsLoadingStatus insertStatus(String credentialsId, HoldingsLoadingStatus status, String processId, Vertx vertx) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx)
-      .execute("INSERT INTO " + holdingsStatusTestTable() + " (" + ID_COLUMN + ", " + JSONB_COLUMN + ", " + PROCESS_ID_COLUMN + " ) VALUES (?,?,?)",
-        new JsonArray(Arrays.asList(UUID.randomUUID().toString(), Json.encode(status), processId)),
+      .execute(String.format(INSERT_LOADING_STATUS, holdingsStatusTestTable(), createPlaceholders(4)),
+        new JsonArray(Arrays.asList(UUID.randomUUID().toString(), credentialsId, Json.encode(status), processId)),
          event -> future.complete(null));
     return future.join();
   }

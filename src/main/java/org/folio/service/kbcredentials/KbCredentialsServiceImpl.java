@@ -3,6 +3,7 @@ package org.folio.service.kbcredentials;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
@@ -21,6 +22,9 @@ import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
+import org.folio.repository.holdings.status.HoldingsStatusRepository;
+import org.folio.repository.holdings.status.retry.RetryStatus;
+import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -36,6 +40,10 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Autowired
   private KbCredentialsRepository repository;
+  @Autowired
+  private HoldingsStatusRepository holdingsStatusRepository;
+  @Autowired
+  private RetryStatusRepository retryStatusRepository;
 
   @Autowired
   private Converter<KbCredentials, Configuration> configurationConverter;
@@ -84,6 +92,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   public CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders) {
     postBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
+    final String tenantId = tenantId(okapiHeaders);
     return verifyCredentials(kbCredentials, okapiHeaders)
       .thenCompose(o -> fetchUserInfo(okapiHeaders))
       .thenApply(userInfo -> requireNonNull(credentialsToDBConverter.convert(kbCredentials))
@@ -92,8 +101,17 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .createdByUserId(userInfo.getUserId())
         .createdByUserName(userInfo.getUserName())
         .build())
-      .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
-      .thenApply(credentialsFromDBConverter::convert);
+      .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId))
+      .thenApply(credentialsFromDBConverter::convert)
+      .thenApply(credentials -> insertLoadingStatusNotStarted(credentials, tenantId));
+  }
+
+  private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
+    final String credentialsId = credentials.getId();
+    holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
+      .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
+      .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
+    return credentials;
   }
 
   @Override

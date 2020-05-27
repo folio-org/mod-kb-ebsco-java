@@ -76,10 +76,10 @@ public final class KBTestUtil {
    *
    * @param wiremockUrl wiremock url with port
    */
-  public static void mockDefaultConfiguration(String wiremockUrl) throws IOException, URISyntaxException {
-    String configurationsFile = "responses/kb-ebsco/configuration/get-configuration.json";
-    mockConfiguration(configurationsFile, wiremockUrl);
-  }
+//  public static void mockDefaultConfiguration(String wiremockUrl) throws IOException, URISyntaxException {
+//    String configurationsFile = "responses/kb-ebsco/configuration/get-configuration.json";
+//    mockConfiguration(configurationsFile, wiremockUrl);
+//  }
 
   public static void setupDefaultKBConfiguration(String wiremockUrl, Vertx vertx) {
     insertKbCredentials(wiremockUrl, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
