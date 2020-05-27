@@ -9,9 +9,10 @@ import org.folio.holdingsiq.model.PackageId;
 
 @Value
 @Builder
-public class PackageInfoInDB {
-  private PackageId id;
-  private String name;
-  private String contentType;
-  private List<String> tags;
+public class DbPackage {
+  PackageId id;
+  String credentialsId;
+  String name;
+  String contentType;
+  List<String> tags;
 }

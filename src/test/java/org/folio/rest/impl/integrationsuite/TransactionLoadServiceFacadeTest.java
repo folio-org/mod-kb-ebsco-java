@@ -61,7 +61,7 @@ import org.folio.service.holdings.message.LoadHoldingsMessage;
 public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
 
   private static final String TRANSACTION_ID = "84113ab0-da4b-4a1f-a004-a9d686e54811";
-  private static final int TIMEOUT = 180000;
+  private static final int TIMEOUT = 60000;
 
   @Autowired
   TransactionLoadServiceFacade loadServiceFacade;

@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 
@@ -10,6 +11,7 @@ import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
+import static org.folio.rest.util.IdParser.resourceIdToString;
 import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
@@ -32,6 +34,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -48,6 +51,7 @@ import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
+import org.folio.repository.resources.DbResource;
 import org.folio.repository.resources.ResourceRepository;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.aspect.HandleValidationErrors;
@@ -64,9 +68,9 @@ import org.folio.rest.jaxrs.model.ResourceTags;
 import org.folio.rest.jaxrs.model.ResourceTagsDataAttributes;
 import org.folio.rest.jaxrs.model.ResourceTagsItem;
 import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
-import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
 import org.folio.rest.util.ErrorHandler;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
@@ -77,6 +81,7 @@ import org.folio.rmapi.result.ObjectsForPostResourceResult;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
+import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
@@ -109,6 +114,10 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private AccessTypeMappingsService accessTypeMappingsService;
   @Autowired
   private RelatedEntitiesLoader relatedEntitiesLoader;
+  @Autowired
+  @Qualifier("securedUserCredentialsService")
+  private UserKbCredentialsService userKbCredentialsService;
+
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -206,12 +215,12 @@ public class EholdingsResourcesImpl implements EholdingsResources {
                                                     Map<String, String> okapiHeaders,
                                                     Handler<AsyncResult<Response>> asyncResultHandler,
                                                     Context vertxContext) {
-    CompletableFuture.completedFuture(null)
-      .thenCompose(o -> {
+    userKbCredentialsService.findByUser(okapiHeaders)
+      .thenCompose(creds -> {
         ResourceTagsDataAttributes attributes = entity.getData().getAttributes();
         resourceTagsPutBodyValidator.validate(entity, attributes);
-        return updateResourceTags(resourceId, entity.getData().getAttributes().getName(), attributes.getTags(),
-          new OkapiData(okapiHeaders).getTenant())
+        return updateResourceTags(createDbResource(resourceId, creds.getId(), attributes),
+            new OkapiData(okapiHeaders).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
             Future.succeededFuture(PutEholdingsResourcesTagsByResourceIdResponse.respond200WithApplicationVndApiJson(
               convertToResourceTags(attributes)))));
@@ -282,13 +291,16 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private CompletableFuture<Void> deleteAssignedResources(String resourceId, RMAPITemplateContext context) {
     CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, resourceId, context);
-    CompletableFuture<Void> deleteTags = deleteTags(resourceId, context.getOkapiData().getTenant());
+    CompletableFuture<Void> deleteTags = deleteTags(resourceId, context);
 
     return CompletableFuture.allOf(deleteAccessMapping, deleteTags);
   }
 
-  private CompletableFuture<Void> deleteTags(String resourceId, String tenant) {
-    return resourceRepository.delete(resourceId, tenant)
+  private CompletableFuture<Void> deleteTags(String resourceId, RMAPITemplateContext context) {
+    String tenant = context.getOkapiData().getTenant();
+    String credentialsId = context.getCredentialsId();
+
+    return resourceRepository.delete(resourceId, credentialsId, tenant)
       .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
       .thenCompose(aBoolean -> CompletableFuture.completedFuture(null));
   }
@@ -310,20 +322,20 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         new ObjectsForPostResourceResult(titleFuture.join(), packageFuture.join(), titles)));
   }
 
-  private CompletableFuture<Void> updateStoredResource(String resourceId, String name, String tenant, Tags tags) {
-    if (!tags.getTagList().isEmpty()) {
-      return resourceRepository.save(resourceId, name, tenant);
+  private CompletableFuture<Void> updateStoredResource(DbResource resource, String tenant) {
+    if (isNotEmpty(resource.getTags())) {
+      return resourceRepository.save(resource, tenant);
     }
-    return resourceRepository.delete(resourceId, tenant);
+    return resourceRepository.delete(resourceIdToString(resource.getId()), resource.getCredentialsId(), tenant);
   }
 
-  private CompletableFuture<Void> updateResourceTags(String resourceId, String name, Tags tags, String tenant) {
-    if (Objects.isNull(tags)) {
+  private CompletableFuture<Void> updateResourceTags(DbResource resource, String tenant) {
+    if (Objects.isNull(resource.getTags())) {
       return CompletableFuture.completedFuture(null);
     } else {
-      return updateStoredResource(resourceId, name, tenant, tags)
+      return updateStoredResource(resource, tenant)
         .thenCompose(resourceUpdate -> tagRepository
-          .updateRecordTags(tenant, resourceId, RecordType.RESOURCE, tags.getTagList()))
+          .updateRecordTags(tenant, resourceIdToString(resource.getId()), RecordType.RESOURCE, resource.getTags()))
         .thenApply(updated -> null);
     }
   }
@@ -352,4 +364,15 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         .entity(createError(RESOURCE_NOT_FOUND_MESSAGE))
         .build();
   }
+
+  private DbResource createDbResource(String resourceId, String credentialsId,
+    ResourceTagsDataAttributes attributes) {
+    return DbResource.builder()
+      .id(IdParser.parseResourceId(resourceId))
+      .credentialsId(credentialsId)
+      .name(attributes.getName())
+      .tags(attributes.getTags() != null ? attributes.getTags().getTagList() : null)
+      .build();
+  }
+
 }

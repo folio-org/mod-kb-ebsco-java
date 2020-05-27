@@ -1,5 +1,6 @@
 package org.folio.repository.holdings.status;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.ListUtils.createPlaceholders;
@@ -63,7 +64,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
@@ -84,7 +85,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     Promise<UpdateResult> promise = Promise.promise();
     final JsonArray params = createParams(Collections.singleton(credentialsId));
     pgClient(tenantId).execute(query, params, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override

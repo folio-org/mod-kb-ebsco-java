@@ -2,6 +2,7 @@ package org.folio.repository.holdings.status.retry;
 
 import static java.util.Collections.singletonList;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
@@ -56,7 +57,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, createInsertParameters(credentialsId, status), promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
@@ -66,7 +67,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     LOG.info("Do update query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
@@ -75,7 +76,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     LOG.info("Do delete query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, new JsonArray().add(credentialsId), promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   private JsonArray createInsertParameters(String credentialsId, RetryStatus retryStatus) {

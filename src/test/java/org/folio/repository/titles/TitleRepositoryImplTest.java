@@ -25,13 +25,13 @@ public class TitleRepositoryImplTest {
 
   @Test
   public void shouldReturnZeroWhenTagListIsEmpty() {
-    int count = repository.countTitlesByResourceTags(Collections.emptyList(), STUB_TENANT).join();
+    int count = repository.countTitlesByResourceTags(Collections.emptyList(), null, STUB_TENANT).join();
     assertEquals(0, count);
   }
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<DbTitle> titles = repository.getTitlesByResourceTags(Collections.emptyList(), 1, 25, STUB_TENANT).join();
+    List<DbTitle> titles = repository.getTitlesByResourceTags(Collections.emptyList(), 1, 25, null, STUB_TENANT).join();
     assertThat(titles, empty());
   }
 }

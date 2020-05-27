@@ -8,39 +8,39 @@
       "customSnippetPath": "create-tags-table.sql"
     },
     {
+      "tableName": "kb_credentials",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.3.2",
+      "withMetadata": false,
+      "withAuditing": false,
+      "customSnippetPath": "create-kb-credentials-table.sql"
+    },
+    {
       "tableName": "packages",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-packages-table.sql"
     },
     {
       "tableName": "providers",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-providers-table.sql"
     },
     {
       "tableName": "resources",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-resources-table.sql"
     },
     {
       "tableName": "titles",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-titles-table.sql"
-    },
-    {
-      "tableName": "kb_credentials",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.3.2",
-      "withMetadata": false,
-      "withAuditing": false,
-      "customSnippetPath": "create-kb-credentials-table.sql"
     },
     {
       "tableName": "assigned_users",

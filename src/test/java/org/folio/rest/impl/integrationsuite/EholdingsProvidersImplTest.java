@@ -66,6 +66,7 @@ import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.PackagesTestUtil.setUpPackage;
+import static org.folio.util.TagsTestUtil.insertTag;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -137,6 +138,11 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
+    clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+    clearDataFromTable(vertx, TAGS_TABLE_NAME);
+    clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+    clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
@@ -175,11 +181,10 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProvidersOnSearchByTagsOnly() {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE_2);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE_3);
+      insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+      insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
+      insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE_2);
+      insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE_3);
 
       setUpTaggedProviders();
 
@@ -193,160 +198,122 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(2, providers.size());
       assertEquals(STUB_VENDOR_NAME, providers.get(0).getAttributes().getName());
       assertEquals(STUB_VENDOR_NAME_2, providers.get(1).getAttributes().getName());
-
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
   }
 
   @Test
   public void shouldReturnPackagesOnSearchByProviderIdAndTagsOnly() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_2);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
+    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_2);
 
+    PackagesTestUtil.setUpPackages(vertx, configuration.getId());
 
-      PackagesTestUtil.setUpPackages(vertx);
+    PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE + ","
+        + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
 
-      PackageCollection packageCollection =
-        getWithOk(PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
-          .as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      List<PackageCollectionItem> packages = packageCollection.getData();
-
-      assertEquals(1, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertThat(packages.get(0).getAttributes().getTags().getTagList(),
-        containsInAnyOrder(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(1, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertThat(packages.get(0).getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE,
+        STUB_TAG_VALUE_2));
+    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnPackagesOnSearchByProviderIdAndTagsWithPagination() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_4, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_5, PACKAGE, STUB_TAG_VALUE_2);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_4, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_5, PACKAGE, STUB_TAG_VALUE_2);
 
-      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-      setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
-      setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
+    String credentialsId = configuration.getId();
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
 
-      PackageCollection packageCollection =
-        getWithOk(PROVIDER_PACKAGES + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2,
-          STUB_TOKEN_HEADER).as(PackageCollection.class);
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE
+        + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnPackagesOnSearchByProviderIdAndAccessTypeWithPagination() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(1).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(1).getId(), vertx);
 
-      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-      setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
-      setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
+    String credentialsId = configuration.getId();
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
-      String resourcePath = PROVIDER_PACKAGES + "?page=2&count=1&filter[access-type]="
-        + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-      PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    String resourcePath = PROVIDER_PACKAGES + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
+        + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
 
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(0).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(0).getId(), vertx);
 
-      mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
+    mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
 
-      String resourcePath = PROVIDER_PACKAGES + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-      PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    String resourcePath = PROVIDER_PACKAGES + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(0, packages.size());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(0, packages.size());
   }
 
   @Test
   public void shouldReturnEmptyResponseWhenProvidersReturnedWithErrorOnSearchByTags() {
-    try {
-      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
-      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
+    String credentialsId = configuration.getId();
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, credentialsId, STUB_VENDOR_NAME_2));
 
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
 
-      mockGet(new RegexPattern(".*vendors/.*"), SC_INTERNAL_SERVER_ERROR);
+    mockGet(new RegexPattern(".*vendors/.*"), SC_INTERNAL_SERVER_ERROR);
 
-      ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE,
+    ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE,
         STUB_TOKEN_HEADER).as(ProviderCollection.class);
-      List<Providers> providers = providerCollection.getData();
+    List<Providers> providers = providerCollection.getData();
 
-      assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
-      assertEquals(0, providers.size());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
+    assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
+    assertEquals(0, providers.size());
   }
 
   @Test
   public void shouldReturnProvidersOnSearchWithTagsAndPagination() {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE);
 
-      setUpTaggedProviders();
+    setUpTaggedProviders();
 
-      ProviderCollection providerCollection =
-        getWithOk(PROVIDER_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE, STUB_TOKEN_HEADER)
-          .as(ProviderCollection.class);
-      List<Providers> providers = providerCollection.getData();
+    ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE,
+        STUB_TOKEN_HEADER).as(ProviderCollection.class);
+    List<Providers> providers = providerCollection.getData();
 
-      assertEquals(3, (int) providerCollection.getMeta().getTotalResults());
-      assertEquals(1, providers.size());
-      assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
+    assertEquals(3, (int) providerCollection.getMeta().getTotalResults());
+    assertEquals(1, providers.size());
+    assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
   }
 
   @Test
@@ -405,22 +372,15 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProviderWithTagWhenValidId() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
 
-      String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
+    String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
 
-      stubFor(
-        get(PROVIDER_URL_PATTERN)
-          .willReturn(new ResponseDefinitionBuilder()
-            .withBody(readFile(stubResponseFile))));
+    stubFor(get(PROVIDER_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
-      Provider provider = getWithOk(PROVIDER_BY_ID, STUB_TOKEN_HEADER).as(Provider.class);
+    Provider provider = getWithOk(PROVIDER_BY_ID, STUB_TOKEN_HEADER).as(Provider.class);
 
-      assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
 
   @Test
@@ -464,29 +424,19 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateTagsOnPutTags() throws IOException, URISyntaxException {
-    try {
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
+    assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
   }
 
   @Test
   public void shouldUpdateTagsOnPutTagsWithAlreadyExistingTags() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
+    assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
   }
 
   @Test
@@ -558,23 +508,18 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProviderPackagesWithTags() throws IOException, URISyntaxException {
-    try {
-      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
+    setUpPackage(vertx, configuration.getId(), STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
 
 
-      mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
+    mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
 
-      String actual = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).asString();
-      String expected = readFile(
+    String actual = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).asString();
+    String expected = readFile(
         "responses/kb-ebsco/packages/expected-package-collection-with-one-element-with-tags.json");
 
-      JSONAssert.assertEquals(expected, actual, false);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    JSONAssert.assertEquals(expected, actual, false);
   }
 
   @Test
@@ -652,16 +597,18 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .build());
   }
 
-  private ProvidersTestUtil.DbProviders buildDbProvider(String id, String name) {
+  private ProvidersTestUtil.DbProviders buildDbProvider(String id, String credentialsId, String name) {
     return ProvidersTestUtil.DbProviders.builder()
       .id(String.valueOf(id))
+      .credentialsId(credentialsId)
       .name(name).build();
   }
 
   private void setUpTaggedProviders() {
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, STUB_VENDOR_NAME_3));
+    String credentialsId = configuration.getId();
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, credentialsId, STUB_VENDOR_NAME_2));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, credentialsId, STUB_VENDOR_NAME_3));
 
     mockProviderWithName(STUB_VENDOR_ID, STUB_VENDOR_NAME);
     mockProviderWithName(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2);

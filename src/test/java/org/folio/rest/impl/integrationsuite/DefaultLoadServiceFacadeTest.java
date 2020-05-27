@@ -55,7 +55,7 @@ import org.folio.service.holdings.message.LoadHoldingsMessage;
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
 
-  private static final int TIMEOUT = 180000;
+  private static final int TIMEOUT = 60000;
 
   @Autowired
   private DefaultLoadServiceFacade loadServiceFacade;

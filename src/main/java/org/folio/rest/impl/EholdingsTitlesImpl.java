@@ -1,5 +1,7 @@
 package org.folio.rest.impl;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
@@ -141,9 +143,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().postTitle(titlePost, packageId)
-          .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, false)))
+          .thenCompose(title -> completedFuture(new TitleResult(title, false)))
           .thenCompose(titleResult ->
-            updateTags(titleResult, context.getOkapiData().getTenant(), entity.getData().getAttributes().getTags()))
+            updateTags(titleResult, context, entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
   }
@@ -161,7 +163,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         context.getTitlesService().retrieveTitle(parsedTitleId)
           .thenCompose(title -> {
             if (BooleanUtils.isNotTrue(title.getIsTitleCustom())) {
-              return CompletableFuture.completedFuture(null);
+              return completedFuture(null);
             }
             CustomerResources resource = title.getCustomerResourcesList().get(0);
             ResourcePut resourcePutRequest =
@@ -171,9 +173,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           })
           .thenCompose(o -> context.getTitlesService().retrieveTitle(parsedTitleId))
           .thenCompose(title ->
-            updateTags(new TitleResult(title, false),
-              context.getOkapiData().getTenant(),
-              entity.getData().getAttributes().getTags()))
+            updateTags(new TitleResult(title, false), context, entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
   }
@@ -188,7 +188,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(titleIdLong)
-          .thenCompose(title -> CompletableFuture.completedFuture(new TitleResult(title, includeResource)))
+          .thenCompose(title -> completedFuture(new TitleResult(title, includeResource)))
           .thenCompose(result -> loadTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -204,11 +204,12 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
 
     String tenant = context.getOkapiData().getTenant();
+    String credentialsId = context.getCredentialsId();
 
-    return titlesRepository.countTitlesByResourceTags(tags, tenant)
+    return titlesRepository.countTitlesByResourceTags(tags, credentialsId, tenant)
       .thenCompose(resultsCount -> {
         totalResults.setValue(resultsCount);
-        return titlesRepository.getTitlesByResourceTags(tags, page, count, tenant);
+        return titlesRepository.getTitlesByResourceTags(tags, page, count, credentialsId, tenant);
       })
       .thenCompose(dbTitles -> {
         mutableDbTitles.setValue(dbTitles);
@@ -265,11 +266,14 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     }
   }
 
-  private CompletableFuture<TitleResult> updateTags(TitleResult result, String tenant, Tags tags) {
+  private CompletableFuture<TitleResult> updateTags(TitleResult result, RMAPITemplateContext context, Tags tags) {
     if (Objects.isNull(tags)) {
-      return CompletableFuture.completedFuture(result);
+      return completedFuture(result);
     } else {
-      return updateStoredTitles(result, tags, tenant)
+      String tenant = context.getOkapiData().getTenant();
+      String credentialsId = context.getCredentialsId();
+
+      return updateStoredTitles(createDbTitle(result, credentialsId), tags, tenant)
         .thenCompose(o -> tagRepository.updateRecordTags(tenant, String.valueOf(
           result.getTitle().getTitleId()), RecordType.TITLE, tags.getTagList()))
         .thenApply(updated -> {
@@ -279,11 +283,19 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     }
   }
 
-  private CompletableFuture<Void> updateStoredTitles(TitleResult result, Tags tags, String tenant) {
+  private DbTitle createDbTitle(TitleResult result, String credentialsId) {
+    return DbTitle.builder()
+      .id(result.getTitle().getTitleId().longValue())
+      .name(result.getTitle().getTitleName())
+      .credentialsId(credentialsId)
+      .title(result.getTitle())
+      .build();
+  }
 
+  private CompletableFuture<Void> updateStoredTitles(DbTitle dbTitle, Tags tags, String tenant) {
     if (!tags.getTagList().isEmpty()) {
-      return titlesRepository.saveTitle(result.getTitle(), tenant);
+      return titlesRepository.save(dbTitle, tenant);
     }
-    return titlesRepository.deleteTitle(String.valueOf(result.getTitle().getTitleId()), tenant);
+    return titlesRepository.delete(dbTitle.getId(), dbTitle.getCredentialsId(), tenant);
   }
 }

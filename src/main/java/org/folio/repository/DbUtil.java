@@ -16,6 +16,7 @@ import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -24,6 +25,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.UpdateResult;
 
+import org.folio.db.DbUtils;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DbExcUtils;
 import org.folio.rest.persist.PostgresClient;
@@ -31,14 +33,15 @@ import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class DbUtil {
 
+  public static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
+  public static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
+  public static final String SELECT_LOG_MESSAGE = "Do select query = {}";
+
   private DbUtil() {
   }
 
-  public static JsonArray createInsertOrUpdateParameters(String id, String name) {
-    return new JsonArray()
-      .add(id)
-      .add(name)
-      .add(name);
+  public static JsonArray createInsertOrUpdateParameters(String id, String credentialsId, String name) {
+    return DbUtils.createParams(Arrays.asList(id, credentialsId, name, name));
   }
 
   private static String getTableName(String tenantId, String tableName) {

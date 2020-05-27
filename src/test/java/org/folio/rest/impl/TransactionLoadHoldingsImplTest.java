@@ -106,7 +106,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   private static final String DELETED_HOLDING_ID = "123356-3157070-19412030";
   private static final String UPDATED_HOLDING_ID = "123357-3157072-19412032";
   private static final String ADDED_HOLDING_ID = "36-7191-2435667";
-  private static final int TIMEOUT = 180000;
+  private static final int TIMEOUT = 60000;
   private static final int EXPECTED_LOADED_PAGES = 2;
   private static final int TEST_SNAPSHOT_RETRY_COUNT = 2;
   private static final String STUB_HOLDINGS_TITLE = "java-test-one";

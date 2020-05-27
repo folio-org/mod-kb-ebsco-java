@@ -118,6 +118,10 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
+    clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+    clearDataFromTable(vertx, TAGS_TABLE_NAME);
+    clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
@@ -135,18 +139,14 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourceWithTags() throws IOException, URISyntaxException {
-    try {
-      insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-      String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
+    insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
 
-      mockResource(stubResponseFile);
+    mockResource(stubResponseFile);
 
-      Resource resource = getWithOk(STUB_MANAGED_RESOURCE_PATH, STUB_TOKEN_HEADER).as(Resource.class);
+    Resource resource = getWithOk(STUB_MANAGED_RESOURCE_PATH, STUB_TOKEN_HEADER).as(Resource.class);
 
-      assertTrue(resource.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    assertTrue(resource.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
 
   @Test
@@ -330,60 +330,47 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldCreateNewAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String accessTypeId = accessTypes.get(0).getId();
-      String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
-      String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource-with-access-type.json";
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String accessTypeId = accessTypes.get(0).getId();
+    String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
+    String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource-with-access-type.json";
 
-      String requestBody = format(readFile("requests/kb-ebsco/resource/put-resource-with-access-type.json"),
+    String requestBody = format(readFile("requests/kb-ebsco/resource/put-resource-with-access-type.json"),
         accessTypeId);
-      String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT,
+    String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT,
         STUB_MANAGED_RESOURCE_ID, requestBody);
 
-      String expectedJson = format(readFile(expectedResourceFile), accessTypeId, accessTypeId);
-      JSONAssert.assertEquals(expectedJson, actualResponse, false);
+    String expectedJson = format(readFile(expectedResourceFile), accessTypeId, accessTypeId);
+    JSONAssert.assertEquals(expectedJson, actualResponse, false);
 
-      verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true))
-        .withRequestBody(
-          equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)).withRequestBody(
+        equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(1, accessTypeMappingsInDB.size());
-      assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
-      assertEquals(RESOURCE, accessTypeMappingsInDB.get(0).getRecordType());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(1, accessTypeMappingsInDB.size());
+    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEquals(RESOURCE, accessTypeMappingsInDB.get(0).getRecordType());
   }
 
   @Test
   public void shouldDeleteAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      String accessTypeId = accessTypes.get(0).getId();
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypeId, vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    String accessTypeId = accessTypes.get(0).getId();
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypeId, vertx);
 
-      String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
-      String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource.json";
+    String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
+    String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource.json";
 
-      String actualResponse =
-        mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT, STUB_MANAGED_RESOURCE_ID,
-          readFile("requests/kb-ebsco/resource/put-managed-resource.json"));
+    String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT,
+        STUB_MANAGED_RESOURCE_ID, readFile("requests/kb-ebsco/resource/put-managed-resource.json"));
 
-      JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, false);
+    JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, false);
 
-      verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true))
-        .withRequestBody(
-          equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)).withRequestBody(
+        equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
 
-      List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-      assertEquals(0, accessTypeMappingsInDB.size());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
+    assertEquals(0, accessTypeMappingsInDB.size());
   }
 
   @Test
@@ -450,31 +437,21 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateTagsOnSuccessfulTagsPut() throws IOException, URISyntaxException {
-    try {
-      List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
-      sendPutTags(tags);
-      List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
-      assertEquals(1, resources.size());
-      assertEquals(STUB_CUSTOM_RESOURCE_ID, resources.get(0).getId());
-      assertEquals(STUB_VENDOR_NAME, resources.get(0).getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
-    }
+    List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
+    sendPutTags(tags);
+    List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
+    assertEquals(1, resources.size());
+    assertEquals(STUB_CUSTOM_RESOURCE_ID, resources.get(0).getId());
+    assertEquals(STUB_VENDOR_NAME, resources.get(0).getName());
   }
 
   @Test
   public void shouldUpdateTagsOnSuccessfulTagsPutWithAlreadyExistingTags() throws IOException, URISyntaxException {
-    try {
-      insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(newTags);
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.RESOURCE);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
-    }
+    insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    sendPutTags(newTags);
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.RESOURCE);
+    assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
   }
 
   @Test
@@ -574,30 +551,21 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteTagsOnDeleteRequest() throws IOException, URISyntaxException {
-    try {
-      insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-      EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
-      deleteResource(putBodyPattern);
-      List<String> actualTags = TagsTestUtil.getTags(vertx);
-      assertThat(actualTags, empty());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+    deleteResource(putBodyPattern);
+    List<String> actualTags = TagsTestUtil.getTags(vertx);
+    assertThat(actualTags, empty());
   }
 
   @Test
   public void shouldDeleteAccessTypeOnDeleteRequest() throws IOException, URISyntaxException {
-    try {
-      String accessTypeId = insertAccessTypes(testData(), vertx).get(0).getId();
-      insertAccessTypeMapping(STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, accessTypeId, vertx);
-      EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
-      deleteResource(putBodyPattern);
-      List<AccessTypeMapping> actualMappings = getAccessTypeMappings(vertx);
-      assertThat(actualMappings, empty());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).get(0).getId();
+    insertAccessTypeMapping(STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, accessTypeId, vertx);
+    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+    deleteResource(putBodyPattern);
+    List<AccessTypeMapping> actualMappings = getAccessTypeMappings(vertx);
+    assertThat(actualMappings, empty());
   }
 
   @Test

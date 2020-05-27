@@ -32,6 +32,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
@@ -103,7 +104,7 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.model.Titles;
-import org.folio.util.ResourcesTestUtil.DbResources;
+import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TitlesTestUtil;
 
@@ -123,6 +124,12 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
+    clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+    clearDataFromTable(vertx, HOLDINGS_TABLE);
+    clearDataFromTable(vertx, TAGS_TABLE_NAME);
+    clearDataFromTable(vertx, TITLES_TABLE_NAME);
+    clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
@@ -148,123 +155,106 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException {
-    try {
-      mockGetManagedTitleById();
-      addHolding(configuration.getId(),
-        Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now(), vertx);
+    mockGetManagedTitleById();
+    addHolding(configuration.getId(), Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
+        HoldingInfoInDB.class), Instant.now(), vertx);
 
-      addResource(vertx, DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
-      addResource(vertx, DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());
-      insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-      insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+    addResource(vertx, buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
+    addResource(vertx, buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));
+    insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
-      String actualResponse = RestAssured.given()
-        .spec(getRequestSpecification())
-        .header(STUB_TOKEN_HEADER)
-        .when()
-        .get(EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
-        .then()
-        .statusCode(200)
-        .extract().asString();
-      JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, true);
-    } finally {
-      clearDataFromTable(vertx, HOLDINGS_TABLE);
-    }
+    String actualResponse = RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(STUB_TOKEN_HEADER)
+      .when()
+      .get(EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+      .then()
+      .statusCode(200)
+      .extract().asString();
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, true);
   }
 
   @Test
   public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
-    try {
-      mockGetManagedTitleById();
-      final String credentialsId = configuration.getId();
-      addHolding(credentialsId,
-        Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now(), vertx);
+    mockGetManagedTitleById();
+    addHolding(configuration.getId(), Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
+        HoldingInfoInDB.class), Instant.now(), vertx);
 
-      addResource(vertx, DbResources.builder().id(STUB_MANAGED_RESOURCE_ID).name(STUB_TITLE_NAME).build());
-      addResource(vertx, DbResources.builder().id(STUB_CUSTOM_RESOURCE_ID).name(STUB_CUSTOM_TITLE_NAME).build());
-      insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-      insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+    addResource(vertx, buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
+    addResource(vertx, buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));
+    insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
-      TitleCollection response = RestAssured.given()
-        .spec(getRequestSpecification())
-        .header(STUB_TOKEN_HEADER)
-        .when()
-        .get(EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
-        .then()
-        .statusCode(200)
-        .extract().as(TitleCollection.class);
-      assertEquals(STUB_CUSTOM_TITLE_NAME, response.getData().get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, HOLDINGS_TABLE);
-    }
+    TitleCollection response = RestAssured.given()
+      .spec(getRequestSpecification())
+      .header(STUB_TOKEN_HEADER)
+      .when()
+      .get(EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+      .then()
+      .statusCode(200)
+      .extract().as(TitleCollection.class);
+    assertEquals(STUB_CUSTOM_TITLE_NAME, response.getData().get(0).getAttributes().getName());
+  }
+
+  private ResourcesTestUtil.DbResources buildResource(String id, String credentialsId, String name) {
+    return ResourcesTestUtil.DbResources.builder()
+      .id(id)
+      .credentialsId(credentialsId)
+      .name(name).build();
   }
 
   @Test
   public void shouldReturnTitlesOnSearchByAccessTypes() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
-      mockGetTitles();
+    mockGetTitles();
 
-      String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-      TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
-      List<Titles> titles = titleCollection.getData();
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+    TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    List<Titles> titles = titleCollection.getData();
 
-      assertThat(titles, hasSize(2));
-      assertEquals(2, (int) titleCollection.getMeta().getTotalResults());
-      assertThat(titles, everyItem(hasProperty("id",
-        anyOf(equalTo(STUB_MANAGED_TITLE_ID), equalTo(STUB_MANAGED_TITLE_ID_2))
-      )));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    assertThat(titles, hasSize(2));
+    assertEquals(2, (int) titleCollection.getMeta().getTotalResults());
+    assertThat(titles, everyItem(hasProperty("id",
+      anyOf(equalTo(STUB_MANAGED_TITLE_ID), equalTo(STUB_MANAGED_TITLE_ID_2))
+    )));
   }
 
   @Test
   public void shouldReturnTitleOnSearchByAccessTypesWithPagination() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-      mockGetTitles();
+    mockGetTitles();
 
-      String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[access-type]="
-        + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-      TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
-      List<Titles> titles = titleCollection.getData();
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
+        + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+    TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    List<Titles> titles = titleCollection.getData();
 
-      assertThat(titles, hasSize(1));
-      assertEquals(2, (int) titleCollection.getMeta().getTotalResults());
-      assertThat(titles, everyItem(hasProperty("id", equalTo(STUB_MANAGED_TITLE_ID))));
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    assertThat(titles, hasSize(1));
+    assertEquals(2, (int) titleCollection.getMeta().getTotalResults());
+    assertThat(titles, everyItem(hasProperty("id", equalTo(STUB_MANAGED_TITLE_ID))));
   }
 
   @Test
   public void shouldReturnEmptyTitlesOnSearchByAccessTypesThatIsNotExist() throws IOException, URISyntaxException {
-    try {
-      List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-      mockGetTitles();
+    mockGetTitles();
 
-      String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=Not Exist";
-      TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
-      List<Titles> titles = titleCollection.getData();
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=Not Exist";
+    TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    List<Titles> titles = titleCollection.getData();
 
-      assertThat(titles, hasSize(0));
-      assertEquals(0, (int) titleCollection.getMeta().getTotalResults());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-    }
+    assertThat(titles, hasSize(0));
+    assertEquals(0, (int) titleCollection.getMeta().getTotalResults());
   }
 
   @Test
@@ -300,22 +290,17 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitleTagsWhenValidId() throws IOException, URISyntaxException {
-    try {
-      String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
-      insertTag(vertx, STUB_MANAGED_TITLE_ID, RecordType.TITLE, STUB_TAG_VALUE);
+    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+    insertTag(vertx, STUB_MANAGED_TITLE_ID, RecordType.TITLE, STUB_TAG_VALUE);
 
-      stubFor(
-        get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
-          .willReturn(new ResponseDefinitionBuilder()
-            .withBody(readFile(stubResponseFile))));
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile))));
 
-      Title actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_TOKEN_HEADER).as(Title.class);
+    Title actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_TOKEN_HEADER).as(Title.class);
 
-      assertTrue(actualResponse.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    assertTrue(actualResponse.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
 
   @Test
@@ -372,23 +357,18 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitleWithResourcesWhenIncludeResourcesWithTags() throws IOException, URISyntaxException {
-    try {
-      insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
 
-      String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
-      String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
+    String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
+    String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
-      mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
+    mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
 
-      String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources",
-        SC_OK, STUB_TOKEN_HEADER).asString();
-      String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-with-tags-response.json");
+    String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK,
+        STUB_TOKEN_HEADER).asString();
+    String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-with-tags-response.json");
 
-      JSONAssert.assertEquals(expected, actual, false);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    JSONAssert.assertEquals(expected, actual, false);
   }
 
   @Test
@@ -415,30 +395,20 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateTagsWhenValidPostRequest() throws IOException, URISyntaxException {
-    try {
-      List<String> tagList = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      Title actual = postTitle(tagList).as(Title.class);
-      List<String> tagsFromDB = TagsTestUtil.getTags(vertx);
-      assertThat(actual.getData().getAttributes().getTags().getTagList(), containsInAnyOrder(tagList.toArray()));
-      assertThat(tagsFromDB, containsInAnyOrder(tagList.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    List<String> tagList = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    Title actual = postTitle(tagList).as(Title.class);
+    List<String> tagsFromDB = TagsTestUtil.getTags(vertx);
+    assertThat(actual.getData().getAttributes().getTags().getTagList(), containsInAnyOrder(tagList.toArray()));
+    assertThat(tagsFromDB, containsInAnyOrder(tagList.toArray()));
   }
 
   @Test
   public void shouldAddTitleDataOnPost() throws URISyntaxException, IOException {
-    try {
-      postTitle(Collections.singletonList(STUB_TAG_VALUE));
-      List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
-      assertEquals(1, titles.size());
-      assertEquals(STUB_TITLE_ID, titles.get(0).getId());
-      assertEquals("Test Title", titles.get(0).getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    postTitle(Collections.singletonList(STUB_TAG_VALUE));
+    List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
+    assertEquals(1, titles.size());
+    assertEquals(STUB_TITLE_ID, titles.get(0).getId());
+    assertEquals("Test Title", titles.get(0).getName());
   }
 
   @Test
@@ -478,56 +448,42 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateTitleTagsOnSuccessfulPut() throws IOException, URISyntaxException {
-    try {
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
 
-      putTitle(newTags);
+    putTitle(newTags);
 
-      List<String> tags = TagsTestUtil.getTags(vertx);
-      assertThat(tags, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    List<String> tags = TagsTestUtil.getTags(vertx);
+    assertThat(tags, containsInAnyOrder(newTags.toArray()));
   }
 
   @Test
   public void shouldUpdateOnlyTagsOnPutForNonCustomTitle() throws IOException, URISyntaxException {
-    try {
-      String resourceResponse = "responses/rmapi/resources/get-managed-resource-updated-response.json";
-      ObjectMapper mapper = new ObjectMapper();
-      TitlePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/title/put-title.json"), TitlePutRequest.class);
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      request.getData().getAttributes().setTags(new Tags().withTagList(newTags));
+    String resourceResponse = "responses/rmapi/resources/get-managed-resource-updated-response.json";
+    ObjectMapper mapper = new ObjectMapper();
+    TitlePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/title/put-title.json"),
+        TitlePutRequest.class);
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    request.getData().getAttributes().setTags(new Tags().withTagList(newTags));
 
-      stubFor(
-        get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
-          .willReturn(new ResponseDefinitionBuilder().withBody(readFile(resourceResponse))));
+    stubFor(get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false)).willReturn(
+        new ResponseDefinitionBuilder().withBody(readFile(resourceResponse))));
 
-      putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request), STUB_TOKEN_HEADER);
+    putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request),
+        STUB_TOKEN_HEADER);
 
-      List<String> tags = TagsTestUtil.getTags(vertx);
-      assertThat(tags, containsInAnyOrder(newTags.toArray()));
-      WireMock.verify(0, putRequestedFor(anyUrl()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    List<String> tags = TagsTestUtil.getTags(vertx);
+    assertThat(tags, containsInAnyOrder(newTags.toArray()));
+    WireMock.verify(0, putRequestedFor(anyUrl()));
   }
 
   @Test
   public void shouldAddTitleDataOnPut() throws IOException, URISyntaxException {
-    try {
-      putTitle(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+    putTitle(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
 
-      List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
-      assertEquals(1, titles.size());
-      assertEquals(STUB_CUSTOM_TITLE_ID, titles.get(0).getId());
-      assertEquals("sd-test-java-again", titles.get(0).getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
+    assertEquals(1, titles.size());
+    assertEquals(STUB_CUSTOM_TITLE_ID, titles.get(0).getId());
+    assertEquals("sd-test-java-again", titles.get(0).getName());
   }
 
   @Test
@@ -541,30 +497,26 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateTitleDataOnSecondPut() throws IOException, URISyntaxException {
-    try {
-      String newName = "new name";
-      String updatedResponse = "responses/rmapi/resources/get-custom-resource-updated-title-name-response.json";
+    String newName = "new name";
+    String updatedResponse = "responses/rmapi/resources/get-custom-resource-updated-title-name-response.json";
 
-      putTitle(readFile(updatedResponse), Collections.singletonList(STUB_TAG_VALUE));
+    putTitle(readFile(updatedResponse), Collections.singletonList(STUB_TAG_VALUE));
 
-      ObjectMapper mapper = new ObjectMapper();
-      TitlePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/title/put-title.json"), TitlePutRequest.class);
-      request.getData().getAttributes().withName(newName);
+    ObjectMapper mapper = new ObjectMapper();
+    TitlePutRequest request = mapper.readValue(readFile("requests/kb-ebsco/title/put-title.json"),
+        TitlePutRequest.class);
+    request.getData().getAttributes().withName(newName);
 
-      stubFor(
-        get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false))
-          .willReturn(new ResponseDefinitionBuilder().withBody(readFile(updatedResponse))));
+    stubFor(get(new UrlPathPattern(new RegexPattern(CUSTOM_TITLE_ENDPOINT), false)).willReturn(
+        new ResponseDefinitionBuilder().withBody(readFile(updatedResponse))));
 
-      putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request), STUB_TOKEN_HEADER);
+    putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request),
+        STUB_TOKEN_HEADER);
 
-      List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
-      assertEquals(1, titles.size());
-      assertEquals(STUB_CUSTOM_TITLE_ID, titles.get(0).getId());
-      assertEquals(newName, titles.get(0).getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, TITLES_TABLE_NAME);
-    }
+    List<TitlesTestUtil.DbTitle> titles = TitlesTestUtil.getTitles(vertx);
+    assertEquals(1, titles.size());
+    assertEquals(STUB_CUSTOM_TITLE_ID, titles.get(0).getId());
+    assertEquals(newName, titles.get(0).getName());
   }
 
   @Test

@@ -15,8 +15,8 @@ import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.HoldingsId;
-import org.folio.repository.packages.PackageInfoInDB;
-import org.folio.repository.resources.ResourceInfoInDB;
+import org.folio.repository.packages.DbPackage;
+import org.folio.repository.resources.DbResource;
 
 public final class IdParser {
 
@@ -66,12 +66,12 @@ public final class IdParser {
     return concat(holding.getVendorId(), Long.parseLong(holding.getPackageId()), Long.parseLong(holding.getTitleId()));
   }
 
-  public static List<PackageId> getPackageIds(List<PackageInfoInDB> packageIds) {
-    return mapItems(packageIds, PackageInfoInDB::getId);
+  public static List<PackageId> getPackageIds(List<DbPackage> packageIds) {
+    return mapItems(packageIds, DbPackage::getId);
   }
 
-  public static List<ResourceId> getTitleIds(List<ResourceInfoInDB> resources) {
-    return mapItems(resources, ResourceInfoInDB::getId);
+  public static List<ResourceId> getTitleIds(List<DbResource> resources) {
+    return mapItems(resources, DbResource::getId);
   }
 
   public static List<ResourceId> getResourceIds(List<HoldingInfoInDB> holdings) {

@@ -26,7 +26,7 @@ public class TagRepositoryImplTest {
   TagRepository repository;
   @Test
   public void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTags() {
-    int count = repository.countRecordsByTags(Collections.emptyList(), STUB_TENANT, RecordType.RESOURCE).join();
+    int count = repository.countRecordsByTags(Collections.emptyList(), RecordType.RESOURCE, "????", STUB_TENANT).join();
     assertEquals(0, count);
   }
 
@@ -38,13 +38,13 @@ public class TagRepositoryImplTest {
 
   @Test
   public void shouldReturnEmptyListWhenIdListIsEmptyOnFindByRecordByIds() {
-    List<Tag> tags = repository.findByRecordByIds(STUB_TENANT, Collections.emptyList(), RecordType.RESOURCE).join();
+    List<DbTag> tags = repository.findByRecordByIds(STUB_TENANT, Collections.emptyList(), RecordType.RESOURCE).join();
     assertThat(tags, empty());
   }
 
   @Test
   public void shouldReturnEmptyMapWhenIdListIsEmptyOnFindByRecordByIds() {
-    Map<String, List<Tag>> tags = repository.findPerRecord(STUB_TENANT, Collections.emptyList(), RecordType.RESOURCE).join();
+    Map<String, List<DbTag>> tags = repository.findPerRecord(STUB_TENANT, Collections.emptyList(), RecordType.RESOURCE).join();
     assertThat(tags.keySet(), empty());
   }
 }

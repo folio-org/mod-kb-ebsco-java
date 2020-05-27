@@ -3,9 +3,13 @@ package org.folio.repository.accesstypes;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
@@ -51,9 +55,6 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypeMappingsRepositoryImpl.class);
 
-  private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
-  private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
-  private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
 
   @Autowired
   private Vertx vertx;
@@ -132,7 +133,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
-    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> null);
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 
   @Override

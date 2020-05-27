@@ -56,7 +56,7 @@ import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.repository.holdings.status.retry.RetryStatus;
 import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.repository.holdings.transaction.TransactionIdRepository;
-import org.folio.repository.resources.ResourceInfoInDB;
+import org.folio.repository.resources.DbResource;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
@@ -140,7 +140,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<ResourceInfoInDB> resourcesResult, String credentialsId, String tenantId) {
+  public CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<DbResource> resourcesResult, String credentialsId, String tenantId) {
     return holdingsRepository.findAllById(getTitleIdsAsList(resourcesResult), credentialsId, tenantId);
   }
 
@@ -344,7 +344,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     return responsePromise.future();
   }
 
-  private List<String> getTitleIdsAsList(List<ResourceInfoInDB> resources){
+  private List<String> getTitleIdsAsList(List<DbResource> resources){
     return mapItems(resources, dbResource -> IdParser.resourceIdToString(dbResource.getId()));
   }
 

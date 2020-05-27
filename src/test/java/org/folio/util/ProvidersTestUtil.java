@@ -1,6 +1,7 @@
 package org.folio.util;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.repository.providers.ProviderTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.NAME_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
@@ -25,23 +26,25 @@ public class ProvidersTestUtil {
   public static List<DbProviders> getProviders(Vertx vertx) {
     CompletableFuture<List<ProvidersTestUtil.DbProviders>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
-      "SELECT " + NAME_COLUMN + ", " + ID_COLUMN + " FROM " + providerTestTable(),
+      "SELECT " + NAME_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + ID_COLUMN + " FROM " + providerTestTable(),
       event -> future.complete(mapItems(event.result().getRows(),
         row ->
-          ProvidersTestUtil.DbProviders.builder()
+          DbProviders.builder()
             .id(row.getString(ID_COLUMN))
+            .credentialsId(row.getString(CREDENTIALS_ID_COLUMN))
             .name(row.getString(NAME_COLUMN))
             .build()
       )));
     return future.join();
   }
 
-   public static void addProvider(Vertx vertx, DbProviders DbProvider) {
+   public static void addProvider(Vertx vertx, DbProviders provider) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + providerTestTable() +
-        "(" + ID_COLUMN + ", " + NAME_COLUMN + ") VALUES(?,?)",
-      new JsonArray(Arrays.asList(DbProvider.getId(), DbProvider.getName())),
+        "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ") " +
+        "VALUES(?,?,?)",
+      new JsonArray(Arrays.asList(provider.getId(), provider.getCredentialsId(), provider.getName())),
       event -> future.complete(null));
     future.join();
   }
@@ -53,7 +56,8 @@ public class ProvidersTestUtil {
   @Value
   @Builder(toBuilder = true)
  public static class DbProviders {
-    private String id;
-    private String name;
+    String id;
+    String credentialsId;
+    String name;
   }
 }

@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.logger;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_KEY;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
@@ -98,7 +99,10 @@ public final class KBTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "DELETE FROM " + (PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + tableName),
-      event -> future.complete(null));
+      event -> {
+        logger().info("Table cleaned up: " + tableName);
+        future.complete(null);
+      });
     future.join();
   }
 

@@ -3,6 +3,7 @@ package org.folio.repository.holdings.transaction;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getTransactionIdTableName;
@@ -42,7 +43,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override

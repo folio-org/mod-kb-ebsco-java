@@ -5,8 +5,9 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ProviderInfoInDb {
-  private String id;
-  private String name;
+public class DbProvider {
+  String id;
+  String credentialsId;
+  String name;
 }
 

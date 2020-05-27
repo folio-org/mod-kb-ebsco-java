@@ -3,6 +3,7 @@ package org.folio.repository.kbcredentials;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
@@ -137,7 +138,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     Future<UpdateResult> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
       .recover(foreignKeyConstraintViolation());
-    return mapResult(resultFuture, updateResult -> null);
+    return mapResult(resultFuture, nothing());
   }
 
   @Override

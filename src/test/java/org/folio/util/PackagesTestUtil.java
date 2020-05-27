@@ -2,6 +2,7 @@ package org.folio.util;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
@@ -59,8 +60,10 @@ public class PackagesTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + packageTestTable() +
-        "(" + ID_COLUMN + ", " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ") VALUES(?,?,?)",
-      new JsonArray(Arrays.asList(dbPackage.getId(), dbPackage.getName(), dbPackage.getContentType())),
+        "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ") " +
+        "VALUES(?,?,?,?)",
+      new JsonArray(Arrays.asList(dbPackage.getId(), dbPackage.getCredentialsId(), dbPackage.getName(),
+        dbPackage.getContentType())),
       event -> future.complete(null));
     future.join();
   }
@@ -80,22 +83,23 @@ public class PackagesTestUtil {
       .build());
   }
 
-  public static PackagesTestUtil.DbPackage buildDbPackage(String id, String name) {
+  public static PackagesTestUtil.DbPackage buildDbPackage(String id, String credentialsId, String name) {
     return PackagesTestUtil.DbPackage.builder()
       .id(String.valueOf(id))
+      .credentialsId(credentialsId)
       .name(name)
       .contentType(STUB_PACKAGE_CONTENT_TYPE).build();
   }
 
-  public static void setUpPackages(Vertx vertx) throws IOException, URISyntaxException {
-    setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-    setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID_2, STUB_PACKAGE_NAME_2);
-    setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
+  public static void setUpPackages(Vertx vertx, String credentialsId) throws IOException, URISyntaxException {
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_2, STUB_VENDOR_ID_2, STUB_PACKAGE_NAME_2);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
   }
 
-  public static void setUpPackage(Vertx vertx, String stubPackageId, String stubVendorId, String stubPackageName)
-    throws IOException, URISyntaxException {
-    PackagesTestUtil.addPackage(vertx, buildDbPackage(stubVendorId + "-" + stubPackageId, stubPackageName));
+  public static void setUpPackage(Vertx vertx, String credentialsId, String stubPackageId,
+      String stubVendorId, String stubPackageName) throws IOException, URISyntaxException {
+    addPackage(vertx, buildDbPackage(stubVendorId + "-" + stubPackageId, credentialsId, stubPackageName));
     mockPackageWithName(stubPackageId, stubVendorId, stubPackageName);
   }
 
@@ -109,8 +113,9 @@ public class PackagesTestUtil {
   @Builder(toBuilder = true)
   public static class DbPackage {
 
-    private String id;
-    private String name;
-    private String contentType;
+    String id;
+    String name;
+    String credentialsId;
+    String contentType;
   }
 }

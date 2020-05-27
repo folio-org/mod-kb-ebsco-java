@@ -1,5 +1,6 @@
 package org.folio.repository.holdings.status.audit;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getHoldingsStatusAuditTableName;
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.DELETE_BEFORE_TIMESTAMP_FOR_CREDENTIALS;
@@ -38,6 +39,6 @@ public class HoldingStatusAuditRepositoryImpl implements HoldingsStatusAuditRepo
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(query, createParams(Collections.singleton(credentialsId)), promise);
     return mapVertxFuture(promise.future())
-      .thenApply(result -> null);
+      .thenApply(nothing());
   }
 }
