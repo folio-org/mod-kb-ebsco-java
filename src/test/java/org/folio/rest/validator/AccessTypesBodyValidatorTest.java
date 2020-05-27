@@ -6,67 +6,74 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 
 public class AccessTypesBodyValidatorTest {
+
+  private final AccessTypesBodyValidator validator = new AccessTypesBodyValidator(75, 150);
+
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
-  private AccessTypesBodyValidator validator = new AccessTypesBodyValidator();
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPutBody() {
-    AccessTypeCollectionItem postRequest = null;
-    validator.validate(postRequest);
+    validator.validate(null, null);
   }
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenEmptyPostDataAttributes() {
-    AccessTypeCollectionItem postRequest = new AccessTypeCollectionItem();
-    postRequest.withAttributes(new AccessTypeDataAttributes());
-    validator.validate(postRequest);
+    final AccessType request = stubAccessType();
+    request.setAttributes((new AccessTypeDataAttributes()));
+    validator.validate(null, request);
   }
 
   @Test
   public void shouldThrowExceptionWhenNameIsTooLong() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid name");
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
-      .withAttributes(
-          new AccessTypeDataAttributes().withName(RandomStringUtils.randomAlphanumeric(76)));
-    validator.validate(request);
+    final AccessType request = stubAccessType();
+    request.getAttributes().setName(RandomStringUtils.randomAlphanumeric(76));
+    validator.validate(null, request);
   }
 
   @Test
   public void shouldThrowExceptionWhenDescriptionIsTooLong() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid description");
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
-      .withAttributes(
-        new AccessTypeDataAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(75))
-          .withDescription(RandomStringUtils.randomAlphanumeric(151)));
-    validator.validate(request);
+    final AccessType request = stubAccessType();
+    request.getAttributes().setDescription(RandomStringUtils.randomAlphanumeric(151));
+    validator.validate(null, request);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenCredentialsIdNotEquals() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage("Invalid credentialsId");
+    final AccessType request = stubAccessType();
+    request.getAttributes().setCredentialsId("10");
+    validator.validate("1", request);
   }
 
   @Test
   public void shouldNotThrowExceptionWhenDescriptionIsNull() {
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
-      .withAttributes(
-        new AccessTypeDataAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(75))
-          .withDescription(null));
-    validator.validate(request);
+    final AccessType request = stubAccessType();
+    request.getAttributes().setDescription(null);
+    validator.validate(null, request);
   }
 
 
   @Test
   public void shouldNotThrowExceptionWhenValidParameters() {
-    final AccessTypeCollectionItem request = new AccessTypeCollectionItem()
+    final AccessType request = stubAccessType();
+    validator.validate(null, request);
+  }
+
+  private AccessType stubAccessType() {
+    return new AccessType()
       .withAttributes(
         new AccessTypeDataAttributes()
           .withName(RandomStringUtils.randomAlphanumeric(75))
           .withDescription(RandomStringUtils.randomAlphanumeric(150)));
-    validator.validate(request);
   }
 }

@@ -20,6 +20,7 @@ public class AssignedUsersConstants {
   public static final String PATRON_GROUP = "patron_group";
 
   public static final String SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
+  public static final String SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_AND_USERS_ID_QUERY;
   public static final String UPSERT_ASSIGNED_USERS_QUERY;
   public static final String INSERT_ASSIGNED_USER_QUERY;
   public static final String UPDATE_ASSIGNED_USER_QUERY;
@@ -34,6 +35,8 @@ public class AssignedUsersConstants {
     };
 
     SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY = selectQuery() + " " + whereQuery(CREDENTIALS_ID) + ";";
+    SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_AND_USERS_ID_QUERY = selectQuery() + " " +
+      whereQuery(ID_COLUMN, CREDENTIALS_ID) + ";";
     UPSERT_ASSIGNED_USERS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
     INSERT_ASSIGNED_USER_QUERY = insertQuery(allColumns) + ";";
     UPDATE_ASSIGNED_USER_QUERY = updateQuery(updateColumns) + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID) + ";";

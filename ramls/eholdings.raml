@@ -10,64 +10,10 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 types:
-  configuration: !include types/configuration/configuration.json
-  configurationPutRequest: !include types/configuration/configurationPutRequest.json
-  jsonapiError: !include types/jsonapiError.json
   configurationStatus: !include types/status/status.json
   holdingsLoadingStatus: !include types/loadHoldings/loadingHoldingsStatus.json
+  jsonapiError: !include types/jsonapiError.json
 
-/eholdings/configuration:
-  displayName: Configuration
-  description: Setup KB Configuration.
-  get:
-    description: Details of KB configuration currently being used.
-    responses:
-      200:
-        description: OK
-        body:
-          application/vnd.api+json:
-            description: Details of KB configuration currently being used.
-            type: configuration
-            example:
-              strict: false
-              value: !include examples/configuration/kb_configuration_get_200_response.json
-      500:
-        description: "Internal server error"
-        body:
-          text/plain:
-            example: "Internal server error, contact administrator"
-  put:
-    description: |
-      Update the currently set KB configuration.
-    headers:
-      Content-Type:
-        example: application/vnd.api+json
-    body:
-      application/vnd.api+json:
-        type: configurationPutRequest
-        example: !include examples/configuration/kb_configuration_put_request.json
-    responses:
-      200:
-        description: OK
-        body:
-          application/vnd.api+json:
-            type: configuration
-            example:
-              strict: false
-              value: !include examples/configuration/kb_configuration_put_200_response.json
-      422:
-        description: Unprocessable Entity
-        body:
-          application/vnd.api+json:
-            type: jsonapiError
-            example:
-              strict: false
-              value: !include examples/configuration/kb_configuration_put_422_response.json
-      500:
-        description: "Internal server error"
-        body:
-          text/plain:
-            example: "Internal server error, contact administrator"
 /eholdings/status:
   displayName: Status
   description: Gives status of currently set KB configuration.
@@ -137,3 +83,35 @@ types:
           body:
             text/plain:
               example: "Internal server error, contact administrator"
+
+/eholdings/loading/kb-credentials/{id}:
+  displayName: Run load holdings for provided credentials id
+  uriParameters:
+    id:
+      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  post:
+    description: Run load holdings job by credentials id.
+    headers:
+      Content-Type:
+        example: application/json
+    responses:
+      204:
+        description: No Content
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/loadHoldings/load-holdings-by-id-post-404-response.json
+      409:
+        description: "Process of loading holdings is already running"
+        body:
+          text/plain:
+            example: "Process of loading holdings is already running"
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"

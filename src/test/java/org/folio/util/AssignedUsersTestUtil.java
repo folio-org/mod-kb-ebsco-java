@@ -35,11 +35,10 @@ public class AssignedUsersTestUtil {
   private static final Converter<DbAssignedUser, AssignedUser> CONVERTER =
     new AssignedUserCollectionItemConverter.FromDb();
 
-  public static String insertAssignedUser(String credentialsId, String username, String firstName, String middleName,
-                                          String lastName, String patronGroup, Vertx vertx) {
+  public static String insertAssignedUser(String id, String credentialsId, String username, String firstName,
+                                          String middleName, String lastName, String patronGroup, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String id = UUID.randomUUID().toString();
     String insertStatement = String.format(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());
     JsonArray params = DbUtils.createParams(Arrays.asList(id, credentialsId, username,
       firstName, middleName, lastName, patronGroup
@@ -49,6 +48,12 @@ public class AssignedUsersTestUtil {
     future.join();
 
     return id;
+  }
+
+  public static String insertAssignedUser(String credentialsId, String username, String firstName, String middleName,
+                                          String lastName, String patronGroup, Vertx vertx) {
+    return insertAssignedUser(UUID.randomUUID().toString(), credentialsId, username, firstName, middleName, lastName,
+      patronGroup, vertx);
   }
 
   public static List<AssignedUser> getAssignedUsers(Vertx vertx) {

@@ -39,7 +39,7 @@ public class TitlesTestUtil {
   @Value
   @Builder(toBuilder = true)
   public static class DbTitle {
-    private String id;
-    private String name;
+    String id;
+    String name;
   }
 }

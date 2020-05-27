@@ -1,40 +1,49 @@
 package org.folio.rest.converter.labels;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
+import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
-import org.folio.spring.config.TestConfig;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TestConfig.class)
 public class CustomLabelsCollectionConverterTest {
 
-  @Autowired
-  private CustomLabelsCollectionConverter itemConverter;
+  private final Converter<RootProxyCustomLabels, CustomLabelsCollection> fromRmApiConverter =
+    new CustomLabelsCollectionConverter.FromRmApi(new CustomLabelsConverter.FromRmApi());
+
+  private final Converter<List<CustomLabel>, CustomLabelsCollection> fromLabelsListConverter =
+    new CustomLabelsCollectionConverter.FromLabelsList();
 
   @Test
-  public void shouldConvertToCustomLabelOnly() throws URISyntaxException, IOException {
+  public void shouldConvertFromRmApiToCustomLabelsCollection() throws URISyntaxException, IOException {
+    RootProxyCustomLabels rootProxy = readJsonFile("responses/rmapi/proxiescustomlabels/get-success-response.json",
+      RootProxyCustomLabels.class);
+    CustomLabelsCollection actual = fromRmApiConverter.convert(rootProxy);
 
-    ObjectMapper mapper = new ObjectMapper();
+    assertNotNull(actual);
+    assertEquals((Integer) 5, actual.getMeta().getTotalResults());
+    assertEquals(CustomLabel.Type.CUSTOM_LABELS, actual.getData().get(0).getType());
+  }
 
-    RootProxyCustomLabels rootProxy = mapper.readValue(
-      getFile("responses/rmapi/custom-labels/get-custom-labels.json"), RootProxyCustomLabels.class);
-    final CustomLabelsCollection convertedLabel = itemConverter.convert(rootProxy);
-    Integer totalSize = 5;
-    assertEquals(totalSize, convertedLabel.getMeta().getTotalResults());
-    assertEquals("customLabel", convertedLabel.getData().get(0).getType());
+  @Test
+  public void shouldConvertFromListToCustomLabelsCollection() throws URISyntaxException, IOException {
+    List<CustomLabel> rootProxy = readJsonFile("responses/kb-ebsco/custom-labels/get-custom-labels-list.json",
+      CustomLabelsCollection.class).getData();
+
+    CustomLabelsCollection actual = fromLabelsListConverter.convert(rootProxy);
+
+    assertNotNull(actual);
+    assertEquals((Integer) 5, actual.getMeta().getTotalResults());
+    assertEquals(CustomLabel.Type.CUSTOM_LABELS, actual.getData().get(0).getType());
   }
 }

@@ -5,8 +5,8 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.folio.rest.util.ExceptionMappers.error400InputValidationMapper;
 import static org.folio.rest.util.ExceptionMappers.error403UnAuthorizedMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
-import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 import static org.folio.rest.util.ExceptionMappers.error500ThrowableMapper;
+import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -101,6 +101,13 @@ public class ErrorHandler {
       LOGGER.error(INTERNAL_SERVER_ERROR.getReasonPhrase(), e.getCause());
       asyncResultHandler.handle(Future.succeededFuture(DEFAULT_MAPPER.apply(e.getCause())));
     }
+  }
+
+  public Function<Throwable, Void> handle(Handler<AsyncResult<Response>> asyncResultHandler) {
+    return throwable -> {
+      handle(asyncResultHandler, throwable);
+      return null;
+    };
   }
 }
 

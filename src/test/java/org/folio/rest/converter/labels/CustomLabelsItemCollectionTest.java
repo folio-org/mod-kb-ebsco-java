@@ -1,40 +1,34 @@
 package org.folio.rest.converter.labels;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import static org.folio.test.util.TestUtil.getFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
-import org.folio.rest.jaxrs.model.CustomLabelCollectionItem;
-import org.folio.spring.config.TestConfig;
+import org.folio.rest.jaxrs.model.CustomLabel;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TestConfig.class)
 public class CustomLabelsItemCollectionTest {
 
-  @Autowired
-  private CustomLabelsItemConverter itemConverter;
+  private final Converter<org.folio.holdingsiq.model.CustomLabel, CustomLabel> itemConverter = new
+    CustomLabelsConverter.FromRmApi();
 
   @Test
   public void shouldConvertToCustomLabelOnly() throws URISyntaxException, IOException {
+    org.folio.holdingsiq.model.CustomLabel rmCustomLabel =
+      readJsonFile("responses/rmapi/proxiescustomlabels/get-success-response.json",
+        RootProxyCustomLabels.class).getLabelList().get(0);
 
-    ObjectMapper mapper = new ObjectMapper();
+    CustomLabel actual = itemConverter.convert(rmCustomLabel);
 
-    RootProxyCustomLabels rootProxy = mapper.readValue(
-      getFile("responses/rmapi/custom-labels/get-custom-labels-with-single-element.json"), RootProxyCustomLabels.class);
-    final CustomLabelCollectionItem convertedLabel = itemConverter.convert(rootProxy.getLabelList().get(0));
-    Integer customLabelId = 1;
-    assertEquals(customLabelId, convertedLabel.getAttributes().getId());
-    assertEquals("customLabel", convertedLabel.getType());
+    assertNotNull(actual);
+    assertEquals((Integer) 1, actual.getAttributes().getId());
+    assertEquals(CustomLabel.Type.CUSTOM_LABELS, actual.getType());
   }
 }

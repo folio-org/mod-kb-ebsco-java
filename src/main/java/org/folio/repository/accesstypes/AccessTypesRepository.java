@@ -5,48 +5,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.repository.RecordType;
 
 public interface AccessTypesRepository {
 
-  /**
-   * Returns all access types for given tenantId.
-   */
-  CompletableFuture<List<AccessTypeCollectionItem>> findAll(String tenantId);
+  CompletableFuture<List<DbAccessType>> findByCredentialsId(String credentialsId, String tenantId);
 
-  /**
-   * Returns all access types for given accessTypeNames and tenantId.
-   */
-  CompletableFuture<List<AccessTypeCollectionItem>> findByNames(Collection<String> accessTypeNames, String tenantId);
+  CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                             String tenantId);
 
-  /**
-   * Fetches an access type from the database
-   * If access type with given id doesn't exist then returns NotFoundException as a cause.
-   *
-   * @param id id of access type to get
-   */
-  CompletableFuture<Optional<AccessTypeCollectionItem>> findById(String id, String tenantId);
+  CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(String credentialsId, Collection<String> accessTypeNames,
+                                                                  String tenantId);
 
-  /**
-   * Saves a new access type record to the database
-   *
-   * @param accessType - current AccessType  {@link AccessTypeCollectionItem} object to save
-   */
-  CompletableFuture<AccessTypeCollectionItem> save(AccessTypeCollectionItem accessType, String tenantId);
+  CompletableFuture<Optional<DbAccessType>> findByCredentialsAndRecord(String credentialsId, String recordId,
+                                                                       RecordType recordType, String tenantId);
 
-  /**
-   * Updates access type with given id.
-   * If access type with given id doesn't exist then returns NotFoundException as a cause.
-   */
-  CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, String tenantId);
+  CompletableFuture<DbAccessType> save(DbAccessType accessType, String tenantId);
 
-  CompletableFuture<Integer> count(String tenantId);
+  CompletableFuture<Integer> count(String credentialsId, String tenantId);
 
-  /**
-   * Delete access type with given id and tenantId
-   *
-   * @param id of access type to delete
-   * @return {@link CompletableFuture} with the result of operation
-   */
-  CompletableFuture<Void> delete(String id, String tenantId);
+  CompletableFuture<Void> delete(String credentialsId, String accessTypeId, String tenantId);
 }

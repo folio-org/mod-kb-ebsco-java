@@ -9,11 +9,13 @@
     "id": {
       "type": "string",
       "description": "Root Proxy Id",
+      "enum": ["root-proxy"],
       "example": "root-proxy"
     },
     "type": {
       "type": "string",
       "description": "Root Proxy Type",
+      "enum": ["rootProxies"],
       "example": "rootProxies"
     },
     "attributes": {
@@ -23,6 +25,7 @@
     }
   },
   "required": [
+    "id",
     "type",
     "attributes"
   ]

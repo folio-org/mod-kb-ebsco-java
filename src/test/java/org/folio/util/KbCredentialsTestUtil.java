@@ -40,27 +40,40 @@ import org.folio.rest.persist.PostgresClient;
 public class KbCredentialsTestUtil {
 
   public static final String KB_CREDENTIALS_ENDPOINT = "/eholdings/kb-credentials";
+  public static final String USER_KB_CREDENTIAL_ENDPOINT = "/eholdings/user-kb-credential";
+  public static final String KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/custom-labels";
 
+  public static final String STUB_CREDENTIALS_NAME = "TEST_NAME";
   public static final String STUB_API_KEY = "TEST_API_KEY";
+  public static final String STUB_API_URL = "https://api.ebsco.io";
+  public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
+
   public static final String STUB_USERNAME = "TEST_USER_NAME";
   public static final String STUB_USER_ID = "88888888-8888-4888-8888-888888888888";
-  public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
-  public static final String STUB_API_URL = "http://api.url.com";
-  public static final String STUB_CREDENTIALS_NAME = "TEST_NAME";
   public static final String STUB_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
     + "eyJzdWIiOiJURVNUX1VTRVJfTkFNRSIsInVzZXJfaWQiOiI4ODg4ODg4OC04ODg4LTQ4ODgtODg4OC04O"
     + "Dg4ODg4ODg4ODgiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
-
+  public static final String STUB_INVALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
+    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
 
   public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, KbCredentialsTestUtil.STUB_TOKEN);
+  public static final Header STUB_INVALID_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN,
+    KbCredentialsTestUtil.STUB_INVALID_TOKEN);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
-    new KbCredentialsConverter.KbCredentialsFromDbConverter(STUB_API_KEY);
+    new KbCredentialsConverter.KbCredentialsFromDbSecuredConverter(STUB_API_KEY);
+
+  private static final Converter<DbKbCredentials, KbCredentials> CONVERTER_NON_SECURED =
+    new KbCredentialsConverter.KbCredentialsFromDbNonSecuredConverter(STUB_API_KEY);
 
   public static String insertKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
+    return insertKbCredentials(UUID.randomUUID().toString(), url, name, apiKey, customerId, vertx);
+  }
+
+  public static String insertKbCredentials(String id, String url, String name, String apiKey, String customerId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String id = UUID.randomUUID().toString();
     String insertStatement = String.format(UPSERT_CREDENTIALS_QUERY, kbCredentialsTestTable());
     JsonArray params = DbUtils.createParams(Arrays.asList(id, url, name, apiKey, customerId,
       Instant.now().toString(), STUB_USER_ID, STUB_USERNAME, null, null, null
@@ -73,11 +86,20 @@ public class KbCredentialsTestUtil {
   }
 
   public static List<KbCredentials> getKbCredentials(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER);
+  }
+
+  public static List<KbCredentials> getKbCredentialsNonSecured(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER_NON_SECURED);
+  }
+
+  private static List<KbCredentials> getKbCredentials(Vertx vertx,
+                                                      Converter<DbKbCredentials, KbCredentials> converter) {
     CompletableFuture<List<KbCredentials>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(String.format(SELECT_CREDENTIALS_QUERY, kbCredentialsTestTable()),
       event -> future.complete(event.result().getRows().stream()
         .map(KbCredentialsTestUtil::parseKbCredentials)
-        .map(CONVERTER::convert)
+        .map(converter::convert)
         .collect(Collectors.toList())));
     return future.join();
   }
@@ -100,5 +122,19 @@ public class KbCredentialsTestUtil {
 
   private static String kbCredentialsTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + KB_CREDENTIALS_TABLE_NAME;
+  }
+
+  public static DbKbCredentials getCredentialsNoUrl() {
+    return DbKbCredentials.builder()
+      .name(STUB_CREDENTIALS_NAME)
+      .customerId(STUB_CUSTOMER_ID)
+      .apiKey(STUB_API_KEY).build();
+  }
+  public static DbKbCredentials getCredentials() {
+    return DbKbCredentials.builder()
+      .name(STUB_CREDENTIALS_NAME)
+      .customerId(STUB_CUSTOMER_ID)
+      .apiKey(STUB_API_KEY)
+      .url(STUB_API_URL).build();
   }
 }

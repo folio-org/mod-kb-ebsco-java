@@ -26,6 +26,7 @@ import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.PROVIDER;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
@@ -61,8 +62,11 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
+import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.PackagesTestUtil.setUpPackage;
+import static org.folio.util.TagsTestUtil.insertTag;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -73,22 +77,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageTags;
@@ -109,8 +114,10 @@ import org.folio.util.TagsTestUtil;
 public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   private static final String PROVIDER_RM_API_PATH = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*";
-  private static final String PROVIDER_PACKAGES_RM_API_PATH = "/rm/rmaccounts.*" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*";
-  private static final UrlPathPattern PROVIDER_URL_PATTERN = new UrlPathPattern(new RegexPattern(PROVIDER_RM_API_PATH), true);
+  private static final String PROVIDER_PACKAGES_RM_API_PATH =
+    "/rm/rmaccounts.*" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*";
+  private static final UrlPathPattern PROVIDER_URL_PATTERN =
+    new UrlPathPattern(new RegexPattern(PROVIDER_RM_API_PATH), true);
 
   private static final String PROVIDER_PATH = "eholdings/providers";
   private static final String PROVIDER_BY_ID = PROVIDER_PATH + "/" + STUB_VENDOR_ID;
@@ -119,6 +126,25 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   private static final String PUT_PROVIDER = "requests/kb-ebsco/provider/put-provider.json";
   private static final String PUT_PROVIDER_TAGS = "requests/kb-ebsco/provider/put-provider-tags.json";
   private static final String STUB_PACKAGE_RESPONSE = "responses/rmapi/packages/get-packages-by-provider-id.json";
+
+  private KbCredentials configuration;
+
+  @Override @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
+    configuration = getDefaultKbConfiguration(vertx);
+  }
+
+  @After
+  public void tearDown() {
+    clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
+    clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
+    clearDataFromTable(vertx, TAGS_TABLE_NAME);
+    clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
+    clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+  }
 
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
@@ -131,7 +157,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     boolean supportsCustomPackages = false;
     String token = "sampleToken";
 
-    mockDefaultConfiguration(getWiremockUrl());
     stubFor(
       get(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder()
@@ -139,6 +164,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     RestAssured.given()
       .spec(getRequestSpecification())
+      .header(STUB_TOKEN_HEADER)
       .when()
       .get(PROVIDER_PATH + "?q=e&page=1&sort=name")
       .then()
@@ -154,18 +180,17 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProvidersOnSearchByTagsOnly() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE_2);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE_3);
+  public void shouldReturnProvidersOnSearchByTagsOnly() {
+      insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+      insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
+      insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE_2);
+      insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE_3);
 
       setUpTaggedProviders();
 
       ProviderCollection providerCollection =
-        getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
-        .as(ProviderCollection.class);
+        getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
+          .as(ProviderCollection.class);
 
       List<Providers> providers = providerCollection.getData();
 
@@ -173,165 +198,122 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       assertEquals(2, providers.size());
       assertEquals(STUB_VENDOR_NAME, providers.get(0).getAttributes().getName());
       assertEquals(STUB_VENDOR_NAME_2, providers.get(1).getAttributes().getName());
-
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
-    }
   }
 
   @Test
   public void shouldReturnPackagesOnSearchByProviderIdAndTagsOnly() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_2);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
+    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_2);
 
-      PackagesTestUtil.setUpPackages(vertx, getWiremockUrl());
+    PackagesTestUtil.setUpPackages(vertx, configuration.getId());
 
-      PackageCollection packageCollection =
-        getWithOk(PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
-          .as(PackageCollection.class);
+    PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE + ","
+        + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
 
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(1, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertThat(packages.get(0).getAttributes().getTags().getTagList(),
-        containsInAnyOrder(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
-      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(1, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertThat(packages.get(0).getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE,
+        STUB_TAG_VALUE_2));
+    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnPackagesOnSearchByProviderIdAndTagsWithPagination() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_4, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID_5, PACKAGE, STUB_TAG_VALUE_2);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_4, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID_5, PACKAGE, STUB_TAG_VALUE_2);
 
-      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-      setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
-      setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
-      mockDefaultConfiguration(getWiremockUrl());
+    String credentialsId = configuration.getId();
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
-      PackageCollection packageCollection =
-        getWithOk(PROVIDER_PACKAGES + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
-        .as(PackageCollection.class);
-      List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE
+        + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
+
+    assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
   }
 
   @Test
   public void shouldReturnPackagesOnSearchByProviderIdAndAccessTypeWithPagination() throws IOException, URISyntaxException {
-    try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(1).getId(), vertx);
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(1).getId(), vertx);
 
-      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-      setUpPackage(vertx, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
-      setUpPackage(vertx, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
-      mockDefaultConfiguration(getWiremockUrl());
+    String credentialsId = configuration.getId();
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_2, STUB_VENDOR_ID, STUB_PACKAGE_NAME_2);
+    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
-      String resourcePath = PROVIDER_PACKAGES + "?page=2&count=1&filter[access-type]="
-        + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-      PackageCollection packageCollection = getWithOk(resourcePath).as(PackageCollection.class);
+    String resourcePath = PROVIDER_PACKAGES + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
+        + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
 
-      List<PackageCollectionItem> packages = packageCollection.getData();
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(1, packages.size());
-      assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(1, packages.size());
+    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
   }
 
   @Test
-  public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() throws IOException, URISyntaxException {
-    try {
-      List<AccessTypeCollectionItem> accessTypes = insertAccessTypes(testData(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-      insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(0).getId(), vertx);
+  public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() {
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(0).getId(), vertx);
 
-      mockDefaultConfiguration(getWiremockUrl());
+    mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
 
-      mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
+    String resourcePath = PROVIDER_PACKAGES + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    List<PackageCollectionItem> packages = packageCollection.getData();
 
-      String resourcePath = PROVIDER_PACKAGES + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-      PackageCollection packageCollection = getWithOk(resourcePath).as(PackageCollection.class);
-      List<PackageCollectionItem> packages = packageCollection.getData();
-
-      assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
-      assertEquals(0, packages.size());
-    } finally {
-      clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
-      clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
+    assertEquals(0, packages.size());
   }
 
   @Test
-  public void shouldReturnEmptyResponseWhenProvidersReturnedWithErrorOnSearchByTags() throws IOException, URISyntaxException {
-    try {
+  public void shouldReturnEmptyResponseWhenProvidersReturnedWithErrorOnSearchByTags() {
+    String credentialsId = configuration.getId();
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, credentialsId, STUB_VENDOR_NAME_2));
 
-      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
-      ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
 
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
+    mockGet(new RegexPattern(".*vendors/.*"), SC_INTERNAL_SERVER_ERROR);
 
-      mockDefaultConfiguration(getWiremockUrl());
+    ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE,
+        STUB_TOKEN_HEADER).as(ProviderCollection.class);
+    List<Providers> providers = providerCollection.getData();
 
-      mockGet(new RegexPattern(".*vendors/.*"), SC_INTERNAL_SERVER_ERROR);
-
-      ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE)
-        .as(ProviderCollection.class);
-      List<Providers> providers = providerCollection.getData();
-
-      assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
-      assertEquals(0, providers.size());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
-    }
+    assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
+    assertEquals(0, providers.size());
   }
 
   @Test
-  public void shouldReturnProvidersOnSearchWithTagsAndPagination() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE);
+  public void shouldReturnProvidersOnSearchWithTagsAndPagination() {
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID_2, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID_3, PROVIDER, STUB_TAG_VALUE);
 
-      setUpTaggedProviders();
+    setUpTaggedProviders();
 
-      ProviderCollection providerCollection =
-        getWithOk(PROVIDER_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE)
-        .as(ProviderCollection.class);
-      List<Providers> providers = providerCollection.getData();
+    ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE,
+        STUB_TOKEN_HEADER).as(ProviderCollection.class);
+    List<Providers> providers = providerCollection.getData();
 
-      assertEquals(3, (int) providerCollection.getMeta().getTotalResults());
-      assertEquals(1, providers.size());
-      assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx,PROVIDERS_TABLE_NAME);
-    }
+    assertEquals(3, (int) providerCollection.getMeta().getTotalResults());
+    assertEquals(1, providers.size());
+    assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
   }
 
   @Test
@@ -339,7 +321,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
     String expectedProviderFile = "responses/kb-ebsco/providers/expected-provider-with-packages.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
     stubFor(
       get(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder()
@@ -351,26 +332,20 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(STUB_PACKAGE_RESPONSE))));
 
-    String actualProvider = getWithOk(PROVIDER_BY_ID + "?include=packages").asString();
+    String actualProvider = getWithOk(PROVIDER_BY_ID + "?include=packages", STUB_TOKEN_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), actualProvider, false);
   }
 
   @Test
-  public void shouldReturnErrorIfParameterInvalid() {
-    checkResponseNotEmptyWhenStatusIs400(PROVIDER_PATH + "?q=e&count=1000");
-  }
-
-  @Test
-  public void shouldReturn500IfRMApiReturnsError() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+  public void shouldReturn500IfRMApiReturnsError() {
     stubFor(
       get(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(SC_INTERNAL_SERVER_ERROR)));
 
-    final JsonapiError error = getWithStatus(PROVIDER_PATH + "?q=e&count=1", SC_INTERNAL_SERVER_ERROR).as(
-      JsonapiError.class);
+    final JsonapiError error = getWithStatus(PROVIDER_PATH + "?q=e&count=1", SC_INTERNAL_SERVER_ERROR,
+      STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), notNullValue());
   }
@@ -385,56 +360,43 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
     String expectedProviderFile = "responses/kb-ebsco/providers/expected-provider.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
     stubFor(
       get(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
 
-    String provider = getWithOk(PROVIDER_BY_ID).asString();
+    String provider = getWithOk(PROVIDER_BY_ID, STUB_TOKEN_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
   }
 
   @Test
   public void shouldReturnProviderWithTagWhenValidId() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
 
-      String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
+    String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
 
-      mockDefaultConfiguration(getWiremockUrl());
-      stubFor(
-        get(PROVIDER_URL_PATTERN)
-          .willReturn(new ResponseDefinitionBuilder()
-            .withBody(readFile(stubResponseFile))));
+    stubFor(get(PROVIDER_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
-      Provider provider = getWithOk(PROVIDER_BY_ID).as(Provider.class);
+    Provider provider = getWithOk(PROVIDER_BY_ID, STUB_TOKEN_HEADER).as(Provider.class);
 
-      assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-    }
+    assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
 
   @Test
-  public void shouldReturn404WhenProviderIdNotFound() throws IOException, URISyntaxException {
-
-    mockDefaultConfiguration(getWiremockUrl());
+  public void shouldReturn404WhenProviderIdNotFound() {
     stubFor(
       get(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(SC_NOT_FOUND)));
 
-    JsonapiError error = getWithStatus(PROVIDER_PATH + "/191919", SC_NOT_FOUND).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(PROVIDER_PATH + "/191919", SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
   }
 
   @Test
-  public void shouldReturn400WhenInvalidProviderId() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
-
+  public void shouldReturn400WhenInvalidProviderId() {
     checkResponseNotEmptyWhenStatusIs400(PROVIDER_PATH + "/19191919as");
   }
 
@@ -442,7 +404,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldUpdateAndReturnProvider() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
     String expectedProviderFile = "responses/kb-ebsco/providers/expected-updated-provider.json";
-    mockDefaultConfiguration(getWiremockUrl());
 
     stubFor(
       get(PROVIDER_URL_PATTERN)
@@ -452,7 +413,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       put(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
 
-    String provider = putWithOk(PROVIDER_BY_ID, readFile(PUT_PROVIDER)).asString();
+    String provider = putWithOk(PROVIDER_BY_ID, readFile(PUT_PROVIDER), STUB_TOKEN_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
 
@@ -463,29 +424,19 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateTagsOnPutTags() throws IOException, URISyntaxException {
-    try {
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2), PROVIDER_TAGS_PATH);
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
+    assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
   }
 
   @Test
   public void shouldUpdateTagsOnPutTagsWithAlreadyExistingTags() throws IOException, URISyntaxException {
-    try {
-      TagsTestUtil.insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
-      List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
-      sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2), PROVIDER_TAGS_PATH);
-      List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
-      assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PROVIDERS_TABLE_NAME);
-    }
+    insertTag(vertx, STUB_VENDOR_ID, PROVIDER, STUB_TAG_VALUE);
+    List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
+    sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
+    List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PROVIDER);
+    assertThat(tagsAfterRequest, containsInAnyOrder(newTags.toArray()));
   }
 
   @Test
@@ -495,7 +446,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       PackageTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
     JsonapiError response = putWithStatus(PROVIDER_TAGS_PATH, mapper.writeValueAsString(tags),
-      SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+      SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertEquals("Invalid name", response.getErrors().get(0).getTitle());
     assertEquals("name must not be empty", response.getErrors().get(0).getDetail());
@@ -505,13 +456,12 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldReturn400WhenRMAPIErrorOnPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/put-vendor-token-not-allowed-response.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
-
     stubFor(
       put(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile)).withStatus(SC_BAD_REQUEST)));
 
-    JsonapiError error = putWithStatus(PROVIDER_BY_ID, readFile(PUT_PROVIDER), SC_BAD_REQUEST).as(JsonapiError.class);
+    JsonapiError error = putWithStatus(PROVIDER_BY_ID, readFile(PUT_PROVIDER), SC_BAD_REQUEST,
+      STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Provider does not allow token"));
 
@@ -519,8 +469,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422WhenBodyInputInvalidOnPut() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
-
     ObjectMapper mapper = new ObjectMapper();
     ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile(PUT_PROVIDER), ProviderPutRequest.class);
 
@@ -530,7 +478,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     providerToBeUpdated.getData().getAttributes().setProviderToken(providerToken);
 
     JsonapiError error = putWithStatus(PROVIDER_BY_ID, mapper.writeValueAsString(providerToBeUpdated),
-      SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+      SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), equalTo("Invalid value"));
     assertThat(error.getErrors().get(0).getDetail(), equalTo("Value is too long (maximum is 500 characters)"));
@@ -539,11 +487,9 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProviderPackagesWhenValidId() throws IOException, URISyntaxException {
-
-    mockDefaultConfiguration(getWiremockUrl());
     mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
 
-    String actual = getWithOk(PROVIDER_PACKAGES).asString();
+    String actual = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element.json");
 
     JSONAssert.assertEquals(expected, actual, false);
@@ -551,36 +497,29 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyPackageListWhenNoProviderPackagesAreFound() throws IOException, URISyntaxException {
-
     String packageStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id-empty.json";
 
-    mockDefaultConfiguration(getWiremockUrl());
     mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), packageStubResponseFile);
 
-    PackageCollection packages = getWithOk(PROVIDER_PACKAGES).as(PackageCollection.class);
+    PackageCollection packages = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).as(PackageCollection.class);
     assertThat(packages.getData(), empty());
     assertEquals(0, (int) packages.getMeta().getTotalResults());
   }
 
   @Test
   public void shouldReturnProviderPackagesWithTags() throws IOException, URISyntaxException {
-    try {
-      setUpPackage(vertx, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-      TagsTestUtil.insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
+    setUpPackage(vertx, configuration.getId(), STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
 
-      mockDefaultConfiguration(getWiremockUrl());
-      mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
 
-      String actual = getWithOk(PROVIDER_PACKAGES).asString();
-      String expected = readFile(
+    mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
+
+    String actual = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).asString();
+    String expected = readFile(
         "responses/kb-ebsco/packages/expected-package-collection-with-one-element-with-tags.json");
 
-      JSONAssert.assertEquals(expected, actual, false);
-    } finally {
-      clearDataFromTable(vertx, TAGS_TABLE_NAME);
-      clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
-    }
+    JSONAssert.assertEquals(expected, actual, false);
   }
 
   @Test
@@ -621,19 +560,18 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404WhenNonProviderIdNotFound() throws IOException, URISyntaxException {
+  public void shouldReturn404WhenNonProviderIdNotFound() {
     String rmapiInvalidProviderIdUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/191919/packages";
-
-    mockDefaultConfiguration(getWiremockUrl());
 
     mockGet(new RegexPattern(rmapiInvalidProviderIdUrl), SC_NOT_FOUND);
 
-    JsonapiError error = getWithStatus("/eholdings/providers/191919/packages", SC_NOT_FOUND).as(JsonapiError.class);
+    JsonapiError error = getWithStatus("/eholdings/providers/191919/packages", SC_NOT_FOUND, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
   }
 
-  private void sendPutTags(List<String> newTags, String url) throws IOException, URISyntaxException {
+  private void sendPutTags(List<String> newTags) throws IOException, URISyntaxException {
     ObjectMapper mapper = new ObjectMapper();
 
     ProviderTagsPutRequest tags = mapper.readValue(getFile(PUT_PROVIDER_TAGS),
@@ -644,7 +582,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .withTagList(newTags));
     }
 
-    putWithOk(url, mapper.writeValueAsString(tags)).as(PackageTags.class);
+    putWithOk(PROVIDER_TAGS_PATH, mapper.writeValueAsString(tags), STUB_TOKEN_HEADER).as(PackageTags.class);
   }
 
   private void mockProviderWithName(String stubProviderId, String stubProviderName) {
@@ -659,18 +597,18 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .build());
   }
 
-  private ProvidersTestUtil.DbProviders buildDbProvider(String id, String name) {
+  private ProvidersTestUtil.DbProviders buildDbProvider(String id, String credentialsId, String name) {
     return ProvidersTestUtil.DbProviders.builder()
       .id(String.valueOf(id))
+      .credentialsId(credentialsId)
       .name(name).build();
   }
 
-  private void setUpTaggedProviders() throws IOException, URISyntaxException {
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, STUB_VENDOR_NAME));
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2));
-    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, STUB_VENDOR_NAME_3));
-
-    mockDefaultConfiguration(getWiremockUrl());
+  private void setUpTaggedProviders() {
+    String credentialsId = configuration.getId();
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_2, credentialsId, STUB_VENDOR_NAME_2));
+    ProvidersTestUtil.addProvider(vertx, buildDbProvider(STUB_VENDOR_ID_3, credentialsId, STUB_VENDOR_NAME_3));
 
     mockProviderWithName(STUB_VENDOR_ID, STUB_VENDOR_NAME);
     mockProviderWithName(STUB_VENDOR_ID_2, STUB_VENDOR_NAME_2);

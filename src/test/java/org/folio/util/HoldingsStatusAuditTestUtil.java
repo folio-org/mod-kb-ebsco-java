@@ -1,9 +1,10 @@
 package org.folio.util;
 
-import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
-import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.JSONB_COLUMN;
-import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.OPERATION_COLUMN;
-import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.UPDATED_AT_COLUMN;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.CREDENTIALS_COLUMN;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.JSONB_COLUMN;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.OPERATION_COLUMN;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.UPDATED_AT_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -38,11 +38,11 @@ public class HoldingsStatusAuditTestUtil {
     return future.join();
   }
 
-  public static HoldingsLoadingStatus insertStatus(Vertx vertx, HoldingsLoadingStatus status, Instant updatedAt) {
+  public static HoldingsLoadingStatus insertStatus(String credentialsId, HoldingsLoadingStatus status, Instant updatedAt, Vertx vertx) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx)
-      .execute("INSERT INTO " + holdingsStatusAuditTestTable() + " (" + JSONB_COLUMN + ", " + OPERATION_COLUMN + ", "+ UPDATED_AT_COLUMN +") VALUES (?,?,?)",
-        new JsonArray(Arrays.asList(Json.encode(status),"UPDATE", updatedAt)),
+      .execute("INSERT INTO " + holdingsStatusAuditTestTable() + " (" + CREDENTIALS_COLUMN + ", " + JSONB_COLUMN + ", " + OPERATION_COLUMN + ", "+ UPDATED_AT_COLUMN +") VALUES (?,?,?,?)",
+        new JsonArray(Arrays.asList(credentialsId, Json.encode(status),"UPDATE", updatedAt)),
         event -> future.complete(null));
     return future.join();
   }

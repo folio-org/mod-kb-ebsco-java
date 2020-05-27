@@ -19,8 +19,10 @@ import static org.mockito.Mockito.doAnswer;
 
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
-import static org.folio.repository.holdings.status.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
+import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
+import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
@@ -33,10 +35,17 @@ import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
+import static org.folio.util.HoldingsStatusAuditTestUtil.insertStatus;
 import static org.folio.util.HoldingsStatusUtil.PROCESS_ID;
+import static org.folio.util.HoldingsStatusUtil.insertStatus;
+import static org.folio.util.HoldingsStatusUtil.insertStatusNotStarted;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
-import static org.folio.util.KBTestUtil.mockDefaultConfiguration;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -56,14 +65,12 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.RequestPatternBuilder;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -79,31 +86,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.repository.holdings.HoldingInfoInDB;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
-import org.folio.repository.holdings.status.RetryStatusRepository;
+import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameDetailEnum;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
-import org.folio.service.holdings.HoldingsMessage;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.holdings.LoadServiceFacade;
+import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.util.HoldingsStatusAuditTestUtil;
-import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.HoldingsTestUtil;
-import org.folio.util.KBTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
-  static final String HOLDINGS_STATUS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings/status";
-  static final String HOLDINGS_POST_HOLDINGS_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
-  static final String HOLDINGS_GET_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/holdings";
-  static final String LOAD_HOLDINGS_ENDPOINT = "loadHoldings";
+  public static final String HOLDINGS_LOAD_URL = "/eholdings/loading/kb-credentials";
+  public static final String HOLDINGS_LOAD_BY_ID_URL = HOLDINGS_LOAD_URL + "/" + STUB_CREDENTILS_ID;
   private static final int TIMEOUT = 180000;
   private static final int EXPECTED_LOADED_PAGES = 2;
   private static final int TEST_SNAPSHOT_RETRY_COUNT = 2;
   private static final String STUB_HOLDINGS_TITLE = "java-test-one";
+  public static final String RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED = "responses/rmapi/holdings/status/get-status-completed.json";
+  public static final String RMAPI_RESPONSE_HOLDINGS = "responses/rmapi/holdings/holdings/get-holdings.json";
   @InjectMocks
   @Autowired
   HoldingsService holdingsService;
@@ -129,9 +134,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
-    HoldingsStatusUtil.insertStatusNotStarted(vertx);
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
   }
 
   @After
@@ -139,12 +141,12 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     if (interceptor != null) {
       vertx.eventBus().removeOutboundInterceptor(interceptor);
     }
+    tearDownHoldingsData();
   }
 
   @Test
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
-
+    setupDefaultLoadKBConfiguration();
     runPostHoldingsWithMocks(context);
 
     final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
@@ -152,23 +154,24 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldNotStartLoadingWhenStatusInProgress() throws IOException, URISyntaxException {
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
-    HoldingsStatusUtil.insertStatus(vertx, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID);
-    mockDefaultConfiguration(getWiremockUrl());
+  public void shouldNotStartLoadingWhenStatusInProgress() {
+    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertStatus(STUB_CREDENTILS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_CONFLICT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_CONFLICT, STUB_TOKEN_HEADER);
   }
 
   @Test
   public void shouldSaveStatusChangesToAuditTable(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultLoadKBConfiguration();
+
     runPostHoldingsWithMocks(context);
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
       .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
 
     assertThat(attributes, containsInAnyOrder(
+      statusEquals(LoadStatusNameEnum.NOT_STARTED),
       statusEquals(LoadStatusNameEnum.NOT_STARTED),
       statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null),
       statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 0),
@@ -180,50 +183,49 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldClearOldStatusChangeRecords() throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
-    HoldingsStatusAuditTestUtil.insertStatus(vertx, getStatusCompleted(1000), Instant.now().minus(60, ChronoUnit.DAYS));
+  public void shouldClearOldStatusChangeRecords() {
+    setupDefaultLoadKBConfiguration();
+    insertStatus(STUB_CREDENTILS_ID, getStatusCompleted(1000), Instant.now().minus(60, ChronoUnit.DAYS), vertx);
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
       .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
-    assertEquals(2, attributes.size());
+    assertEquals(3, attributes.size());
     assertThat(attributes, containsInAnyOrder(
-      statusEquals(LoadStatusNameEnum.NOT_STARTED),
+      statusEquals(LoadStatusNameEnum.NOT_STARTED), //insert
+      statusEquals(LoadStatusNameEnum.NOT_STARTED), //delete
       statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null)
       ));
   }
 
   @Test
-  public void shouldStartLoadingWhenStatusInProgressAndProcessTimedOut() throws IOException, URISyntaxException {
-    KBTestUtil.clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+  public void shouldStartLoadingWhenStatusInProgressAndProcessTimedOut() {
+    setupDefaultLoadKBConfiguration();
     HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
     status.getData().getAttributes()
       .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().minus(10, ChronoUnit.DAYS).atZone(ZoneId.systemDefault())));
-    HoldingsStatusUtil.insertStatus(vertx, status, PROCESS_ID);
-    mockDefaultConfiguration(getWiremockUrl());
+    insertStatus(STUB_CREDENTILS_ID, status, PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
   }
 
   @Test
   public void shouldRetryCreationOfSnapshotWhenItFails(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultLoadKBConfiguration();
 
     stubFor(
-      post(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false))
+      post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody("")
           .withStatus(202)));
     ResponseDefinitionBuilder failedResponse = new ResponseDefinitionBuilder().withStatus(500);
     ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
-      .withBody(readFile("responses/rmapi/holdings/status/get-status-completed.json"));
-    mockResponseList(new UrlPathPattern(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), false),
+      .withBody(readFile(RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED));
+    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), false),
       failedResponse,
       successfulResponse,
       successfulResponse);
@@ -232,7 +234,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -240,10 +242,11 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldStopRetryingAfterMultipleFailures(TestContext context) throws IOException, URISyntaxException{
-    mockDefaultConfiguration(getWiremockUrl());
-    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
+    setupDefaultLoadKBConfiguration();
 
-    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false);
+    mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED);
+
+    UrlPathPattern urlPattern = new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false);
     stubFor(
       post(urlPattern)
         .willReturn(new ResponseDefinitionBuilder()
@@ -253,12 +256,12 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, o -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
 
     Async retryStatusAsync = context.async();
-    retryStatusRepository.get(STUB_TENANT)
+    retryStatusRepository.findByCredentialsId(STUB_CREDENTILS_ID, STUB_TENANT)
       .thenAccept(status -> {
         boolean timerExists = vertx.cancelTimer(status.getTimerId());
         context.assertEquals(0, status.getRetryAttemptsLeft());
@@ -273,20 +276,20 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
-    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
+    setupDefaultLoadKBConfiguration();
+    mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED);
 
     stubFor(
-      post(new UrlPathPattern(new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT), false))
+      post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody("")
           .withStatus(202)));
 
     ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
-      .withBody(readFile("responses/rmapi/holdings/holdings/get-holdings.json"))
+      .withBody(readFile(RMAPI_RESPONSE_HOLDINGS))
       .withStatus(200);
     ResponseDefinitionBuilder failedResponse = new ResponseDefinitionBuilder().withStatus(500);
-    mockResponseList(new UrlPathPattern(new EqualToPattern(HOLDINGS_GET_ENDPOINT), false),
+    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false),
       successfulResponse,
       failedResponse,
       failedResponse,
@@ -299,7 +302,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -307,8 +310,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldSendSaveHoldingsEventForEachLoadedPage(TestContext context) throws IOException, URISyntaxException {
-    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
-    mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
+    mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED);
+    mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
 
     List<HoldingsMessage> messages = new ArrayList<>();
     Async async = context.async(EXPECTED_LOADED_PAGES);
@@ -320,7 +323,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_TENANT, 5001, 2, null, null));
+    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT, 5001, 2, null, null));
 
     async.await(TIMEOUT);
     assertEquals(2, messages.size());
@@ -329,18 +332,18 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryLoadingPageWhenPageFails(TestContext context) throws IOException, URISyntaxException {
-    mockDefaultConfiguration(getWiremockUrl());
+    setupDefaultLoadKBConfiguration();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
-    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
+    mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
 
     mockPostHoldings();
-    mockResponseList(new UrlPathPattern(new EqualToPattern(HOLDINGS_GET_ENDPOINT), false),
+    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false),
       new ResponseDefinitionBuilder().withStatus(SC_INTERNAL_SERVER_ERROR),
       new ResponseDefinitionBuilder()
-        .withBody(readFile("responses/rmapi/holdings/holdings/get-holdings.json"))
+        .withBody(readFile(RMAPI_RESPONSE_HOLDINGS))
     );
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
   }
@@ -349,17 +352,17 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
 
-    mockGet(new EqualToPattern(HOLDINGS_STATUS_ENDPOINT), "responses/rmapi/holdings/status/get-status-completed.json");
+    mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED);
     mockPostHoldings();
-    mockGet(new RegexPattern(HOLDINGS_GET_ENDPOINT), "responses/rmapi/holdings/holdings/get-holdings.json");
+    mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
 
-    postWithStatus(LOAD_HOLDINGS_ENDPOINT, "", SC_NO_CONTENT);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     async.await(TIMEOUT);
   }
 
   private void mockPostHoldings() {
-    StringValuePattern urlPattern = new EqualToPattern(HOLDINGS_POST_HOLDINGS_ENDPOINT);
+    StringValuePattern urlPattern = new EqualToPattern(RMAPI_POST_HOLDINGS_URL);
     stubFor(post(new UrlPathPattern(urlPattern, false))
       .willReturn(new ResponseDefinitionBuilder()
         .withBody("")
@@ -373,7 +376,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
       return future.thenAccept(handler);
     }).when(repositorySpy).update(
-      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString());
+      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString(), anyString());
+
   }
 
   private Matcher<LoadStatusAttributes> statusEquals(LoadStatusNameEnum status) {
@@ -386,5 +390,15 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       hasProperty("status", hasProperty("detail", equalTo(detail))),
       hasProperty("importedPages", equalTo(importedPages))
     );
+  }
+
+  public void setupDefaultLoadKBConfiguration() {
+    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertStatusNotStarted(STUB_CREDENTILS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+  }
+
+  private void tearDownHoldingsData() {
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 }

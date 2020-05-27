@@ -41,8 +41,8 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
-  private String ASSIGN_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users";
-  private String KB_CREDENTIALS_ASSIGNED_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users/%s";
+  private static final String ASSIGN_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users";
+  private static final String KB_CREDENTIALS_ASSIGNED_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users/%s";
 
   @After
   public void tearDown() {
@@ -74,7 +74,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn400WhenInvalidCredentialsId() {
     String assignedUsersPath = String.format(ASSIGN_USER_PATH, "invalid-id");
     final JsonapiError error = getWithStatus(assignedUsersPath, SC_BAD_REQUEST).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("invalid input syntax for type uuid: \"invalid-id\""));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect"));
   }
 
   @Test

@@ -7,16 +7,16 @@ import java.util.List;
 import org.junit.Test;
 
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.util.AccessTypesTestUtil;
 
 public class AccessTypeCollectionConverterTest {
 
   @Test
   public void testConvertCollection() {
-    List<AccessTypeCollectionItem> accessTypeCollectionItems = AccessTypesTestUtil.testData();
+    List<AccessType> accessTypes = AccessTypesTestUtil.testData();
 
-    AccessTypeCollection convertedCollection = new AccessTypeCollectionConverter().convert(accessTypeCollectionItems);
+    AccessTypeCollection convertedCollection = new AccessTypeCollectionConverter().convert(accessTypes);
 
     assertNotNull(convertedCollection);
     assertNotNull(convertedCollection.getData());
@@ -25,6 +25,6 @@ public class AccessTypeCollectionConverterTest {
 
     assertEquals(3, convertedCollection.getData().size());
     assertEquals(Integer.valueOf(3), convertedCollection.getMeta().getTotalResults());
-    assertEquals(accessTypeCollectionItems, convertedCollection.getData());
+    assertEquals(accessTypes, convertedCollection.getData());
   }
 }

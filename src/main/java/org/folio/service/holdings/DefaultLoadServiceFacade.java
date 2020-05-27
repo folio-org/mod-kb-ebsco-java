@@ -3,7 +3,6 @@ package org.folio.service.holdings;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
+import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @Component("DefaultLoadServiceFacade")
@@ -43,9 +43,9 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService) {
-    return loadWithPagination(message.getTotalPages(), page ->
-      loadingService.loadHoldings(getMaxPageSize(), page)
-        .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null))));
+    return
+      loadWithPagination(message.getTotalPages(), page -> loadingService.loadHoldings(getMaxPageSize(), page)
+        .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null, message.getCredentialsId()))));
   }
 
   @Override
@@ -53,7 +53,7 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
     return MAX_COUNT;
   }
 
-  protected HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
+  private HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
     return HoldingsStatus.builder()
       .created(status.getCreated())
       .status(LoadStatus.fromValue(status.getStatus()))

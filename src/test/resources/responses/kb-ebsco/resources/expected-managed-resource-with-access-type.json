@@ -113,10 +113,6 @@
       "creator": {
         "lastName": "last name",
         "firstName": "first name"
-      },
-      "updater": {
-        "lastName": "last name",
-        "firstName": "first name"
       }
     }
   ],

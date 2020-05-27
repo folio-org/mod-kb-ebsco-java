@@ -6,6 +6,7 @@ import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +21,32 @@ public class KbCredentialsConverter {
 
   }
 
-  @Component
-  public static class KbCredentialsFromDbConverter implements Converter<DbKbCredentials, KbCredentials> {
+  @Component("secured")
+  @Primary
+  public static class KbCredentialsFromDbSecuredConverter extends KbCredentialsFromDbNonSecuredConverter {
+
+    public KbCredentialsFromDbSecuredConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
+      super(defaultUrl);
+    }
+
+    @Override
+    public KbCredentials convert(@NotNull DbKbCredentials source) {
+      return hideApiKey(super.convert(source));
+    }
+
+    private KbCredentials hideApiKey(KbCredentials source) {
+      source.getAttributes().withApiKey(StringUtils.repeat("*", 40));
+      return source;
+    }
+
+  }
+
+  @Component("nonSecured")
+  public static class KbCredentialsFromDbNonSecuredConverter implements Converter<DbKbCredentials, KbCredentials> {
 
     private final String defaultUrl;
 
-    public KbCredentialsFromDbConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
+    public KbCredentialsFromDbNonSecuredConverter(@Value("${kb.ebsco.credentials.url.default}") String defaultUrl) {
       this.defaultUrl = defaultUrl;
     }
 
@@ -35,7 +56,7 @@ public class KbCredentialsConverter {
         .withId(source.getId())
         .withType(KbCredentials.Type.KB_CREDENTIALS)
         .withAttributes(new KbCredentialsDataAttributes()
-          .withApiKey(hideApiKey(source))
+          .withApiKey(source.getApiKey())
           .withCustomerId(source.getCustomerId())
           .withName(source.getName())
           .withUrl(getUrl(source))
@@ -54,14 +75,12 @@ public class KbCredentialsConverter {
       return source.getUrl() != null ? source.getUrl() : defaultUrl;
     }
 
-    private String hideApiKey(@NotNull DbKbCredentials source) {
-      return source.getApiKey() != null ? StringUtils.repeat("*", 40) : null;
-    }
-
     private Date toDate(Instant date) {
       return date != null ? Date.from(date) : null;
     }
+
   }
+
 
   @Component
   public static class KbCredentialsToDbConverter implements Converter<KbCredentials, DbKbCredentials> {

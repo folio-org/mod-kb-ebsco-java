@@ -10,7 +10,7 @@ import org.folio.holdingsiq.model.ResourceId;
 @Value
 @Builder(toBuilder = true)
 public class ResourceCacheKey implements Shareable {
-  private ResourceId resourceId;
-  private String tenant;
-  private Configuration rmapiConfiguration;
+  ResourceId resourceId;
+  String tenant;
+  Configuration rmapiConfiguration;
 }

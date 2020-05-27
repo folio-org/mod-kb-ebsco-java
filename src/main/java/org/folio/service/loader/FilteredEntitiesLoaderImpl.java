@@ -17,8 +17,8 @@ import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
 import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -37,11 +37,10 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<Packages> fetchPackagesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
-                                                                     RMAPITemplateContext context,
-                                                                     Map<String, String> okapiHeaders) {
+                                                                     RMAPITemplateContext context) {
     AtomicInteger totalCount = new AtomicInteger();
     PackageServiceImpl packagesService = context.getPackagesService();
-    return fetchAccessTypeMappings(accessTypeFilter, okapiHeaders, totalCount)
+    return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
       .thenApply(this::extractPackageIds)
       .thenCompose(packagesService::retrievePackages)
       .thenApply(packages -> packages.toBuilder().totalResults(totalCount.get()).build());
@@ -49,31 +48,32 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<Titles> fetchTitlesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
-                                                                 RMAPITemplateContext context,
-                                                                 Map<String, String> okapiHeaders) {
+                                                                 RMAPITemplateContext context) {
     AtomicInteger totalCount = new AtomicInteger();
     TitlesServiceImpl titlesService = context.getTitlesService();
-    return fetchAccessTypeMappings(accessTypeFilter, okapiHeaders, totalCount)
+    return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
       .thenApply(this::extractTitleIds)
       .thenCompose(titlesService::retrieveTitles)
       .thenApply(titles -> titles.toBuilder().totalResults(totalCount.get()).build());
   }
 
   private CompletableFuture<Collection<AccessTypeMapping>> fetchAccessTypeMappings(AccessTypeFilter accessTypeFilter,
-                                                                                   Map<String, String> okapiHeaders,
+                                                                                   RMAPITemplateContext context,
                                                                                    AtomicInteger totalCount) {
+    Map<String, String> okapiHeaders = context.getOkapiData().getOkapiHeaders();
+    String credentialsId = context.getCredentialsId();
     RecordType recordType = accessTypeFilter.getRecordType();
     String recordIdPrefix = createRecordIdPrefix(accessTypeFilter);
-    accessTypeFilter.setRecordIdPrefix(recordIdPrefix);
-    return accessTypesService.findByNames(accessTypeFilter.getAccessTypeNames(), okapiHeaders)
+    return accessTypesService.findByNames(accessTypeFilter.getAccessTypeNames(), credentialsId, okapiHeaders)
       .thenApply(this::extractAccessTypeIds)
-      .thenCompose(accessTypeIds ->
-        accessTypeMappingsService.countRecordsByAccessTypeAndRecordPrefix(recordIdPrefix, recordType, okapiHeaders)
-          .thenCompose(mappingCount -> {
-            accessTypeFilter.setAccessTypeIds(accessTypeIds);
-            accessTypeIds.forEach(id -> totalCount.getAndAdd(mappingCount.getOrDefault(id, 0)));
-            return accessTypeMappingsService.findByAccessTypeFilter(accessTypeFilter, okapiHeaders);
-          }));
+      .thenCombine(accessTypeMappingsService.countByRecordPrefix(recordIdPrefix, recordType, credentialsId, okapiHeaders),
+        (accessTypeIds, mappingCount) -> {
+          accessTypeFilter.setAccessTypeIds(accessTypeIds);
+          accessTypeFilter.setRecordIdPrefix(recordIdPrefix);
+          accessTypeIds.forEach(id -> totalCount.getAndAdd(mappingCount.getOrDefault(id, 0)));
+          return accessTypeFilter;
+        })
+      .thenCompose(filter -> accessTypeMappingsService.findByAccessTypeFilter(filter, okapiHeaders));
   }
 
   private String createRecordIdPrefix(AccessTypeFilter accessTypeFilter) {
@@ -84,7 +84,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   private List<String> extractAccessTypeIds(AccessTypeCollection accessTypeCollection) {
     return accessTypeCollection.getData()
       .stream()
-      .map(AccessTypeCollectionItem::getId)
+      .map(AccessType::getId)
       .collect(Collectors.toList());
   }
 

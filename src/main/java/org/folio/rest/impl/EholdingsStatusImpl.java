@@ -45,7 +45,7 @@ public class EholdingsStatusImpl implements EholdingsStatus {
         okapiData.setValue(new OkapiData(okapiHeaders));
         return configurationService.retrieveConfiguration(okapiData.getValue());
       })
-      .thenCompose(configuration -> configurationService.verifyCredentials(configuration, vertxContext, okapiData.getValue().getTenant()))
+      .thenCompose(configuration -> configurationService.verifyCredentials(configuration, vertxContext, okapiData.getValue()))
       .thenAccept(errors -> asyncResultHandler.handle(Future.succeededFuture(GetEholdingsStatusResponse.respond200WithApplicationVndApiJson(converter.convert(errors.isEmpty())))))
       .exceptionally(e -> {
         new ErrorHandler().handle(asyncResultHandler, e);

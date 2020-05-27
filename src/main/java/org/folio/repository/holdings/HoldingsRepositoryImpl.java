@@ -1,19 +1,23 @@
 package org.folio.repository.holdings;
 
-import static org.folio.common.FutureUtils.mapResult;
+import static java.util.Collections.singleton;
+
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createInsertPlaceholders;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
-import static org.folio.repository.DbUtil.mapColumn;
-import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_HOLDINGS_BY_ID_LIST;
-import static org.folio.repository.holdings.HoldingsTableConstants.GET_HOLDINGS_BY_IDS;
-import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS_STATEMENT;
-import static org.folio.repository.holdings.HoldingsTableConstants.REMOVE_FROM_HOLDINGS;
+import static org.folio.repository.DbUtil.mapRow;
+import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_BY_PK_HOLDINGS;
+import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_OLD_RECORDS_BY_CREDENTIALS_ID;
+import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PK_HOLDINGS;
+import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
+import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -24,7 +28,6 @@ import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -35,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.util.IdParser;
 
 @Component
 public class HoldingsRepositoryImpl implements HoldingsRepository {
@@ -49,59 +53,59 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveAll(Set<HoldingInfoInDB> holdings, Instant updatedAt, String tenantId) {
+  public CompletableFuture<Void> saveAll(Set<HoldingInfoInDB> holdings, Instant updatedAt, String credentialsId, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) ->
-      executeInBatches(holdings, batch -> saveHoldings(batch, updatedAt, tenantId, connection, postgresClient)));
+      executeInBatches(holdings, batch -> saveHoldings(batch, updatedAt, credentialsId, tenantId, connection, postgresClient)));
   }
 
-  private CompletableFuture<Void> saveHoldings(List<HoldingInfoInDB> holdings, Instant updatedAt, String tenantId,
+  private CompletableFuture<Void> saveHoldings(List<HoldingInfoInDB> holdings, Instant updatedAt, String credentialsId, String tenantId,
                                                AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
-    JsonArray parameters = createParameters(holdings, updatedAt);
-    final String query = String.format(INSERT_OR_UPDATE_HOLDINGS_STATEMENT, getHoldingsTableName(tenantId),
-      createInsertPlaceholders(3, holdings.size()));
+    final JsonArray parameters = createParameters(credentialsId, holdings, updatedAt);
+    final String query = String.format(INSERT_OR_UPDATE_HOLDINGS, getHoldingsTableName(tenantId),
+      createInsertPlaceholders(9, holdings.size()));
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
-  public CompletableFuture<Void> deleteBeforeTimestamp(Instant timestamp, String tenantId){
-    final String query = String.format(REMOVE_FROM_HOLDINGS, getHoldingsTableName(tenantId), timestamp.toString());
+  public CompletableFuture<Void> deleteBeforeTimestamp(Instant timestamp, String credentialsId, String tenantId){
+    final String query = String.format(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId), timestamp.toString());
     LOG.info("Do delete query = " + query);
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     Promise<UpdateResult> promise = Promise.promise();
-    postgresClient.execute(query, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    final JsonArray params = createParams(singleton(credentialsId));
+    pgClient(tenantId).execute(query, params, promise);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
-  public CompletableFuture<List<HoldingInfoInDB>> findAllById(List<String> resourceIds, String tenantId) {
-    final String resourceIdString = resourceIds.isEmpty() ? "''" :
-      resourceIds.stream().map(id -> "'" + id.concat("'")).collect(Collectors.joining(","));
-    final String query = String.format(GET_HOLDINGS_BY_IDS, getHoldingsTableName(tenantId), resourceIdString);
+  public CompletableFuture<List<HoldingInfoInDB>> findAllById(List<String> resourceIds, String credentialsId, String tenantId) {
+    if(resourceIds.isEmpty()){
+      return CompletableFuture.completedFuture(new ArrayList<>());
+    }
+    final String resourceIdString = getHoldingsPkKeys(credentialsId, resourceIds);
+    final String query = String.format(GET_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), resourceIdString);
     LOG.info("Do select query = " + query);
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
     Promise<ResultSet> promise = Promise.promise();
-    postgresClient.select(query, promise);
+    pgClient(tenantId).select(query, promise);
     return mapResult(promise.future(), this::mapHoldings);
   }
 
   @Override
-  public CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, String tenantId) {
+  public CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, String credentialsId, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) ->
-      executeInBatches(holdings, batch -> deleteHoldings(batch, tenantId, connection, postgresClient)));
+      executeInBatches(holdings, batch -> deleteHoldings(batch, credentialsId,tenantId, connection, postgresClient)));
   }
 
-  private CompletableFuture<Void> deleteHoldings(List<HoldingsId> holdings, String tenantId,
+  private CompletableFuture<Void> deleteHoldings(List<HoldingsId> holdings, String credentialsId, String tenantId,
                                                AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
-    JsonArray parameters = createHoldingsIdParameters(holdings);
-    final String query = String.format(DELETE_HOLDINGS_BY_ID_LIST, getHoldingsTableName(tenantId),
-      createPlaceholders(holdings.size()));
+    final String parameters = getHoldingsPkKeys(credentialsId, mapItems(holdings, IdParser::getResourceId));
+    final String query = String.format(DELETE_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), parameters);
     LOG.info("Do delete query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    postgresClient.execute(connection, query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(result -> null);
+    postgresClient.execute(connection, query, promise);
+    return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   /**
@@ -121,28 +125,36 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   private List<HoldingInfoInDB> mapHoldings(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), row -> mapColumn(row, "jsonb", HoldingInfoInDB.class).orElse(null));
+    return mapItems(resultSet.getRows(), row -> mapRow(row, HoldingInfoInDB.class).orElse(null));
   }
 
   private String getHoldingsId(HoldingInfoInDB holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 
-  private JsonArray createParameters(List<HoldingInfoInDB> holdings, Instant updatedAt) {
+  private JsonArray createParameters(String credentialsId, List<HoldingInfoInDB> holdings, Instant updatedAt) {
     JsonArray params = new JsonArray();
     holdings.forEach(holding -> {
       params.add(getHoldingsId(holding));
-      params.add(Json.encode(holding));
+      params.add(credentialsId);
+      params.add(holding.getVendorId());
+      params.add(holding.getPackageId());
+      params.add(holding.getTitleId());
+      params.add(holding.getResourceType());
+      params.add(holding.getPublisherName());
+      params.add(holding.getPublicationTitle());
       params.add(updatedAt);
     });
     return params;
   }
-  private JsonArray createHoldingsIdParameters(List<HoldingsId> ids) {
-    return new JsonArray(
-      ids.stream()
-      .map(id -> id.getVendorId() + "-" + id.getPackageId() + "-" + id.getTitleId())
-      .collect(Collectors.toList())
-    );
+
+  private String getHoldingsPkKeys(String credentialsId, List<String> resourceIds) {
+    return resourceIds.stream()
+      .map(id -> "('" + credentialsId + "', '"+ id.concat("')"))
+      .collect(Collectors.joining(","));
   }
 
+  private PostgresClient pgClient(String tenantId) {
+    return PostgresClient.getInstance(vertx, tenantId);
+  }
 }

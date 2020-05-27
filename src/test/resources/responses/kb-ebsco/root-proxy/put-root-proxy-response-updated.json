@@ -1,0 +1,14 @@
+{
+  "data": {
+    "id": "root-proxy",
+    "type": "rootProxies",
+    "credentialsId": "12312312-1231-1231-a111-111111111111",
+    "attributes": {
+      "id": "root-proxy",
+      "proxyTypeId": "Test-Proxy-ID-123"
+    }
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

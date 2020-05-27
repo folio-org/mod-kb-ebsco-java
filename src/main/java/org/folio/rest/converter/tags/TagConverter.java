@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
@@ -17,7 +17,7 @@ import org.folio.rest.jaxrs.model.TagRelationship;
 import org.folio.rest.util.RestConstants;
 
 @Component
-public class TagConverter implements Converter<Tag, TagCollectionItem> {
+public class TagConverter implements Converter<DbTag, TagCollectionItem> {
 
   private static final Map<RecordType, String> RECORD_TYPES = new EnumMap<>(RecordType.class);
 
@@ -29,7 +29,7 @@ public class TagConverter implements Converter<Tag, TagCollectionItem> {
   }
 
   @Override
-  public TagCollectionItem convert(@NonNull Tag source) {
+  public TagCollectionItem convert(@NonNull DbTag source) {
     return new TagCollectionItem()
       .withType(RestConstants.TAGS_TYPE)
       .withId(source.getId())
@@ -37,11 +37,11 @@ public class TagConverter implements Converter<Tag, TagCollectionItem> {
       .withRelationships(createRelationships(source));
   }
 
-  private TagDataAttributes createAttributes(Tag source) {
+  private TagDataAttributes createAttributes(DbTag source) {
     return new TagDataAttributes().withValue(source.getValue());
   }
 
-  private TagRelationship createRelationships(Tag source) {
+  private TagRelationship createRelationships(DbTag source) {
     return new TagRelationship().withRecord(
             new HasOneRelationship().withData(
                 new RelationshipData()

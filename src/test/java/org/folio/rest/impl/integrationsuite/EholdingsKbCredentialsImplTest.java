@@ -8,6 +8,7 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -17,16 +18,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USERNAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
+import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.util.List;
@@ -54,6 +61,9 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @After
   public void tearDown() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    clearDataFromTable(vertx, HOLDINGS_STATUS_AUDIT_TABLE);
+    clearDataFromTable(vertx, RETRY_STATUS_TABLE);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
@@ -89,16 +99,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn201OnPostIfCredentialsAreValid() {
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+      .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_TOKEN_HEADER)
       .as(KbCredentials.class);
 
@@ -116,16 +120,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPostWhenCredentialsAreInvalid() {
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+      .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -134,14 +132,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPostWhenCredentialsNameIsLongerThen255() {
-    KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(Strings.repeat('*', 256))
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+    KbCredentials creds = stubbedCredentials();
+    creds.getAttributes().setName(Strings.repeat('*', 256));
+
+    KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
     String postBody = Json.encode(kbCredentialsPostRequest);
 
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
@@ -153,14 +147,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPostWhenCredentialsNameIsEmpty() {
-    KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName("")
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+    KbCredentials creds = stubbedCredentials();
+    creds.getAttributes().setName("");
+
+    KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
     String postBody = Json.encode(kbCredentialsPostRequest);
 
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
@@ -174,16 +164,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPostWhenCredentialsWithProvidedNameAlreadyExist() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+      .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
@@ -222,17 +206,15 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn204OnPutIfCredentialsAreValid() {
     String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME + "updated")
-          .withCustomerId(STUB_CUSTOMER_ID + "updated")
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+    KbCredentials creds = stubbedCredentials();
+    creds.getAttributes()
+      .withName(STUB_CREDENTIALS_NAME + "updated")
+      .withCustomerId(STUB_CUSTOMER_ID + "updated");
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     putWithNoContent(resourcePath, putBody, STUB_TOKEN_HEADER);
 
@@ -257,16 +239,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+      .withData(stubbedCredentials());
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForFailedCredentials();
+    mockVerifyFailedCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -276,14 +252,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutWhenCredentialsNameIsLongerThen255() {
-    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(Strings.repeat('*', 256))
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+    KbCredentials creds = stubbedCredentials();
+    creds.getAttributes().setName(Strings.repeat('*', 256));
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
@@ -296,14 +268,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutWhenCredentialsNameIsEmpty() {
-    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName("")
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+    KbCredentials creds = stubbedCredentials();
+    creds.getAttributes().setName("");
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
@@ -317,20 +285,14 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPutWhenCredentialsWithProvidedNameAlreadyExist() {
     insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId =
-      insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2", STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2",
+      STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
-      .withData(new KbCredentials()
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+      .withData(stubbedCredentials());
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -342,15 +304,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnPutWhenIdIsInvalid() {
-    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
-      .withData(new KbCredentials()
-        .withId(UUID.randomUUID().toString())
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+    KbCredentials creds = stubbedCredentials();
+    creds.setId(UUID.randomUUID().toString());
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
@@ -361,18 +318,13 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404OnPutWhenCredentialsAreMissing() {
-    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
-      .withData(new KbCredentials()
-        .withId(UUID.randomUUID().toString())
-        .withType(KbCredentials.Type.KB_CREDENTIALS)
-        .withAttributes(new KbCredentialsDataAttributes()
-          .withName(STUB_CREDENTIALS_NAME)
-          .withCustomerId(STUB_CUSTOMER_ID)
-          .withApiKey(STUB_API_KEY)
-          .withUrl(getWiremockUrl())));
+    KbCredentials creds = stubbedCredentials();
+    creds.setId(UUID.randomUUID().toString());
+
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);
 
-    stubForSuccessCredentials();
+    mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
@@ -380,7 +332,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn201OnDelete() {
+  public void shouldReturn204OnDelete() {
     String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
@@ -405,7 +357,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn201OnDeleteWhenCredentialsAreMissing() {
+  public void shouldReturn204OnDeleteWhenCredentialsAreMissing() {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     deleteWithNoContent(resourcePath);
 
@@ -421,17 +373,58 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
   }
 
-  private void stubForSuccessCredentials() {
-    stubFor(
-      get(urlPathMatching("/rm/rmaccounts/.*"))
-        .willReturn(aResponse()
-          .withStatus(SC_OK)
-          .withBody("{\"totalResults\": 0, \"vendors\": []}")));
+  @Test
+  public void shouldReturn200AndKbCredentialsOnGetByUser() {
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
+
+    KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
+    assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
   }
 
-  private void stubForFailedCredentials() {
+  @Test
+  public void shouldReturn200AndKbCredentialsOnGetByUserWhenSingleKbCredentialsPresent() {
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
+    assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
+  }
+
+  @Test
+  public void shouldReturn401OnGetByUserWhenTokenIsInvalid() {
+    JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid token"));
+  }
+
+  @Test
+  public void shouldReturn404OnGetByUserWhenAssignedUserIsMissingAndNoKBCredentialsAtAll() {
+    JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("User credentials not found"));
+  }
+
+  private KbCredentials stubbedCredentials() {
+    return new KbCredentials()
+      .withType(KbCredentials.Type.KB_CREDENTIALS)
+      .withAttributes(new KbCredentialsDataAttributes()
+        .withName(STUB_CREDENTIALS_NAME)
+        .withCustomerId(STUB_CUSTOMER_ID)
+        .withApiKey(STUB_API_KEY)
+        .withUrl(getWiremockUrl()));
+  }
+
+  private void mockVerifyValidCredentialsRequest() {
+    stubFor(
+      get(urlPathMatching("/rm/rmaccounts/.*"))
+        .willReturn(aResponse().withStatus(SC_OK).withBody("{\"totalResults\": 0, \"vendors\": []}")));
+  }
+
+  private void mockVerifyFailedCredentialsRequest() {
     stubFor(
       get(urlPathMatching("/rm/rmaccounts/.*"))
         .willReturn(aResponse().withStatus(SC_UNPROCESSABLE_ENTITY)));
   }
+
 }

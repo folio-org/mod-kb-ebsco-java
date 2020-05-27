@@ -11,8 +11,7 @@ documentation:
 
 types:
   customLabelsCollection: !include types/customLabels/customLabelsCollection.json
-  customLabelCollectionItem: !include types/customLabels/customLabelCollectionItem.json
-  customLabelPutRequest: !include types/customLabels/customLabelPutRequest.json
+  customLabelsPutRequest: !include types/customLabels/customLabelsPutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/custom-labels:
@@ -28,20 +27,43 @@ types:
             type: customLabelsCollection
             example:
               strict: false
-              value: !include examples/customLabels/cl_collection_get_200_response.json
+              value: !include examples/customLabels/custom_labels_get_200_response.json
       500:
         description: "Internal server error"
         body:
           text/plain:
             example: "Internal server error, contact administrator"
+/eholdings/kb-credentials/{id}/custom-labels:
+  displayName: Custom labels
+  description: Custom labels belongs to specific KB Credentials
+  uriParameters:
+    id:
+      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  get:
+    description: Get a custom labels related to specific KB credentials
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Collection of Custom Labels
+            type: customLabelsCollection
+            example:
+              strict: false
+              value: !include examples/customLabels/custom_labels_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/customLabels/custom_labels_get_404_response.json
   put:
     description: Update a list of custom labels.
-    headers:
-      Content-Type:
-        example: application/vnd.api+json
     body:
       application/vnd.api+json:
-        type: customLabelPutRequest
+        type: customLabelsPutRequest
         example:
           strict: false
           value: !include examples/customLabels/cl_collection_put_request.json
@@ -55,6 +77,14 @@ types:
             example:
               strict: false
               value: !include examples/customLabels/cl_collection_put_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/customLabels/custom_labels_get_404_response.json
       422:
         description: Unprocessable Entity
         body:

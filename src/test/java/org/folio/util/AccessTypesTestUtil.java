@@ -1,18 +1,31 @@
 package org.folio.util;
 
-import static org.apache.commons.lang3.StringUtils.join;
-
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_FIELD_LIST;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USERNAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_DATE_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.JSONB_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USERNAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -22,15 +35,21 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.ResultSet;
-import org.jetbrains.annotations.NotNull;
+import io.vertx.ext.sql.UpdateResult;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.core.convert.converter.Converter;
 
+import org.folio.db.DbUtils;
 import org.folio.repository.RecordType;
+import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.accesstypes.AccessTypeMapping;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
+import org.folio.repository.accesstypes.AccessTypeMappingsTableConstants;
+import org.folio.repository.accesstypes.DbAccessType;
+import org.folio.rest.converter.accesstypes.AccessTypeConverter;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.persist.PostgresClient;
@@ -41,47 +60,59 @@ public class AccessTypesTestUtil {
   public static final String STUB_ACCESS_TYPE_NAME_2 = "Trial";
   public static final String STUB_ACCESS_TYPE_NAME_3 = "Purchased with perpetual access";
 
-  public static List<AccessTypeCollectionItem> getAccessTypes(Vertx vertx) {
-    ObjectMapper mapper = new ObjectMapper();
-    CompletableFuture<List<AccessTypeCollectionItem>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesTestTable(),
-      event -> future.complete(event.result().getRows().stream()
-        .map(row -> row.getString(JSONB_COLUMN))
-        .map(json -> parseAccessType(mapper, json))
-        .collect(Collectors.toList())));
-    return future.join();
-  }
+  public static final String ACCESS_TYPES_PATH = "/eholdings/access-types";
+  public static final String KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types";
+  public static final String KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/access-types/%s";
 
-  public static void insertAccessTypeMapping(String recordId, final RecordType recordType, String accessTypeId,
-                                             Vertx vertx) {
+  private static final Converter<DbAccessType, AccessType> CONVERTER = new AccessTypeConverter.FromDb();
+
+  public static void insertAccessTypeMapping(String recordId, RecordType recordType, String accessTypeId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String insertStatement = "INSERT INTO " + accessTypesMappingTestTable() + "("
-      + ACCESS_TYPES_MAPPING_FIELD_LIST + ") VALUES " + "(?,?,?,?)";
-    JsonArray params =
-      new JsonArray(Arrays.asList(UUID.randomUUID().toString(), recordId, recordType.getValue(), accessTypeId));
+    String insertStatement = String.format(AccessTypeMappingsTableConstants.UPSERT_QUERY, accessTypesMappingTestTable());
+    JsonArray params = new JsonArray(Arrays.asList(id(), recordId, recordType.getValue(), accessTypeId));
 
     PostgresClient.getInstance(vertx)
       .execute(insertStatement, params, event -> future.complete(null));
     future.join();
   }
 
-  public static List<AccessTypeCollectionItem> insertAccessTypes(List<AccessTypeCollectionItem> items, Vertx vertx) {
-    CompletableFuture<ResultSet> future = new CompletableFuture<>();
+  private static String id() {
+    return UUID.randomUUID().toString();
+  }
 
-    String insertStatement = "INSERT INTO " + accessTypesTestTable() +
-      "(" + ID_COLUMN + "," + JSONB_COLUMN + ") VALUES " + join(Collections.nCopies(items.size(), "(?,?)"), ",") +
-      " RETURNING " + ID_COLUMN;
-    JsonArray params = createParams(items);
+  public static List<AccessType> insertAccessTypes(List<AccessType> items, Vertx vertx) {
+    for (AccessType item : items) {
+      String id = insertAccessType(item, vertx);
+      item.setId(id);
+    }
+    return items;
+  }
 
-    PostgresClient.getInstance(vertx).select(insertStatement, params, ar -> {
-      if (ar.succeeded()) {
-        future.complete(ar.result());
-      } else {
-        future.completeExceptionally(ar.cause());
-      }
-    });
-    return populateAccessTypesIds(items, future.join().getRows());
+  public static String insertAccessType(AccessType accessType, Vertx vertx) {
+    CompletableFuture<UpdateResult> future = new CompletableFuture<>();
+
+    String query = String.format(UPSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
+
+    String id = id();
+    JsonArray params = DbUtils.createParams(Arrays.asList(
+      id,
+      accessType.getAttributes().getCredentialsId(),
+      accessType.getAttributes().getName(),
+      accessType.getAttributes().getDescription(),
+      Instant.now().toString(),
+      id(),
+      "username",
+      accessType.getCreator().getLastName(),
+      accessType.getCreator().getFirstName(),
+      accessType.getCreator().getMiddleName(),
+      null, null, null, null, null, null
+    ));
+
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    future.join();
+
+    return id;
   }
 
   public static List<AccessTypeMapping> getAccessTypeMappings(Vertx vertx) {
@@ -96,44 +127,21 @@ public class AccessTypesTestUtil {
     return future.join();
   }
 
+  public static List<AccessType> getAccessTypes(Vertx vertx) {
+    CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
+    PostgresClient.getInstance(vertx).select(String.format(SqlQueryHelper.selectQuery(), accessTypesTestTable()),
+      event -> future.complete(event.result().getRows().stream()
+        .map(AccessTypesTestUtil::mapAccessType)
+        .map(CONVERTER::convert)
+        .collect(Collectors.toList())));
+    return future.join();
+  }
+
   private static AccessTypeMapping parseAccessTypeMapping(ObjectMapper mapper, JsonObject entry) {
     try {
       return mapper.readValue(entry.encode(), AccessTypeMapping.class);
     } catch (IOException e) {
-      e.printStackTrace();
       throw new IllegalArgumentException("Can't parse access type mapping", e);
-    }
-  }
-
-  private static List<AccessTypeCollectionItem> populateAccessTypesIds(List<AccessTypeCollectionItem> items,
-                                                                       List<JsonObject> rows) {
-    List<AccessTypeCollectionItem> result = new ArrayList<>(items.size());
-
-    for (int i = 0; i < items.size(); i++) {
-      result.add(items.get(i)
-        .withId(rows.get(i).getString(ID_COLUMN)));
-    }
-
-    return result;
-  }
-
-  private static JsonArray createParams(List<AccessTypeCollectionItem> items) {
-    JsonArray params = new JsonArray();
-
-    items.forEach(item -> {
-      params.add(UUID.randomUUID().toString());
-      params.add(Json.encode(item));
-    });
-
-    return params;
-  }
-
-  private static AccessTypeCollectionItem parseAccessType(ObjectMapper mapper, String json) {
-    try {
-      return mapper.readValue(json, AccessTypeCollectionItem.class);
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new IllegalArgumentException("Can't parse access type", e);
     }
   }
 
@@ -145,41 +153,60 @@ public class AccessTypesTestUtil {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
   }
 
-  @NotNull
-  public static List<AccessTypeCollectionItem> testData() {
-    AccessTypeCollectionItem accessType1 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+  private static DbAccessType mapAccessType(JsonObject resultRow) {
+    return DbAccessType.builder()
+      .id(resultRow.getString(ID_COLUMN))
+      .credentialsId(resultRow.getString(CREDENTIALS_ID_COLUMN))
+      .name(resultRow.getString(NAME_COLUMN))
+      .description(resultRow.getString(DESCRIPTION_COLUMN))
+      .usageNumber(ObjectUtils.defaultIfNull(resultRow.getInteger(USAGE_NUMBER_COLUMN), 0))
+      .createdDate(resultRow.getInstant(CREATED_DATE_COLUMN))
+      .createdByUserId(resultRow.getString(CREATED_BY_USER_ID_COLUMN))
+      .createdByUsername(resultRow.getString(CREATED_BY_USERNAME_COLUMN))
+      .createdByLastName(resultRow.getString(CREATED_BY_LAST_NAME_COLUMN))
+      .createdByFirstName(resultRow.getString(CREATED_BY_FIRST_NAME_COLUMN))
+      .createdByMiddleName(resultRow.getString(CREATED_BY_MIDDLE_NAME_COLUMN))
+      .updatedDate(resultRow.getInstant(UPDATED_DATE_COLUMN))
+      .updatedByUserId(resultRow.getString(UPDATED_BY_USER_ID_COLUMN))
+      .updatedByUsername(resultRow.getString(UPDATED_BY_USERNAME_COLUMN))
+      .updatedByLastName(resultRow.getString(UPDATED_BY_LAST_NAME_COLUMN))
+      .updatedByFirstName(resultRow.getString(UPDATED_BY_FIRST_NAME_COLUMN))
+      .updatedByMiddleName(resultRow.getString(UPDATED_BY_MIDDLE_NAME_COLUMN))
+      .build();
+  }
+
+  public static List<AccessType> testData() {
+    return testData(null);
+  }
+
+  public static List<AccessType> testData(String credentialsId) {
+    AccessType accessType1 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME)
         .withDescription("Access Type description 1"))
       .withCreator(new UserDisplayInfo()
         .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
-        .withFirstName("first name")
         .withLastName("last name"));
 
-    AccessTypeCollectionItem accessType2 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+    AccessType accessType2 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME_2)
         .withDescription("Access Type description 2"))
       .withCreator(new UserDisplayInfo()
         .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
-        .withFirstName("first name")
         .withLastName("last name"));
 
-    AccessTypeCollectionItem accessType3 = new AccessTypeCollectionItem()
-      .withType(AccessTypeCollectionItem.Type.ACCESS_TYPES)
+    AccessType accessType3 = new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
       .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
         .withName(STUB_ACCESS_TYPE_NAME_3)
         .withDescription("Access Type description 3"))
       .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"))
-      .withUpdater(new UserDisplayInfo()
         .withFirstName("first name")
         .withLastName("last name"));
 

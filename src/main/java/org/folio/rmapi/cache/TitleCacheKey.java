@@ -9,7 +9,7 @@ import org.folio.holdingsiq.model.Configuration;
 @Value
 @Builder(toBuilder = true)
 public class TitleCacheKey implements Shareable{
-  private long titleId;
-  private String tenant;
-  private Configuration rmapiConfiguration;
+  long titleId;
+  String tenant;
+  Configuration rmapiConfiguration;
 }

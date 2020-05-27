@@ -12,17 +12,15 @@ import org.folio.rest.util.RestConstants;
 
 @Component
 public class RootProxyConverter implements Converter<RootProxyCustomLabels, RootProxy> {
-  private static final String ROOT_PROXY_ID = "root-proxy";
-  private static final String ROOT_PROXY_TYPE = "rootProxies";
 
   @Override
   public RootProxy convert(@NonNull RootProxyCustomLabels proxy) {
     return new org.folio.rest.jaxrs.model.RootProxy()
       .withData(new RootProxyData()
-        .withId(ROOT_PROXY_ID)
-        .withType(ROOT_PROXY_TYPE)
+        .withId(RootProxyData.Id.ROOT_PROXY)
+        .withType(RootProxyData.Type.ROOT_PROXIES)
         .withAttributes(new RootProxyDataAttributes()
-          .withId(ROOT_PROXY_ID)
+          .withId(RootProxyDataAttributes.Id.ROOT_PROXY)
           .withProxyTypeId(proxy.getProxy().getId())))
       .withJsonapi(RestConstants.JSONAPI);
   }

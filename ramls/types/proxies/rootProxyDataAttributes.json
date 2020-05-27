@@ -9,6 +9,7 @@
     "id": {
       "type": "string",
       "description": "Root Proxy ID",
+      "enum": ["root-proxy"],
       "example": "root-proxy"
     },
     "proxyTypeId": {
@@ -16,5 +17,9 @@
       "description": "Proxy Type Id",
       "example": "EZProxy"
     }
-  }
+  },
+  "required": [
+    "id",
+    "proxyTypeId"
+  ]
 }

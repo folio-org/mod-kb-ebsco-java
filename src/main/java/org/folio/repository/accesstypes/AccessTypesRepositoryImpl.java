@@ -1,154 +1,256 @@
 package org.folio.repository.accesstypes;
 
-import static org.folio.common.FutureUtils.mapResult;
-import static org.folio.common.ListUtils.mapItems;
-import static org.folio.repository.DbUtil.getAccessTypesTableName;
-import static org.folio.repository.DbUtil.mapColumn;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_ALL_ACCESS_TYPES;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_ACCESS_TYPES;
+import static java.lang.String.format;
 
+import static org.folio.common.ListUtils.mapItems;
+import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
+import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
+import static org.folio.repository.DbUtil.getAccessTypesTableName;
+import static org.folio.repository.DbUtil.uniqueConstraintRecover;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USERNAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_DATE_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_NAMES_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_RECORD_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USERNAME_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
+import static org.folio.util.FutureUtils.mapResult;
+
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
-import javax.ws.rs.NotFoundException;
-
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.common.ListUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
-import org.folio.rest.jaxrs.model.AccessTypeCollectionItem;
-import org.folio.rest.persist.Criteria.Criteria;
-import org.folio.rest.persist.Criteria.Criterion;
+import org.folio.repository.RecordType;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.persist.interfaces.Results;
+import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypesRepositoryImpl.class);
 
-  private static final String ACCESS_TYPE_NOT_FOUND_MESSAGE = "Access type with id '%s' not found";
+  private static final String LOG_SELECT_QUERY = "Do select query = {}";
+  private static final String LOG_INSERT_QUERY = "Do insert query = {}";
+  private static final String LOG_COUNT_QUERY = "Do count query = {}";
+  private static final String LOG_DELETE_QUERY = "Do delete query = {}";
 
-  @Autowired
-  private Vertx vertx;
+  private static final String NAME_UNIQUENESS_MESSAGE = "Duplicate name";
+  private static final String NAME_UNIQUENESS_DETAILS = "Access type with name '%s' already exist";
+
   @Autowired
   private DBExceptionTranslator excTranslator;
 
+  @Autowired
+  private Vertx vertx;
 
   @Override
-  public CompletableFuture<List<AccessTypeCollectionItem>> findAll(String tenantId) {
-    LOG.info("Retrieving access types: tenantId = {}", tenantId);
+  public CompletableFuture<List<DbAccessType>> findByCredentialsId(String credentialsId, String tenantId) {
+    String query = format(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY,
+      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+
+    LOG.info(LOG_SELECT_QUERY, query);
+
     Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenantId).select(String.format(SELECT_ALL_ACCESS_TYPES, getAccessTypesTableName(tenantId)), promise);
+    pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
 
-    return mapResult(promise.future(), this::readAccessTypes);
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessTypes);
   }
 
   @Override
-  public CompletableFuture<List<AccessTypeCollectionItem>> findByNames(Collection<String> accessTypeNames, String tenantId) {
-    Promise<Results<AccessTypeCollectionItem>> promise = Promise.promise();
+  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(String credentialsId,
+                                                                                    String accessTypeId, String tenantId) {
+    String query = String.format(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY,
+      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
-    Criterion criterion = criterionForFindByNames(accessTypeNames);
-    pgClient(tenantId).get(ACCESS_TYPES_TABLE_NAME, AccessTypeCollectionItem.class, criterion, false, false, promise);
+    LOG.info(LOG_SELECT_QUERY, query);
 
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), Results::getResults);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, createParams(Arrays.asList(accessTypeId, credentialsId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
   }
 
   @Override
-  public CompletableFuture<Optional<AccessTypeCollectionItem>> findById(String id, String tenantId) {
-    LOG.info("Retrieving access type: id = {}, tenantId = {}", id, tenantId);
-    Promise<AccessTypeCollectionItem> promise = Promise.promise();
-    pgClient(tenantId).getById(ACCESS_TYPES_TABLE_NAME, id, AccessTypeCollectionItem.class, promise);
+  public CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(String credentialsId,
+                                                                       Collection<String> accessTypeNames, String tenantId) {
+    String query = format(SELECT_BY_CREDENTIALS_AND_NAMES_QUERY,
+      getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(accessTypeNames.size()));
 
-    return mapResult(promise.future(), Optional::ofNullable);
+    LOG.info(LOG_SELECT_QUERY, query);
+
+    JsonArray params = createParams(Collections.singleton(credentialsId));
+    accessTypeNames.forEach(params::add);
+
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessTypes);
   }
 
   @Override
-  public CompletableFuture<AccessTypeCollectionItem> save(AccessTypeCollectionItem accessType, String tenantId) {
-    Promise<String> promise = Promise.promise();
+  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndRecord(String credentialsId, String recordId,
+                                                                              RecordType recordType,
+                                                                              String tenantId) {
+    String query = String.format(SELECT_BY_CREDENTIALS_AND_RECORD_QUERY,
+      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
+    LOG.info(LOG_SELECT_QUERY, query);
+
+    JsonArray params = createParams(Arrays.asList(credentialsId, recordId, recordType.getValue()));
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
+  }
+
+  @Override
+  public CompletableFuture<DbAccessType> save(DbAccessType accessType, String tenantId) {
+    String query = format(UPSERT_ACCESS_TYPE_QUERY, getAccessTypesTableName(tenantId));
+
+    String id = accessType.getId();
     if (StringUtils.isBlank(accessType.getId())) {
-      accessType.setId(UUID.randomUUID().toString());
+      id = UUID.randomUUID().toString();
     }
-    LOG.info("Saving access type: " + accessType);
-    pgClient(tenantId).save(ACCESS_TYPES_TABLE_NAME, accessType.getId(), accessType, promise);
+    JsonArray params = createParams(Arrays.asList(
+      id,
+      accessType.getCredentialsId(),
+      accessType.getName(),
+      accessType.getDescription(),
+      accessType.getCreatedDate(),
+      accessType.getCreatedByUserId(),
+      accessType.getCreatedByUsername(),
+      accessType.getCreatedByLastName(),
+      accessType.getCreatedByFirstName(),
+      accessType.getCreatedByMiddleName(),
+      accessType.getUpdatedDate(),
+      accessType.getUpdatedByUserId(),
+      accessType.getCreatedByUsername(),
+      accessType.getUpdatedByLastName(),
+      accessType.getUpdatedByFirstName(),
+      accessType.getUpdatedByMiddleName()
+    ));
 
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), accessTypeId -> {
-      accessType.setId(accessTypeId);
-      return accessType;
-    });
-  }
+    LOG.info(LOG_INSERT_QUERY, query);
 
-  @Override
-  public CompletableFuture<Void> update(String id, AccessTypeCollectionItem accessType, String tenantId) {
     Promise<UpdateResult> promise = Promise.promise();
+    pgClient(tenantId).execute(query, params, promise);
 
-    pgClient(tenantId).update(ACCESS_TYPES_TABLE_NAME, accessType, id, promise);
-
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), updateResult -> {
-      if (updateResult.getUpdated() == 0) {
-        throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
-      }
-      return null;
-    });
+    Future<UpdateResult> resultFuture = promise.future()
+      .recover(excTranslator.translateOrPassBy())
+      .recover(uniqueNameConstraintViolation(accessType.getName()))
+      .recover(credentialsNotFoundConstraintViolation(accessType.getCredentialsId()));
+    return mapResult(resultFuture, setId(accessType, id));
   }
 
   @Override
-  public CompletableFuture<Integer> count(String tenantId) {
+  public CompletableFuture<Integer> count(String credentialsId, String tenantId) {
+    String query = format(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAccessTypesTableName(tenantId));
+
+    LOG.info(LOG_COUNT_QUERY, query);
+
     Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
 
-    String query = String.format(SELECT_COUNT_ACCESS_TYPES, getAccessTypesTableName(tenantId));
-    LOG.info("Do count query: " + query);
-    pgClient(tenantId).select(query, promise);
-
-    return mapResult(promise.future(), rs -> rs.getResults().get(0).getInteger(0));
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()),
+      rs -> rs.getResults().get(0).getInteger(0));
   }
 
   @Override
-  public CompletableFuture<Void> delete(String id, String tenantId) {
-    Promise<UpdateResult> promise = Promise.promise();
+  public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, String tenantId) {
+    String query = format(DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesTableName(tenantId));
 
-    pgClient(tenantId).delete(ACCESS_TYPES_TABLE_NAME, id, promise);
+    LOG.info(LOG_DELETE_QUERY, query);
 
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), updateResult -> {
-      if (updateResult.getUpdated() == 0) {
-        throw new NotFoundException(String.format(ACCESS_TYPE_NOT_FOUND_MESSAGE, id));
-      }
-      return null;
-    });
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, createParams(Arrays.asList(accessTypeId, credentialsId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), rs -> null);
   }
 
-  private AccessTypeCollectionItem mapAccessItem(JsonObject row) {
-    return mapColumn(row, "jsonb", AccessTypeCollectionItem.class).orElse(null);
+  private List<DbAccessType> mapAccessTypes(ResultSet resultSet) {
+    return mapItems(resultSet.getRows(), this::mapAccessType);
   }
 
-  private List<AccessTypeCollectionItem> readAccessTypes(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), this::mapAccessItem);
+  private Optional<DbAccessType> mapSingleAccessType(ResultSet resultSet) {
+    List<JsonObject> rows = resultSet.getRows();
+    return rows.isEmpty() ? Optional.empty() : Optional.of(mapAccessType(rows.get(0)));
   }
 
-  private Criterion criterionForFindByNames(Collection<String> accessTypeNames) {
-    Criterion criterion = new Criterion();
-    accessTypeNames.forEach(name -> {
-      Criteria criteria = new Criteria();
-      criteria.addField("'attributes'");
-      criteria.addField("'name'");
-      criteria.setOperation("=");
-      criteria.setVal(name);
-      criterion.addCriterion(criteria, "OR");
-    });
-    return criterion;
+  private DbAccessType mapAccessType(JsonObject resultRow) {
+    return DbAccessType.builder()
+      .id(resultRow.getString(ID_COLUMN))
+      .credentialsId(resultRow.getString(CREDENTIALS_ID_COLUMN))
+      .name(resultRow.getString(NAME_COLUMN))
+      .description(resultRow.getString(DESCRIPTION_COLUMN))
+      .usageNumber(ObjectUtils.defaultIfNull(resultRow.getInteger(USAGE_NUMBER_COLUMN), 0))
+      .createdDate(resultRow.getInstant(CREATED_DATE_COLUMN))
+      .createdByUserId(resultRow.getString(CREATED_BY_USER_ID_COLUMN))
+      .createdByUsername(resultRow.getString(CREATED_BY_USERNAME_COLUMN))
+      .createdByLastName(resultRow.getString(CREATED_BY_LAST_NAME_COLUMN))
+      .createdByFirstName(resultRow.getString(CREATED_BY_FIRST_NAME_COLUMN))
+      .createdByMiddleName(resultRow.getString(CREATED_BY_MIDDLE_NAME_COLUMN))
+      .updatedDate(resultRow.getInstant(UPDATED_DATE_COLUMN))
+      .updatedByUserId(resultRow.getString(UPDATED_BY_USER_ID_COLUMN))
+      .updatedByUsername(resultRow.getString(UPDATED_BY_USERNAME_COLUMN))
+      .updatedByLastName(resultRow.getString(UPDATED_BY_LAST_NAME_COLUMN))
+      .updatedByFirstName(resultRow.getString(UPDATED_BY_FIRST_NAME_COLUMN))
+      .updatedByMiddleName(resultRow.getString(UPDATED_BY_MIDDLE_NAME_COLUMN))
+      .build();
+  }
+
+  private Function<Throwable, Future<UpdateResult>> uniqueNameConstraintViolation(String value) {
+    return uniqueConstraintRecover(NAME_COLUMN, new InputValidationException(
+      NAME_UNIQUENESS_MESSAGE,
+      format(NAME_UNIQUENESS_DETAILS, value)));
+  }
+
+  private Function<Throwable, Future<UpdateResult>> credentialsNotFoundConstraintViolation(String credentialsId) {
+    return foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, credentialsId));
+  }
+
+  private Function<UpdateResult, DbAccessType> setId(DbAccessType accessType, String id) {
+    return updateResult -> accessType.toBuilder().id(id).build();
   }
 
   private PostgresClient pgClient(String tenantId) {

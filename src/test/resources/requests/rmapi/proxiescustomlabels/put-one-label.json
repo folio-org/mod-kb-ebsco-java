@@ -1,0 +1,15 @@
+{
+  "proxy": {
+    "id": "<n>",
+    "inherited": null
+  },
+  "vendorId": "19",
+  "labels": [
+    {
+      "id": 1,
+      "displayLabel": "test label 1 updated",
+      "displayOnFullTextFinder": false,
+      "displayOnPublicationFinder": true
+    }
+  ]
+}

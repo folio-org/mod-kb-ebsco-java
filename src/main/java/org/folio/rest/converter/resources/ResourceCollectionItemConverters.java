@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Title;
-import org.folio.repository.tag.Tag;
+import org.folio.repository.tag.DbTag;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rmapi.result.TitleResult;
@@ -45,7 +45,7 @@ public class ResourceCollectionItemConverters {
     @Autowired
     private Converter<Title, ResourceCollectionItem> titleConverter;
     @Autowired
-    private Converter<List<Tag>, Tags> tagsConverter;
+    private Converter<List<DbTag>, Tags> tagsConverter;
 
     @Override
     public ResourceCollectionItem convert(@NonNull TitleResult titleResult) {

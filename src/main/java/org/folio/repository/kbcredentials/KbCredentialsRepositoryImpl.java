@@ -3,10 +3,13 @@ package org.folio.repository.kbcredentials;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
-import static org.folio.common.FutureUtils.mapResult;
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
+import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.DbUtil.getKbCredentialsTableName;
+import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.API_KEY_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_BY_USER_NAME_COLUMN;
@@ -16,12 +19,14 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.DEL
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAME_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_ID_QUERY;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_USER_ID_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_NAME_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
+import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -46,9 +51,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.db.exc.Constraint;
-import org.folio.db.exc.ConstraintViolationException;
-import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
@@ -136,7 +138,19 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     Future<UpdateResult> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
       .recover(foreignKeyConstraintViolation());
-    return mapResult(resultFuture, updateResult -> null);
+    return mapResult(resultFuture, nothing());
+  }
+
+  @Override
+  public CompletableFuture<Optional<DbKbCredentials>> findByUserId(String userId, String tenant) {
+    String query = format(SELECT_CREDENTIALS_BY_USER_ID_QUERY, getKbCredentialsTableName(tenant),
+      getAssignedUsersTableName(tenant));
+
+    LOG.info(SELECT_LOG_MESSAGE, query);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenant).select(query, createParams(Collections.singleton(userId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
 
   private Collection<DbKbCredentials> mapCredentialsCollection(ResultSet resultSet) {
@@ -165,28 +179,13 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   }
 
   private Function<Throwable, Future<UpdateResult>> uniqueNameConstraintViolation(String value) {
-    return throwable -> {
-      if (DbExcUtils.isUniqueViolation(throwable)) {
-        Constraint constraint = ((ConstraintViolationException) throwable).getConstraint();
-        if (constraint.getColumns().contains(NAME_COLUMN)) {
-          return Future.failedFuture(new InputValidationException(
-            CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
-            format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, value)));
-        }
-      }
-      return Future.failedFuture(throwable);
-    };
+    return uniqueConstraintRecover(NAME_COLUMN, new InputValidationException(
+      CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
+      format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, value)));
   }
 
   private Function<Throwable, Future<UpdateResult>> foreignKeyConstraintViolation() {
-    return throwable -> {
-      if (DbExcUtils.isFKViolation(throwable)) {
-        return Future.failedFuture(
-          new BadRequestException(CREDENTIALS_DELETE_ALLOWED_DETAILS)
-        );
-      }
-      return Future.failedFuture(throwable);
-    };
+    return foreignKeyConstraintRecover(new BadRequestException(CREDENTIALS_DELETE_ALLOWED_DETAILS));
   }
 
   private Function<UpdateResult, DbKbCredentials> setId(DbKbCredentials credentials, String id) {

@@ -18,4 +18,5 @@ public interface AssignedUsersService {
                                  Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> delete(String credentialsId, String userId, Map<String, String> okapiHeaders);
+
 }

@@ -10,6 +10,8 @@ import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 
 public interface KbCredentialsService {
 
+  CompletableFuture<KbCredentials> findByUser(Map<String, String> okapiHeaders);
+
   CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders);
 
   CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders);
@@ -19,4 +21,5 @@ public interface KbCredentialsService {
   CompletableFuture<Void> update(String id, KbCredentialsPutRequest entity, Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders);
+
 }

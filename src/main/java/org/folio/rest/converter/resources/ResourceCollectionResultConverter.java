@@ -15,7 +15,7 @@ import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.repository.holdings.HoldingInfoInDB;
-import org.folio.repository.resources.ResourceInfoInDB;
+import org.folio.repository.resources.DbResource;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
@@ -31,10 +31,10 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   @Autowired
   private Converter<HoldingInfoInDB, ResourceCollectionItem> holdingCollectionItemConverter;
 
-  private List<String> getTagsById(List<ResourceInfoInDB> resources, ResourceId resourceId) {
+  private List<String> getTagsById(List<DbResource> resources, ResourceId resourceId) {
     return resources.stream()
       .filter(dbResource -> dbResource.getId().equals(resourceId))
-      .map(ResourceInfoInDB::getTags)
+      .map(DbResource::getTags)
       .findFirst()
       .orElse(Collections.emptyList());
   }
@@ -43,7 +43,7 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   public ResourceCollection convert(@NonNull ResourceCollectionResult resourceCollectionResult) {
 
     final Titles titles = resourceCollectionResult.getTitles();
-    final List<ResourceInfoInDB> resources = resourceCollectionResult.getTitlesList();
+    final List<DbResource> resources = resourceCollectionResult.getTitlesList();
     final List<HoldingInfoInDB> holdings = resourceCollectionResult.getHoldings();
     final List<ResourceCollectionItem> resourceCollectionItems = mapItems(titles.getTitleList(),
       title -> mapResourceCollectionItem(resources, resourceCollectionItemConverter.convert(title), createResourceId(title)));
@@ -60,7 +60,7 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
       .withData(resourceCollectionItems);
   }
 
-  private ResourceCollectionItem mapResourceCollectionItem(List<ResourceInfoInDB> resources, ResourceCollectionItem item,
+  private ResourceCollectionItem mapResourceCollectionItem(List<DbResource> resources, ResourceCollectionItem item,
                                                            ResourceId resourceId) {
     item.getAttributes().withTags(new Tags().withTagList(getTagsById(resources, resourceId)));
     return item;

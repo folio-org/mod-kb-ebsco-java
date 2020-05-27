@@ -2,10 +2,11 @@ package org.folio.repository.assigneduser;
 
 import static java.lang.String.format;
 
-import static org.folio.common.FutureUtils.mapResult;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
+import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.DELETE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
@@ -17,15 +18,14 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GR
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.UPDATE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
+import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -40,9 +40,8 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.db.exc.ConstraintViolationException;
-import org.folio.db.exc.DbExcUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.service.exc.ServiceExceptions;
 
@@ -50,13 +49,13 @@ import org.folio.service.exc.ServiceExceptions;
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
+
   private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {}";
   private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
 
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
-  private static final String KB_CREDENTIALS_NOT_FOUND_MESSAGE = "KB credentials with id '%s' not found";
 
   @Autowired
   private Vertx vertx;
@@ -94,7 +93,8 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     Future<UpdateResult> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
-      .recover(constraintViolation(entity.getCredentialsId()));
+      .recover(uniqueConstraintRecover(ID_COLUMN, new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE)))
+      .recover(foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, entity.getCredentialsId())));
     return mapResult(resultFuture, updateResult -> entity);
   }
 
@@ -156,21 +156,6 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
       .lastName(row.getString(LAST_NAME))
       .patronGroup(row.getString(PATRON_GROUP))
       .build();
-  }
-
-  private Function<Throwable, Future<UpdateResult>> constraintViolation(String credentialsId) {
-    return throwable -> {
-      if (DbExcUtils.isUniqueViolation(throwable)) {
-        if (((ConstraintViolationException) throwable).getConstraint().getColumns().contains(ID_COLUMN)) {
-          return Future.failedFuture(new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE));
-        }
-      } else if (DbExcUtils.isFKViolation(throwable)) {
-        return Future.failedFuture(
-          new NotFoundException(String.format(KB_CREDENTIALS_NOT_FOUND_MESSAGE, credentialsId))
-        );
-      }
-      return Future.failedFuture(throwable);
-    };
   }
 
   private PostgresClient pgClient(String tenantId) {
