@@ -104,7 +104,7 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.model.Titles;
-import org.folio.util.ResourcesTestUtil.DbResources;
+import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TitlesTestUtil;
 
@@ -156,8 +156,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
-    addHolding(configuration.getId(),
-      Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now(), vertx);
+    addHolding(configuration.getId(), Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
+        HoldingInfoInDB.class), Instant.now(), vertx);
 
     addResource(vertx, buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
     addResource(vertx, buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));
@@ -178,8 +178,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
-    addHolding(vertx,
-      Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now());
+    addHolding(configuration.getId(), Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
+        HoldingInfoInDB.class), Instant.now(), vertx);
 
     addResource(vertx, buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
     addResource(vertx, buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));
