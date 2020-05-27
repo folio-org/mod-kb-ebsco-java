@@ -14,6 +14,7 @@ import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.HoldingsId;
 import org.folio.repository.packages.DbPackage;
 import org.folio.repository.resources.DbResource;
 
@@ -59,6 +60,10 @@ public final class IdParser {
 
   public static String getResourceId(CustomerResources resource) {
     return concat(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
+  }
+
+  public static String getResourceId(HoldingsId holding) {
+    return concat(holding.getVendorId(), Long.parseLong(holding.getPackageId()), Long.parseLong(holding.getTitleId()));
   }
 
   public static List<PackageId> getPackageIds(List<DbPackage> packageIds) {

@@ -1,11 +1,15 @@
-package org.folio.repository.holdings.status;
+package org.folio.repository.holdings.transaction;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getTransactionIdTableName;
-import static org.folio.repository.holdings.status.TransactionIdTableConstants.GET_LAST_TRANSACTION_ID;
-import static org.folio.repository.holdings.status.TransactionIdTableConstants.INSERT_TRANSACTION_ID;
-import static org.folio.repository.holdings.status.TransactionIdTableConstants.TRANSACTION_ID_COLUMN;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.GET_LAST_TRANSACTION_ID_BY_CREDENTIALS;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.INSERT_TRANSACTION_ID;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_COLUMN;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
@@ -30,25 +34,25 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
   private static final Logger LOG = LoggerFactory.getLogger(TransactionIdRepositoryImpl.class);
 
   @Autowired
-  Vertx vertx;
+  private Vertx vertx;
 
   @Override
-  public CompletableFuture<Void> save(String transactionId, String tenantId) {
-    final String query = String.format(INSERT_TRANSACTION_ID, getTransactionIdTableName(tenantId), createPlaceholders(1));
+  public CompletableFuture<Void> save(String credentialsId, String transactionId, String tenantId) {
+    final JsonArray params = createParams(asList(credentialsId, transactionId));
+    final String query = String.format(INSERT_TRANSACTION_ID, getTransactionIdTableName(tenantId), createPlaceholders(params.size()));
     LOG.info("Do insert query = " + query);
     Promise<UpdateResult> promise = Promise.promise();
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
-    postgresClient.execute(query, new JsonArray().add(transactionId), promise);
+    pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
   @Override
-  public CompletableFuture<String> getLastTransactionId(String tenantId) {
-    final String query = String.format(GET_LAST_TRANSACTION_ID, getTransactionIdTableName(tenantId));
-    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+  public CompletableFuture<String> getLastTransactionId(String credentialsId, String tenantId) {
+    final String query = String.format(GET_LAST_TRANSACTION_ID_BY_CREDENTIALS, getTransactionIdTableName(tenantId));
     LOG.info("Select last transaction id = " + query);
     Promise<ResultSet> promise = Promise.promise();
-    postgresClient.select(query, promise);
+    final JsonArray params = createParams(singleton(credentialsId));
+    pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapId);
   }
 
@@ -58,5 +62,9 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
       return rows.get(0).getString(TRANSACTION_ID_COLUMN);
     }
     return null;
+  }
+
+  private PostgresClient pgClient(String tenantId) {
+    return PostgresClient.getInstance(vertx, tenantId);
   }
 }

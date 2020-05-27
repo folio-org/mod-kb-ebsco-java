@@ -15,7 +15,7 @@ import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.getResourcesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.DbUtil.getTitlesTableName;
-import static org.folio.repository.DbUtil.mapColumn;
+import static org.folio.repository.DbUtil.mapRow;
 import static org.folio.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
 import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
@@ -156,12 +156,12 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .build();
   }
 
-  private Optional<HoldingInfoInDB> readHolding(JsonObject row) {
-    if (row.getString("holding") != null) {
-      return mapColumn(row, "holding", HoldingInfoInDB.class);
-    } else {
-      return Optional.empty();
-    }
+  private Optional<HoldingInfoInDB> readHolding(JsonObject row){
+      if(row.getString("credentials_id") != null && row.getString("h_id") != null) {
+        return mapRow(row, HoldingInfoInDB.class);
+      } else {
+        return Optional.empty();
+      }
   }
 
   private Title mapHoldingToTitle(HoldingInfoInDB holding) {
