@@ -88,26 +88,25 @@ public class ApplicationConfig {
 
   @Bean
   public VertxCache<String, org.folio.holdingsiq.model.Configuration> rmApiConfigurationCache(Vertx vertx,
-                                                                                              @Value("${configuration.cache.expire}")
-                                                                                                long expirationTime) {
+      @Value("${configuration.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache");
   }
 
   @Bean
   public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx,
-                                                          @Value("${vendor.id.cache.expire}") long expirationTime) {
+      @Value("${vendor.id.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorIdCache");
   }
 
   @Bean
   public VertxCache<PackageCacheKey, PackageByIdData> packageCache(Vertx vertx,
-                                                                   @Value("${package.cache.expire}") long expirationTime) {
+      @Value("${package.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "packageCache");
   }
 
   @Bean
   public VertxCache<VendorCacheKey, VendorById> vendorCache(Vertx vertx,
-                                                            @Value("${vendor.cache.expire}") long expirationTime) {
+      @Value("${vendor.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorCache");
   }
 
@@ -118,20 +117,17 @@ public class ApplicationConfig {
 
   @Bean
   public VertxCache<ResourceCacheKey, Title> resourceCache(Vertx vertx,
-                                                           @Value("${resource.cache.expire}") long expirationTime) {
+      @Value("${resource.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "resourceCache");
   }
 
   @Bean
   public ConfigurationService configurationService(
       @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
-      Converter<KbCredentials, org.folio.holdingsiq.model.Configuration> converter,
-      Vertx vertx,
+      Converter<KbCredentials, org.folio.holdingsiq.model.Configuration> converter, Vertx vertx,
       @Value("${configuration.cache.expire}") long expirationTime) {
-    return new ConfigurationServiceCache(
-      new LocalConfigurationServiceImpl(userKbCredentialsService, converter, vertx),
-      new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache")
-    );
+    return new ConfigurationServiceCache(new LocalConfigurationServiceImpl(userKbCredentialsService, converter, vertx),
+        new VertxCache<>(vertx, expirationTime, "rmApiConfigurationCache"));
   }
 
   @Bean
@@ -146,7 +142,7 @@ public class ApplicationConfig {
 
   @Bean
   public LoadServiceFacade loadServiceFacade(@Value("${holdings.load.implementation.qualifier}") String qualifier,
-                                             ApplicationContext context) {
+      ApplicationContext context) {
     return (LoadServiceFacade) context.getBean(qualifier);
   }
 
