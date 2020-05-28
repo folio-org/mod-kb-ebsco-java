@@ -10,7 +10,6 @@ import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.mockEmptyConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 
@@ -23,7 +22,6 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,7 +41,6 @@ public class EholdingsStatusTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTrueWhenRMAPIRequestCompletesWith200Status() throws IOException, URISyntaxException {
-
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     stubFor(
@@ -58,7 +55,6 @@ public class EholdingsStatusTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnFalseWhenRMAPIRequestCompletesWithErrorStatus() {
-
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
 
     stubFor(
@@ -84,10 +80,7 @@ public class EholdingsStatusTest extends WireMockTestBase {
   }
 
   @Test
-  @Ignore
-  public void shouldReturnFalseIfEmptyConfig() throws IOException, URISyntaxException {
-    mockEmptyConfiguration(null);
-
+  public void shouldReturnFalseIfEmptyConfig() {
     final ConfigurationStatus status = getWithOk(EHOLDINGS_STATUS_PATH, STUB_TOKEN_HEADER).as(ConfigurationStatus.class);
 
     assertThat(status.getData().getAttributes().getIsConfigurationValid(), equalTo(false));
