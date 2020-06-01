@@ -50,8 +50,8 @@ public class HoldingsTestUtil {
 
   private static JsonArray getHoldingsInsertParams(String credentialsId, HoldingInfoInDB holding, Instant updatedAt) {
     return new JsonArray(Arrays.asList(
-      getHoldingsId(holding),
       credentialsId,
+      getHoldingsId(holding),
       holding.getVendorId(),
       holding.getPackageId(),
       holding.getTitleId(),

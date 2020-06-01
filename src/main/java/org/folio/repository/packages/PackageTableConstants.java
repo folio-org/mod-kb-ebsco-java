@@ -1,15 +1,17 @@
 package org.folio.repository.packages;
 
-public class PackageTableConstants {
-  private PackageTableConstants() {}
+import static org.folio.repository.SqlQueryHelper.joinWithComma;
+
+public final class PackageTableConstants {
+  private PackageTableConstants() { }
 
   public static final String PACKAGES_TABLE_NAME = "packages";
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
   public static final String NAME_COLUMN = "name";
   public static final String CONTENT_TYPE_COLUMN = "content_type";
-  public static final String PACKAGE_FIELD_LIST = String.format("%s, %s, %s, %s",
-    ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, CONTENT_TYPE_COLUMN);
+  public static final String PK_PACKAGES = joinWithComma(ID_COLUMN, CREDENTIALS_ID_COLUMN);
+  public static final String PACKAGE_FIELD_LIST = joinWithComma(PK_PACKAGES, NAME_COLUMN, CONTENT_TYPE_COLUMN);
 
   public static final String INSERT_OR_UPDATE_STATEMENT =
     "INSERT INTO %s(" + PACKAGE_FIELD_LIST + ") VALUES (?, ?, ?, ?) " +

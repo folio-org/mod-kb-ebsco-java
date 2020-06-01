@@ -6,6 +6,12 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "credentialsId": {
+      "type": "string",
+      "description": "The UUID of credentials",
+      "$ref": "../../raml-util/schemas/uuid.schema",
+      "examples": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
+    },
     "started": {
       "type": "string",
       "description": "Holdings loading started time",
