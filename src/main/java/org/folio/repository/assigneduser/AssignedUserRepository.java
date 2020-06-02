@@ -7,6 +7,8 @@ public interface AssignedUserRepository {
 
   CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(String credentialsId, String tenant);
 
+  CompletableFuture<Integer> count(String credentialsId, String tenant);
+
   CompletableFuture<DbAssignedUser> save(DbAssignedUser entity, String tenant);
 
   CompletableFuture<Void> update(DbAssignedUser dbAssignedUser, String tenant);

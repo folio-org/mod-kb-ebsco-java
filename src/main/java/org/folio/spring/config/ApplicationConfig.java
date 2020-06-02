@@ -46,6 +46,7 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.exception.InputValidationException;
@@ -172,9 +173,10 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public UserKbCredentialsService securedUserCredentialsService(KbCredentialsRepository repository,
+  public UserKbCredentialsService securedUserCredentialsService(KbCredentialsRepository credentialsRepository,
+      AssignedUserRepository assignedUserRepository,
       @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter) {
-    return new UserKbCredentialsServiceImpl(repository, converter);
+    return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter);
   }
 
   @Bean("securedCredentialsService")
@@ -186,8 +188,9 @@ public class ApplicationConfig {
 
   @Bean
   public UserKbCredentialsService nonSecuredUserCredentialsService(KbCredentialsRepository repository,
+      AssignedUserRepository assignedUserRepository,
       @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter) {
-    return new UserKbCredentialsServiceImpl(repository, converter);
+    return new UserKbCredentialsServiceImpl(repository, assignedUserRepository, converter);
   }
 
   @Bean("nonSecuredCredentialsService")

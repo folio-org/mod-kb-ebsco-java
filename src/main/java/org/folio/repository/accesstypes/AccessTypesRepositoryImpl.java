@@ -4,6 +4,10 @@ import static java.lang.String.format;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.COUNT_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
@@ -70,11 +74,6 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypesRepositoryImpl.class);
 
-  private static final String LOG_SELECT_QUERY = "Do select query = {}";
-  private static final String LOG_INSERT_QUERY = "Do insert query = {}";
-  private static final String LOG_COUNT_QUERY = "Do count query = {}";
-  private static final String LOG_DELETE_QUERY = "Do delete query = {}";
-
   private static final String NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String NAME_UNIQUENESS_DETAILS = "Access type with name '%s' already exist";
 
@@ -89,7 +88,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = format(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
-    LOG.info(LOG_SELECT_QUERY, query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
@@ -103,7 +102,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = String.format(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
-    LOG.info(LOG_SELECT_QUERY, query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, createParams(Arrays.asList(accessTypeId, credentialsId)), promise);
@@ -117,7 +116,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = format(SELECT_BY_CREDENTIALS_AND_NAMES_QUERY,
       getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(accessTypeNames.size()));
 
-    LOG.info(LOG_SELECT_QUERY, query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
 
     JsonArray params = createParams(Collections.singleton(credentialsId));
     accessTypeNames.forEach(params::add);
@@ -135,7 +134,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = String.format(SELECT_BY_CREDENTIALS_AND_RECORD_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
-    LOG.info(LOG_SELECT_QUERY, query);
+    LOG.info(SELECT_LOG_MESSAGE, query);
 
     JsonArray params = createParams(Arrays.asList(credentialsId, recordId, recordType.getValue()));
     Promise<ResultSet> promise = Promise.promise();
@@ -171,7 +170,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       accessType.getUpdatedByMiddleName()
     ));
 
-    LOG.info(LOG_INSERT_QUERY, query);
+    LOG.info(INSERT_LOG_MESSAGE, query);
 
     Promise<UpdateResult> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -187,7 +186,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   public CompletableFuture<Integer> count(String credentialsId, String tenantId) {
     String query = format(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAccessTypesTableName(tenantId));
 
-    LOG.info(LOG_COUNT_QUERY, query);
+    LOG.info(COUNT_LOG_MESSAGE, query);
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
@@ -200,7 +199,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, String tenantId) {
     String query = format(DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesTableName(tenantId));
 
-    LOG.info(LOG_DELETE_QUERY, query);
+    LOG.info(DELETE_LOG_MESSAGE, query);
 
     Promise<ResultSet> promise = Promise.promise();
     pgClient(tenantId).select(query, createParams(Arrays.asList(accessTypeId, credentialsId)), promise);
