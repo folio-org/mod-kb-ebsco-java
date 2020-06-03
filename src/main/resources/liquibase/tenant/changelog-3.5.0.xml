@@ -8,4 +8,7 @@
   <include file="liquibase/tenant/scripts/v3.5.0/add-kb-credentials-to-providers.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/add-kb-credentials-to-resources.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/add-kb-credentials-to-titles.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.0/create-assigned-users-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.0/alter-access-types-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.0/alter-access-type-mapping-table.xml"/>
 </databaseChangeLog>

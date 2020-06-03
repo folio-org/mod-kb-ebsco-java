@@ -1,0 +1,70 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="drop-jsonb-from-access-types-mappings" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="access_types_mappings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <dropColumn tableName="access_types_mappings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="alter-access-types-table" author="dmtkachenko">
+    <addColumn tableName="access_types_mappings">
+      <column name="record_id" type="varchar(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="record_type" type="varchar(10)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="access_type_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-from-access-types-mappings-to-access-types" author="dmtkachenko">
+    <addForeignKeyConstraint
+      baseColumnNames="access_type_id"
+      baseTableName="access_types_mappings"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_access_types_mappings_access_types"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="access_types"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="add-unique-constraint-for-access-type-record-in-access-types-mappings" author="dmtkachenko">
+    <addUniqueConstraint
+      constraintName="unq_access_types_mappings_acc_type_rec_id"
+      tableName="access_types_mappings"
+      columnNames="access_type_id, record_id"
+      schemaName="${database.defaultSchemaName}"
+      deferrable="true"/>
+  </changeSet>
+
+  <changeSet id="add-check-for-access-types-mappings-record-type" author="dmtkachenko">
+    <sql>
+      ALTER TABLE access_types_mappings
+        ADD CONSTRAINT chk_access_types_mappings_record_type
+          CHECK (record_type IN ('provider', 'package', 'title', 'resource'));
+    </sql>
+  </changeSet>
+
+  <changeSet id="create-index-for-access-types-mappings-record-id" author="dmtkachenko">
+    <createIndex
+      indexName="idx_access_types_mappings_rec_id"
+      tableName="access_types_mappings"
+      schemaName="${database.defaultSchemaName}">
+        <column name="record_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>
