@@ -69,12 +69,14 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
     return allCreds.thenCompose(credentials -> {
       if (credentials.size() != 1) {
         return completedFuture(Optional.empty());
-        }
+      }
 
       DbKbCredentials single = CollectionUtils.extractSingleton(credentials);
 
       return assignedUserRepository.count(single.getId(), tenant)
-        .thenApply(count -> INTEGER_ZERO.equals(count) ? Optional.of(single) : Optional.empty());
+        .thenApply(count -> INTEGER_ZERO.equals(count)
+          ? Optional.of(single)
+          : Optional.empty());
     });
   }
 
