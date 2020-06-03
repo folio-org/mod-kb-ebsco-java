@@ -15,6 +15,7 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPD
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -49,15 +50,18 @@ public class KbCredentialsTestUtil {
   public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
 
   public static final String STUB_USERNAME = "TEST_USER_NAME";
+  public static final String STUB_USERNAME_OTHER = "TEST_USER_NAME_OTHER";
   public static final String STUB_USER_ID = "88888888-8888-4888-8888-888888888888";
-  public static final String STUB_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
-    + "eyJzdWIiOiJURVNUX1VTRVJfTkFNRSIsInVzZXJfaWQiOiI4ODg4ODg4OC04ODg4LTQ4ODgtODg4OC04O"
-    + "Dg4ODg4ODg4ODgiLCJpYXQiOjE1ODU4OTUxNDQsInRlbmFudCI6ImRpa3UifQ.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
+  public static final String STUB_USER_OTHER_ID = "99999999-9999-4999-9999-999999999999";
+
   public static final String STUB_INVALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
     + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
 
-  public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, KbCredentialsTestUtil.STUB_TOKEN);
+  public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, generateToken(STUB_USERNAME,
+      STUB_USER_ID));
+  public static final Header STUB_TOKEN_OTHER_HEADER = new Header(XOkapiHeaders.TOKEN, generateToken(
+      STUB_USERNAME_OTHER, STUB_USER_OTHER_ID));
   public static final Header STUB_INVALID_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN,
     KbCredentialsTestUtil.STUB_INVALID_TOKEN);
 

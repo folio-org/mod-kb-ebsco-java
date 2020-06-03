@@ -2,6 +2,7 @@ package org.folio.service.kbcredentials;
 
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
@@ -19,6 +20,7 @@ import javax.ws.rs.NotFoundException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -28,13 +30,16 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
 
   private static final String USER_CREDS_NOT_FOUND_MESSAGE = "User credentials not found: userId = %s";
 
-  private KbCredentialsRepository repository;
-  private Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
+  private final KbCredentialsRepository credentialsRepository;
+  private final AssignedUserRepository assignedUserRepository;
+  private final Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
 
 
-  public UserKbCredentialsServiceImpl(KbCredentialsRepository repository,
+  public UserKbCredentialsServiceImpl(KbCredentialsRepository credentialsRepository,
+                                      AssignedUserRepository assignedUserRepository,
                                       Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter) {
-    this.repository = repository;
+    this.credentialsRepository = credentialsRepository;
+    this.assignedUserRepository = assignedUserRepository;
     this.credentialsFromDBConverter = credentialsFromDBConverter;
   }
 
@@ -46,7 +51,7 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
   }
 
   private CompletionStage<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
-    return repository.findByUserId(userInfo.getUserId(), tenant)
+    return credentialsRepository.findByUserId(userInfo.getUserId(), tenant)
       .thenCompose(ifEmpty(() -> findSingleKbCredentials(tenant)))
       .thenApply(getCredentialsOrFailWithUserId(userInfo.getUserId()));
   }
@@ -59,13 +64,20 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
   }
 
   private CompletableFuture<Optional<DbKbCredentials>> findSingleKbCredentials(String tenant) {
-    CompletableFuture<Collection<DbKbCredentials>> allCreds = repository.findAll(tenant);
+    CompletableFuture<Collection<DbKbCredentials>> allCreds = credentialsRepository.findAll(tenant);
 
-    return allCreds.thenApply(credentials ->
-      credentials.size() == 1
-        ? Optional.of(CollectionUtils.extractSingleton(credentials))
-        : Optional.empty()
-    );
+    return allCreds.thenCompose(credentials -> {
+      if (credentials.size() != 1) {
+        return completedFuture(Optional.empty());
+      }
+
+      DbKbCredentials single = CollectionUtils.extractSingleton(credentials);
+
+      return assignedUserRepository.count(single.getId(), tenant)
+        .thenApply(count -> INTEGER_ZERO.equals(count)
+          ? Optional.of(single)
+          : Optional.empty());
+    });
   }
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFailWithUserId(String userId) {
