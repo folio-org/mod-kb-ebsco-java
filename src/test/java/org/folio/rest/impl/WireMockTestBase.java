@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -91,7 +92,7 @@ public abstract class WireMockTestBase extends TestBase {
   }
 
   protected ExtractableResponse<Response> getWithStatus(String endpoint, int code, Header... headers) {
-    return RestAssured.given()
+    return given()
       .spec(this.getRequestSpecification())
       .headers(new Headers(headers))
       .when()
@@ -138,6 +139,25 @@ public abstract class WireMockTestBase extends TestBase {
   protected ExtractableResponse<Response> postWithStatus(String resourcePath, String postBody, int expectedStatus,
                                                          Header... headers) {
     return super.postWithStatus(resourcePath, postBody, expectedStatus, addContentHeader(headers));
+  }
+
+  protected ExtractableResponse<Response> patchWithNoContent(String resourcePath, String patchBody, Header... headers) {
+    return patchWithStatus(resourcePath, patchBody, SC_NO_CONTENT, headers);
+  }
+
+  protected ExtractableResponse<Response> patchWithStatus(String resourcePath, String patchBody, int expectedStatus,
+                                                          Header... headers) {
+    return given()
+      .spec(getRequestSpecification())
+      .header(JSON_CONTENT_TYPE_HEADER)
+      .headers(new Headers(addContentHeader(headers)))
+      .body(patchBody)
+      .when()
+      .patch(resourcePath)
+      .then()
+      .log().ifValidationFails()
+      .statusCode(expectedStatus)
+      .extract();
   }
 
   protected ExtractableResponse<Response> deleteWithNoContent(String resourcePath, Header... headers) {

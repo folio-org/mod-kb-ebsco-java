@@ -18,10 +18,18 @@ class KbCredentialsBodyAttributesValidator {
 
   protected void validateAttributes(KbCredentialsDataAttributes attributes) {
     ValidatorUtil.checkIsNotBlank(NAME_PARAMETER, attributes.getName());
-    ValidatorUtil.checkMaxLength(NAME_PARAMETER, attributes.getName(), nameLengthMax);
+    validateName(attributes);
     ValidatorUtil.checkIsNotBlank(API_KEY_PARAMETER, attributes.getApiKey());
     ValidatorUtil.checkIsNotBlank(CUSTOMER_ID_PARAMETER, attributes.getCustomerId());
     ValidatorUtil.checkIsNotBlank(URL_PARAMETER, attributes.getUrl());
+    validateUrl(attributes);
+  }
+
+  protected void validateName(KbCredentialsDataAttributes attributes) {
+    ValidatorUtil.checkMaxLength(NAME_PARAMETER, attributes.getName(), nameLengthMax);
+  }
+
+  protected void validateUrl(KbCredentialsDataAttributes attributes) {
     ValidatorUtil.checkUrlFormat(URL_PARAMETER, attributes.getUrl());
   }
 }
