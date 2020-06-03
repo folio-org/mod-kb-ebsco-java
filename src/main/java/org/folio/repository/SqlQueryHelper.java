@@ -9,20 +9,18 @@ public final class SqlQueryHelper {
 
   private static final String FROM_KEYWORD = "FROM %s";
 
-  private SqlQueryHelper() {
-
-  }
+  private SqlQueryHelper() {}
 
   public static String selectQuery(String... columns) {
     if (columns.length == 0) {
       return "SELECT * " + FROM_KEYWORD + " t1";
     } else {
-      return "SELECT " + joinWithComa(columns) + " " + FROM_KEYWORD;
+      return "SELECT " + joinWithComma(columns) + " " + FROM_KEYWORD;
     }
   }
 
   public static String insertQuery(String... columns) {
-    return "INSERT INTO %s (" + joinWithComa(columns) + ") VALUES "
+    return "INSERT INTO %s (" + joinWithComma(columns) + ") VALUES "
       + ListUtils.createInsertPlaceholders(columns.length, 1);
   }
 
@@ -43,11 +41,11 @@ public final class SqlQueryHelper {
   }
 
   public static String groupByQuery(String... columns) {
-    return "GROUP BY " + joinWithComa(columns);
+    return "GROUP BY " + joinWithComma(columns);
   }
 
   public static String orderByQuery(String... columns) {
-    return "ORDER BY " + joinWithComa(columns);
+    return "ORDER BY " + joinWithComma(columns);
   }
 
   public static String whereQuery(String... columns) {
@@ -111,11 +109,11 @@ public final class SqlQueryHelper {
       .collect(Collectors.joining(", "));
   }
 
-  private static String assignExcludedColumn(String column) {
+  private static String assignExcludedColumn(CharSequence column) {
     return column + "= EXCLUDED." + column;
   }
 
-  private static String joinWithComa(String[] columns) {
+  public static String joinWithComma(CharSequence... columns) {
     return String.join(", ", columns);
   }
 

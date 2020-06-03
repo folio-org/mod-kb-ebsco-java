@@ -1,7 +1,6 @@
 package org.folio.repository.holdings.status;
 
 import static org.folio.rest.util.RestConstants.JSONAPI;
-import static org.folio.rest.util.RestConstants.STATUS_RECTYPE;
 import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 
 import java.time.Instant;
@@ -18,13 +17,12 @@ import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 
 public class HoldingsLoadingStatusFactory {
 
-  private HoldingsLoadingStatusFactory() {
-  }
+  private HoldingsLoadingStatusFactory() {}
 
   public static HoldingsLoadingStatus getStatusNotStarted() {
     return new HoldingsLoadingStatus()
       .withData(new LoadStatusData()
-        .withType(STATUS_RECTYPE)
+        .withType(LoadStatusData.Type.STATUS)
         .withAttributes(new LoadStatusAttributes()
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.NOT_STARTED))
@@ -36,7 +34,7 @@ public class HoldingsLoadingStatusFactory {
   public static HoldingsLoadingStatus getStatusPopulatingStagingArea() {
     return new HoldingsLoadingStatus()
       .withData(new LoadStatusData()
-        .withType(STATUS_RECTYPE)
+        .withType(LoadStatusData.Type.STATUS)
         .withAttributes(new LoadStatusAttributes()
           .withStarted(getTimeNow())
           .withStatus(new LoadStatusInformation()
@@ -50,7 +48,7 @@ public class HoldingsLoadingStatusFactory {
   public static HoldingsLoadingStatus getStatusLoadingHoldings(int totalCount, int importedCount, int totalPages, int importedPages) {
     return new HoldingsLoadingStatus()
       .withData(new LoadStatusData()
-        .withType(STATUS_RECTYPE)
+        .withType(LoadStatusData.Type.STATUS)
         .withAttributes(new LoadStatusAttributes()
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.IN_PROGRESS)
@@ -67,7 +65,7 @@ public class HoldingsLoadingStatusFactory {
   public static HoldingsLoadingStatus getStatusCompleted(int totalCount) {
     return new HoldingsLoadingStatus()
       .withData(new LoadStatusData()
-        .withType(STATUS_RECTYPE)
+        .withType(LoadStatusData.Type.STATUS)
         .withAttributes(new LoadStatusAttributes()
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.COMPLETED))
@@ -80,7 +78,7 @@ public class HoldingsLoadingStatusFactory {
   public static HoldingsLoadingStatus getLoadStatusFailed(List<JsonapiErrorResponse> errors) {
     return new HoldingsLoadingStatus()
       .withData(new LoadStatusData()
-        .withType(STATUS_RECTYPE)
+        .withType(LoadStatusData.Type.STATUS)
         .withAttributes(new LoadStatusAttributes()
           .withStatus(new LoadStatusInformation()
             .withName(LoadStatusNameEnum.FAILED))

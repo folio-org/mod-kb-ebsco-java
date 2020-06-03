@@ -135,8 +135,8 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   private JsonArray createParameters(String credentialsId, List<HoldingInfoInDB> holdings, Instant updatedAt) {
     JsonArray params = new JsonArray();
     holdings.forEach(holding -> {
-      params.add(getHoldingsId(holding));
       params.add(credentialsId);
+      params.add(getHoldingsId(holding));
       params.add(holding.getVendorId());
       params.add(holding.getPackageId());
       params.add(holding.getTitleId());
@@ -150,8 +150,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   private String getHoldingsPkKeys(String credentialsId, List<String> resourceIds) {
     return resourceIds.stream()
-      .map(id -> "('" + credentialsId + "', '"+ id.concat("')"))
-      .collect(Collectors.joining(","));
+      .collect(Collectors.joining(",", "('" + credentialsId + "', '", "')"));
   }
 
   private PostgresClient pgClient(String tenantId) {
