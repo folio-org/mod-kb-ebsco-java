@@ -49,14 +49,14 @@
     },
     {
       "tableName": "holdings",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-holdings-table.sql"
     },
     {
       "tableName": "holdings_status",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.2",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-holdings-status-table.sql"

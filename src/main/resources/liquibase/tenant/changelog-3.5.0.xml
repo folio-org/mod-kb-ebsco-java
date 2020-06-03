@@ -11,4 +11,6 @@
   <include file="liquibase/tenant/scripts/v3.5.0/create-assigned-users-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-access-types-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-access-type-mapping-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.0/alter-holdings-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.0/alter-holdings-status-table.xml"/>
 </databaseChangeLog>

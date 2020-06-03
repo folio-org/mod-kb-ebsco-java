@@ -1,0 +1,52 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="alter-holdings-status-table" author="dmtkachenko">
+    <addColumn tableName="holdings_status">
+      <column name="credentials_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="drop-old-holdings-status-lock-constraint" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN" onFailMessage="[WARN] Unique constraint doesn't exist: holdings_status_lock_key">
+      <sqlCheck  expectedResult="1">
+        SELECT COUNT(1) from pg_constraint
+          WHERE conname = 'holdings_status_lock_key'
+            AND contype = 'u';
+      </sqlCheck>
+    </preConditions>
+
+    <dropUniqueConstraint tableName="holdings_status" constraintName="holdings_status_lock_key"
+                          schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="add-unique-constraint-for-credentialsid-lock-in-holdings-status" author="dmtkachenko">
+    <addUniqueConstraint
+      constraintName="unq_holdings_status_credentialsid_lock"
+      tableName="holdings_status"
+      columnNames="credentials_id, lock"
+      schemaName="${database.defaultSchemaName}"
+      deferrable="true"/>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-from-holdings-status-to-kb-credentials" author="dmtkachenko">
+    <addForeignKeyConstraint
+      baseColumnNames="credentials_id"
+      baseTableName="holdings_status"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_holdings_status_kb_credentials"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_credentials"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,59 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="drop-jsonb-from-holdings" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="holdings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <dropColumn tableName="holdings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="alter-holdings-table" author="dmtkachenko">
+    <addColumn tableName="holdings">
+      <column name="credentials_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+      <column name="vendor_id" type="varchar(10)"/>
+      <column name="package_id" type="varchar(10)"/>
+      <column name="title_id" type="varchar(10)"/>
+      <column name="resource_type" type="varchar(20)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="publisher_name" type="varchar(200)"/>
+      <column name="publication_title" type="varchar(300)"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="drop-old-holdings-primary-key" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN" onFailMessage="[WARN] Primary key doesn't exist: holdings_pkey">
+      <primaryKeyExists primaryKeyName="holdings_pkey" tableName="holdings" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <dropPrimaryKey constraintName="holdings_pkey" tableName="holdings" schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="add-credentials-id-to-holdings-primary-key" author="dmtkachenko">
+    <addPrimaryKey constraintName="pk_holdings" tableName="holdings" columnNames="id, credentials_id"
+                   schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-from-holdings-to-kb-credentials" author="dmtkachenko">
+    <addForeignKeyConstraint
+      baseColumnNames="credentials_id"
+      baseTableName="holdings"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_holdings_kb_credentials"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_credentials"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+</databaseChangeLog>
