@@ -37,7 +37,6 @@ public class TenantApiImpl extends TenantAPI {
 
 
   public TenantApiImpl() {
-    REMOVE ME!!
     super();
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }

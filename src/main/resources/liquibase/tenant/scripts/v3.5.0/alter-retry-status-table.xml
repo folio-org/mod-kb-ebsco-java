@@ -1,0 +1,30 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="alter-retry-status-table" author="dmtkachenko">
+    <addColumn tableName="retry_status">
+      <column name="credentials_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-from-retry-status-to-kb-credentials" author="dmtkachenko">
+    <addForeignKeyConstraint
+      baseColumnNames="credentials_id"
+      baseTableName="retry_status"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_retry_status_kb_credentials"
+      deferrable="true"
+      initiallyDeferred="true"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_credentials"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+</databaseChangeLog>

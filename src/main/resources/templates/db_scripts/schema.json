@@ -63,21 +63,21 @@
     },
     {
       "tableName": "holdings_status_audit",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.2",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-holdings-status-audit-table.sql"
     },
     {
       "tableName": "retry_status",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.0.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-retry-status-table.sql"
     },
     {
       "tableName": "transaction_ids",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1",
+      "fromModuleVersion": "mod-kb-ebsco-java-3.1.1",
       "withMetadata": false,
       "withAuditing": false,
       "customSnippetPath": "create-transaction-ids-table.sql"
@@ -92,11 +92,6 @@
     {
       "run": "after",
       "snippetPath": "drop_set_id_in_jsonb.sql"
-    },
-    {
-      "run": "after",
-      "snippetPath": "holdings_status_history_trigger.sql",
-      "fromModuleVersion": "mod-kb-ebsco-java-3.4.1"
     }
   ]
 }
