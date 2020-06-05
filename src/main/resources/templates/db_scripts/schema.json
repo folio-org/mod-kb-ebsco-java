@@ -42,7 +42,7 @@
       "withAuditing": false
     },
     {
-      "tableName": "access_types_mapping",
+      "tableName": "access_types_mappings",
       "fromModuleVersion": "mod-kb-ebsco-java-3.1.1",
       "withMetadata": false,
       "withAuditing": false
@@ -84,6 +84,10 @@
     }
   ],
   "scripts": [
+    {
+      "run": "before",
+      "snippetPath": "set_role.sql"
+    },
     {
       "run": "after",
       "snippetPath": "update_started_date_before_insertion.sql",

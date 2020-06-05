@@ -4,6 +4,14 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
+  <changeSet id="rename-access-types-mapping-table" author="dmtkachenko">
+    <preConditions>
+      <tableExists tableName="access_types_mapping"/>
+    </preConditions>
+
+    <renameTable oldTableName="access_types_mapping" newTableName="access_types_mappings"/>
+  </changeSet>
+
   <changeSet id="drop-jsonb-from-access-types-mappings" author="dmtkachenko">
     <preConditions onFail="MARK_RAN">
       <columnExists tableName="access_types_mappings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
