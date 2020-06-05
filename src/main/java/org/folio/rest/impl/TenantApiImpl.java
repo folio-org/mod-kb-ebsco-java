@@ -45,32 +45,33 @@ public class TenantApiImpl extends TenantAPI {
   @Override
   public void postTenant(TenantAttributes entity, Map<String, String> headers, Handler<AsyncResult<Response>> handlers,
                          Context context) {
+    super.postTenant(entity, headers, ar -> {
+      if (ar.failed()) {
+        handlers.handle(ar);
+      } else {
+        String tenantId = TenantTool.tenantId(headers);
+        Vertx vertx = context.owner();
 
-    Promise<Response> postTenant = Promise.promise();
-    super.postTenant(entity, headers, postTenant, context);
+        vertx.executeBlocking(
+          executeSchemaUpdates(tenantId, vertx),
 
-    String tenantId = TenantTool.tenantId(headers);
-    Vertx vertx = context.owner();
-
-    postTenant.future()
-      .compose(executeSchemaScripts(vertx, tenantId)::map)
-      .compose(setupTestData(vertx, tenantId)::map)
-      .setHandler(handlers);
+          result -> setupTestData(vertx, tenantId)
+            .setHandler(event -> handlers.handle(ar))
+        );
+      }
+    }, context);
   }
 
-  private Future<Object> executeSchemaScripts(Vertx vertx, String tenantId) {
-    Promise<Object> promise = Promise.promise();
-
-    vertx.executeBlocking(p -> {
+  private Handler<Promise<Object>> executeSchemaUpdates(String tenantId, Vertx vertx) {
+    return blocking -> {
       logger.info("************ Running schema updates ************");
 
       LiquibaseUtil.initializeSchemaForTenant(vertx, tenantId);
 
       logger.info("Schema updated for tenant: {}", tenantId);
-      p.complete();
-    }, promise);
 
-    return promise.future();
+      blocking.complete();
+    };
   }
 
   private Future<List<String>> setupTestData(Vertx vertx, String tenantId) {
