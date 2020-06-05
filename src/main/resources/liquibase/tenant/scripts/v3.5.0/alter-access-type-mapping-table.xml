@@ -5,7 +5,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
   <changeSet id="rename-access-types-mapping-table" author="dmtkachenko">
-    <preConditions>
+    <preConditions onFail="MARK_RAN">
       <tableExists tableName="access_types_mapping"/>
     </preConditions>
 
