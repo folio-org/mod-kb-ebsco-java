@@ -9,16 +9,15 @@ import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Tuple;
 
+import org.folio.db.RowSetUtils;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
 
@@ -29,23 +28,23 @@ public class HoldingsStatusAuditTestUtil {
     CompletableFuture<List<HoldingsLoadingStatus>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx)
       .select("SELECT * FROM " + holdingsStatusAuditTestTable() + " ORDER BY " + UPDATED_AT_COLUMN,
-        event -> future.complete(event.result().getRows().stream()
-          .map(row -> row.getString(JSONB_COLUMN))
-          .map(json -> parseStatus(mapper, json))
-          .collect(Collectors.toList()))
+        event -> future
+          .complete(RowSetUtils.mapItems(event.result(), row -> parseStatus(mapper, row.getString(JSONB_COLUMN))))
       );
-
     return future.join();
   }
 
-  public static HoldingsLoadingStatus insertStatus(String credentialsId, HoldingsLoadingStatus status, Instant updatedAt, Vertx vertx) {
+  public static HoldingsLoadingStatus insertStatus(String credentialsId, HoldingsLoadingStatus status, Instant updatedAt,
+                                                   Vertx vertx) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx)
-      .execute("INSERT INTO " + holdingsStatusAuditTestTable() + " (" + CREDENTIALS_COLUMN + ", " + JSONB_COLUMN + ", " + OPERATION_COLUMN + ", "+ UPDATED_AT_COLUMN +") VALUES (?,?,?,?)",
-        new JsonArray(Arrays.asList(credentialsId, Json.encode(status),"UPDATE", updatedAt)),
+      .execute("INSERT INTO " + holdingsStatusAuditTestTable() + " (" + CREDENTIALS_COLUMN + ", " + JSONB_COLUMN + ", "
+          + OPERATION_COLUMN + ", " + UPDATED_AT_COLUMN + ") VALUES (?,?,?,?)",
+        Tuple.of(credentialsId, JsonObject.mapFrom(status), "UPDATE", updatedAt),
         event -> future.complete(null));
     return future.join();
   }
+
   private static String holdingsStatusAuditTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + HOLDINGS_STATUS_AUDIT_TABLE;
   }

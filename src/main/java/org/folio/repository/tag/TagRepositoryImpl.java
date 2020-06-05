@@ -1,6 +1,5 @@
 package org.folio.repository.tag;
 
-import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -9,13 +8,14 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getTagsTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.tag.TagTableConstants.COUNT_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX;
 import static org.folio.repository.tag.TagTableConstants.DELETE_TAG_RECORD;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
@@ -46,20 +46,20 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.SQLConnection;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.persist.SQLConnection;
 
 @Component
 class TagRepositoryImpl implements TagRepository {
@@ -71,13 +71,12 @@ class TagRepositoryImpl implements TagRepository {
   @Autowired
   private DBExceptionTranslator excTranslator;
 
-
   @Override
   public CompletableFuture<List<DbTag>> findAll(String tenantId) {
-    String query = String.format(SELECT_ALL_TAGS, getTagsTableName(tenantId));
+    String query = prepareQuery(SELECT_ALL_TAGS, getTagsTableName(tenantId));
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTags);
@@ -85,13 +84,13 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<List<DbTag>> findByRecord(String tenantId, String recordId, RecordType recordType) {
-    JsonArray parameters = createParams(asList(recordId, recordType.getValue()));
+    Tuple parameters = Tuple.of(recordId, recordType.getValue());
 
-    String query = String.format(SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE, getTagsTableName(tenantId));
+    String query = prepareQuery(SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE, getTagsTableName(tenantId));
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenantId).select(query,parameters, promise);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTags);
   }
@@ -102,13 +101,13 @@ class TagRepositoryImpl implements TagRepository {
       return failedFuture(new IllegalArgumentException("At least one record type required"));
     }
 
-    JsonArray parameters = createParams(toValues(recordTypes));
+    Tuple parameters = createParams(toValues(recordTypes));
     String placeholders = createPlaceholders(parameters.size());
 
-    String query = String.format(SELECT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders);
+    String query = prepareQuery(SELECT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders);
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTags);
@@ -116,58 +115,30 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<List<DbTag>> findByRecordByIds(String tenantId, List<String> recordIds,
-      RecordType recordType) {
-    if(isEmpty(recordIds)){
+                                                          RecordType recordType) {
+    if (isEmpty(recordIds)) {
       return completedFuture(Collections.emptyList());
     }
-    Future<ResultSet> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
+    Future<RowSet<Row>> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
 
     return mapResult(resultSetFuture, this::readTags);
   }
 
   @Override
   public CompletableFuture<Map<String, List<DbTag>>> findPerRecord(String tenantId, List<String> recordIds,
-      RecordType recordType) {
-    if(isEmpty(recordIds)){
+                                                                   RecordType recordType) {
+    if (isEmpty(recordIds)) {
       return completedFuture(Collections.emptyMap());
     }
-    Future<ResultSet> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
+    Future<RowSet<Row>> resultSetFuture = findByRecordIdsOfType(tenantId, recordIds, recordType);
 
     return mapResult(resultSetFuture, this::readTagsPerRecord).thenApply(this::remapToRecordIds);
   }
 
   @Override
-  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, RecordType recordType, String credentialsId,
-      String tenantId) {
-    return countRecordsByTagsAndPrefix(tags, "", tenantId, recordType);
-  }
-
-  @Override
-  public CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix,
-      String tenantId, RecordType recordType) {
-    if(isEmpty(tags)){
-      return completedFuture(0);
-    }
-    JsonArray parameters = createParams(tags);
-    parameters.add(recordType.getValue());
-    parameters.add(recordIdPrefix + "%");
-
-    String valuesList = createPlaceholders(tags.size());
-
-    String query = String.format(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX, getTagsTableName(tenantId),
-      valuesList);
-    LOG.info(SELECT_LOG_MESSAGE, query);
-
-    Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
-
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
-  }
-
-  @Override
   public CompletableFuture<Boolean> updateRecordTags(String tenantId, String recordId, RecordType recordType,
-      List<String> tags) {
-    if(tags.isEmpty()){
+                                                     List<String> tags) {
+    if (tags.isEmpty()) {
       return unAssignTags(null, tenantId, recordId, recordType);
     }
     return updateTags(tenantId, recordId, recordType, tags);
@@ -179,11 +150,39 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   @Override
-  public CompletableFuture<List<String>> findDistinctRecordTags(String tenantId) {
-    String query = String.format(SELECT_ALL_DISTINCT_TAGS, getTagsTableName(tenantId));
+  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, RecordType recordType, String credentialsId,
+                                                       String tenantId) {
+    return countRecordsByTagsAndPrefix(tags, "", tenantId, recordType);
+  }
+
+  @Override
+  public CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix,
+                                                                String tenantId, RecordType recordType) {
+    if (isEmpty(tags)) {
+      return completedFuture(0);
+    }
+    Tuple parameters = createParams(tags);
+    parameters.addString(recordType.getValue());
+    parameters.addString(recordIdPrefix + "%");
+
+    String valuesList = createPlaceholders(tags.size());
+
+    String query = prepareQuery(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX, getTagsTableName(tenantId),
+      valuesList);
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).select(query, parameters, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
+  }
+
+  @Override
+  public CompletableFuture<List<String>> findDistinctRecordTags(String tenantId) {
+    String query = prepareQuery(SELECT_ALL_DISTINCT_TAGS, getTagsTableName(tenantId));
+    LOG.info(SELECT_LOG_MESSAGE, query);
+
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagValues);
@@ -195,52 +194,52 @@ class TagRepositoryImpl implements TagRepository {
       return failedFuture(new IllegalArgumentException("At least one record type required"));
     }
 
-    JsonArray parameters = createParams(toValues(recordTypes));
+    Tuple parameters = createParams(toValues(recordTypes));
     String placeholders = createPlaceholders(parameters.size());
 
-    String query = String.format(SELECT_DISTINCT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders);
+    String query = prepareQuery(SELECT_DISTINCT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders);
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagValues);
   }
 
-  private Future<ResultSet> findByRecordIdsOfType(String tenantId, List<String> recordIds, RecordType recordType) {
+  private Future<RowSet<Row>> findByRecordIdsOfType(String tenantId, List<String> recordIds, RecordType recordType) {
     String placeholders = createPlaceholders(recordIds.size());
-    JsonArray parameters = createParametersWithRecordType(recordIds, recordType);
+    Tuple parameters = createParametersWithRecordType(recordIds, recordType);
 
-    String query = String.format(SELECT_TAGS_BY_RESOURCE_IDS, getTagsTableName(tenantId), placeholders);
+    String query = prepareQuery(SELECT_TAGS_BY_RESOURCE_IDS, getTagsTableName(tenantId), placeholders);
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return promise.future().recover(excTranslator.translateOrPassBy());
   }
 
-  private List<String> readTagValues(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), object -> object.getString(TAG_COLUMN));
+  private List<String> readTagValues(RowSet<Row> resultSet) {
+    return RowSetUtils.mapItems(resultSet, row -> row.getString(TAG_COLUMN));
   }
 
-  private List<DbTag> readTags(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), this::populateTag);
+  private List<DbTag> readTags(RowSet<Row> resultSet) {
+    return RowSetUtils.mapItems(resultSet, this::populateTag);
   }
 
-  private Map<RecordKey, List<DbTag>> readTagsPerRecord(ResultSet resultSet) {
-    return resultSet.getRows().stream().collect(
-            groupingBy(this::readRecordKey, mapping(this::populateTag, toList())));
+  private Map<RecordKey, List<DbTag>> readTagsPerRecord(RowSet<Row> resultSet) {
+    return RowSetUtils.streamOf(resultSet)
+      .collect(groupingBy(this::readRecordKey, mapping(this::populateTag, toList())));
   }
 
-  private RecordKey readRecordKey(JsonObject row) {
+  private RecordKey readRecordKey(Row row) {
     return RecordKey.builder()
-            .recordId(row.getString(RECORD_ID_COLUMN))
-            .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN))).build();
+      .recordId(row.getString(RECORD_ID_COLUMN))
+      .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN))).build();
   }
 
-  private Integer readTagCount(ResultSet resultSet) {
-    return resultSet.getRows().get(0).getInteger("count");
+  private Integer readTagCount(RowSet<Row> resultSet) {
+    return RowSetUtils.mapFirstItem(resultSet, row -> row.getInteger(COUNT_COLUMN));
   }
 
   private Map<String, List<DbTag>> remapToRecordIds(Map<RecordKey, List<DbTag>> tagsPerRecord) {
@@ -250,12 +249,12 @@ class TagRepositoryImpl implements TagRepository {
     return result;
   }
 
-  private DbTag populateTag(JsonObject row) {
+  private DbTag populateTag(Row row) {
     return DbTag.builder()
-            .id(row.getString(ID_COLUMN))
-            .recordId(row.getString(RECORD_ID_COLUMN))
-            .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN)))
-            .value(row.getString(TAG_COLUMN)).build();
+      .id(row.getString(ID_COLUMN))
+      .recordId(row.getString(RECORD_ID_COLUMN))
+      .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN)))
+      .value(row.getString(TAG_COLUMN)).build();
   }
 
   private Set<String> toValues(Set<RecordType> recordTypes) {
@@ -263,7 +262,7 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   private CompletableFuture<Boolean> updateTags(String tenantId, String recordId, RecordType recordType,
-      List<String> tags) {
+                                                List<String> tags) {
     return executeInTransaction(tenantId, vertx,
       (postgresClient, connection) ->
         unAssignTags(connection, tenantId, recordId, recordType)
@@ -272,27 +271,27 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   private CompletableFuture<Void> assignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,
-      RecordType recordType, List<String> tags, PostgresClient postgresClient) {
-    JsonArray parameters = new JsonArray();
+                                             RecordType recordType, List<String> tags, PostgresClient postgresClient) {
+    Tuple parameters = Tuple.tuple();
     String updatedValues = createInsertStatement(recordId, recordType, tags, parameters);
 
-    final String query = String.format(UPDATE_INSERT_STATEMENT_FOR_PROVIDER, getTagsTableName(tenantId), updatedValues);
+    final String query = prepareQuery(UPDATE_INSERT_STATEMENT_FOR_PROVIDER, getTagsTableName(tenantId), updatedValues);
     LOG.info(INSERT_LOG_MESSAGE, query);
 
-    Promise<UpdateResult> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   private CompletableFuture<Boolean> unAssignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,
-      RecordType recordType) {
+                                                  RecordType recordType) {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-    final String deleteQuery = String.format(DELETE_TAG_RECORD, getTagsTableName(tenantId));
+    final String deleteQuery = prepareQuery(DELETE_TAG_RECORD, getTagsTableName(tenantId));
     LOG.info(DELETE_LOG_MESSAGE, deleteQuery);
 
-    JsonArray parameters = createParams(asList(recordId, recordType.getValue()));
+    Tuple parameters = Tuple.of(recordId, recordType.getValue());
 
     if (connection != null) {
       pgClient(tenantId).execute(connection, deleteQuery, parameters, deleteHandler(future));
@@ -302,7 +301,7 @@ class TagRepositoryImpl implements TagRepository {
     return future;
   }
 
-  private Handler<AsyncResult<UpdateResult>> deleteHandler(CompletableFuture<Boolean> future) {
+  private Handler<AsyncResult<RowSet<Row>>> deleteHandler(CompletableFuture<Boolean> future) {
     return result -> {
       if (result.succeeded()) {
         LOG.info("Successfully deleted entries.");
@@ -314,24 +313,24 @@ class TagRepositoryImpl implements TagRepository {
     };
   }
 
-  private JsonArray createParametersWithRecordType(List<String> queryParameters, RecordType recordType) {
-    JsonArray parameters = new JsonArray();
+  private Tuple createParametersWithRecordType(List<String> queryParameters, RecordType recordType) {
+    Tuple parameters = Tuple.tuple();
 
-    queryParameters.forEach(parameters::add);
-    parameters.add(recordType.getValue());
+    queryParameters.forEach(parameters::addString);
+    parameters.addString(recordType.getValue());
 
     return parameters;
   }
 
-  private String createInsertStatement(String recordId, RecordType recordType, List<String> tags, JsonArray params) {
+  private String createInsertStatement(String recordId, RecordType recordType, List<String> tags, Tuple params) {
     tags.forEach(tag -> {
       String id = UUID.randomUUID().toString();
-      params.add(id);
-      params.add(recordId);
-      params.add(recordType.getValue());
-      params.add(tag);
+      params.addString(id);
+      params.addString(recordId);
+      params.addString(recordType.getValue());
+      params.addString(tag);
     });
-    return String.join(",", Collections.nCopies(tags.size(),"(?,?,?,?)"));
+    return String.join(",", Collections.nCopies(tags.size(), "(?,?,?,?)"));
   }
 
   private PostgresClient pgClient(String tenantId) {

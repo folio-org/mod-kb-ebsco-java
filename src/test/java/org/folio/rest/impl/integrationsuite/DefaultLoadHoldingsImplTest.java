@@ -84,7 +84,7 @@ import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.rest.impl.WireMockTestBase;
@@ -149,7 +149,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     setupDefaultLoadKBConfiguration();
     runPostHoldingsWithMocks(context);
 
-    final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
   }
 

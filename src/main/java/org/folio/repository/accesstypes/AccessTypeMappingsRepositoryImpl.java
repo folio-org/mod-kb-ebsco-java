@@ -5,13 +5,17 @@ import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.db.RowSetUtils.isEmpty;
+import static org.folio.db.RowSetUtils.mapFirstItem;
+import static org.folio.db.RowSetUtils.mapItems;
+import static org.folio.db.RowSetUtils.streamOf;
 import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_BY_RECORD_ID_PREFIX_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_COLUMN;
@@ -35,12 +39,11 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,7 +58,6 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   private static final Logger LOG = LoggerFactory.getLogger(AccessTypeMappingsRepositoryImpl.class);
 
-
   @Autowired
   private Vertx vertx;
   @Autowired
@@ -64,13 +66,13 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType,
                                                                      String credentialsId, String tenantId) {
-    String query = format(SELECT_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
+    String query = prepareQuery(SELECT_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    JsonArray params = createParams(asList(recordId, recordType.getValue(), credentialsId));
-    Promise<ResultSet> promise = Promise.promise();
+    Tuple params = createParams(asList(recordId, recordType.getValue(), credentialsId));
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessItem);
@@ -87,17 +89,17 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     int count = accessTypeFilter.getCount();
     int offset = (page - 1) * count;
 
-    JsonArray params = createParams(accessTypeIds);
-    params.add(accessTypeFilter.getRecordType().getValue());
-    params.add(accessTypeFilter.getRecordIdPrefix() + "%");
-    params.add(offset);
-    params.add(count);
+    Tuple params = createParams(accessTypeIds);
+    params.addString(accessTypeFilter.getRecordType().getValue());
+    params.addString(accessTypeFilter.getRecordIdPrefix() + "%");
+    params.addInteger(offset);
+    params.addInteger(count);
 
-    String query = format(SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
+    String query = prepareQuery(SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       createPlaceholders(accessTypeIds.size()));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessItemCollection);
@@ -105,9 +107,9 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   @Override
   public CompletableFuture<AccessTypeMapping> save(AccessTypeMapping mapping, String tenantId) {
-    String query = format(UPSERT_QUERY, getAccessTypesMappingTableName(tenantId));
+    String query = prepareQuery(UPSERT_QUERY, getAccessTypesMappingTableName(tenantId));
 
-    JsonArray params = createParams(asList(
+    Tuple params = createParams(asList(
       mapping.getId(),
       mapping.getRecordId(),
       mapping.getRecordType().getValue(),
@@ -115,7 +117,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     ));
 
     LOG.info(INSERT_LOG_MESSAGE, query);
-    Promise<UpdateResult> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> mapping);
@@ -124,13 +126,13 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, String credentialsId,
                                                 String tenantId) {
-    String query = format(DELETE_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
+    String query = prepareQuery(DELETE_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
     LOG.info(DELETE_LOG_MESSAGE, query);
 
-    JsonArray params = createParams(asList(recordId, recordType.getValue(), credentialsId));
-    Promise<UpdateResult> promise = Promise.promise();
+    Tuple params = createParams(asList(recordId, recordType.getValue(), credentialsId));
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
@@ -139,34 +141,32 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Map<String, Integer>> countByRecordIdPrefix(String recordIdPrefix, RecordType recordType,
                                                                        String credentialsId, String tenantId) {
-    String query = format(COUNT_BY_RECORD_ID_PREFIX_QUERY, getAccessTypesMappingTableName(tenantId),
+    String query = prepareQuery(COUNT_BY_RECORD_ID_PREFIX_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    JsonArray params = createParams(asList(recordIdPrefix + "%", recordType.getValue(), credentialsId));
-    Promise<ResultSet> promise = Promise.promise();
+    Tuple params = createParams(asList(recordIdPrefix + "%", recordType.getValue(), credentialsId));
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCount);
   }
 
-  private Map<String, Integer> mapCount(ResultSet resultSet) {
-    return resultSet.getRows().stream()
+  private Map<String, Integer> mapCount(RowSet<Row> resultSet) {
+    return streamOf(resultSet)
       .collect(Collectors.toMap(row -> row.getString(ACCESS_TYPE_ID_COLUMN), row -> row.getInteger(COUNT_COLUMN)));
   }
 
-  private List<AccessTypeMapping> mapAccessItemCollection(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), this::mapAccessItem);
+  private List<AccessTypeMapping> mapAccessItemCollection(RowSet<Row> resultSet) {
+    return mapItems(resultSet, this::mapAccessItem);
   }
 
-  private Optional<AccessTypeMapping> mapSingleAccessItem(ResultSet resultSet) {
-    final List<JsonObject> rows = resultSet.getRows();
-
-    return rows.isEmpty() ? Optional.empty() : Optional.of(mapAccessItem(rows.get(0)));
+  private Optional<AccessTypeMapping> mapSingleAccessItem(RowSet<Row> resultSet) {
+    return isEmpty(resultSet) ? Optional.empty() : Optional.of(mapFirstItem(resultSet, this::mapAccessItem));
   }
 
-  private AccessTypeMapping mapAccessItem(JsonObject row) {
+  private AccessTypeMapping mapAccessItem(Row row) {
     return AccessTypeMapping.builder()
       .id(row.getString(ID_COLUMN))
       .accessTypeId(row.getString(ACCESS_TYPE_ID_COLUMN))

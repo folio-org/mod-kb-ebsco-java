@@ -14,7 +14,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor
-public class HoldingInfoInDB {
+public class DbHoldingInfo {
   @JsonProperty("title_id")
   private final String titleId;
   @JsonProperty("package_id")

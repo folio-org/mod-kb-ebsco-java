@@ -7,7 +7,7 @@ import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -64,9 +64,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Autowired
   private Context context;
 
-  public KbCredentialsServiceImpl(
-      Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
-      UserKbCredentialsService userKbCredentialsService) {
+  public KbCredentialsServiceImpl(Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
+                                  UserKbCredentialsService userKbCredentialsService) {
     this.credentialsFromDBConverter = credentialsFromDBConverter;
     this.userKbCredentialsService = userKbCredentialsService;
   }
@@ -97,21 +96,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenCompose(o -> fetchUserInfo(okapiHeaders))
       .thenApply(userInfo -> requireNonNull(credentialsToDBConverter.convert(kbCredentials))
         .toBuilder()
-        .createdDate(Instant.now())
+        .createdDate(LocalDateTime.now())
         .createdByUserId(userInfo.getUserId())
         .createdByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId))
       .thenApply(credentialsFromDBConverter::convert)
       .thenApply(credentials -> insertLoadingStatusNotStarted(credentials, tenantId));
-  }
-
-  private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
-    final String credentialsId = credentials.getId();
-    holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
-      .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
-      .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
-    return credentials;
   }
 
   @Override
@@ -126,7 +117,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .url(attributes.getUrl())
         .apiKey(attributes.getApiKey())
         .customerId(attributes.getCustomerId())
-        .updatedDate(Instant.now())
+        .updatedDate(LocalDateTime.now())
         .updatedByUserId(userInfo.getUserId())
         .updatedByUserName(userInfo.getUserName())
         .build())
@@ -137,6 +128,14 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Override
   public CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders) {
     return repository.delete(id, tenantId(okapiHeaders));
+  }
+
+  private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
+    final String credentialsId = credentials.getId();
+    holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
+      .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
+      .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
+    return credentials;
   }
 
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {

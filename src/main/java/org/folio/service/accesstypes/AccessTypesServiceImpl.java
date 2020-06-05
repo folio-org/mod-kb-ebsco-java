@@ -6,7 +6,7 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -191,7 +191,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private DbAccessType setCreatorMetaInfo(DbAccessType dbAccessType, UserLookUp userInfo) {
     return dbAccessType.toBuilder()
-      .createdDate(Instant.now())
+      .createdDate(LocalDateTime.now())
       .createdByUserId(userInfo.getUserId())
       .createdByUsername(userInfo.getUsername())
       .createdByFirstName(userInfo.getFirstName())
@@ -202,7 +202,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private DbAccessType setUpdaterMetaInfo(DbAccessType dbAccessType, UserLookUp user) {
     return dbAccessType.toBuilder()
-      .updatedDate(Instant.now())
+      .updatedDate(LocalDateTime.now())
       .updatedByUserId(user.getUserId())
       .updatedByUsername(user.getUsername())
       .updatedByFirstName(user.getFirstName())

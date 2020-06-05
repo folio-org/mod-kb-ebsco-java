@@ -47,7 +47,7 @@ public class TenantApiImpl extends TenantAPI {
     super.postTenant(entity, headers, promise, context);
 
     promise.future().compose(response -> setupTestData(headers, context).map(response))
-      .setHandler(handlers);
+      .onComplete(handlers);
   }
 
   private Future<List<String>> setupTestData(Map<String, String> headers, Context context) {

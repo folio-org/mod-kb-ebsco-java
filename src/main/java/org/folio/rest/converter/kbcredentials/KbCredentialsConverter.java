@@ -1,6 +1,7 @@
 package org.folio.rest.converter.kbcredentials;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -75,12 +76,10 @@ public class KbCredentialsConverter {
       return source.getUrl() != null ? source.getUrl() : defaultUrl;
     }
 
-    private Date toDate(Instant date) {
-      return date != null ? Date.from(date) : null;
+    private Date toDate(LocalDateTime date) {
+      return date != null ? Date.from(date.atZone(ZoneId.systemDefault()).toInstant()) : null;
     }
-
   }
-
 
   @Component
   public static class KbCredentialsToDbConverter implements Converter<KbCredentials, DbKbCredentials> {

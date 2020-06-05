@@ -3,7 +3,6 @@ package org.folio.util;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
@@ -15,7 +14,6 @@ import static org.folio.test.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -23,10 +21,11 @@ import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
+import io.vertx.sqlclient.Tuple;
 import lombok.Builder;
 import lombok.Value;
 
+import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 
 public class ResourcesTestUtil {
@@ -38,7 +37,7 @@ public class ResourcesTestUtil {
     CompletableFuture<List<ResourcesTestUtil.DbResources>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
       "SELECT " + NAME_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + ID_COLUMN + " FROM " + resourceTestTable(),
-      event -> future.complete(mapItems(event.result().getRows(),
+      event -> future.complete(RowSetUtils.mapItems(event.result(),
         row ->
           DbResources.builder()
             .id(row.getString(ID_COLUMN))
@@ -55,7 +54,7 @@ public class ResourcesTestUtil {
       "INSERT INTO " + resourceTestTable() +
         "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ") " +
         "VALUES(?,?,?)",
-      new JsonArray(Arrays.asList(dbResource.getId(), dbResource.getCredentialsId(), dbResource.getName() )),
+      Tuple.of(dbResource.getId(), dbResource.getCredentialsId(), dbResource.getName()),
       event -> future.complete(null));
     future.join();
   }
@@ -83,6 +82,7 @@ public class ResourcesTestUtil {
   @Value
   @Builder(toBuilder = true)
   public static class DbResources {
+
     String id;
     String credentialsId;
     String name;

@@ -1,6 +1,7 @@
 package org.folio.service.holdings;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.codegen.annotations.GenIgnore;
@@ -10,7 +11,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.resources.DbResource;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.message.DeltaReportCreatedMessage;
@@ -41,13 +42,13 @@ public interface HoldingsService {
   }
 
   @GenIgnore
-  default CompletableFuture<Void> loadHoldingsById(String credentialsId, RMAPITemplateContext context) {
+  default CompletableFuture<Void> loadHoldingsById(UUID credentialsId, RMAPITemplateContext context) {
     //Default implementation is necessary for automatically generated vertx proxy
     throw new UnsupportedOperationException();
   }
 
   @GenIgnore
-  default CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<DbResource> resourcesResult, String credentialsId, String tenant) {
+  default CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<DbResource> resourcesResult, UUID credentialsId, String tenant) {
     throw new UnsupportedOperationException();
   }
 

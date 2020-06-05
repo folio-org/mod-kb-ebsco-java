@@ -58,7 +58,7 @@ import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
 import org.folio.repository.resources.DbResource;
@@ -479,7 +479,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<DbResource>> mutableDbTitles = new MutableObject<>();
-    MutableObject<List<HoldingInfoInDB>> mutableDbHoldings = new MutableObject<>();
+    MutableObject<List<DbHoldingInfo>> mutableDbHoldings = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     String credentialsId = context.getCredentialsId();
 
@@ -503,7 +503,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       );
   }
 
-  private List<ResourceId> getRemainingResourceIds(List<HoldingInfoInDB> holdings, List<DbResource> resourcesResult) {
+  private List<ResourceId> getRemainingResourceIds(List<DbHoldingInfo> holdings, List<DbResource> resourcesResult) {
     final List<ResourceId> resourceIds = getTitleIds(resourcesResult);
     resourceIds.removeIf(dbResource -> getResourceIds(holdings).contains(dbResource));
     return resourceIds;

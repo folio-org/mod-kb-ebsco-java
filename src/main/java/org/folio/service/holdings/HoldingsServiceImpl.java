@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -49,7 +50,7 @@ import org.springframework.stereotype.Component;
 import org.folio.holdingsiq.model.Holding;
 import org.folio.holdingsiq.model.HoldingChangeType;
 import org.folio.holdingsiq.model.HoldingInReport;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.HoldingsId;
 import org.folio.repository.holdings.HoldingsRepository;
 import org.folio.repository.holdings.status.HoldingsStatusRepository;
@@ -129,7 +130,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public CompletableFuture<Void> loadHoldingsById(String credentialsId, RMAPITemplateContext context) {
+  public CompletableFuture<Void> loadHoldingsById(UUID credentialsId, RMAPITemplateContext context) {
     final String tenantId = context.getOkapiData().getTenant();
     Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
       tryChangingStatusToInProgress(getStatusPopulatingStagingArea(), credentialsId, tenantId)
@@ -140,14 +141,14 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public CompletableFuture<List<HoldingInfoInDB>> getHoldingsByIds(List<DbResource> resourcesResult, String credentialsId, String tenantId) {
+  public CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<DbResource> resourcesResult, UUID credentialsId, String tenantId) {
     return holdingsRepository.findAllById(getTitleIdsAsList(resourcesResult), credentialsId, tenantId);
   }
 
   @Override
   public void saveHolding(HoldingsMessage holdings) {
     final String tenantId = holdings.getTenantId();
-    final String credentialsId = holdings.getCredentialsId();
+    final UUID credentialsId = holdings.getCredentialsId();
     saveHoldings(holdings.getHoldingList(), Instant.now(), credentialsId, tenantId)
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(), 1, credentialsId, tenantId))
       .thenCompose(status -> {
@@ -170,7 +171,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   @Override
   public void processChanges(DeltaReportMessage holdings) {
     final String tenantId = holdings.getTenantId();
-    final String credentialsId = holdings.getCredentialsId();
+    final UUID credentialsId = holdings.getCredentialsId();
     processChanges(holdings.getHoldingList(), Instant.now(), credentialsId, tenantId)
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(), 1, credentialsId, tenantId))
       .thenCompose(status -> {
@@ -199,7 +200,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   @Override
   public void snapshotCreated(SnapshotCreatedMessage message) {
     final String tenantId = message.getTenantId();
-    final String credentialsId = message.getCredentialsId();
+    final UUID credentialsId = message.getCredentialsId();
     transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
       .thenApply(previousTransactionId -> {
         boolean transactionIsAlreadyLoaded =
@@ -349,9 +350,9 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private CompletableFuture<Void> saveHoldings(List<Holding> holdings, Instant updatedAt, String credentialsId, String tenantId) {
-    Set<HoldingInfoInDB> dbHoldings = holdings.stream()
+    Set<DbHoldingInfo> dbHoldings = holdings.stream()
       .filter(distinctByKey(this::getHoldingsId))
-      .map(holding -> new HoldingInfoInDB(
+      .map(holding -> new DbHoldingInfo(
         holding.getTitleId(),
         holding.getPackageId(),
         holding.getVendorId(),
@@ -365,7 +366,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   public CompletableFuture<Void> processChanges(List<HoldingInReport> holdings, Instant updatedAt, String credentialsId, String tenantId) {
-    Set<HoldingInfoInDB> holdingsToSave = getDbHoldingsByType(holdings, ADDED_OR_UPDATED_CHANGE_TYPES)
+    Set<DbHoldingInfo> holdingsToSave = getDbHoldingsByType(holdings, ADDED_OR_UPDATED_CHANGE_TYPES)
       .map(this::mapToHoldingInfoInDb)
       .collect(Collectors.toSet());
     Set<HoldingsId> holdingsToDelete = getDbHoldingsByType(holdings, Collections.singleton(HOLDING_DELETED))
@@ -381,8 +382,8 @@ public class HoldingsServiceImpl implements HoldingsService {
       .filter(holding -> matchingTypes.contains(holding.getChangeType()));
   }
 
-  private HoldingInfoInDB mapToHoldingInfoInDb(HoldingInReport holding){
-    return new HoldingInfoInDB(
+  private DbHoldingInfo mapToHoldingInfoInDb(HoldingInReport holding){
+    return new DbHoldingInfo(
       holding.getTitleId(),
       holding.getPackageId(),
       holding.getVendorId(),

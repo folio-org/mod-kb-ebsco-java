@@ -24,25 +24,25 @@ import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.db.DbUtils;
+import org.folio.db.RowSetUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.accesstypes.AccessTypeMapping;
@@ -70,15 +70,11 @@ public class AccessTypesTestUtil {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = String.format(AccessTypeMappingsTableConstants.UPSERT_QUERY, accessTypesMappingTestTable());
-    JsonArray params = new JsonArray(Arrays.asList(id(), recordId, recordType.getValue(), accessTypeId));
+    Tuple params = Tuple.of(UUID.randomUUID(), recordId, recordType.getValue(), accessTypeId);
 
     PostgresClient.getInstance(vertx)
       .execute(insertStatement, params, event -> future.complete(null));
     future.join();
-  }
-
-  private static String id() {
-    return UUID.randomUUID().toString();
   }
 
   public static List<AccessType> insertAccessTypes(List<AccessType> items, Vertx vertx) {
@@ -90,18 +86,18 @@ public class AccessTypesTestUtil {
   }
 
   public static String insertAccessType(AccessType accessType, Vertx vertx) {
-    CompletableFuture<UpdateResult> future = new CompletableFuture<>();
+    CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
     String query = String.format(UPSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
 
-    String id = id();
-    JsonArray params = DbUtils.createParams(Arrays.asList(
+    UUID id = UUID.randomUUID();
+    Tuple params = DbUtils.createParams(Arrays.asList(
       id,
       accessType.getAttributes().getCredentialsId(),
       accessType.getAttributes().getName(),
       accessType.getAttributes().getDescription(),
       Instant.now().toString(),
-      id(),
+      UUID.randomUUID(),
       "username",
       accessType.getCreator().getLastName(),
       accessType.getCreator().getFirstName(),
@@ -112,7 +108,7 @@ public class AccessTypesTestUtil {
     PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
 
-    return id;
+    return id.toString();
   }
 
   public static List<AccessTypeMapping> getAccessTypeMappings(Vertx vertx) {
@@ -121,25 +117,20 @@ public class AccessTypesTestUtil {
     mapper.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     CompletableFuture<List<AccessTypeMapping>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select("SELECT * FROM " + accessTypesMappingTestTable(),
-      event -> future.complete(event.result().getRows().stream()
-        .map(entry -> parseAccessTypeMapping(mapper, entry))
-        .collect(Collectors.toList())));
+      event -> future.complete(RowSetUtils.mapItems(event.result(), entry -> parseAccessTypeMapping(mapper, entry))));
     return future.join();
   }
 
   public static List<AccessType> getAccessTypes(Vertx vertx) {
     CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(String.format(SqlQueryHelper.selectQuery(), accessTypesTestTable()),
-      event -> future.complete(event.result().getRows().stream()
-        .map(AccessTypesTestUtil::mapAccessType)
-        .map(CONVERTER::convert)
-        .collect(Collectors.toList())));
+      event -> future.complete(RowSetUtils.mapItems(event.result(), row -> CONVERTER.convert(mapAccessType(row)))));
     return future.join();
   }
 
-  private static AccessTypeMapping parseAccessTypeMapping(ObjectMapper mapper, JsonObject entry) {
+  private static AccessTypeMapping parseAccessTypeMapping(ObjectMapper mapper, Row entry) {
     try {
-      return mapper.readValue(entry.encode(), AccessTypeMapping.class);
+      return mapper.readValue(RowSetUtils.toJson(entry), AccessTypeMapping.class);
     } catch (IOException e) {
       throw new IllegalArgumentException("Can't parse access type mapping", e);
     }
@@ -153,20 +144,20 @@ public class AccessTypesTestUtil {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
   }
 
-  private static DbAccessType mapAccessType(JsonObject resultRow) {
+  private static DbAccessType mapAccessType(Row resultRow) {
     return DbAccessType.builder()
-      .id(resultRow.getString(ID_COLUMN))
+      .id(resultRow.getUUID(ID_COLUMN))
       .credentialsId(resultRow.getString(CREDENTIALS_ID_COLUMN))
       .name(resultRow.getString(NAME_COLUMN))
       .description(resultRow.getString(DESCRIPTION_COLUMN))
       .usageNumber(ObjectUtils.defaultIfNull(resultRow.getInteger(USAGE_NUMBER_COLUMN), 0))
-      .createdDate(resultRow.getInstant(CREATED_DATE_COLUMN))
+      .createdDate(resultRow.getLocalDateTime(CREATED_DATE_COLUMN))
       .createdByUserId(resultRow.getString(CREATED_BY_USER_ID_COLUMN))
       .createdByUsername(resultRow.getString(CREATED_BY_USERNAME_COLUMN))
       .createdByLastName(resultRow.getString(CREATED_BY_LAST_NAME_COLUMN))
       .createdByFirstName(resultRow.getString(CREATED_BY_FIRST_NAME_COLUMN))
       .createdByMiddleName(resultRow.getString(CREATED_BY_MIDDLE_NAME_COLUMN))
-      .updatedDate(resultRow.getInstant(UPDATED_DATE_COLUMN))
+      .updatedDate(resultRow.getLocalDateTime(UPDATED_DATE_COLUMN))
       .updatedByUserId(resultRow.getString(UPDATED_BY_USER_ID_COLUMN))
       .updatedByUsername(resultRow.getString(UPDATED_BY_USERNAME_COLUMN))
       .updatedByLastName(resultRow.getString(UPDATED_BY_LAST_NAME_COLUMN))

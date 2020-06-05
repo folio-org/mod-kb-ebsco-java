@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 
 import org.folio.holdingsiq.model.Titles;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.resources.DbResource;
 
 @Value
@@ -14,5 +14,5 @@ import org.folio.repository.resources.DbResource;
 public class ResourceCollectionResult {
   Titles titles;
   List<DbResource> titlesList;
-  List<HoldingInfoInDB> holdings;
+  List<DbHoldingInfo> holdings;
 }

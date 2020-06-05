@@ -1,6 +1,6 @@
 package org.folio.repository.kbcredentials;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -14,8 +14,8 @@ public class DbKbCredentials {
   private final String apiKey;
   private final String customerId;
   private final String url;
-  private final Instant createdDate;
-  private final Instant updatedDate;
+  private final LocalDateTime createdDate;
+  private final LocalDateTime updatedDate;
   private final String createdByUserId;
   private final String updatedByUserId;
   private final String createdByUserName;

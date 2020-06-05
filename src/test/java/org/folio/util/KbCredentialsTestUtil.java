@@ -17,21 +17,21 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TokenTestUtils.generateToken;
 
+import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import io.restassured.http.Header;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.db.DbUtils;
+import org.folio.db.RowSetUtils;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.converter.kbcredentials.KbCredentialsConverter;
@@ -59,9 +59,9 @@ public class KbCredentialsTestUtil {
     + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
 
   public static final Header STUB_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, generateToken(STUB_USERNAME,
-      STUB_USER_ID));
+    STUB_USER_ID));
   public static final Header STUB_TOKEN_OTHER_HEADER = new Header(XOkapiHeaders.TOKEN, generateToken(
-      STUB_USERNAME_OTHER, STUB_USER_OTHER_ID));
+    STUB_USERNAME_OTHER, STUB_USER_OTHER_ID));
   public static final Header STUB_INVALID_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN,
     KbCredentialsTestUtil.STUB_INVALID_TOKEN);
 
@@ -75,11 +75,12 @@ public class KbCredentialsTestUtil {
     return insertKbCredentials(UUID.randomUUID().toString(), url, name, apiKey, customerId, vertx);
   }
 
-  public static String insertKbCredentials(String id, String url, String name, String apiKey, String customerId, Vertx vertx) {
+  public static String insertKbCredentials(String id, String url, String name, String apiKey, String customerId,
+                                           Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
     String insertStatement = String.format(UPSERT_CREDENTIALS_QUERY, kbCredentialsTestTable());
-    JsonArray params = DbUtils.createParams(Arrays.asList(id, url, name, apiKey, customerId,
+    Tuple params = DbUtils.createParams(Arrays.asList(id, url, name, apiKey, customerId,
       Instant.now().toString(), STUB_USER_ID, STUB_USERNAME, null, null, null
     ));
 
@@ -101,22 +102,19 @@ public class KbCredentialsTestUtil {
                                                       Converter<DbKbCredentials, KbCredentials> converter) {
     CompletableFuture<List<KbCredentials>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(String.format(SELECT_CREDENTIALS_QUERY, kbCredentialsTestTable()),
-      event -> future.complete(event.result().getRows().stream()
-        .map(KbCredentialsTestUtil::parseKbCredentials)
-        .map(converter::convert)
-        .collect(Collectors.toList())));
+      event -> future.complete(RowSetUtils.mapItems(event.result(), row -> converter.convert(parseKbCredentials(row)))));
     return future.join();
   }
 
-  private static DbKbCredentials parseKbCredentials(JsonObject row) {
+  private static DbKbCredentials parseKbCredentials(Row row) {
     return DbKbCredentials.builder()
       .id(row.getString(ID_COLUMN))
       .url(row.getString(URL_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .apiKey(row.getString(API_KEY_COLUMN))
       .customerId(row.getString(CUSTOMER_ID_COLUMN))
-      .createdDate(row.getInstant(CREATED_DATE_COLUMN))
-      .updatedDate(row.getInstant(UPDATED_DATE_COLUMN))
+      .createdDate(row.getLocalDateTime(CREATED_DATE_COLUMN))
+      .updatedDate(row.getLocalDateTime(UPDATED_DATE_COLUMN))
       .createdByUserId(row.getString(CREATED_BY_USER_ID_COLUMN))
       .updatedByUserId(row.getString(UPDATED_BY_USER_ID_COLUMN))
       .createdByUserName(row.getString(CREATED_BY_USER_NAME_COLUMN))
@@ -134,6 +132,7 @@ public class KbCredentialsTestUtil {
       .customerId(STUB_CUSTOMER_ID)
       .apiKey(STUB_API_KEY).build();
   }
+
   public static DbKbCredentials getCredentials() {
     return DbKbCredentials.builder()
       .name(STUB_CREDENTIALS_NAME)

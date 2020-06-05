@@ -15,15 +15,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.db.DbUtils;
+import org.folio.db.RowSetUtils;
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.AssignedUserCollectionItemConverter;
@@ -37,10 +37,10 @@ public class AssignedUsersTestUtil {
 
   public static String insertAssignedUser(String id, String credentialsId, String username, String firstName,
                                           String middleName, String lastName, String patronGroup, Vertx vertx) {
-    CompletableFuture<ResultSet> future = new CompletableFuture<>();
+    CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
     String insertStatement = String.format(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());
-    JsonArray params = DbUtils.createParams(Arrays.asList(id, credentialsId, username,
+    Tuple params = DbUtils.createParams(Arrays.asList(id, credentialsId, username,
       firstName, middleName, lastName, patronGroup
     ));
 
@@ -59,14 +59,11 @@ public class AssignedUsersTestUtil {
   public static List<AssignedUser> getAssignedUsers(Vertx vertx) {
     CompletableFuture<List<AssignedUser>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(String.format(SqlQueryHelper.selectQuery(), kbAssignedUsersTestTable()),
-      event -> future.complete(event.result().getRows().stream()
-        .map(AssignedUsersTestUtil::parseAssignedUser)
-        .map(CONVERTER::convert)
-        .collect(Collectors.toList())));
+      event -> future.complete(RowSetUtils.mapItems(event.result(), row -> CONVERTER.convert(parseAssignedUser(row)))));
     return future.join();
   }
 
-  private static DbAssignedUser parseAssignedUser(JsonObject row) {
+  private static DbAssignedUser parseAssignedUser(Row row) {
     return DbAssignedUser.builder()
       .id(row.getString(ID_COLUMN))
       .credentialsId(row.getString(CREDENTIALS_ID))

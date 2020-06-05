@@ -34,16 +34,33 @@
   </licenses>
 
   <properties>
-    <raml-module-builder.version>29.1.1</raml-module-builder.version>
-    <vertx.version>3.8.4</vertx.version>
+    <rmb.version>30.0.0</rmb.version>
+    <folio-di-support.version>1.1.0-SNAPSHOT</folio-di-support.version>
+    <folio-service-tools.version>1.4.4-SNAPSHOT</folio-service-tools.version>
+    <folio-holdingsiq-client.version>1.8.1-SNAPSHOT</folio-holdingsiq-client.version>
+    <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
+
+    <vertx.version>3.9.0</vertx.version>
     <aspectj.version>1.9.4</aspectj.version>
-    <folio-service-tools.version>1.4.3</folio-service-tools.version>
+    <spring.version>5.1.1.RELEASE</spring.version>
+    <jackson.version>2.10.4</jackson.version>
+    <jopt-simple.version>4.6</jopt-simple.version>
+    <commons-configuration2.version>2.7</commons-configuration2.version>
+    <commons-beanutils.version>1.9.4</commons-beanutils.version>
+    <lombok.version>1.18.12</lombok.version>
+    <httpcore.version>4.4.13</httpcore.version>
+    <log4j-slf4j-impl.version>2.13.3</log4j-slf4j-impl.version>
+
+    <junit.version>4.12</junit.version>
+    <rest-assured.version>3.3.0</rest-assured.version>
+    <wiremock.version>2.19.0</wiremock.version>
+    <mockito.version>2.23.0</mockito.version>
+    <jsonassert.version>1.5.0</jsonassert.version>
+    <easy-random-core.version>4.0.0.RC1</easy-random-core.version>
+
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
-    <spring.version>5.1.1.RELEASE</spring.version>
-    <jackson.version>2.9.10.4</jackson.version>
   </properties>
 
   <profiles>
@@ -68,7 +85,7 @@
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>domain-models-runtime</artifactId>
-      <version>${raml-module-builder.version}</version>
+      <version>${rmb.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -99,70 +116,48 @@
     <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
       <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>2.9.9</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-configuration2</artifactId>
-      <version>2.7</version>
+      <version>${commons-configuration2.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
-      <version>1.9.3</version>
+      <version>${commons-beanutils.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.4</version>
+      <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
-      <version>4.4.9</version>
+      <version>${httpcore.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
-      <version>2.9.1</version>
-    </dependency>
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-unit</artifactId>
-      <version>${vertx.version}</version>
-      <scope>test</scope>
+      <version>${log4j-slf4j-impl.version}</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-      <scope>test</scope>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-di-support</artifactId>
+      <version>${folio-di-support.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
-      <version>3.3.0</version>
-      <scope>test</scope>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-holdingsiq-client</artifactId>
+      <version>${folio-holdingsiq-client.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock</artifactId>
-      <version>2.19.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>2.23.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.skyscreamer</groupId>
-      <artifactId>jsonassert</artifactId>
-      <version>1.5.0</version>
-      <scope>test</scope>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-service-tools-dev</artifactId>
+      <version>${folio-service-tools.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -174,20 +169,42 @@
       <artifactId>spring-context</artifactId>
       <version>${spring.version}</version>
     </dependency>
+    <!-- Test dependencies -->
     <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-di-support</artifactId>
-      <version>1.0.0</version>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-unit</artifactId>
+      <version>${vertx.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-holdingsiq-client</artifactId>
-      <version>1.8.0</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-service-tools-dev</artifactId>
-      <version>${folio-service-tools.version}</version>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>${rest-assured.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>${wiremock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.skyscreamer</groupId>
+      <artifactId>jsonassert</artifactId>
+      <version>${jsonassert.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
@@ -204,9 +221,15 @@
     <dependency>
       <groupId>org.jeasy</groupId>
       <artifactId>easy-random-core</artifactId>
-      <version>4.0.0.RC1</version>
+      <version>${easy-random-core.version}</version>
       <scope>test</scope>
     </dependency>
+      <dependency>
+          <groupId>org.jetbrains</groupId>
+          <artifactId>annotations</artifactId>
+          <version>18.0.0</version>
+          <scope>compile</scope>
+      </dependency>
   </dependencies>
 
   <dependencyManagement>
@@ -214,7 +237,7 @@
       <dependency>
         <groupId>net.sf.jopt-simple</groupId>
         <artifactId>jopt-simple</artifactId>
-        <version>4.6</version>
+        <version>${jopt-simple.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

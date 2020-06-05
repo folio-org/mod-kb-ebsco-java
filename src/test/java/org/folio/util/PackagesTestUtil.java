@@ -1,6 +1,5 @@
 package org.folio.util;
 
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
@@ -22,17 +21,17 @@ import static org.folio.test.util.TestUtil.readFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
+import io.vertx.sqlclient.Tuple;
 import lombok.Builder;
 import lombok.Value;
 
+import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.rest.persist.PostgresClient;
 
@@ -45,7 +44,7 @@ public class PackagesTestUtil {
     CompletableFuture<List<DbPackage>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
       "SELECT " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ", " + ID_COLUMN + " FROM " + packageTestTable(),
-      event -> future.complete(mapItems(event.result().getRows(),
+      event -> future.complete(RowSetUtils.mapItems(event.result(),
         row ->
           DbPackage.builder()
             .id(row.getString(ID_COLUMN))
@@ -62,8 +61,7 @@ public class PackagesTestUtil {
       "INSERT INTO " + packageTestTable() +
         "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ") " +
         "VALUES(?,?,?,?)",
-      new JsonArray(Arrays.asList(dbPackage.getId(), dbPackage.getCredentialsId(), dbPackage.getName(),
-        dbPackage.getContentType())),
+      Tuple.of(dbPackage.getId(), dbPackage.getCredentialsId(), dbPackage.getName(), dbPackage.getContentType()),
       event -> future.complete(null));
     future.join();
   }
@@ -98,7 +96,7 @@ public class PackagesTestUtil {
   }
 
   public static void setUpPackage(Vertx vertx, String credentialsId, String stubPackageId,
-      String stubVendorId, String stubPackageName) throws IOException, URISyntaxException {
+                                  String stubVendorId, String stubPackageName) throws IOException, URISyntaxException {
     addPackage(vertx, buildDbPackage(stubVendorId + "-" + stubPackageId, credentialsId, stubPackageName));
     mockPackageWithName(stubPackageId, stubVendorId, stubPackageName);
   }

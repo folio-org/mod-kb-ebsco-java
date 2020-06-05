@@ -92,7 +92,7 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Errors;
@@ -157,7 +157,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
     addHolding(configuration.getId(), Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
-        HoldingInfoInDB.class), Instant.now(), vertx);
+        DbHoldingInfo.class), Instant.now(), vertx);
 
     addResource(vertx, buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
     addResource(vertx, buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));
@@ -179,7 +179,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
     addHolding(configuration.getId(), Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"),
-        HoldingInfoInDB.class), Instant.now(), vertx);
+        DbHoldingInfo.class), Instant.now(), vertx);
 
     addResource(vertx, buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME));
     addResource(vertx, buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME));

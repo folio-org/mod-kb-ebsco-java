@@ -1,6 +1,5 @@
 package org.folio.util;
 
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.titles.TitlesTableConstants.ID_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.NAME_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
@@ -13,16 +12,18 @@ import io.vertx.core.Vertx;
 import lombok.Builder;
 import lombok.Value;
 
+import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 
 public class TitlesTestUtil {
+
   private TitlesTestUtil() {}
 
   public static List<TitlesTestUtil.DbTitle> getTitles(Vertx vertx) {
     CompletableFuture<List<TitlesTestUtil.DbTitle>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
       "SELECT " + NAME_COLUMN + ", " + ID_COLUMN + " FROM " + titlesTestTable(),
-      event -> future.complete(mapItems(event.result().getRows(),
+      event -> future.complete(RowSetUtils.mapItems(event.result(),
         row ->
           TitlesTestUtil.DbTitle.builder()
             .id(row.getString(ID_COLUMN))
@@ -39,6 +40,7 @@ public class TitlesTestUtil {
   @Value
   @Builder(toBuilder = true)
   public static class DbTitle {
+
     String id;
     String name;
   }

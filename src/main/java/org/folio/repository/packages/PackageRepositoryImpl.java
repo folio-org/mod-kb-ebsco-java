@@ -13,6 +13,7 @@ import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getPackagesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.DELETE_STATEMENT;
@@ -32,16 +33,16 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.rest.persist.PostgresClient;
@@ -57,114 +58,119 @@ public class PackageRepositoryImpl implements PackageRepository {
   @Autowired
   private DBExceptionTranslator excTranslator;
 
-
   @Override
-  public CompletableFuture<Void> save(DbPackage packageData, String tenantId){
-    JsonArray parameters = createInsertOrUpdateParameters(IdParser.packageIdToString(packageData.getId()),
-      packageData.getCredentialsId(), packageData.getName(), packageData.getContentType());
+  public CompletableFuture<Void> save(DbPackage packageData, String tenantId) {
+    Tuple parameters = createInsertOrUpdateParameters(
+      IdParser.packageIdToString(packageData.getId()),
+      packageData.getCredentialsId(),
+      packageData.getName(),
+      packageData.getContentType()
+    );
 
-    final String query = String.format(INSERT_OR_UPDATE_STATEMENT, getPackagesTableName(tenantId));
+    final String query = prepareQuery(INSERT_OR_UPDATE_STATEMENT, getPackagesTableName(tenantId));
 
     LOG.info(INSERT_LOG_MESSAGE, query);
 
-    Promise<UpdateResult> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
   public CompletableFuture<Void> delete(PackageId packageId, String credentialsId, String tenantId) {
-    JsonArray parameter = createParams(asList(IdParser.packageIdToString(packageId), credentialsId));
+    Tuple parameters = createParams(asList(IdParser.packageIdToString(packageId), credentialsId));
 
-    final String query = String.format(DELETE_STATEMENT, getPackagesTableName(tenantId));
+    final String query = prepareQuery(DELETE_STATEMENT, getPackagesTableName(tenantId));
 
     LOG.info(DELETE_LOG_MESSAGE, query);
 
-    Promise<UpdateResult> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameter, promise);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
   public CompletableFuture<List<DbPackage>> findByTagName(List<String> tags, int page, int count,
-      String credentialsId, String tenantId) {
+                                                          String credentialsId, String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, "", page, count, credentialsId, tenantId);
   }
 
   @Override
   public CompletableFuture<List<DbPackage>> findByTagNameAndProvider(List<String> tags, String providerId,
-      int page, int count, String credentialsId, String tenantId) {
+                                                                     int page, int count, String credentialsId,
+                                                                     String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, credentialsId, tenantId);
   }
 
   @Override
   public CompletableFuture<List<DbPackage>> findByIds(List<PackageId> packageIds, String credentialsId,
-      String tenantId) {
-    if(CollectionUtils.isEmpty(packageIds)){
+                                                      String tenantId) {
+    if (CollectionUtils.isEmpty(packageIds)) {
       return completedFuture(Collections.emptyList());
     }
 
-    JsonArray parameters = new JsonArray();
-    packageIds.forEach(packageId -> parameters.add(IdParser.packageIdToString(packageId)));
-    parameters.add(credentialsId);
+    Tuple parameters = Tuple.tuple();
+    packageIds.forEach(packageId -> parameters.addString(IdParser.packageIdToString(packageId)));
+    parameters.addString(credentialsId);
 
-    final String query = String.format(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getPackagesTableName(tenantId),
+    final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getPackagesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(packageIds.size()));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }
 
   private CompletableFuture<List<DbPackage>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix,
-      int page, int count, String credentialsId, String tenantId) {
-    if(CollectionUtils.isEmpty(tags)){
+                                                                           int page, int count, String credentialsId,
+                                                                           String tenantId) {
+    if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
     int offset = (page - 1) * count;
 
-    JsonArray parameters = new JsonArray();
-    tags.forEach(parameters::add);
+    Tuple parameters = Tuple.tuple();
+    tags.forEach(parameters::addString);
     String likeExpression = prefix + "%";
     parameters
-      .add(likeExpression)
-      .add(credentialsId)
-      .add(offset)
-      .add(count);
+      .addString(likeExpression)
+      .addString(credentialsId)
+      .addInteger(offset)
+      .addInteger(count);
 
-    final String query = String.format(SELECT_PACKAGES_WITH_TAGS, getPackagesTableName(tenantId),
+    final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS, getPackagesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }
 
-  private JsonArray createInsertOrUpdateParameters(String id, String credentialsId, String name, String contentType) {
+  private Tuple createInsertOrUpdateParameters(String id, String credentialsId, String name, String contentType) {
     return createParams(asList(id, credentialsId, name, contentType, name, contentType));
   }
 
-  private List<DbPackage> mapPackages(ResultSet resultSet) {
-    Map<PackageId, List<JsonObject>> rowsById = resultSet.getRows().stream()
+  private List<DbPackage> mapPackages(RowSet<Row> resultSet) {
+    Map<PackageId, List<Row>> rowsById = RowSetUtils.streamOf(resultSet)
       .collect(groupingBy(this::readPackageId));
     return mapItems(rowsById.entrySet(), this::readPackage);
   }
 
-  private PackageId readPackageId(JsonObject row) {
+  private PackageId readPackageId(Row row) {
     return IdParser.parsePackageId(row.getString(ID_COLUMN));
   }
 
-  private DbPackage readPackage(Map.Entry<PackageId, List<JsonObject>> entry) {
+  private DbPackage readPackage(Map.Entry<PackageId, List<Row>> entry) {
     PackageId packageId = entry.getKey();
-    List<JsonObject> rows = entry.getValue();
+    List<Row> rows = entry.getValue();
 
-    JsonObject firstRow = rows.get(0);
+    Row firstRow = rows.get(0);
     List<String> tags = rows.stream()
       .map(row -> row.getString(TAG_COLUMN))
       .collect(Collectors.toList());

@@ -1,21 +1,20 @@
 package org.folio.util;
 
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.providers.ProviderTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.NAME_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
+import io.vertx.sqlclient.Tuple;
 import lombok.Builder;
 import lombok.Value;
 
+import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 
 public class ProvidersTestUtil {
@@ -27,7 +26,7 @@ public class ProvidersTestUtil {
     CompletableFuture<List<ProvidersTestUtil.DbProviders>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(
       "SELECT " + NAME_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + ID_COLUMN + " FROM " + providerTestTable(),
-      event -> future.complete(mapItems(event.result().getRows(),
+      event -> future.complete(RowSetUtils.mapItems(event.result(),
         row ->
           DbProviders.builder()
             .id(row.getString(ID_COLUMN))
@@ -38,13 +37,13 @@ public class ProvidersTestUtil {
     return future.join();
   }
 
-   public static void addProvider(Vertx vertx, DbProviders provider) {
+  public static void addProvider(Vertx vertx, DbProviders provider) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + providerTestTable() +
         "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ") " +
         "VALUES(?,?,?)",
-      new JsonArray(Arrays.asList(provider.getId(), provider.getCredentialsId(), provider.getName())),
+      Tuple.of(provider.getId(), provider.getCredentialsId(), provider.getName()),
       event -> future.complete(null));
     future.join();
   }
@@ -55,7 +54,8 @@ public class ProvidersTestUtil {
 
   @Value
   @Builder(toBuilder = true)
- public static class DbProviders {
+  public static class DbProviders {
+
     String id;
     String credentialsId;
     String name;

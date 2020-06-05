@@ -1,7 +1,5 @@
 package org.folio.util;
 
-import static java.util.Arrays.asList;
-
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTIONS_FIELD_LIST;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
@@ -9,7 +7,7 @@ import static org.folio.test.util.TestUtil.STUB_TENANT;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
+import io.vertx.sqlclient.Tuple;
 
 import org.folio.rest.persist.PostgresClient;
 
@@ -20,7 +18,7 @@ public class TransactionIdTestUtil {
     PostgresClient.getInstance(vertx).execute(
       "INSERT INTO " + transactionIdsTestTable() +
         "(" + TRANSACTIONS_FIELD_LIST + ") VALUES(?,?)",
-      new JsonArray(asList(credentialsId, transactionId)),
+      Tuple.of(credentialsId, transactionId),
       event -> future.complete(null));
     future.join();
   }

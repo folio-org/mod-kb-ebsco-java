@@ -86,7 +86,7 @@ import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsDownloadTransaction;
 import org.folio.holdingsiq.model.HoldingsTransactionIdsList;
 import org.folio.holdingsiq.model.TransactionId;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
@@ -160,7 +160,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
     runPostHoldingsWithMocks(context);
 
-    final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
   }
 
@@ -170,14 +170,14 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
     runPostHoldingsWithMocks(context);
 
-    final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
   }
 
   @Test
   public void shouldUpdateHoldingsWithDeltas(TestContext context) throws IOException, URISyntaxException {
-    HoldingsTestUtil.addHolding(STUB_CREDENTILS_ID, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now(), vertx);
-    HoldingsTestUtil.addHolding(STUB_CREDENTILS_ID, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"), HoldingInfoInDB.class), Instant.now(), vertx);
+    HoldingsTestUtil.addHolding(STUB_CREDENTILS_ID, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHoldingInfo.class), Instant.now(), vertx);
+    HoldingsTestUtil.addHolding(STUB_CREDENTILS_ID, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"), DbHoldingInfo.class), Instant.now(), vertx);
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
 
     HoldingsDownloadTransaction previousTransaction = HoldingsDownloadTransaction.builder()
@@ -199,18 +199,18 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
     async.await(TIMEOUT);
 
-    Map<String, HoldingInfoInDB> holdings = HoldingsTestUtil.getHoldings(vertx)
+    Map<String, DbHoldingInfo> holdings = HoldingsTestUtil.getHoldings(vertx)
       .stream()
       .collect(Collectors.toMap(this::getHoldingsId, Function.identity()));
 
     assertFalse(holdings.containsKey(DELETED_HOLDING_ID));
 
-    HoldingInfoInDB updatedHolding = holdings.get(UPDATED_HOLDING_ID);
+    DbHoldingInfo updatedHolding = holdings.get(UPDATED_HOLDING_ID);
     assertEquals("Test Title Updated", updatedHolding.getPublicationTitle());
     assertEquals("Test one Press Updated", updatedHolding.getPublisherName());
     assertEquals("Book", updatedHolding.getResourceType());
 
-    HoldingInfoInDB addedHolding = holdings.get(ADDED_HOLDING_ID);
+    DbHoldingInfo addedHolding = holdings.get(ADDED_HOLDING_ID);
     assertEquals("Added test title", addedHolding.getPublicationTitle());
     assertEquals("Added test publisher", addedHolding.getPublisherName());
     assertEquals("Book", addedHolding.getResourceType());
@@ -421,7 +421,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   private String getDeltaReportStatusEndpoint() {
     return String.format(RMAPI_DELTA_STATUS_URL, DELTA_ID);
   }
-  private String getHoldingsId(HoldingInfoInDB holding) {
+  private String getHoldingsId(DbHoldingInfo holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 
