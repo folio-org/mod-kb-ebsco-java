@@ -31,7 +31,7 @@
       tableName="holdings_status"
       columnNames="credentials_id, lock"
       schemaName="${database.defaultSchemaName}"
-      deferrable="true"/>
+      deferrable="false"/>
   </changeSet>
 
   <changeSet id="add-foreign-key-from-holdings-status-to-kb-credentials" author="dmtkachenko">
@@ -40,8 +40,8 @@
       baseTableName="holdings_status"
       baseTableSchemaName="${database.defaultSchemaName}"
       constraintName="fk_holdings_status_kb_credentials"
-      deferrable="true"
-      initiallyDeferred="true"
+      deferrable="false"
+      initiallyDeferred="false"
       onDelete="CASCADE"
       onUpdate="RESTRICT"
       referencedColumnNames="id"

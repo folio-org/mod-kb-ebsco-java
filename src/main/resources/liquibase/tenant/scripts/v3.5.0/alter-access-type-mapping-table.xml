@@ -40,8 +40,8 @@
       baseTableName="access_types_mappings"
       baseTableSchemaName="${database.defaultSchemaName}"
       constraintName="fk_access_types_mappings_access_types"
-      deferrable="true"
-      initiallyDeferred="true"
+      deferrable="false"
+      initiallyDeferred="false"
       onDelete="RESTRICT"
       onUpdate="RESTRICT"
       referencedColumnNames="id"
@@ -55,7 +55,7 @@
       tableName="access_types_mappings"
       columnNames="access_type_id, record_id"
       schemaName="${database.defaultSchemaName}"
-      deferrable="true"/>
+      deferrable="false"/>
   </changeSet>
 
   <changeSet id="add-check-for-access-types-mappings-record-type" author="dmtkachenko">

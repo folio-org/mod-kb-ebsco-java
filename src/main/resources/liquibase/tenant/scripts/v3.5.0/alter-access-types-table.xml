@@ -50,8 +50,8 @@
       baseTableName="access_types"
       baseTableSchemaName="${database.defaultSchemaName}"
       constraintName="fk_access_types_kb_credentials"
-      deferrable="true"
-      initiallyDeferred="true"
+      deferrable="false"
+      initiallyDeferred="false"
       onDelete="RESTRICT"
       onUpdate="RESTRICT"
       referencedColumnNames="id"
@@ -65,7 +65,7 @@
       tableName="access_types"
       columnNames="credentials_id, name"
       schemaName="${database.defaultSchemaName}"
-      deferrable="true"/>
+      deferrable="false"/>
   </changeSet>
 
 </databaseChangeLog>
