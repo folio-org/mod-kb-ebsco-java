@@ -124,13 +124,9 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public CompletableFuture<Void> loadHoldingsById(String credentialsId, RMAPITemplateContext context) {
+  public CompletableFuture<Void> loadSingleHoldings(RMAPITemplateContext context) {
     final String tenantId = context.getOkapiData().getTenant();
+    final String credentialsId = context.getCredentialsId();
     Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
       tryChangingStatusToInProgress(getStatusPopulatingStagingArea(), credentialsId, tenantId)
         .thenCompose(o -> resetRetries(credentialsId, tenantId, snapshotRetryCount - 1))
@@ -174,14 +170,14 @@ public class HoldingsServiceImpl implements HoldingsService {
     processChanges(holdings.getHoldingList(), Instant.now(), credentialsId, tenantId)
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(), 1, credentialsId, tenantId))
       .thenCompose(status -> {
-          LoadStatusAttributes attributes = status.getData().getAttributes();
-          if (hasLoadedLastPage(attributes)) {
-            return
-              holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
-                .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
-          }
-          return CompletableFuture.completedFuture(null);
+        LoadStatusAttributes attributes = status.getData().getAttributes();
+        if (hasLoadedLastPage(attributes)) {
+          return
+            holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
+              .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
         }
+        return CompletableFuture.completedFuture(null);
+      }
       )
       .exceptionally(e -> {
         logger.error("Failed to process changes", e);
@@ -292,7 +288,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     return holdingsStatusRepository.findByCredentialsId(credentialsId, tenantId)
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
-        logger.info("Current status is {}", attributes.getStatus().getName());
+        logger.info("Current status for credentials - {} is {}", credentialsId, attributes.getStatus().getName());
         if(attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)){
           return holdingsStatusRepository.delete(credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, credentialsId, tenantId));

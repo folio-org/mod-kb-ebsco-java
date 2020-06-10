@@ -2,6 +2,7 @@ package org.folio.rest.util;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CONFLICT;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -27,6 +28,7 @@ import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.exception.UnAuthorizedException;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.service.holdings.exception.ProcessInProgressException;
 
 public final class ExceptionMappers {
 
@@ -190,6 +192,24 @@ public final class ExceptionMappers {
   public static Function<NotFoundException, Response> error404NotFoundMapper() {
     return exception ->
       Response.status(SC_NOT_FOUND)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(createError(exception.getMessage()))
+        .build();
+  }
+
+  /**
+   * {@link ProcessInProgressException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 409}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<ProcessInProgressException, Response> error409ProcessInProgressMapper() {
+    return exception ->
+      Response.status(SC_CONFLICT)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(createError(exception.getMessage()))
         .build();

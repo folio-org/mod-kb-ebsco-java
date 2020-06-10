@@ -17,9 +17,7 @@ import org.folio.rest.jaxrs.model.Meta;
 
 public class KbCredentialsConverter {
 
-  private KbCredentialsConverter() {
-
-  }
+  private KbCredentialsConverter() { }
 
   @Component("secured")
   @Primary
