@@ -13,8 +13,13 @@ import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.getResourcesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.DbUtil.getTitlesTableName;
-import static org.folio.repository.DbUtil.mapRow;
 import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
@@ -163,8 +168,16 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   private Optional<DbHoldingInfo> readHolding(Row row) {
-    if (row.getString(CREDENTIALS_ID_COLUMN) != null && row.getString(HOLDINGS_ID_COLUMN) != null) {
-      return mapRow(row, DbHoldingInfo.class);
+    if (row.getUUID(CREDENTIALS_ID_COLUMN) != null && row.getString(HOLDINGS_ID_COLUMN) != null) {
+      DbHoldingInfo holdingInfo = DbHoldingInfo.builder()
+        .titleId(row.getString(TITLE_ID_COLUMN))
+        .packageId(row.getString(PACKAGE_ID_COLUMN))
+        .vendorId(row.getString(VENDOR_ID_COLUMN))
+        .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
+        .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
+        .resourceType(row.getString(RESOURCE_TYPE_COLUMN))
+        .build();
+      return Optional.of(holdingInfo);
     } else {
       return Optional.empty();
     }

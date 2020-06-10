@@ -15,19 +15,15 @@ import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TA
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 
-import java.io.IOException;
-import java.util.Optional;
 import java.util.function.Function;
 
 import io.vertx.core.Future;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 
-import org.folio.db.RowSetUtils;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DbExcUtils;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class DbUtil {
 
@@ -98,22 +94,6 @@ public class DbUtil {
 
   public static String getAssignedUsersTableName(String tenantId) {
     return getTableName(tenantId, ASSIGNED_USERS_TABLE_NAME);
-  }
-
-  public static <T> Optional<T> mapColumn(Row row, String columnName, Class<T> tClass) {
-    try {
-      return Optional.of(ObjectMapperTool.getMapper().readValue(row.getValue(columnName).toString(), tClass));
-    } catch (IOException e) {
-      return Optional.empty();
-    }
-  }
-
-  public static <T> Optional<T> mapRow(Row row, Class<T> tClass) {
-    try {
-      return Optional.of(ObjectMapperTool.getMapper().readValue(RowSetUtils.toJson(row), tClass));
-    } catch (IOException e) {
-      return Optional.empty();
-    }
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> uniqueConstraintRecover(String columnName, Throwable t) {

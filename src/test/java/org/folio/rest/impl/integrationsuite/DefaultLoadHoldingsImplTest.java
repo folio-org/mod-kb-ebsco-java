@@ -50,9 +50,7 @@ import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -212,7 +210,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     setupDefaultLoadKBConfiguration();
     HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
     status.getData().getAttributes()
-      .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().minus(10, ChronoUnit.DAYS).atZone(ZoneId.systemDefault())));
+      .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(OffsetDateTime.now().minus(10, ChronoUnit.DAYS)));
     saveStatus(STUB_CREDENTILS_ID, status, PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
@@ -281,7 +279,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context) throws IOException, URISyntaxException {
+  public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context)
+    throws IOException, URISyntaxException {
     setupDefaultLoadKBConfiguration();
     mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED);
 
@@ -341,7 +340,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     setupDefaultLoadKBConfiguration();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
-    mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
+    mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL),
+      "responses/rmapi/holdings/status/get-status-completed-one-page.json");
 
     mockPostHoldings();
     mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false),
@@ -381,7 +381,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
         .withStatus(202)));
   }
 
-  static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy, Consumer<Void> handler) {
+  static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy,
+                                 Consumer<Void> handler) {
     doAnswer(invocationOnMock -> {
       @SuppressWarnings("unchecked")
       CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();

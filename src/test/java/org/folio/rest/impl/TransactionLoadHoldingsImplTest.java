@@ -199,7 +199,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
 
     HoldingsDownloadTransaction previousTransaction = HoldingsDownloadTransaction.builder()
-      .creationDate(Instant.now().minus(500, ChronoUnit.HOURS).toString())
+      .creationDate(OffsetDateTime.now().minus(500, ChronoUnit.HOURS).toString())
       .transactionId(PREVIOUS_TRANSACTION_ID)
       .build();
     mockTransactionList(Collections.singletonList(previousTransaction));

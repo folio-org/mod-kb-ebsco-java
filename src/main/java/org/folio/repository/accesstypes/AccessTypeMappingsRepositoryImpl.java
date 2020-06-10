@@ -134,7 +134,6 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     Tuple params = createParams(asList(recordId, recordType.getValue(), credentialsId));
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
-
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 

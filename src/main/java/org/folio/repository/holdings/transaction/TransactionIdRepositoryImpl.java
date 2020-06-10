@@ -1,6 +1,5 @@
 package org.folio.repository.holdings.transaction;
 
-import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;

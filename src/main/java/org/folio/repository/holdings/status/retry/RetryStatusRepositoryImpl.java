@@ -9,15 +9,14 @@ import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.UPDATE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.DELETE_RETRY_STATUS;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.GET_RETRY_STATUS_BY_CREDENTIALS;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.INSERT_RETRY_STATUS;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.TIMER_ID_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.UPDATE_RETRY_STATUS;
 import static org.folio.util.FutureUtils.mapResult;
 
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -88,21 +87,21 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   }
 
   private Tuple createInsertParameters(UUID credentialsId, RetryStatus retryStatus) {
-    Tuple parameters = createParams(Arrays.asList(UUID.randomUUID(), credentialsId, retryStatus.getRetryAttemptsLeft()));
+    Tuple parameters = createParams(UUID.randomUUID(), credentialsId, retryStatus.getRetryAttemptsLeft());
     if (retryStatus.getTimerId() != null) {
       parameters.addLong(retryStatus.getTimerId());
     } else {
-      parameters.addValue(null);
+      parameters.addLong(null);
     }
     return parameters;
   }
 
   private Tuple createUpdateParameters(UUID credentialsId, RetryStatus retryStatus) {
-    Tuple parameters = createParams(Arrays.asList(credentialsId, retryStatus.getRetryAttemptsLeft()));
+    Tuple parameters = createParams(credentialsId, retryStatus.getRetryAttemptsLeft());
     if (retryStatus.getTimerId() != null) {
       parameters.addLong(retryStatus.getTimerId());
     } else {
-      parameters.addValue(null);
+      parameters.addLong(null);
     }
     return parameters;
   }

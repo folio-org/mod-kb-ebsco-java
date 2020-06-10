@@ -1,24 +1,18 @@
 package org.folio.repository.holdings.status;
 
-import static io.vertx.core.json.Json.encode;
-
-import static org.folio.common.FunctionUtils.nothing;
-import static java.util.Arrays.asList;
-
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.executeInTransaction;
-import static org.folio.db.RowSetUtils.firstItem;
-import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.isEmpty;
+import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.UPDATE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
-import static org.folio.repository.DbUtil.mapColumn;
 import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.CREDENTIALS_COLUMN;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.DELETE_LOADING_STATUS;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUS_BY_ID;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
@@ -36,13 +30,12 @@ import javax.annotation.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.common.VertxIdProvider;
@@ -69,13 +62,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<HoldingsLoadingStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
-    return get(credentialsId, tenantId, null).thenApply(status -> setCredentialsId(status, fromUUID(credentialsId)));
-  }
-
-  @NotNull
-  private HoldingsLoadingStatus setCredentialsId(HoldingsLoadingStatus status, String credentialsId) {
-    status.getData().getAttributes().setCredentialsId(credentialsId);
-    return status;
+    return get(credentialsId, tenantId, null);
   }
 
   @Override
@@ -148,7 +135,12 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   }
 
   private HoldingsLoadingStatus mapStatus(RowSet<Row> resultSet) {
-    return mapColumn(firstItem(resultSet), JSONB_COLUMN, HoldingsLoadingStatus.class).orElse(null);
+    return mapFirstItem(resultSet, row -> {
+      String statusJson = row.getValue(JSONB_COLUMN).toString();
+      HoldingsLoadingStatus holdingsLoadingStatus = Json.decodeValue(statusJson, HoldingsLoadingStatus.class);
+      holdingsLoadingStatus.getData().getAttributes().setCredentialsId(row.getUUID(CREDENTIALS_COLUMN).toString());
+      return holdingsLoadingStatus;
+    });
   }
 
   private PostgresClient pgClient(String tenantId) {

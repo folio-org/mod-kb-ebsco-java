@@ -11,13 +11,13 @@ public final class HoldingsTableConstants {
   public static final String HOLDINGS_TABLE = "holdings";
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
-  private static final String TITLE_ID_COLUMN = "title_id";
-  private static final String VENDOR_ID_COLUMN = "vendor_id";
-  private static final String PACKAGE_ID_COLUMN = "package_id";
-  private static final String RESOURCE_TYPE_COLUMN = "resource_type";
-  private static final String PUBLISHER_NAME_COLUMN = "publisher_name";
-  private static final String PUBLICATION_TITLE_COLUMN = "publication_title";
-  private static final String UPDATED_AT_COLUMN = "updated_at";
+  public static final String TITLE_ID_COLUMN = "title_id";
+  public static final String VENDOR_ID_COLUMN = "vendor_id";
+  public static final String PACKAGE_ID_COLUMN = "package_id";
+  public static final String RESOURCE_TYPE_COLUMN = "resource_type";
+  public static final String PUBLISHER_NAME_COLUMN = "publisher_name";
+  public static final String PUBLICATION_TITLE_COLUMN = "publication_title";
+  public static final String UPDATED_AT_COLUMN = "updated_at";
   private static final String PK_HOLDINGS;
 
   public static final String INSERT_OR_UPDATE_HOLDINGS;
@@ -44,7 +44,7 @@ public final class HoldingsTableConstants {
     GET_BY_PK_HOLDINGS =  "SELECT * FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
 
     DELETE_OLD_RECORDS_BY_CREDENTIALS_ID = "DELETE FROM %s WHERE " + CREDENTIALS_ID_COLUMN + "=? AND "
-      + UPDATED_AT_COLUMN + " < timestamp with time zone '%s';";
+      + UPDATED_AT_COLUMN + " < ?;";
 
     INSERT_OR_UPDATE_HOLDINGS = "INSERT INTO %s (" + allColumns + ") VALUES %s " +
       "ON CONFLICT (" + PK_HOLDINGS + ") " +

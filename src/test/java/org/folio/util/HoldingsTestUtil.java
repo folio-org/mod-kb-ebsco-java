@@ -6,6 +6,12 @@ import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
+import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readJsonFile;
 
@@ -20,6 +26,7 @@ import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
+import org.folio.db.RowSetUtils;
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.persist.PostgresClient;
@@ -64,8 +71,15 @@ public class HoldingsTestUtil {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + HOLDINGS_TABLE;
   }
 
-  private static DbHoldingInfo mapHoldingInfo(Row json) {
-    return Json.decodeValue(json.toString(), DbHoldingInfo.class);
+  private static DbHoldingInfo mapHoldingInfo(Row row) {
+    return DbHoldingInfo.builder()
+      .titleId(row.getString(TITLE_ID_COLUMN))
+      .packageId(row.getString(PACKAGE_ID_COLUMN))
+      .vendorId(row.getString(VENDOR_ID_COLUMN))
+      .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
+      .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
+      .resourceType(row.getString(RESOURCE_TYPE_COLUMN))
+      .build();
   }
 
   private static String getHoldingsId(DbHoldingInfo holding) {

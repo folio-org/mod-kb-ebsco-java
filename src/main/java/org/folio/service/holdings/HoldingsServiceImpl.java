@@ -179,7 +179,7 @@ public class HoldingsServiceImpl implements HoldingsService {
           if (hasLoadedLastPage(attributes)) {
             return
               holdingsRepository
-                .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()).toInstant(), credentialsId, tenantId)
+                .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()).toOffsetDateTime(), credentialsId, tenantId)
                 .thenCompose(o -> holdingsStatusRepository
                   .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
                 )
@@ -224,7 +224,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     final UUID credentialsId = toUUID(message.getCredentialsId());
     transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
       .thenApply(previousTransactionId -> {
-        if(!isTransactionIsAlreadyLoaded(message, previousTransactionId)){
+        if (!isTransactionIsAlreadyLoaded(message, previousTransactionId)) {
           holdingsStatusRepository.update(getStatusLoadingHoldings(
             message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
             .thenCompose(o -> resetRetries(credentialsId, tenantId, loadHoldingsRetryCount - 1))

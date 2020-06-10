@@ -8,16 +8,20 @@ import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
-import static org.folio.repository.DbUtil.mapRow;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_BY_PK_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_OLD_RECORDS_BY_CREDENTIALS_ID;
 import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PK_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
+import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,12 +70,11 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<Void> deleteBeforeTimestamp(Instant timestamp, UUID credentialsId, String tenantId) {
-    final String query = prepareQuery(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId),
-      timestamp.toString());
+  public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
+    final String query = prepareQuery(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId));
     LOG.info(DELETE_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    final Tuple params = Tuple.of(credentialsId);
+    final Tuple params = Tuple.of(credentialsId, timestamp);
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
   }
@@ -137,7 +140,15 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   private List<DbHoldingInfo> mapHoldings(RowSet<Row> resultSet) {
-    return RowSetUtils.mapItems(resultSet, row -> mapRow(row, DbHoldingInfo.class).orElse(null));
+    return RowSetUtils.mapItems(resultSet, row -> DbHoldingInfo.builder()
+      .titleId(row.getString(TITLE_ID_COLUMN))
+      .packageId(row.getString(PACKAGE_ID_COLUMN))
+      .vendorId(row.getString(VENDOR_ID_COLUMN))
+      .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
+      .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
+      .resourceType(row.getString(RESOURCE_TYPE_COLUMN))
+      .build()
+    );
   }
 
   private String getHoldingsId(DbHoldingInfo holding) {

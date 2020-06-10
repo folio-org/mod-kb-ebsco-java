@@ -51,6 +51,7 @@
     <lombok.version>1.18.12</lombok.version>
     <httpcore.version>4.4.13</httpcore.version>
     <log4j-slf4j-impl.version>2.13.3</log4j-slf4j-impl.version>
+    <jetbrains-annotations.version>18.0.0</jetbrains-annotations.version>
 
     <junit.version>4.12</junit.version>
     <rest-assured.version>3.3.0</rest-assured.version>
@@ -176,6 +177,12 @@
       <version>${folio-liquibase-util.version}</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>${jetbrains-annotations.version}</version>
+      <scope>compile</scope>
+    </dependency>
     <!-- Test dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>
@@ -231,12 +238,6 @@
       <version>${easy-random-core.version}</version>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>org.jetbrains</groupId>
-          <artifactId>annotations</artifactId>
-          <version>18.0.0</version>
-          <scope>compile</scope>
-      </dependency>
   </dependencies>
 
   <dependencyManagement>
