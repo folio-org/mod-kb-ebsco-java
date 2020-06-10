@@ -75,7 +75,7 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
 
   private ResourceId createResourceId(DbHoldingInfo holding) {
     return ResourceId.builder()
-      .providerIdPart(holding.getVendorId())
+      .providerIdPart(Long.parseLong(holding.getVendorId()))
       .packageIdPart(Integer.parseInt(holding.getPackageId()))
       .titleIdPart(Integer.parseInt(holding.getTitleId())).build();
   }

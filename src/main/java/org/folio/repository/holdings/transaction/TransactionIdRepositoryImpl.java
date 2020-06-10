@@ -13,6 +13,7 @@ import static org.folio.repository.holdings.transaction.TransactionIdTableConsta
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
@@ -38,7 +39,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
   }
 
   @Override
-  public CompletableFuture<Void> save(String credentialsId, String transactionId, String tenantId) {
+  public CompletableFuture<Void> save(UUID credentialsId, String transactionId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId, transactionId);
     final String query = prepareQuery(INSERT_TRANSACTION_ID,
       getTransactionIdTableName(tenantId),
@@ -47,11 +48,11 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
     LOG.info(INSERT_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
+    return mapVertxFuture(promise.future()).thenApply(rowSet -> null);
   }
 
   @Override
-  public CompletableFuture<String> getLastTransactionId(String credentialsId, String tenantId) {
+  public CompletableFuture<String> getLastTransactionId(UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId);
     final String query = prepareQuery(GET_LAST_TRANSACTION_ID_BY_CREDENTIALS, getTransactionIdTableName(tenantId));
     LOG.info(SELECT_LOG_MESSAGE, query);

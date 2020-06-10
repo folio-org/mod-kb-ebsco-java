@@ -122,7 +122,6 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
       .exceptionally(handleException(asyncResultHandler));
   }
 
-
   private Function<Throwable, Void> handleException(Handler<AsyncResult<Response>> asyncResultHandler) {
     return throwable -> {
       errorHandler.handle(asyncResultHandler, throwable);

@@ -20,7 +20,7 @@ public class DbHoldingInfo {
   @JsonProperty("package_id")
   private final String packageId;
   @JsonProperty("vendor_id")
-  private final int vendorId;
+  private final String vendorId;
   @JsonProperty("publication_title")
   private final String publicationTitle;
   @JsonProperty("publisher_name")

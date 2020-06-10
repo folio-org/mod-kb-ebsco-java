@@ -3,6 +3,7 @@ package org.folio.service.loader;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.ResourceId;
@@ -81,10 +83,11 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     return StringUtils.isBlank(recordIdPrefix) ? "" : StringUtils.appendIfMissing(recordIdPrefix, "-");
   }
 
-  private List<String> extractAccessTypeIds(AccessTypeCollection accessTypeCollection) {
+  private List<UUID> extractAccessTypeIds(AccessTypeCollection accessTypeCollection) {
     return accessTypeCollection.getData()
       .stream()
       .map(AccessType::getId)
+      .map(RowSetUtils::toUUID)
       .collect(Collectors.toList());
   }
 

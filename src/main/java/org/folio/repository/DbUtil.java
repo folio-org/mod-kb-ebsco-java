@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 
@@ -41,7 +40,7 @@ public class DbUtil {
   private DbUtil() {
   }
 
-  private static String getTableName(String tenantId, String tableName) {
+  public static String getTableName(String tenantId, String tableName) {
     return PostgresClient.convertToPsqlStandard(tenantId) + "." + tableName;
   }
 
@@ -103,7 +102,7 @@ public class DbUtil {
 
   public static <T> Optional<T> mapColumn(Row row, String columnName, Class<T> tClass) {
     try {
-      return Optional.of(ObjectMapperTool.getMapper().readValue(row.getString(columnName), tClass));
+      return Optional.of(ObjectMapperTool.getMapper().readValue(row.getValue(columnName).toString(), tClass));
     } catch (IOException e) {
       return Optional.empty();
     }

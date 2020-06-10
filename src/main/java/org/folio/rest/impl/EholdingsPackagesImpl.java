@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getPackageIds;
@@ -21,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -159,7 +161,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
-
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -365,7 +366,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
         PackageTagsDataAttributes attributes = entity.getData().getAttributes();
 
-        return updateTags(attributes.getTags(), createDbPackage(packageId, creds.getId(), attributes),
+        return updateTags(attributes.getTags(), createDbPackage(packageId, UUID.fromString(creds.getId()), attributes),
           new OkapiData(okapiHeaders).getTenant())
           .thenAccept(o2 ->
             asyncResultHandler
@@ -425,7 +426,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .thenApply(packageById -> new PackageResult(packageById, null, null));
   }
 
-  private DbPackage createDbPackage(String packageId, String credentialsId, PackageTagsDataAttributes attributes) {
+  private DbPackage createDbPackage(String packageId, UUID credentialsId, PackageTagsDataAttributes attributes) {
     return DbPackage.builder()
       .id(parsePackageId(packageId))
       .credentialsId(credentialsId)
@@ -487,7 +488,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .countRecordsByTagsAndPrefix(tags, packageId + "-", tenant, RecordType.RESOURCE)
       .thenCompose(resourceCount -> {
         totalResults.setValue(resourceCount);
-        return resourceRepository.findByTagNameAndPackageId(tags, packageId, page, count, credentialsId, tenant);
+        return resourceRepository.findByTagNameAndPackageId(tags, packageId, page, count, toUUID(credentialsId), tenant);
       })
       .thenCompose(resourcesResult -> {
         mutableDbTitles.setValue(resourcesResult);
@@ -513,13 +514,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                         RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
-    String credentialsId = context.getCredentialsId();
+    UUID credentialsId = toUUID(context.getCredentialsId());
 
     return tagRepository
       .countRecordsByTags(tags, RecordType.PACKAGE, credentialsId, tenant)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.findByTagName(tags, page, count, context.getCredentialsId(), tenant);
+        return packageRepository.findByTagName(tags, page, count, credentialsId, tenant);
       })
       .thenCompose(dbPackages ->
         context.getPackagesService().retrievePackages(getPackageIds(dbPackages)))
@@ -548,7 +549,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<Void> deleteTags(PackageId packageId, RMAPITemplateContext context) {
-    String credentialsId = context.getCredentialsId();
+    UUID credentialsId = toUUID(context.getCredentialsId());
     String tenant = context.getOkapiData().getTenant();
 
     return packageRepository.delete(packageId, credentialsId, tenant)

@@ -1,6 +1,7 @@
 package org.folio.service.accesstypes;
 
 import static org.folio.common.FunctionUtils.nothing;
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.util.Collection;
@@ -35,12 +36,12 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   public CompletableFuture<Void> update(AccessType accessType, String recordId, RecordType recordType,
                                         String credentialsId, Map<String, String> okapiHeaders) {
     if (accessType == null) {
-      return mappingRepository.deleteByRecord(recordId, recordType, credentialsId, tenantId(okapiHeaders));
+      return mappingRepository.deleteByRecord(recordId, recordType, toUUID(credentialsId), tenantId(okapiHeaders));
     }
 
-    return mappingRepository.findByRecord(recordId, recordType, credentialsId, tenantId(okapiHeaders))
+    return mappingRepository.findByRecord(recordId, recordType, toUUID(credentialsId), tenantId(okapiHeaders))
       .thenCompose(dbMapping -> {
-        String accessTypeId = accessType.getId();
+        UUID accessTypeId = UUID.fromString(accessType.getId());
         AccessTypeMapping mapping;
         if (dbMapping.isPresent()) {
           mapping = dbMapping.get().toBuilder().accessTypeId(accessTypeId).build();
@@ -52,15 +53,14 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countByRecordPrefix(String recordPrefix, RecordType recordType,
-                                                                     String credentialsId,
-                                                                     Map<String, String> okapiHeaders) {
-    return mappingRepository.countByRecordIdPrefix(recordPrefix, recordType, credentialsId, tenantId(okapiHeaders));
+  public CompletableFuture<Map<UUID, Integer>> countByRecordPrefix(String recordPrefix, RecordType recordType,
+                                                                   String credentialsId, Map<String, String> okapiHeaders) {
+    return mappingRepository.countByRecordIdPrefix(recordPrefix, recordType, toUUID(credentialsId), tenantId(okapiHeaders));
   }
 
-  private AccessTypeMapping createAccessTypeMapping(String recordId, RecordType recordType, String accessTypeId) {
+  private AccessTypeMapping createAccessTypeMapping(String recordId, RecordType recordType, UUID accessTypeId) {
     return AccessTypeMapping.builder()
-      .id(UUID.randomUUID().toString())
+      .id(UUID.randomUUID())
       .accessTypeId(accessTypeId)
       .recordId(recordId)
       .recordType(recordType)

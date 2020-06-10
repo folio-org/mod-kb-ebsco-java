@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.TagsTestUtil.insertTags;
+import static org.folio.util.TagsTestUtil.saveTags;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,7 +67,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnAllTagsSortedIfNotFilteredOnGet() {
-    List<DbTag> tags = insertTags(ALL_TAGS, vertx);
+    List<DbTag> tags = saveTags(ALL_TAGS, vertx);
 
     TagCollection col = getWithOk("eholdings/tags").as(TagCollection.class);
 
@@ -85,7 +85,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldFilterByRecordTypeOnGet() {
-    List<DbTag> tags = insertTags(ALL_TAGS, vertx);
+    List<DbTag> tags = saveTags(ALL_TAGS, vertx);
 
     TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider").as(TagCollection.class);
 
@@ -95,7 +95,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldFilterBySeveralRecordTypesOnGet() {
-    List<DbTag> tags = insertTags(ALL_TAGS, vertx);
+    List<DbTag> tags = saveTags(ALL_TAGS, vertx);
 
     TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider&filter[rectype]=title").as(
         TagCollection.class);
@@ -106,7 +106,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyCollectionIfFilteredOutOnGet() {
-    insertTags(asList(PROVIDER_TAG, PACKAGE_TAG), vertx);
+    saveTags(asList(PROVIDER_TAG, PACKAGE_TAG), vertx);
 
     TagCollection col = getWithOk("eholdings/tags?filter[rectype]=title").as(TagCollection.class);
 
@@ -124,7 +124,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnAllUniqueTags() {
-    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
+    List<String> tags = mapItems(saveTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     TagUniqueCollection col = getWithOk("eholdings/tags/summary").as(TagUniqueCollection.class);
 
@@ -143,7 +143,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnListOfUniqueTagsWithParamsResources() {
-    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
+    List<String> tags = mapItems(saveTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
         TagUniqueCollection.class);
@@ -155,7 +155,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnListOfUniqueTagsWithMultipleParams() {
-    List<String> tags = mapItems(insertTags(UNIQUE_TAGS, vertx), DbTag::getValue);
+    List<String> tags = mapItems(saveTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource&filter[rectype]=provider").as(
         TagUniqueCollection.class);

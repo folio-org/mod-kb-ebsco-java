@@ -18,6 +18,7 @@ import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -56,7 +57,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<Void> saveAll(Set<DbHoldingInfo> holdings, Instant updatedAt, UUID credentialsId,
+  public CompletableFuture<Void> saveAll(Set<DbHoldingInfo> holdings, OffsetDateTime updatedAt, UUID credentialsId,
                                          String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) ->
       executeInBatches(holdings,
@@ -95,7 +96,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     );
   }
 
-  private CompletableFuture<Void> saveHoldings(List<DbHoldingInfo> holdings, Instant updatedAt, UUID credentialsId,
+  private CompletableFuture<Void> saveHoldings(List<DbHoldingInfo> holdings, OffsetDateTime updatedAt, UUID credentialsId,
                                                String tenantId, AsyncResult<SQLConnection> connection,
                                                PostgresClient postgresClient) {
     final Tuple parameters = createParameters(credentialsId, holdings, updatedAt);
@@ -143,7 +144,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 
-  private Tuple createParameters(UUID credentialsId, List<DbHoldingInfo> holdings, Instant updatedAt) {
+  private Tuple createParameters(UUID credentialsId, List<DbHoldingInfo> holdings, OffsetDateTime updatedAt) {
     Tuple params = Tuple.tuple();
     holdings.forEach(holding -> {
       params.addValue(getHoldingsId(holding));

@@ -7,6 +7,7 @@ import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.db.RowSetUtils.firstItem;
 import static org.folio.db.RowSetUtils.isEmpty;
+import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
@@ -39,6 +40,7 @@ import io.vertx.sqlclient.Tuple;
 import org.springframework.stereotype.Component;
 
 import org.folio.common.VertxIdProvider;
+import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.persist.SQLConnection;
@@ -50,52 +52,55 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   private final Vertx vertx;
   private final VertxIdProvider vertxIdProvider;
+  private final DBExceptionTranslator excTranslator;
 
-  public HoldingsStatusRepositoryImpl(Vertx vertx, VertxIdProvider vertxIdProvider) {
+  public HoldingsStatusRepositoryImpl(Vertx vertx, VertxIdProvider vertxIdProvider,
+                                      DBExceptionTranslator excTranslator) {
     this.vertx = vertx;
     this.vertxIdProvider = vertxIdProvider;
+    this.excTranslator = excTranslator;
   }
 
   @Override
-  public CompletableFuture<HoldingsLoadingStatus> findByCredentialsId(String credentialsId, String tenantId) {
+  public CompletableFuture<HoldingsLoadingStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
     return get(credentialsId, tenantId, null);
   }
 
   @Override
-  public CompletableFuture<Void> save(HoldingsLoadingStatus status, String credentialsId, String tenantId) {
-    final Tuple params = Tuple.of(UUID.randomUUID(), credentialsId, encode(status), vertxIdProvider.getVertxId());
+  public CompletableFuture<Void> save(HoldingsLoadingStatus status, UUID credentialsId, String tenantId) {
+    final Tuple params = Tuple.of(UUID.randomUUID(), credentialsId, toJsonObject(status), vertxIdProvider.getVertxId());
     final String query = prepareQuery(INSERT_LOADING_STATUS,
       getHoldingsStatusTableName(tenantId),
       createPlaceholders(params.size()));
     LOG.info(INSERT_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 
   @Override
-  public CompletableFuture<Void> update(HoldingsLoadingStatus status, String credentialsId, String tenantId) {
-    final Tuple params = Tuple.of(encode(status), vertxIdProvider.getVertxId(), credentialsId);
+  public CompletableFuture<Void> update(HoldingsLoadingStatus status, UUID credentialsId, String tenantId) {
+    final Tuple params = Tuple.of(toJsonObject(status), vertxIdProvider.getVertxId(), credentialsId);
     final String query = prepareQuery(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
     LOG.info(UPDATE_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
-    return mapVertxFuture(promise.future()).thenApply(this::assertUpdated);
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(this::assertUpdated);
   }
 
   @Override
-  public CompletableFuture<Void> delete(String credentialsId, String tenantId) {
+  public CompletableFuture<Void> delete(UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId);
     final String query = prepareQuery(DELETE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
     LOG.info(DELETE_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 
   @Override
   public CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount,
-                                                                        String credentialsId, String tenantId) {
+                                                                        UUID credentialsId, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
       final Tuple params = Tuple.of(vertxIdProvider.getVertxId(), credentialsId);
       final String query = prepareQuery(UPDATE_IMPORTED_COUNT, getHoldingsStatusTableName(tenantId),
@@ -103,13 +108,13 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
       LOG.info("Increment imported count query = " + query);
       Promise<RowSet<Row>> promise = Promise.promise();
       postgresClient.execute(connection, query, params, promise);
-      return mapVertxFuture(promise.future())
+      return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy()))
         .thenApply(this::assertUpdated)
         .thenCompose(o -> get(credentialsId, tenantId, connection));
     });
   }
 
-  private CompletableFuture<HoldingsLoadingStatus> get(String credentialsId, String tenantId,
+  private CompletableFuture<HoldingsLoadingStatus> get(UUID credentialsId, String tenantId,
                                                        @Nullable AsyncResult<SQLConnection> connection) {
     final Tuple params = Tuple.of(credentialsId);
     final String query = prepareQuery(GET_HOLDINGS_STATUS_BY_ID, getHoldingsStatusTableName(tenantId));
@@ -120,7 +125,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     } else {
       pgClient(tenantId).select(query, params, promise);
     }
-    return mapResult(promise.future(), this::mapStatus);
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapStatus);
   }
 
   private Void assertUpdated(RowSet<Row> result) {

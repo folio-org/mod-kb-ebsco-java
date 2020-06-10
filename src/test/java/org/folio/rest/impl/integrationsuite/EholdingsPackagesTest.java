@@ -51,6 +51,8 @@ import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
+import static org.folio.rest.util.AssertTestUtil.assertEqualsPackageId;
+import static org.folio.rest.util.AssertTestUtil.assertEqualsUUID;
 import static org.folio.test.util.TestUtil.getFile;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockPost;
@@ -67,11 +69,12 @@ import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.PackagesTestUtil.addPackage;
+import static org.folio.util.PackagesTestUtil.savePackage;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
-import static org.folio.util.ResourcesTestUtil.mockGetTitles;
-import static org.folio.util.TagsTestUtil.insertTag;
+import static org.folio.util.ResourcesTestUtil.buildResource;
+import static org.folio.util.TitlesTestUtil.mockGetTitles;
+import static org.folio.util.TagsTestUtil.saveTag;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -104,6 +107,7 @@ import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.repository.packages.DbPackage;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.ContentType;
@@ -195,11 +199,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesOnSearchByTagsOnly() throws IOException, URISyntaxException {
-    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
-    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE_2);
-    insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_3);
+  public void shouldReturnPackagesOnSearchByTagsOnly() {
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE_2);
+    saveTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE_3);
 
     setUpPackages(vertx, configuration.getId());
 
@@ -216,10 +220,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByTags() {
-    addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID, configuration.getId(), STUB_PACKAGE_NAME));
-    addPackage(vertx, buildDbPackage(FULL_PACKAGE_ID_2, configuration.getId(), STUB_PACKAGE_NAME_2));
-    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    savePackage(buildDbPackage(FULL_PACKAGE_ID, configuration.getId(), STUB_PACKAGE_NAME), vertx);
+    savePackage(buildDbPackage(FULL_PACKAGE_ID_2, configuration.getId(), STUB_PACKAGE_NAME_2), vertx);
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
 
     mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
@@ -232,10 +236,10 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesOnSearchWithPagination() throws IOException, URISyntaxException {
-    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
-    insertTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
-    insertTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE);
+  public void shouldReturnPackagesOnSearchWithPagination() {
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, FULL_PACKAGE_ID_2, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, FULL_PACKAGE_ID_3, PACKAGE, STUB_TAG_VALUE);
 
     setUpPackages(vertx, configuration.getId());
 
@@ -251,7 +255,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesOnSearchByAccessTypeWithPagination() throws IOException, URISyntaxException {
+  public void shouldReturnPackagesOnSearchByAccessTypeWithPagination() {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
     insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(1).getId(), vertx);
@@ -313,7 +317,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnPackageWithTagOnGetById() throws IOException, URISyntaxException {
     String packageId = FULL_PACKAGE_ID;
-    insertTag(vertx, packageId, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, packageId, PACKAGE, STUB_TAG_VALUE);
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
     Package packageData = getWithOk(PACKAGES_ENDPOINT + "/" + packageId, STUB_TOKEN_HEADER).as(Package.class);
@@ -337,7 +341,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldAddPackageTagsOnPutTagsWhenPackageAlreadyHasTags() throws IOException, URISyntaxException {
-    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
     List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
     sendPutTags(Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2));
     List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
@@ -348,9 +352,9 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldAddPackageDataOnPutTags() throws IOException, URISyntaxException {
     List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
     sendPutTags(tags);
-    List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+    List<DbPackage> packages = PackagesTestUtil.getPackages(vertx);
     assertEquals(1, packages.size());
-    assertEquals(FULL_PACKAGE_ID, packages.get(0).getId());
+    assertEqualsPackageId(packages.get(0).getId());
     assertEquals(STUB_PACKAGE_NAME, packages.get(0).getName());
     assertThat(packages.get(0).getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
   }
@@ -368,7 +372,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteAllPackageTagsOnPutTagsWhenRequestHasEmptyListOfTags() throws IOException, URISyntaxException {
-    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
     sendPutTags(Collections.emptyList());
     List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, PACKAGE);
     assertThat(tagsAfterRequest, empty());
@@ -396,7 +400,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldDeletePackageTagsOnDelete() throws IOException, URISyntaxException {
-    insertTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
+    saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, "test one");
 
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
@@ -435,7 +439,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     deleteWithNoContent(PACKAGES_PATH, STUB_TOKEN_HEADER);
 
-    List<PackagesTestUtil.DbPackage> packages = PackagesTestUtil.getPackages(vertx);
+    List<DbPackage> packages = PackagesTestUtil.getPackages(vertx);
     assertThat(packages, is(empty()));
   }
 
@@ -576,7 +580,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateAllAttributesInSelectedPackageAndCreateNewAccessTypeMapping()
-      throws URISyntaxException, IOException {
+    throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
     String accessTypeId = accessTypes.get(0).getId();
 
@@ -620,7 +624,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDB.size());
     assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
-    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEqualsUUID(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
     assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
     assertNotNull(aPackage.getIncluded());
     assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
@@ -728,7 +732,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndCreateNewAccessTypeMapping()
-      throws URISyntaxException, IOException {
+    throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
     String accessTypeId = accessTypes.get(0).getId();
 
@@ -773,7 +777,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDB.size());
     assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
-    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEqualsUUID(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
     assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
     assertNotNull(aPackage.getIncluded());
     assertEquals(accessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
@@ -880,7 +884,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDB.size());
     assertEquals(aPackage.getData().getId(), accessTypeMappingsInDB.get(0).getRecordId());
-    assertEquals(newAccessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEqualsUUID(newAccessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
     assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
     assertNotNull(aPackage.getIncluded());
     assertEquals(newAccessTypeId, aPackage.getData().getRelationships().getAccessType().getData().getId());
@@ -953,7 +957,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDB.size());
-    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEqualsUUID(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
     assertEquals(PACKAGE, accessTypeMappingsInDB.get(0).getRecordType());
     assertNotNull(createdPackage.getIncluded());
     assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
@@ -1033,9 +1037,9 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesWithTagsOnGetWithResources() throws IOException, URISyntaxException {
-    insertTag(vertx, "295-2545963-2099944", RESOURCE, STUB_TAG_VALUE);
-    insertTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_2);
-    insertTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_3);
+    saveTag(vertx, "295-2545963-2099944", RESOURCE, STUB_TAG_VALUE);
+    saveTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_2);
+    saveTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_3);
 
     String query =
       "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
@@ -1071,8 +1075,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourcesWithAccessTypesOnGetWithResourcesWithPagination() throws IOException,
-      URISyntaxException {
+  public void shouldReturnResourcesWithAccessTypesOnGetWithResourcesWithPagination() throws IOException, URISyntaxException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
@@ -1080,7 +1083,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGetTitles();
 
     String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources?page=2&count=1&"
-        + "filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+      + "filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
     ResourceCollection resourceCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(ResourceCollection.class);
     List<ResourceCollectionItem> resources = resourceCollection.getData();
 
@@ -1103,10 +1106,9 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturnResourcesWithOnSearchByTags() throws IOException, URISyntaxException {
     mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
 
-    ResourcesTestUtil.addResource(vertx, ResourcesTestUtil.DbResources.builder().id(STUB_MANAGED_RESOURCE_ID)
-        .credentialsId(configuration.getId()).name(STUB_TITLE_NAME).build());
+    ResourcesTestUtil.saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
 
-    insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RESOURCE, STUB_TAG_VALUE);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RESOURCE, STUB_TAG_VALUE);
 
     String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?filter[tags]=" + STUB_TAG_VALUE;
 

@@ -7,6 +7,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.RowSetUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.DbTag;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
@@ -32,7 +33,7 @@ public class TagConverter implements Converter<DbTag, TagCollectionItem> {
   public TagCollectionItem convert(@NonNull DbTag source) {
     return new TagCollectionItem()
       .withType(RestConstants.TAGS_TYPE)
-      .withId(source.getId())
+      .withId(RowSetUtils.fromUUID(source.getId()))
       .withAttributes(createAttributes(source))
       .withRelationships(createRelationships(source));
   }

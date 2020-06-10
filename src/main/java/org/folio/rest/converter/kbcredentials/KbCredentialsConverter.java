@@ -1,8 +1,14 @@
 package org.folio.rest.converter.kbcredentials;
 
+import static org.folio.db.RowSetUtils.fromUUID;
+import static org.folio.db.RowSetUtils.toDate;
+import static org.folio.db.RowSetUtils.toUUID;
+
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +60,7 @@ public class KbCredentialsConverter {
     @Override
     public KbCredentials convert(@NotNull DbKbCredentials source) {
       return new KbCredentials()
-        .withId(source.getId())
+        .withId(fromUUID(source.getId()))
         .withType(KbCredentials.Type.KB_CREDENTIALS)
         .withAttributes(new KbCredentialsDataAttributes()
           .withApiKey(source.getApiKey())
@@ -63,10 +69,10 @@ public class KbCredentialsConverter {
           .withUrl(getUrl(source))
         )
         .withMeta(new Meta()
-          .withCreatedByUserId(source.getCreatedByUserId())
+          .withCreatedByUserId(fromUUID(source.getCreatedByUserId()))
           .withCreatedByUsername(source.getCreatedByUserName())
           .withCreatedDate(toDate(source.getCreatedDate()))
-          .withUpdatedByUserId(source.getUpdatedByUserId())
+          .withUpdatedByUserId(fromUUID(source.getUpdatedByUserId()))
           .withUpdatedByUsername(source.getUpdatedByUserName())
           .withUpdatedDate(toDate(source.getUpdatedDate()))
         );
@@ -74,10 +80,6 @@ public class KbCredentialsConverter {
 
     private String getUrl(@NotNull DbKbCredentials source) {
       return source.getUrl() != null ? source.getUrl() : defaultUrl;
-    }
-
-    private Date toDate(LocalDateTime date) {
-      return date != null ? Date.from(date.atZone(ZoneId.systemDefault()).toInstant()) : null;
     }
   }
 
@@ -90,7 +92,7 @@ public class KbCredentialsConverter {
 
       KbCredentialsDataAttributes attributes = source.getAttributes();
       return dbKbCredentialsBuilder
-        .id(source.getId())
+        .id(toUUID(source.getId()))
         .name(attributes.getName())
         .apiKey(attributes.getApiKey())
         .customerId(attributes.getCustomerId())

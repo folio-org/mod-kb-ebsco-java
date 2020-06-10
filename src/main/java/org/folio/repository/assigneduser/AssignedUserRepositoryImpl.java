@@ -25,11 +25,13 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_AS
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.UPDATE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
+import static org.folio.service.exc.ServiceExceptions.notFound;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.BadRequestException;
@@ -48,7 +50,6 @@ import org.springframework.stereotype.Component;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.service.exc.ServiceExceptions;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
@@ -63,7 +64,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   private DBExceptionTranslator excTranslator;
 
   @Override
-  public CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(String credentialsId, String tenant) {
+  public CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(UUID credentialsId, String tenant) {
     String query = prepareQuery(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY, getAssignedUsersTableName(tenant));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
@@ -74,7 +75,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> count(String credentialsId, String tenant) {
+  public CompletableFuture<Integer> count(UUID credentialsId, String tenant) {
     String query = prepareQuery(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAssignedUsersTableName(tenant));
 
     LOG.info(COUNT_LOG_MESSAGE, query);
@@ -107,7 +108,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
       .recover(uniqueConstraintRecover(ID_COLUMN, new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE)))
-      .recover(foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, entity.getCredentialsId())));
+      .recover(foreignKeyConstraintRecover(notFound(KbCredentials.class, entity.getCredentialsId().toString())));
     return mapResult(resultFuture, updateResult -> entity);
   }
 
@@ -135,7 +136,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   }
 
   @Override
-  public CompletableFuture<Void> delete(String credentialsId, String userId, String tenant) {
+  public CompletableFuture<Void> delete(UUID credentialsId, UUID userId, String tenant) {
     String query = prepareQuery(DELETE_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
 
     LOG.info(DELETE_LOG_MESSAGE, query);
@@ -147,9 +148,9 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     return mapResult(resultFuture, updateResult -> checkUserFound(userId, updateResult));
   }
 
-  private Void checkUserFound(String userId, RowSet<Row> rowSet) {
+  private Void checkUserFound(UUID userId, RowSet<Row> rowSet) {
     if (isEmpty(rowSet)) {
-      throw ServiceExceptions.notFound("Assigned User", userId);
+      throw notFound("Assigned User", userId.toString());
     }
     return null;
   }
@@ -160,8 +161,8 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private DbAssignedUser mapAssignedUserItem(Row row) {
     return DbAssignedUser.builder()
-      .id(row.getString(ID_COLUMN))
-      .credentialsId(row.getString(CREDENTIALS_ID))
+      .id(row.getUUID(ID_COLUMN))
+      .credentialsId(row.getUUID(CREDENTIALS_ID))
       .username(row.getString(USER_NAME))
       .firstName(row.getString(FIRST_NAME))
       .middleName(row.getString(MIDDLE_NAME))

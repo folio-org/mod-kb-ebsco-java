@@ -3,7 +3,7 @@ package org.folio.rest.converter.holdings;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import static org.folio.util.HoldingsTestUtil.getHolding;
+import static org.folio.util.HoldingsTestUtil.getStubHolding;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -28,7 +28,7 @@ public class HoldingsCollectionItemConverterTest {
 
   @Test
   public void shouldConvertHoldingToResource() throws IOException, URISyntaxException {
-    DbHoldingInfo holding = getHolding();
+    DbHoldingInfo holding = getStubHolding();
     final ResourceCollectionItem resourceCollectionItem = holdingCollectionItemConverter.convert(holding);
     assertThat(resourceCollectionItem.getId(), equalTo("123356-3157070-19412030"));
     assertThat(resourceCollectionItem.getAttributes().getName(), equalTo("Test Title"));

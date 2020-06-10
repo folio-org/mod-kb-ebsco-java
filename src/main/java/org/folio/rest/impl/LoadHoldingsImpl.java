@@ -1,7 +1,8 @@
 package org.folio.rest.impl;
 
-
 import static io.vertx.core.Future.succeededFuture;
+
+import static org.folio.db.RowSetUtils.toUUID;
 
 import java.util.Map;
 
@@ -48,7 +49,6 @@ public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredent
   @Qualifier("nonSecuredCredentialsService")
   private KbCredentialsService credentialsService;
 
-
   public LoadHoldingsImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
@@ -67,7 +67,7 @@ public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredent
     String tenantId = TenantTool.tenantId(okapiHeaders);
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template
-      .requestAction(context -> holdingsStatusRepository.findByCredentialsId(context.getCredentialsId(), tenantId))
+      .requestAction(context -> holdingsStatusRepository.findByCredentialsId(toUUID(context.getCredentialsId()), tenantId))
       .executeWithResult(HoldingsLoadingStatus.class);
   }
 
@@ -75,7 +75,8 @@ public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredent
   @Validate
   @HandleValidationErrors
   public void postEholdingsLoadingKbCredentialsById(String id, String contentType, Map<String, String> okapiHeaders,
-                                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                    Handler<AsyncResult<Response>> asyncResultHandler,
+                                                    Context vertxContext) {
     logger.info("Start loading of holdings for credentials: " + id);
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template.requestAction(context -> holdingsStatusAuditService.clearExpiredRecords(id, context.getOkapiData().getTenant())

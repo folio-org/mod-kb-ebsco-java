@@ -38,6 +38,7 @@ import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_PACKAGE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_VENDOR_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
+import static org.folio.rest.util.AssertTestUtil.assertEqualsResourceId;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
@@ -54,7 +55,7 @@ import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.TagsTestUtil.insertTag;
+import static org.folio.util.TagsTestUtil.saveTag;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -78,6 +79,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
+import org.folio.repository.resources.DbResource;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Errors;
@@ -139,7 +141,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourceWithTags() throws IOException, URISyntaxException {
-    insertTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
     String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
 
     mockResource(stubResponseFile);
@@ -348,7 +350,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDB.size());
-    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId());
+    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId().toString());
     assertEquals(RESOURCE, accessTypeMappingsInDB.get(0).getRecordType());
   }
 
@@ -439,15 +441,15 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   public void shouldUpdateTagsOnSuccessfulTagsPut() throws IOException, URISyntaxException {
     List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
     sendPutTags(tags);
-    List<ResourcesTestUtil.DbResources> resources = ResourcesTestUtil.getResources(vertx);
+    List<DbResource> resources = ResourcesTestUtil.getResources(vertx);
     assertEquals(1, resources.size());
-    assertEquals(STUB_CUSTOM_RESOURCE_ID, resources.get(0).getId());
+    assertEqualsResourceId(resources.get(0).getId());
     assertEquals(STUB_VENDOR_NAME, resources.get(0).getName());
   }
 
   @Test
   public void shouldUpdateTagsOnSuccessfulTagsPutWithAlreadyExistingTags() throws IOException, URISyntaxException {
-    insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
     List<String> newTags = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
     sendPutTags(newTags);
     List<String> tagsAfterRequest = TagsTestUtil.getTagsForRecordType(vertx, RecordType.RESOURCE);
@@ -551,7 +553,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteTagsOnDeleteRequest() throws IOException, URISyntaxException {
-    insertTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
     deleteResource(putBodyPattern);
     List<String> actualTags = TagsTestUtil.getTags(vertx);

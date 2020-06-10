@@ -3,14 +3,16 @@ package org.folio.service.kbcredentials;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -96,8 +98,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenCompose(o -> fetchUserInfo(okapiHeaders))
       .thenApply(userInfo -> requireNonNull(credentialsToDBConverter.convert(kbCredentials))
         .toBuilder()
-        .createdDate(LocalDateTime.now())
-        .createdByUserId(userInfo.getUserId())
+        .createdDate(OffsetDateTime.now())
+        .createdByUserId(UUID.fromString(userInfo.getUserId()))
         .createdByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId))
@@ -117,8 +119,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .url(attributes.getUrl())
         .apiKey(attributes.getApiKey())
         .customerId(attributes.getCustomerId())
-        .updatedDate(LocalDateTime.now())
-        .updatedByUserId(userInfo.getUserId())
+        .updatedDate(OffsetDateTime.now())
+        .updatedByUserId(UUID.fromString(userInfo.getUserId()))
         .updatedByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
@@ -127,11 +129,11 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Override
   public CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders) {
-    return repository.delete(id, tenantId(okapiHeaders));
+    return repository.delete(toUUID(id), tenantId(okapiHeaders));
   }
 
   private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
-    final String credentialsId = credentials.getId();
+    final UUID credentialsId = UUID.fromString(credentials.getId());
     holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
       .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
       .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
@@ -152,7 +154,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   private CompletableFuture<DbKbCredentials> fetchDbKbCredentials(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, tenantId(okapiHeaders)).thenApply(getCredentialsOrFail(id));
+    return repository.findById(toUUID(id), tenantId(okapiHeaders)).thenApply(getCredentialsOrFail(id));
   }
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {

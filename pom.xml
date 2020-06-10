@@ -34,13 +34,13 @@
   </licenses>
 
   <properties>
-    <rmb.version>30.0.0</rmb.version>
-    <folio-di-support.version>1.1.0-SNAPSHOT</folio-di-support.version>
-    <folio-service-tools.version>1.4.4-SNAPSHOT</folio-service-tools.version>
-    <folio-holdingsiq-client.version>1.8.1-SNAPSHOT</folio-holdingsiq-client.version>
+    <rmb.version>30.0.2</rmb.version>
+    <folio-di-support.version>1.1.0</folio-di-support.version>
+    <folio-service-tools.version>1.5.1-SNAPSHOT</folio-service-tools.version>
+    <folio-holdingsiq-client.version>1.9.0</folio-holdingsiq-client.version>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
 
-    <vertx.version>3.9.0</vertx.version>
+    <vertx.version>3.9.1</vertx.version>
     <aspectj.version>1.9.4</aspectj.version>
     <spring.version>5.1.1.RELEASE</spring.version>
     <jackson.version>2.10.4</jackson.version>

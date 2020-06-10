@@ -35,9 +35,9 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsKbCredentialsUsersById(String id, Map<String, String> okapiHeaders,
+  public void getEholdingsKbCredentialsUsersById(String credentialsId, Map<String, String> okapiHeaders,
                                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    assignedUsersService.findByCredentialsId(id, okapiHeaders)
+    assignedUsersService.findByCredentialsId(credentialsId, okapiHeaders)
       .thenAccept(assignedUserCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsUsersByIdResponse.respond200WithApplicationVndApiJson(assignedUserCollection))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
@@ -46,7 +46,7 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
   @Override
   @Validate
   @HandleValidationErrors
-  public void postEholdingsKbCredentialsUsersById(String id, String contentType, AssignedUserPostRequest entity,
+  public void postEholdingsKbCredentialsUsersById(String credentialsId, String contentType, AssignedUserPostRequest entity,
                                                   Map<String, String> okapiHeaders,
                                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     assignedUsersService.save(entity, okapiHeaders)
@@ -58,11 +58,11 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
   @Override
   @Validate
   @HandleValidationErrors
-  public void putEholdingsKbCredentialsUsersByIdAndUserId(String id, String userId, AssignedUserPutRequest entity,
+  public void putEholdingsKbCredentialsUsersByIdAndUserId(String credentialsId, String userId, AssignedUserPutRequest entity,
                                                           Map<String, String> okapiHeaders,
                                                           Handler<AsyncResult<Response>> asyncResultHandler,
                                                           Context vertxContext) {
-    assignedUsersService.update(id, userId, entity, okapiHeaders)
+    assignedUsersService.update(credentialsId, userId, entity, okapiHeaders)
       .thenAccept(o -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsKbCredentialsUsersByIdAndUserIdResponse.respond204())))
       .exceptionally(errorHandler.handle(asyncResultHandler));
@@ -71,9 +71,11 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
   @Override
   @Validate
   @HandleValidationErrors
-  public void deleteEholdingsKbCredentialsUsersByIdAndUserId(String id, String userId, Map<String, String> okapiHeaders,
-                                                             Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    assignedUsersService.delete(id, userId, okapiHeaders)
+  public void deleteEholdingsKbCredentialsUsersByIdAndUserId(String credentialsId, String userId,
+                                                             Map<String, String> okapiHeaders,
+                                                             Handler<AsyncResult<Response>> asyncResultHandler,
+                                                             Context vertxContext) {
+    assignedUsersService.delete(credentialsId, userId, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         DeleteEholdingsKbCredentialsUsersByIdAndUserIdResponse.respond204())))
       .exceptionally(errorHandler.handle(asyncResultHandler));

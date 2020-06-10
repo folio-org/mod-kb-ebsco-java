@@ -19,7 +19,7 @@ import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +37,7 @@ import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.util.KbCredentialsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
@@ -52,7 +53,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200WithCollection() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(credentialsId, "john_doe", "John", null, "Doe", "patron", vertx);
     insertAssignedUser(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
 
@@ -79,7 +81,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn201OnPostWhenAssignedUserIsValid() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     AssignedUser expected = new AssignedUser()
       .withId(UUID.randomUUID().toString())
@@ -104,8 +107,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnPostWhenAssignedUserToMissingCredentials() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn400OnPostWhenAssignedUserIsAlreadyAssigned() {
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String userId = insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()
@@ -165,9 +169,10 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn204OnDeleteUserAssignment(){
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    final String userId1 = insertAssignedUser(credentialsId, "john_doe", "John", null, "Doe", "patron", vertx);
-    final String userId2 = insertAssignedUser(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String userId1 = insertAssignedUser(credentialsId, "john_doe", "John", null, "Doe", "patron", vertx);
+    String userId2 = insertAssignedUser(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
     deleteWithNoContent(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH,  credentialsId, userId1));
 
     final AssignedUserCollection assignedUsers = getWithOk(String.format(ASSIGN_USER_PATH, credentialsId))
@@ -180,21 +185,24 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnDeleteWhenInvalidUserId() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     final JsonapiError error = deleteWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, "invalid-id"), SC_BAD_REQUEST).as(JsonapiError.class);
     assertThat(error.getErrors().get(0).getTitle(), containsString("'userId' parameter is incorrect."));
   }
 
   @Test
   public void shouldReturn404OnDeleteWhenUserNotFound() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     final JsonapiError error = deleteWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, UUID.randomUUID().toString()), SC_NOT_FOUND).as(JsonapiError.class);
     assertThat(error.getErrors().get(0).getTitle(), containsString("Assigned User not found by id"));
   }
 
   @Test
   public void shouldReturn204OnPutWhenAssignedUserIsValid() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String userId = insertAssignedUser(credentialsId, "jane_doe", "Jane", null, "Doe", "patron", vertx);
 
     AssignedUser expected = new AssignedUser()
@@ -218,7 +226,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404OnPutWhenAssignedUserNotFound() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String userId = UUID.randomUUID().toString();
 
     AssignedUser expected = new AssignedUser()

@@ -1,6 +1,5 @@
 package org.folio.repository.accesstypes;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
@@ -34,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -65,7 +65,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   @Override
   public CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType,
-                                                                     String credentialsId, String tenantId) {
+                                                                     UUID credentialsId, String tenantId) {
     String query = prepareQuery(SELECT_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
@@ -81,7 +81,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Collection<AccessTypeMapping>> findByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                                  String tenantId) {
-    List<String> accessTypeIds = accessTypeFilter.getAccessTypeIds();
+    List<UUID> accessTypeIds = accessTypeFilter.getAccessTypeIds();
     if (CollectionUtils.isEmpty(accessTypeIds)) {
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
@@ -124,7 +124,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   }
 
   @Override
-  public CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, String credentialsId,
+  public CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, UUID credentialsId,
                                                 String tenantId) {
     String query = prepareQuery(DELETE_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
@@ -139,8 +139,8 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   }
 
   @Override
-  public CompletableFuture<Map<String, Integer>> countByRecordIdPrefix(String recordIdPrefix, RecordType recordType,
-                                                                       String credentialsId, String tenantId) {
+  public CompletableFuture<Map<UUID, Integer>> countByRecordIdPrefix(String recordIdPrefix, RecordType recordType,
+                                                                     UUID credentialsId, String tenantId) {
     String query = prepareQuery(COUNT_BY_RECORD_ID_PREFIX_QUERY, getAccessTypesMappingTableName(tenantId),
       getAccessTypesTableName(tenantId));
 
@@ -153,9 +153,9 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCount);
   }
 
-  private Map<String, Integer> mapCount(RowSet<Row> resultSet) {
+  private Map<UUID, Integer> mapCount(RowSet<Row> resultSet) {
     return streamOf(resultSet)
-      .collect(Collectors.toMap(row -> row.getString(ACCESS_TYPE_ID_COLUMN), row -> row.getInteger(COUNT_COLUMN)));
+      .collect(Collectors.toMap(row -> row.getUUID(ACCESS_TYPE_ID_COLUMN), row -> row.getInteger(COUNT_COLUMN)));
   }
 
   private List<AccessTypeMapping> mapAccessItemCollection(RowSet<Row> resultSet) {
@@ -168,8 +168,8 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   private AccessTypeMapping mapAccessItem(Row row) {
     return AccessTypeMapping.builder()
-      .id(row.getString(ID_COLUMN))
-      .accessTypeId(row.getString(ACCESS_TYPE_ID_COLUMN))
+      .id(row.getUUID(ID_COLUMN))
+      .accessTypeId(row.getUUID(ACCESS_TYPE_ID_COLUMN))
       .recordId(row.getString(RECORD_ID_COLUMN))
       .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN)))
       .build();

@@ -35,7 +35,6 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -51,7 +50,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -85,12 +83,12 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   }
 
   @Override
-  public CompletableFuture<Optional<DbKbCredentials>> findById(String id, String tenant) {
+  public CompletableFuture<Optional<DbKbCredentials>> findById(UUID id, String tenant) {
     String query = prepareQuery(SELECT_CREDENTIALS_BY_ID_QUERY, getKbCredentialsTableName(tenant));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, createParams(Collections.singleton(id)), promise);
+    pgClient(tenant).select(query, Tuple.of(id), promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
@@ -99,9 +97,9 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<DbKbCredentials> save(DbKbCredentials credentials, String tenant) {
     String query = prepareQuery(UPSERT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
-    String id = credentials.getId();
-    if (StringUtils.isBlank(id)) {
-      id = UUID.randomUUID().toString();
+    UUID id = credentials.getId();
+    if (id == null) {
+      id = UUID.randomUUID();
     }
     Tuple params = createParams(asList(
       id,
@@ -128,12 +126,12 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   }
 
   @Override
-  public CompletableFuture<Void> delete(String id, String tenant) {
+  public CompletableFuture<Void> delete(UUID id, String tenant) {
     String query = prepareQuery(DELETE_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
     LOG.info(DELETE_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, createParams(Collections.singleton(id)), promise);
+    pgClient(tenant).execute(query, Tuple.of(id), promise);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
@@ -142,13 +140,13 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   }
 
   @Override
-  public CompletableFuture<Optional<DbKbCredentials>> findByUserId(String userId, String tenant) {
+  public CompletableFuture<Optional<DbKbCredentials>> findByUserId(UUID userId, String tenant) {
     String query = prepareQuery(SELECT_CREDENTIALS_BY_USER_ID_QUERY, getKbCredentialsTableName(tenant),
       getAssignedUsersTableName(tenant));
 
     LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, createParams(Collections.singleton(userId)), promise);
+    pgClient(tenant).select(query, Tuple.of(userId), promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
@@ -165,15 +163,15 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private DbKbCredentials mapCredentials(Row row) {
     return DbKbCredentials.builder()
-      .id(row.getString(ID_COLUMN))
+      .id(row.getUUID(ID_COLUMN))
       .url(row.getString(URL_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .apiKey(row.getString(API_KEY_COLUMN))
       .customerId(row.getString(CUSTOMER_ID_COLUMN))
-      .createdDate(row.getLocalDateTime(CREATED_DATE_COLUMN))
-      .updatedDate(row.getLocalDateTime(UPDATED_DATE_COLUMN))
-      .createdByUserId(row.getString(CREATED_BY_USER_ID_COLUMN))
-      .updatedByUserId(row.getString(UPDATED_BY_USER_ID_COLUMN))
+      .createdDate(row.getOffsetDateTime(CREATED_DATE_COLUMN))
+      .updatedDate(row.getOffsetDateTime(UPDATED_DATE_COLUMN))
+      .createdByUserId(row.getUUID(CREATED_BY_USER_ID_COLUMN))
+      .updatedByUserId(row.getUUID(UPDATED_BY_USER_ID_COLUMN))
       .createdByUserName(row.getString(CREATED_BY_USER_NAME_COLUMN))
       .updatedByUserName(row.getString(UPDATED_BY_USER_NAME_COLUMN))
       .build();
@@ -189,7 +187,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     return foreignKeyConstraintRecover(new BadRequestException(CREDENTIALS_DELETE_ALLOWED_DETAILS));
   }
 
-  private Function<RowSet<Row>, DbKbCredentials> setId(DbKbCredentials credentials, String id) {
+  private Function<RowSet<Row>, DbKbCredentials> setId(DbKbCredentials credentials, UUID id) {
     return updateResult -> credentials.toBuilder().id(id).build();
   }
 

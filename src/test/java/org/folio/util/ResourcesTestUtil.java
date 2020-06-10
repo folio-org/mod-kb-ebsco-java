@@ -1,90 +1,66 @@
 package org.folio.util;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-
+import static org.folio.db.RowSetUtils.mapItems;
+import static org.folio.db.RowSetUtils.toUUID;
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
-import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
-import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID_2;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.test.util.TestUtil.readFile;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import lombok.Builder;
-import lombok.Value;
 
-import org.folio.db.RowSetUtils;
+import org.folio.repository.resources.DbResource;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.util.IdParser;
 
 public class ResourcesTestUtil {
 
   public ResourcesTestUtil() {
   }
 
-  public static List<ResourcesTestUtil.DbResources> getResources(Vertx vertx) {
-    CompletableFuture<List<ResourcesTestUtil.DbResources>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select(
-      "SELECT " + NAME_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + ID_COLUMN + " FROM " + resourceTestTable(),
-      event -> future.complete(RowSetUtils.mapItems(event.result(),
-        row ->
-          DbResources.builder()
-            .id(row.getString(ID_COLUMN))
-            .credentialsId(row.getString(CREDENTIALS_ID_COLUMN))
-            .name(row.getString(NAME_COLUMN))
-            .build()
-      )));
+  public static List<DbResource> getResources(Vertx vertx) {
+    CompletableFuture<List<DbResource>> future = new CompletableFuture<>();
+    String query = prepareQuery(selectQuery(), resourceTestTable());
+    PostgresClient.getInstance(vertx)
+      .select(query, event -> future.complete(mapItems(event.result(), ResourcesTestUtil::mapDbResource)));
     return future.join();
   }
 
-  public static void addResource(Vertx vertx, DbResources dbResource) {
+  public static void saveResource(DbResource dbResource, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "INSERT INTO " + resourceTestTable() +
-        "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ") " +
-        "VALUES(?,?,?)",
-      Tuple.of(dbResource.getId(), dbResource.getCredentialsId(), dbResource.getName()),
-      event -> future.complete(null));
+    String query = prepareQuery(insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN), resourceTestTable());
+    Tuple params = Tuple.of(dbResource.getId(), dbResource.getCredentialsId(), dbResource.getName());
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
+  }
+
+  public static DbResource buildResource(String id, String credentialsId, String name) {
+    return buildResource(id, toUUID(credentialsId), name);
+  }
+
+  private static DbResource buildResource(String id, UUID credentialsId, String name) {
+    return DbResource.builder()
+      .id(IdParser.parseResourceId(id))
+      .credentialsId(credentialsId)
+      .name(name)
+      .build();
+  }
+
+  private static DbResource mapDbResource(Row row) {
+    return buildResource(row.getString(ID_COLUMN), row.getUUID(CREDENTIALS_ID_COLUMN), row.getString(NAME_COLUMN));
   }
 
   private static String resourceTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + RESOURCES_TABLE_NAME;
-  }
-
-  public static void mockGetTitles() throws IOException, URISyntaxException {
-    String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID),
-        true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile))));
-
-    String stubResponseFile2 = "responses/rmapi/titles/get-title-by-id-2-response.json";
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID_2),
-        true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile2))));
-  }
-
-  @Value
-  @Builder(toBuilder = true)
-  public static class DbResources {
-
-    String id;
-    String credentialsId;
-    String name;
   }
 }

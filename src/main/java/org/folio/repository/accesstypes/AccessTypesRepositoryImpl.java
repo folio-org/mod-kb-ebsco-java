@@ -84,7 +84,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   private Vertx vertx;
 
   @Override
-  public CompletableFuture<List<DbAccessType>> findByCredentialsId(String credentialsId, String tenantId) {
+  public CompletableFuture<List<DbAccessType>> findByCredentialsId(UUID credentialsId, String tenantId) {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
@@ -97,8 +97,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(String credentialsId,
-                                                                                    String accessTypeId, String tenantId) {
+  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(UUID credentialsId,
+                                                                                    UUID accessTypeId, String tenantId) {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
 
@@ -111,7 +111,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(String credentialsId,
+  public CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(UUID credentialsId,
                                                                          Collection<String> accessTypeNames,
                                                                          String tenantId) {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_NAMES_QUERY,
@@ -120,7 +120,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     LOG.info(SELECT_LOG_MESSAGE, query);
 
     Tuple params = Tuple.tuple();
-    params.addString(credentialsId);
+    params.addUUID(credentialsId);
     accessTypeNames.forEach(params::addString);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -130,7 +130,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndRecord(String credentialsId, String recordId,
+  public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndRecord(UUID credentialsId, String recordId,
                                                                               RecordType recordType,
                                                                               String tenantId) {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_RECORD_QUERY,
@@ -185,7 +185,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> count(String credentialsId, String tenantId) {
+  public CompletableFuture<Integer> count(UUID credentialsId, String tenantId) {
     String query = prepareQuery(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAccessTypesTableName(tenantId));
 
     LOG.info(COUNT_LOG_MESSAGE, query);
@@ -198,7 +198,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, String tenantId) {
+  public CompletableFuture<Void> delete(UUID credentialsId, UUID accessTypeId, String tenantId) {
     String query = prepareQuery(DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesTableName(tenantId));
 
     LOG.info(DELETE_LOG_MESSAGE, query);
@@ -220,18 +220,18 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   private DbAccessType mapAccessType(Row row) {
     return DbAccessType.builder()
       .id(row.getUUID(ID_COLUMN))
-      .credentialsId(row.getString(CREDENTIALS_ID_COLUMN))
+      .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .description(row.getString(DESCRIPTION_COLUMN))
       .usageNumber(ObjectUtils.defaultIfNull(row.getInteger(USAGE_NUMBER_COLUMN), 0))
-      .createdDate(row.getLocalDateTime(CREATED_DATE_COLUMN))
-      .createdByUserId(row.getString(CREATED_BY_USER_ID_COLUMN))
+      .createdDate(row.getOffsetDateTime(CREATED_DATE_COLUMN))
+      .createdByUserId(row.getUUID(CREATED_BY_USER_ID_COLUMN))
       .createdByUsername(row.getString(CREATED_BY_USERNAME_COLUMN))
       .createdByLastName(row.getString(CREATED_BY_LAST_NAME_COLUMN))
       .createdByFirstName(row.getString(CREATED_BY_FIRST_NAME_COLUMN))
       .createdByMiddleName(row.getString(CREATED_BY_MIDDLE_NAME_COLUMN))
-      .updatedDate(row.getLocalDateTime(UPDATED_DATE_COLUMN))
-      .updatedByUserId(row.getString(UPDATED_BY_USER_ID_COLUMN))
+      .updatedDate(row.getOffsetDateTime(UPDATED_DATE_COLUMN))
+      .updatedByUserId(row.getUUID(UPDATED_BY_USER_ID_COLUMN))
       .updatedByUsername(row.getString(UPDATED_BY_USERNAME_COLUMN))
       .updatedByLastName(row.getString(UPDATED_BY_LAST_NAME_COLUMN))
       .updatedByFirstName(row.getString(UPDATED_BY_FIRST_NAME_COLUMN))
@@ -245,8 +245,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       format(NAME_UNIQUENESS_DETAILS, value)));
   }
 
-  private Function<Throwable, Future<RowSet<Row>>> credentialsNotFoundConstraintViolation(String credentialsId) {
-    return foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, credentialsId));
+  private Function<Throwable, Future<RowSet<Row>>> credentialsNotFoundConstraintViolation(UUID credentialsId) {
+    return foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, credentialsId.toString()));
   }
 
   private Function<RowSet<Row>, DbAccessType> setId(DbAccessType accessType, UUID id) {

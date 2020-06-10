@@ -1,7 +1,5 @@
 package org.folio.rest.util.template;
 
-import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Value;
 
@@ -26,7 +24,7 @@ public class RMAPITemplateContext {
   LoadService loadingService;
   OkapiData okapiData;
   Configuration configuration;
-  UUID credentialsId;
+  String credentialsId;
   String credentialsName;
 
 }

@@ -29,6 +29,7 @@ import static org.folio.util.FutureUtils.mapResult;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
@@ -78,7 +79,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<Void> delete(Long titleId, String credentialsId, String tenantId) {
+  public CompletableFuture<Void> delete(Long titleId, UUID credentialsId, String tenantId) {
     Tuple parameter = createParams(asList(String.valueOf(titleId), credentialsId));
 
     final String query = prepareQuery(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
@@ -93,7 +94,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
   @Override
   public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count,
-                                                                  String credentialsId, String tenantId) {
+                                                                  UUID credentialsId, String tenantId) {
 
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
@@ -103,7 +104,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     Tuple parameters = Tuple.tuple();
     tags.forEach(parameters::addString);
     parameters
-      .addString(credentialsId)
+      .addUUID(credentialsId)
       .addInteger(offset)
       .addInteger(count);
 
@@ -120,8 +121,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String credentialsId,
-                                                              String tenantId) {
+  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, UUID credentialsId, String tenantId) {
 
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(0);
@@ -129,7 +129,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     Tuple parameters = Tuple.tuple();
     tags.forEach(parameters::addString);
-    parameters.addString(credentialsId);
+    parameters.addUUID(credentialsId);
 
     final String query = prepareQuery(COUNT_TITLES_BY_RESOURCE_TAGS,
       getResourcesTableName(tenantId), getTagsTableName(tenantId), createPlaceholders(tags.size()));
@@ -156,7 +156,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .orElse(null);
     return DbTitle.builder()
       .id(Long.parseLong(row.getString(ID_COLUMN)))
-      .credentialsId(row.getString(CREDENTIALS_ID_COLUMN))
+      .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .title(title)
       .build();

@@ -1,7 +1,5 @@
 package org.folio.rest.util.template;
 
-import java.util.UUID;
-
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -49,8 +47,7 @@ public class RMAPITemplateContextBuilder {
   @Autowired
   private Vertx vertx;
 
-
-  public RMAPITemplateContextBuilder okapiData(OkapiData okapiData){
+  public RMAPITemplateContextBuilder okapiData(OkapiData okapiData) {
     this.okapiData = okapiData;
     return this;
   }
@@ -60,7 +57,7 @@ public class RMAPITemplateContextBuilder {
     return this;
   }
 
-  public RMAPITemplateContext build(){
+  public RMAPITemplateContext build() {
     String tenant = okapiData.getTenant();
 
     Configuration configuration = converter.convert(credentials);
@@ -79,7 +76,7 @@ public class RMAPITemplateContextBuilder {
     return RMAPITemplateContext.builder()
       .configuration(configuration)
       .okapiData(okapiData)
-      .credentialsId(UUID.fromString(credentials.getId()))
+      .credentialsId(credentials.getId())
       .credentialsName(credentials.getAttributes().getName())
       .holdingsService(holdingsService)
       .packagesService(packagesService)

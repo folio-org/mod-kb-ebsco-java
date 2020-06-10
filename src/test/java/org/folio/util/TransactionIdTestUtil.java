@@ -1,6 +1,9 @@
 package org.folio.util;
 
-import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTIONS_FIELD_LIST;
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_COLUMN;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
@@ -9,17 +12,18 @@ import java.util.concurrent.CompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Tuple;
 
+import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 
 public class TransactionIdTestUtil {
 
   public static void addTransactionId(String credentialsId, String transactionId, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "INSERT INTO " + transactionIdsTestTable() +
-        "(" + TRANSACTIONS_FIELD_LIST + ") VALUES(?,?)",
-      Tuple.of(credentialsId, transactionId),
-      event -> future.complete(null));
+    String query = prepareQuery(insertQuery(CREDENTIALS_ID_COLUMN, TRANSACTION_ID_COLUMN), transactionIdsTestTable());
+    Tuple params = Tuple.of(RowSetUtils.toUUID(credentialsId), transactionId);
+    PostgresClient.getInstance(vertx).execute(query, params,
+      event -> future.complete(null)
+    );
     future.join();
   }
 

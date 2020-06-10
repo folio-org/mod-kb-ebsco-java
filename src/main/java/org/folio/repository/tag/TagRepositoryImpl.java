@@ -150,7 +150,7 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, RecordType recordType, String credentialsId,
+  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, RecordType recordType, UUID credentialsId,
                                                        String tenantId) {
     return countRecordsByTagsAndPrefix(tags, "", tenantId, recordType);
   }
@@ -251,7 +251,7 @@ class TagRepositoryImpl implements TagRepository {
 
   private DbTag populateTag(Row row) {
     return DbTag.builder()
-      .id(row.getString(ID_COLUMN))
+      .id(row.getUUID(ID_COLUMN))
       .recordId(row.getString(RECORD_ID_COLUMN))
       .recordType(RecordType.fromValue(row.getString(RECORD_TYPE_COLUMN)))
       .value(row.getString(TAG_COLUMN)).build();
@@ -324,8 +324,7 @@ class TagRepositoryImpl implements TagRepository {
 
   private String createInsertStatement(String recordId, RecordType recordType, List<String> tags, Tuple params) {
     tags.forEach(tag -> {
-      String id = UUID.randomUUID().toString();
-      params.addString(id);
+      params.addUUID(UUID.randomUUID());
       params.addString(recordId);
       params.addString(recordType.getValue());
       params.addString(tag);

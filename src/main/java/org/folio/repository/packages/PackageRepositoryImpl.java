@@ -28,6 +28,7 @@ import static org.folio.util.FutureUtils.mapResult;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -77,7 +78,7 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<Void> delete(PackageId packageId, String credentialsId, String tenantId) {
+  public CompletableFuture<Void> delete(PackageId packageId, UUID credentialsId, String tenantId) {
     Tuple parameters = createParams(asList(IdParser.packageIdToString(packageId), credentialsId));
 
     final String query = prepareQuery(DELETE_STATEMENT, getPackagesTableName(tenantId));
@@ -91,19 +92,19 @@ public class PackageRepositoryImpl implements PackageRepository {
 
   @Override
   public CompletableFuture<List<DbPackage>> findByTagName(List<String> tags, int page, int count,
-                                                          String credentialsId, String tenantId) {
+                                                          UUID credentialsId, String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, "", page, count, credentialsId, tenantId);
   }
 
   @Override
   public CompletableFuture<List<DbPackage>> findByTagNameAndProvider(List<String> tags, String providerId,
-                                                                     int page, int count, String credentialsId,
+                                                                     int page, int count, UUID credentialsId,
                                                                      String tenantId) {
     return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, credentialsId, tenantId);
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> findByIds(List<PackageId> packageIds, String credentialsId,
+  public CompletableFuture<List<DbPackage>> findByIds(List<PackageId> packageIds, UUID credentialsId,
                                                       String tenantId) {
     if (CollectionUtils.isEmpty(packageIds)) {
       return completedFuture(Collections.emptyList());
@@ -111,7 +112,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     Tuple parameters = Tuple.tuple();
     packageIds.forEach(packageId -> parameters.addString(IdParser.packageIdToString(packageId)));
-    parameters.addString(credentialsId);
+    parameters.addUUID(credentialsId);
 
     final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getPackagesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(packageIds.size()));
@@ -125,7 +126,7 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   private CompletableFuture<List<DbPackage>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix,
-                                                                           int page, int count, String credentialsId,
+                                                                           int page, int count, UUID credentialsId,
                                                                            String tenantId) {
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
@@ -137,7 +138,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     String likeExpression = prefix + "%";
     parameters
       .addString(likeExpression)
-      .addString(credentialsId)
+      .addUUID(credentialsId)
       .addInteger(offset)
       .addInteger(count);
 
@@ -152,7 +153,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }
 
-  private Tuple createInsertOrUpdateParameters(String id, String credentialsId, String name, String contentType) {
+  private Tuple createInsertOrUpdateParameters(String id, UUID credentialsId, String name, String contentType) {
     return createParams(asList(id, credentialsId, name, contentType, name, contentType));
   }
 
@@ -176,7 +177,7 @@ public class PackageRepositoryImpl implements PackageRepository {
       .collect(Collectors.toList());
     return DbPackage.builder()
       .id(packageId)
-      .credentialsId(firstRow.getString(CREDENTIALS_ID_COLUMN))
+      .credentialsId(firstRow.getUUID(CREDENTIALS_ID_COLUMN))
       .contentType(firstRow.getString(CONTENT_TYPE_COLUMN))
       .name(firstRow.getString(NAME_COLUMN))
       .tags(tags)

@@ -1,5 +1,7 @@
 package org.folio.rest.validator;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,14 +40,14 @@ public class AccessTypesBodyValidator {
     }
 
     if (attributes.getCredentialsId() != null) {
-      ValidatorUtil.checkIsEqual("credentialsId", credentialsId, attributes.getCredentialsId());
+      ValidatorUtil.checkIsEqual("credentialsId", credentialsId.toString(), attributes.getCredentialsId());
     }
   }
 
   public void validate(String credentialsId, String accessTypeId, AccessType request) {
     validate(credentialsId, request);
     if (request.getId() != null) {
-      ValidatorUtil.checkIsEqual("id", accessTypeId, request.getId());
+      ValidatorUtil.checkIsEqual("id", accessTypeId.toString(), request.getId());
     }
   }
 }

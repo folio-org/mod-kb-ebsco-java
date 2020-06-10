@@ -1,6 +1,7 @@
 package org.folio.repository.packages;
 
 import java.util.List;
+import java.util.UUID;
 
 import lombok.Builder;
 import lombok.Value;
@@ -11,7 +12,7 @@ import org.folio.holdingsiq.model.PackageId;
 @Builder
 public class DbPackage {
   PackageId id;
-  String credentialsId;
+  UUID credentialsId;
   String name;
   String contentType;
   List<String> tags;

@@ -1,17 +1,17 @@
 package org.folio.util;
 
-import static org.apache.commons.lang3.StringUtils.join;
-
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.SqlQueryHelper.selectQuery;
+import static org.folio.repository.SqlQueryHelper.whereQuery;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.TAG_FIELD_LIST;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -32,26 +32,24 @@ public class TagsTestUtil {
   private TagsTestUtil() {
   }
 
-  public static void insertTag(Vertx vertx, String recordId, final RecordType recordType, String value) {
+  public static void saveTag(Vertx vertx, String recordId, RecordType recordType, String value) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "INSERT INTO " + tagTestTable() +
-        "(" + ID_COLUMN + ", " + RECORD_ID_COLUMN + ", " + RECORD_TYPE_COLUMN + ", " + TAG_COLUMN
-        + ") VALUES(?,?,?,?)",
-      Tuple.of(UUID.randomUUID().toString(), recordId, recordType.getValue(), value),
-      event -> future.complete(null));
+    String query = prepareQuery(insertQuery(ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN), tagTestTable());
+    Tuple params = Tuple.of(UUID.randomUUID(), recordId, recordType.getValue(), value);
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
   }
 
-  public static List<DbTag> insertTags(List<DbTag> tags, Vertx vertx) {
+  public static List<DbTag> saveTags(List<DbTag> tags, Vertx vertx) {
     CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
-    String insertStatement = "INSERT INTO " + tagTestTable() +
-      "(" + TAG_FIELD_LIST + ") VALUES " + join(Collections.nCopies(tags.size(), "(?,?,?,?)"), ",") +
-      " RETURNING " + ID_COLUMN;
+    String query = prepareQuery(
+      insertQuery(tags.size(), ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN),
+      tagTestTable()
+    );
     Tuple params = createParams(tags);
 
-    PostgresClient.getInstance(vertx).select(insertStatement, params, ar -> {
+    PostgresClient.getInstance(vertx).select(query, params, ar -> {
       if (ar.succeeded()) {
         future.complete(ar.result());
       } else {
@@ -68,7 +66,7 @@ public class TagsTestUtil {
     RowIterator<Row> iterator = keys.iterator();
     for (DbTag tag : tags) {
       result.add(tag.toBuilder()
-        .id(iterator.next().getString(ID_COLUMN))
+        .id(iterator.next().getUUID(ID_COLUMN))
         .build());
     }
 
@@ -77,18 +75,18 @@ public class TagsTestUtil {
 
   public static List<String> getTags(Vertx vertx) {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select(
-      "SELECT " + TAG_COLUMN + " FROM " + tagTestTable(),
-      event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN))));
+    String query = prepareQuery(selectQuery(TAG_COLUMN), tagTestTable());
+    PostgresClient.getInstance(vertx).select(query,
+      event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN)))
+    );
     return future.join();
   }
 
   public static List<String> getTagsForRecordType(Vertx vertx, RecordType recordType) {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select(
-      "SELECT " + TAG_COLUMN + " FROM " + tagTestTable() + " " +
-        "WHERE " + RECORD_TYPE_COLUMN + "= ?",
-      Tuple.of(recordType.getValue()),
+    String query = prepareQuery(selectQuery(TAG_COLUMN) + " " + whereQuery(RECORD_TYPE_COLUMN), tagTestTable());
+    Tuple params = Tuple.of(recordType.getValue());
+    PostgresClient.getInstance(vertx).select(query, params,
       event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN))));
     return future.join();
   }
@@ -101,7 +99,7 @@ public class TagsTestUtil {
     Tuple params = Tuple.tuple();
 
     tags.forEach(tag -> {
-      params.addValue(UUID.randomUUID().toString());
+      params.addValue(UUID.randomUUID());
       params.addValue(tag.getRecordId());
       params.addValue(tag.getRecordType().getValue());
       params.addValue(tag.getValue());

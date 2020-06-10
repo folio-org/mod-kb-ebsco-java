@@ -1,6 +1,6 @@
 package org.folio.service.holdings;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 
@@ -12,6 +12,7 @@ import org.folio.repository.holdings.status.audit.HoldingsStatusAuditRepository;
 
 @Component
 public class HoldingsStatusAuditServiceImpl implements HoldingsStatusAuditService {
+
   @Autowired
   private HoldingsStatusAuditRepository repository;
   /**
@@ -22,7 +23,7 @@ public class HoldingsStatusAuditServiceImpl implements HoldingsStatusAuditServic
 
   @Override
   public CompletableFuture<Void> clearExpiredRecords(String credentialsId, String tenantId) {
-    Instant expirationLimit = Instant.now().minus(auditExpirationPeriod, ChronoUnit.MILLIS);
+    OffsetDateTime expirationLimit = OffsetDateTime.now().minus(auditExpirationPeriod, ChronoUnit.MILLIS);
     return repository.deleteBeforeTimestamp(expirationLimit, credentialsId, tenantId);
   }
 }

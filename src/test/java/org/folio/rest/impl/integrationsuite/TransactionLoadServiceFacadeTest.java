@@ -19,11 +19,11 @@ import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
-import static org.folio.util.HoldingsStatusUtil.insertStatusNotStarted;
+import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -175,9 +175,9 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
     return TransactionId.builder().transactionId(transactionId).build();
   }
 
-  public void setupDefaultLoadKBConfiguration() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    insertStatusNotStarted(STUB_CREDENTILS_ID, vertx);
+  private void setupDefaultLoadKBConfiguration() {
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatusNotStarted(STUB_CREDENTILS_ID, vertx);
     insertRetryStatus(STUB_CREDENTILS_ID, vertx);
   }
 

@@ -22,6 +22,10 @@ public final class SqlQueryHelper {
   }
 
   public static String insertQuery(String... columns) {
+    return insertQuery(1, columns);
+  }
+
+  public static String insertQuery(int size, String... columns) {
     return "INSERT INTO %s (" + joinWithComa(columns) + ") VALUES "
       + ListUtils.createInsertPlaceholders(columns.length, 1);
   }

@@ -21,6 +21,7 @@ import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
@@ -67,21 +68,21 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<Void> delete(String vendorId, String credentialsId, String tenantId) {
-    Tuple parameter = createParams(asList(vendorId, credentialsId));
+  public CompletableFuture<Void> delete(String vendorId, UUID credentialsId, String tenantId) {
+    Tuple parameters = createParams(asList(vendorId, credentialsId));
 
     final String query = prepareQuery(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
 
     LOG.info(DELETE_LOG_MESSAGE, query);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameter, promise);
+    pgClient(tenantId).execute(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
-  public CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count, String credentialsId,
+  public CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count, UUID credentialsId,
                                                         String tenantId) {
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
@@ -92,7 +93,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     Tuple parameters = Tuple.tuple();
     tags.forEach(parameters::addString);
     parameters
-      .addString(credentialsId)
+      .addUUID(credentialsId)
       .addInteger(offset)
       .addInteger(count);
 

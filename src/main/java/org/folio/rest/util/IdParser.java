@@ -77,7 +77,7 @@ public final class IdParser {
   public static List<ResourceId> getResourceIds(List<DbHoldingInfo> holdings) {
     return mapItems(holdings, resource ->
       ResourceId.builder()
-        .providerIdPart(resource.getVendorId())
+        .providerIdPart(Long.parseLong(resource.getVendorId()))
         .packageIdPart(Long.parseLong(resource.getPackageId()))
         .titleIdPart(Long.parseLong(resource.getTitleId()))
         .build());

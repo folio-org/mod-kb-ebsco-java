@@ -3,10 +3,12 @@ package org.folio.service.accesstypes;
 import static java.lang.String.format;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +87,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessTypeCollection> findByCredentialsId(String credentialsId,
                                                                      Map<String, String> okapiHeaders) {
-    return repository.findByCredentialsId(credentialsId, tenantId(okapiHeaders))
+    return repository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
       .thenApply(accessTypes -> mapItems(accessTypes, accessTypeFromDbConverter::convert))
       .thenApply(accessTypeCollectionConverter::convert);
   }
@@ -107,7 +109,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames,
                                                              String credentialsId,
                                                              Map<String, String> okapiHeaders) {
-    return repository.findByCredentialsAndNames(credentialsId, accessTypeNames, tenantId(okapiHeaders))
+    return repository.findByCredentialsAndNames(toUUID(credentialsId), accessTypeNames, tenantId(okapiHeaders))
       .thenApply(accessTypes -> mapItems(accessTypes, accessTypeFromDbConverter::convert))
       .thenApply(accessTypeCollectionConverter::convert);
   }
@@ -117,7 +119,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
                                                     Map<String, String> okapiHeaders) {
     String recordId = recordKey.getRecordId();
     RecordType recordType = recordKey.getRecordType();
-    return repository.findByCredentialsAndRecord(credentialsId, recordId, recordType, tenantId(okapiHeaders))
+    return repository.findByCredentialsAndRecord(toUUID(credentialsId), recordId, recordType, tenantId(okapiHeaders))
       .thenApply(getAccessTypeOrFail(recordId, recordType))
       .thenApply(accessTypeFromDbConverter::convert);
   }
@@ -153,7 +155,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, Map<String, String> okapiHeaders) {
     CompletableFuture<Void> resultFuture = new CompletableFuture<>();
 
-    repository.delete(credentialsId, accessTypeId, tenantId(okapiHeaders))
+    repository.delete(toUUID(credentialsId), toUUID(accessTypeId), tenantId(okapiHeaders))
       .whenComplete((aVoid, throwable) -> {
         if (throwable != null) {
           Throwable cause = throwable.getCause();
@@ -172,13 +174,13 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private CompletableFuture<DbAccessType> fetchDbAccessType(String credentialsId, String accessTypeId,
                                                             Map<String, String> okapiHeaders) {
-    return repository.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, tenantId(okapiHeaders))
+    return repository.findByCredentialsAndAccessTypeId(toUUID(credentialsId), toUUID(accessTypeId), tenantId(okapiHeaders))
       .thenApply(getAccessTypeOrFail(accessTypeId));
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(String credentialsId, Map<String, String> okapiHeaders) {
     return mapVertxFuture(configuration.getInt(configurationLimitCode, accessTypesLimit, new OkapiParams(okapiHeaders)))
-      .thenCombine(repository.count(credentialsId, tenantId(okapiHeaders)), this::checkStoredAccessTypesAmount);
+      .thenCombine(repository.count(toUUID(credentialsId), tenantId(okapiHeaders)), this::checkStoredAccessTypesAmount);
   }
 
   private Void checkStoredAccessTypesAmount(int configLimit, int stored) {
@@ -191,8 +193,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private DbAccessType setCreatorMetaInfo(DbAccessType dbAccessType, UserLookUp userInfo) {
     return dbAccessType.toBuilder()
-      .createdDate(LocalDateTime.now())
-      .createdByUserId(userInfo.getUserId())
+      .createdDate(OffsetDateTime.now())
+      .createdByUserId(toUUID(userInfo.getUserId()))
       .createdByUsername(userInfo.getUsername())
       .createdByFirstName(userInfo.getFirstName())
       .createdByLastName(userInfo.getLastName())
@@ -202,8 +204,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private DbAccessType setUpdaterMetaInfo(DbAccessType dbAccessType, UserLookUp user) {
     return dbAccessType.toBuilder()
-      .updatedDate(LocalDateTime.now())
-      .updatedByUserId(user.getUserId())
+      .updatedDate(OffsetDateTime.now())
+      .updatedByUserId(toUUID(user.getUserId()))
       .updatedByUsername(user.getUsername())
       .updatedByFirstName(user.getFirstName())
       .updatedByLastName(user.getLastName())

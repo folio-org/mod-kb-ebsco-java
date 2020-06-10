@@ -1,5 +1,7 @@
 package org.folio.repository.tag;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -9,7 +11,7 @@ import org.folio.repository.RecordType;
 @Builder(toBuilder = true)
 public class DbTag {
 
-  String id;
+  UUID id;
   String recordId;
   RecordType recordType;
   String value;

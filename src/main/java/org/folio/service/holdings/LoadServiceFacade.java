@@ -8,6 +8,7 @@ import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @ProxyGen
 public interface LoadServiceFacade {
+
   static LoadServiceFacade createProxy(Vertx vertx, String address) {
     return new LoadServiceFacadeVertxEBProxy(vertx, address);
   }

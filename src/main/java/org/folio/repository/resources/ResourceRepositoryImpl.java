@@ -21,11 +21,13 @@ import static org.folio.repository.resources.ResourceTableConstants.SELECT_RESOU
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.ID_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.NAME_COLUMN;
+import static org.folio.rest.util.IdParser.resourceIdToString;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -59,7 +61,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   @Override
   public CompletableFuture<Void> save(DbResource resource, String tenantId) {
     Tuple parameters = createParams(asList(
-      resource.getId(),
+      resourceIdToString(resource.getId()),
       resource.getCredentialsId(),
       resource.getName(),
       resource.getName()
@@ -76,7 +78,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   }
 
   @Override
-  public CompletableFuture<Void> delete(String resourceId, String credentialsId, String tenantId) {
+  public CompletableFuture<Void> delete(String resourceId, UUID credentialsId, String tenantId) {
     Tuple parameter = createParams(asList(resourceId, credentialsId));
 
     final String query = prepareQuery(DELETE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
@@ -91,7 +93,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
   @Override
   public CompletableFuture<List<DbResource>> findByTagNameAndPackageId(List<String> tags, String resourceId,
-                                                                       int page, int count, String credentialsId,
+                                                                       int page, int count, UUID credentialsId,
                                                                        String tenantId) {
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
@@ -104,7 +106,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     String likeExpression = resourceId + "-%";
     parameters
       .addString(likeExpression)
-      .addString(credentialsId)
+      .addUUID(credentialsId)
       .addInteger(offset)
       .addInteger(count);
 
@@ -140,7 +142,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     return DbResource.builder()
       .id(resourceId)
-      .credentialsId(firstRow.getString(CREDENTIALS_ID_COLUMN))
+      .credentialsId(firstRow.getUUID(CREDENTIALS_ID_COLUMN))
       .name(firstRow.getString(NAME_COLUMN))
       .tags(tags)
       .build();
