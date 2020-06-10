@@ -17,4 +17,5 @@
   <include file="liquibase/tenant/scripts/v3.5.0/alter-retry-status-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-transaction-ids-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/create-holding-status-audit-trigger.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.0/_clean-up.xml"/>
 </databaseChangeLog>
