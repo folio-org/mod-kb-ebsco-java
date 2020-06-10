@@ -1,0 +1,47 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="create-holdings-status-audit-function" author="dmtkachenko">
+    <!-- Trigger that records all insert, update, delete operations for table holdings_status -->
+    <createProcedure>
+      CREATE OR REPLACE FUNCTION ${database.defaultSchemaName}.process_holdings_status_audit() RETURNS TRIGGER AS $$
+      DECLARE
+        previous_search_path text := current_setting('search_path');
+      BEGIN
+        PERFORM set_config('search_path', TG_TABLE_SCHEMA, true);
+        IF (TG_OP = 'DELETE') THEN
+          IF EXISTS (SELECT 1 FROM kb_credentials c WHERE c.id = OLD.credentials_id) THEN
+            INSERT INTO holdings_status_audit(operation, updated_at, jsonb, credentials_id)
+              SELECT 'DELETE', now(), OLD.jsonb, OLD.credentials_id;
+          END IF;
+        ELSIF (TG_OP = 'UPDATE') THEN
+          INSERT INTO holdings_status_audit(operation, updated_at, jsonb, credentials_id)
+              SELECT 'UPDATE', now(), NEW.jsonb, NEW.credentials_id;
+        ELSIF (TG_OP = 'INSERT') THEN
+          IF EXISTS (SELECT 1 FROM kb_credentials c WHERE c.id = NEW.credentials_id) THEN
+            INSERT INTO holdings_status_audit(operation, updated_at, jsonb, credentials_id)
+              SELECT 'INSERT', now(), NEW.jsonb, NEW.credentials_id;
+          END IF;
+        END IF;
+
+        PERFORM set_config('search_path', previous_search_path, true);
+        RETURN NULL;
+      END;
+      $$ LANGUAGE plpgsql;
+    </createProcedure>
+  </changeSet>
+
+  <changeSet id="create-holdings-status-audit-trigger" author="dmtkachenko">
+    <sql>
+      DROP TRIGGER IF EXISTS holdings_status_audit ON ${database.defaultSchemaName}.holdings_status CASCADE;
+
+      CREATE TRIGGER holdings_status_audit
+        AFTER INSERT OR UPDATE OR DELETE ON ${database.defaultSchemaName}.holdings_status
+      FOR EACH ROW EXECUTE PROCEDURE ${database.defaultSchemaName}.process_holdings_status_audit();
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
