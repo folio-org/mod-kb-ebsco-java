@@ -28,6 +28,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_OTHER_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USERNAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
 import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
@@ -374,7 +375,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200AndKbCredentialsOnGetByUser() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
+        vertx);
     insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
@@ -400,6 +402,18 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnGetByUserWhenAssignedUserIsMissingAndNoKBCredentialsAtAll() {
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+
+    assertThat(error.getErrors().get(0).getTitle(), containsString("User credentials not found"));
+  }
+
+  @Test
+  public void shouldReturn404OnGetByUserWhenUserIsNotTheOneWhoIsAssigned() {
+    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
+        vertx);
+    insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
+
+    JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_OTHER_HEADER).as(
+        JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("User credentials not found"));
   }

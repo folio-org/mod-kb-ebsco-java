@@ -1,8 +1,8 @@
 package org.folio.repository.holdings.status;
 
-import static org.folio.common.FunctionUtils.nothing;
 import static java.util.Arrays.asList;
 
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
@@ -32,6 +32,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.sql.UpdateResult;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -54,7 +55,13 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<HoldingsLoadingStatus> findByCredentialsId(String credentialsId, String tenantId) {
-    return get(credentialsId, tenantId,null);
+    return get(credentialsId, tenantId,null).thenApply(status -> setCredentialsId(status, credentialsId));
+  }
+
+  @NotNull
+  private HoldingsLoadingStatus setCredentialsId(HoldingsLoadingStatus status, String credentialsId) {
+    status.getData().getAttributes().setCredentialsId(credentialsId);
+    return status;
   }
 
   @Override

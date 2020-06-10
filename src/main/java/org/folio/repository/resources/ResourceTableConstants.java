@@ -1,5 +1,7 @@
 package org.folio.repository.resources;
 
+import static org.folio.repository.SqlQueryHelper.joinWithComma;
+
 public class ResourceTableConstants {
   private ResourceTableConstants() {}
 
@@ -7,8 +9,7 @@ public class ResourceTableConstants {
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
   public static final String NAME_COLUMN = "name";
-  public static final String RESOURCE_FIELD_LIST = String.format("%s, %s, %s", ID_COLUMN, CREDENTIALS_ID_COLUMN,
-    NAME_COLUMN);
+  public static final String RESOURCE_FIELD_LIST = joinWithComma(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN);
 
   public static final String INSERT_OR_UPDATE_RESOURCE_STATEMENT =
     "INSERT INTO %s(" + RESOURCE_FIELD_LIST + ") VALUES (?, ?, ?) " +

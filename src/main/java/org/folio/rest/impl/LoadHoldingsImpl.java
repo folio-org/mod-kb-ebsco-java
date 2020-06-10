@@ -3,8 +3,11 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 
+import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
+
 import java.util.Map;
 
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -23,8 +26,8 @@ import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.resource.EholdingsLoadingKbCredentialsId;
 import org.folio.rest.jaxrs.resource.LoadHoldings;
-import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.util.ErrorUtil;
+import org.folio.rest.util.ExceptionMappers;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.service.holdings.HoldingsService;
@@ -61,13 +64,17 @@ public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredent
   }
 
   @Override
-  public void getLoadHoldingsStatus(String contentType, Map<String, String> okapiHeaders,
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsLoadingKbCredentialsStatusById(String id, String contentType, Map<String, String> okapiHeaders,
                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Getting holdings loading status");
-    String tenantId = TenantTool.tenantId(okapiHeaders);
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template
-      .requestAction(context -> holdingsStatusRepository.findByCredentialsId(context.getCredentialsId(), tenantId))
+      .requestAction(context ->
+        holdingsStatusRepository.findByCredentialsId(context.getCredentialsId(), context.getOkapiData().getTenant()))
+      .addErrorMapper(NotAuthorizedException.class, error401NotAuthorizedMapper())
+      .addErrorMapper(NotFoundException.class, ExceptionMappers.error404NotFoundMapper())
       .executeWithResult(HoldingsLoadingStatus.class);
   }
 
@@ -83,8 +90,7 @@ public class LoadHoldingsImpl implements LoadHoldings, EholdingsLoadingKbCredent
     )
       .addErrorMapper(ProcessInProgressException.class,
         e -> PostEholdingsLoadingKbCredentialsByIdResponse.respond409WithTextPlain(ErrorUtil.createError(e.getMessage())))
-      .addErrorMapper(NotFoundException.class,
-        e -> PostEholdingsLoadingKbCredentialsByIdResponse.respond404WithApplicationVndApiJson(ErrorUtil.createError(e.getMessage())))
+      .addErrorMapper(NotFoundException.class, ExceptionMappers.error404NotFoundMapper())
       .execute();
   }
 }

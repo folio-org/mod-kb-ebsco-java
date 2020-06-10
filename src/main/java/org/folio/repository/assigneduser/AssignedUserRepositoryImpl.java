@@ -4,6 +4,11 @@ import static java.lang.String.format;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbUtil.COUNT_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
+import static org.folio.repository.DbUtil.UPDATE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
@@ -16,6 +21,7 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.LAST_NAME
 import static org.folio.repository.assigneduser.AssignedUsersConstants.MIDDLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GROUP;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.UPDATE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
 import static org.folio.util.FutureUtils.mapResult;
@@ -50,11 +56,6 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
 
-  private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
-  private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
-  private static final String UPDATE_LOG_MESSAGE = "Do update query = {}";
-  private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
-
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
 
   @Autowired
@@ -71,6 +72,19 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     pgClient(tenant).select(query, createParams(Collections.singleton(credentialsId)), promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAssignedUserCollection);
+  }
+
+  @Override
+  public CompletableFuture<Integer> count(String credentialsId, String tenant) {
+    String query = format(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAssignedUsersTableName(tenant));
+
+    LOG.info(COUNT_LOG_MESSAGE, query);
+
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenant).select(query, createParams(Collections.singleton(credentialsId)), promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()),
+      rs -> rs.getResults().get(0).getInteger(0));
   }
 
   @Override

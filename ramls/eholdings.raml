@@ -62,28 +62,6 @@ types:
         body:
           text/plain:
             example: "Internal server error, contact administrator"
-  /status:
-    displayName: Get current status of load holdings job.
-    get:
-      description: Get current status of load holdings job.
-      headers:
-        Content-Type:
-          example: application/json
-      responses:
-        200:
-          body:
-            application/json:
-              description: Get current status of load holdings job.
-              type: holdingsLoadingStatus
-              example:
-                strict: false
-                value: !include examples/loadHoldings/loading_completed_200_response.json
-        500:
-          description: "Internal server error"
-          body:
-            text/plain:
-              example: "Internal server error, contact administrator"
-
 /eholdings/loading/kb-credentials/{id}:
   displayName: Run load holdings for provided credentials id
   uriParameters:
@@ -115,3 +93,32 @@ types:
         body:
           text/plain:
             example: "Internal server error, contact administrator"
+  /status:
+    displayName: Get current status of load holdings job.
+    get:
+      description: Get current status of load holdings job.
+      headers:
+        Content-Type:
+          example: application/json
+      responses:
+        200:
+          body:
+            application/json:
+              description: Get current status of load holdings job.
+              type: holdingsLoadingStatus
+              example:
+                strict: false
+                value: !include examples/loadHoldings/loading_completed_200_response.json
+        404:
+          description: Not Found
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/loadHoldings/load-holdings-by-id-post-404-response.json
+        500:
+          description: "Internal server error"
+          body:
+            text/plain:
+              example: "Internal server error, contact administrator"

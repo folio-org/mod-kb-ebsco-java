@@ -1,5 +1,7 @@
 package org.folio.repository.providers;
 
+import static org.folio.repository.SqlQueryHelper.joinWithComma;
+
 public class ProviderTableConstants {
 
   private ProviderTableConstants() {}
@@ -8,8 +10,7 @@ public class ProviderTableConstants {
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
   public static final String NAME_COLUMN = "name";
-  public static final String PROVIDER_FIELD_LIST = String.format("%s, %s, %s", ID_COLUMN, CREDENTIALS_ID_COLUMN,
-    NAME_COLUMN);
+  public static final String PROVIDER_FIELD_LIST = joinWithComma(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN);
 
   public static final String INSERT_OR_UPDATE_PROVIDER_STATEMENT =
       "INSERT INTO %s (" + PROVIDER_FIELD_LIST + ") VALUES (?, ?, ?) " +

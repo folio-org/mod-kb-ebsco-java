@@ -1,6 +1,6 @@
 package org.folio.repository.holdings.status.audit;
 
-public class HoldingsStatusAuditTableConstants {
+public final class HoldingsStatusAuditTableConstants {
   public static final String HOLDINGS_STATUS_AUDIT_TABLE = "holdings_status_audit";
   public static final String JSONB_COLUMN = "jsonb";
   public static final String OPERATION_COLUMN = "operation";

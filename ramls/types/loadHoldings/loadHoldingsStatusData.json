@@ -8,7 +8,9 @@
   "properties": {
     "type": {
       "type": "string",
-      "description": "Type information"
+      "description": "Type information",
+      "enum": ["status"],
+      "example": "status"
     },
     "attributes": {
       "type": "object",

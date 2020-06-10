@@ -202,9 +202,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     final String credentialsId = message.getCredentialsId();
     transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
       .thenApply(previousTransactionId -> {
-        boolean transactionIsAlreadyLoaded =
-          message.getTransactionId()!= null && message.getTransactionId().equals(previousTransactionId);
-        if(!transactionIsAlreadyLoaded){
+        if(!isTransactionIsAlreadyLoaded(message, previousTransactionId)){
           holdingsStatusRepository.update(getStatusLoadingHoldings(
             message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
             .thenCompose(o -> resetRetries(credentialsId, tenantId, loadHoldingsRetryCount - 1))
@@ -219,6 +217,11 @@ public class HoldingsServiceImpl implements HoldingsService {
         }
         return null;
       });
+  }
+
+  private boolean isTransactionIsAlreadyLoaded(SnapshotCreatedMessage message, String previousTransactionId) {
+    final String transactionId = message.getTransactionId();
+    return transactionId != null && transactionId.equals(previousTransactionId);
   }
 
   @Override
