@@ -28,5 +28,3 @@ DO $$ BEGIN EXECUTE change_owner_all(); END $$ language plpgsql;
 
 DROP FUNCTION change_owner_all;
 DROP FUNCTION change_owner;
-
-SET ROLE ${myuniversity}_${mymodule};
