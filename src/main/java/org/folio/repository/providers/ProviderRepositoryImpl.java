@@ -5,11 +5,11 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.mapItems;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getProviderTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
@@ -59,7 +59,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
     final String query = prepareQuery(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -69,11 +69,11 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
   @Override
   public CompletableFuture<Void> delete(String vendorId, UUID credentialsId, String tenantId) {
-    Tuple parameters = createParams(asList(vendorId, credentialsId));
+    Tuple parameters = createParams(vendorId, credentialsId);
 
     final String query = prepareQuery(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -100,7 +100,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     final String query = prepareQuery(SELECT_TAGGED_PROVIDERS, getProviderTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);

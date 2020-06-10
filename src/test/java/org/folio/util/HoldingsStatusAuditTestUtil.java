@@ -45,7 +45,10 @@ public class HoldingsStatusAuditTestUtil {
   public static HoldingsLoadingStatus saveStatusAudit(String credentialsId, HoldingsLoadingStatus status,
                                                       OffsetDateTime updatedAt, Vertx vertx) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
-    String query = prepareQuery(insertQuery(CREDENTIALS_COLUMN, JSONB_COLUMN, OPERATION_COLUMN, UPDATED_AT_COLUMN));
+    String query = prepareQuery(
+      insertQuery(CREDENTIALS_COLUMN, JSONB_COLUMN, OPERATION_COLUMN, UPDATED_AT_COLUMN),
+      holdingsStatusAuditTestTable()
+    );
     Tuple params = Tuple.of(toUUID(credentialsId), toJsonObject(status), "UPDATE", updatedAt);
     PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     return future.join();

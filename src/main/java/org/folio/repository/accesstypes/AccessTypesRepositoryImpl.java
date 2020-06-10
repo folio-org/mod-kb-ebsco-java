@@ -3,13 +3,13 @@ package org.folio.repository.accesstypes;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+import static org.folio.common.LogUtils.logCountQuery;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
-import static org.folio.repository.DbUtil.COUNT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
@@ -42,7 +42,6 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_N
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -87,11 +86,12 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   public CompletableFuture<List<DbAccessType>> findByCredentialsId(UUID credentialsId, String tenantId) {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+    Tuple params = createParams(credentialsId);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
+    pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessTypes);
   }
@@ -101,11 +101,12 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
                                                                                     UUID accessTypeId, String tenantId) {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+    Tuple params = createParams(accessTypeId, credentialsId);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, createParams(asList(accessTypeId, credentialsId)), promise);
+    pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
   }
@@ -117,11 +118,11 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_NAMES_QUERY,
       getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(accessTypeNames.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
-
     Tuple params = Tuple.tuple();
     params.addUUID(credentialsId);
     accessTypeNames.forEach(params::addString);
+
+    logSelectQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -135,10 +136,9 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
                                                                               String tenantId) {
     String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_RECORD_QUERY,
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+    Tuple params = createParams(credentialsId, recordId, recordType.getValue());
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
-
-    Tuple params = createParams(asList(credentialsId, recordId, recordType.getValue()));
+    logSelectQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
@@ -172,7 +172,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       accessType.getUpdatedByMiddleName()
     ));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -187,11 +187,12 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   @Override
   public CompletableFuture<Integer> count(UUID credentialsId, String tenantId) {
     String query = prepareQuery(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAccessTypesTableName(tenantId));
+    Tuple params = createParams(credentialsId);
 
-    LOG.info(COUNT_LOG_MESSAGE, query);
+    logCountQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, createParams(Collections.singleton(credentialsId)), promise);
+    pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()),
       rs -> mapFirstItem(rs, row -> row.getInteger(0)));
@@ -200,11 +201,12 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   @Override
   public CompletableFuture<Void> delete(UUID credentialsId, UUID accessTypeId, String tenantId) {
     String query = prepareQuery(DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesTableName(tenantId));
+    Tuple params = createParams(accessTypeId, credentialsId);
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, createParams(asList(accessTypeId, credentialsId)), promise);
+    pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), rs -> null);
   }

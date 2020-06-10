@@ -2,11 +2,11 @@ package org.folio.repository.holdings.status.retry;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logUpdateQuery;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.UPDATE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
@@ -50,7 +50,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<RetryStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
     final String query = prepareQuery(GET_RETRY_STATUS_BY_CREDENTIALS, getRetryStatusTableName(tenantId));
     final Tuple parameters = Tuple.of(credentialsId);
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapStatus);
@@ -60,7 +60,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<Void> save(RetryStatus status, UUID credentialsId, String tenantId) {
     final String query = prepareQuery(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId), createPlaceholders(4));
     final Tuple parameters = createInsertParameters(credentialsId, status);
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
@@ -70,7 +70,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<Void> update(RetryStatus retryStatus, UUID credentialsId, String tenantId) {
     final String query = prepareQuery(UPDATE_RETRY_STATUS, getRetryStatusTableName(tenantId));
     final Tuple parameters = createUpdateParameters(credentialsId, retryStatus);
-    LOG.info(UPDATE_LOG_MESSAGE, query);
+    logUpdateQuery(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
@@ -80,7 +80,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<Void> delete(UUID credentialsId, String tenantId) {
     final String query = prepareQuery(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
     final Tuple parameters = Tuple.of(credentialsId);
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());

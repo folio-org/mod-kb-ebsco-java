@@ -5,10 +5,10 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.getResourcesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
@@ -75,7 +75,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     final String query = prepareQuery(INSERT_OR_UPDATE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -85,14 +85,14 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
   @Override
   public CompletableFuture<Void> delete(Long titleId, UUID credentialsId, String tenantId) {
-    Tuple parameter = createParams(asList(String.valueOf(titleId), credentialsId));
+    Tuple params = createParams(String.valueOf(titleId), credentialsId);
 
     final String query = prepareQuery(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameter, promise);
+    pgClient(tenantId).execute(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -117,7 +117,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId),
       createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -139,7 +139,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     final String query = prepareQuery(COUNT_TITLES_BY_RESOURCE_TAGS,
       getResourcesTableName(tenantId), getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);

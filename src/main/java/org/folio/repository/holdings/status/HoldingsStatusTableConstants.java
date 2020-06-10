@@ -15,8 +15,8 @@ public final class HoldingsStatusTableConstants {
   public static final String UPDATE_LOADING_STATUS = "UPDATE %s SET " + JSONB_COLUMN + " = ? WHERE process_id=? AND " + CREDENTIALS_COLUMN + "=?;";
   public static final String UPDATE_IMPORTED_COUNT =
     "UPDATE %s SET jsonb = jsonb_set(jsonb_set(jsonb, " +
-      "'{data,attributes,importedCount}', ((jsonb->'data'->'attributes'->>'importedCount')::int + %s)::text::jsonb, false), " +
-      "'{data,attributes,importedPages}', ((jsonb->'data'->'attributes'->>'importedPages')::int + %s)::text::jsonb, false) " +
+      "'{data,attributes,importedCount}', ((jsonb->'data'->'attributes'->>'importedCount')::int + ?)::text::jsonb, false), " +
+      "'{data,attributes,importedPages}', ((jsonb->'data'->'attributes'->>'importedPages')::int + ?)::text::jsonb, false) " +
       "WHERE " +
       "jsonb->'data'->'attributes'->>'importedCount' IS NOT NULL AND " +
       "jsonb->'data'->'attributes'->>'importedPages' IS NOT NULL AND " +

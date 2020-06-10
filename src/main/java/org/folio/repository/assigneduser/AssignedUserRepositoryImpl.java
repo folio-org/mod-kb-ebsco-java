@@ -1,18 +1,18 @@
 package org.folio.repository.assigneduser;
 
+import static org.folio.common.LogUtils.logCountQuery;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logUpdateQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
-import static org.folio.repository.DbUtil.COUNT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.UPDATE_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.DELETE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
@@ -30,7 +30,6 @@ import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -66,10 +65,11 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   @Override
   public CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(UUID credentialsId, String tenant) {
     String query = prepareQuery(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY, getAssignedUsersTableName(tenant));
+    Tuple params = createParams(credentialsId);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, createParams(Collections.singleton(credentialsId)), promise);
+    pgClient(tenant).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAssignedUserCollection);
   }
@@ -77,11 +77,12 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   @Override
   public CompletableFuture<Integer> count(UUID credentialsId, String tenant) {
     String query = prepareQuery(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAssignedUsersTableName(tenant));
+    Tuple params = Tuple.of(credentialsId);
 
-    LOG.info(COUNT_LOG_MESSAGE, query);
+    logCountQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, Tuple.of(credentialsId), promise);
+    pgClient(tenant).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()),
       rs -> mapFirstItem(rs, row -> row.getInteger(0)));
@@ -101,7 +102,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
       entity.getPatronGroup()
     ));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -126,7 +127,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
       dbAssignedUser.getCredentialsId()
     ));
 
-    LOG.info(UPDATE_LOG_MESSAGE, query);
+    logUpdateQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -138,10 +139,11 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   @Override
   public CompletableFuture<Void> delete(UUID credentialsId, UUID userId, String tenant) {
     String query = prepareQuery(DELETE_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
+    Tuple params = createParams(credentialsId, userId);
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, createParams(Arrays.asList(credentialsId, userId)), promise);
+    pgClient(tenant).execute(query, params, promise);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy());

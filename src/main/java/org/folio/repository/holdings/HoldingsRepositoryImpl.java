@@ -3,10 +3,10 @@ package org.folio.repository.holdings;
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createInsertPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.executeInTransaction;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_BY_PK_HOLDINGS;
@@ -72,9 +72,9 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   @Override
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
     final String query = prepareQuery(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId));
-    LOG.info(DELETE_LOG_MESSAGE, query);
-    Promise<RowSet<Row>> promise = Promise.promise();
     final Tuple params = Tuple.of(credentialsId, timestamp);
+    logDeleteQuery(LOG, query, params);
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
   }
@@ -86,7 +86,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     }
     final String resourceIdString = getHoldingsPkKeys(credentialsId, resourceIds);
     final String query = prepareQuery(GET_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), resourceIdString);
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
     return mapResult(promise.future(), this::mapHoldings);
@@ -105,7 +105,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     final Tuple parameters = createParameters(credentialsId, holdings, updatedAt);
     final String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS, getHoldingsTableName(tenantId),
       createInsertPlaceholders(9, holdings.size()));
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
@@ -115,7 +115,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
                                                  AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
     final String parameters = getHoldingsPkKeys(credentialsId, mapItems(holdings, IdParser::getResourceId));
     final String query = prepareQuery(DELETE_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), parameters);
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());

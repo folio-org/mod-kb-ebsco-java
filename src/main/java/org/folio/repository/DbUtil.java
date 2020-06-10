@@ -27,12 +27,6 @@ import org.folio.rest.persist.PostgresClient;
 
 public class DbUtil {
 
-  public static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
-  public static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
-  public static final String UPDATE_LOG_MESSAGE = "Do update query = {}";
-  public static final String SELECT_LOG_MESSAGE = "Do select query = {}";
-  public static final String COUNT_LOG_MESSAGE = "Do count query = {}";
-
   private DbUtil() {
   }
 

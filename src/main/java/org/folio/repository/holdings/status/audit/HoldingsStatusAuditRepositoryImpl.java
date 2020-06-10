@@ -8,6 +8,7 @@ import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTabl
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
@@ -20,6 +21,7 @@ import io.vertx.sqlclient.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.common.LogUtils;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -35,11 +37,12 @@ public class HoldingsStatusAuditRepositoryImpl implements HoldingsStatusAuditRep
   }
 
   @Override
-  public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, String credentialsId, String tenantId) {
-    final String query = prepareQuery(DELETE_BEFORE_TIMESTAMP_FOR_CREDENTIALS, getHoldingsStatusAuditTableName(tenantId));
-    LOG.info("Delete holdings status audit records before timestamp = " + query);
+  public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
+    String query = prepareQuery(DELETE_BEFORE_TIMESTAMP_FOR_CREDENTIALS, getHoldingsStatusAuditTableName(tenantId));
+    Tuple params = Tuple.of(timestamp, credentialsId);
+    LogUtils.logDeleteQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    PostgresClient.getInstance(vertx, tenantId).execute(query, Tuple.of(timestamp, toUUID(credentialsId)), promise);
+    PostgresClient.getInstance(vertx, tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 }

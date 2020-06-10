@@ -4,13 +4,11 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
+import static org.folio.common.LogUtils.*;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.DbUtil.getKbCredentialsTableName;
@@ -53,6 +51,7 @@ import io.vertx.sqlclient.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.common.LogUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
@@ -75,7 +74,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<Collection<DbKbCredentials>> findAll(String tenant) {
     String query = prepareQuery(SELECT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, promise);
 
@@ -85,10 +84,11 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   @Override
   public CompletableFuture<Optional<DbKbCredentials>> findById(UUID id, String tenant) {
     String query = prepareQuery(SELECT_CREDENTIALS_BY_ID_QUERY, getKbCredentialsTableName(tenant));
+    Tuple params = Tuple.of(id);
+    logSelectQuery(LOG, query, params);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, Tuple.of(id), promise);
+    pgClient(tenant).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
@@ -115,7 +115,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       credentials.getUpdatedByUserName()
     ));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -128,10 +128,11 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   @Override
   public CompletableFuture<Void> delete(UUID id, String tenant) {
     String query = prepareQuery(DELETE_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    Tuple params = Tuple.of(id);
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, Tuple.of(id), promise);
+    pgClient(tenant).execute(query, params, promise);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
@@ -143,10 +144,11 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<Optional<DbKbCredentials>> findByUserId(UUID userId, String tenant) {
     String query = prepareQuery(SELECT_CREDENTIALS_BY_USER_ID_QUERY, getKbCredentialsTableName(tenant),
       getAssignedUsersTableName(tenant));
+    Tuple params = Tuple.of(userId);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, Tuple.of(userId), promise);
+    pgClient(tenant).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }

@@ -7,10 +7,10 @@ import static java.util.stream.Collectors.groupingBy;
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
 import static org.folio.repository.DbUtil.getResourcesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
@@ -69,7 +69,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     final String query = prepareQuery(INSERT_OR_UPDATE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -79,14 +79,14 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
   @Override
   public CompletableFuture<Void> delete(String resourceId, UUID credentialsId, String tenantId) {
-    Tuple parameter = createParams(asList(resourceId, credentialsId));
+    Tuple params = createParams(resourceId, credentialsId);
 
     final String query = prepareQuery(DELETE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameter, promise);
+    pgClient(tenantId).execute(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -113,7 +113,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     final String query = prepareQuery(SELECT_RESOURCES_WITH_TAGS, getResourcesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
