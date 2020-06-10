@@ -249,8 +249,8 @@
         },
         {
           "methods": ["GET"],
-          "pathPattern": "/loadHoldings/status",
-          "permissionsRequired": ["kb-ebsco.holdings.load.status.get"]
+          "pathPattern": "/eholdings/loading/kb-credentials/{credentialsId}/status",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.holdings-load.status.item.get"]
         },
         {
           "methods": ["GET"],
@@ -303,7 +303,8 @@
       "handlers" : [
         {
           "methods" : [ "GET" ],
-          "pathPattern" : "/_/jsonSchemas"
+          "pathPattern" : "/_/jsonSchemas",
+          "permissionsRequired" : [ ]
         }
       ]
     },
@@ -314,7 +315,8 @@
       "handlers" : [
         {
           "methods" : [ "GET" ],
-          "pathPattern" : "/_/ramls"
+          "pathPattern" : "/_/ramls",
+          "permissionsRequired" : [ ]
         }
       ]
     },
@@ -525,9 +527,9 @@
       "description": "One-time load of holdings based on credentials"
     },
     {
-      "permissionName": "kb-ebsco.holdings.load.status.get",
-      "displayName": "get current status of holdings loading",
-      "description": "Get current status of holdings loading"
+      "permissionName": "kb-ebsco.kb-credentials.holdings-load.status.item.get",
+      "displayName": "get current status of holdings loading by credentials id",
+      "description": "Get current status of holdings loading by credentials id"
     },
     {
       "permissionName": "kb-ebsco.custom-labels.collection.get",
@@ -695,7 +697,7 @@
         "kb-ebsco.root-proxy.get",
         "kb-ebsco.tags.collection.get",
         "kb-ebsco.unique.tags.collection.get",
-        "kb-ebsco.holdings.load.status.get",
+        "kb-ebsco.kb-credentials.holdings-load.status.item.get",
         "kb-ebsco.custom-labels.collection.get",
         "kb-ebsco.access-types.collection.get",
         "kb-ebsco.access-types.item.get"
@@ -706,10 +708,6 @@
     {
       "id": "users",
       "version": "15.0"
-    },
-    {
-      "id": "configuration",
-      "version": "2.0"
     }
   ],
   "launchDescriptor": {

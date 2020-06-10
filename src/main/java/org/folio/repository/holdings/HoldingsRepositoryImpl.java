@@ -147,8 +147,8 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   private Tuple createParameters(UUID credentialsId, List<DbHoldingInfo> holdings, OffsetDateTime updatedAt) {
     Tuple params = Tuple.tuple();
     holdings.forEach(holding -> {
-      params.addValue(getHoldingsId(holding));
       params.addValue(credentialsId);
+      params.addValue(getHoldingsId(holding));
       params.addValue(holding.getVendorId());
       params.addValue(holding.getPackageId());
       params.addValue(holding.getTitleId());
@@ -162,8 +162,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   private String getHoldingsPkKeys(UUID credentialsId, List<String> resourceIds) {
     return resourceIds.stream()
-      .map(id -> "('" + credentialsId + "', '" + id.concat("')"))
-      .collect(Collectors.joining(","));
+      .collect(Collectors.joining(",", "('" + credentialsId + "', '", "')"));
   }
 
   private PostgresClient pgClient(String tenantId) {

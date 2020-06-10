@@ -38,6 +38,7 @@
     <folio-di-support.version>1.1.0</folio-di-support.version>
     <folio-service-tools.version>1.5.1-SNAPSHOT</folio-service-tools.version>
     <folio-holdingsiq-client.version>1.9.0</folio-holdingsiq-client.version>
+    <folio-liquibase-util.version>0.0.1-SNAPSHOT</folio-liquibase-util.version>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
 
     <vertx.version>3.9.1</vertx.version>
@@ -169,6 +170,12 @@
       <artifactId>spring-context</artifactId>
       <version>${spring.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-liquibase-util</artifactId>
+      <version>${folio-liquibase-util.version}</version>
+      <type>jar</type>
+    </dependency>
     <!-- Test dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>
@@ -243,13 +250,6 @@
   </dependencyManagement>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

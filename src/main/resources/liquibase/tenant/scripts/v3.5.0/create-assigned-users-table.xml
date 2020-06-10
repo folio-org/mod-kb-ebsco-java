@@ -1,0 +1,43 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="create-assigned-users-table" author="dmtkachenko">
+    <createTable tableName="assigned_users">
+      <column name="id" type="uuid">
+        <constraints primaryKey="true" primaryKeyName="pk_assigned_users"
+                     nullable="false"/>
+      </column>
+      <column name="credentials_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="user_name" type="varchar(100)">
+        <constraints unique="true" uniqueConstraintName="unq_assigned_users_name"
+                     nullable="false"/>
+      </column>
+      <column name="first_name" type="varchar(100)"/>
+      <column name="middle_name" type="varchar(100)"/>
+      <column name="last_name" type="varchar(100)"/>
+      <column name="patron_group" type="varchar(100)"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-from-assigned-users-to-kb-credentials" author="dmtkachenko">
+    <addForeignKeyConstraint
+      baseColumnNames="credentials_id"
+      baseTableName="assigned_users"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_assigned_users_kb_credentials"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_credentials"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+</databaseChangeLog>

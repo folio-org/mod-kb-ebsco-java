@@ -1,0 +1,71 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="drop-jsonb-from-access-types" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <dropColumn tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="alter-access-types-table" author="dmtkachenko">
+    <addColumn tableName="access_types">
+      <column name="credentials_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+      <column name="name" type="varchar(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="description" type="varchar(200)"/>
+      <column name="created_date" type="timestamptz">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by_user_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by_username" type="varchar(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by_last_name" type="varchar(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by_first_name" type="varchar(1000)"/>
+      <column name="created_by_middle_name" type="varchar(100)"/>
+      <column name="updated_date" type="timestamptz"/>
+      <column name="updated_by_user_id" type="uuid"/>
+      <column name="updated_by_username" type="varchar(100)"/>
+      <column name="updated_by_last_name" type="varchar(100)"/>
+      <column name="updated_by_first_name" type="varchar(100)"/>
+      <column name="updated_by_middle_name" type="varchar(100)"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-from-access-types-to-kb-credentials" author="dmtkachenko">
+    <addForeignKeyConstraint
+      baseColumnNames="credentials_id"
+      baseTableName="access_types"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_access_types_kb_credentials"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_credentials"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="add-unique-constraint-for-credentialsid-name-in-access-types" author="dmtkachenko">
+    <addUniqueConstraint
+      constraintName="unq_access_types_creds_id_name"
+      tableName="access_types"
+      columnNames="credentials_id, name"
+      schemaName="${database.defaultSchemaName}"
+      deferrable="false"/>
+  </changeSet>
+
+</databaseChangeLog>

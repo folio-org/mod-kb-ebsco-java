@@ -1,0 +1,39 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="alter-holdings-status-audit-table" author="dmtkachenko">
+    <addColumn tableName="holdings_status_audit">
+      <column name="credentials_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-from-holdings-status-audit-to-kb-credentials" author="dmtkachenko">
+    <addForeignKeyConstraint
+      baseColumnNames="credentials_id"
+      baseTableName="holdings_status_audit"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_holdings_status_audit_kb_credentials"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_credentials"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="create-index-for-holdings-status-audit-credentials-id" author="dmtkachenko">
+    <createIndex
+      indexName="idx_holdings_status_audit_credentialsid"
+      tableName="holdings_status_audit"
+      schemaName="${database.defaultSchemaName}">
+        <column name="credentials_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>

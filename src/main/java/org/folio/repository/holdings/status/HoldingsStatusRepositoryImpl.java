@@ -3,9 +3,13 @@ package org.folio.repository.holdings.status;
 import static io.vertx.core.json.Json.encode;
 
 import static org.folio.common.FunctionUtils.nothing;
+import static java.util.Arrays.asList;
+
+import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.db.RowSetUtils.firstItem;
+import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
@@ -37,6 +41,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.common.VertxIdProvider;
@@ -63,7 +69,13 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<HoldingsLoadingStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
-    return get(credentialsId, tenantId, null);
+    return get(credentialsId, tenantId, null).thenApply(status -> setCredentialsId(status, fromUUID(credentialsId)));
+  }
+
+  @NotNull
+  private HoldingsLoadingStatus setCredentialsId(HoldingsLoadingStatus status, String credentialsId) {
+    status.getData().getAttributes().setCredentialsId(credentialsId);
+    return status;
   }
 
   @Override

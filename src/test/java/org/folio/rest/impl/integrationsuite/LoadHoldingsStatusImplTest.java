@@ -4,14 +4,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static java.time.ZonedDateTime.parse;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.impl.ProxiesTestData.JOHN_TOKEN_HEADER;
 import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
@@ -40,6 +42,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -62,13 +65,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.LoadStatusData;
+import org.folio.rest.jaxrs.model.LoadStatusNameDetailEnum;
+import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @RunWith(VertxUnitRunner.class)
 public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
-  static final String HOLDINGS_LOAD_STATUS_OLD_URL = "loadHoldings/status";
+  private static final String HOLDINGS_LOAD_STATUS_BY_ID_URL = "/eholdings/loading/kb-credentials/%s/status";
+  private static final String STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_CREDENTILS_ID);
   private static final int TIMEOUT = 300;
   private static final int SNAPSHOT_RETRIES = 2;
   private List<Handler<DeliveryContext<LoadHoldingsMessage>>> interceptors = new ArrayList<>();
@@ -85,7 +93,6 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void setUp() throws Exception {
     super.setUp();
     MockitoAnnotations.initMocks(this);
-    setupDefaultLoadKBConfiguration();
   }
 
   @After
@@ -98,16 +105,14 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnStatusNotStarted() {
-
-    final HoldingsLoadingStatus status = getWithOk(HOLDINGS_LOAD_STATUS_OLD_URL, STUB_TOKEN_HEADER).body()
-      .as(HoldingsLoadingStatus.class);
-
-    assertThat(status.getData().getAttributes().getStatus().getName().value(), equalToIgnoringWhiteSpace("Not Started"));
+    setupDefaultLoadKBConfiguration();
+    final HoldingsLoadingStatus status = getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body().as(HoldingsLoadingStatus.class);
+    assertThat(status.getData().getAttributes().getStatus().getName(), equalTo(LoadStatusNameEnum.NOT_STARTED));
   }
 
   @Test
   public void shouldReturnStatusPopulatingStagingArea(TestContext context) throws IOException, URISyntaxException {
-
+    setupDefaultLoadKBConfiguration();
     mockResponseList(
       new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), false),
       new ResponseDefinitionBuilder()
@@ -131,16 +136,17 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
 
     startedAsync.await(TIMEOUT);
-    final HoldingsLoadingStatus status = getWithOk(HOLDINGS_LOAD_STATUS_OLD_URL, STUB_TOKEN_HEADER).body()
+
+    final HoldingsLoadingStatus status = getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body()
       .as(HoldingsLoadingStatus.class);
-    assertThat(status.getData().getAttributes().getStatus().getDetail().value(), equalToIgnoringWhiteSpace("Populating staging area"));
+    assertThat(status.getData().getAttributes().getStatus().getDetail(), equalTo(LoadStatusNameDetailEnum.POPULATING_STAGING_AREA));
 
     finishedAsync.await(TIMEOUT);
   }
 
   @Test
   public void shouldReturnStatusCompleted(TestContext context) throws IOException, URISyntaxException {
-
+    setupDefaultLoadKBConfiguration();
     mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
 
     stubFor(post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false))
@@ -155,12 +161,12 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
     async.await(TIMEOUT);
-    final HoldingsLoadingStatus status = getWithOk(HOLDINGS_LOAD_STATUS_OLD_URL, STUB_TOKEN_HEADER).body()
+    final HoldingsLoadingStatus status = getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body()
       .as(HoldingsLoadingStatus.class);
 
-    assertThat(status.getData().getType(), equalTo("status"));
+    assertThat(status.getData().getType(), equalTo(LoadStatusData.Type.STATUS));
     assertThat(status.getData().getAttributes().getTotalCount(), equalTo(2));
-    assertThat(status.getData().getAttributes().getStatus().getName().value(), equalToIgnoringCase("Completed"));
+    assertThat(status.getData().getAttributes().getStatus().getName(), equalTo(COMPLETED));
 
     assertTrue(parse(status.getData().getAttributes().getStarted(), POSTGRES_TIMESTAMP_FORMATTER)
       .isBefore(parse(status.getData().getAttributes().getFinished(), POSTGRES_TIMESTAMP_FORMATTER)));
@@ -168,7 +174,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnErrorWhenRMAPIReturnsError(TestContext context) {
-
+    setupDefaultLoadKBConfiguration();
     mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), SC_INTERNAL_SERVER_ERROR);
 
     Async finishedAsync = context.async(SNAPSHOT_RETRIES);
@@ -176,9 +182,23 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
     finishedAsync.await(TIMEOUT);
 
-    final HoldingsLoadingStatus status = getWithOk(HOLDINGS_LOAD_STATUS_OLD_URL, STUB_TOKEN_HEADER).body()
+    final HoldingsLoadingStatus status = getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body()
       .as(HoldingsLoadingStatus.class);
-    assertThat(status.getData().getAttributes().getStatus().getName().value(), equalToIgnoringCase("Failed"));
+    assertThat(status.getData().getAttributes().getStatus().getName(), equalTo(FAILED));
+  }
+
+  @Test
+  public void shouldReturn404WhenNoKbCredentialsFound() {
+    final String url = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, UUID.randomUUID().toString());
+    final JsonapiError error = getWithStatus(url, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    assertThat(error.getErrors().get(0).getTitle(), containsString("not found"));
+  }
+
+  @Test
+  public void shouldReturn401WhenNoHeader() {
+    final String url = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, UUID.randomUUID().toString());
+    final JsonapiError error = getWithStatus(url, SC_UNAUTHORIZED).as(JsonapiError.class);
+    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid token"));
   }
 
   public void setupDefaultLoadKBConfiguration() {

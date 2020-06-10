@@ -28,9 +28,14 @@ import org.folio.service.holdings.message.LoadHoldingsMessage;
  */
 public final class KBTestUtil {
 
-  private KBTestUtil() {
-  }
+  private KBTestUtil() {}
 
+  /**
+   * Mocks wiremock server to return default test RM API configuration from database,
+   * RM API url will be changed to wiremockUrl so that following requests to RM API will be sent to wiremock instead
+   *
+   * @param wiremockUrl wiremock url with port
+   */
   public static void setupDefaultKBConfiguration(String wiremockUrl, Vertx vertx) {
     KbCredentialsTestUtil.saveKbCredentials(wiremockUrl, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
   }

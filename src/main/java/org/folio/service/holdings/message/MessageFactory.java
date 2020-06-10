@@ -7,6 +7,8 @@ import org.folio.holdingsiq.model.Holdings;
 
 public class MessageFactory {
 
+  private MessageFactory() {}
+
   @NotNull
   public static DeltaReportMessage getDeltaReportMessage(LoadHoldingsMessage message, DeltaReport holdings) {
     return new DeltaReportMessage(

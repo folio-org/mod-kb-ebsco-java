@@ -2,6 +2,7 @@
   "data": {
     "type": "status",
     "attributes": {
+      "credentialsId": "99999999-9999-9999-9999-999999999999",
       "started": "1999-12-31 14:59:59",
       "status": {
         "name": "Started"

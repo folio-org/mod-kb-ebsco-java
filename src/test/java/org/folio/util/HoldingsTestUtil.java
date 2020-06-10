@@ -44,8 +44,8 @@ public class HoldingsTestUtil {
 
   private static Tuple getHoldingsInsertParams(String credentialsId, DbHoldingInfo holding, OffsetDateTime updatedAt) {
     return Tuple.of(
-      getHoldingsId(holding),
       toUUID(credentialsId),
+      getHoldingsId(holding),
       holding.getVendorId(),
       holding.getPackageId(),
       holding.getTitleId(),
