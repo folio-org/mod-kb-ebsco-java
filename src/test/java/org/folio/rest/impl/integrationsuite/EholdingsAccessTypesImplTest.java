@@ -176,7 +176,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     List<AccessType> testAccessTypes = testData(credentialsId);
     String id0 = insertAccessType(testAccessTypes.get(0), vertx);
     String id1 = insertAccessType(testAccessTypes.get(1), vertx);
-    insertAccessType(testAccessTypes.get(2), vertx);
+    String id2 = insertAccessType(testAccessTypes.get(2), vertx);
 
     insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id0, vertx);
     insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id0, vertx);
@@ -187,9 +187,15 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     AccessTypeCollection actual = getWithOk(resourcePath).as(AccessTypeCollection.class);
 
-    assertThat(actual.getData().get(0).getUsageNumber(), equalTo(3));
-    assertThat(actual.getData().get(1).getUsageNumber(), equalTo(2));
-    assertThat(actual.getData().get(2).getUsageNumber(), equalTo(0));
+    assertThat(findAccessTypeWithId(actual, id0).getUsageNumber(), equalTo(3));
+    assertThat(findAccessTypeWithId(actual, id1).getUsageNumber(), equalTo(2));
+    assertThat(findAccessTypeWithId(actual, id2).getUsageNumber(), equalTo(0));
+  }
+
+  private AccessType findAccessTypeWithId(AccessTypeCollection collection, String id) {
+    return collection.getData().stream()
+      .filter(accessType -> accessType.getId().equals(id))
+      .findFirst().orElse(null);
   }
 
   @Test

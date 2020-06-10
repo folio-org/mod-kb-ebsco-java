@@ -6,7 +6,7 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
-import static org.folio.repository.DbUtil.uniqueConstraintRecover;
+import static org.folio.repository.DbUtil.pkConstraintRecover;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.DELETE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
@@ -93,7 +93,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     Future<UpdateResult> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
-      .recover(uniqueConstraintRecover(ID_COLUMN, new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE)))
+      .recover(pkConstraintRecover(ID_COLUMN, new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE)))
       .recover(foreignKeyConstraintRecover(ServiceExceptions.notFound(KbCredentials.class, entity.getCredentialsId())));
     return mapResult(resultFuture, updateResult -> entity);
   }

@@ -127,6 +127,13 @@ public class DbUtil {
       : Future.failedFuture(throwable);
   }
 
+  public static Function<Throwable, Future<UpdateResult>> pkConstraintRecover(String columnName, Throwable t) {
+    return throwable -> DbExcUtils.isPKViolation(throwable)
+      && ((ConstraintViolationException) throwable).getConstraint().getColumns().contains(columnName)
+      ? Future.failedFuture(t)
+      : Future.failedFuture(throwable);
+  }
+
   public static Function<Throwable, Future<UpdateResult>> foreignKeyConstraintRecover(Throwable t) {
     return throwable -> DbExcUtils.isFKViolation(throwable)
       ? Future.failedFuture(t)
