@@ -65,9 +65,9 @@ import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.ResourcesTestUtil.buildResource;
-import static org.folio.util.ResourcesTestUtil.mockGetTitles;
 import static org.folio.util.ResourcesTestUtil.saveResource;
 import static org.folio.util.TagsTestUtil.saveTag;
+import static org.folio.util.TitlesTestUtil.mockGetTitles;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
