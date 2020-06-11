@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="create-assigned-users-table" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@create-assigned-users-table" author="dmtkachenko">
     <createTable tableName="assigned_users">
       <column name="id" type="uuid">
         <constraints primaryKey="true" primaryKeyName="pk_assigned_users"
@@ -25,7 +25,7 @@
     </createTable>
   </changeSet>
 
-  <changeSet id="add-foreign-key-from-assigned-users-to-kb-credentials" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-assigned-users-to-kb-credentials" author="dmtkachenko">
     <addForeignKeyConstraint
       baseColumnNames="credentials_id"
       baseTableName="assigned_users"
