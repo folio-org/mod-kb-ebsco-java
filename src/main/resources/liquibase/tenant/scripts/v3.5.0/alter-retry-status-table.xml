@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="alter-retry-status-table" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@alter-retry-status-table" author="dmtkachenko">
     <addColumn tableName="retry_status">
       <column name="credentials_id" type="uuid">
         <constraints nullable="false"/>
@@ -12,7 +12,13 @@
     </addColumn>
   </changeSet>
 
-  <changeSet id="add-foreign-key-from-retry-status-to-kb-credentials" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-retry-status" author="dmtkachenko">
+    <update tableName="retry_status">
+      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-retry-status-to-kb-credentials" author="dmtkachenko">
     <addForeignKeyConstraint
       baseColumnNames="credentials_id"
       baseTableName="retry_status"
