@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="alter-holdings-status-audit-table" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@alter-holdings-status-audit-table" author="dmtkachenko">
     <addColumn tableName="holdings_status_audit">
       <column name="credentials_id" type="uuid">
         <constraints nullable="false"/>
@@ -12,7 +12,13 @@
     </addColumn>
   </changeSet>
 
-  <changeSet id="add-foreign-key-from-holdings-status-audit-to-kb-credentials" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-holdings-status-audit" author="dmtkachenko">
+    <update tableName="holdings_status_audit">
+      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-holdings-status-audit-to-kb-credentials" author="dmtkachenko">
     <addForeignKeyConstraint
       baseColumnNames="credentials_id"
       baseTableName="holdings_status_audit"
@@ -27,7 +33,7 @@
       referencedTableSchemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="create-index-for-holdings-status-audit-credentials-id" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@create-index-for-holdings-status-audit-credentials-id" author="dmtkachenko">
     <createIndex
       indexName="idx_holdings_status_audit_credentialsid"
       tableName="holdings_status_audit"

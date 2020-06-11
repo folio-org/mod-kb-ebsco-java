@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="alter-holdings-status-table" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@alter-holdings-status-table" author="dmtkachenko">
     <addColumn tableName="holdings_status">
       <column name="credentials_id" type="uuid">
         <constraints nullable="false"/>
@@ -12,7 +12,13 @@
     </addColumn>
   </changeSet>
 
-  <changeSet id="drop-old-holdings-status-lock-constraint" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-holdings-status" author="dmtkachenko">
+    <update tableName="holdings_status">
+      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@drop-old-holdings-status-lock-constraint" author="dmtkachenko">
     <preConditions onFail="MARK_RAN" onFailMessage="[WARN] Unique constraint doesn't exist: holdings_status_lock_key">
       <sqlCheck  expectedResult="1">
         SELECT COUNT(1) from pg_constraint
@@ -25,7 +31,7 @@
                           schemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="add-unique-constraint-for-credentialsid-lock-in-holdings-status" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@add-unique-constraint-for-credentialsid-lock-in-holdings-status" author="dmtkachenko">
     <addUniqueConstraint
       constraintName="unq_holdings_status_credentialsid_lock"
       tableName="holdings_status"
@@ -34,7 +40,7 @@
       deferrable="false"/>
   </changeSet>
 
-  <changeSet id="add-foreign-key-from-holdings-status-to-kb-credentials" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-holdings-status-to-kb-credentials" author="dmtkachenko">
     <addForeignKeyConstraint
       baseColumnNames="credentials_id"
       baseTableName="holdings_status"

@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="rename-access-types-mapping-table" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@rename-access-types-mapping-table" author="dmtkachenko">
     <preConditions onFail="MARK_RAN">
       <tableExists tableName="access_types_mapping"/>
     </preConditions>
@@ -12,15 +12,13 @@
     <renameTable oldTableName="access_types_mapping" newTableName="access_types_mappings"/>
   </changeSet>
 
-  <changeSet id="drop-jsonb-from-access-types-mappings" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@alter-access-types-table" author="dmtkachenko">
     <preConditions onFail="MARK_RAN">
-      <columnExists tableName="access_types_mappings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+      <not>
+        <columnExists tableName="access_types_mappings" columnName="record_id"/>
+      </not>
     </preConditions>
 
-    <dropColumn tableName="access_types_mappings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
-  </changeSet>
-
-  <changeSet id="alter-access-types-table" author="dmtkachenko">
     <addColumn tableName="access_types_mappings">
       <column name="record_id" type="varchar(50)">
         <constraints nullable="false"/>
@@ -34,7 +32,19 @@
     </addColumn>
   </changeSet>
 
-  <changeSet id="add-foreign-key-from-access-types-mappings-to-access-types" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@change-access-type-id-to-uuid" author="dmtkachenko">
+    <modifyDataType tableName="access_types_mappings" columnName="access_type_id" newDataType="uuid"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@drop-jsonb-from-access-types-mappings" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="access_types_mappings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <dropColumn tableName="access_types_mappings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-access-types-mappings-to-access-types" author="dmtkachenko">
     <addForeignKeyConstraint
       baseColumnNames="access_type_id"
       baseTableName="access_types_mappings"
@@ -49,7 +59,7 @@
       referencedTableSchemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="add-unique-constraint-for-access-type-record-in-access-types-mappings" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@add-unique-constraint-for-access-type-record-in-access-types-mappings" author="dmtkachenko">
     <addUniqueConstraint
       constraintName="unq_access_types_mappings_acc_type_rec_id"
       tableName="access_types_mappings"
@@ -58,15 +68,28 @@
       deferrable="false"/>
   </changeSet>
 
-  <changeSet id="add-check-for-access-types-mappings-record-type" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@add-check-for-access-types-mappings-record-type" author="dmtkachenko">
     <sql>
-      ALTER TABLE access_types_mappings
+      ALTER TABLE ${database.defaultSchemaName}.access_types_mappings
         ADD CONSTRAINT chk_access_types_mappings_record_type
           CHECK (record_type IN ('provider', 'package', 'title', 'resource'));
     </sql>
   </changeSet>
 
-  <changeSet id="create-index-for-access-types-mappings-record-id" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@drop-access-type-id-index" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <indexExists tableName="access_types_mappings" indexName="access_type_index" columnNames="access_type_id"/>
+    </preConditions>
+
+    <dropIndex tableName="access_types_mappings" indexName="access_type_index"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@create-index-for-access-types-mappings-record-id" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN" onFailMessage="[WARN] Index is present on: access_types_mappings.record_id">
+      <not>
+        <indexExists tableName="access_types_mappings" columnNames="record_id"/>
+      </not>
+    </preConditions>
     <createIndex
       indexName="idx_access_types_mappings_rec_id"
       tableName="access_types_mappings"
