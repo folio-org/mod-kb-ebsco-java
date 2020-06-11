@@ -85,10 +85,6 @@
   ],
   "scripts": [
     {
-      "run": "before",
-      "snippetPath": "set_role.sql"
-    },
-    {
       "run": "after",
       "snippetPath": "update_started_date_before_insertion.sql",
       "fromModuleVersion": "mod-kb-ebsco-java-3.0.1"
@@ -96,6 +92,10 @@
     {
       "run": "after",
       "snippetPath": "drop_set_id_in_jsonb.sql"
+    },
+    {
+      "run": "after",
+      "snippetPath": "change_table_owner.sql"
     }
   ]
 }
