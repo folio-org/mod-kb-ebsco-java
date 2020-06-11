@@ -3,6 +3,7 @@ package org.folio.util;
 import static java.util.UUID.randomUUID;
 
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
@@ -17,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 
 import org.folio.repository.DbUtil;
@@ -45,12 +47,12 @@ public class HoldingsStatusUtil {
     String query = DbUtil.prepareQuery(GET_HOLDINGS_STATUS_BY_ID, holdingsStatusTestTable());
     Tuple params = Tuple.of(toUUID(credentialsId));
     PostgresClient.getInstance(vertx)
-      .selectSingle(query, params, event -> future.complete(mapStatus(event.result())));
+      .select(query, params, event -> future.complete(mapStatus(event.result())));
     return future.join();
   }
 
-  private static HoldingsLoadingStatus mapStatus(Row row) {
-    return Json.decodeValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
+  private static HoldingsLoadingStatus mapStatus(RowSet<Row> rowSet) {
+    return mapFirstItem(rowSet, row -> Json.decodeValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class));
   }
 
   private static String holdingsStatusTestTable() {

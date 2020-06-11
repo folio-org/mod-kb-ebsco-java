@@ -419,8 +419,6 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnStatusNotStartedOnKbCredentialsCreation() {
-    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
-    clearDataFromTable(vertx, RETRY_STATUS_TABLE);
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);

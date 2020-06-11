@@ -17,9 +17,7 @@ import static org.folio.util.FutureUtils.failedFuture;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,13 +74,7 @@ import org.folio.service.holdings.message.SnapshotFailedMessage;
 @Component
 public class HoldingsServiceImpl implements HoldingsService {
 
-  public static final DateTimeFormatter POSTGRES_TIMESTAMP_FORMATTER = new DateTimeFormatterBuilder()
-    .parseCaseInsensitive()
-    .append(DateTimeFormatter.ISO_LOCAL_DATE)
-    .appendLiteral(' ')
-    .append(DateTimeFormatter.ISO_LOCAL_TIME)
-    .appendOffset("+HH", "Z")
-    .toFormatter();
+  public static final DateTimeFormatter POSTGRES_TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
   private static final Logger logger = LoggerFactory.getLogger(HoldingsServiceImpl.class);
   private static final String START_LOADING_LOCK = "getStatus";
@@ -178,7 +170,7 @@ public class HoldingsServiceImpl implements HoldingsService {
           LoadStatusAttributes attributes = status.getData().getAttributes();
           if (hasLoadedLastPage(attributes)) {
             return holdingsRepository
-              .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()).toOffsetDateTime(), credentialsId, tenantId)
+              .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()), credentialsId, tenantId)
               .thenCompose(o -> holdingsStatusRepository
                 .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
               )
@@ -444,11 +436,11 @@ public class HoldingsServiceImpl implements HoldingsService {
     if (StringUtils.isEmpty(updatedString)) {
       return true;
     }
-    ZonedDateTime updated = getZonedDateTime(updatedString);
-    return ZonedDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
+    OffsetDateTime updated = getZonedDateTime(updatedString);
+    return OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
   }
 
-  private ZonedDateTime getZonedDateTime(String stringToParse) {
-    return ZonedDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_FORMATTER);
+  private OffsetDateTime getZonedDateTime(String stringToParse) {
+    return OffsetDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_FORMATTER);
   }
 }
