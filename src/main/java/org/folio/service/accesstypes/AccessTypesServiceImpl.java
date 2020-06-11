@@ -7,7 +7,6 @@ import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;

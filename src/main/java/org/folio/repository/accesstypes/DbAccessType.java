@@ -1,6 +1,5 @@
 package org.folio.repository.accesstypes;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 

@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 
-import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Sort;

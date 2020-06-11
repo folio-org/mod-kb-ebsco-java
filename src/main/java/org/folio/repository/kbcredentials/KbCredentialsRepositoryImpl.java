@@ -4,7 +4,9 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.LogUtils.*;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
@@ -51,7 +53,6 @@ import io.vertx.sqlclient.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.LogUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
