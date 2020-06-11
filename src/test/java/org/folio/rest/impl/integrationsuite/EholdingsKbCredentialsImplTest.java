@@ -16,6 +16,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.rest.util.AssertTestUtil.assertErrorContainsTitle;
@@ -57,7 +59,6 @@ import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
-import org.folio.util.KbCredentialsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
@@ -70,7 +71,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnKbCredentialsCollectionOnGet() {
-    KbCredentialsTestUtil.saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentialsCollection actual = getWithOk(KB_CREDENTIALS_ENDPOINT).as(KbCredentialsCollection.class);
 
     assertEquals(1, actual.getData().size());
@@ -163,7 +164,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPostWhenCredentialsWithProvidedNameAlreadyExist() {
-    KbCredentialsTestUtil.saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
@@ -178,8 +179,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnKbCredentialsOnGet() {
-    String credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
@@ -205,8 +205,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn204OnPutIfCredentialsAreValid() {
-    String credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentials creds = stubbedCredentials();
     creds.getAttributes()
@@ -238,8 +237,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutWhenCredentialsAreInvalid() {
-    String credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
       .withData(stubbedCredentials());
@@ -287,8 +285,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutWhenCredentialsWithProvidedNameAlreadyExist() {
-    KbCredentialsTestUtil.saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = KbCredentialsTestUtil.saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2",
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2",
       STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
@@ -335,8 +333,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn204OnDelete() {
-    String credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     deleteWithNoContent(resourcePath);
@@ -347,8 +344,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnDeleteWhenHasRelatedRecords() {
-    String credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
@@ -379,8 +375,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200AndKbCredentialsOnGetByUser() {
-    String credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron",
       vertx);
 
@@ -390,7 +385,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200AndKbCredentialsOnGetByUserWhenSingleKbCredentialsPresent() {
-    KbCredentialsTestUtil.saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
     assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
@@ -413,9 +408,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404OnGetByUserWhenUserIsNotTheOneWhoIsAssigned() {
-    String credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-      vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_OTHER_HEADER).as(
@@ -426,6 +419,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnStatusNotStartedOnKbCredentialsCreation() {
+    clearDataFromTable(vertx, HOLDINGS_STATUS_TABLE);
+    clearDataFromTable(vertx, RETRY_STATUS_TABLE);
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
