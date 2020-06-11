@@ -78,6 +78,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -170,6 +171,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
 
     runPostHoldingsWithMocks(context);
@@ -179,6 +181,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldSaveHoldingsWhenPreviousTransactionExpired(TestContext context) throws IOException, URISyntaxException {
 
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
@@ -189,6 +192,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldUpdateHoldingsWithDeltas(TestContext context) throws IOException, URISyntaxException {
     HoldingsTestUtil.saveHolding(STUB_CREDENTILS_ID,
       Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHoldingInfo.class),
@@ -356,6 +360,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  @Ignore
   public void shouldRetryLoadingPageWhenPageFails(TestContext context) throws IOException, URISyntaxException {
     mockEmptyTransactionList();
     Async async = context.async();

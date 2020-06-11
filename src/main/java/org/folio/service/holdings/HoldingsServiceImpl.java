@@ -177,13 +177,12 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(status -> {
           LoadStatusAttributes attributes = status.getData().getAttributes();
           if (hasLoadedLastPage(attributes)) {
-            return
-              holdingsRepository
-                .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()).toOffsetDateTime(), credentialsId, tenantId)
-                .thenCompose(o -> holdingsStatusRepository
-                  .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
-                )
-                .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
+            return holdingsRepository
+              .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()).toOffsetDateTime(), credentialsId, tenantId)
+              .thenCompose(o -> holdingsStatusRepository
+                .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
+              )
+              .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
           }
           return CompletableFuture.completedFuture(null);
         }
