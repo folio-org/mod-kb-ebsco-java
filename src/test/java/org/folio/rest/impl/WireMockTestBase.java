@@ -6,7 +6,9 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.notNullValue;
 
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +69,10 @@ public abstract class WireMockTestBase extends TestBase {
   public static void setUpClass(TestContext context) {
     configProperties.put("spring.configuration", "org.folio.spring.config.TestConfig");
     TestBase.setUpClass(context);
+
+    // An ad-hoc to clear any records after DB setup but before test execution
+    // this should be removed once a proper separation between migration scripts and clean DB is in place
+    clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
   @Before
