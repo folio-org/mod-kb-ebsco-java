@@ -1,11 +1,13 @@
 package org.folio.util;
 
 import static org.folio.db.RowSetUtils.mapItems;
-import static org.folio.db.RowSetUtils.toJson;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
@@ -28,7 +30,6 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_N
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -53,7 +54,6 @@ import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class AccessTypesTestUtil {
 
@@ -128,19 +128,12 @@ public class AccessTypesTestUtil {
   }
 
   private static AccessTypeMapping mapAccessTypeMapping(Row entry) {
-    try {
-      return ObjectMapperTool.getMapper().readValue(toJson(entry), AccessTypeMapping.class);
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Can't parse access type mapping", e);
-    }
-  }
-
-  private static String accessTypesTestTable() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME;
-  }
-
-  private static String accessTypesMappingTestTable() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
+    return AccessTypeMapping.builder()
+      .id(entry.getUUID(ID_COLUMN))
+      .accessTypeId(entry.getUUID(ACCESS_TYPE_ID_COLUMN))
+      .recordId(entry.getString(RECORD_ID_COLUMN))
+      .recordType(RecordType.fromValue(entry.getString(RECORD_TYPE_COLUMN)))
+      .build();
   }
 
   private static AccessType mapAccessType(Row resultRow) {
@@ -201,5 +194,13 @@ public class AccessTypesTestUtil {
         .withLastName("last name"));
 
     return Arrays.asList(accessType1, accessType2, accessType3);
+  }
+
+  private static String accessTypesTestTable() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME;
+  }
+
+  private static String accessTypesMappingTestTable() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_MAPPING_TABLE_NAME;
   }
 }
