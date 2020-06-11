@@ -22,7 +22,10 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
+import static org.folio.test.util.TestUtil.readJsonFile;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -69,8 +72,9 @@ public class PackagesTestUtil {
     future.join();
   }
 
-  public static String getPackageResponse(String packageName, String packageId, String providerId) {
-    PackageByIdData packageData = Json.decodeValue(STUB_PACKAGE_JSON_PATH, PackageByIdData.class);
+  public static String getPackageResponse(String packageName, String packageId, String providerId)
+    throws IOException, URISyntaxException {
+    PackageByIdData packageData = readJsonFile(STUB_PACKAGE_JSON_PATH, PackageByIdData.class);
     return Json.encode(packageData.toByIdBuilder()
       .packageName(packageName)
       .packageId(Integer.parseInt(packageId))
@@ -78,18 +82,20 @@ public class PackagesTestUtil {
       .build());
   }
 
-  public static void setUpPackages(Vertx vertx, String credentialsId) {
+  public static void setUpPackages(Vertx vertx, String credentialsId) throws IOException, URISyntaxException {
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_2, STUB_VENDOR_ID_2, STUB_PACKAGE_NAME_2);
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
   }
 
-  public static void setUpPackage(Vertx vertx, String credentialsId, String packageId, String vendorId, String packageName) {
+  public static void setUpPackage(Vertx vertx, String credentialsId, String packageId, String vendorId, String packageName)
+    throws IOException, URISyntaxException {
     savePackage(buildDbPackage(vendorId + "-" + packageId, credentialsId, packageName), vertx);
     mockPackageWithName(packageId, vendorId, packageName);
   }
 
-  public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName) {
+  public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName)
+    throws IOException, URISyntaxException {
     mockGetWithBody(new RegexPattern(".*vendors/" + stubProviderId + "/packages/" + stubPackageId),
       getPackageResponse(stubPackageName, stubPackageId, stubProviderId));
   }

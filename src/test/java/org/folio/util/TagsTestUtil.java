@@ -44,7 +44,7 @@ public class TagsTestUtil {
     CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
     String query = prepareQuery(
-      insertQuery(tags.size(), ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN),
+      insertQuery(tags.size(), ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN) + " RETURNING " + ID_COLUMN,
       tagTestTable()
     );
     Tuple params = createParams(tags);

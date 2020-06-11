@@ -9,6 +9,7 @@ import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
+import static org.folio.rest.util.IdParser.resourceIdToString;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class ResourcesTestUtil {
   public static void saveResource(DbResource dbResource, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN), resourceTestTable());
-    Tuple params = Tuple.of(dbResource.getId(), dbResource.getCredentialsId(), dbResource.getName());
+    Tuple params = Tuple.of(resourceIdToString(dbResource.getId()), dbResource.getCredentialsId(), dbResource.getName());
     PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
   }

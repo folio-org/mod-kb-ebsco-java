@@ -25,7 +25,7 @@ public final class SqlQueryHelper {
 
   public static String insertQuery(int size, String... columns) {
     return "INSERT INTO %s (" + joinWithComma(columns) + ") VALUES "
-      + ListUtils.createInsertPlaceholders(columns.length, 1);
+      + ListUtils.createInsertPlaceholders(columns.length, size);
   }
 
   public static String deleteQuery() {
