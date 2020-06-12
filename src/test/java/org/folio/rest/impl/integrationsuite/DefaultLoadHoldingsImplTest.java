@@ -77,7 +77,6 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -149,7 +148,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  @Ignore
   public void shouldSaveHoldings(TestContext context) throws IOException, URISyntaxException {
     setupDefaultLoadKBConfiguration();
     runPostHoldingsWithMocks(context);
@@ -168,7 +166,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  @Ignore
   public void shouldSaveStatusChangesToAuditTable(TestContext context) throws IOException, URISyntaxException {
     setupDefaultLoadKBConfiguration();
 
@@ -339,7 +336,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  @Ignore
   public void shouldRetryLoadingPageWhenPageFails(TestContext context) throws IOException, URISyntaxException {
     setupDefaultLoadKBConfiguration();
     Async async = context.async();

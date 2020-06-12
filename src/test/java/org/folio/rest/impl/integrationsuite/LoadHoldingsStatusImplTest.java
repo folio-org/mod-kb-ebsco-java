@@ -55,7 +55,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -146,7 +145,6 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   }
 
   @Test
-  @Ignore
   public void shouldReturnStatusCompleted(TestContext context) throws IOException, URISyntaxException {
     setupDefaultLoadKBConfiguration();
     mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), "responses/rmapi/holdings/status/get-status-completed-one-page.json");
@@ -175,7 +173,6 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   }
 
   @Test
-  @Ignore
   public void shouldReturnErrorWhenRMAPIReturnsError(TestContext context) {
     setupDefaultLoadKBConfiguration();
     mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), SC_INTERNAL_SERVER_ERROR);

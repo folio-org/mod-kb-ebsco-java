@@ -98,17 +98,17 @@ public class HoldingsServiceImpl implements HoldingsService {
   private static final String SKIPPING_LOADING_SNAPSHOT_MESSAGE = "Skipping loading snapshot, "
     + "because transaction with id {} is already loaded";
 
-  private final LoadServiceFacade loadServiceFacade;
-  private final HoldingsRepository holdingsRepository;
-  private final HoldingsStatusRepository holdingsStatusRepository;
-  private final RetryStatusRepository retryStatusRepository;
-  private final TransactionIdRepository transactionIdRepository;
-  private final Vertx vertx;
-  private final long snapshotRetryDelay;
-  private final int snapshotRetryCount;
-  private final long loadHoldingsRetryDelay;
-  private final int loadHoldingsRetryCount;
-  private final int loadHoldingsTimeout;
+  private LoadServiceFacade loadServiceFacade;
+  private HoldingsRepository holdingsRepository;
+  private HoldingsStatusRepository holdingsStatusRepository;
+  private RetryStatusRepository retryStatusRepository;
+  private TransactionIdRepository transactionIdRepository;
+  private Vertx vertx;
+  private long snapshotRetryDelay;
+  private int snapshotRetryCount;
+  private long loadHoldingsRetryDelay;
+  private int loadHoldingsRetryCount;
+  private int loadHoldingsTimeout;
 
   @Autowired
   public HoldingsServiceImpl(Vertx vertx, HoldingsRepository holdingsRepository,
