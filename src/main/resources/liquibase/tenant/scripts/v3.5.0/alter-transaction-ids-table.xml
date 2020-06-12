@@ -6,9 +6,7 @@
 
   <changeSet id="MODKBEKBJ-444@@alter-transaction-ids-table" author="dmtkachenko">
     <addColumn tableName="transaction_ids">
-      <column name="credentials_id" type="uuid">
-        <constraints nullable="false"/>
-      </column>
+      <column name="credentials_id" type="uuid"/>
     </addColumn>
   </changeSet>
 
@@ -16,6 +14,10 @@
     <update tableName="transaction_ids">
       <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
     </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-not-null-constraints-to-transaction-ids" author="dmtkachenko">
+    <addNotNullConstraint tableName="transaction_ids" columnName="credentials_id"/>
   </changeSet>
 
   <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-transaction-ids-to-kb-credentials" author="dmtkachenko">

@@ -4,6 +4,39 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
+  <changeSet id="MODKBEKBJ-444@@alter-holdings-table" author="dmtkachenko">
+    <addColumn tableName="holdings">
+      <column name="credentials_id" type="uuid"/>
+      <column name="vendor_id" type="varchar(10)"/>
+      <column name="package_id" type="varchar(10)"/>
+      <column name="title_id" type="varchar(10)"/>
+      <column name="resource_type" type="varchar(20)"/>
+      <column name="publisher_name" type="varchar(200)"/>
+      <column name="publication_title" type="varchar(300)"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444-datamigration@@copy-data-from-jsonb-to-plain-columns-of-holdings" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="holdings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <update tableName="holdings">
+      <column name="vendor_id" valueComputed="jsonb ->> 'vendor_id'"/>
+      <column name="package_id" valueComputed="jsonb ->> 'package_id'"/>
+      <column name="title_id" valueComputed="jsonb ->> 'title_id'"/>
+      <column name="resource_type" valueComputed="jsonb ->> 'resource_type'"/>
+      <column name="publisher_name" valueComputed="jsonb ->> 'publisher_name'"/>
+      <column name="publication_title" valueComputed="jsonb ->> 'publication_title'"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-holdings" author="dmtkachenko">
+    <update tableName="holdings">
+      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
+    </update>
+  </changeSet>
+
   <changeSet id="MODKBEKBJ-444@@drop-jsonb-from-holdings" author="dmtkachenko">
     <preConditions onFail="MARK_RAN">
       <columnExists tableName="holdings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
@@ -12,26 +45,9 @@
     <dropColumn tableName="holdings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-444@@alter-holdings-table" author="dmtkachenko">
-    <addColumn tableName="holdings">
-      <column name="credentials_id" type="uuid">
-        <constraints nullable="false"/>
-      </column>
-      <column name="vendor_id" type="varchar(10)"/>
-      <column name="package_id" type="varchar(10)"/>
-      <column name="title_id" type="varchar(10)"/>
-      <column name="resource_type" type="varchar(20)">
-        <constraints nullable="false"/>
-      </column>
-      <column name="publisher_name" type="varchar(200)"/>
-      <column name="publication_title" type="varchar(300)"/>
-    </addColumn>
-  </changeSet>
-
-  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-holdings" author="dmtkachenko">
-    <update tableName="holdings">
-      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
-    </update>
+  <changeSet id="MODKBEKBJ-444@@add-not-null-constraints-to-holdings" author="dmtkachenko">
+    <addNotNullConstraint tableName="holdings" columnName="credentials_id"/>
+    <addNotNullConstraint tableName="holdings" columnName="resource_type"/>
   </changeSet>
 
   <changeSet id="MODKBEKBJ-444@@drop-old-holdings-primary-key" author="dmtkachenko">

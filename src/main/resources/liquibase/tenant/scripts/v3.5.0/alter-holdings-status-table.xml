@@ -6,9 +6,7 @@
 
   <changeSet id="MODKBEKBJ-444@@alter-holdings-status-table" author="dmtkachenko">
     <addColumn tableName="holdings_status">
-      <column name="credentials_id" type="uuid">
-        <constraints nullable="false"/>
-      </column>
+      <column name="credentials_id" type="uuid"/>
     </addColumn>
   </changeSet>
 
@@ -16,6 +14,10 @@
     <update tableName="holdings_status">
       <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
     </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-not-null-constraints-to-holdings-status" author="dmtkachenko">
+    <addNotNullConstraint tableName="holdings_status" columnName="credentials_id"/>
   </changeSet>
 
   <changeSet id="MODKBEKBJ-444@@drop-old-holdings-status-lock-constraint" author="dmtkachenko">
