@@ -20,6 +20,7 @@ import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -36,6 +37,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.OkapiData;
@@ -298,7 +300,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private CompletableFuture<Void> deleteTags(String resourceId, RMAPITemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
-    String credentialsId = context.getCredentialsId();
+    UUID credentialsId = RowSetUtils.toUUID(context.getCredentialsId());
 
     return resourceRepository.delete(resourceId, credentialsId, tenant)
       .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
@@ -369,7 +371,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     ResourceTagsDataAttributes attributes) {
     return DbResource.builder()
       .id(IdParser.parseResourceId(resourceId))
-      .credentialsId(credentialsId)
+      .credentialsId(UUID.fromString(credentialsId))
       .name(attributes.getName())
       .tags(attributes.getTags() != null ? attributes.getTags().getTagList() : null)
       .build();

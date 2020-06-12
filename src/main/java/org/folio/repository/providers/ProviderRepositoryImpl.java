@@ -1,36 +1,36 @@
 package org.folio.repository.providers;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
+import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.getProviderTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.providers.ProviderTableConstants.DELETE_PROVIDER_STATEMENT;
 import static org.folio.repository.providers.ProviderTableConstants.ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.INSERT_OR_UPDATE_PROVIDER_STATEMENT;
 import static org.folio.repository.providers.ProviderTableConstants.SELECT_TAGGED_PROVIDERS;
 import static org.folio.util.FutureUtils.mapResult;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,69 +48,71 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   @Autowired
   private DBExceptionTranslator excTranslator;
 
-
   @Override
   public CompletableFuture<Void> save(DbProvider provider, String tenantId) {
-    JsonArray parameters = createInsertOrUpdateParameters(provider.getId(), provider.getCredentialsId(),
-        provider.getName());
+    Tuple parameters = createParams(asList(
+      provider.getId(),
+      provider.getCredentialsId(),
+      provider.getName(),
+      provider.getName())
+    );
 
-    final String query = String.format(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
+    final String query = prepareQuery(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, parameters);
 
-    Promise<UpdateResult> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
-  public CompletableFuture<Void> delete(String vendorId, String credentialsId, String tenantId) {
-    JsonArray parameter = createParams(Arrays.asList(vendorId, credentialsId));
+  public CompletableFuture<Void> delete(String vendorId, UUID credentialsId, String tenantId) {
+    Tuple parameters = createParams(vendorId, credentialsId);
 
-    final String query = String.format(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
+    final String query = prepareQuery(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, parameters);
 
-    Promise<UpdateResult> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameter, promise);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).execute(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
-  public CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count,
-      String credentialsId, String tenantId) {
-
-    if(CollectionUtils.isEmpty(tags)){
+  public CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count, UUID credentialsId,
+                                                        String tenantId) {
+    if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
 
     int offset = (page - 1) * count;
 
-    JsonArray parameters = new JsonArray();
-    tags.forEach(parameters::add);
+    Tuple parameters = Tuple.tuple();
+    tags.forEach(parameters::addString);
     parameters
-      .add(credentialsId)
-      .add(offset)
-      .add(count);
+      .addUUID(credentialsId)
+      .addInteger(offset)
+      .addInteger(count);
 
-    final String query = String.format(SELECT_TAGGED_PROVIDERS, getProviderTableName(tenantId),
+    final String query = prepareQuery(SELECT_TAGGED_PROVIDERS, getProviderTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapProviderIds);
   }
 
-  private List<Long> mapProviderIds(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), this::readProviderId);
+  private List<Long> mapProviderIds(RowSet<Row> resultSet) {
+    return mapItems(resultSet, this::readProviderId);
   }
 
-  private Long readProviderId(JsonObject row) {
+  private Long readProviderId(Row row) {
     return Long.parseLong(row.getString(ID_COLUMN));
   }
 

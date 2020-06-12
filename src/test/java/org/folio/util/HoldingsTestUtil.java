@@ -1,56 +1,57 @@
 package org.folio.util;
 
 import static org.folio.common.ListUtils.createInsertPlaceholders;
+import static org.folio.db.RowSetUtils.mapItems;
+import static org.folio.db.RowSetUtils.toUUID;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
+import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.Arrays;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.db.RowSetUtils;
+import org.folio.repository.SqlQueryHelper;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.persist.PostgresClient;
 
 public class HoldingsTestUtil {
 
-  public HoldingsTestUtil() {
-  }
-
-  public static List<HoldingInfoInDB> getHoldings(Vertx vertx) {
-    ObjectMapper mapper = new ObjectMapper();
-    CompletableFuture<List<HoldingInfoInDB>> future = new CompletableFuture<>();
+  public static List<DbHoldingInfo> getHoldings(Vertx vertx) {
+    CompletableFuture<List<DbHoldingInfo>> future = new CompletableFuture<>();
+    String query = prepareQuery(SqlQueryHelper.selectQuery(), holdingsTestTable());
     PostgresClient.getInstance(vertx)
-      .select("SELECT * FROM " + holdingsTestTable(),
-        event -> future.complete(event.result().getRows().stream()
-          .map(row -> parseHolding(mapper, row))
-          .collect(Collectors.toList()))
-      );
+      .select(query, event -> future.complete(mapItems(event.result(), HoldingsTestUtil::mapHoldingInfo)));
     return future.join();
   }
 
-  public static void addHolding(String credentialsId, HoldingInfoInDB holding, Instant updatedAt, Vertx vertx) {
+  public static void saveHolding(String credentialsId, DbHoldingInfo holding, OffsetDateTime updatedAt, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    final String sql = String.format(INSERT_OR_UPDATE_HOLDINGS, holdingsTestTable(), createInsertPlaceholders(9, 1));
-    final JsonArray params = getHoldingsInsertParams(credentialsId, holding, updatedAt);
-    PostgresClient.getInstance(vertx).execute(sql, params, event -> future.complete(null));
+    String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS, holdingsTestTable(), createInsertPlaceholders(9, 1));
+    Tuple params = getHoldingsInsertParams(credentialsId, holding, updatedAt);
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
   }
 
-  private static JsonArray getHoldingsInsertParams(String credentialsId, HoldingInfoInDB holding, Instant updatedAt) {
-    return new JsonArray(Arrays.asList(
-      credentialsId,
+  private static Tuple getHoldingsInsertParams(String credentialsId, DbHoldingInfo holding, OffsetDateTime updatedAt) {
+    return Tuple.of(
+      toUUID(credentialsId),
       getHoldingsId(holding),
       holding.getVendorId(),
       holding.getPackageId(),
@@ -58,27 +59,30 @@ public class HoldingsTestUtil {
       holding.getResourceType(),
       holding.getPublisherName(),
       holding.getPublicationTitle(),
-      updatedAt));
+      updatedAt
+    );
+  }
+
+  public static DbHoldingInfo getStubHolding() throws IOException, URISyntaxException {
+    return readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class);
   }
 
   private static String holdingsTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + HOLDINGS_TABLE;
   }
 
-  private static HoldingInfoInDB parseHolding(ObjectMapper mapper, JsonObject json) {
-    try {
-      return mapper.readValue(json.toString(), HoldingInfoInDB.class);
-    } catch (IOException e) {
-      e.printStackTrace();
-      throw new IllegalArgumentException("Can't parse holding", e);
-    }
+  private static DbHoldingInfo mapHoldingInfo(Row row) {
+    return DbHoldingInfo.builder()
+      .titleId(row.getString(TITLE_ID_COLUMN))
+      .packageId(row.getString(PACKAGE_ID_COLUMN))
+      .vendorId(row.getString(VENDOR_ID_COLUMN))
+      .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
+      .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
+      .resourceType(row.getString(RESOURCE_TYPE_COLUMN))
+      .build();
   }
 
-  private static String getHoldingsId(HoldingInfoInDB holding) {
+  private static String getHoldingsId(DbHoldingInfo holding) {
     return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
-  }
-
-  public static HoldingInfoInDB getHolding() throws IOException, URISyntaxException {
-    return Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class);
   }
 }

@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,19 +13,25 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class VertxIdProvider {
-  public static final String VERTX_ID_MAP = "vertxIdMap";
-  public static final String VERTX_ID_KEY = "vertxId";
-  private Vertx vertx;
+
+  private static final String VERTX_ID_MAP = "vertxIdMap";
+  private static final String VERTX_ID_KEY = "vertxId";
+
+  private final Vertx vertx;
 
   @Autowired
   public VertxIdProvider(Vertx vertx) {
     this.vertx = vertx;
-    LocalMap<Object, Object> map = vertx.sharedData().getLocalMap(VERTX_ID_MAP);
+    LocalMap<Object, Object> map = getLocalMap(vertx);
     map.computeIfAbsent(VERTX_ID_KEY, key -> UUID.randomUUID().toString());
   }
 
-  public String  getVertxId(){
-    return (String) vertx.sharedData().getLocalMap(VERTX_ID_MAP).get(VERTX_ID_KEY);
+  public UUID getVertxId() {
+    return UUID.fromString((String) getLocalMap(vertx).get(VERTX_ID_KEY));
+  }
+
+  private LocalMap<Object, Object> getLocalMap(Vertx vertx) {
+    return vertx.sharedData().getLocalMap(VERTX_ID_MAP);
   }
 }
 

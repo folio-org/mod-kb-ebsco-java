@@ -2,6 +2,8 @@ package org.folio.rest.converter.assignedusers;
 
 import static org.folio.rest.jaxrs.model.AssignedUser.Type.ASSIGNED_USERS;
 
+import java.util.UUID;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -21,10 +23,10 @@ public class AssignedUserCollectionItemConverter {
     @Override
     public AssignedUser convert(DbAssignedUser source) {
       return new AssignedUser()
-        .withId(source.getId())
+        .withId(source.getId().toString())
         .withType(ASSIGNED_USERS)
         .withAttributes(new AssignedUserDataAttributes()
-          .withCredentialsId(source.getCredentialsId())
+          .withCredentialsId(source.getCredentialsId().toString())
           .withUserName(source.getUsername())
           .withFirstName(source.getFirstName())
           .withMiddleName(source.getMiddleName())
@@ -41,8 +43,8 @@ public class AssignedUserCollectionItemConverter {
     public DbAssignedUser convert(AssignedUser source) {
       AssignedUserDataAttributes attributes = source.getAttributes();
       return DbAssignedUser.builder()
-        .id(source.getId())
-        .credentialsId(attributes.getCredentialsId())
+        .id(UUID.fromString(source.getId()))
+        .credentialsId(UUID.fromString(attributes.getCredentialsId()))
         .username(attributes.getUserName())
         .firstName(attributes.getFirstName())
         .middleName(attributes.getMiddleName())

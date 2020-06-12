@@ -1,5 +1,6 @@
 package org.folio.service.assignedusers;
 
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.util.Collection;
@@ -36,7 +37,8 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Override
   public CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId,
                                                                        Map<String, String> okapiHeaders) {
-    return repository.findByCredentialsId(credentialsId, tenantId(okapiHeaders)).thenApply(collectionConverter::convert);
+    return repository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
+      .thenApply(collectionConverter::convert);
   }
 
   @Override
@@ -53,19 +55,20 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
       .thenCompose(o -> repository.update(toDbConverter.convert(assignedUser), tenantId(okapiHeaders)));
   }
 
+  @Override
+  public CompletableFuture<Void> delete(String credentialsId, String userId, Map<String, String> okapiHeaders) {
+    return repository.delete(toUUID(credentialsId), toUUID(userId), tenantId(okapiHeaders));
+  }
+
   private CompletableFuture<Void> validate(String credentialsId, String userId, AssignedUser assignedUser) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    if (!assignedUser.getId().equals(userId) || !assignedUser.getAttributes().getCredentialsId().equals(credentialsId)) {
+    if (!assignedUser.getId().equals(userId)
+      || !assignedUser.getAttributes().getCredentialsId().equals(credentialsId)) {
       BadRequestException exception = new BadRequestException(IDS_NOT_MATCH_MESSAGE);
       future.completeExceptionally(exception);
     } else {
       future.complete(null);
     }
     return future;
-  }
-
-  @Override
-  public CompletableFuture<Void> delete(String credentialsId, String userId, Map<String, String> okapiHeaders) {
-    return repository.delete(credentialsId, userId, tenantId(okapiHeaders));
   }
 }

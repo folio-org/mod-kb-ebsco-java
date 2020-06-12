@@ -5,19 +5,28 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.getResourcesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.DbUtil.getTitlesTableName;
-import static org.folio.repository.DbUtil.mapRow;
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
+import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
+import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
+import static org.folio.repository.titles.TitlesTableConstants.COUNT_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
 import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
+import static org.folio.repository.titles.TitlesTableConstants.HOLDINGS_ID_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
 import static org.folio.util.FutureUtils.mapResult;
@@ -25,24 +34,24 @@ import static org.folio.util.FutureUtils.mapResult;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.Title;
-import org.folio.repository.holdings.HoldingInfoInDB;
-import org.folio.repository.resources.ResourceTableConstants;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -55,116 +64,126 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   @Autowired
   private DBExceptionTranslator excTranslator;
 
-
   @Override
   public CompletableFuture<Void> save(DbTitle title, String tenantId) {
-    JsonArray parameters = createInsertOrUpdateParameters(String.valueOf(title.getId()), title.getCredentialsId(),
-      title.getName());
+    Tuple parameters = createParams(asList(
+      String.valueOf(title.getId()),
+      title.getCredentialsId(),
+      title.getName(),
+      title.getName()
+    ));
 
-    final String query = String.format(INSERT_OR_UPDATE_TITLE_STATEMENT, getTitlesTableName(tenantId));
+    final String query = prepareQuery(INSERT_OR_UPDATE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
+    logInsertQuery(LOG, query, parameters);
 
-    Promise<UpdateResult> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
-  public CompletableFuture<Void> delete(Long titleId, String credentialsId, String tenantId) {
-    JsonArray parameter = createParams(asList(String.valueOf(titleId), credentialsId));
+  public CompletableFuture<Void> delete(Long titleId, UUID credentialsId, String tenantId) {
+    Tuple params = createParams(String.valueOf(titleId), credentialsId);
 
-    final String query = String.format(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
+    final String query = prepareQuery(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, params);
 
-    Promise<UpdateResult> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameter, promise);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).execute(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
   public CompletableFuture<List<DbTitle>> getTitlesByResourceTags(List<String> tags, int page, int count,
-      String credentialsId, String tenantId) {
+                                                                  UUID credentialsId, String tenantId) {
 
-    if(CollectionUtils.isEmpty(tags)){
+    if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
     int offset = (page - 1) * count;
 
-    JsonArray parameters = new JsonArray();
-    tags.forEach(parameters::add);
+    Tuple parameters = Tuple.tuple();
+    tags.forEach(parameters::addString);
     parameters
-      .add(credentialsId)
-      .add(offset)
-      .add(count);
+      .addUUID(credentialsId)
+      .addInteger(offset)
+      .addInteger(count);
 
-    final String query = String.format(SELECT_TITLES_BY_RESOURCE_TAGS,
+    final String query = prepareQuery(SELECT_TITLES_BY_RESOURCE_TAGS,
       getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId),
       createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapTitles);
   }
 
   @Override
-  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, String credentialsId,
-      String tenantId) {
+  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, UUID credentialsId, String tenantId) {
 
-    if(CollectionUtils.isEmpty(tags)){
+    if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(0);
     }
 
-    JsonArray parameters = new JsonArray();
-    tags.forEach(parameters::add);
-    parameters.add(credentialsId);
+    Tuple parameters = Tuple.tuple();
+    tags.forEach(parameters::addString);
+    parameters.addUUID(credentialsId);
 
-    final String query = String.format(COUNT_TITLES_BY_RESOURCE_TAGS,
+    final String query = prepareQuery(COUNT_TITLES_BY_RESOURCE_TAGS,
       getResourcesTableName(tenantId), getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
   }
 
-  private Integer readTagCount(ResultSet resultSet) {
-    return resultSet.getRows().get(0).getInteger("count");
+  private Integer readTagCount(RowSet<Row> resultSet) {
+    return RowSetUtils.mapFirstItem(resultSet, row -> row.getInteger(COUNT_COLUMN));
   }
 
-  private List<DbTitle> mapTitles(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), this::mapTitle);
+  private List<DbTitle> mapTitles(RowSet<Row> resultSet) {
+    return RowSetUtils.mapItems(resultSet, this::mapTitle);
   }
 
-  private DbTitle mapTitle(JsonObject row) {
+  private DbTitle mapTitle(Row row) {
     Title title = readHolding(row)
       .map(this::mapHoldingToTitle)
       .orElse(null);
     return DbTitle.builder()
-      .id(Long.parseLong(row.getString(ResourceTableConstants.ID_COLUMN)))
-      .credentialsId(row.getString(ResourceTableConstants.CREDENTIALS_ID_COLUMN))
-      .name(row.getString(ResourceTableConstants.NAME_COLUMN))
+      .id(Long.parseLong(row.getString(ID_COLUMN)))
+      .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
+      .name(row.getString(NAME_COLUMN))
       .title(title)
       .build();
   }
 
-  private Optional<HoldingInfoInDB> readHolding(JsonObject row){
-      if(row.getString("credentials_id") != null && row.getString("h_id") != null) {
-        return mapRow(row, HoldingInfoInDB.class);
-      } else {
-        return Optional.empty();
-      }
+  private Optional<DbHoldingInfo> readHolding(Row row) {
+    if (row.getUUID(CREDENTIALS_ID_COLUMN) != null && row.getString(HOLDINGS_ID_COLUMN) != null) {
+      DbHoldingInfo holdingInfo = DbHoldingInfo.builder()
+        .titleId(row.getString(TITLE_ID_COLUMN))
+        .packageId(row.getString(PACKAGE_ID_COLUMN))
+        .vendorId(row.getString(VENDOR_ID_COLUMN))
+        .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
+        .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
+        .resourceType(row.getString(RESOURCE_TYPE_COLUMN))
+        .build();
+      return Optional.of(holdingInfo);
+    } else {
+      return Optional.empty();
+    }
   }
 
-  private Title mapHoldingToTitle(HoldingInfoInDB holding) {
+  private Title mapHoldingToTitle(DbHoldingInfo holding) {
     return Title.builder()
       .titleName(holding.getPublicationTitle())
       .titleId(Integer.parseInt(holding.getTitleId()))

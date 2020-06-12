@@ -18,11 +18,11 @@ import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
-import static org.folio.util.HoldingsStatusUtil.insertStatusNotStarted;
+import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -85,7 +85,7 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
   public void shouldCreateSnapshotOnInitialStatusNone(TestContext context) throws IOException, URISyntaxException {
     Async async = context.async();
 
-    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL),false),
+    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), false),
       new ResponseDefinitionBuilder().withBody(readFile("responses/rmapi/holdings/status/get-status-none.json")),
       new ResponseDefinitionBuilder().withBody(readFile("responses/rmapi/holdings/status/get-status-completed.json"))
     );
@@ -121,17 +121,17 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
     WireMock.verify(0, postRequestedFor(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false)));
   }
 
+  private void setupDefaultLoadKBConfiguration() {
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatusNotStarted(STUB_CREDENTILS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+  }
+
   private void mockPostHoldings() {
     stubFor(post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false))
       .willReturn(new ResponseDefinitionBuilder()
         .withBody("")
         .withStatus(202)));
-  }
-
-  public void setupDefaultLoadKBConfiguration() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    insertStatusNotStarted(STUB_CREDENTILS_ID, vertx);
-    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
   }
 
   private void tearDownHoldingsData() {

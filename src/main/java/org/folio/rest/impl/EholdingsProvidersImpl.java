@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getPackageIds;
 import static org.folio.rest.util.IdParser.parseProviderId;
@@ -15,6 +16,7 @@ import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import javax.validation.ValidationException;
@@ -107,7 +109,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
-
   @Override
   @Validate
   @HandleValidationErrors
@@ -177,8 +178,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .thenCompose(creds -> {
         ProviderTagsDataAttributes attributes = entity.getData().getAttributes();
         providerTagsPutBodyValidator.validate(entity, attributes);
-        return updateTags(createDbProvider(providerId, creds.getId(), entity.getData().getAttributes()), tags,
-                    new OkapiData(okapiHeaders).getTenant())
+        return updateTags(createDbProvider(providerId, UUID.fromString(creds.getId()), entity.getData().getAttributes()),
+          tags, new OkapiData(okapiHeaders).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
             Future.succeededFuture(PutEholdingsProvidersTagsByProviderIdResponse.respond200WithApplicationVndApiJson(
               convertToProviderTags(attributes)
@@ -234,7 +235,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
-    String credentialsId = context.getCredentialsId();
+    UUID credentialsId = toUUID(context.getCredentialsId());
 
     return tagRepository
       .countRecordsByTags(tags, RecordType.PROVIDER, credentialsId, tenant)
@@ -261,7 +262,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.findByTagNameAndProvider(tags, providerId, page, count, context.getCredentialsId(),
+        return packageRepository.findByTagNameAndProvider(tags, providerId, page, count, toUUID(context.getCredentialsId()),
           tenant);
       })
       .thenCompose(dbPackages -> {
@@ -323,7 +324,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, RMAPITemplateContext context) {
-    String credentialsId = context.getCredentialsId();
+    UUID credentialsId = toUUID(context.getCredentialsId());
     String tenant = context.getOkapiData().getTenant();
     return packageRepository.findByIds(getPackageIds(packages), credentialsId, tenant)
       .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
@@ -348,8 +349,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .withJsonapi(JSONAPI);
   }
 
-  private DbProvider createDbProvider(String providerId, String credentialsId,
-      ProviderTagsDataAttributes attributes) {
+  private DbProvider createDbProvider(String providerId, UUID credentialsId,
+                                      ProviderTagsDataAttributes attributes) {
     return DbProvider.builder()
       .id(providerId)
       .credentialsId(credentialsId)

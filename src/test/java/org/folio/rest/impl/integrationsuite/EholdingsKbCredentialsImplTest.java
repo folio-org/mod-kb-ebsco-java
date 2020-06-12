@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.util.AssertTestUtil.assertErrorContainsDetail;
+import static org.folio.rest.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
@@ -37,7 +39,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
 import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +86,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnKbCredentialsCollectionOnGet() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentialsCollection actual = getWithOk(KB_CREDENTIALS_ENDPOINT).as(KbCredentialsCollection.class);
 
     assertEquals(1, actual.getData().size());
@@ -142,7 +144,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("KB API Credentials are invalid", error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "KB API Credentials are invalid");
   }
 
   @Test
@@ -156,8 +158,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
-    assertEquals("name is too long (maximum is 255 characters)", error.getErrors().get(0).getDetail());
+    assertErrorContainsTitle(error, "Invalid name");
+    assertErrorContainsDetail(error, "name is too long (maximum is 255 characters)");
   }
 
   @Test
@@ -171,13 +173,13 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
-    assertEquals("name must not be empty", error.getErrors().get(0).getDetail());
+    assertErrorContainsTitle(error, "Invalid name");
+    assertErrorContainsDetail(error, "name must not be empty");
   }
 
   @Test
   public void shouldReturn422OnPostWhenCredentialsWithProvidedNameAlreadyExist() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
@@ -186,14 +188,13 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("Duplicate name", error.getErrors().get(0).getTitle());
-    assertEquals(String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME),
-      error.getErrors().get(0).getDetail());
+    assertErrorContainsTitle(error, "Duplicate name");
+    assertErrorContainsDetail(error, String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME));
   }
 
   @Test
   public void shouldReturnKbCredentialsOnGet() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
@@ -206,7 +207,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
     JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
   }
 
   @Test
@@ -214,12 +215,12 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
+    assertErrorContainsTitle(error, "KbCredentials not found by id");
   }
 
   @Test
   public void shouldReturn204OnPutIfCredentialsAreValid() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentials creds = stubbedCredentials();
     creds.getAttributes()
@@ -251,7 +252,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPutWhenCredentialsAreInvalid() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
       .withData(stubbedCredentials());
@@ -262,7 +263,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("KB API Credentials are invalid", error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "KB API Credentials are invalid");
   }
 
   @Test
@@ -277,8 +278,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
-    assertEquals("name is too long (maximum is 255 characters)", error.getErrors().get(0).getDetail());
+    assertErrorContainsTitle(error, "Invalid name");
+    assertErrorContainsDetail(error, "name is too long (maximum is 255 characters)");
   }
 
   @Test
@@ -293,14 +294,14 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
-    assertEquals("name must not be empty", error.getErrors().get(0).getDetail());
+    assertErrorContainsTitle(error, "Invalid name");
+    assertErrorContainsDetail(error, "name must not be empty");
   }
 
   @Test
   public void shouldReturn422OnPutWhenCredentialsWithProvidedNameAlreadyExist() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2",
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2",
       STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
@@ -312,9 +313,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals("Duplicate name", error.getErrors().get(0).getTitle());
-    assertEquals(String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME),
-      error.getErrors().get(0).getDetail());
+    assertErrorContainsTitle(error, "Duplicate name");
+    assertErrorContainsDetail(error, String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME));
   }
 
   @Test
@@ -328,7 +328,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
   }
 
   @Test
@@ -343,12 +343,12 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("KbCredentials not found by id"));
+    assertErrorContainsTitle(error, "KbCredentials not found by id");
   }
 
   @Test
   public void shouldReturn204OnDelete() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     deleteWithNoContent(resourcePath);
@@ -359,13 +359,13 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnDeleteWhenHasRelatedRecords() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertEquals("Credentials have related records and can't be deleted", error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Credentials have related records and can't be deleted");
 
     List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
     assertFalse(kbCredentialsInDb.isEmpty());
@@ -385,14 +385,14 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
   }
 
   @Test
   public void shouldReturn200AndKbCredentialsOnGetByUser() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-        vertx);
-    insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron",
+      vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
     assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
@@ -400,7 +400,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200AndKbCredentialsOnGetByUserWhenSingleKbCredentialsPresent() {
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
     assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
@@ -411,30 +411,29 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid token"));
+    assertErrorContainsTitle(error, "Invalid token");
   }
 
   @Test
   public void shouldReturn404OnGetByUserWhenAssignedUserIsMissingAndNoKBCredentialsAtAll() {
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("User credentials not found"));
+    assertErrorContainsTitle(error, "User credentials not found");
   }
 
   @Test
   public void shouldReturn404OnGetByUserWhenUserIsNotTheOneWhoIsAssigned() {
-    String credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-        vertx);
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
 
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_OTHER_HEADER).as(
-        JsonapiError.class);
+      JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("User credentials not found"));
+    assertErrorContainsTitle(error, "User credentials not found");
   }
 
   @Test
-  public void shouldReturnStatusNotStartedOnKbCredentialsCreation(){
+  public void shouldReturnStatusNotStartedOnKbCredentialsCreation() {
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest()
       .withData(stubbedCredentials());
     String postBody = Json.encode(kbCredentialsPostRequest);
@@ -451,8 +450,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnSecuredCollection(){
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnSecuredCollection() {
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     Map<String, String> headers = new HashMap<>();
     headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);
     KbCredentialsCollection collection = securedCredentialsService.findAll(headers).join();
@@ -463,9 +462,10 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertThat(collection.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
     assertThat(collection.getData().get(0).getAttributes().getUrl(), equalTo(STUB_API_URL));
   }
+
   @Test
-  public void shouldReturnNonSecuredCollection(){
-    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnNonSecuredCollection() {
+    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     Map<String, String> headers = new HashMap<>();
     headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);
     KbCredentialsCollection collection = nonSecuredCredentialsService.findAll(headers).join();

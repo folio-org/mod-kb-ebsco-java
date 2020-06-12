@@ -14,8 +14,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -48,8 +48,7 @@ public class UserLookUpService {
    * @return User information.
    */
   public CompletableFuture<UserLookUp> getUserInfo(final Map<String, String> okapiHeaders) {
-    CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
-    headers.addAll(okapiHeaders);
+    CaseInsensitiveMap<String, String> headers = new CaseInsensitiveMap<>(okapiHeaders);
 
     String tenantId = TenantTool.calculateTenantId(headers.get(XOkapiHeaders.TENANT));
     Optional<UserInfo> userInfo = TokenUtils.userInfoFromToken(headers.get(XOkapiHeaders.TOKEN));

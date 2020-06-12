@@ -1,115 +1,113 @@
 package org.folio.repository.holdings.status.retry;
 
-import static java.util.Collections.singletonList;
-
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logUpdateQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getRetryStatusTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.DELETE_RETRY_STATUS;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.GET_RETRY_STATUS_BY_CREDENTIALS;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.INSERT_RETRY_STATUS;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRIES_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.TIMER_ID_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.UPDATE_RETRY_STATUS;
 import static org.folio.util.FutureUtils.mapResult;
-import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.RowSetUtils;
+import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class RetryStatusRepositoryImpl implements RetryStatusRepository {
+
   private static final Logger LOG = LoggerFactory.getLogger(RetryStatusRepositoryImpl.class);
-  private Vertx vertx;
 
-  @Autowired
-  public RetryStatusRepositoryImpl(Vertx vertx) {
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public RetryStatusRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
     this.vertx = vertx;
+    this.excTranslator = excTranslator;
   }
 
   @Override
-  public CompletableFuture<RetryStatus> findByCredentialsId(String credentialsId, String tenantId) {
-    final String query = String.format(GET_RETRY_STATUS_BY_CREDENTIALS, getRetryStatusTableName(tenantId));
-    LOG.info("Select retry status = " + query);
-    Promise<ResultSet> promise = Promise.promise();
-    final JsonArray parameters = createParams(singletonList(credentialsId));
+  public CompletableFuture<RetryStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
+    final String query = prepareQuery(GET_RETRY_STATUS_BY_CREDENTIALS, getRetryStatusTableName(tenantId));
+    final Tuple parameters = Tuple.of(credentialsId);
+    logSelectQuery(LOG, query, parameters);
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
-    return mapResult(promise.future(), this::mapStatus);
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapStatus);
   }
 
   @Override
-  public CompletableFuture<Void> save(RetryStatus status, String credentialsId, String tenantId) {
-    final String query = String.format(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId), createPlaceholders(4));
-    LOG.info("Do insert query = " + query);
-    Promise<UpdateResult> promise = Promise.promise();
-    pgClient(tenantId).execute(query, createInsertParameters(credentialsId, status), promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
-  }
-
-  @Override
-  public CompletableFuture<Void> update(RetryStatus retryStatus, String credentialsId, String tenantId) {
-    final String query = String.format(UPDATE_RETRY_STATUS, getRetryStatusTableName(tenantId));
-    final JsonArray parameters = createUpdateParameters(credentialsId, retryStatus);
-    LOG.info("Do update query = " + query);
-    Promise<UpdateResult> promise = Promise.promise();
+  public CompletableFuture<Void> save(RetryStatus status, UUID credentialsId, String tenantId) {
+    final String query = prepareQuery(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId), createPlaceholders(4));
+    final Tuple parameters = createInsertParameters(credentialsId, status);
+    logInsertQuery(LOG, query, parameters);
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
-  public CompletableFuture<Void> delete(String credentialsId, String tenantId) {
-    final String query = String.format(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
-    LOG.info("Do delete query = " + query);
-    Promise<UpdateResult> promise = Promise.promise();
-    pgClient(tenantId).execute(query, new JsonArray().add(credentialsId), promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
+  public CompletableFuture<Void> update(RetryStatus retryStatus, UUID credentialsId, String tenantId) {
+    final String query = prepareQuery(UPDATE_RETRY_STATUS, getRetryStatusTableName(tenantId));
+    final Tuple parameters = createUpdateParameters(credentialsId, retryStatus);
+    logUpdateQuery(LOG, query, parameters);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).execute(query, parameters, promise);
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
-  private JsonArray createInsertParameters(String credentialsId, RetryStatus retryStatus) {
-    JsonArray parameters = new JsonArray()
-      .add(UUID.randomUUID().toString())
-      .add(credentialsId)
-      .add(retryStatus.getRetryAttemptsLeft());
-    if(retryStatus.getTimerId() != null){
-      parameters.add(retryStatus.getTimerId());
-    } else {
-      parameters.addNull();
-    }
-    return parameters;
+  @Override
+  public CompletableFuture<Void> delete(UUID credentialsId, String tenantId) {
+    final String query = prepareQuery(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
+    final Tuple parameters = Tuple.of(credentialsId);
+    logDeleteQuery(LOG, query, parameters);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).execute(query, parameters, promise);
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
-  private JsonArray createUpdateParameters(String credentialsId, RetryStatus retryStatus) {
-    JsonArray parameters = new JsonArray()
-      .add(credentialsId)
-      .add(retryStatus.getRetryAttemptsLeft());
-    if(retryStatus.getTimerId() != null){
-      parameters.add(retryStatus.getTimerId());
-    } else {
-      parameters.addNull();
-    }
-    parameters.add(credentialsId);
-    return parameters;
+  private Tuple createInsertParameters(UUID credentialsId, RetryStatus retryStatus) {
+    return createParams(
+      UUID.randomUUID(),
+      credentialsId,
+      retryStatus.getRetryAttemptsLeft(),
+      retryStatus.getTimerId()
+    );
   }
 
-  private RetryStatus mapStatus(ResultSet resultSet) {
-    JsonObject row = resultSet.getRows().get(0);
-    return new RetryStatus(
-      row.getInteger(RETRIES_LEFT_COLUMN),
-      row.getLong(TIMER_ID_COLUMN));
+  private Tuple createUpdateParameters(UUID credentialsId, RetryStatus retryStatus) {
+    return createParams(
+      retryStatus.getRetryAttemptsLeft(),
+      retryStatus.getTimerId(),
+      credentialsId
+    );
+  }
+
+  private RetryStatus mapStatus(RowSet<Row> resultSet) {
+    return RowSetUtils.mapFirstItem(resultSet, row -> new RetryStatus(
+      row.getInteger(ATTEMPTS_LEFT_COLUMN),
+      row.getLong(TIMER_ID_COLUMN))
+    );
   }
 
   private PostgresClient pgClient(String tenantId) {

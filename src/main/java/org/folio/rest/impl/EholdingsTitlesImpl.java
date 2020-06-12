@@ -2,6 +2,7 @@ package org.folio.rest.impl;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
@@ -14,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -152,6 +154,26 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   @Override
   @HandleValidationErrors
+  public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders,
+                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    long titleIdLong = parseTitleId(titleId);
+    boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
+
+    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+      .requestAction(context ->
+        context.getTitlesService().retrieveTitle(titleIdLong)
+          .thenCompose(title -> completedFuture(new TitleResult(title, includeResource)))
+          .thenCompose(result -> loadTags(result, context))
+      )
+      .addErrorMapper(ResourceNotFoundException.class, exception ->
+        GetEholdingsTitlesByTitleIdResponse
+          .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))
+      )
+      .executeWithResult(Title.class);
+  }
+
+  @Override
+  @HandleValidationErrors
   public void putEholdingsTitlesByTitleId(String titleId, String contentType, TitlePutRequest entity,
                                           Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
@@ -178,33 +200,13 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .executeWithResult(Title.class);
   }
 
-  @Override
-  @HandleValidationErrors
-  public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders,
-                                          Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    long titleIdLong = parseTitleId(titleId);
-    boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
-
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context ->
-        context.getTitlesService().retrieveTitle(titleIdLong)
-          .thenCompose(title -> completedFuture(new TitleResult(title, includeResource)))
-          .thenCompose(result -> loadTags(result, context))
-      )
-      .addErrorMapper(ResourceNotFoundException.class, exception ->
-        GetEholdingsTitlesByTitleIdResponse
-          .respond404WithApplicationVndApiJson(ErrorUtil.createError(GET_TITLE_NOT_FOUND_MESSAGE))
-      )
-      .executeWithResult(Title.class);
-  }
-
   private CompletableFuture<Titles> getResourcesByTags(List<String> tags, int page, int count,
                                                        RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
 
     String tenant = context.getOkapiData().getTenant();
-    String credentialsId = context.getCredentialsId();
+    UUID credentialsId = toUUID(context.getCredentialsId());
 
     return titlesRepository.countTitlesByResourceTags(tags, credentialsId, tenant)
       .thenCompose(resultsCount -> {
@@ -271,7 +273,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       return completedFuture(result);
     } else {
       String tenant = context.getOkapiData().getTenant();
-      String credentialsId = context.getCredentialsId();
+      UUID credentialsId = toUUID(context.getCredentialsId());
 
       return updateStoredTitles(createDbTitle(result, credentialsId), tags, tenant)
         .thenCompose(o -> tagRepository.updateRecordTags(tenant, String.valueOf(
@@ -283,7 +285,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     }
   }
 
-  private DbTitle createDbTitle(TitleResult result, String credentialsId) {
+  private DbTitle createDbTitle(TitleResult result, UUID credentialsId) {
     return DbTitle.builder()
       .id(result.getTitle().getTitleId().longValue())
       .name(result.getTitle().getTitleName())

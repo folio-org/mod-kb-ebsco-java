@@ -1,12 +1,14 @@
 package org.folio.rest.validator;
 
-import org.folio.rest.util.RestConstants;
-import org.springframework.stereotype.Component;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 import javax.validation.ValidationException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+
+import org.springframework.stereotype.Component;
+
+import org.folio.rest.util.RestConstants;
 
 /**
  * Verifies that headers are valid
@@ -14,7 +16,7 @@ import java.util.Map;
 @Component
 public class HeaderValidator {
 
-  private final Collection<String> expectedHeaders = Arrays.asList(
+  private final Collection<String> expectedHeaders = Collections.singletonList(
     RestConstants.OKAPI_URL_HEADER
   );
 

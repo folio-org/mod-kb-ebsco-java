@@ -1,5 +1,7 @@
 package org.folio.util;
 
+import static org.folio.db.RowSetUtils.fromUUID;
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
@@ -15,15 +17,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.sql.ResultSet;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.db.DbUtils;
+import org.folio.db.RowSetUtils;
+import org.folio.repository.DbUtil;
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.AssignedUserCollectionItemConverter;
@@ -37,10 +40,10 @@ public class AssignedUsersTestUtil {
 
   public static String insertAssignedUser(String id, String credentialsId, String username, String firstName,
                                           String middleName, String lastName, String patronGroup, Vertx vertx) {
-    CompletableFuture<ResultSet> future = new CompletableFuture<>();
+    CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
-    String insertStatement = String.format(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());
-    JsonArray params = DbUtils.createParams(Arrays.asList(id, credentialsId, username,
+    String insertStatement = DbUtil.prepareQuery(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());
+    Tuple params = DbUtils.createParams(Arrays.asList(toUUID(id), UUID.fromString(credentialsId), username,
       firstName, middleName, lastName, patronGroup
     ));
 
@@ -52,30 +55,27 @@ public class AssignedUsersTestUtil {
 
   public static String insertAssignedUser(String credentialsId, String username, String firstName, String middleName,
                                           String lastName, String patronGroup, Vertx vertx) {
-    return insertAssignedUser(UUID.randomUUID().toString(), credentialsId, username, firstName, middleName, lastName,
+    return insertAssignedUser(fromUUID(UUID.randomUUID()), credentialsId, username, firstName, middleName, lastName,
       patronGroup, vertx);
   }
 
   public static List<AssignedUser> getAssignedUsers(Vertx vertx) {
     CompletableFuture<List<AssignedUser>> future = new CompletableFuture<>();
     PostgresClient.getInstance(vertx).select(String.format(SqlQueryHelper.selectQuery(), kbAssignedUsersTestTable()),
-      event -> future.complete(event.result().getRows().stream()
-        .map(AssignedUsersTestUtil::parseAssignedUser)
-        .map(CONVERTER::convert)
-        .collect(Collectors.toList())));
+      event -> future.complete(RowSetUtils.mapItems(event.result(), AssignedUsersTestUtil::parseAssignedUser)));
     return future.join();
   }
 
-  private static DbAssignedUser parseAssignedUser(JsonObject row) {
-    return DbAssignedUser.builder()
-      .id(row.getString(ID_COLUMN))
-      .credentialsId(row.getString(CREDENTIALS_ID))
+  private static AssignedUser parseAssignedUser(Row row) {
+    return CONVERTER.convert(DbAssignedUser.builder()
+      .id(row.getUUID(ID_COLUMN))
+      .credentialsId(row.getUUID(CREDENTIALS_ID))
       .username(row.getString(USER_NAME))
       .patronGroup(row.getString(PATRON_GROUP))
       .firstName(row.getString(FIRST_NAME))
       .middleName(row.getString(MIDDLE_NAME))
       .lastName(row.getString(LAST_NAME))
-      .build();
+      .build());
   }
 
   private static String kbAssignedUsersTestTable() {

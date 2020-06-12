@@ -1,12 +1,13 @@
 package org.folio.util;
 
+import static org.folio.repository.DbUtil.getTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.logger;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_KEY;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -17,6 +18,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryContext;
 import io.vertx.core.eventbus.Message;
 
+import org.folio.repository.SqlQueryHelper;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
@@ -35,7 +37,7 @@ public final class KBTestUtil {
    * @param wiremockUrl wiremock url with port
    */
   public static void setupDefaultKBConfiguration(String wiremockUrl, Vertx vertx) {
-    insertKbCredentials(wiremockUrl, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentialsTestUtil.saveKbCredentials(wiremockUrl, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
   }
 
   public static KbCredentials getDefaultKbConfiguration(Vertx vertx) {
@@ -49,12 +51,13 @@ public final class KBTestUtil {
 
   public static void clearDataFromTable(Vertx vertx, String tableName) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "DELETE FROM " + (PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + tableName),
-      event -> {
-        logger().info("Table cleaned up: " + tableName);
-        future.complete(null);
-      });
+    String query = prepareQuery(SqlQueryHelper.deleteQuery(), getTableName(STUB_TENANT, tableName));
+    PostgresClient.getInstance(vertx)
+      .execute(query,
+        event -> {
+          logger().info("Table cleaned up: " + tableName);
+          future.complete(null);
+        });
     future.join();
   }
 
@@ -65,10 +68,8 @@ public final class KBTestUtil {
       Message<?> message = messageContext.message();
       if (messageMatches(serviceAddress, serviceMethodName, message)) {
         messageConsumer.accept(message);
-        messageContext.next();
-      } else {
-        messageContext.next();
       }
+      messageContext.next();
     };
   }
 

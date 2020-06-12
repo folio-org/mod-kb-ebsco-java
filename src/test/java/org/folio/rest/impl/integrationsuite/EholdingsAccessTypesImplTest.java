@@ -42,7 +42,7 @@ import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.io.IOException;
@@ -73,6 +73,7 @@ import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.util.RestConstants;
+import org.folio.util.KbCredentialsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAccessTypesImplTest extends WireMockTestBase {
@@ -119,7 +120,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
           .withStatus(403)
         ));
 
-    credentialsId = insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    credentialsId = KbCredentialsTestUtil
+      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
   }
 
   @After
@@ -257,7 +259,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnGetByIdAndUserIfIdIsInvalid() {
-    String id = "99999999-9999-2-9999-999999999999";
+    String id = "invalid-id";
     String resourcePath = ACCESS_TYPES_PATH + "/" + id;
     JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 

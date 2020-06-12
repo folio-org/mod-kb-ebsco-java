@@ -4,11 +4,17 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.db.RowSetUtils.isEmpty;
+import static org.folio.db.RowSetUtils.mapFirstItem;
+import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.DbUtil.getKbCredentialsTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.API_KEY_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_BY_USER_ID_COLUMN;
@@ -29,8 +35,6 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -41,13 +45,11 @@ import javax.ws.rs.BadRequestException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
-import org.apache.commons.lang3.StringUtils;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,10 +62,6 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private static final Logger LOG = LoggerFactory.getLogger(KbCredentialsRepositoryImpl.class);
 
-  private static final String SELECT_LOG_MESSAGE = "Do select query = {}";
-  private static final String INSERT_LOG_MESSAGE = "Do insert query = {}";
-  private static final String DELETE_LOG_MESSAGE = "Do delete query = {}";
-
   private static final String CREDENTIALS_NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String CREDENTIALS_NAME_UNIQUENESS_DETAILS = "Credentials with name '%s' already exist";
   private static final String CREDENTIALS_DELETE_ALLOWED_DETAILS = "Credentials have related records and can't be deleted";
@@ -75,35 +73,36 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   @Override
   public CompletableFuture<Collection<DbKbCredentials>> findAll(String tenant) {
-    String query = format(SELECT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    String query = prepareQuery(SELECT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
-    Promise<ResultSet> promise = Promise.promise();
+    logSelectQuery(LOG, query);
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCredentialsCollection);
   }
 
   @Override
-  public CompletableFuture<Optional<DbKbCredentials>> findById(String id, String tenant) {
-    String query = format(SELECT_CREDENTIALS_BY_ID_QUERY, getKbCredentialsTableName(tenant));
+  public CompletableFuture<Optional<DbKbCredentials>> findById(UUID id, String tenant) {
+    String query = prepareQuery(SELECT_CREDENTIALS_BY_ID_QUERY, getKbCredentialsTableName(tenant));
+    Tuple params = Tuple.of(id);
+    logSelectQuery(LOG, query, params);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
-    Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenant).select(query, createParams(Collections.singleton(id)), promise);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenant).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
 
   @Override
   public CompletableFuture<DbKbCredentials> save(DbKbCredentials credentials, String tenant) {
-    String query = format(UPSERT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    String query = prepareQuery(UPSERT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
-    String id = credentials.getId();
-    if (StringUtils.isBlank(id)) {
-      id = UUID.randomUUID().toString();
+    UUID id = credentials.getId();
+    if (id == null) {
+      id = UUID.randomUUID();
     }
-    JsonArray params = createParams(asList(
+    Tuple params = createParams(asList(
       id,
       credentials.getUrl(),
       credentials.getName(),
@@ -117,78 +116,81 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       credentials.getUpdatedByUserName()
     ));
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
-    Promise<UpdateResult> promise = Promise.promise();
+    logInsertQuery(LOG, query, params);
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
-    Future<UpdateResult> resultFuture = promise.future()
+    Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
       .recover(uniqueNameConstraintViolation(credentials.getName()));
     return mapResult(resultFuture, setId(credentials, id));
   }
 
   @Override
-  public CompletableFuture<Void> delete(String id, String tenant) {
-    String query = format(DELETE_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+  public CompletableFuture<Void> delete(UUID id, String tenant) {
+    String query = prepareQuery(DELETE_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    Tuple params = Tuple.of(id);
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
-    Promise<UpdateResult> promise = Promise.promise();
-    pgClient(tenant).execute(query, createParams(Collections.singleton(id)), promise);
+    logDeleteQuery(LOG, query, params);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenant).execute(query, params, promise);
 
-    Future<UpdateResult> resultFuture = promise.future()
+    Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
       .recover(foreignKeyConstraintViolation());
     return mapResult(resultFuture, nothing());
   }
 
   @Override
-  public CompletableFuture<Optional<DbKbCredentials>> findByUserId(String userId, String tenant) {
-    String query = format(SELECT_CREDENTIALS_BY_USER_ID_QUERY, getKbCredentialsTableName(tenant),
+  public CompletableFuture<Optional<DbKbCredentials>> findByUserId(UUID userId, String tenant) {
+    String query = prepareQuery(SELECT_CREDENTIALS_BY_USER_ID_QUERY, getKbCredentialsTableName(tenant),
       getAssignedUsersTableName(tenant));
+    Tuple params = Tuple.of(userId);
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
-    Promise<ResultSet> promise = Promise.promise();
-    pgClient(tenant).select(query, createParams(Collections.singleton(userId)), promise);
+    logSelectQuery(LOG, query, params);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenant).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
 
-  private Collection<DbKbCredentials> mapCredentialsCollection(ResultSet resultSet) {
-    return mapItems(resultSet.getRows(), this::mapCredentials);
+  private Collection<DbKbCredentials> mapCredentialsCollection(RowSet<Row> resultSet) {
+    return mapItems(resultSet, this::mapCredentials);
   }
 
-  private Optional<DbKbCredentials> mapSingleCredentials(ResultSet resultSet) {
-    List<JsonObject> rows = resultSet.getRows();
-    return rows.isEmpty() ? Optional.empty() : Optional.of(mapCredentials(rows.get(0)));
+  private Optional<DbKbCredentials> mapSingleCredentials(RowSet<Row> resultSet) {
+    return isEmpty(resultSet)
+      ? Optional.empty()
+      : Optional.of(mapFirstItem(resultSet, this::mapCredentials));
   }
 
-  private DbKbCredentials mapCredentials(JsonObject row) {
+  private DbKbCredentials mapCredentials(Row row) {
     return DbKbCredentials.builder()
-      .id(row.getString(ID_COLUMN))
+      .id(row.getUUID(ID_COLUMN))
       .url(row.getString(URL_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .apiKey(row.getString(API_KEY_COLUMN))
       .customerId(row.getString(CUSTOMER_ID_COLUMN))
-      .createdDate(row.getInstant(CREATED_DATE_COLUMN))
-      .updatedDate(row.getInstant(UPDATED_DATE_COLUMN))
-      .createdByUserId(row.getString(CREATED_BY_USER_ID_COLUMN))
-      .updatedByUserId(row.getString(UPDATED_BY_USER_ID_COLUMN))
+      .createdDate(row.getOffsetDateTime(CREATED_DATE_COLUMN))
+      .updatedDate(row.getOffsetDateTime(UPDATED_DATE_COLUMN))
+      .createdByUserId(row.getUUID(CREATED_BY_USER_ID_COLUMN))
+      .updatedByUserId(row.getUUID(UPDATED_BY_USER_ID_COLUMN))
       .createdByUserName(row.getString(CREATED_BY_USER_NAME_COLUMN))
       .updatedByUserName(row.getString(UPDATED_BY_USER_NAME_COLUMN))
       .build();
   }
 
-  private Function<Throwable, Future<UpdateResult>> uniqueNameConstraintViolation(String value) {
+  private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {
     return uniqueConstraintRecover(NAME_COLUMN, new InputValidationException(
       CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
       format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, value)));
   }
 
-  private Function<Throwable, Future<UpdateResult>> foreignKeyConstraintViolation() {
+  private Function<Throwable, Future<RowSet<Row>>> foreignKeyConstraintViolation() {
     return foreignKeyConstraintRecover(new BadRequestException(CREDENTIALS_DELETE_ALLOWED_DETAILS));
   }
 
-  private Function<UpdateResult, DbKbCredentials> setId(DbKbCredentials credentials, String id) {
+  private Function<RowSet<Row>, DbKbCredentials> setId(DbKbCredentials credentials, UUID id) {
     return updateResult -> credentials.toBuilder().id(id).build();
   }
 

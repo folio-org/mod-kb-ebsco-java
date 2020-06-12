@@ -1,6 +1,10 @@
 package org.folio.util;
 
-import static org.folio.common.ListUtils.mapItems;
+import static org.folio.db.RowSetUtils.mapItems;
+import static org.folio.db.RowSetUtils.toUUID;
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
@@ -18,77 +22,64 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
-import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import lombok.Builder;
-import lombok.Value;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 
 import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.repository.packages.DbPackage;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.util.IdParser;
 
 public class PackagesTestUtil {
+
+  private static final String STUB_PACKAGE_JSON_PATH = "responses/rmapi/packages/get-package-by-id-response.json";
 
   private PackagesTestUtil() {
   }
 
   public static List<DbPackage> getPackages(Vertx vertx) {
     CompletableFuture<List<DbPackage>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select(
-      "SELECT " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ", " + ID_COLUMN + " FROM " + packageTestTable(),
-      event -> future.complete(mapItems(event.result().getRows(),
-        row ->
-          DbPackage.builder()
-            .id(row.getString(ID_COLUMN))
-            .name(row.getString(NAME_COLUMN))
-            .contentType(row.getString(CONTENT_TYPE_COLUMN))
-            .build()
-      )));
+    String query = prepareQuery(selectQuery(), packageTestTable());
+    PostgresClient.getInstance(vertx)
+      .select(query, event -> future.complete(mapItems(event.result(), PackagesTestUtil::mapDbPackage)));
     return future.join();
   }
 
-  public static void addPackage(Vertx vertx, DbPackage dbPackage) {
+  public static void savePackage(DbPackage dbPackage, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "INSERT INTO " + packageTestTable() +
-        "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ", " + CONTENT_TYPE_COLUMN + ") " +
-        "VALUES(?,?,?,?)",
-      new JsonArray(Arrays.asList(dbPackage.getId(), dbPackage.getCredentialsId(), dbPackage.getName(),
-        dbPackage.getContentType())),
-      event -> future.complete(null));
+    String query = prepareQuery(
+      insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, CONTENT_TYPE_COLUMN),
+      packageTestTable()
+    );
+    Tuple params = Tuple.of(
+      IdParser.packageIdToString(dbPackage.getId()),
+      dbPackage.getCredentialsId(),
+      dbPackage.getName(),
+      dbPackage.getContentType()
+    );
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
   }
 
-  private static String packageTestTable() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + PACKAGES_TABLE_NAME;
-  }
-
-  public static String getPackageResponse(String packageName, String packageId, String stubProviderId)
+  public static String getPackageResponse(String packageName, String packageId, String providerId)
     throws IOException, URISyntaxException {
-    PackageByIdData packageData =
-      Json.decodeValue(readFile("responses/rmapi/packages/get-package-by-id-response.json"), PackageByIdData.class);
+    PackageByIdData packageData = readJsonFile(STUB_PACKAGE_JSON_PATH, PackageByIdData.class);
     return Json.encode(packageData.toByIdBuilder()
       .packageName(packageName)
       .packageId(Integer.parseInt(packageId))
-      .vendorId(Integer.parseInt(stubProviderId))
+      .vendorId(Integer.parseInt(providerId))
       .build());
-  }
-
-  public static PackagesTestUtil.DbPackage buildDbPackage(String id, String credentialsId, String name) {
-    return PackagesTestUtil.DbPackage.builder()
-      .id(String.valueOf(id))
-      .credentialsId(credentialsId)
-      .name(name)
-      .contentType(STUB_PACKAGE_CONTENT_TYPE).build();
   }
 
   public static void setUpPackages(Vertx vertx, String credentialsId) throws IOException, URISyntaxException {
@@ -97,10 +88,10 @@ public class PackagesTestUtil {
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
   }
 
-  public static void setUpPackage(Vertx vertx, String credentialsId, String stubPackageId,
-      String stubVendorId, String stubPackageName) throws IOException, URISyntaxException {
-    addPackage(vertx, buildDbPackage(stubVendorId + "-" + stubPackageId, credentialsId, stubPackageName));
-    mockPackageWithName(stubPackageId, stubVendorId, stubPackageName);
+  public static void setUpPackage(Vertx vertx, String credentialsId, String packageId, String vendorId, String packageName)
+    throws IOException, URISyntaxException {
+    savePackage(buildDbPackage(vendorId + "-" + packageId, credentialsId, packageName), vertx);
+    mockPackageWithName(packageId, vendorId, packageName);
   }
 
   public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName)
@@ -109,13 +100,29 @@ public class PackagesTestUtil {
       getPackageResponse(stubPackageName, stubPackageId, stubProviderId));
   }
 
-  @Value
-  @Builder(toBuilder = true)
-  public static class DbPackage {
+  public static DbPackage buildDbPackage(String id, String credentialsId, String name) {
+    return buildDbPackage(id, toUUID(credentialsId), name, STUB_PACKAGE_CONTENT_TYPE);
+  }
 
-    String id;
-    String name;
-    String credentialsId;
-    String contentType;
+  private static DbPackage buildDbPackage(String id, UUID credentialsId, String name, String contentType) {
+    return DbPackage.builder()
+      .id(IdParser.parsePackageId(id))
+      .credentialsId(credentialsId)
+      .name(name)
+      .contentType(contentType)
+      .build();
+  }
+
+  private static DbPackage mapDbPackage(Row row) {
+    return buildDbPackage(
+      row.getString(ID_COLUMN),
+      row.getUUID(CREDENTIALS_ID_COLUMN),
+      row.getString(NAME_COLUMN),
+      row.getString(CONTENT_TYPE_COLUMN)
+    );
+  }
+
+  private static String packageTestTable() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + PACKAGES_TABLE_NAME;
   }
 }

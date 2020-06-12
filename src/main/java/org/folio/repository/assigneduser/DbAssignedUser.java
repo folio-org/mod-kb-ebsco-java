@@ -1,13 +1,15 @@
 package org.folio.repository.assigneduser;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder(toBuilder = true)
 public class DbAssignedUser {
-  private final String id;
-  private final String credentialsId;
+  private final UUID id;
+  private final UUID credentialsId;
   private final String username;
   private final String firstName;
   private final String middleName;

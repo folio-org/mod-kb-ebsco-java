@@ -3,14 +3,16 @@ package org.folio.service.kbcredentials;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -63,10 +65,9 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Autowired
   private Context context;
 
-  public KbCredentialsServiceImpl(
-      Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
-      UserKbCredentialsService userKbCredentialsService,
-      Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+  public KbCredentialsServiceImpl(Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
+                                  UserKbCredentialsService userKbCredentialsService,
+                                  Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     this.credentialsFromDBConverter = credentialsFromDBConverter;
     this.userKbCredentialsService = userKbCredentialsService;
     this.credentialsCollectionConverter = credentialsCollectionConverter;
@@ -98,21 +99,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenCompose(o -> fetchUserInfo(okapiHeaders))
       .thenApply(userInfo -> requireNonNull(credentialsToDBConverter.convert(kbCredentials))
         .toBuilder()
-        .createdDate(Instant.now())
-        .createdByUserId(userInfo.getUserId())
+        .createdDate(OffsetDateTime.now())
+        .createdByUserId(toUUID(userInfo.getUserId()))
         .createdByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId))
       .thenApply(credentialsFromDBConverter::convert)
       .thenApply(credentials -> insertLoadingStatusNotStarted(credentials, tenantId));
-  }
-
-  private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
-    final String credentialsId = credentials.getId();
-    holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
-      .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
-      .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
-    return credentials;
   }
 
   @Override
@@ -127,8 +120,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .url(attributes.getUrl())
         .apiKey(attributes.getApiKey())
         .customerId(attributes.getCustomerId())
-        .updatedDate(Instant.now())
-        .updatedByUserId(userInfo.getUserId())
+        .updatedDate(OffsetDateTime.now())
+        .updatedByUserId(toUUID(userInfo.getUserId()))
         .updatedByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
@@ -137,7 +130,15 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Override
   public CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders) {
-    return repository.delete(id, tenantId(okapiHeaders));
+    return repository.delete(toUUID(id), tenantId(okapiHeaders));
+  }
+
+  private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
+    final UUID credentialsId = toUUID(credentials.getId());
+    holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
+      .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
+      .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
+    return credentials;
   }
 
   private CompletableFuture<Void> verifyCredentials(KbCredentials kbCredentials, Map<String, String> okapiHeaders) {
@@ -154,7 +155,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   private CompletableFuture<DbKbCredentials> fetchDbKbCredentials(String id, Map<String, String> okapiHeaders) {
-    return repository.findById(id, tenantId(okapiHeaders)).thenApply(getCredentialsOrFail(id));
+    return repository.findById(toUUID(id), tenantId(okapiHeaders)).thenApply(getCredentialsOrFail(id));
   }
 
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {

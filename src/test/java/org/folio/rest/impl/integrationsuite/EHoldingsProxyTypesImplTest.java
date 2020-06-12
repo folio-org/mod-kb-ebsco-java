@@ -21,7 +21,7 @@ import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -35,6 +35,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.util.KbCredentialsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
@@ -50,7 +51,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProxyTypesWhenUserAssignedToKbCredentials() throws IOException, URISyntaxException {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
@@ -63,7 +64,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProxyTypesWhenOneCredentialsExistsAndUserNotAssigned() throws IOException, URISyntaxException {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
@@ -75,7 +76,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyProxyTypesFromEmptyRMApiResponse() throws IOException, URISyntaxException {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-empty-response.json");
 
@@ -87,9 +88,10 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404WhenUserNotAssignedToKbCredentials() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
-    insertKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "1", STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    KbCredentialsTestUtil
+      .saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "1", STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     JsonapiError error = getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_NOT_FOUND, JANE_TOKEN_HEADER).as(JsonapiError.class);
 
@@ -105,7 +107,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn401WhenRMAPIRequestCompletesWith401ErrorStatus() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_UNAUTHORIZED);
@@ -115,7 +117,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn403WhenRMAPIRequestCompletesWith403ErrorStatus() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_FORBIDDEN);
@@ -125,7 +127,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProxyTypesCollection() throws IOException, URISyntaxException {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
@@ -138,7 +140,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyCollection() throws IOException, URISyntaxException {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
@@ -151,7 +153,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn401WhenRMAPIReturns401ErrorStatus() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_UNAUTHORIZED);
@@ -162,7 +164,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn403WhenRMAPIReturns403ErrorStatus() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_FORBIDDEN);

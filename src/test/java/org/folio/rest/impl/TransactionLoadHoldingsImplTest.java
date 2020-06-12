@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
@@ -35,22 +36,23 @@ import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
-import static org.folio.util.HoldingsStatusUtil.insertStatusNotStarted;
+import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -86,7 +88,7 @@ import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsDownloadTransaction;
 import org.folio.holdingsiq.model.HoldingsTransactionIdsList;
 import org.folio.holdingsiq.model.TransactionId;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
@@ -110,7 +112,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   private static final int EXPECTED_LOADED_PAGES = 2;
   private static final int TEST_SNAPSHOT_RETRY_COUNT = 2;
   private static final String STUB_HOLDINGS_TITLE = "java-test-one";
-  private static final String RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED = "responses/rmapi/holdings/status/get-transaction-status-completed.json";
+  private static final String RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED =
+    "responses/rmapi/holdings/status/get-transaction-status-completed.json";
   private static final String RMAPI_RESPONSE_HOLDINGS = "responses/rmapi/holdings/holdings/get-holdings.json";
 
   @InjectMocks
@@ -131,8 +134,18 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @AfterClass
-  public static void tearDownPropertiesAfterClass(){
+  public static void tearDownPropertiesAfterClass() {
     System.clearProperty("holdings.load.implementation.qualifier");
+  }
+
+  public static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy,
+                                        Consumer<Void> handler) {
+    doAnswer(invocationOnMock -> {
+      @SuppressWarnings("unchecked")
+      CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
+      return future.thenAccept(handler);
+    }).when(repositorySpy).update(
+      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), any(UUID.class), anyString());
   }
 
   @Before
@@ -160,7 +173,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
     runPostHoldingsWithMocks(context);
 
-    final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
   }
 
@@ -170,18 +183,22 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
     runPostHoldingsWithMocks(context);
 
-    final List<HoldingInfoInDB> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
     assertThat(holdingsList.size(), Matchers.notNullValue());
   }
 
   @Test
   public void shouldUpdateHoldingsWithDeltas(TestContext context) throws IOException, URISyntaxException {
-    HoldingsTestUtil.addHolding(STUB_CREDENTILS_ID, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), HoldingInfoInDB.class), Instant.now(), vertx);
-    HoldingsTestUtil.addHolding(STUB_CREDENTILS_ID, Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"), HoldingInfoInDB.class), Instant.now(), vertx);
+    HoldingsTestUtil.saveHolding(STUB_CREDENTILS_ID,
+      Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHoldingInfo.class),
+      OffsetDateTime.now(), vertx);
+    HoldingsTestUtil.saveHolding(STUB_CREDENTILS_ID,
+      Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"), DbHoldingInfo.class),
+      OffsetDateTime.now(), vertx);
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
 
     HoldingsDownloadTransaction previousTransaction = HoldingsDownloadTransaction.builder()
-      .creationDate(Instant.now().minus(500, ChronoUnit.HOURS).toString())
+      .creationDate(OffsetDateTime.now().minus(500, ChronoUnit.HOURS).toString())
       .transactionId(PREVIOUS_TRANSACTION_ID)
       .build();
     mockTransactionList(Collections.singletonList(previousTransaction));
@@ -189,7 +206,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     mockGet(new EqualToPattern(getStatusEndpoint(PREVIOUS_TRANSACTION_ID)), RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED);
     mockGet(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED);
     mockPostDeltaReport();
-    mockGet(new EqualToPattern(getDeltaReportStatusEndpoint()), "responses/rmapi/holdings/status/get-delta-report-status-completed.json");
+    mockGet(new EqualToPattern(getDeltaReportStatusEndpoint()),
+      "responses/rmapi/holdings/status/get-delta-report-status-completed.json");
     mockGet(new EqualToPattern(getDeltaEndpoint()), "responses/rmapi/holdings/delta/get-delta.json");
 
     Async async = context.async();
@@ -199,18 +217,18 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
     async.await(TIMEOUT);
 
-    Map<String, HoldingInfoInDB> holdings = HoldingsTestUtil.getHoldings(vertx)
+    Map<String, DbHoldingInfo> holdings = HoldingsTestUtil.getHoldings(vertx)
       .stream()
       .collect(Collectors.toMap(this::getHoldingsId, Function.identity()));
 
     assertFalse(holdings.containsKey(DELETED_HOLDING_ID));
 
-    HoldingInfoInDB updatedHolding = holdings.get(UPDATED_HOLDING_ID);
+    DbHoldingInfo updatedHolding = holdings.get(UPDATED_HOLDING_ID);
     assertEquals("Test Title Updated", updatedHolding.getPublicationTitle());
     assertEquals("Test one Press Updated", updatedHolding.getPublisherName());
     assertEquals("Book", updatedHolding.getResourceType());
 
-    HoldingInfoInDB addedHolding = holdings.get(ADDED_HOLDING_ID);
+    DbHoldingInfo addedHolding = holdings.get(ADDED_HOLDING_ID);
     assertEquals("Added test title", addedHolding.getPublicationTitle());
     assertEquals("Added test publisher", addedHolding.getPublisherName());
     assertEquals("Book", addedHolding.getResourceType());
@@ -263,7 +281,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     async.await(TIMEOUT);
 
     Async retryStatusAsync = context.async();
-    retryStatusRepository.findByCredentialsId(STUB_CREDENTILS_ID, STUB_TENANT)
+    retryStatusRepository.findByCredentialsId(UUID.fromString(STUB_CREDENTILS_ID), STUB_TENANT)
       .thenAccept(status -> {
         boolean timerExists = vertx.cancelTimer(status.getTimerId());
         context.assertEquals(0, status.getRetryAttemptsLeft());
@@ -277,7 +295,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context) throws IOException, URISyntaxException {
+  public void shouldRetryLoadingHoldingsFromStartWhenPageFailsToLoad(TestContext context)
+    throws IOException, URISyntaxException {
     mockEmptyTransactionList();
     mockGet(new EqualToPattern(getStatusEndpoint()), RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED);
 
@@ -326,7 +345,9 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    proxy.loadHoldings(new LoadHoldingsMessage(configuration, STUB_CREDENTILS_ID, STUB_TENANT, 5001, 2, TRANSACTION_ID, null));
+    LoadHoldingsMessage message = new LoadHoldingsMessage(this.configuration, STUB_CREDENTILS_ID,
+      STUB_TENANT, 5001, 2, TRANSACTION_ID, null);
+    proxy.loadHoldings(message);
 
     async.await(TIMEOUT);
     assertEquals(2, messages.size());
@@ -338,7 +359,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     mockEmptyTransactionList();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
-    mockGet(new EqualToPattern(getStatusEndpoint()), "responses/rmapi/holdings/status/get-transaction-status-completed-one-page.json");
+    mockGet(new EqualToPattern(getStatusEndpoint()),
+      "responses/rmapi/holdings/status/get-transaction-status-completed-one-page.json");
 
     mockPostHoldings();
     mockResponseList(new UrlPathPattern(new EqualToPattern(getHoldingsEndpoint()), false),
@@ -350,13 +372,10 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     assertTrue(async.isSucceeded());
   }
 
-  public static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy, Consumer<Void> handler) {
-    doAnswer(invocationOnMock -> {
-      @SuppressWarnings("unchecked")
-      CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
-      return future.thenAccept(handler);
-    }).when(repositorySpy).update(
-      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), anyString(), anyString());
+  public void setupDefaultLoadKBConfiguration() {
+    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatusNotStarted(STUB_CREDENTILS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
   }
 
   private void runPostHoldingsWithMocks(TestContext context) throws IOException, URISyntaxException {
@@ -378,7 +397,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   private void mockTransactionList(List<HoldingsDownloadTransaction> transactionIds) {
-    HoldingsTransactionIdsList emptyTransactionList = HoldingsTransactionIdsList.builder().holdingsDownloadTransactionIds(transactionIds).build();
+    HoldingsTransactionIdsList emptyTransactionList =
+      HoldingsTransactionIdsList.builder().holdingsDownloadTransactionIds(transactionIds).build();
     mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL), Json.encode(emptyTransactionList));
   }
 
@@ -421,14 +441,9 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   private String getDeltaReportStatusEndpoint() {
     return String.format(RMAPI_DELTA_STATUS_URL, DELTA_ID);
   }
-  private String getHoldingsId(HoldingInfoInDB holding) {
-    return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
-  }
 
-  public void setupDefaultLoadKBConfiguration() {
-    insertKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    insertStatusNotStarted(STUB_CREDENTILS_ID, vertx);
-    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+  private String getHoldingsId(DbHoldingInfo holding) {
+    return holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId();
   }
 
   private void tearDownHoldingsData() {

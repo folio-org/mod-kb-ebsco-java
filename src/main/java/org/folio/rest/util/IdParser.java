@@ -13,7 +13,7 @@ import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.ResourceId;
-import org.folio.repository.holdings.HoldingInfoInDB;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.HoldingsId;
 import org.folio.repository.packages.DbPackage;
 import org.folio.repository.resources.DbResource;
@@ -74,10 +74,10 @@ public final class IdParser {
     return mapItems(resources, DbResource::getId);
   }
 
-  public static List<ResourceId> getResourceIds(List<HoldingInfoInDB> holdings) {
+  public static List<ResourceId> getResourceIds(List<DbHoldingInfo> holdings) {
     return mapItems(holdings, resource ->
       ResourceId.builder()
-        .providerIdPart(resource.getVendorId())
+        .providerIdPart(Long.parseLong(resource.getVendorId()))
         .packageIdPart(Long.parseLong(resource.getPackageId()))
         .titleIdPart(Long.parseLong(resource.getTitleId()))
         .build());

@@ -17,13 +17,14 @@ public class AccessTypesBodyValidator {
   private final int maxDescriptionLength;
 
   public AccessTypesBodyValidator(@Value("${kb.ebsco.credentials.access.types.name.length.max:75}") int maxNameLength,
-                                  @Value("${kb.ebsco.credentials.access.types.description.length.max:150}") int maxDescriptionLength) {
+                                  @Value("${kb.ebsco.credentials.access.types.description.length.max:150}")
+                                    int maxDescriptionLength) {
     this.maxNameLength = maxNameLength;
     this.maxDescriptionLength = maxDescriptionLength;
   }
 
   /**
-   * @throws InputValidationException  if validation of attributes fails
+   * @throws InputValidationException if validation of attributes fails
    */
   public void validate(String credentialsId, AccessType request) {
     if (request == null || request.getAttributes() == null) {
