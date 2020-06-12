@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="drop-jsonb-from-holdings" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@drop-jsonb-from-holdings" author="dmtkachenko">
     <preConditions onFail="MARK_RAN">
       <columnExists tableName="holdings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
     </preConditions>
@@ -12,7 +12,7 @@
     <dropColumn tableName="holdings" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="alter-holdings-table" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@alter-holdings-table" author="dmtkachenko">
     <addColumn tableName="holdings">
       <column name="credentials_id" type="uuid">
         <constraints nullable="false"/>
@@ -28,7 +28,13 @@
     </addColumn>
   </changeSet>
 
-  <changeSet id="drop-old-holdings-primary-key" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-holdings" author="dmtkachenko">
+    <update tableName="holdings">
+      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@drop-old-holdings-primary-key" author="dmtkachenko">
     <preConditions onFail="MARK_RAN" onFailMessage="[WARN] Primary key doesn't exist: holdings_pkey">
       <primaryKeyExists primaryKeyName="holdings_pkey" tableName="holdings" schemaName="${database.defaultSchemaName}"/>
     </preConditions>
@@ -36,12 +42,12 @@
     <dropPrimaryKey constraintName="holdings_pkey" tableName="holdings" schemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="add-credentials-id-to-holdings-primary-key" author="dmtkachenko">
-    <addPrimaryKey constraintName="pk_holdings" tableName="holdings" columnNames="id, credentials_id"
+  <changeSet id="MODKBEKBJ-444@@add-credentials-id-to-holdings-primary-key" author="dmtkachenko">
+    <addPrimaryKey constraintName="pk_holdings" tableName="holdings" columnNames="credentials_id, id"
                    schemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="add-foreign-key-from-holdings-to-kb-credentials" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-holdings-to-kb-credentials" author="dmtkachenko">
     <addForeignKeyConstraint
       baseColumnNames="credentials_id"
       baseTableName="holdings"

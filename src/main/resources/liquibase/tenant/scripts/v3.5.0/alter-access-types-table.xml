@@ -4,35 +4,15 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="drop-jsonb-from-access-types" author="dmtkachenko">
-    <preConditions onFail="MARK_RAN">
-      <columnExists tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
-    </preConditions>
-
-    <dropColumn tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
-  </changeSet>
-
-  <changeSet id="alter-access-types-table" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@alter-access-types-table" author="dmtkachenko">
     <addColumn tableName="access_types">
-      <column name="credentials_id" type="uuid">
-        <constraints nullable="false"/>
-      </column>
-      <column name="name" type="varchar(100)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="credentials_id" type="uuid"/>
+      <column name="name" type="varchar(100)"/>
       <column name="description" type="varchar(200)"/>
-      <column name="created_date" type="timestamptz">
-        <constraints nullable="false"/>
-      </column>
-      <column name="created_by_user_id" type="uuid">
-        <constraints nullable="false"/>
-      </column>
-      <column name="created_by_username" type="varchar(100)">
-        <constraints nullable="false"/>
-      </column>
-      <column name="created_by_last_name" type="varchar(100)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="created_date" type="timestamptz" defaultValueComputed="current_timestamp"/>
+      <column name="created_by_user_id" type="uuid"/>
+      <column name="created_by_username" type="varchar(100)"/>
+      <column name="created_by_last_name" type="varchar(100)"/>
       <column name="created_by_first_name" type="varchar(1000)"/>
       <column name="created_by_middle_name" type="varchar(100)"/>
       <column name="updated_date" type="timestamptz"/>
@@ -44,7 +24,54 @@
     </addColumn>
   </changeSet>
 
-  <changeSet id="add-foreign-key-from-access-types-to-kb-credentials" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444-datamigration@@copy-data-from-jsonb-to-plain-columns-of-access-types" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <update tableName="access_types">
+      <column name="name" valueComputed="jsonb -> 'attributes' ->> 'name'"/>
+      <column name="description" valueComputed="jsonb -> 'attributes' ->> 'description'"/>
+      <column name="created_by_first_name" valueComputed="jsonb -> 'creator' ->> 'firstName'"/>
+      <column name="created_by_last_name" valueComputed="jsonb -> 'creator' ->> 'lastName'"/>
+      <column name="updated_by_first_name" valueComputed="jsonb -> 'updater' ->> 'firstName'"/>
+      <column name="updated_by_last_name" valueComputed="jsonb -> 'updater' ->> 'lastName'"/>
+      <column name="updated_by_last_name" valueComputed="jsonb -> 'updater' ->> 'lastName'"/>
+      <column name="created_date"
+              valueComputed="to_timestamp(jsonb -> 'metadata' ->> 'createdDate', 'YYYY-MM-DD&quot;T&quot;HH24:MI:SS.MS')"/>
+      <column name="updated_date"
+              valueComputed="to_timestamp(jsonb -> 'metadata' ->> 'updatedDate', 'YYYY-MM-DD&quot;T&quot;HH24:MI:SS.MS')"/>
+      <column name="created_by_user_id" valueComputed="(jsonb -> 'metadata' ->> 'createdByUserId')::uuid"/>
+      <column name="updated_by_user_id" valueComputed="(jsonb -> 'metadata' ->> 'updatedByUserId')::uuid"/>
+      <column name="created_by_username" valueComputed="jsonb -> 'metadata' ->> 'createdByUsername'"/>
+      <column name="updated_by_username" valueComputed="jsonb -> 'metadata' ->> 'updatedByUsername'"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-not-null-constraints-to-access-types-columns" author="dmtkachenko">
+    <addNotNullConstraint tableName="access_types" columnName="credentials_id"/>
+    <addNotNullConstraint tableName="access_types" columnName="name"/>
+    <addNotNullConstraint tableName="access_types" columnName="created_date"/>
+    <addNotNullConstraint tableName="access_types" columnName="created_by_user_id"/>
+    <addNotNullConstraint tableName="access_types" columnName="created_by_username"/>
+    <addNotNullConstraint tableName="access_types" columnName="created_by_last_name"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@drop-jsonb-from-access-types" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <columnExists tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+    </preConditions>
+
+    <dropColumn tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-access-types" author="dmtkachenko">
+    <update tableName="access_types">
+      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-access-types-to-kb-credentials" author="dmtkachenko">
     <addForeignKeyConstraint
       baseColumnNames="credentials_id"
       baseTableName="access_types"
@@ -59,7 +86,7 @@
       referencedTableSchemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="add-unique-constraint-for-credentialsid-name-in-access-types" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@add-unique-constraint-for-credentialsid-name-in-access-types" author="dmtkachenko">
     <addUniqueConstraint
       constraintName="unq_access_types_creds_id_name"
       tableName="access_types"
