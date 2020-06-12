@@ -23,7 +23,8 @@ public class KbCredentialsCollectionConverter {
 
   @Primary
   @Component("securedCredentialsCollection")
-  public static class SecuredKbCredentialsCollectionConverter extends NonSecuredKbCredentialsCollectionConverter {
+  public static class SecuredKbCredentialsCollectionConverter implements
+    Converter<Collection<DbKbCredentials>, KbCredentialsCollection>{
 
     @Autowired
     @Qualifier("secured")
