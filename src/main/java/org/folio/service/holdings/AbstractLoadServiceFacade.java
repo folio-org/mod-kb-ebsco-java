@@ -1,5 +1,7 @@
 package org.folio.service.holdings;
 
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+
 import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getLoadFailedMessage;
 import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSnapshotCreatedMessage;
 import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSnapshotFailedMessage;
@@ -44,7 +46,6 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     .append(DateTimeFormatter.ISO_LOCAL_TIME)
     .toFormatter();
   protected static final int MAX_COUNT = 5000;
-  protected static final int ZERO_COUNT = 0;
   private static final Logger logger = LoggerFactory.getLogger(AbstractLoadServiceFacade.class);
   protected final HoldingsService holdingsService;
   protected final int loadPageRetries;
@@ -102,7 +103,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
       } else if (snapshotCreatedRecently(loadStatus)) {
         logger.info("Snapshot created recently: {}", loadStatus.toString());
         final Integer totalCount = loadStatus.getTotalCount();
-        if (ZERO_COUNT == totalCount){
+        if (INTEGER_ZERO.equals(totalCount)){
           throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus.toString());
         } else {
         return CompletableFuture.completedFuture(loadStatus);
@@ -128,7 +129,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
         logger.info("Getting status of stage snapshot: {}.", status);
         if (COMPLETED.equals(status)) {
           final Integer totalCount = loadStatus.getTotalCount();
-          if (ZERO_COUNT == totalCount){
+          if (INTEGER_ZERO.equals(totalCount)) {
             throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus.toString());
           } else {
             future.complete(loadStatus);
