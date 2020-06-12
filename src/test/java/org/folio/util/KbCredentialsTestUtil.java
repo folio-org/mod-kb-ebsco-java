@@ -18,9 +18,9 @@ import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -145,15 +145,9 @@ public class KbCredentialsTestUtil {
   }
 
   public static Collection<DbKbCredentials> getCredentialsCollectionNoUrl(){
-    return new ArrayList<DbKbCredentials>()
-    {{
-      add(getCredentialsNoUrl());
-    }};
+    return Collections.singletonList(getCredentialsNoUrl());
   }
   public static Collection<DbKbCredentials> getCredentialsCollection(){
-    return new ArrayList<DbKbCredentials>()
-    {{
-      add(getCredentials());
-    }};
+    return Collections.singletonList(getCredentials());
   }
 }
