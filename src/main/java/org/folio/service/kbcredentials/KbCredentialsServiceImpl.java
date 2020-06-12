@@ -52,7 +52,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
   @Autowired
   private Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter;
-  @Autowired
   private Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter;
 
   @Autowired
@@ -67,9 +66,11 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private Context context;
 
   public KbCredentialsServiceImpl(Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
-                                  UserKbCredentialsService userKbCredentialsService) {
+                                  UserKbCredentialsService userKbCredentialsService,
+                                  Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     this.credentialsFromDBConverter = credentialsFromDBConverter;
     this.userKbCredentialsService = userKbCredentialsService;
+    this.credentialsCollectionConverter = credentialsCollectionConverter;
   }
 
   @Override
@@ -99,7 +100,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenApply(userInfo -> requireNonNull(credentialsToDBConverter.convert(kbCredentials))
         .toBuilder()
         .createdDate(OffsetDateTime.now())
-        .createdByUserId(UUID.fromString(userInfo.getUserId()))
+        .createdByUserId(toUUID(userInfo.getUserId()))
         .createdByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId))
@@ -120,7 +121,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
         .apiKey(attributes.getApiKey())
         .customerId(attributes.getCustomerId())
         .updatedDate(OffsetDateTime.now())
-        .updatedByUserId(UUID.fromString(userInfo.getUserId()))
+        .updatedByUserId(toUUID(userInfo.getUserId()))
         .updatedByUserName(userInfo.getUserName())
         .build())
       .thenCompose(dbKbCredentials -> repository.save(dbKbCredentials, tenantId(okapiHeaders)))
@@ -133,7 +134,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
-    final UUID credentialsId = UUID.fromString(credentials.getId());
+    final UUID credentialsId = toUUID(credentials.getId());
     holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
       .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
       .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));

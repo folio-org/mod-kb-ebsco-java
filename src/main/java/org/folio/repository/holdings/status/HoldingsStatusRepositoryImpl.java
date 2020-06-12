@@ -10,11 +10,13 @@ import static org.folio.common.LogUtils.logUpdateQuery;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
+import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.CREDENTIALS_COLUMN;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.DELETE_LOADING_STATUS;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUSES;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUS_BY_ID;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.JSONB_COLUMN;
@@ -23,6 +25,7 @@ import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -59,6 +62,15 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     this.vertx = vertx;
     this.vertxIdProvider = vertxIdProvider;
     this.excTranslator = excTranslator;
+  }
+
+  @Override
+  public CompletableFuture<List<HoldingsLoadingStatus>> findAll(String tenantId) {
+    final String query = prepareQuery(GET_HOLDINGS_STATUSES, getHoldingsStatusTableName(tenantId));
+    logSelectQuery(LOG, query);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).select(query, promise);
+    return mapResult(promise.future(), this::mapStatusesCollection);
   }
 
   @Override
@@ -111,6 +123,14 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
         .thenApply(this::assertUpdated)
         .thenCompose(o -> get(credentialsId, tenantId, connection));
     });
+  }
+
+  private List<HoldingsLoadingStatus> mapStatusesCollection(RowSet<Row> resultSet) {
+    return mapItems(resultSet, this::mapItem);
+  }
+
+  private HoldingsLoadingStatus mapItem(Row row) {
+    return Json.decodeValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
   }
 
   private CompletableFuture<HoldingsLoadingStatus> get(UUID credentialsId, String tenantId,

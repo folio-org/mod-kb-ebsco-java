@@ -85,7 +85,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     HOLDING_UPDATED_DELETED_COVERAGE
   );
 
-  private static final String CURRENT_STATUS_MESSAGE = "Current status is {}";
+  private static final String CURRENT_STATUS_MESSAGE = "Current status for credentials - {} is {}";
   private static final String FAILED_CREATE_SNAPSHOT_MESSAGE = "Failed to create snapshot";
   private static final String FAILED_DURING_RETRY_MESSAGE = "Failed during retry";
   private static final String FAILED_PROCESS_CHANGES_MESSAGE = "Failed to process changes";
@@ -134,13 +134,9 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public CompletableFuture<Void> loadHoldings(RMAPITemplateContext context) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public CompletableFuture<Void> loadHoldingsById(String credentialsId, RMAPITemplateContext context) {
+  public CompletableFuture<Void> loadSingleHoldings(RMAPITemplateContext context) {
     final String tenantId = context.getOkapiData().getTenant();
+    final String credentialsId = context.getCredentialsId();
     Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
       tryChangingStatusToInProgress(getStatusPopulatingStagingArea(), toUUID(credentialsId), tenantId)
         .thenCompose(o -> resetRetries(toUUID(credentialsId), tenantId, snapshotRetryCount - 1))
@@ -194,14 +190,14 @@ public class HoldingsServiceImpl implements HoldingsService {
         1, credentialsId, tenantId)
       )
       .thenCompose(status -> {
-          LoadStatusAttributes attributes = status.getData().getAttributes();
-          if (hasLoadedLastPage(attributes)) {
-            return
-              holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
-                .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
-          }
-          return CompletableFuture.completedFuture(null);
+        LoadStatusAttributes attributes = status.getData().getAttributes();
+        if (hasLoadedLastPage(attributes)) {
+          return
+            holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
+              .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
         }
+        return CompletableFuture.completedFuture(null);
+      }
       )
       .exceptionally(e -> {
         logger.error(FAILED_PROCESS_CHANGES_MESSAGE, e);
@@ -329,8 +325,8 @@ public class HoldingsServiceImpl implements HoldingsService {
     return holdingsStatusRepository.findByCredentialsId(credentialsId, tenantId)
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
-        logger.info(CURRENT_STATUS_MESSAGE, attributes.getStatus().getName());
-        if (attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)) {
+        logger.info(CURRENT_STATUS_MESSAGE, credentialsId, attributes.getStatus().getName());
+        if(attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)){
           return holdingsStatusRepository.delete(credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, credentialsId, tenantId));
         }
