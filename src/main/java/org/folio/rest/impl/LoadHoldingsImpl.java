@@ -2,11 +2,10 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 
+import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
 import static org.folio.util.FutureUtils.failedFuture;
-
-import static org.folio.db.RowSetUtils.toUUID;
 
 import java.util.List;
 import java.util.Map;
@@ -73,13 +72,13 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
 
   @Override
   public void postEholdingsLoadingKbCredentials(String contentType, Map<String, String> okapiHeaders,
-                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     logger.info("Received signal to start scheduled loading of holdings");
     validateStatus(okapiHeaders)
       .thenCompose(o -> credentialsService.findAll(okapiHeaders)
         .thenAccept(credentialsList -> iterateOverCredentials(okapiHeaders, credentialsList)))
       .thenAccept(anyObj -> asyncResultHandler.handle(
-        succeededFuture(EholdingsLoadingKbCredentials.PostEholdingsLoadingKbCredentialsResponse.respond204())))
+        succeededFuture(PostEholdingsLoadingKbCredentialsResponse.respond204())))
       .exceptionally(handleException(asyncResultHandler));
   }
 
@@ -87,7 +86,8 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
   @Validate
   @HandleValidationErrors
   public void getEholdingsLoadingKbCredentialsStatusById(String id, String contentType, Map<String, String> okapiHeaders,
-                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                         Handler<AsyncResult<Response>> asyncResultHandler,
+                                                         Context vertxContext) {
     logger.info("Getting holdings loading status");
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template
@@ -118,14 +118,16 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
       .thenApply(statuses -> statuses.stream()
         .anyMatch(status -> LoadStatusNameEnum.IN_PROGRESS.equals(status.getData().getAttributes().getStatus().getName())))
       .thenCompose(isExists -> {
-        if (Boolean.TRUE.equals(isExists)){
-          return failedFuture(new ProcessInProgressException("Loading status is already In Progress for one of the credentials"));
+        if (Boolean.TRUE.equals(isExists)) {
+          return failedFuture(
+            new ProcessInProgressException("Loading status is already In Progress for one of the credentials"));
         }
         return CompletableFuture.completedFuture(null);
       });
   }
 
-  private CompletableFuture<Void> iterateOverCredentials(Map<String, String> okapiHeaders, KbCredentialsCollection credentialsList) {
+  private CompletableFuture<Void> iterateOverCredentials(Map<String, String> okapiHeaders,
+                                                         KbCredentialsCollection credentialsList) {
     final List<KbCredentials> kbCredentials = credentialsList.getData();
     kbCredentials.forEach(credentials -> buldContextAndRun(okapiHeaders, credentials));
     return CompletableFuture.completedFuture(null);
@@ -143,7 +145,8 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
   }
 
   private CompletableFuture<HoldingsLoadingStatus> getStatus(RMAPITemplateContext context) {
-    return holdingsStatusRepository.findByCredentialsId(context.getCredentialsId(), context.getOkapiData().getTenant());
+    return holdingsStatusRepository
+      .findByCredentialsId(toUUID(context.getCredentialsId()), context.getOkapiData().getTenant());
   }
 
   private CompletableFuture<Void> startLoading(RMAPITemplateContext context) {

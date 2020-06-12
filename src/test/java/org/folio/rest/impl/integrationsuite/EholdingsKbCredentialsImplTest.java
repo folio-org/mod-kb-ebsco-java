@@ -19,8 +19,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.rest.util.AssertTestUtil.assertErrorContainsTitle;
@@ -452,7 +450,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnSecuredCollection(){
+  public void shouldReturnSecuredCollection() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     Map<String, String> headers = new HashMap<>();
     headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);
@@ -464,8 +462,9 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertThat(collection.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
     assertThat(collection.getData().get(0).getAttributes().getUrl(), equalTo(STUB_API_URL));
   }
+
   @Test
-  public void shouldReturnNonSecuredCollection(){
+  public void shouldReturnNonSecuredCollection() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     Map<String, String> headers = new HashMap<>();
     headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);

@@ -190,14 +190,14 @@ public class HoldingsServiceImpl implements HoldingsService {
         1, credentialsId, tenantId)
       )
       .thenCompose(status -> {
-        LoadStatusAttributes attributes = status.getData().getAttributes();
-        if (hasLoadedLastPage(attributes)) {
-          return
-            holdingsStatusRepository.update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
+          LoadStatusAttributes attributes = status.getData().getAttributes();
+          if (hasLoadedLastPage(attributes)) {
+            return holdingsStatusRepository
+              .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
               .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
+          }
+          return CompletableFuture.completedFuture(null);
         }
-        return CompletableFuture.completedFuture(null);
-      }
       )
       .exceptionally(e -> {
         logger.error(FAILED_PROCESS_CHANGES_MESSAGE, e);
@@ -326,7 +326,7 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
         logger.info(CURRENT_STATUS_MESSAGE, credentialsId, attributes.getStatus().getName());
-        if(attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)){
+        if (attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)) {
           return holdingsStatusRepository.delete(credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, credentialsId, tenantId));
         }

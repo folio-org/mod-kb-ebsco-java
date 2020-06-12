@@ -87,24 +87,20 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   }
 
   private Tuple createInsertParameters(UUID credentialsId, RetryStatus retryStatus) {
-    Tuple parameters = createParams(UUID.randomUUID(), credentialsId, retryStatus.getRetryAttemptsLeft());
-    if (retryStatus.getTimerId() != null) {
-      parameters.addLong(retryStatus.getTimerId());
-    } else {
-      parameters.addLong(null);
-    }
-    return parameters;
+    return createParams(
+      UUID.randomUUID(),
+      credentialsId,
+      retryStatus.getRetryAttemptsLeft(),
+      retryStatus.getTimerId()
+    );
   }
 
   private Tuple createUpdateParameters(UUID credentialsId, RetryStatus retryStatus) {
-    Tuple parameters = createParams(credentialsId, retryStatus.getRetryAttemptsLeft());
-    if (retryStatus.getTimerId() != null) {
-      parameters.addLong(retryStatus.getTimerId());
-    } else {
-      parameters.addLong(null);
-    }
-    parameters.add(credentialsId);
-    return parameters;
+    return createParams(
+      retryStatus.getRetryAttemptsLeft(),
+      retryStatus.getTimerId(),
+      credentialsId
+    );
   }
 
   private RetryStatus mapStatus(RowSet<Row> resultSet) {

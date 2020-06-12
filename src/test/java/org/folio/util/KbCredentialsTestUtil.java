@@ -143,10 +143,11 @@ public class KbCredentialsTestUtil {
       .url(STUB_API_URL).build();
   }
 
-  public static Collection<DbKbCredentials> getCredentialsCollectionNoUrl(){
+  public static Collection<DbKbCredentials> getCredentialsCollectionNoUrl() {
     return Collections.singletonList(getCredentialsNoUrl());
   }
-  public static Collection<DbKbCredentials> getCredentialsCollection(){
+
+  public static Collection<DbKbCredentials> getCredentialsCollection() {
     return Collections.singletonList(getCredentials());
   }
 }
