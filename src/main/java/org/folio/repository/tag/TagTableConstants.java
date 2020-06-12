@@ -2,6 +2,7 @@ package org.folio.repository.tag;
 
 @SuppressWarnings("squid:S1192")
 public class TagTableConstants {
+
   private TagTableConstants() {}
 
   public static final String TAGS_TABLE_NAME = "tags";
@@ -9,6 +10,7 @@ public class TagTableConstants {
   public static final String ID_COLUMN = "id";
   public static final String RECORD_ID_COLUMN = "record_id";
   public static final String RECORD_TYPE_COLUMN = "record_type";
+  public static final String COUNT_COLUMN = "count";
   public static final String TAG_FIELD_LIST = String.format("%s, %s, %s, %s",
     ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN);
 
@@ -24,7 +26,7 @@ public class TagTableConstants {
       + "WHERE " + RECORD_TYPE_COLUMN + " IN (%s) ORDER BY " + TAG_COLUMN;
 
   public static final String COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX =
-    "SELECT COUNT(DISTINCT " + RECORD_ID_COLUMN + ") AS count FROM %s "
+    "SELECT COUNT(DISTINCT " + RECORD_ID_COLUMN + ") AS " + COUNT_COLUMN + " FROM %s "
       + "WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "=? AND " + RECORD_ID_COLUMN + " LIKE ?";
 
 

@@ -44,7 +44,7 @@ public class IdentifiersConverterPair {
       }
 
       return identifiersList.stream()
-        .filter(identifier -> IDENTIFIER_TYPES.keySet().contains(identifier.getType()) && IDENTIFIER_SUBTYPES.keySet().contains(identifier.getSubtype()))
+        .filter(identifier -> IDENTIFIER_TYPES.containsKey(identifier.getType()) && IDENTIFIER_SUBTYPES.containsKey(identifier.getSubtype()))
         .sorted(Comparator.comparing(Identifier::getType).thenComparing(Identifier::getSubtype))
         .map(identifier -> new org.folio.rest.jaxrs.model.Identifier()
           .withId(identifier.getId())
@@ -71,7 +71,7 @@ public class IdentifiersConverterPair {
           .build())
         .collect(Collectors.toList());
     }
-    
+
   }
 
 }

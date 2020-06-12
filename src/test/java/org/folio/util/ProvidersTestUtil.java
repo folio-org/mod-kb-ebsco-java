@@ -1,21 +1,25 @@
 package org.folio.util;
 
-import static org.folio.common.ListUtils.mapItems;
+import static org.folio.db.RowSetUtils.mapItems;
+import static org.folio.db.RowSetUtils.toUUID;
+import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.providers.ProviderTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.NAME_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import lombok.Builder;
-import lombok.Value;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 
+import org.folio.repository.providers.DbProvider;
 import org.folio.rest.persist.PostgresClient;
 
 public class ProvidersTestUtil {
@@ -23,41 +27,39 @@ public class ProvidersTestUtil {
   public ProvidersTestUtil() {
   }
 
-  public static List<DbProviders> getProviders(Vertx vertx) {
-    CompletableFuture<List<ProvidersTestUtil.DbProviders>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select(
-      "SELECT " + NAME_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + ID_COLUMN + " FROM " + providerTestTable(),
-      event -> future.complete(mapItems(event.result().getRows(),
-        row ->
-          DbProviders.builder()
-            .id(row.getString(ID_COLUMN))
-            .credentialsId(row.getString(CREDENTIALS_ID_COLUMN))
-            .name(row.getString(NAME_COLUMN))
-            .build()
-      )));
+  public static List<DbProvider> getProviders(Vertx vertx) {
+    CompletableFuture<List<DbProvider>> future = new CompletableFuture<>();
+    String query = prepareQuery(selectQuery(), providerTestTable());
+    PostgresClient.getInstance(vertx)
+      .select(query, event -> future.complete(mapItems(event.result(), ProvidersTestUtil::mapDbProvider)));
     return future.join();
   }
 
-   public static void addProvider(Vertx vertx, DbProviders provider) {
+  public static void saveProvider(DbProvider provider, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).execute(
-      "INSERT INTO " + providerTestTable() +
-        "(" + ID_COLUMN + ", " + CREDENTIALS_ID_COLUMN + ", " + NAME_COLUMN + ") " +
-        "VALUES(?,?,?)",
-      new JsonArray(Arrays.asList(provider.getId(), provider.getCredentialsId(), provider.getName())),
-      event -> future.complete(null));
+    String query = prepareQuery(insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN), providerTestTable());
+    Tuple params = Tuple.of(provider.getId(), provider.getCredentialsId(), provider.getName());
+    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
+  }
+
+  public static DbProvider buildDbProvider(String id, String credentialsId, String name) {
+    return buildDbProvider(id, toUUID(credentialsId), name);
+  }
+
+  private static DbProvider buildDbProvider(String id, UUID credentialsId, String name) {
+    return DbProvider.builder()
+      .id(id)
+      .credentialsId(credentialsId)
+      .name(name)
+      .build();
+  }
+
+  private static DbProvider mapDbProvider(Row row) {
+    return buildDbProvider(row.getString(ID_COLUMN), row.getUUID(CREDENTIALS_ID_COLUMN), row.getString(NAME_COLUMN));
   }
 
   private static String providerTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + PROVIDERS_TABLE_NAME;
-  }
-
-  @Value
-  @Builder(toBuilder = true)
- public static class DbProviders {
-    String id;
-    String credentialsId;
-    String name;
   }
 }

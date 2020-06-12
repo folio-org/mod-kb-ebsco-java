@@ -7,13 +7,13 @@ import static java.util.stream.Collectors.groupingBy;
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.DELETE_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.INSERT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.SELECT_LOG_MESSAGE;
-import static org.folio.repository.DbUtil.createInsertOrUpdateParameters;
 import static org.folio.repository.DbUtil.getResourcesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.DELETE_RESOURCE_STATEMENT;
 import static org.folio.repository.resources.ResourceTableConstants.INSERT_OR_UPDATE_RESOURCE_STATEMENT;
@@ -27,21 +27,22 @@ import static org.folio.util.FutureUtils.mapResult;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.sql.ResultSet;
-import io.vertx.ext.sql.UpdateResult;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.rest.persist.PostgresClient;
@@ -57,89 +58,91 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   @Autowired
   private DBExceptionTranslator excTranslator;
 
-
   @Override
   public CompletableFuture<Void> save(DbResource resource, String tenantId) {
+    Tuple parameters = createParams(asList(
+      resourceIdToString(resource.getId()),
+      resource.getCredentialsId(),
+      resource.getName(),
+      resource.getName()
+    ));
 
-    JsonArray parameters = createInsertOrUpdateParameters(resourceIdToString(resource.getId()),
-      resource.getCredentialsId(), resource.getName());
+    final String query = prepareQuery(INSERT_OR_UPDATE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
 
-    final String query = String.format(INSERT_OR_UPDATE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
+    logInsertQuery(LOG, query, parameters);
 
-    LOG.info(INSERT_LOG_MESSAGE, query);
-
-    Promise<UpdateResult> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
-  public CompletableFuture<Void> delete(String resourceId, String credentialsId, String tenantId) {
-    JsonArray parameter = createParams(asList(resourceId, credentialsId));
+  public CompletableFuture<Void> delete(String resourceId, UUID credentialsId, String tenantId) {
+    Tuple params = createParams(resourceId, credentialsId);
 
-    final String query = String.format(DELETE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
+    final String query = prepareQuery(DELETE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
 
-    LOG.info(DELETE_LOG_MESSAGE, query);
+    logDeleteQuery(LOG, query, params);
 
-    Promise<UpdateResult> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameter, promise);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).execute(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
   @Override
   public CompletableFuture<List<DbResource>> findByTagNameAndPackageId(List<String> tags, String resourceId,
-      int page, int count, String credentialsId, String tenantId) {
-
-    if(CollectionUtils.isEmpty(tags)){
+                                                                       int page, int count, UUID credentialsId,
+                                                                       String tenantId) {
+    if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
 
     int offset = (page - 1) * count;
 
-    JsonArray parameters = new JsonArray();
-    tags.forEach(parameters::add);
+    Tuple parameters = Tuple.tuple();
+    tags.forEach(parameters::addString);
     String likeExpression = resourceId + "-%";
     parameters
-      .add(likeExpression)
-      .add(credentialsId)
-      .add(offset)
-      .add(count);
+      .addString(likeExpression)
+      .addUUID(credentialsId)
+      .addInteger(offset)
+      .addInteger(count);
 
-    final String query = String.format(SELECT_RESOURCES_WITH_TAGS, getResourcesTableName(tenantId),
+    final String query = prepareQuery(SELECT_RESOURCES_WITH_TAGS, getResourcesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    LOG.info(SELECT_LOG_MESSAGE, query);
+    logSelectQuery(LOG, query, parameters);
 
-    Promise<ResultSet> promise = Promise.promise();
+    Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapResources);
   }
 
-  private List<DbResource> mapResources(ResultSet resultSet) {
-    final Map<ResourceId, List<JsonObject>> rowsById = resultSet.getRows().stream()
+  private List<DbResource> mapResources(RowSet<Row> resultSet) {
+    final Map<ResourceId, List<Row>> rowsById = RowSetUtils.streamOf(resultSet)
       .collect(groupingBy(this::readResourceId));
     return mapItems(rowsById.entrySet(), this::readResource);
   }
 
-  private ResourceId readResourceId(JsonObject row) {
+  private ResourceId readResourceId(Row row) {
     return IdParser.parseResourceId(row.getString(ID_COLUMN));
   }
 
-  private DbResource readResource(Map.Entry<ResourceId, List<JsonObject>> entry) {
+  private DbResource readResource(Map.Entry<ResourceId, List<Row>> entry) {
     ResourceId resourceId = entry.getKey();
-    List<JsonObject> rows = entry.getValue();
+    List<Row> rows = entry.getValue();
 
-    JsonObject firstRow = rows.get(0);
+    Row firstRow = rows.get(0);
     List<String> tags = rows.stream()
       .map(row -> row.getString(TAG_COLUMN))
       .collect(Collectors.toList());
 
     return DbResource.builder()
       .id(resourceId)
-      .credentialsId(firstRow.getString(CREDENTIALS_ID_COLUMN))
+      .credentialsId(firstRow.getUUID(CREDENTIALS_ID_COLUMN))
       .name(firstRow.getString(NAME_COLUMN))
       .tags(tags)
       .build();

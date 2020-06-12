@@ -1,5 +1,7 @@
 package org.folio.repository.titles;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.lang.NonNull;
@@ -13,7 +15,7 @@ public class DbTitle {
   @NonNull
   Long id;
   @NonNull
-  String credentialsId;
+  UUID credentialsId;
   @NonNull
   String name;
   @Nullable

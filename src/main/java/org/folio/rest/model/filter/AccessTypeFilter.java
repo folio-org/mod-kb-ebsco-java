@@ -1,6 +1,7 @@
 package org.folio.rest.model.filter;
 
 import java.util.List;
+import java.util.UUID;
 
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import org.folio.repository.RecordType;
 public class AccessTypeFilter {
 
   private List<String> accessTypeNames;
-  private List<String> accessTypeIds;
+  private List<UUID> accessTypeIds;
   private String recordIdPrefix;
   private RecordType recordType;
   private int page;

@@ -56,7 +56,7 @@ public class TenantApiImpl extends TenantAPI {
           executeSchemaUpdates(tenantId, vertx),
 
           result -> setupTestData(vertx, tenantId)
-            .setHandler(event -> handlers.handle(ar))
+            .onComplete(event -> handlers.handle(ar))
         );
       }
     }, context);

@@ -2,8 +2,10 @@ package org.folio.rest.converter.accesstypes;
 
 import static org.apache.commons.lang3.StringUtils.isAllBlank;
 
-import java.time.Instant;
-import java.util.Date;
+import static org.folio.db.RowSetUtils.fromDate;
+import static org.folio.db.RowSetUtils.fromUUID;
+import static org.folio.db.RowSetUtils.toDate;
+import static org.folio.db.RowSetUtils.toUUID;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
@@ -27,22 +29,22 @@ public class AccessTypeConverter {
     @Override
     public AccessType convert(@NotNull DbAccessType source) {
       AccessType accessType = new AccessType()
-        .withId(source.getId())
+        .withId(source.getId().toString())
         .withType(AccessType.Type.ACCESS_TYPES)
         .withAttributes(new AccessTypeDataAttributes()
           .withName(source.getName())
           .withDescription(source.getDescription())
-          .withCredentialsId(source.getCredentialsId()))
+          .withCredentialsId(source.getCredentialsId().toString()))
         .withUsageNumber(source.getUsageNumber())
         .withCreator(new UserDisplayInfo()
           .withFirstName(source.getCreatedByFirstName())
           .withLastName(source.getCreatedByLastName())
           .withMiddleName(source.getCreatedByMiddleName()))
         .withMetadata(new Metadata()
-          .withCreatedByUserId(source.getCreatedByUserId())
+          .withCreatedByUserId(fromUUID(source.getCreatedByUserId()))
           .withCreatedByUsername(source.getCreatedByUsername())
           .withCreatedDate(toDate(source.getCreatedDate()))
-          .withUpdatedByUserId(source.getUpdatedByUserId())
+          .withUpdatedByUserId(fromUUID(source.getUpdatedByUserId()))
           .withUpdatedByUsername(source.getUpdatedByUsername())
           .withUpdatedDate(toDate(source.getUpdatedDate())));
       if (!isAllBlank(source.getUpdatedByFirstName(), source.getUpdatedByLastName(), source.getUpdatedByMiddleName())) {
@@ -55,11 +57,7 @@ public class AccessTypeConverter {
       return accessType;
     }
 
-    private Date toDate(Instant date) {
-      return date != null ? Date.from(date) : null;
-    }
   }
-
 
   @Component
   public static class ToDb implements Converter<AccessType, DbAccessType> {
@@ -68,10 +66,10 @@ public class AccessTypeConverter {
     public DbAccessType convert(@NotNull AccessType source) {
       AccessTypeDataAttributes attributes = source.getAttributes();
       DbAccessType.DbAccessTypeBuilder builder = DbAccessType.builder()
-        .id(source.getId())
+        .id(toUUID(source.getId()))
         .name(attributes.getName())
         .description(attributes.getDescription())
-        .credentialsId(attributes.getCredentialsId());
+        .credentialsId(toUUID(attributes.getCredentialsId()));
 
       UserDisplayInfo creator = source.getCreator();
       if (creator != null) {
@@ -92,18 +90,14 @@ public class AccessTypeConverter {
       Metadata metadata = source.getMetadata();
       if (metadata != null) {
         builder
-          .createdDate(toInstant(metadata.getCreatedDate()))
-          .createdByUserId(metadata.getCreatedByUserId())
+          .createdDate(fromDate(metadata.getCreatedDate()))
+          .createdByUserId(toUUID(metadata.getCreatedByUserId()))
           .createdByUsername(metadata.getCreatedByUsername())
-          .updatedDate(toInstant(metadata.getUpdatedDate()))
-          .updatedByUserId(metadata.getUpdatedByUserId())
+          .updatedDate(fromDate(metadata.getUpdatedDate()))
+          .updatedByUserId(toUUID(metadata.getUpdatedByUserId()))
           .updatedByUsername(metadata.getUpdatedByUsername());
       }
       return builder.build();
-    }
-
-    private Instant toInstant(Date date) {
-      return date != null ? date.toInstant() : null;
     }
   }
 }

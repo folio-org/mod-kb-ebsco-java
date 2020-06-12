@@ -1,5 +1,7 @@
 package org.folio.repository.providers;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -7,7 +9,7 @@ import lombok.Value;
 @Builder
 public class DbProvider {
   String id;
-  String credentialsId;
+  UUID credentialsId;
   String name;
 }
 

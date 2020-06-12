@@ -1,5 +1,7 @@
 package org.folio.repository.accesstypes;
 
+import java.util.UUID;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -9,9 +11,9 @@ import org.folio.repository.RecordType;
 @Builder(toBuilder = true)
 public class AccessTypeMapping {
 
-  String id;
+  UUID id;
   String recordId;
   RecordType recordType;
-  String accessTypeId;
+  UUID accessTypeId;
 
 }

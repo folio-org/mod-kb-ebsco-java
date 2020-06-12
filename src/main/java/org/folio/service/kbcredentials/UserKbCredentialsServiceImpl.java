@@ -10,6 +10,7 @@ import static org.folio.util.TokenUtils.fetchUserInfo;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
@@ -51,7 +52,7 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
   }
 
   private CompletionStage<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
-    return credentialsRepository.findByUserId(userInfo.getUserId(), tenant)
+    return credentialsRepository.findByUserId(UUID.fromString(userInfo.getUserId()), tenant)
       .thenCompose(ifEmpty(() -> findSingleKbCredentials(tenant)))
       .thenApply(getCredentialsOrFailWithUserId(userInfo.getUserId()));
   }

@@ -3,8 +3,7 @@ package org.folio.repository.holdings.status;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
@@ -88,6 +87,6 @@ public class HoldingsLoadingStatusFactory {
   }
 
   private static String getTimeNow() {
-    return POSTGRES_TIMESTAMP_FORMATTER.format(Instant.now().atZone(ZoneId.systemDefault()));
+    return POSTGRES_TIMESTAMP_FORMATTER.format(OffsetDateTime.now());
   }
 }

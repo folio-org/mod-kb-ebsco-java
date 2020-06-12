@@ -8,6 +8,8 @@ public class TitlesTableConstants {
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
   public static final String NAME_COLUMN = "name";
+  public static final String HOLDINGS_ID_COLUMN = "h_id";
+  public static final String COUNT_COLUMN = "count";
   public static final String TITLE_FIELD_LIST = String.format("%s, %s, %s", ID_COLUMN, CREDENTIALS_ID_COLUMN,
     NAME_COLUMN);
 
@@ -22,7 +24,7 @@ public class TitlesTableConstants {
       "AND " + CREDENTIALS_ID_COLUMN + "=?";
 
   public static final String COUNT_TITLES_BY_RESOURCE_TAGS =
-    "SELECT COUNT(DISTINCT (regexp_split_to_array(resources.id, '-'))[3]) AS count " +
+    "SELECT COUNT(DISTINCT (regexp_split_to_array(resources.id, '-'))[3]) AS " + COUNT_COLUMN + " " +
       "FROM %s as resources " +
       "INNER JOIN %s as tags ON " +
       "tags.record_id = resources.id " +
@@ -33,7 +35,7 @@ public class TitlesTableConstants {
   public static final String SELECT_TITLES_BY_RESOURCE_TAGS =
     "SELECT DISTINCT (regexp_split_to_array(resources.id, '-'))[3] as id, " +
           "resources.credentials_id as credentials_id, resources.name as name, " +
-          "holdings.id as h_id, holdings.vendor_id, holdings.package_id, holdings.title_id, " +
+      "holdings.id as " + HOLDINGS_ID_COLUMN + ", holdings.vendor_id, holdings.package_id, holdings.title_id, " +
           "holdings.resource_type, holdings.publisher_name, holdings.publication_title " +
       "FROM %s as resources " +
       "INNER JOIN %s as tags ON " +

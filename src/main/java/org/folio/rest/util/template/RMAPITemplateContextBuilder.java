@@ -47,8 +47,7 @@ public class RMAPITemplateContextBuilder {
   @Autowired
   private Vertx vertx;
 
-
-  public RMAPITemplateContextBuilder okapiData(OkapiData okapiData){
+  public RMAPITemplateContextBuilder okapiData(OkapiData okapiData) {
     this.okapiData = okapiData;
     return this;
   }
@@ -58,7 +57,7 @@ public class RMAPITemplateContextBuilder {
     return this;
   }
 
-  public RMAPITemplateContext build(){
+  public RMAPITemplateContext build() {
     String tenant = okapiData.getTenant();
 
     Configuration configuration = converter.convert(credentials);
