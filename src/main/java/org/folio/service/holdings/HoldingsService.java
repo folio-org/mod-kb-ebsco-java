@@ -35,13 +35,7 @@ public interface HoldingsService {
    * will be failed.
    */
   @GenIgnore
-  default CompletableFuture<Void> loadHoldings(RMAPITemplateContext context) {
-    //Default implementation is necessary for automatically generated vertx proxy
-    throw new UnsupportedOperationException();
-  }
-
-  @GenIgnore
-  default CompletableFuture<Void> loadHoldingsById(String credentialsId, RMAPITemplateContext context) {
+  default CompletableFuture<Void> loadSingleHoldings(RMAPITemplateContext context) {
     //Default implementation is necessary for automatically generated vertx proxy
     throw new UnsupportedOperationException();
   }

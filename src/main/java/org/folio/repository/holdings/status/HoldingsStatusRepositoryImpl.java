@@ -4,11 +4,13 @@ import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
+import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
 import static org.folio.repository.DbUtil.mapColumn;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.DELETE_LOADING_STATUS;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUSES;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUS_BY_ID;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.UPDATE_IMPORTED_COUNT;
@@ -17,6 +19,7 @@ import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,6 +30,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.sql.ResultSet;
@@ -109,6 +113,23 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
         .thenApply(this::assertUpdated)
         .thenCompose(o -> get(credentialsId, tenantId, connection));
     });
+  }
+
+  @Override
+  public CompletableFuture<List<HoldingsLoadingStatus>> getAll(String tenantId) {
+    final String query = String.format(GET_HOLDINGS_STATUSES, getHoldingsStatusTableName(tenantId));
+    LOG.info("Select holdings loading status = " + query);
+    Promise<ResultSet> promise = Promise.promise();
+    pgClient(tenantId).select(query, promise);
+    return mapResult(promise.future(), this::mapStatusesCollection);
+  }
+
+  private List<HoldingsLoadingStatus> mapStatusesCollection(ResultSet resultSet) {
+    return mapItems(resultSet.getRows(), this::mapItem);
+  }
+
+  private HoldingsLoadingStatus mapItem(JsonObject row) {
+    return mapColumn(row, "jsonb", HoldingsLoadingStatus.class).orElse(null);
   }
 
   private CompletableFuture<HoldingsLoadingStatus> get(String credentialsId, String tenantId, @Nullable  AsyncResult<SQLConnection> connection) {

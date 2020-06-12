@@ -19,6 +19,8 @@ import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -140,5 +142,12 @@ public class KbCredentialsTestUtil {
       .customerId(STUB_CUSTOMER_ID)
       .apiKey(STUB_API_KEY)
       .url(STUB_API_URL).build();
+  }
+
+  public static Collection<DbKbCredentials> getCredentialsCollectionNoUrl(){
+    return Collections.singletonList(getCredentialsNoUrl());
+  }
+  public static Collection<DbKbCredentials> getCredentialsCollection(){
+    return Collections.singletonList(getCredentials());
   }
 }

@@ -50,7 +50,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
   @Autowired
   private Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter;
-  @Autowired
   private Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter;
 
   @Autowired
@@ -66,9 +65,11 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   public KbCredentialsServiceImpl(
       Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
-      UserKbCredentialsService userKbCredentialsService) {
+      UserKbCredentialsService userKbCredentialsService,
+      Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     this.credentialsFromDBConverter = credentialsFromDBConverter;
     this.userKbCredentialsService = userKbCredentialsService;
+    this.credentialsCollectionConverter = credentialsCollectionConverter;
   }
 
   @Override

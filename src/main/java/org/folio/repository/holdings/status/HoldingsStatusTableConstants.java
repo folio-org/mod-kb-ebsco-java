@@ -10,6 +10,7 @@ public final class HoldingsStatusTableConstants {
   public static final String JSONB_COLUMN = "jsonb";
   public static final String PROCESS_ID_COLUMN = "process_id";
   private static final String HOLDINGS_STATUS_FIELD_LIST_FULL = joinWithComma(ID_COLUMN, CREDENTIALS_COLUMN, JSONB_COLUMN, PROCESS_ID_COLUMN);
+  public static final String GET_HOLDINGS_STATUSES = "SELECT " + HOLDINGS_STATUS_FIELD_LIST_FULL + " from %s;";
   public static final String GET_HOLDINGS_STATUS_BY_ID = "SELECT " + HOLDINGS_STATUS_FIELD_LIST_FULL + " from %s WHERE " + CREDENTIALS_COLUMN + "=?;";
   public static final String INSERT_LOADING_STATUS = "INSERT INTO %s (" + HOLDINGS_STATUS_FIELD_LIST_FULL + ") VALUES (%s) ON CONFLICT DO NOTHING;";
   public static final String UPDATE_LOADING_STATUS = "UPDATE %s SET " + JSONB_COLUMN + " = ? WHERE process_id=? AND " + CREDENTIALS_COLUMN + "=?;";

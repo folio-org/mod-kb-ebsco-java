@@ -42,7 +42,7 @@ types:
       204:
         description: No Content
 
-/loadHoldings:
+/eholdings/loading/kb-credentials:
   displayName: Run load holdings job
   post:
     description: Run load holdings job.
@@ -62,53 +62,19 @@ types:
         body:
           text/plain:
             example: "Internal server error, contact administrator"
-/eholdings/loading/kb-credentials/{id}:
-  displayName: Run load holdings for provided credentials id
-  uriParameters:
-    id:
-      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
-  post:
-    description: Run load holdings job by credentials id.
-    headers:
-      Content-Type:
-        example: application/json
-    responses:
-      204:
-        description: No Content
-      404:
-        description: Not Found
-        body:
-          application/vnd.api+json:
-            type: jsonapiError
-            example:
-              strict: false
-              value: !include examples/loadHoldings/load-holdings-by-id-post-404-response.json
-      409:
-        description: "Process of loading holdings is already running"
-        body:
-          text/plain:
-            example: "Process of loading holdings is already running"
-      500:
-        description: "Internal server error"
-        body:
-          text/plain:
-            example: "Internal server error, contact administrator"
-  /status:
-    displayName: Get current status of load holdings job.
-    get:
-      description: Get current status of load holdings job.
+  /{id}:
+    displayName: Run load holdings for provided credentials id
+    uriParameters:
+      id:
+        pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    post:
+      description: Run load holdings job by credentials id.
       headers:
         Content-Type:
           example: application/json
       responses:
-        200:
-          body:
-            application/json:
-              description: Get current status of load holdings job.
-              type: holdingsLoadingStatus
-              example:
-                strict: false
-                value: !include examples/loadHoldings/loading_completed_200_response.json
+        204:
+          description: No Content
         404:
           description: Not Found
           body:
@@ -117,8 +83,42 @@ types:
               example:
                 strict: false
                 value: !include examples/loadHoldings/load-holdings-by-id-post-404-response.json
+        409:
+          description: "Process of loading holdings is already running"
+          body:
+            text/plain:
+              example: "Process of loading holdings is already running"
         500:
           description: "Internal server error"
           body:
             text/plain:
               example: "Internal server error, contact administrator"
+    /status:
+      displayName: Get current status of load holdings job.
+      get:
+        description: Get current status of load holdings job.
+        headers:
+          Content-Type:
+            example: application/json
+        responses:
+          200:
+            body:
+              application/json:
+                description: Get current status of load holdings job.
+                type: holdingsLoadingStatus
+                example:
+                  strict: false
+                  value: !include examples/loadHoldings/loading_completed_200_response.json
+          404:
+            description: Not Found
+            body:
+              application/vnd.api+json:
+                type: jsonapiError
+                example:
+                  strict: false
+                  value: !include examples/loadHoldings/load-holdings-by-id-post-404-response.json
+          500:
+            description: "Internal server error"
+            body:
+              text/plain:
+                example: "Internal server error, contact administrator"

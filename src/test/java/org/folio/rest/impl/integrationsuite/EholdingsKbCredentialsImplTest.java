@@ -12,6 +12,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
 import static org.folio.util.HoldingsRetryStatusTestUtil.getRetryStatus;
 import static org.folio.util.HoldingsStatusUtil.getStatus;
@@ -36,7 +39,9 @@ import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
 import static org.folio.util.KbCredentialsTestUtil.insertKbCredentials;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import io.vertx.core.json.Json;
@@ -46,6 +51,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.repository.holdings.status.retry.RetryStatus;
 import org.folio.rest.impl.WireMockTestBase;
@@ -57,9 +64,17 @@ import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
+import org.folio.service.kbcredentials.KbCredentialsService;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
+
+  @Autowired
+  @Qualifier("nonSecuredCredentialsService")
+  private KbCredentialsService nonSecuredCredentialsService;
+
+  @Autowired
+  private KbCredentialsService securedCredentialsService;
 
   @After
   public void tearDown() {
@@ -433,6 +448,33 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     final RetryStatus retryStatus = getRetryStatus(actual.getId(), vertx);
     assertNotNull(retryStatus);
+  }
+
+  @Test
+  public void shouldReturnSecuredCollection(){
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    Map<String, String> headers = new HashMap<>();
+    headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    KbCredentialsCollection collection = securedCredentialsService.findAll(headers).join();
+    assertThat(collection.getMeta().getTotalResults(), equalTo(1));
+    assertThat(collection.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
+    assertThat(collection.getData().get(0).getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
+    assertThat(collection.getData().get(0).getAttributes().getApiKey(), containsString("*"));
+    assertThat(collection.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
+    assertThat(collection.getData().get(0).getAttributes().getUrl(), equalTo(STUB_API_URL));
+  }
+  @Test
+  public void shouldReturnNonSecuredCollection(){
+    insertKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    Map<String, String> headers = new HashMap<>();
+    headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    KbCredentialsCollection collection = nonSecuredCredentialsService.findAll(headers).join();
+    assertThat(collection.getMeta().getTotalResults(), equalTo(1));
+    assertThat(collection.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
+    assertThat(collection.getData().get(0).getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
+    assertThat(collection.getData().get(0).getAttributes().getApiKey(), equalTo(STUB_API_KEY));
+    assertThat(collection.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
+    assertThat(collection.getData().get(0).getAttributes().getUrl(), equalTo(STUB_API_URL));
   }
 
   private KbCredentials stubbedCredentials() {

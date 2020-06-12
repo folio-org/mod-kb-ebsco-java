@@ -239,8 +239,8 @@
         },
         {
           "methods": ["POST"],
-          "pathPattern": "/loadHoldings",
-          "permissionsRequired": ["kb-ebsco.holdings.load.post"]
+          "pathPattern": "/eholdings/loading/kb-credentials",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.holdings-load-all.post"]
         },
         {
           "methods": ["POST"],
@@ -338,8 +338,7 @@
       "handlers": [
         {
           "methods": [ "POST" ],
-          "pathPattern": "/loadHoldings",
-          "modulePermissions": ["configuration.entries.collection.get"],
+          "pathPattern": "/eholdings/loading/kb-credentials",
           "unit": "day",
           "delay": "5"
         }
@@ -517,7 +516,7 @@
       "description": "Get record unique tags"
     },
     {
-      "permissionName": "kb-ebsco.holdings.load.post",
+      "permissionName": "kb-ebsco.kb-credentials.holdings-load-all.post",
       "displayName": "permission to run load of holdings",
       "description": "One-time load of holdings"
     },

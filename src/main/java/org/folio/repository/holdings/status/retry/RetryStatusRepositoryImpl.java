@@ -101,6 +101,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
     } else {
       parameters.addNull();
     }
+    parameters.add(credentialsId);
     return parameters;
   }
 

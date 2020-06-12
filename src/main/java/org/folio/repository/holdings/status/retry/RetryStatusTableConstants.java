@@ -15,7 +15,7 @@ public final class RetryStatusTableConstants {
   public static final String RETRY_STATUS_FIELD_LIST = joinWithComma(ID_COLUMN, CREDENTIALS_ID_COLUMN, RETRIES_LEFT_COLUMN, TIMER_ID_COLUMN);
 
   public static final String GET_RETRY_STATUS_BY_CREDENTIALS = "SELECT " + RETRY_STATUS_FIELD_LIST + " from %s WHERE " + CREDENTIALS_ID_COLUMN + "=?;";
-  public static final String UPDATE_RETRY_STATUS = "UPDATE %s SET " + CREDENTIALS_ID_COLUMN + "=?, " + RETRIES_LEFT_COLUMN + "=?, " + TIMER_ID_COLUMN + "=?;";
+  public static final String UPDATE_RETRY_STATUS = "UPDATE %s SET " + CREDENTIALS_ID_COLUMN + "=?, " + RETRIES_LEFT_COLUMN + "=?, " + TIMER_ID_COLUMN + "=? WHERE " + CREDENTIALS_ID_COLUMN + "=?;";
   public static final String INSERT_RETRY_STATUS = "INSERT INTO %s (" + RETRY_STATUS_FIELD_LIST + ") VALUES (%s);";
   public static final String DELETE_RETRY_STATUS = "DELETE FROM %s WHERE " + CREDENTIALS_ID_COLUMN + "=?;";
 }

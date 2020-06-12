@@ -6,10 +6,12 @@ import static org.folio.rest.util.ExceptionMappers.error400DatabaseMapper;
 import static org.folio.rest.util.ExceptionMappers.error401AuthorizationMapper;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
 import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
+import static org.folio.rest.util.ExceptionMappers.error409ProcessInProgressMapper;
 import static org.folio.rest.util.ExceptionMappers.error422ConfigurationInvalidMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ws.rs.BadRequestException;
@@ -51,6 +53,7 @@ import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
+import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -58,6 +61,7 @@ import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.rmapi.cache.VendorCacheKey;
 import org.folio.service.holdings.LoadServiceFacade;
+import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
@@ -168,6 +172,19 @@ public class ApplicationConfig {
   }
 
   @Bean
+  public ErrorHandler loadHoldingsErrorHandler() {
+    return new ErrorHandler()
+      .add(ConstraintViolationException.class, error400ConstraintViolationMapper())
+      .add(NotFoundException.class, error404NotFoundMapper())
+      .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
+      .add(AuthorizationException.class, error401AuthorizationMapper())
+      .add(ProcessInProgressException.class, error409ProcessInProgressMapper())
+      .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper())
+      .add(DatabaseException.class, error400DatabaseMapper())
+      .add(ServiceResponseException.class, errorServiceResponseMapper());
+
+  }
+  @Bean
   public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
     return new ModConfiguration(module);
   }
@@ -182,8 +199,9 @@ public class ApplicationConfig {
   @Bean("securedCredentialsService")
   public KbCredentialsService securedCredentialsService(
       @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter,
-      @Qualifier("securedUserCredentialsService") UserKbCredentialsService userKbCredentialsService) {
-    return new KbCredentialsServiceImpl(converter, userKbCredentialsService);
+      @Qualifier("securedUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
+      @Qualifier("securedCredentialsCollection") Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
   }
 
   @Bean
@@ -196,7 +214,8 @@ public class ApplicationConfig {
   @Bean("nonSecuredCredentialsService")
   public KbCredentialsService nonSecuredCredentialsService(
       @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter,
-      @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService) {
-    return new KbCredentialsServiceImpl(converter, userKbCredentialsService);
+      @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
+      @Qualifier("nonSecuredCredentialsCollection") Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
   }
 }

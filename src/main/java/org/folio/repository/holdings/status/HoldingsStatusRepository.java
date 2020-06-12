@@ -1,5 +1,6 @@
 package org.folio.repository.holdings.status;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
@@ -15,4 +16,6 @@ public interface HoldingsStatusRepository {
   CompletableFuture<Void> delete(String credentialsId, String tenantId);
 
   CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount, String credentialsId, String tenantId);
+
+  CompletableFuture<List<HoldingsLoadingStatus>> getAll(String tenantId);
 }
