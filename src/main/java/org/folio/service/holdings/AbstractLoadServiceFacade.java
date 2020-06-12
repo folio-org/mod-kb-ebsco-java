@@ -44,6 +44,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     .append(DateTimeFormatter.ISO_LOCAL_TIME)
     .toFormatter();
   protected static final int MAX_COUNT = 5000;
+  protected static final int ZERO_COUNT = 0;
   private static final Logger logger = LoggerFactory.getLogger(AbstractLoadServiceFacade.class);
   protected final HoldingsService holdingsService;
   protected final int loadPageRetries;
@@ -99,7 +100,13 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
       if (IN_PROGRESS.equals(loadStatus.getStatus())) {
         return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
       } else if (snapshotCreatedRecently(loadStatus)) {
+        logger.info("Snapshot created recently: {}", loadStatus.toString());
+        final Integer totalCount = loadStatus.getTotalCount();
+        if (ZERO_COUNT == totalCount){
+          throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus.toString());
+        } else {
         return CompletableFuture.completedFuture(loadStatus);
+        }
       } else {
         logger.info("Start populating holdings to stage environment.");
         return populateHoldings(loadingService)
@@ -120,7 +127,12 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
         final LoadStatus status = loadStatus.getStatus();
         logger.info("Getting status of stage snapshot: {}.", status);
         if (COMPLETED.equals(status)) {
-          future.complete(loadStatus);
+          final Integer totalCount = loadStatus.getTotalCount();
+          if (ZERO_COUNT == totalCount){
+            throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus.toString());
+          } else {
+            future.complete(loadStatus);
+          }
         } else if (IN_PROGRESS.equals(status)) {
           if (retries <= 1) {
             throw new IllegalStateException("Failed to get status with status response:" + loadStatus.getStatus());
