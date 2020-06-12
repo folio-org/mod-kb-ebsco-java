@@ -6,9 +6,7 @@
 
   <changeSet id="MODKBEKBJ-444@@alter-holdings-status-audit-table" author="dmtkachenko">
     <addColumn tableName="holdings_status_audit">
-      <column name="credentials_id" type="uuid">
-        <constraints nullable="false"/>
-      </column>
+      <column name="credentials_id" type="uuid"/>
     </addColumn>
   </changeSet>
 
@@ -16,6 +14,10 @@
     <update tableName="holdings_status_audit">
       <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
     </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-not-null-constraints-to-holdings-status-audit" author="dmtkachenko">
+    <addNotNullConstraint tableName="holdings_status_audit" columnName="credentials_id"/>
   </changeSet>
 
   <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-holdings-status-audit-to-kb-credentials" author="dmtkachenko">

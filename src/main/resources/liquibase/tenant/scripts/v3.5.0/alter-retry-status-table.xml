@@ -6,9 +6,7 @@
 
   <changeSet id="MODKBEKBJ-444@@alter-retry-status-table" author="dmtkachenko">
     <addColumn tableName="retry_status">
-      <column name="credentials_id" type="uuid">
-        <constraints nullable="false"/>
-      </column>
+      <column name="credentials_id" type="uuid"/>
     </addColumn>
   </changeSet>
 
@@ -16,6 +14,10 @@
     <update tableName="retry_status">
       <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
     </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@add-not-null-constraints-to-retry-status" author="dmtkachenko">
+    <addNotNullConstraint tableName="retry_status" columnName="credentials_id"/>
   </changeSet>
 
   <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-retry-status-to-kb-credentials" author="dmtkachenko">

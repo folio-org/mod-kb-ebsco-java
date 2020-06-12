@@ -33,9 +33,10 @@
       <column name="name" valueComputed="jsonb -> 'attributes' ->> 'name'"/>
       <column name="description" valueComputed="jsonb -> 'attributes' ->> 'description'"/>
       <column name="created_by_first_name" valueComputed="jsonb -> 'creator' ->> 'firstName'"/>
+      <column name="created_by_middle_name" valueComputed="jsonb -> 'creator' ->> 'middleName'"/>
       <column name="created_by_last_name" valueComputed="jsonb -> 'creator' ->> 'lastName'"/>
       <column name="updated_by_first_name" valueComputed="jsonb -> 'updater' ->> 'firstName'"/>
-      <column name="updated_by_last_name" valueComputed="jsonb -> 'updater' ->> 'lastName'"/>
+      <column name="updated_by_middle_name" valueComputed="jsonb -> 'updater' ->> 'middleName'"/>
       <column name="updated_by_last_name" valueComputed="jsonb -> 'updater' ->> 'lastName'"/>
       <column name="created_date"
               valueComputed="to_timestamp(jsonb -> 'metadata' ->> 'createdDate', 'YYYY-MM-DD&quot;T&quot;HH24:MI:SS.MS')"/>
@@ -45,6 +46,12 @@
       <column name="updated_by_user_id" valueComputed="(jsonb -> 'metadata' ->> 'updatedByUserId')::uuid"/>
       <column name="created_by_username" valueComputed="jsonb -> 'metadata' ->> 'createdByUsername'"/>
       <column name="updated_by_username" valueComputed="jsonb -> 'metadata' ->> 'updatedByUsername'"/>
+    </update>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-access-types" author="dmtkachenko">
+    <update tableName="access_types">
+      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
     </update>
   </changeSet>
 
@@ -63,12 +70,6 @@
     </preConditions>
 
     <dropColumn tableName="access_types" columnName="jsonb" schemaName="${database.defaultSchemaName}"/>
-  </changeSet>
-
-  <changeSet id="MODKBEKBJ-444-datamigration@@set-credentials-id-in-access-types" author="dmtkachenko">
-    <update tableName="access_types">
-      <column name="credentials_id" valueComputed="${database.defaultSchemaName}.get_single_credentials_id()"/>
-    </update>
   </changeSet>
 
   <changeSet id="MODKBEKBJ-444@@add-foreign-key-from-access-types-to-kb-credentials" author="dmtkachenko">
