@@ -1,3 +1,37 @@
+## v3.5.0 2020-06-12
+* MODKBEKBJ-444 - Final verification migration scripts before release Q2 2020
+* MODKBEKBJ-443 - Update to RMB v30
+* MODKBEKBJ-430 - Support POST /eholdings/loading/kb-credentials to load holdings for all KB Credentials
+* MODKBEKBJ-436 - Securing APIs by default
+* MODKBEKBJ-427 - Update GET /loadHoldings/status to support getting status for certain credentials
+* MODKBEKBJ-432 - Modify configuration routine to support user related KB credentials
+* MODKBEKBJ-428 - Set loading status "Not Started" on KB Credentials creation
+* MODKBEKBJ-434 - Apply credentials to services that work with local data of packages, providers, resources, titles
+* MODKBEKBJ-429 - Support POST /eholdings/loading/kb-credentials/{credentialsId} to load holdings for certain KB Credentials
+* MODKBEKBJ 413 - Update mapping and filtering by access types for packages and resources
+* MODKBEKBJ-433 - Update RMAPITemplate to use new configuration routine
+* MODKBEKBJ-432 - Modify configuration routine to support user related KB credentials
+* MODKBEKBJ-438 - Update default RM API url
+* MODKBEKBJ-406 - Update DELETE /eholdings/access-types/{id} to support multiple KB credentials
+* MODKBEKBJ-418 - Update PUT /eholdings/root-proxy to support multiple KB credentials
+* MODKBEKBJ-405 - Update PUT /eholdings/access-types/{id} to support multiple KB credentials
+* MODKBEKBJ-404 - Update GET /eholdings/access-types/{id} to support multiple KB credentials
+* MODKBEKBJ-403 - Update POST /eholdings/access-types to support multiple KB credentials
+* MODKBEKBJ-417 - Update GET /eholdings/root-proxy to support multiple KB credentials
+* MODKBEKBJ-416 - Update GET /eholdings/proxy-types to support multiple KB credentials
+* MODKBEKBJ-402 - Update GET /eholdings/access-types to support multiple KB credentials
+* MODKBEKBJ-415 - Update PUT /eholdings/custom-labels to support multiple KB credentials
+* MODKBEKBJ-424 - Support GET /eholdings/user-kb-credential to retrieve KB credentials entry for user
+* MODKBEKBJ-414 - Update GET /eholdings/custom-labels to support multiple KB credentials
+* MODKBEKBJ-412 - Support DELETE /eholdings/kb-credentials/{credId}/users/{userId} to remove association between user and KB
+* MODKBEKBJ-411 - Support PUT /eholdings/kb-credentials/{credId}/users/{userId} to update details of user associated with KB
+* MODKBEKBJ-410 - Support POST /eholdings/kb-credentials/{credId}/users to associate user with KB
+* MODKBEKBJ-408 - Support GET /eholdings/kb-credentials/{credId}/users to retrieve users associated with KBs
+* MODKBEKBJ-423 - Support DELETE /eholdings/kb-credentials/{credentialsId} to delete KB credentials entry
+* MODKBEKBJ-422 - Support PUT  /eholdings/kb-credentials{credentialsId} to update existing KB credentials entry
+* MODKBEKBJ-421 - Support GET /eholdings/kb-credentials/{credentialsId} to retrieve particular KB credential entry
+* MODKBEKBJ-420 - Support POST /eholdings/kb-credentials to create new KB credentials entry
+
 ## v3.4.0 2020-04-06
 * MODKBEKBJ-356 - Filter titles by access type
 * MODKBEKBJ-376 - Filter titles by access type into package
