@@ -18,9 +18,17 @@ class KbCredentialsBodyAttributesValidator {
 
   protected void validateAttributes(KbCredentialsDataAttributes attributes) {
     validateName(attributes);
-    ValidatorUtil.checkIsNotBlank(API_KEY_PARAMETER, attributes.getApiKey());
-    ValidatorUtil.checkIsNotBlank(CUSTOMER_ID_PARAMETER, attributes.getCustomerId());
+    validateApiKey(attributes);
+    validateCustomerId(attributes);
     validateUrl(attributes);
+  }
+
+  protected void validateCustomerId(KbCredentialsDataAttributes attributes) {
+    ValidatorUtil.checkIsNotBlank(CUSTOMER_ID_PARAMETER, attributes.getCustomerId());
+  }
+
+  protected void validateApiKey(KbCredentialsDataAttributes attributes) {
+    ValidatorUtil.checkIsNotBlank(API_KEY_PARAMETER, attributes.getApiKey());
   }
 
   protected void validateName(KbCredentialsDataAttributes attributes) {
