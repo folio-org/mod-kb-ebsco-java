@@ -43,7 +43,7 @@
 
     <vertx.version>3.9.1</vertx.version>
     <aspectj.version>1.9.4</aspectj.version>
-    <spring.version>5.1.1.RELEASE</spring.version>
+    <spring.version>5.2.7.RELEASE</spring.version>
     <jackson.version>2.10.4</jackson.version>
     <jopt-simple.version>4.6</jopt-simple.version>
     <commons-configuration2.version>2.7</commons-configuration2.version>
