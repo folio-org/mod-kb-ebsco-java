@@ -4,6 +4,12 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
+  <changeSet id="MODKBEKBJ-444@@drop-holdings-status-audit-trigger" author="dmtkachenko">
+    <sql>
+      DROP TRIGGER IF EXISTS holdings_status_audit ON ${database.defaultSchemaName}.holdings_status CASCADE;
+    </sql>
+  </changeSet>
+
   <changeSet id="MODKBEKBJ-444@@alter-holdings-status-table" author="dmtkachenko">
     <addColumn tableName="holdings_status">
       <column name="credentials_id" type="uuid"/>

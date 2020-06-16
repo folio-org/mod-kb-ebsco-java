@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="create-holdings-status-audit-function" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@create-holdings-status-audit-function" author="dmtkachenko">
     <!-- Trigger that records all insert, update, delete operations for table holdings_status -->
     <createProcedure>
       CREATE OR REPLACE FUNCTION ${database.defaultSchemaName}.process_holdings_status_audit() RETURNS TRIGGER AS $$
@@ -34,7 +34,7 @@
     </createProcedure>
   </changeSet>
 
-  <changeSet id="create-holdings-status-audit-trigger" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@create-holdings-status-audit-trigger" author="dmtkachenko">
     <sql>
       DROP TRIGGER IF EXISTS holdings_status_audit ON ${database.defaultSchemaName}.holdings_status CASCADE;
 
