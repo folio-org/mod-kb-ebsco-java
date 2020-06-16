@@ -173,14 +173,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return credentials;
   }
 
-  private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
-    final String credentialsId = credentials.getId();
-    holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
-      .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
-      .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
-    return credentials;
-  }
-
   private CompletableFuture<Void> verifyCredentials(DbKbCredentials dbKbCredentials, Map<String, String> okapiHeaders) {
     Configuration configuration = configurationConverter.convert(dbKbCredentials);
     return configurationService.verifyCredentials(configuration, context, new OkapiData(okapiHeaders))
