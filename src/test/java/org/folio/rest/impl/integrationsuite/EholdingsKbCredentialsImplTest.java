@@ -287,6 +287,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPatchWhenCredentialsNameIsEmpty() {
     KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
     kbCredentialsPatchRequest.getData().getAttributes().setName("");
+    kbCredentialsPatchRequest.getData().getAttributes().setCustomerId(STUB_CUSTOMER_ID);
 
     String patchBody = Json.encode(kbCredentialsPatchRequest);
 
@@ -313,8 +314,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnPatchWhenCredentialsWithProvidedNameAlreadyExist() {
-    saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2",
+    saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "2",
       STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
