@@ -4,9 +4,9 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="MODKBEKBJ-444@@drop-holdings-status-audit-trigger" author="dmtkachenko">
+  <changeSet id="MODKBEKBJ-444@@disable-holdings-status-audit-triggers" author="dmtkachenko">
     <sql>
-      DROP TRIGGER IF EXISTS holdings_status_audit ON ${database.defaultSchemaName}.holdings_status CASCADE;
+      ALTER TABLE ${database.defaultSchemaName}.holdings_status DISABLE TRIGGER ALL;
     </sql>
   </changeSet>
 
@@ -61,6 +61,12 @@
       referencedColumnNames="id"
       referencedTableName="kb_credentials"
       referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-444@@enable-holdings-status-audit-triggers" author="dmtkachenko">
+    <sql>
+      ALTER TABLE ${database.defaultSchemaName}.holdings_status ENABLE TRIGGER ALL;
+    </sql>
   </changeSet>
 
 </databaseChangeLog>
