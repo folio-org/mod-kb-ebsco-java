@@ -1,6 +1,5 @@
 package org.folio.rest.validator.kbcredentials;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +15,10 @@ public class KbCredentialsPatchBodyValidator extends KbCredentialsBodyAttributes
 
   public void validate(KbCredentialsPatchRequest patchRequest) {
     KbCredentialsDataAttributes attributes = patchRequest.getData().getAttributes();
-    if (StringUtils.isNotBlank(attributes.getName())) {
+    if (attributes.getName() != null) {
       validateName(attributes);
     }
-    if (StringUtils.isNotBlank(attributes.getUrl())) {
+    if (attributes.getUrl() != null) {
       validateUrl(attributes);
     }
   }
