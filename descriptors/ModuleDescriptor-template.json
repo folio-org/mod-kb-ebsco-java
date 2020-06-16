@@ -22,6 +22,11 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.item.get"]
         },
         {
+          "methods": ["PATCH"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.patch"]
+        },
+        {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
           "permissionsRequired": ["kb-ebsco.kb-credentials.item.put"]
@@ -596,6 +601,11 @@
       "description": "Get KB credentials collection item"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.item.patch",
+      "displayName": "patch KB credentials collection item",
+      "description": "Patch KB credentials collection item"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.item.put",
       "displayName": "put KB credentials collection item",
       "description": "Put KB credentials collection item"
@@ -613,6 +623,7 @@
         "kb-ebsco.kb-credentials.collection.get",
         "kb-ebsco.kb-credentials.collection.post",
         "kb-ebsco.kb-credentials.item.get",
+        "kb-ebsco.kb-credentials.item.patch",
         "kb-ebsco.kb-credentials.item.put",
         "kb-ebsco.kb-credentials.item.delete",
         "kb-ebsco.kb-credentials.custom-labels.collection.get",

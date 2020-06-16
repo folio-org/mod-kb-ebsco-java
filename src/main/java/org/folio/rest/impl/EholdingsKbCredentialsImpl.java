@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentials;
@@ -72,6 +73,18 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
     securedCredentialsService.findById(id, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsByIdResponse.respond200WithApplicationVndApiJson(kbCredentials))))
+      .exceptionally(errorHandler.handle(asyncResultHandler));
+  }
+
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void patchEholdingsKbCredentialsById(String id, String contentType, KbCredentialsPatchRequest entity,
+                                              Map<String, String> okapiHeaders,
+                                              Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    securedCredentialsService.updatePartially(id, entity, okapiHeaders)
+      .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
+        PutEholdingsKbCredentialsByIdResponse.respond204())))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
