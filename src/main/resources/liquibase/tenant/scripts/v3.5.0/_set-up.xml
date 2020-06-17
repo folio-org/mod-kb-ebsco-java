@@ -1,0 +1,28 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="MODKBEKBJ-444@@create-trigger-exists-function" author="dmtkachenko">
+    <createProcedure>
+      CREATE OR REPLACE FUNCTION ${database.defaultSchemaName}.trigger_exists(name text)
+        RETURNS text AS $$
+      DECLARE
+        rowCount int;
+      BEGIN
+        SELECT COUNT(*) INTO rowCount
+          FROM pg_trigger
+          WHERE tgname = name;
+
+        IF rowCount = 1 THEN
+          RETURN 'true';
+        ELSE
+          RETURN 'false';
+        END IF;
+      END;
+      $$ LANGUAGE 'plpgsql';
+    </createProcedure>
+  </changeSet>
+
+</databaseChangeLog>
