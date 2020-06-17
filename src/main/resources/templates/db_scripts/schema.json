@@ -96,6 +96,10 @@
     {
       "run": "after",
       "snippetPath": "change_table_owner.sql"
+    },
+    {
+      "run": "after",
+      "snippetPath": "change_function_owner.sql"
     }
   ]
 }
