@@ -63,6 +63,9 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestData;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
@@ -214,6 +217,143 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn404OnGetWhenCredentialsAreMissing() {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "KbCredentials not found by id");
+  }
+
+  @Test
+  public void shouldReturn204OnPatchIfCredentialsAreValid() {
+    String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setCustomerId("updated");
+
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    mockVerifyValidCredentialsRequest();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
+    patchWithNoContent(resourcePath, patchBody, STUB_TOKEN_HEADER);
+
+    KbCredentials actual = getKbCredentialsNonSecured(vertx).get(0);
+
+    assertNotNull(actual);
+    assertNotNull(actual.getId());
+    assertNotNull(actual.getType());
+    assertEquals(getWiremockUrl(), actual.getAttributes().getUrl());
+    assertEquals(STUB_API_KEY, actual.getAttributes().getApiKey());
+    assertEquals(STUB_CREDENTIALS_NAME, actual.getAttributes().getName());
+    assertEquals("updated", actual.getAttributes().getCustomerId());
+    assertEquals(STUB_USERNAME, actual.getMeta().getCreatedByUsername());
+    assertEquals(STUB_USER_ID, actual.getMeta().getCreatedByUserId());
+    assertNotNull(actual.getMeta().getCreatedDate());
+    assertEquals(STUB_USERNAME, actual.getMeta().getUpdatedByUsername());
+    assertEquals(STUB_USER_ID, actual.getMeta().getUpdatedByUserId());
+    assertNotNull(actual.getMeta().getUpdatedDate());
+  }
+
+  @Test
+  public void shouldReturn422OnPatchWhenCredentialsAreInvalid() {
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setCustomerId("updated");
+
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    mockVerifyFailedCredentialsRequest();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "KB API Credentials are invalid");
+  }
+
+  @Test
+  public void shouldReturn422OnPatchWhenCredentialsNameIsLongerThen255() {
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setName(Strings.repeat('*', 256));
+
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid name");
+    assertErrorContainsDetail(error, "name is too long (maximum is 255 characters)");
+  }
+
+  @Test
+  public void shouldReturn422OnPatchWhenCredentialsNameIsEmpty() {
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setName("");
+    kbCredentialsPatchRequest.getData().getAttributes().setCustomerId(STUB_CUSTOMER_ID);
+
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid name");
+    assertErrorContainsDetail(error, "name must not be empty");
+  }
+
+  @Test
+  public void shouldReturn422OnPatchWhenAllFieldsAreEmpty() {
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid attributes");
+    assertErrorContainsDetail(error, "At least one of attributes must not be empty");
+  }
+
+  @Test
+  public void shouldReturn422OnPatchWhenCredentialsWithProvidedNameAlreadyExist() {
+    saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "2",
+      STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setName(STUB_CREDENTIALS_NAME);
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    mockVerifyValidCredentialsRequest();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Duplicate name");
+    assertErrorContainsDetail(error, String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME));
+  }
+
+  @Test
+  public void shouldReturn400OnPatchWhenIdIsInvalid() {
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setName(STUB_CREDENTIALS_NAME);
+
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_BAD_REQUEST).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
+  }
+
+  @Test
+  public void shouldReturn404OnPatchWhenCredentialsAreMissing() {
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setName(STUB_CREDENTIALS_NAME);
+
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    mockVerifyValidCredentialsRequest();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KbCredentials not found by id");
   }
@@ -485,6 +625,13 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
         .withCustomerId(STUB_CUSTOMER_ID)
         .withApiKey(STUB_API_KEY)
         .withUrl(getWiremockUrl()));
+  }
+
+  private KbCredentialsPatchRequest stubPatchRequest() {
+    return new KbCredentialsPatchRequest().withData(
+      new KbCredentialsPatchRequestData().withType(KbCredentialsPatchRequestData.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsPatchRequestDataAttributes())
+    );
   }
 
   private void mockVerifyValidCredentialsRequest() {

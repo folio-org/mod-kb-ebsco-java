@@ -17,10 +17,26 @@ class KbCredentialsBodyAttributesValidator {
   }
 
   protected void validateAttributes(KbCredentialsDataAttributes attributes) {
+    validateName(attributes);
+    validateApiKey(attributes);
+    validateCustomerId(attributes);
+    validateUrl(attributes);
+  }
+
+  protected void validateCustomerId(KbCredentialsDataAttributes attributes) {
+    ValidatorUtil.checkIsNotBlank(CUSTOMER_ID_PARAMETER, attributes.getCustomerId());
+  }
+
+  protected void validateApiKey(KbCredentialsDataAttributes attributes) {
+    ValidatorUtil.checkIsNotBlank(API_KEY_PARAMETER, attributes.getApiKey());
+  }
+
+  protected void validateName(KbCredentialsDataAttributes attributes) {
     ValidatorUtil.checkIsNotBlank(NAME_PARAMETER, attributes.getName());
     ValidatorUtil.checkMaxLength(NAME_PARAMETER, attributes.getName(), nameLengthMax);
-    ValidatorUtil.checkIsNotBlank(API_KEY_PARAMETER, attributes.getApiKey());
-    ValidatorUtil.checkIsNotBlank(CUSTOMER_ID_PARAMETER, attributes.getCustomerId());
+  }
+
+  protected void validateUrl(KbCredentialsDataAttributes attributes) {
     ValidatorUtil.checkIsNotBlank(URL_PARAMETER, attributes.getUrl());
     ValidatorUtil.checkUrlFormat(URL_PARAMETER, attributes.getUrl());
   }
