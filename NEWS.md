@@ -1,3 +1,9 @@
+## v3.5.1 2020-06-18
+* MODKBEKBJ-444 - Update migration scripts
+* MODKBEKBJ-447 - Add support of PATCH credentials endpoint
+* Upgrade eholdings interface to v2.1
+* Upgrade RMB to v30.1.0
+
 ## v3.5.0 2020-06-12
 * MODKBEKBJ-444 - Final verification migration scripts before release Q2 2020
 * MODKBEKBJ-443 - Update to RMB v30
