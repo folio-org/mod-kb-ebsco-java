@@ -64,6 +64,9 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private static final String CREDENTIALS_NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String CREDENTIALS_NAME_UNIQUENESS_DETAILS = "Credentials with name '%s' already exist";
+  private static final String CREDENTIALS_CUSTOMERID_URL_UNIQUENESS_MESSAGE = "Duplicate credentials";
+  private static final String CREDENTIALS_CUSTOMERID_URL_UNIQUENESS_DETAILS =
+    "Credentials with customer id '%s' and url '%s' already exist";
   private static final String CREDENTIALS_DELETE_ALLOWED_DETAILS = "Credentials have related records and can't be deleted";
 
   @Autowired
@@ -122,7 +125,8 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
-      .recover(uniqueNameConstraintViolation(credentials.getName()));
+      .recover(uniqueNameConstraintViolation(credentials.getName()))
+      .recover(uniqueCredsConstraintViolation(credentials.getCustomerId(), credentials.getUrl()));
     return mapResult(resultFuture, setId(credentials, id));
   }
 
@@ -184,6 +188,12 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     return uniqueConstraintRecover(NAME_COLUMN, new InputValidationException(
       CREDENTIALS_NAME_UNIQUENESS_MESSAGE,
       format(CREDENTIALS_NAME_UNIQUENESS_DETAILS, value)));
+  }
+
+  private Function<Throwable, Future<RowSet<Row>>> uniqueCredsConstraintViolation(String customerId, String url) {
+    return uniqueConstraintRecover(asList(CUSTOMER_ID_COLUMN, URL_COLUMN), new InputValidationException(
+      CREDENTIALS_CUSTOMERID_URL_UNIQUENESS_MESSAGE,
+      format(CREDENTIALS_CUSTOMERID_URL_UNIQUENESS_DETAILS, customerId, url)));
   }
 
   private Function<Throwable, Future<RowSet<Row>>> foreignKeyConstraintViolation() {

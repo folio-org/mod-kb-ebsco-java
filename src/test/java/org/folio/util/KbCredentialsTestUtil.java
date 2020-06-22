@@ -85,7 +85,13 @@ public class KbCredentialsTestUtil {
       OffsetDateTime.now(), toUUID(STUB_USER_ID), STUB_USERNAME, null, null, null
     ));
 
-    PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> {
+      if (event.succeeded()) {
+        future.complete(null);
+      } else {
+        future.completeExceptionally(event.cause());
+      }
+    });
     future.join();
 
     return id;

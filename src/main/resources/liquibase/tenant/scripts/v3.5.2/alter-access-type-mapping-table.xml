@@ -1,0 +1,14 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="MODKBEKBJ-444@@remove-duplicate-check-on-access-types-mappings" author="dmtkachenko">
+    <sql>
+      ALTER TABLE ${database.defaultSchemaName}.access_types_mappings
+        DROP CONSTRAINT IF EXISTS access_types_mapping_record_type_check;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
