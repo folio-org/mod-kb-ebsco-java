@@ -3,6 +3,6 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <include file="liquibase/tenant/changelog-3.5.0.xml"/>
-  <include file="liquibase/tenant/changelog-3.5.2.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.2/alter-kb-credentials-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.2/alter-access-type-mapping-table.xml"/>
 </databaseChangeLog>

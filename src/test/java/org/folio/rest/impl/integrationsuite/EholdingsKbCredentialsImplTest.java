@@ -196,6 +196,25 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn422OnPostWhenCredentialsWithProvidedCustIdAndUrlAlreadyExist() {
+    saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    KbCredentials creds = stubbedCredentials();
+    creds.getAttributes().setName("Other KB");
+
+    KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
+    String postBody = Json.encode(kbCredentialsPostRequest);
+
+    mockVerifyValidCredentialsRequest();
+    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Duplicate credentials");
+    assertErrorContainsDetail(error, String.format("Credentials with customer id '%s' and url '%s' already exist",
+      STUB_CUSTOMER_ID, getWiremockUrl()));
+  }
+
+  @Test
   public void shouldReturnKbCredentialsOnGet() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
@@ -332,6 +351,27 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn422OnPatchWhenCredentialsWithProvidedCustIdAndUrlAlreadyExist() {
+    saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "2",
+      STUB_API_KEY, "OTHER_CUST_ID", vertx);
+
+    KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
+    kbCredentialsPatchRequest.getData().getAttributes().setCustomerId(STUB_CUSTOMER_ID);
+    kbCredentialsPatchRequest.getData().getAttributes().setUrl(getWiremockUrl());
+    String patchBody = Json.encode(kbCredentialsPatchRequest);
+
+    mockVerifyValidCredentialsRequest();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Duplicate credentials");
+    assertErrorContainsDetail(error, String.format("Credentials with customer id '%s' and url '%s' already exist",
+      STUB_CUSTOMER_ID, getWiremockUrl()));
+  }
+
+  @Test
   public void shouldReturn400OnPatchWhenIdIsInvalid() {
     KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
     kbCredentialsPatchRequest.getData().getAttributes().setName(STUB_CREDENTIALS_NAME);
@@ -455,6 +495,27 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     assertErrorContainsTitle(error, "Duplicate name");
     assertErrorContainsDetail(error, String.format("Credentials with name '%s' already exist", STUB_CREDENTIALS_NAME));
+  }
+
+  @Test
+  public void shouldReturn422OnPutWhenCredentialsWithProvidedCustIdAndUrlAlreadyExist() {
+    saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "2",
+      STUB_API_KEY, "OTHER_CUST_ID", vertx);
+
+    KbCredentials creds = stubbedCredentials();
+    creds.getAttributes().setName(STUB_CREDENTIALS_NAME + "2");
+    KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
+    String putBody = Json.encode(kbCredentialsPutRequest);
+
+    mockVerifyValidCredentialsRequest();
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Duplicate credentials");
+    assertErrorContainsDetail(error, String.format("Credentials with customer id '%s' and url '%s' already exist",
+      STUB_CUSTOMER_ID, getWiremockUrl()));
   }
 
   @Test

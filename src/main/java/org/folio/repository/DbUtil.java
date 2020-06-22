@@ -1,5 +1,12 @@
 package org.folio.repository;
 
+import static io.vertx.core.Future.failedFuture;
+import static java.util.Collections.singletonList;
+import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
+
+import static org.folio.db.exc.DbExcUtils.isFKViolation;
+import static org.folio.db.exc.DbExcUtils.isPKViolation;
+import static org.folio.db.exc.DbExcUtils.isUniqueViolation;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
@@ -15,6 +22,7 @@ import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TA
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 
+import java.util.List;
 import java.util.function.Function;
 
 import io.vertx.core.Future;
@@ -22,7 +30,6 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 
 import org.folio.db.exc.ConstraintViolationException;
-import org.folio.db.exc.DbExcUtils;
 import org.folio.rest.persist.PostgresClient;
 
 public class DbUtil {
@@ -91,23 +98,31 @@ public class DbUtil {
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> uniqueConstraintRecover(String columnName, Throwable t) {
-    return throwable -> DbExcUtils.isUniqueViolation(throwable)
-      && ((ConstraintViolationException) throwable).getConstraint().getColumns().contains(columnName)
-      ? Future.failedFuture(t)
-      : Future.failedFuture(throwable);
+    return uniqueConstraintRecover(singletonList(columnName), t);
+  }
+
+  public static Function<Throwable, Future<RowSet<Row>>> uniqueConstraintRecover(List<String> columnNames, Throwable t) {
+    return throwable -> isUniqueViolation(throwable)
+      && isEqualCollection(((ConstraintViolationException) throwable).getConstraint().getColumns(), columnNames)
+      ? failedFuture(t)
+      : failedFuture(throwable);
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> pkConstraintRecover(String columnName, Throwable t) {
-    return throwable -> DbExcUtils.isPKViolation(throwable)
-      && ((ConstraintViolationException) throwable).getConstraint().getColumns().contains(columnName)
-      ? Future.failedFuture(t)
-      : Future.failedFuture(throwable);
+    return pkConstraintRecover(singletonList(columnName), t);
+  }
+
+  public static Function<Throwable, Future<RowSet<Row>>> pkConstraintRecover(List<String> columnNames, Throwable t) {
+    return throwable -> isPKViolation(throwable)
+      && isEqualCollection(((ConstraintViolationException) throwable).getConstraint().getColumns(), columnNames)
+      ? failedFuture(t)
+      : failedFuture(throwable);
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> foreignKeyConstraintRecover(Throwable t) {
-    return throwable -> DbExcUtils.isFKViolation(throwable)
-      ? Future.failedFuture(t)
-      : Future.failedFuture(throwable);
+    return throwable -> isFKViolation(throwable)
+      ? failedFuture(t)
+      : failedFuture(throwable);
   }
 
   public static String prepareQuery(String queryTemplate, Object... params) {
