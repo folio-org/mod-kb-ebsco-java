@@ -95,7 +95,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     insertAssignedUser(JOHN_ID, STUB_CREDENTILS_ID, "john_doe", "John", null, "Doe", "patron", vertx);
     KbCredentialsTestUtil
-      .saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "1", STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      .saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "1", STUB_API_KEY, "OTHER_CUSTOMER_ID", vertx);
 
     JsonapiError error = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_NOT_FOUND, JANE_TOKEN_HEADER).as(JsonapiError.class);
 
