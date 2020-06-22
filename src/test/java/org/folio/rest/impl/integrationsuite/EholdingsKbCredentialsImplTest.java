@@ -74,6 +74,7 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
+  private static final String OTHER_CUST_ID = "OTHER_CUST_ID";
   @Autowired
   @Qualifier("nonSecuredCredentialsService")
   private KbCredentialsService nonSecuredCredentialsService;
@@ -335,7 +336,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPatchWhenCredentialsWithProvidedNameAlreadyExist() {
     saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "2",
-      STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      STUB_API_KEY, OTHER_CUST_ID, vertx);
 
     KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
     kbCredentialsPatchRequest.getData().getAttributes().setName(STUB_CREDENTIALS_NAME);
@@ -482,7 +483,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPutWhenCredentialsWithProvidedNameAlreadyExist() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME + "2",
-      STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+      STUB_API_KEY, OTHER_CUST_ID, vertx);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest()
       .withData(stubbedCredentials());
@@ -501,7 +502,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPutWhenCredentialsWithProvidedCustIdAndUrlAlreadyExist() {
     saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "2",
-      STUB_API_KEY, "OTHER_CUST_ID", vertx);
+      STUB_API_KEY, OTHER_CUST_ID, vertx);
 
     KbCredentials creds = stubbedCredentials();
     creds.getAttributes().setName(STUB_CREDENTIALS_NAME + "2");

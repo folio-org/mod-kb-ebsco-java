@@ -242,7 +242,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {
-    return uniqueConstraintRecover(NAME_COLUMN, new InputValidationException(
+    return uniqueConstraintRecover(asList(CREDENTIALS_ID_COLUMN, NAME_COLUMN), new InputValidationException(
       NAME_UNIQUENESS_MESSAGE,
       format(NAME_UNIQUENESS_DETAILS, value)));
   }
