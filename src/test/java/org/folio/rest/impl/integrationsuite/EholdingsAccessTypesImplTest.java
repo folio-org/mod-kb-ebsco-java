@@ -42,7 +42,6 @@ import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.io.IOException;
@@ -299,14 +298,15 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnDeleteWhenAssignedToRecords() {
+  public void shouldReturn204OnDeleteWhenAssignedToRecords() {
     List<AccessType> accessTypes = testData(credentialsId);
     String id = insertAccessType(accessTypes.get(0), vertx);
     insertAccessTypeMapping("11111111-1111", RecordType.PACKAGE, id, vertx);
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
-    JsonapiError errors = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
-    assertEquals("Can't delete access type that has assigned records", errors.getErrors().get(0).getTitle());
+    int statusCode = deleteWithNoContent(resourcePath).response().statusCode();
+
+    assertEquals(SC_NO_CONTENT, statusCode);
   }
 
   @Test

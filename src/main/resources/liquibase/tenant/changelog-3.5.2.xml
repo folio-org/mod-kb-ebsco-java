@@ -5,4 +5,5 @@
 
   <include file="liquibase/tenant/scripts/v3.5.2/alter-kb-credentials-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.2/alter-access-type-mapping-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.2/enable-delete-cascade-from-kb-credentials.xml"/>
 </databaseChangeLog>
