@@ -14,12 +14,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
+import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME;
+import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
 import static org.folio.rest.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.rest.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
@@ -40,6 +46,14 @@ import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
+import static org.folio.util.PackagesTestUtil.buildDbPackage;
+import static org.folio.util.PackagesTestUtil.savePackage;
+import static org.folio.util.ProvidersTestUtil.buildDbProvider;
+import static org.folio.util.ProvidersTestUtil.saveProvider;
+import static org.folio.util.ResourcesTestUtil.buildResource;
+import static org.folio.util.ResourcesTestUtil.saveResource;
+import static org.folio.util.TitlesTestUtil.buildTitle;
+import static org.folio.util.TitlesTestUtil.saveTitle;
 
 import java.util.HashMap;
 import java.util.List;
@@ -560,17 +574,21 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnDeleteWhenHasRelatedRecords() {
-    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn204OnDeleteWhenHasRelatedRecords() {
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
+        vertx);
+
     insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    saveProvider(buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME), vertx);
+    savePackage(buildDbPackage(FULL_PACKAGE_ID, credentialsId, STUB_PACKAGE_NAME), vertx);
+    saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, credentialsId, STUB_TITLE_NAME), vertx);
+    saveTitle(buildTitle(STUB_TITLE_ID, credentialsId, STUB_TITLE_NAME), vertx);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "Credentials have related records and can't be deleted");
+    deleteWithNoContent(resourcePath);
 
     List<KbCredentials> kbCredentialsInDb = getKbCredentials(vertx);
-    assertFalse(kbCredentialsInDb.isEmpty());
+    assertTrue(kbCredentialsInDb.isEmpty());
   }
 
   @Test
