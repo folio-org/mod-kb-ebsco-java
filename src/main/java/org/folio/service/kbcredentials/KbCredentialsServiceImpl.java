@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -182,9 +183,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
     final UUID credentialsId = toUUID(credentials.getId());
     holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
-      .thenAccept(v -> retryStatusRepository.delete(credentialsId, tenantId))
-      .thenAccept(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
+      .thenCompose(v -> resetRetryStatus(credentialsId, tenantId));
     return credentials;
+  }
+
+  private CompletionStage<Void> resetRetryStatus(UUID credentialsId, String tenantId) {
+    return retryStatusRepository.delete(credentialsId, tenantId)
+      .thenCompose(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
   }
 
   private CompletableFuture<DbKbCredentials> verifyAndSave(DbKbCredentials dbKbCredentials,
