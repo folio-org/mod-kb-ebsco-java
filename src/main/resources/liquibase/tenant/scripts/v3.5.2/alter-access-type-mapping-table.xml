@@ -11,4 +11,32 @@
     </sql>
   </changeSet>
 
+  <changeSet id="MODKBEKBJ-452@@rename-access-types-mappings-primary-key" author="dmtkachenko">
+    <preConditions onFail="MARK_RAN">
+      <!--DOESN'T WORK: -->
+      <!--<primaryKeyExists primaryKeyName="access_types_mapping_pkey" tableName="access_types_mappings"
+                        schemaName="${database.defaultSchemaName}"/>-->
+      <sqlCheck expectedResult="1">
+        SELECT count(1) FROM pg_constraint
+          WHERE conname = 'access_types_mapping_pkey'
+            AND contype = 'p'
+      </sqlCheck>
+    </preConditions>
+
+    <dropPrimaryKey
+      constraintName="access_types_mapping_pkey"
+      tableName="access_types_mappings"
+      schemaName="${database.defaultSchemaName}"/>
+
+    <addPrimaryKey
+      constraintName="access_types_mappings_pkey"
+      tableName="access_types_mappings"
+      columnNames="id"
+      schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-452@@add-not-null-to-record-type-in-access-types-mappings" author="dmtkachenko">
+    <addNotNullConstraint tableName="access_types_mappings" columnName="record_type"/>
+  </changeSet>
+
 </databaseChangeLog>
