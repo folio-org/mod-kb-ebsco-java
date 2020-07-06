@@ -1,3 +1,8 @@
+## v3.5.2 2020-07-06
+* MODKBEKBJ-449 Prevent duplicate KB credentials
+* MODKBEKBJ-450 Remove restrictions to support deleting KB credentials
+* MODKBEKBJ-452 Schema migration issue from Fameflower - Goldenrod
+
 ## v3.5.1 2020-06-18
 * MODKBEKBJ-444 - Update migration scripts
 * MODKBEKBJ-447 - Add support of PATCH credentials endpoint
