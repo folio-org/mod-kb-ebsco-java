@@ -111,8 +111,8 @@
         "description": "Access Type description 1"
       },
       "creator": {
-        "lastName": "last name",
-        "firstName": "first name"
+        "lastName": "Doe",
+        "firstName": "John"
       }
     }
   ],

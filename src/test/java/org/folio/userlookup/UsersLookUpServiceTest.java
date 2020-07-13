@@ -3,9 +3,6 @@ package org.folio.userlookup;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
-import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
-import static org.folio.rest.util.RestConstants.OKAPI_TOKEN_HEADER;
-import static org.folio.rest.util.RestConstants.OKAPI_URL_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TokenTestUtils.generateToken;
 
@@ -33,6 +30,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.folio.common.OkapiParams;
+import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
 import org.folio.test.junit.TestStartLoggingRule;
@@ -64,9 +62,9 @@ public class UsersLookUpServiceTest {
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
-    OKAPI_HEADERS.put(OKAPI_TENANT_HEADER, STUB_TENANT);
-    OKAPI_HEADERS.put(OKAPI_URL_HEADER, getWiremockUrl());
-    OKAPI_HEADERS.put(OKAPI_TOKEN_HEADER, stubToken);
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+    OKAPI_HEADERS.put(XOkapiHeaders.TOKEN, stubToken);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
@@ -99,8 +97,8 @@ public class UsersLookUpServiceTest {
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
-    OKAPI_HEADERS.put(OKAPI_URL_HEADER, getWiremockUrl());
-    OKAPI_HEADERS.put(OKAPI_TOKEN_HEADER, stubToken);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+    OKAPI_HEADERS.put(XOkapiHeaders.TOKEN, stubToken);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
@@ -127,9 +125,9 @@ public class UsersLookUpServiceTest {
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
 
-    OKAPI_HEADERS.put(OKAPI_TENANT_HEADER, STUB_TENANT);
-    OKAPI_HEADERS.put(OKAPI_URL_HEADER, getWiremockUrl());
-    OKAPI_HEADERS.put(OKAPI_TOKEN_HEADER, stubToken);
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+    OKAPI_HEADERS.put(XOkapiHeaders.TOKEN, stubToken);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
@@ -153,7 +151,7 @@ public class UsersLookUpServiceTest {
   public void shouldReturn500WhenMissingOkapiURLHeader(TestContext context) {
     Async async = context.async();
 
-    OKAPI_HEADERS.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
 
     CompletableFuture<User> info = usersLookUpService.lookUpUser(new OkapiParams(OKAPI_HEADERS));
     info.thenCompose(result -> {
