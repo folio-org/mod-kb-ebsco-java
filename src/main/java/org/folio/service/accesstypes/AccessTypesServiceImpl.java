@@ -38,8 +38,8 @@ import org.folio.rest.jaxrs.model.AccessTypePostRequest;
 import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.validator.AccessTypesBodyValidator;
 import org.folio.service.kbcredentials.KbCredentialsService;
-import org.folio.service.userlookup.UserLookUp;
-import org.folio.service.userlookup.UserLookUpService;
+import org.folio.service.users.User;
+import org.folio.service.users.UsersService;
 
 @Component
 public class AccessTypesServiceImpl implements AccessTypesService {
@@ -50,7 +50,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   private static final String NOT_FOUND_BY_RECORD_MESSAGE = "Access type not found: recordId = %s, recordType = %s";
 
   @Autowired
-  private UserLookUpService userLookUpService;
+  private UsersService usersService;
   @Autowired
   private AccessTypeMappingsService mappingService;
   @Autowired
@@ -133,7 +133,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     }
     return validateAccessTypeLimit(credentialsId, okapiHeaders)
       .thenApply(o -> accessTypeToDbConverter.convert(requestData))
-      .thenCombine(userLookUpService.getUserInfo(okapiHeaders), this::setCreatorMetaInfo)
+      .thenCombine(usersService.findByToken(new OkapiParams(okapiHeaders)), this::setCreatorMetaInfo)
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
       .thenApply(accessTypeFromDbConverter::convert);
   }
@@ -144,7 +144,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     AccessType requestData = putRequest.getData();
     bodyValidator.validate(credentialsId, accessTypeId, requestData);
     return fetchDbAccessType(credentialsId, accessTypeId, okapiHeaders)
-      .thenCombine(userLookUpService.getUserInfo(okapiHeaders), this::setUpdaterMetaInfo)
+      .thenCombine(usersService.findByToken(new OkapiParams(okapiHeaders)), this::setUpdaterMetaInfo)
       .thenApply(accessType -> updateFields(accessType, requestData.getAttributes()))
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
       .thenApply(accessType -> null);
@@ -190,22 +190,22 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return null;
   }
 
-  private DbAccessType setCreatorMetaInfo(DbAccessType dbAccessType, UserLookUp userInfo) {
+  private DbAccessType setCreatorMetaInfo(DbAccessType dbAccessType, User userInfo) {
     return dbAccessType.toBuilder()
       .createdDate(OffsetDateTime.now())
-      .createdByUserId(toUUID(userInfo.getUserId()))
-      .createdByUsername(userInfo.getUsername())
+      .createdByUserId(toUUID(userInfo.getId()))
+      .createdByUsername(userInfo.getUserName())
       .createdByFirstName(userInfo.getFirstName())
       .createdByLastName(userInfo.getLastName())
       .createdByMiddleName(userInfo.getMiddleName())
       .build();
   }
 
-  private DbAccessType setUpdaterMetaInfo(DbAccessType dbAccessType, UserLookUp user) {
+  private DbAccessType setUpdaterMetaInfo(DbAccessType dbAccessType, User user) {
     return dbAccessType.toBuilder()
       .updatedDate(OffsetDateTime.now())
-      .updatedByUserId(toUUID(user.getUserId()))
-      .updatedByUsername(user.getUsername())
+      .updatedByUserId(toUUID(user.getId()))
+      .updatedByUsername(user.getUserName())
       .updatedByFirstName(user.getFirstName())
       .updatedByLastName(user.getLastName())
       .updatedByMiddleName(user.getMiddleName())

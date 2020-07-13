@@ -21,11 +21,13 @@ import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TA
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.repository.users.UsersTableConstants.USERS_TABLE_NAME;
 
 import java.util.List;
 import java.util.function.Function;
 
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 
@@ -35,6 +37,10 @@ import org.folio.rest.persist.PostgresClient;
 public class DbUtil {
 
   private DbUtil() {
+  }
+
+  public static PostgresClient pgClient(String tenantId, Vertx vertx) {
+    return PostgresClient.getInstance(vertx, tenantId);
   }
 
   public static String getTableName(String tenantId, String tableName) {
@@ -95,6 +101,10 @@ public class DbUtil {
 
   public static String getAssignedUsersTableName(String tenantId) {
     return getTableName(tenantId, ASSIGNED_USERS_TABLE_NAME);
+  }
+
+  public static String getUsersTableName(String tenantId) {
+    return getTableName(tenantId, USERS_TABLE_NAME);
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> uniqueConstraintRecover(String columnName, Throwable t) {

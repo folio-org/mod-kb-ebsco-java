@@ -56,8 +56,8 @@ public class AccessTypesTableConstants {
 
     String selectWithCountUsage = selectQuery() + " " +
       leftJoinQuery(
-        selectQuery(ACCESS_TYPE_ID_COLUMN, count(ACCESS_TYPE_ID_COLUMN, USAGE_NUMBER_COLUMN)) + " " +
-          groupByQuery(ACCESS_TYPE_ID_COLUMN), ID_COLUMN, ACCESS_TYPE_ID_COLUMN
+        "(" + selectQuery(ACCESS_TYPE_ID_COLUMN, count(ACCESS_TYPE_ID_COLUMN, USAGE_NUMBER_COLUMN)) + " " +
+          groupByQuery(ACCESS_TYPE_ID_COLUMN) + ")", ID_COLUMN, ACCESS_TYPE_ID_COLUMN
       );
     SELECT_IDS_BY_CREDENTIALS_ID_QUERY = selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
     SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY = selectWithCountUsage + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";

@@ -1,0 +1,31 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="MODKBEKBJ-435@@alter-assigned-users-table" author="psmagin">
+    <dropColumn tableName="assigned_users" columnName="user_name"/>
+    <dropColumn tableName="assigned_users" columnName="first_name"/>
+    <dropColumn tableName="assigned_users" columnName="middle_name"/>
+    <dropColumn tableName="assigned_users" columnName="last_name"/>
+    <dropColumn tableName="assigned_users" columnName="patron_group"/>
+    <renameColumn tableName="assigned_users" oldColumnName="id" newColumnName="user_id"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-435@@add-foreign-key-from-assigned-users-to-kb-users" author="psmagin">
+    <addForeignKeyConstraint
+      baseColumnNames="user_id"
+      baseTableName="assigned_users"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_assigned_users_kb_users"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_users"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+</databaseChangeLog>

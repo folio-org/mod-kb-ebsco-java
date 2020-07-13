@@ -26,11 +26,11 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
-import static org.folio.rest.util.AssertTestUtil.assertErrorContainsDetail;
-import static org.folio.rest.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.util.AssignedUsersTestUtil.insertAssignedUser;
+import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
+import static org.folio.util.AssignedUsersTestUtil.saveAssignedUser;
 import static org.folio.util.HoldingsRetryStatusTestUtil.getRetryStatus;
 import static org.folio.util.HoldingsStatusUtil.getStatus;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
@@ -54,6 +54,7 @@ import static org.folio.util.ResourcesTestUtil.buildResource;
 import static org.folio.util.ResourcesTestUtil.saveResource;
 import static org.folio.util.TitlesTestUtil.buildTitle;
 import static org.folio.util.TitlesTestUtil.saveTitle;
+import static org.folio.util.UsersTestUtil.saveUser;
 
 import java.util.HashMap;
 import java.util.List;
@@ -576,9 +577,9 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn204OnDeleteWhenHasRelatedRecords() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-        vertx);
+      vertx);
 
-    insertAssignedUser(credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    saveAssignedUser(saveUser("username", "John", null, "Doe", "patron", vertx), credentialsId, vertx);
     saveProvider(buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME), vertx);
     savePackage(buildDbPackage(FULL_PACKAGE_ID, credentialsId, STUB_PACKAGE_NAME), vertx);
     saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, credentialsId, STUB_TITLE_NAME), vertx);
@@ -611,8 +612,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn200AndKbCredentialsOnGetByUser() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron",
-      vertx);
+    saveAssignedUser(saveUser(STUB_USER_ID, "username", "John", null, "Doe", "patron", vertx), credentialsId, vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
     assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
@@ -644,7 +644,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnGetByUserWhenUserIsNotTheOneWhoIsAssigned() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    insertAssignedUser(STUB_USER_ID, credentialsId, "username", "John", null, "Doe", "patron", vertx);
+    saveAssignedUser(saveUser(STUB_USER_ID, "username", "John", null, "Doe", "patron", vertx), credentialsId, vertx);
 
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_OTHER_HEADER).as(
       JsonapiError.class);

@@ -10,6 +10,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -89,5 +90,9 @@ public final class KBTestUtil {
   private static boolean messageMatches(String serviceAddress, String serviceMethodName, Message<?> message) {
     return serviceAddress.equals(message.address())
       && serviceMethodName.equals(message.headers().get("action"));
+  }
+
+  public static String randomId() {
+    return UUID.randomUUID().toString();
   }
 }

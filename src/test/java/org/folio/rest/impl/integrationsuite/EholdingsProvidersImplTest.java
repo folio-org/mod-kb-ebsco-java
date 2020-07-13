@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -62,6 +61,8 @@ import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_2;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
+import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
@@ -392,7 +393,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(PROVIDER_PATH + "/191919", SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
+    assertErrorContainsTitle(error, "Provider not found");
   }
 
   @Test
@@ -445,11 +446,11 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     PackageTagsPutRequest tags = mapper.readValue(getFile(PUT_PROVIDER_TAGS),
       PackageTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
-    JsonapiError response = putWithStatus(PROVIDER_TAGS_PATH, mapper.writeValueAsString(tags),
+    JsonapiError error = putWithStatus(PROVIDER_TAGS_PATH, mapper.writeValueAsString(tags),
       SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertEquals("Invalid name", response.getErrors().get(0).getTitle());
-    assertEquals("name must not be empty", response.getErrors().get(0).getDetail());
+    assertErrorContainsTitle(error, "Invalid name");
+    assertErrorContainsDetail(error, "name must not be empty");
   }
 
   @Test
@@ -463,8 +464,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(PROVIDER_BY_ID, readFile(PUT_PROVIDER), SC_BAD_REQUEST,
       STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Provider does not allow token"));
-
+    assertErrorContainsTitle(error, "Provider does not allow token");
   }
 
   @Test
@@ -480,8 +480,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(PROVIDER_BY_ID, mapper.writeValueAsString(providerToBeUpdated),
       SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Invalid value"));
-    assertThat(error.getErrors().get(0).getDetail(), equalTo("Value is too long (maximum is 500 characters)"));
+    assertErrorContainsTitle(error, "Invalid value");
+    assertErrorContainsDetail(error, "Value is too long (maximum is 500 characters)");
 
   }
 
@@ -567,7 +567,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus("/eholdings/providers/191919/packages", SC_NOT_FOUND, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), is("Provider not found"));
+    assertErrorContainsTitle(error, "Provider not found");
   }
 
   private void sendPutTags(List<String> newTags) throws IOException, URISyntaxException {

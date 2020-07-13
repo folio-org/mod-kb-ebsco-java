@@ -1,0 +1,45 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="MODKBEKBJ-435@@alter-assigned-users-table" author="psmagin">
+    <dropColumn tableName="access_types" columnName="created_by_username" />
+    <dropColumn tableName="access_types" columnName="created_by_last_name"/>
+    <dropColumn tableName="access_types" columnName="created_by_first_name"/>
+    <dropColumn tableName="access_types" columnName="created_by_middle_name"/>
+    <dropColumn tableName="access_types" columnName="updated_by_username"/>
+    <dropColumn tableName="access_types" columnName="updated_by_last_name"/>
+    <dropColumn tableName="access_types" columnName="updated_by_first_name"/>
+    <dropColumn tableName="access_types" columnName="updated_by_middle_name"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-435@@add-foreign-key-from-assigned-users-to-kb-users" author="psmagin">
+    <addForeignKeyConstraint
+      baseColumnNames="created_by_user_id"
+      baseTableName="access_types"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_access_types_created_kb_users"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_users"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+    <addForeignKeyConstraint
+      baseColumnNames="updated_by_user_id"
+      baseTableName="access_types"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_access_types_updated_kb_users"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_users"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+</databaseChangeLog>

@@ -15,7 +15,7 @@ public final class SqlQueryHelper {
     if (columns.length == 0) {
       return "SELECT * " + FROM_KEYWORD + " t1";
     } else {
-      return "SELECT " + joinWithComma(columns) + " " + FROM_KEYWORD;
+      return "SELECT " + joinWithComma(columns) + " " + FROM_KEYWORD + " t1";
     }
   }
 
@@ -33,7 +33,7 @@ public final class SqlQueryHelper {
   }
 
   public static String leftJoinQuery(String query, String columnT1, String columnT2) {
-    return "LEFT JOIN (" + query + ") t2 ON t1." + columnT1 + " = t2." + columnT2;
+    return "LEFT JOIN " + query + " t2 ON t1." + columnT1 + " = t2." + columnT2;
   }
 
   public static String count() {
@@ -75,6 +75,10 @@ public final class SqlQueryHelper {
     return "ON CONFLICT(" + idColumnName + ") DO UPDATE SET " + updateColumns;
   }
 
+  public static String nothingOnConflictedIdQuery(String idColumnName) {
+    return "ON CONFLICT(" + idColumnName + ") DO NOTHING";
+  }
+
   public static String limitQuery() {
     return limit("?");
   }
@@ -114,7 +118,7 @@ public final class SqlQueryHelper {
   }
 
   private static String assignExcludedColumn(CharSequence column) {
-    return column + "= EXCLUDED." + column;
+    return column + " = EXCLUDED." + column;
   }
 
   public static String joinWithComma(CharSequence... columns) {

@@ -42,7 +42,7 @@ public final class KbCredentialsTableConstants {
     SELECT_CREDENTIALS_QUERY = selectQuery() + ";";
     SELECT_CREDENTIALS_BY_ID_QUERY = selectQuery() + " " + whereQuery(ID_COLUMN) + " " + limitQuery(1) + ";";
     SELECT_CREDENTIALS_BY_USER_ID_QUERY = selectQuery() + " WHERE " + ID_COLUMN + " = (" +
-      selectQuery(AssignedUsersConstants.CREDENTIALS_ID) + " " + whereQuery(AssignedUsersConstants.ID_COLUMN) + ");";
+      selectQuery(AssignedUsersConstants.CREDENTIALS_ID_COLUMN) + " " + whereQuery(AssignedUsersConstants.ID_COLUMN) + ");";
     UPSERT_CREDENTIALS_QUERY = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
     DELETE_CREDENTIALS_QUERY = deleteQuery() + " " + whereQuery(ID_COLUMN) + ";";
   }

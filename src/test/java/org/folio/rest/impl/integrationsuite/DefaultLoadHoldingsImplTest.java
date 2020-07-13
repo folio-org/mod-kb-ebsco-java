@@ -21,7 +21,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
@@ -104,7 +103,7 @@ import org.folio.util.HoldingsTestUtil;
 public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   public static final String HOLDINGS_LOAD_URL = "/eholdings/loading/kb-credentials";
-  public static final String HOLDINGS_LOAD_BY_ID_URL = HOLDINGS_LOAD_URL + "/" + STUB_CREDENTILS_ID;
+  public static final String HOLDINGS_LOAD_BY_ID_URL = HOLDINGS_LOAD_URL + "/" + STUB_CREDENTIALS_ID;
   public static final String RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED =
     "responses/rmapi/holdings/status/get-status-completed.json";
   public static final String RMAPI_RESPONSE_HOLDINGS = "responses/rmapi/holdings/holdings/get-holdings.json";
@@ -158,8 +157,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldNotStartLoadingWhenStatusInProgress() {
-    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    saveStatus(STUB_CREDENTILS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatus(STUB_CREDENTIALS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_CONFLICT, STUB_TOKEN_HEADER);
@@ -188,7 +187,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   @Test
   public void shouldClearOldStatusChangeRecords() {
     setupDefaultLoadKBConfiguration();
-    saveStatusAudit(STUB_CREDENTILS_ID, getStatusCompleted(1000),
+    saveStatusAudit(STUB_CREDENTIALS_ID, getStatusCompleted(1000),
       OffsetDateTime.now().minus(60, ChronoUnit.DAYS), vertx);
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
@@ -211,7 +210,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
     status.getData().getAttributes()
       .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(OffsetDateTime.now().minus(10, ChronoUnit.DAYS)));
-    saveStatus(STUB_CREDENTILS_ID, status, PROCESS_ID, vertx);
+    saveStatus(STUB_CREDENTIALS_ID, status, PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
     vertx.eventBus().addOutboundInterceptor(interceptor);
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
@@ -265,7 +264,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     async.await(TIMEOUT);
 
     Async retryStatusAsync = context.async();
-    retryStatusRepository.findByCredentialsId(UUID.fromString(STUB_CREDENTILS_ID), STUB_TENANT)
+    retryStatusRepository.findByCredentialsId(UUID.fromString(STUB_CREDENTIALS_ID), STUB_TENANT)
       .thenAccept(status -> {
         boolean timerExists = vertx.cancelTimer(status.getTimerId());
         context.assertEquals(0, status.getRetryAttemptsLeft());
@@ -328,7 +327,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT, 5001, 2, null, null));
+    proxy.loadHoldings(new LoadHoldingsMessage(stubConfiguration, STUB_CREDENTIALS_ID, STUB_TENANT, 5001, 2, null, null));
 
     async.await(TIMEOUT);
     assertEquals(2, messages.size());
@@ -355,9 +354,9 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   private void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    saveStatusNotStarted(STUB_CREDENTILS_ID, vertx);
-    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }
 
   private void runPostHoldingsWithMocks(TestContext context) throws IOException, URISyntaxException {
