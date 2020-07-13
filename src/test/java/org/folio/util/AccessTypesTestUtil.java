@@ -9,6 +9,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_VIEW_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
@@ -27,6 +28,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
+import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 
@@ -91,19 +93,16 @@ public class AccessTypesTestUtil {
     String query = prepareQuery(UPSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
 
     UUID id = UUID.randomUUID();
-    Tuple params = DbUtils.createParams(Arrays.asList(
+    Tuple params = DbUtils.createParams(
       id,
-      UUID.fromString(accessType.getAttributes().getCredentialsId()),
+      toUUID(accessType.getAttributes().getCredentialsId()),
       accessType.getAttributes().getName(),
       accessType.getAttributes().getDescription(),
       OffsetDateTime.now(),
-      UUID.randomUUID(),
-      "username",
-      accessType.getCreator().getLastName(),
-      accessType.getCreator().getFirstName(),
-      accessType.getCreator().getMiddleName(),
-      null, null, null, null, null, null
-    ));
+      toUUID(JOHN_ID),
+      null,
+      null
+    );
 
     PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
@@ -121,7 +120,7 @@ public class AccessTypesTestUtil {
 
   public static List<AccessType> getAccessTypes(Vertx vertx) {
     CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
-    String query = prepareQuery(selectQuery(), accessTypesTestTable());
+    String query = prepareQuery(selectQuery(), accessTypesTestView());
     PostgresClient.getInstance(vertx)
       .select(query, event -> future.complete(mapItems(event.result(), AccessTypesTestUtil::mapAccessType)));
     return future.join();
@@ -198,6 +197,10 @@ public class AccessTypesTestUtil {
 
   private static String accessTypesTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME;
+  }
+
+  private static String accessTypesTestView() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_VIEW_NAME;
   }
 
   private static String accessTypesMappingTestTable() {

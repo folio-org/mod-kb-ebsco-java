@@ -56,13 +56,13 @@ public abstract class WireMockTestBase extends TestBase {
   protected static final String STUB_API_KEY = "TEST_API_KEY";
   protected static final String STUB_CREDENTIALS_ID = "12312312-1231-1231-a111-111111111111";
 
-  protected static final String JOHN_ID = "47d9ca93-9c82-4d6a-8d7f-7a73963086b9";
-  protected static final String JOHN_USERNAME = "john_doe";
-  protected static final Header JOHN_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JOHN_USERNAME, JOHN_ID);
+  public static final String JOHN_ID = "47d9ca93-9c82-4d6a-8d7f-7a73963086b9";
+  public static final String JOHN_USERNAME = "john_doe";
+  public static final Header JOHN_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JOHN_USERNAME, JOHN_ID);
 
-  protected static final String JANE_ID = "781fce7d-5cf5-490d-ad89-a3d192eb526c";
-  protected static final String JANE_USERNAME = "jane_doe";
-  protected static final Header JANE_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JANE_USERNAME, JANE_ID);
+  public static final String JANE_ID = "781fce7d-5cf5-490d-ad89-a3d192eb526c";
+  public static final String JANE_USERNAME = "jane_doe";
+  public static final Header JANE_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JANE_USERNAME, JANE_ID);
 
   @Autowired
   @Qualifier("rmApiConfigurationCache")

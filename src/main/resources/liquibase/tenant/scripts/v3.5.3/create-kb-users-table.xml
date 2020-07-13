@@ -4,14 +4,12 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="MODKBEKBJ-435@@create-users-table" author="psmagin">
+  <changeSet id="MODKBEKBJ-435@@create-kb-users-table" author="psmagin">
     <createTable tableName="kb_users">
       <column name="id" type="uuid">
         <constraints primaryKey="true" primaryKeyName="pk_kb_users" nullable="false"/>
       </column>
-      <column name="user_name" type="varchar(100)">
-        <constraints unique="true" uniqueConstraintName="unq_kb_users_name" nullable="false"/>
-      </column>
+      <column name="user_name" type="varchar(100)"/>
       <column name="first_name" type="varchar(100)"/>
       <column name="middle_name" type="varchar(100)"/>
       <column name="last_name" type="varchar(100)"/>
@@ -19,21 +17,25 @@
     </createTable>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-435@@insert-into-users-table" author="psmagin">
+  <changeSet id="MODKBEKBJ-435@@insert-into-kb-users-table" author="psmagin">
     <sql>
       INSERT INTO kb_users (id, user_name, first_name, middle_name, last_name, patron_group)
       SELECT id, user_name, first_name, middle_name, last_name, patron_group
-      FROM assigned_users;
+      FROM assigned_users
+      ON CONFLICT(id) DO NOTHING;
     </sql>
     <sql>
       INSERT INTO kb_users (id, user_name, first_name, middle_name, last_name)
-      SELECT created_by_user_id, created_by_username, created_by_first_name, created_by_middle_name, created_by_last_name
-      FROM access_types ON CONFLICT(id) DO NOTHING;
+      SELECT DISTINCT created_by_user_id, created_by_username, created_by_first_name, created_by_middle_name, created_by_last_name
+      FROM access_types
+      ON CONFLICT(id) DO NOTHING;
     </sql>
     <sql>
       INSERT INTO kb_users (id, user_name, first_name, middle_name, last_name)
-      SELECT updated_by_user_id, updated_by_username, updated_by_first_name, updated_by_middle_name, updated_by_last_name
-      FROM access_types ON CONFLICT(id) DO NOTHING;
+      SELECT DISTINCT updated_by_user_id, updated_by_username, updated_by_first_name, updated_by_middle_name, updated_by_last_name
+      FROM access_types
+      WHERE updated_by_user_id IS NOT NULL
+      ON CONFLICT(id) DO NOTHING;
     </sql>
   </changeSet>
 </databaseChangeLog>

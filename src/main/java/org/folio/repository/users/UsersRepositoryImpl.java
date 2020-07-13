@@ -19,6 +19,7 @@ import static org.folio.repository.users.UsersTableConstants.USER_NAME_COLUMN;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
@@ -45,7 +46,7 @@ public class UsersRepositoryImpl implements UsersRepository {
   private DBExceptionTranslator excTranslator;
 
   @Override
-  public CompletableFuture<Optional<DbUser>> findById(String id, String tenant) {
+  public CompletableFuture<Optional<DbUser>> findById(UUID id, String tenant) {
     String query = prepareQuery(SELECT_BY_ID_QUERY, getUsersTableName(tenant));
     Tuple params = createParams(id);
 

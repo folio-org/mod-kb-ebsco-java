@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="MODKBEKBJ-435@@alter-assigned-users-table" author="psmagin">
+  <changeSet id="MODKBEKBJ-435@@drop-columns-from-access-types-table" author="psmagin">
     <dropColumn tableName="access_types" columnName="created_by_username" />
     <dropColumn tableName="access_types" columnName="created_by_last_name"/>
     <dropColumn tableName="access_types" columnName="created_by_first_name"/>
@@ -15,7 +15,7 @@
     <dropColumn tableName="access_types" columnName="updated_by_middle_name"/>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-435@@add-foreign-key-from-assigned-users-to-kb-users" author="psmagin">
+  <changeSet id="MODKBEKBJ-435@@add-foreign-keys-from-access-types-to-kb-users" author="psmagin">
     <addForeignKeyConstraint
       baseColumnNames="created_by_user_id"
       baseTableName="access_types"

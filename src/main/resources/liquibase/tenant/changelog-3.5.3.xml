@@ -6,4 +6,5 @@
   <include file="liquibase/tenant/scripts/v3.5.3/create-kb-users-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.3/alter-assigned-users-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.3/alter-access-types-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.3/create-access-types-view.xml"/>
 </databaseChangeLog>

@@ -1,5 +1,7 @@
 package org.folio.service.users;
 
+import static org.folio.db.RowSetUtils.toUUID;
+
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.core.convert.converter.Converter;
@@ -36,7 +38,7 @@ public class UsersServiceImpl implements UsersService {
 
   @Override
   public CompletableFuture<User> findById(String userId, OkapiParams okapiParams) {
-    return repository.findById(userId, okapiParams.getTenant())
+    return repository.findById(toUUID(userId), okapiParams.getTenant())
       .thenCompose(dbUser -> dbUser.map(user -> CompletableFuture.completedFuture(fromDbConverter.convert(user)))
         .orElseGet(() -> lookUpService.lookUpUser(okapiParams).thenCompose(user -> save(user, okapiParams))));
   }
@@ -51,7 +53,7 @@ public class UsersServiceImpl implements UsersService {
   public CompletableFuture<Void> update(User user, OkapiParams okapiParams) {
     return repository.update(toDbConverter.convert(user), okapiParams.getTenant())
       .thenApply(updated -> {
-        if (updated)
+        if (Boolean.TRUE.equals(updated))
           return null;
         throw ServiceExceptions.notFound(User.class, user.getId());
       });

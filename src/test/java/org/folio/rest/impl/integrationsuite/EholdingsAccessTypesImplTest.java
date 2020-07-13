@@ -484,7 +484,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "Unauthorized");
+    assertErrorContainsTitle(error, "Invalid token");
   }
 
   @Test

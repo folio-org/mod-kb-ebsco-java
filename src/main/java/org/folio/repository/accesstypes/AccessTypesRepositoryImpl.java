@@ -13,6 +13,7 @@ import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
+import static org.folio.repository.DbUtil.getAccessTypesViewName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
@@ -84,8 +85,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<List<DbAccessType>> findByCredentialsId(UUID credentialsId, String tenantId) {
-    String query = prepareQuery(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY,
-      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+    String query = prepareQuery(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY, getAccessTypesViewName(tenantId));
     Tuple params = createParams(credentialsId);
 
     logSelectQuery(LOG, query, params);
@@ -99,8 +99,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   @Override
   public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(UUID credentialsId,
                                                                                     UUID accessTypeId, String tenantId) {
-    String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY,
-      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+    String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesViewName(tenantId));
     Tuple params = createParams(accessTypeId, credentialsId);
 
     logSelectQuery(LOG, query, params);
@@ -153,24 +152,16 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     if (id == null) {
       id = UUID.randomUUID();
     }
-    Tuple params = createParams(asList(
+    Tuple params = createParams(
       id,
       accessType.getCredentialsId(),
       accessType.getName(),
       accessType.getDescription(),
       accessType.getCreatedDate(),
       accessType.getCreatedByUserId(),
-      accessType.getCreatedByUsername(),
-      accessType.getCreatedByLastName(),
-      accessType.getCreatedByFirstName(),
-      accessType.getCreatedByMiddleName(),
       accessType.getUpdatedDate(),
-      accessType.getUpdatedByUserId(),
-      accessType.getCreatedByUsername(),
-      accessType.getUpdatedByLastName(),
-      accessType.getUpdatedByFirstName(),
-      accessType.getUpdatedByMiddleName()
-    ));
+      accessType.getUpdatedByUserId()
+    );
 
     logInsertQuery(LOG, query, params);
 
