@@ -11,6 +11,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_VIEW_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_VIEW_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
@@ -106,6 +107,10 @@ public class DbUtil {
 
   public static String getAssignedUsersTableName(String tenantId) {
     return getTableName(tenantId, ASSIGNED_USERS_TABLE_NAME);
+  }
+
+  public static String getAssignedUsersViewName(String tenantId) {
+    return getTableName(tenantId, ASSIGNED_USERS_VIEW_NAME);
   }
 
   public static String getUsersTableName(String tenantId) {

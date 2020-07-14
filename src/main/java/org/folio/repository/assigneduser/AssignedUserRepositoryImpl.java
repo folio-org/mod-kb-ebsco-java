@@ -10,7 +10,7 @@ import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
-import static org.folio.repository.DbUtil.getUsersTableName;
+import static org.folio.repository.DbUtil.getAssignedUsersViewName;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
@@ -64,11 +64,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   @Override
   public CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(UUID credentialsId, String tenant) {
-    String query = prepareQuery(
-      SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY,
-      getAssignedUsersTableName(tenant),
-      getUsersTableName(tenant)
-    );
+    String query = prepareQuery(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY, getAssignedUsersViewName(tenant));
     Tuple params = createParams(credentialsId);
 
     logSelectQuery(LOG, query, params);
