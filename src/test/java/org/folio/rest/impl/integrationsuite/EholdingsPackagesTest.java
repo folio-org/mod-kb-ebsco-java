@@ -51,8 +51,6 @@ import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_3;
-import static org.folio.rest.util.AssertTestUtil.assertEqualsPackageId;
-import static org.folio.rest.util.AssertTestUtil.assertEqualsUUID;
 import static org.folio.test.util.TestUtil.getFile;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockPost;
@@ -65,16 +63,19 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessType;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
+import static org.folio.util.AssertTestUtil.assertEqualsPackageId;
+import static org.folio.util.AssertTestUtil.assertEqualsUUID;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.PackagesTestUtil.savePackage;
 import static org.folio.util.PackagesTestUtil.buildDbPackage;
+import static org.folio.util.PackagesTestUtil.savePackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
 import static org.folio.util.ResourcesTestUtil.buildResource;
-import static org.folio.util.TitlesTestUtil.mockGetTitles;
 import static org.folio.util.TagsTestUtil.saveTag;
+import static org.folio.util.TitlesTestUtil.mockGetTitles;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -174,6 +175,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     super.setUp();
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
+    setUpTestUsers();
   }
 
   @After
@@ -184,6 +186,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test
@@ -395,7 +398,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
       putWithStatus(PACKAGE_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
         .as(JsonapiError.class);
 
-    assertEquals("Invalid name", error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Invalid name");
   }
 
   @Test
@@ -449,7 +452,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(PACKAGES_PATH, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("not found"));
+    assertErrorContainsTitle(error, "not found");
   }
 
   @Test
@@ -514,7 +517,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = deleteWithStatus(PACKAGES_PATH, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Package cannot be deleted"));
+    assertErrorContainsTitle(error, "Package cannot be deleted");
   }
 
   @Test
@@ -659,13 +662,12 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPutWhenPackageIsNotUpdatable() throws URISyntaxException, IOException {
     String putBody = readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json");
-    JsonapiError apiError = putWithStatus(PACKAGES_PATH, putBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER,
+    JsonapiError error = putWithStatus(PACKAGES_PATH, putBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER,
       STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     verify(0, putRequestedFor(PACKAGE_URL_PATTERN));
 
-    assertEquals(1, apiError.getErrors().size());
-    assertEquals("Package is not updatable", apiError.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Package is not updatable");
   }
 
   @Test
@@ -898,8 +900,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     JsonapiError error = putWithStatus(PACKAGES_PATH, requestBody, SC_BAD_REQUEST, CONTENT_TYPE_HEADER, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertEquals(1, error.getErrors().size());
-    assertEquals("Access type not found: id = 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Access type not found: id = 99999999-9999-1999-a999-999999999999");
   }
 
   @Test
@@ -971,8 +972,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     JsonapiError error = postWithStatus(PACKAGES_ENDPOINT, requestBody, SC_BAD_REQUEST, CONTENT_TYPE_HEADER,
       STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertEquals(1, error.getErrors().size());
-    assertEquals("Access type not found: id = 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Access type not found: id = 99999999-9999-1999-a999-999999999999");
   }
 
   @Test
@@ -1124,7 +1124,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(PACKAGE_RESOURCES_PATH, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), is("Package not found"));
+    assertErrorContainsTitle(error, "Package not found");
   }
 
   @Test
@@ -1133,7 +1133,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(packageResourcesUrl, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("is not valid"));
+    assertErrorContainsTitle(error, "is not valid");
   }
 
   @Test
@@ -1151,7 +1151,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(PACKAGE_RESOURCES_PATH, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), is("Parameter Count is outside the range 1-100."));
+    assertErrorContainsTitle(error, "Parameter Count is outside the range 1-100.");
   }
 
   @Test
@@ -1159,7 +1159,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL + "/titles.*"), HttpStatus.SC_UNAUTHORIZED);
 
     JsonapiError error = getWithStatus(PACKAGE_RESOURCES_PATH, SC_FORBIDDEN, STUB_TOKEN_HEADER).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
+
+    assertErrorContainsTitle(error, "Unauthorized Access");
   }
 
   @Test
@@ -1167,7 +1168,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL + "/titles.*"), SC_FORBIDDEN);
 
     JsonapiError error = getWithStatus(PACKAGE_RESOURCES_PATH, SC_FORBIDDEN, STUB_TOKEN_HEADER).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized Access"));
+
+    assertErrorContainsTitle(error, "Unauthorized Access");
   }
 
   @Test

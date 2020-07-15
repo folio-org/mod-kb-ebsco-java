@@ -2,13 +2,12 @@ package org.folio.rest.impl.integrationsuite;
 
 import static java.util.Arrays.asList;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.TagsTestUtil.saveTags;
 
@@ -119,7 +118,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus("eholdings/tags?filter[rectype]=INVALID&filter[rectype]=title",
       SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
+    assertErrorContainsTitle(error, "Invalid 'filter[rectype]' parameter value");
   }
 
   @Test
@@ -170,7 +169,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus("eholdings/tags/summary?filter[rectype]=INVALID&filter[rectype]=title",
       SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid 'filter[rectype]' parameter value"));
+    assertErrorContainsTitle(error, "Invalid 'filter[rectype]' parameter value");
   }
 
   private boolean checkContainingOfUniqueTags(List<String> source, TagUniqueCollection collection){

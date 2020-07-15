@@ -1,0 +1,11 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <include file="liquibase/tenant/scripts/v3.5.3/create-kb-users-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.3/alter-assigned-users-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.3/alter-access-types-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.3/create-access-types-view.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.3/create-assigned-users-view.xml"/>
+</databaseChangeLog>

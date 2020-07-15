@@ -50,7 +50,6 @@ import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID_2;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
-import static org.folio.rest.util.AssertTestUtil.assertEqualsLong;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
@@ -59,6 +58,8 @@ import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_2;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
+import static org.folio.util.AssertTestUtil.assertEqualsLong;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.HoldingsTestUtil.saveHolding;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
@@ -122,6 +123,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     super.setUp();
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
+    setUpTestUsers();
   }
 
   @After
@@ -133,6 +135,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     clearDataFromTable(vertx, TITLES_TABLE_NAME);
     clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test
@@ -260,7 +263,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST,
         STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("parameter value {1000} is not valid"));
+    assertErrorContainsTitle(error, "parameter value {1000} is not valid");
   }
 
   @Test
@@ -274,7 +277,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       getWithStatus(EHOLDINGS_TITLES_PATH + "?filter[name]=news", SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER)
         .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid RMAPI response"));
+    assertErrorContainsTitle(error, "Invalid RMAPI response");
   }
 
   @Test
@@ -313,7 +316,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_NOT_FOUND, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Title not found"));
+    assertErrorContainsTitle(error, "Title not found");
   }
 
   @Test
@@ -321,7 +324,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/12345aaa", SC_BAD_REQUEST, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Title id is invalid - 12345aaa"));
+    assertErrorContainsTitle(error, "Title id is invalid - 12345aaa");
   }
 
   @Test
@@ -335,7 +338,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER)
         .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid RMAPI response"));
+    assertErrorContainsTitle(error, "Invalid RMAPI response");
   }
 
   @Test
@@ -428,7 +431,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST, STUB_TOKEN_HEADER)
         .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Package with the provided name already exists"));
+    assertErrorContainsTitle(error, "Package with the provided name already exists");
   }
 
   @Test

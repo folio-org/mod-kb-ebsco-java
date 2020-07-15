@@ -38,7 +38,6 @@ import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_PACKAGE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_VENDOR_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
-import static org.folio.rest.util.AssertTestUtil.assertEqualsResourceId;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
@@ -51,6 +50,8 @@ import static org.folio.util.AccessTypesTestUtil.getAccessTypeMappings;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
+import static org.folio.util.AssertTestUtil.assertEqualsResourceId;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
@@ -116,6 +117,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     super.setUp();
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
+    setUpTestUsers();
   }
 
   @After
@@ -125,6 +127,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     clearDataFromTable(vertx, TAGS_TABLE_NAME);
     clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test
@@ -294,7 +297,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Resource not found"));
+    assertErrorContainsTitle(error, "Resource not found");
   }
 
   @Test
@@ -302,7 +305,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus("eholdings/resources/583-abc-762169", SC_BAD_REQUEST, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), equalTo("Resource id is invalid - 583-abc-762169"));
+    assertErrorContainsTitle(error, "Resource id is invalid - 583-abc-762169");
   }
 
   @Test
@@ -384,8 +387,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     verify(0, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)));
 
-    assertEquals(1, error.getErrors().size());
-    assertEquals("Access type not found: id = 99999999-9999-1999-a999-999999999999", error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Access type not found: id = 99999999-9999-1999-a999-999999999999");
   }
 
   @Test
@@ -466,7 +468,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       putWithStatus(RESOURCE_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
         .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid name"));
+    assertErrorContainsTitle(error, "Invalid name");
   }
 
   @Test
@@ -480,7 +482,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       putWithStatus("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID, invalidPutBody, SC_UNPROCESSABLE_ENTITY,
         STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid url"));
+    assertErrorContainsTitle(error, "Invalid url");
   }
 
   @Test
@@ -522,7 +524,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error = postWithStatus("eholdings/resources", readFile(postStubRequest), SC_NOT_FOUND, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("not found"));
+    assertErrorContainsTitle(error, "not found");
   }
 
   @Test
@@ -575,7 +577,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error =
       deleteWithStatus("eholdings/resources/abc-def", SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Resource id is invalid"));
+    assertErrorContainsTitle(error, "Resource id is invalid");
   }
 
   @Test
@@ -587,7 +589,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error =
       deleteWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Resource cannot be deleted"));
+    assertErrorContainsTitle(error, "Resource cannot be deleted");
   }
 
   @Test

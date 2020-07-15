@@ -4,27 +4,26 @@ import static org.folio.common.LogUtils.logCountQuery;
 import static org.folio.common.LogUtils.logDeleteQuery;
 import static org.folio.common.LogUtils.logInsertQuery;
 import static org.folio.common.LogUtils.logSelectQuery;
-import static org.folio.common.LogUtils.logUpdateQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
+import static org.folio.repository.DbUtil.getAssignedUsersViewName;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
 import static org.folio.repository.DbUtil.prepareQuery;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.DELETE_ASSIGNED_USER_QUERY;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.INSERT_ASSIGNED_USER_QUERY;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.LAST_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.MIDDLE_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GROUP;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.UPDATE_ASSIGNED_USER_QUERY;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
+import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.PATRON_GROUP_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.USER_NAME_COLUMN;
 import static org.folio.service.exc.ServiceExceptions.notFound;
 import static org.folio.util.FutureUtils.mapResult;
 
@@ -49,6 +48,7 @@ import org.springframework.stereotype.Component;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.service.users.User;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
@@ -64,7 +64,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   @Override
   public CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(UUID credentialsId, String tenant) {
-    String query = prepareQuery(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY, getAssignedUsersTableName(tenant));
+    String query = prepareQuery(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY, getAssignedUsersViewName(tenant));
     Tuple params = createParams(credentialsId);
 
     logSelectQuery(LOG, query, params);
@@ -94,12 +94,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     Tuple params = createParams(Arrays.asList(
       entity.getId(),
-      entity.getCredentialsId(),
-      entity.getUsername(),
-      entity.getFirstName(),
-      entity.getMiddleName(),
-      entity.getLastName(),
-      entity.getPatronGroup()
+      entity.getCredentialsId()
     ));
 
     logInsertQuery(LOG, query, params);
@@ -109,31 +104,9 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
       .recover(pkConstraintRecover(ID_COLUMN, new BadRequestException(USER_ASSIGN_NOT_ALLOWED_MESSAGE)))
-      .recover(foreignKeyConstraintRecover(notFound(KbCredentials.class, entity.getCredentialsId().toString())));
+      .recover(foreignKeyConstraintRecover(notFound(KbCredentials.class, entity.getCredentialsId().toString())))
+      .recover(foreignKeyConstraintRecover(notFound(User.class, entity.getId().toString())));
     return mapResult(resultFuture, updateResult -> entity);
-  }
-
-  @Override
-  public CompletableFuture<Void> update(DbAssignedUser dbAssignedUser, String tenant) {
-    String query = prepareQuery(UPDATE_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
-
-    Tuple params = createParams(Arrays.asList(
-      dbAssignedUser.getUsername(),
-      dbAssignedUser.getFirstName(),
-      dbAssignedUser.getMiddleName(),
-      dbAssignedUser.getLastName(),
-      dbAssignedUser.getPatronGroup(),
-      dbAssignedUser.getId(),
-      dbAssignedUser.getCredentialsId()
-    ));
-
-    logUpdateQuery(LOG, query, params);
-    Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, params, promise);
-
-    Future<RowSet<Row>> resultFuture = promise.future()
-      .recover(excTranslator.translateOrPassBy());
-    return mapResult(resultFuture, updateResult -> checkUserFound(dbAssignedUser.getId(), updateResult));
   }
 
   @Override
@@ -164,12 +137,12 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
   private DbAssignedUser mapAssignedUserItem(Row row) {
     return DbAssignedUser.builder()
       .id(row.getUUID(ID_COLUMN))
-      .credentialsId(row.getUUID(CREDENTIALS_ID))
-      .username(row.getString(USER_NAME))
-      .firstName(row.getString(FIRST_NAME))
-      .middleName(row.getString(MIDDLE_NAME))
-      .lastName(row.getString(LAST_NAME))
-      .patronGroup(row.getString(PATRON_GROUP))
+      .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
+      .username(row.getString(USER_NAME_COLUMN))
+      .firstName(row.getString(FIRST_NAME_COLUMN))
+      .middleName(row.getString(MIDDLE_NAME_COLUMN))
+      .lastName(row.getString(LAST_NAME_COLUMN))
+      .patronGroup(row.getString(PATRON_GROUP_COLUMN))
       .build();
   }
 

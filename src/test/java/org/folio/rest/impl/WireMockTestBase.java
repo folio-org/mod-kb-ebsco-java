@@ -8,8 +8,10 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.notNullValue;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.users.UsersTableConstants.USERS_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
+import static org.folio.util.UsersTestUtil.saveUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +42,7 @@ import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.rmapi.cache.VendorCacheKey;
 import org.folio.spring.SpringContextUtil;
 import org.folio.test.util.TestBase;
+import org.folio.test.util.TokenTestUtil;
 
 /**
  * Base test class for tests that use wiremock and vertx http servers,
@@ -50,6 +53,15 @@ public abstract class WireMockTestBase extends TestBase {
   protected static final Header CONTENT_TYPE_HEADER = new Header(HTTP.CONTENT_TYPE, JSON_API_TYPE);
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
   protected static final String STUB_API_KEY = "TEST_API_KEY";
+  protected static final String STUB_CREDENTIALS_ID = "12312312-1231-1231-a111-111111111111";
+
+  public static final String JOHN_ID = "47d9ca93-9c82-4d6a-8d7f-7a73963086b9";
+  public static final String JOHN_USERNAME = "john_doe";
+  public static final Header JOHN_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JOHN_USERNAME, JOHN_ID);
+
+  public static final String JANE_ID = "781fce7d-5cf5-490d-ad89-a3d192eb526c";
+  public static final String JANE_USERNAME = "jane_doe";
+  public static final Header JANE_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JANE_USERNAME, JANE_ID);
 
   @Autowired
   @Qualifier("rmApiConfigurationCache")
@@ -85,6 +97,15 @@ public abstract class WireMockTestBase extends TestBase {
     vendorCache.invalidateAll();
     resourceCache.invalidateAll();
     titleCache.invalidateAll();
+  }
+
+  protected void setUpTestUsers() {
+    saveUser(JOHN_ID, JOHN_USERNAME, "John", null, "Doe", "patron", vertx);
+    saveUser(JANE_ID, JANE_USERNAME, "Jane", null, "Doe", "patron", vertx);
+  }
+
+  protected void tearDownTestUsers() {
+    clearDataFromTable(vertx, USERS_TABLE_NAME);
   }
 
   protected ExtractableResponse<Response> getWithOk(String endpoint, Header... headers) {

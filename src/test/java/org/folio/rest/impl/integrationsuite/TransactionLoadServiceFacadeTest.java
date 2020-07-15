@@ -6,7 +6,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_TRANSACTIONS_HOLDINGS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_TRANSACTIONS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_TRANSACTION_STATUS_URL;
@@ -104,7 +103,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTIALS_ID, STUB_TENANT));
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -125,7 +124,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTIALS_ID, STUB_TENANT));
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -148,7 +147,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTILS_ID, STUB_TENANT));
+    loadServiceFacade.createSnapshot(new ConfigurationMessage(stubConfiguration, STUB_CREDENTIALS_ID, STUB_TENANT));
 
     async.await(TIMEOUT);
 
@@ -176,9 +175,9 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   }
 
   private void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    saveStatusNotStarted(STUB_CREDENTILS_ID, vertx);
-    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }
 
   private void tearDownHoldingsData() {

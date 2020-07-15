@@ -1,21 +1,19 @@
 package org.folio.util;
 
-import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.FIRST_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_VIEW_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.LAST_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.MIDDLE_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.PATRON_GROUP;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.UPSERT_ASSIGNED_USERS_QUERY;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.USER_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.INSERT_ASSIGNED_USER_QUERY;
+import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.PATRON_GROUP_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.USER_NAME_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
@@ -38,14 +36,11 @@ public class AssignedUsersTestUtil {
   private static final Converter<DbAssignedUser, AssignedUser> CONVERTER =
     new AssignedUserCollectionItemConverter.FromDb();
 
-  public static String insertAssignedUser(String id, String credentialsId, String username, String firstName,
-                                          String middleName, String lastName, String patronGroup, Vertx vertx) {
+  public static String saveAssignedUser(String id, String credentialsId, Vertx vertx) {
     CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
-    String insertStatement = DbUtil.prepareQuery(UPSERT_ASSIGNED_USERS_QUERY, kbAssignedUsersTestTable());
-    Tuple params = DbUtils.createParams(Arrays.asList(toUUID(id), UUID.fromString(credentialsId), username,
-      firstName, middleName, lastName, patronGroup
-    ));
+    String insertStatement = DbUtil.prepareQuery(INSERT_ASSIGNED_USER_QUERY, kbAssignedUsersTestTable());
+    Tuple params = DbUtils.createParams(toUUID(id), toUUID(credentialsId));
 
     PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));
     future.join();
@@ -53,32 +48,32 @@ public class AssignedUsersTestUtil {
     return id;
   }
 
-  public static String insertAssignedUser(String credentialsId, String username, String firstName, String middleName,
-                                          String lastName, String patronGroup, Vertx vertx) {
-    return insertAssignedUser(fromUUID(UUID.randomUUID()), credentialsId, username, firstName, middleName, lastName,
-      patronGroup, vertx);
-  }
-
   public static List<AssignedUser> getAssignedUsers(Vertx vertx) {
     CompletableFuture<List<AssignedUser>> future = new CompletableFuture<>();
-    PostgresClient.getInstance(vertx).select(String.format(SqlQueryHelper.selectQuery(), kbAssignedUsersTestTable()),
-      event -> future.complete(RowSetUtils.mapItems(event.result(), AssignedUsersTestUtil::parseAssignedUser)));
+    String query = DbUtil.prepareQuery(SqlQueryHelper.selectQuery(), kbAssignedUsersTestView());
+    PostgresClient.getInstance(vertx).select(query, event ->
+      future.complete(RowSetUtils.mapItems(event.result(), AssignedUsersTestUtil::parseAssignedUser))
+    );
     return future.join();
   }
 
   private static AssignedUser parseAssignedUser(Row row) {
     return CONVERTER.convert(DbAssignedUser.builder()
       .id(row.getUUID(ID_COLUMN))
-      .credentialsId(row.getUUID(CREDENTIALS_ID))
-      .username(row.getString(USER_NAME))
-      .patronGroup(row.getString(PATRON_GROUP))
-      .firstName(row.getString(FIRST_NAME))
-      .middleName(row.getString(MIDDLE_NAME))
-      .lastName(row.getString(LAST_NAME))
+      .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
+      .username(row.getString(USER_NAME_COLUMN))
+      .patronGroup(row.getString(PATRON_GROUP_COLUMN))
+      .firstName(row.getString(FIRST_NAME_COLUMN))
+      .middleName(row.getString(MIDDLE_NAME_COLUMN))
+      .lastName(row.getString(LAST_NAME_COLUMN))
       .build());
   }
 
   private static String kbAssignedUsersTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ASSIGNED_USERS_TABLE_NAME;
+  }
+
+  private static String kbAssignedUsersTestView() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ASSIGNED_USERS_VIEW_NAME;
   }
 }

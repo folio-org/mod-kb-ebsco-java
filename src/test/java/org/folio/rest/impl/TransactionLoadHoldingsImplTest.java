@@ -15,7 +15,6 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_DELTAS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_DELTA_BY_ID_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_DELTA_STATUS_URL;
@@ -180,7 +179,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   @Test
   public void shouldSaveHoldingsWhenPreviousTransactionExpired(TestContext context) throws IOException, URISyntaxException {
 
-    TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
+    TransactionIdTestUtil.addTransactionId(STUB_CREDENTIALS_ID, PREVIOUS_TRANSACTION_ID, vertx);
     runPostHoldingsWithMocks(context);
 
     final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
@@ -189,13 +188,13 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateHoldingsWithDeltas(TestContext context) throws IOException, URISyntaxException {
-    HoldingsTestUtil.saveHolding(STUB_CREDENTILS_ID,
+    HoldingsTestUtil.saveHolding(STUB_CREDENTIALS_ID,
       Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHoldingInfo.class),
       OffsetDateTime.now(), vertx);
-    HoldingsTestUtil.saveHolding(STUB_CREDENTILS_ID,
+    HoldingsTestUtil.saveHolding(STUB_CREDENTIALS_ID,
       Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding2.json"), DbHoldingInfo.class),
       OffsetDateTime.now(), vertx);
-    TransactionIdTestUtil.addTransactionId(STUB_CREDENTILS_ID, PREVIOUS_TRANSACTION_ID, vertx);
+    TransactionIdTestUtil.addTransactionId(STUB_CREDENTIALS_ID, PREVIOUS_TRANSACTION_ID, vertx);
 
     HoldingsDownloadTransaction previousTransaction = HoldingsDownloadTransaction.builder()
       .creationDate(OffsetDateTime.now().minus(500, ChronoUnit.HOURS).toString())
@@ -281,7 +280,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     async.await(TIMEOUT);
 
     Async retryStatusAsync = context.async();
-    retryStatusRepository.findByCredentialsId(UUID.fromString(STUB_CREDENTILS_ID), STUB_TENANT)
+    retryStatusRepository.findByCredentialsId(UUID.fromString(STUB_CREDENTIALS_ID), STUB_TENANT)
       .thenAccept(status -> {
         boolean timerExists = vertx.cancelTimer(status.getTimerId());
         context.assertEquals(0, status.getRetryAttemptsLeft());
@@ -345,7 +344,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
     LoadServiceFacade proxy = LoadServiceFacade.createProxy(vertx, LOAD_FACADE_ADDRESS);
-    LoadHoldingsMessage message = new LoadHoldingsMessage(this.configuration, STUB_CREDENTILS_ID,
+    LoadHoldingsMessage message = new LoadHoldingsMessage(this.configuration, STUB_CREDENTIALS_ID,
       STUB_TENANT, 5001, 2, TRANSACTION_ID, null);
     proxy.loadHoldings(message);
 
@@ -373,9 +372,9 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   public void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    saveStatusNotStarted(STUB_CREDENTILS_ID, vertx);
-    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }
 
   private void runPostHoldingsWithMocks(TestContext context) throws IOException, URISyntaxException {

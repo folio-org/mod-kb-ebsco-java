@@ -13,8 +13,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.rest.impl.ProxiesTestData.JOHN_TOKEN_HEADER;
-import static org.folio.rest.impl.ProxiesTestData.STUB_CREDENTILS_ID;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
 import static org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest.HOLDINGS_LOAD_BY_ID_URL;
@@ -76,10 +74,11 @@ import org.folio.service.holdings.message.LoadHoldingsMessage;
 public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
   private static final String HOLDINGS_LOAD_STATUS_BY_ID_URL = "/eholdings/loading/kb-credentials/%s/status";
-  private static final String STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_CREDENTILS_ID);
+  private static final String STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL,
+    STUB_CREDENTIALS_ID);
   private static final int TIMEOUT = 300;
   private static final int SNAPSHOT_RETRIES = 2;
-  private List<Handler<DeliveryContext<LoadHoldingsMessage>>> interceptors = new ArrayList<>();
+  private final List<Handler<DeliveryContext<LoadHoldingsMessage>>> interceptors = new ArrayList<>();
 
   @InjectMocks
   @Autowired
@@ -202,9 +201,9 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   }
 
   public void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTILS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    saveStatusNotStarted(STUB_CREDENTILS_ID, vertx);
-    insertRetryStatus(STUB_CREDENTILS_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
+    insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }
 
   private void tearDownHoldingsData() {

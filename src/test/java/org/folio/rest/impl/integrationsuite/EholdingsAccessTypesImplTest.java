@@ -38,10 +38,12 @@ import static org.folio.util.AccessTypesTestUtil.getAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.insertAccessType;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.testData;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.io.IOException;
@@ -72,7 +74,6 @@ import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.util.RestConstants;
-import org.folio.util.KbCredentialsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAccessTypesImplTest extends WireMockTestBase {
@@ -119,8 +120,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
           .withStatus(403)
         ));
 
-    credentialsId = KbCredentialsTestUtil
-      .saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    setUpTestUsers();
   }
 
   @After
@@ -128,6 +129,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test
@@ -193,12 +195,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     assertThat(findAccessTypeWithId(actual, id2).getUsageNumber(), equalTo(0));
   }
 
-  private AccessType findAccessTypeWithId(AccessTypeCollection collection, String id) {
-    return collection.getData().stream()
-      .filter(accessType -> accessType.getId().equals(id))
-      .findFirst().orElse(null);
-  }
-
   @Test
   public void shouldReturnAccessTypeOnGetByIdAndUser() {
     List<AccessType> accessTypes = testData(credentialsId);
@@ -241,8 +237,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = ACCESS_TYPES_PATH + "/" + id;
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Access type not found: id = %s", id), error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, String.format("Access type not found: id = %s", id));
   }
 
   @Test
@@ -252,8 +247,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       UUID.randomUUID().toString(), id);
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertEquals(1, error.getErrors().size());
-    assertEquals(String.format("Access type not found: id = %s", id), error.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, String.format("Access type not found: id = %s", id));
   }
 
   @Test
@@ -262,8 +256,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = ACCESS_TYPES_PATH + "/" + id;
     JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertEquals(1, error.getErrors().size());
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'id' parameter is incorrect."));
+    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
   }
 
   @Test
@@ -285,8 +278,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, "invalid-id");
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertEquals(1, error.getErrors().size());
-    assertThat(error.getErrors().get(0).getTitle(), containsString("'accessTypeId' parameter is incorrect."));
+    assertErrorContainsTitle(error, "'accessTypeId' parameter is incorrect.");
   }
 
   @Test
@@ -339,9 +331,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError errors = postWithStatus(resourcePath, postBody, SC_BAD_REQUEST, USER8_TOKEN).as(JsonapiError.class);
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_BAD_REQUEST, USER8_TOKEN).as(JsonapiError.class);
 
-    assertEquals("Maximum number of access types allowed is 2", errors.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Maximum number of access types allowed is 2");
   }
 
   @Test
@@ -355,10 +347,10 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError errors =
+    JsonapiError error =
       postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN).as(JsonapiError.class);
 
-    assertEquals("Duplicate name", errors.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Duplicate name");
   }
 
   @Test
@@ -374,9 +366,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     mockInvalidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError errors = postWithStatus(resourcePath, postBody, SC_BAD_REQUEST, USER8_TOKEN).as(JsonapiError.class);
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_BAD_REQUEST, USER8_TOKEN).as(JsonapiError.class);
 
-    assertEquals("Maximum number of access types allowed is 3", errors.getErrors().get(0).getTitle());
+    assertErrorContainsTitle(error, "Maximum number of access types allowed is 3");
     List<AccessType> accessTypesInDb = getAccessTypes(vertx);
     assertEquals(3, accessTypesInDb.size());
   }
@@ -387,8 +379,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError errors = postWithStatus(resourcePath, postBody, SC_NOT_FOUND, USER2_TOKEN).as(JsonapiError.class);
-    assertEquals("User not found", errors.getErrors().get(0).getTitle());
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_NOT_FOUND, USER2_TOKEN).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "User not found");
   }
 
   @Test
@@ -479,9 +472,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void shouldReturn404OnPutByCredentialsAndAccessTypeIdWhenAccessTypeIsMissing() {
     String putBody = Json.encode(new AccessTypePutRequest().withData(stubbedAccessType()));
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID());
-    JsonapiError errors = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, USER9_TOKEN).as(JsonapiError.class);
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, USER9_TOKEN).as(JsonapiError.class);
 
-    assertThat(errors.getErrors().get(0).getTitle(), containsString("not found"));
+    assertErrorContainsTitle(error, "not found");
   }
 
   @Test
@@ -491,9 +484,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     String putBody = Json.encode(new AccessTypePutRequest().withData(stubbedAccessType()));
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
-    JsonapiError errors = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED).as(JsonapiError.class);
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED).as(JsonapiError.class);
 
-    assertThat(errors.getErrors().get(0).getTitle(), containsString("Unauthorized"));
+    assertErrorContainsTitle(error, "Invalid token");
   }
 
   @Test
@@ -517,7 +510,13 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED, USER3_TOKEN).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Unauthorized"));
+    assertErrorContainsTitle(error, "Unauthorized");
+  }
+
+  private AccessType findAccessTypeWithId(AccessTypeCollection collection, String id) {
+    return collection.getData().stream()
+      .filter(accessType -> accessType.getId().equals(id))
+      .findFirst().orElse(null);
   }
 
   private AccessType stubbedAccessType() {
