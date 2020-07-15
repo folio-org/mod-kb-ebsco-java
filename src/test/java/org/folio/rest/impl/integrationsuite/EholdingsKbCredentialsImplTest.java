@@ -101,6 +101,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void tearDown() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test
