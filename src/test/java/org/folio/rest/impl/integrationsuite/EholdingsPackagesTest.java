@@ -175,6 +175,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     super.setUp();
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
+    setUpTestUsers();
   }
 
   @After
@@ -185,6 +186,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test
