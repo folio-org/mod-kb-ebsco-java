@@ -4,12 +4,15 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="MODKBEKBJ-435@@drop-columns-from-assigned-users-table" author="psmagin">
+  <changeSet id="MODKBEKBJ-435@@drop-deprecated-columns-from-assigned-users-table" author="psmagin">
     <dropColumn tableName="assigned_users" columnName="user_name"/>
     <dropColumn tableName="assigned_users" columnName="first_name"/>
     <dropColumn tableName="assigned_users" columnName="middle_name"/>
     <dropColumn tableName="assigned_users" columnName="last_name"/>
     <dropColumn tableName="assigned_users" columnName="patron_group"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-435@@rename-id-column-in-assigned-users-table" author="psmagin">
     <renameColumn tableName="assigned_users" oldColumnName="id" newColumnName="user_id"/>
   </changeSet>
 

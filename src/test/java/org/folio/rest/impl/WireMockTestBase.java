@@ -25,7 +25,6 @@ import io.restassured.response.Response;
 import io.vertx.ext.unit.TestContext;
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,8 +86,6 @@ public abstract class WireMockTestBase extends TestBase {
     // An ad-hoc to clear any records after DB setup but before test execution
     // this should be removed once a proper separation between migration scripts and clean DB is in place
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
-    saveUser(JOHN_ID, JOHN_USERNAME, "John", null, "Doe", "patron", vertx);
-    saveUser(JANE_ID, JANE_USERNAME, "Jane", null, "Doe", "patron", vertx);
   }
 
   @Before
@@ -102,8 +99,12 @@ public abstract class WireMockTestBase extends TestBase {
     titleCache.invalidateAll();
   }
 
-  @AfterClass
-  public static void afterClass() {
+  protected void setUpTestUsers() {
+    saveUser(JOHN_ID, JOHN_USERNAME, "John", null, "Doe", "patron", vertx);
+    saveUser(JANE_ID, JANE_USERNAME, "Jane", null, "Doe", "patron", vertx);
+  }
+
+  protected void tearDownTestUsers() {
     clearDataFromTable(vertx, USERS_TABLE_NAME);
   }
 

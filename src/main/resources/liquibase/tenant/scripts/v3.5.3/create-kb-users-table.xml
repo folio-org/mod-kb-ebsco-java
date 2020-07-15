@@ -17,19 +17,25 @@
     </createTable>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-435@@insert-into-kb-users-table" author="psmagin">
+  <changeSet id="MODKBEKBJ-435@@migrate-users-from-assigned-users-to-kb-users" author="psmagin">
     <sql>
       INSERT INTO kb_users (id, user_name, first_name, middle_name, last_name, patron_group)
       SELECT id, user_name, first_name, middle_name, last_name, patron_group
       FROM assigned_users
       ON CONFLICT(id) DO NOTHING;
     </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-435@@migrate-created-by-users-from-access-types-to-kb-users" author="psmagin">
     <sql>
       INSERT INTO kb_users (id, user_name, first_name, middle_name, last_name)
       SELECT DISTINCT created_by_user_id, created_by_username, created_by_first_name, created_by_middle_name, created_by_last_name
       FROM access_types
       ON CONFLICT(id) DO NOTHING;
     </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-435@@migrate-updated-by-users-from-access-types-to-kb-users" author="psmagin">
     <sql>
       INSERT INTO kb_users (id, user_name, first_name, middle_name, last_name)
       SELECT DISTINCT updated_by_user_id, updated_by_username, updated_by_first_name, updated_by_middle_name, updated_by_last_name

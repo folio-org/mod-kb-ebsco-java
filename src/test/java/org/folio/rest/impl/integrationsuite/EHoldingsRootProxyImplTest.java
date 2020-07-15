@@ -34,6 +34,7 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -52,10 +53,18 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   private static final String KB_EBSCO_GET_ROOT_PROXY_RESPONSE =
     "responses/kb-ebsco/root-proxy/get-root-proxy-response.json";
 
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    setUpTestUsers();
+  }
+
   @After
   public void tearDown() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test

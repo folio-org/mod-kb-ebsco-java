@@ -121,6 +121,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
         ));
 
     credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    setUpTestUsers();
   }
 
   @After
@@ -128,6 +129,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+    tearDownTestUsers();
   }
 
   @Test
