@@ -36,7 +36,7 @@ public class TitleRepositoryImplTest {
     TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
       .recordType(RecordType.RESOURCE)
       .build();
-    List<DbTitle> titles = repository.getTitlesByTagFilter(filter, null, STUB_TENANT).join();
+    List<DbTitle> titles = repository.findByTagFilter(filter, null, STUB_TENANT).join();
     assertThat(titles, empty());
   }
 }

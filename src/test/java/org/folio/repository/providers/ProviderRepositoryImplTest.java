@@ -30,7 +30,7 @@ public class ProviderRepositoryImplTest {
     TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
       .recordType(RecordType.PROVIDER)
       .build();
-    List<Long> providerIds = repository.findIdsByTagName(filter, null, STUB_TENANT).join();
+    List<Long> providerIds = repository.findIdsByTagFilter(filter, null, STUB_TENANT).join();
     assertThat(providerIds, empty());
   }
 }

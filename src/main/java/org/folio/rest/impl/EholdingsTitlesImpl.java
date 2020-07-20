@@ -7,8 +7,6 @@ import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +21,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -31,7 +28,6 @@ import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.TitlePost;
-import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
@@ -49,7 +45,6 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.filter.Filter;
-import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RMAPITemplate;
@@ -116,7 +111,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> getResourcesByTags(filter.createTagFilter(), context));
+      template.requestAction(context -> filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
@@ -195,48 +190,6 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             updateTags(new TitleResult(title, false), context, entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
-  }
-
-  private CompletableFuture<Titles> getResourcesByTags(TagFilter tagFilter, RMAPITemplateContext context) {
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
-
-    String tenant = context.getOkapiData().getTenant();
-    UUID credentialsId = toUUID(context.getCredentialsId());
-
-    return titlesRepository.countTitlesByResourceTags(tagFilter.getTags(), credentialsId, tenant)
-      .thenCompose(resultsCount -> {
-        totalResults.setValue(resultsCount);
-        return titlesRepository.getTitlesByTagFilter(tagFilter, credentialsId, tenant);
-      })
-      .thenCompose(dbTitles -> {
-        mutableDbTitles.setValue(dbTitles);
-        List<Long> missingTitleIds = dbTitles.stream()
-          .filter(title -> Objects.isNull(title.getTitle()))
-          .map(DbTitle::getId)
-          .collect(Collectors.toList());
-        return context.getTitlesService().retrieveTitles(missingTitleIds);
-      })
-      .thenApply(titles ->
-        titles.toBuilder()
-          .titleList(combineTitles(mutableDbTitles.getValue(), titles.getTitleList()))
-          .totalResults(totalResults.getValue())
-          .build()
-      );
-  }
-
-  private List<org.folio.holdingsiq.model.Title> combineTitles(List<DbTitle> dbTitles,
-                                                               List<org.folio.holdingsiq.model.Title> titleList) {
-    List<org.folio.holdingsiq.model.Title> resultList = new ArrayList<>(titleList);
-    resultList.addAll(
-      dbTitles.stream()
-        .filter(title -> Objects.nonNull(title.getTitle()))
-        .map(DbTitle::getTitle)
-        .collect(Collectors.toList())
-    );
-    resultList.sort(Comparator.comparing(org.folio.holdingsiq.model.Title::getTitleName));
-
-    return resultList;
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result,

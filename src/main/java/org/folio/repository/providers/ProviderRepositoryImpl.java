@@ -83,7 +83,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<List<Long>> findIdsByTagName(TagFilter tagFilter, UUID credentialsId, String tenantId) {
+  public CompletableFuture<List<Long>> findIdsByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
     List<String> tags = tagFilter.getTags();
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());

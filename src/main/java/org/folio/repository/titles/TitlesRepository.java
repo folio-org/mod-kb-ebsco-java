@@ -12,7 +12,7 @@ public interface TitlesRepository {
 
   CompletableFuture<Void> delete(Long titleId, UUID credentialsId, String tenantId);
 
-  CompletableFuture<List<DbTitle>> getTitlesByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId);
+  CompletableFuture<List<DbTitle>> findByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId);
 
   CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, UUID credentialsId, String tenantId);
 }

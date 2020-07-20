@@ -23,7 +23,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -32,11 +31,9 @@ import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
-import org.folio.holdingsiq.model.Vendors;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
-import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
 import org.folio.repository.providers.DbProvider;
 import org.folio.repository.providers.ProviderRepository;
@@ -56,7 +53,6 @@ import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.filter.Filter;
-import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplate;
@@ -118,7 +114,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .count(count)
       .build();
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> fetchProvidersByTags(filter.createTagFilter(), context));
+      template.requestAction(context -> filteredEntitiesLoader.fetchProvidersByTagFilter(filter.createTagFilter(), context));
     } else {
       template
         .requestAction(context ->
@@ -212,7 +208,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .build();
 
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> fetchPackagesByTagsAndProvider(filter.createTagFilter(), context));
+      template.requestAction(context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
@@ -233,50 +229,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
           ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)
         ))
       .executeWithResult(PackageCollection.class);
-  }
-
-  private CompletableFuture<Vendors> fetchProvidersByTags(TagFilter tagFilter, RMAPITemplateContext context) {
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    String tenant = context.getOkapiData().getTenant();
-    UUID credentialsId = toUUID(context.getCredentialsId());
-
-    return tagRepository
-      .countRecordsByTagFilter(tagFilter, tenant)
-      .thenCompose(providerCount -> {
-        totalResults.setValue(providerCount);
-        return providerRepository.findIdsByTagName(tagFilter, credentialsId, tenant);
-      })
-      .thenCompose(providerIds ->
-        context.getProvidersService().retrieveProviders(providerIds))
-      .thenApply(providers ->
-        providers.toBuilder()
-          .totalResults(totalResults.getValue())
-          .build()
-      );
-  }
-
-  private CompletableFuture<PackageCollectionResult> fetchPackagesByTagsAndProvider(TagFilter tagFilter,
-                                                                                    RMAPITemplateContext context) {
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<DbPackage>> mutableDbPackages = new MutableObject<>();
-    String tenant = context.getOkapiData().getTenant();
-    return tagRepository
-      .countRecordsByTagFilter(tagFilter, tenant)
-      .thenCompose(packageCount -> {
-        totalResults.setValue(packageCount);
-        return packageRepository.findByTagFilter(tagFilter, toUUID(context.getCredentialsId()), tenant);
-      })
-      .thenCompose(dbPackages -> {
-        mutableDbPackages.setValue(dbPackages);
-        return context.getPackagesService().retrievePackages(getPackageIds(dbPackages));
-      })
-      .thenApply(packages ->
-        new PackageCollectionResult(
-          packages.toBuilder()
-            .totalResults(totalResults.getValue())
-            .build(),
-          mutableDbPackages.getValue())
-      );
   }
 
   private CompletableFuture<VendorResult> loadTags(VendorResult result, RMAPITemplateContext context) {

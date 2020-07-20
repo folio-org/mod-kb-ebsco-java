@@ -7,9 +7,6 @@ import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
-import static org.folio.rest.util.IdParser.getPackageIds;
-import static org.folio.rest.util.IdParser.getResourceIds;
-import static org.folio.rest.util.IdParser.getTitleIds;
 import static org.folio.rest.util.IdParser.packageIdToString;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.RestConstants.JSONAPI;
@@ -33,7 +30,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -46,19 +42,14 @@ import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
-import org.folio.holdingsiq.model.Packages;
-import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
-import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
-import org.folio.repository.resources.DbResource;
-import org.folio.repository.resources.ResourceRepository;
 import org.folio.repository.tag.DbTag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
@@ -82,7 +73,6 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.model.filter.Filter;
-import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RMAPITemplate;
@@ -98,7 +88,6 @@ import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
-import org.folio.service.holdings.HoldingsService;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
@@ -138,10 +127,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private TagRepository tagRepository;
   @Autowired
   private PackageRepository packageRepository;
-  @Autowired
-  private ResourceRepository resourceRepository;
-  @Autowired
-  private HoldingsService holdingsService;
   @Autowired
   private Converter<Titles, TitleCollectionResult> titleCollectionConverter;
   @Autowired
@@ -183,7 +168,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> fetchPackagesByTags(filter.createTagFilter(), context));
+      template.requestAction(context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
@@ -327,7 +312,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> fetchResourcesByPackageIdAndTags(filter.createTagFilter(), context));
+      template.requestAction(context -> filteredEntitiesLoader.fetchResourcesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
@@ -469,61 +454,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private String getResourceId(TitleResult titleResult) {
     CustomerResources resource = titleResult.getTitle().getCustomerResourcesList().get(0);
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
-  }
-
-  private CompletableFuture<ResourceCollectionResult> fetchResourcesByPackageIdAndTags(TagFilter tagFilter,
-                                                                                       RMAPITemplateContext context) {
-
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<DbResource>> mutableDbTitles = new MutableObject<>();
-    MutableObject<List<DbHoldingInfo>> mutableDbHoldings = new MutableObject<>();
-    String tenant = context.getOkapiData().getTenant();
-    String credentialsId = context.getCredentialsId();
-
-    return tagRepository
-      .countRecordsByTagFilter(tagFilter, tenant)
-      .thenCompose(resourceCount -> {
-        totalResults.setValue(resourceCount);
-        return resourceRepository.findByTagFilter(tagFilter, toUUID(credentialsId), tenant);
-      })
-      .thenCompose(resourcesResult -> {
-        mutableDbTitles.setValue(resourcesResult);
-        return holdingsService.getHoldingsByIds(resourcesResult, context.getCredentialsId(), tenant);
-      }).thenCompose(dbHoldings -> {
-        mutableDbHoldings.setValue(dbHoldings);
-        return context.getResourcesService()
-          .retrieveResources(getRemainingResourceIds(dbHoldings, mutableDbTitles.getValue()), Collections.emptyList());
-      })
-      .thenApply(titles -> new ResourceCollectionResult(
-        titles.toBuilder().totalResults(totalResults.getValue()).build(),
-        mutableDbTitles.getValue(), mutableDbHoldings.getValue())
-      );
-  }
-
-  private List<ResourceId> getRemainingResourceIds(List<DbHoldingInfo> holdings, List<DbResource> resourcesResult) {
-    final List<ResourceId> resourceIds = getTitleIds(resourcesResult);
-    resourceIds.removeIf(dbResource -> getResourceIds(holdings).contains(dbResource));
-    return resourceIds;
-  }
-
-  private CompletableFuture<Packages> fetchPackagesByTags(TagFilter tagFilter, RMAPITemplateContext context) {
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    String tenant = context.getOkapiData().getTenant();
-    UUID credentialsId = toUUID(context.getCredentialsId());
-
-    return tagRepository
-      .countRecordsByTagFilter(tagFilter, tenant)
-      .thenCompose(packageCount -> {
-        totalResults.setValue(packageCount);
-        return packageRepository.findByTagFilter(tagFilter, credentialsId, tenant);
-      })
-      .thenCompose(dbPackages ->
-        context.getPackagesService().retrievePackages(getPackageIds(dbPackages)))
-      .thenApply(packages ->
-        packages.toBuilder()
-          .totalResults(totalResults.getValue())
-          .build()
-      );
   }
 
   private CompletableFuture<Long> getCustomProviderId(RMAPITemplateContext context) {

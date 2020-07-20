@@ -121,7 +121,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbTitle>> getTitlesByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
+  public CompletableFuture<List<DbTitle>> findByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
     List<String> tags = tagFilter.getTags();
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
