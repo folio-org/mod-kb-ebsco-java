@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
+import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
@@ -18,13 +19,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
-import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -42,7 +41,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
@@ -50,7 +48,6 @@ import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.ResourceId;
-import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
@@ -88,7 +85,6 @@ import org.folio.rest.model.filter.Filter;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
-import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
@@ -187,29 +183,21 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> getPackagesByTags(filter.getTagFilter(), context));
+      template.requestAction(context -> fetchPackagesByTags(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
-        .fetchPackagesByAccessTypeFilter(filter.getAccessTypeFilter(), context)
+        .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
       );
     } else {
-      if (Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)) {
-        throw new ValidationException("Invalid Query Parameter for filter[custom]");
-      }
-      String selected = RestConstants.FILTER_SELECTED_MAPPING.getOrDefault(filterSelected, filterSelected);
-      packageParametersValidator.validate(selected, filterType, sort, q);
-
-      boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
-      Sort nameSort = Sort.valueOf(sort.toUpperCase());
-
       template
         .requestAction(context -> {
-          if (isFilterCustom) {
-            return getVendorId(context)
-              .thenCompose(vendorId ->
-                context.getPackagesService().retrievePackages(selected, filterType, vendorId, q, page, count, nameSort));
+          if (Boolean.TRUE.equals(filter.getFilterCustom())) {
+            return getCustomProviderId(context).thenCompose(providerId ->
+              context.getPackagesService()
+                .retrievePackages(filter.getFilterSelected(), filterType, providerId, q, page, count, filter.getSort()));
           } else {
-            return context.getPackagesService().retrievePackages(selected, filterType, null, q, page, count, nameSort);
+            return context.getPackagesService()
+              .retrievePackages(filter.getFilterSelected(), filterType, null, q, page, count, filter.getSort());
           }
         });
     }
@@ -339,30 +327,23 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> getResourcesByPackageIdAndTags(filter.getTagFilter(), context));
+      template.requestAction(context -> fetchResourcesByPackageIdAndTags(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
-      template.requestAction(context ->
-        filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.getAccessTypeFilter(), context)
-          .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
+        .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
       );
     } else {
-      PackageId parsedPackageId = parsePackageId(packageId);
-
-      FilterQuery fq = FilterQuery.builder()
-        .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
-        .type(filterType)
-        .name(filterName).isxn(filterIsxn).subject(filterSubject)
-        .publisher(filterPublisher).build();
-
-      titleParametersValidator.validate(fq, sort, true);
-
-      Sort nameSort = Sort.valueOf(sort.toUpperCase());
-
       template.requestAction(context ->
-        context.getTitlesService().retrieveTitles(parsedPackageId.getProviderIdPart(), parsedPackageId.getPackageIdPart(),
-          fq, nameSort, page, count)
-          .thenApply(titles -> titleCollectionConverter.convert(titles))
-          .thenCompose(loadResourceTags(context))
+        {
+          PackageId pkgId = filter.getPackageId();
+          long providerIdPart = pkgId.getProviderIdPart();
+          long packageIdPart = pkgId.getPackageIdPart();
+          return context.getTitlesService()
+            .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), filter.getSort(), page, count)
+            .thenApply(titles -> titleCollectionConverter.convert(titles))
+            .thenCompose(loadResourceTags(context));
+        }
       );
     }
 
@@ -437,7 +418,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<PackageResult> postCustomPackage(PackagePost packagePost, RMAPITemplateContext context) {
-    return getVendorId(context)
+    return getCustomProviderId(context)
       .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
       .thenApply(packageById -> new PackageResult(packageById, null, null));
   }
@@ -490,8 +471,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 
-  private CompletableFuture<ResourceCollectionResult> getResourcesByPackageIdAndTags(TagFilter tagFilter,
-                                                                                     RMAPITemplateContext context) {
+  private CompletableFuture<ResourceCollectionResult> fetchResourcesByPackageIdAndTags(TagFilter tagFilter,
+                                                                                       RMAPITemplateContext context) {
 
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<DbResource>> mutableDbTitles = new MutableObject<>();
@@ -525,7 +506,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resourceIds;
   }
 
-  private CompletableFuture<Packages> getPackagesByTags(TagFilter tagFilter, RMAPITemplateContext context) {
+  private CompletableFuture<Packages> fetchPackagesByTags(TagFilter tagFilter, RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
@@ -545,7 +526,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       );
   }
 
-  private CompletableFuture<Long> getVendorId(RMAPITemplateContext context) {
+  private CompletableFuture<Long> getCustomProviderId(RMAPITemplateContext context) {
     VendorIdCacheKey cacheKey = VendorIdCacheKey.builder()
       .tenant(context.getOkapiData().getTenant())
       .rmapiConfiguration(context.getConfiguration())

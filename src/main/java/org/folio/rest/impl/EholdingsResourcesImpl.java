@@ -4,6 +4,7 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 
+import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;

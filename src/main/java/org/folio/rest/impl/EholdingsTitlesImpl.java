@@ -28,10 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourcePut;
-import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.TitlePost;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
@@ -50,10 +48,10 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
-import org.folio.rest.model.filter.AccessTypeFilter;
+import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
-import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
@@ -101,30 +99,32 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                  String filterType, String filterName, String filterIsxn, String filterSubject,
                                  String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    Filter filter = Filter.builder()
+      .recordType(RecordType.TITLE)
+      .filterTags(filterTags)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (isTagsSearch(filterTags, filterAccessType.toArray(new String[0]))) {
-      List<String> tags = parseByComma(filterTags);
-      template.requestAction(context -> getResourcesByTags(tags, page, count, context));
-    } else if (isAccessTypeSearch(filterAccessType, filterTags)) {
-      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
-      accessTypeFilter.setAccessTypeNames(filterAccessType);
-      accessTypeFilter.setRecordType(RecordType.RESOURCE);
-      accessTypeFilter.setCount(count);
-      accessTypeFilter.setPage(page);
-      template.requestAction(context -> filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context));
+    if (filter.isTagsFilter()) {
+      template.requestAction(context -> getResourcesByTags(filter.createTagFilter(), context));
+    } else if (filter.isAccessTypeFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
+      );
     } else {
-      FilterQuery fq = FilterQuery.builder()
-        .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
-        .type(filterType).name(filterName).isxn(filterIsxn).subject(filterSubject)
-        .publisher(filterPublisher).build();
-
-      parametersValidator.validate(fq, sort);
-
-      Sort nameSort = Sort.valueOf(sort.toUpperCase());
-
       template
         .requestAction(context ->
-          context.getTitlesService().retrieveTitles(fq, nameSort, page, count)
+          context.getTitlesService().retrieveTitles(filter.createFilterQuery(), filter.getSort(), page, count)
         );
     }
     template.executeWithResult(TitleCollection.class);

@@ -1,5 +1,9 @@
 package org.folio.rest.util;
 
+import static java.util.Arrays.asList;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -7,10 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import org.folio.rest.jaxrs.model.JsonAPI;
 
 public final class RestConstants {
-  public static final String OKAPI_TOKEN_HEADER = "x-okapi-token";
-  public static final String OKAPI_URL_HEADER = "x-okapi-url";
-  public static final String OKAPI_USER_ID_HEADER = "x-okapi-user-id";
-  public static final String OKAPI_TENANT_HEADER = "x-okapi-tenant";
+
   public static final JsonAPI JSONAPI = new JsonAPI().withVersion("1.0");
   public static final String PACKAGES_TYPE = "packages";
   public static final String PROVIDERS_TYPE = "providers";
@@ -31,5 +32,14 @@ public final class RestConstants {
       "ebsco", "orderedthroughebsco"
     );
 
-  private RestConstants(){ }
+  public static final List<String> SUPPORTED_FILTER_SELECTED_VALUES =
+    Collections.unmodifiableList(
+      asList("all", "selected", "notselected", "orderedthroughebsco")
+    );
+  public static final List<String> SUPPORTED_FILTER_TYPE_VALUES =
+    Collections.unmodifiableList(
+      asList("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference")
+    );
+
+  private RestConstants() { }
 }
