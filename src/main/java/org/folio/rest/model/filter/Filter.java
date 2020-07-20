@@ -205,7 +205,7 @@ public class Filter {
       if (nonNullFilters < 1 && !allowNullFilters) {
         throw new ValidationException(MISSING_KEYWORD_SEARCH_PARAMETERS_MESSAGE);
       }
-      if (matchesAny(searchParameters, String::isEmpty)) {
+      if (matchesAny(searchParameters, StringUtils.EMPTY::equals)) {
         throw new ValidationException(INVALID_KEYWORD_SEARCH_PARAMETERS_MESSAGE);
       }
     }

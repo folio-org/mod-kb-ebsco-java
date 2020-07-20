@@ -55,7 +55,6 @@ import static org.folio.util.TitlesTestUtil.buildTitle;
 import static org.folio.util.TitlesTestUtil.saveTitle;
 import static org.folio.util.UsersTestUtil.saveUser;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -63,6 +62,7 @@ import java.util.UUID;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import joptsimple.internal.Strings;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -673,7 +673,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnSecuredCollection() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    Map<String, String> headers = new HashMap<>();
+    Map<String, String> headers = new CaseInsensitiveMap<>();
     headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
     KbCredentialsCollection collection = securedCredentialsService.findAll(headers).join();
     assertThat(collection.getMeta().getTotalResults(), equalTo(1));
@@ -687,7 +687,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnNonSecuredCollection() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    Map<String, String> headers = new HashMap<>();
+    Map<String, String> headers = new CaseInsensitiveMap<>();
     headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
     KbCredentialsCollection collection = nonSecuredCredentialsService.findAll(headers).join();
     assertThat(collection.getMeta().getTotalResults(), equalTo(1));
