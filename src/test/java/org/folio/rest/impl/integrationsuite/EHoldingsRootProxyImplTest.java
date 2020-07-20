@@ -33,6 +33,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +69,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnRootProxyWhenUserAssignedToKbCredentials() throws IOException, URISyntaxException {
+  public void shouldReturnRootProxyWhenUserAssignedToKbCredentials() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
@@ -81,7 +82,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnRootProxyWhenOneCredentialsExistsAndUserNotAssigned() throws IOException, URISyntaxException {
+  public void shouldReturnRootProxyWhenOneCredentialsExistsAndUserNotAssigned() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), RMAPI_ROOT_PROXY_CUSTOM_LABELS_RESPONSE);
@@ -131,7 +132,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnRootProxyWhenUserAssignedToCredentials() throws IOException, URISyntaxException {
+  public void shouldReturnRootProxyWhenUserAssignedToCredentials() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
@@ -174,7 +175,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException {
+  public void shouldReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-updated-response.json";
 

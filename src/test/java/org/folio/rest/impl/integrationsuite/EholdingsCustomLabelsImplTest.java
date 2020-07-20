@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,7 +81,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnCustomLabelsOnGet() throws IOException, URISyntaxException {
+  public void shouldReturnCustomLabelsOnGet() throws IOException, URISyntaxException, JSONException {
     mockCustomLabelsConfiguration();
 
     String actual = getWithOk(KB_CUSTOM_LABELS_PATH, STUB_TOKEN_HEADER).asString();
@@ -135,7 +136,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateCustomLabelsOnPutWhenAllIsValidWithOneItem() throws IOException, URISyntaxException {
+  public void shouldUpdateCustomLabelsOnPutWhenAllIsValidWithOneItem() throws IOException, URISyntaxException, JSONException {
     mockCustomLabelsSuccessPutRequest();
 
     String putBody = readFile(PUT_ONE_LABEL_REQUEST);
@@ -149,7 +150,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateCustomLabelsOnPutWhenAllIsValidWithFiveItems() throws IOException, URISyntaxException {
+  public void shouldUpdateCustomLabelsOnPutWhenAllIsValidWithFiveItems() throws IOException, URISyntaxException, JSONException {
     mockCustomLabelsSuccessPutRequest();
 
     String putBody = readFile(PUT_FIVE_LABEL_REQUEST);

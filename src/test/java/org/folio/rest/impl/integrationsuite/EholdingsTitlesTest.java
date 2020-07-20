@@ -88,6 +88,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -139,7 +140,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException {
+  public void shouldReturnTitlesOnGet() throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/titles/searchTitles.json";
 
     stubFor(
@@ -159,7 +160,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException {
+  public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException, JSONException {
     mockGetManagedTitleById();
     saveHolding(configuration.getId(),
       readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class),
@@ -281,7 +282,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException {
+  public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException, JSONException {
     mockGetManagedTitleById();
     String actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_TOKEN_HEADER).asString();
     JSONAssert.assertEquals(
@@ -342,7 +343,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWithSortedResourcesWhenIncludeResources() throws IOException, URISyntaxException {
+  public void shouldReturnTitleWithSortedResourcesWhenIncludeResources() throws IOException, URISyntaxException, JSONException {
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response-with-resources.json";
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
@@ -356,7 +357,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWithResourcesWhenIncludeResourcesWithTags() throws IOException, URISyntaxException {
+  public void shouldReturnTitleWithResourcesWhenIncludeResourcesWithTags() throws IOException, URISyntaxException, JSONException {
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
 
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
@@ -372,7 +373,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWithoutResourcesWhenInvalidInclude() throws IOException, URISyntaxException {
+  public void shouldReturnTitleWithoutResourcesWhenInvalidInclude() throws IOException, URISyntaxException, JSONException {
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
@@ -386,7 +387,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWhenValidPostRequest() throws IOException, URISyntaxException {
+  public void shouldReturnTitleWhenValidPostRequest() throws IOException, URISyntaxException, JSONException {
     String actual = postTitle(Collections.emptyList()).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-created-title-response.json");
 
@@ -435,7 +436,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUpdatedValuesForCustomTitleOnSuccessfulPut() throws IOException, URISyntaxException {
+  public void shouldReturnUpdatedValuesForCustomTitleOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
     String expectedTitleFile = "responses/kb-ebsco/titles/expected-updated-title.json";
     String actualResponse = putTitle(null);
 

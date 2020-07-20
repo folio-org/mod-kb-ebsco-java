@@ -3,6 +3,7 @@ package org.folio.rest.impl;
 import static io.vertx.core.Future.succeededFuture;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,8 +59,10 @@ public class EholdingsTagsImpl implements EholdingsTags {
   @Validate
   @HandleValidationErrors
   @Override
-  public void getEholdingsTags(List<String> filterRectypes, Map<String, String> okapiHeaders,
+  public void getEholdingsTags(String filterRectype, Map<String, String> okapiHeaders,
                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    List<String> filterRectypes = Arrays.asList(filterRectype.split(","));
+
     validateRecordTypes(filterRectypes);
 
     completedFuture(null)
@@ -72,11 +75,13 @@ public class EholdingsTagsImpl implements EholdingsTags {
   @Validate
   @HandleValidationErrors
   @Override
-  public void getEholdingsTagsSummary(List<String> filterRectype, Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    validateRecordTypes(filterRectype);
+  public void getEholdingsTagsSummary(String filterRectype, Map<String, String> okapiHeaders,
+      Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    List<String> filterRectypes = Arrays.asList(filterRectype.split(","));
+    validateRecordTypes(filterRectypes);
 
     completedFuture(null)
-      .thenCompose(o -> findUniqueTags(filterRectype, TenantTool.tenantId(okapiHeaders)))
+      .thenCompose(o -> findUniqueTags(filterRectypes, TenantTool.tenantId(okapiHeaders)))
       .thenAccept(tags -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsTagsSummaryResponse.respond200WithApplicationVndApiJson(
           uniqueTagsConverter.convert(tags)))))

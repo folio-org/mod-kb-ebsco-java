@@ -86,6 +86,7 @@ import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang.RandomStringUtils;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -320,7 +321,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProvidersOnGetWithPackages() throws IOException, URISyntaxException {
+  public void shouldReturnProvidersOnGetWithPackages() throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
     String expectedProviderFile = "responses/kb-ebsco/providers/expected-provider-with-packages.json";
 
@@ -359,7 +360,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProviderWhenValidId() throws IOException, URISyntaxException {
+  public void shouldReturnProviderWhenValidId() throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-by-id-response.json";
     String expectedProviderFile = "responses/kb-ebsco/providers/expected-provider.json";
 
@@ -404,7 +405,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateAndReturnProvider() throws IOException, URISyntaxException {
+  public void shouldUpdateAndReturnProvider() throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendor-updated-response.json";
     String expectedProviderFile = "responses/kb-ebsco/providers/expected-updated-provider.json";
 
@@ -488,7 +489,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProviderPackagesWhenValidId() throws IOException, URISyntaxException {
+  public void shouldReturnProviderPackagesWhenValidId() throws IOException, URISyntaxException, JSONException {
     mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
 
     String actual = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).asString();
@@ -509,7 +510,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProviderPackagesWithTags() throws IOException, URISyntaxException {
+  public void shouldReturnProviderPackagesWithTags() throws IOException, URISyntaxException, JSONException {
     setUpPackage(vertx, configuration.getId(), STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
     saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE);
     saveTag(vertx, FULL_PACKAGE_ID, PACKAGE, STUB_TAG_VALUE_2);
