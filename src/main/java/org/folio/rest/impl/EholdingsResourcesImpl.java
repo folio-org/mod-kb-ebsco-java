@@ -12,7 +12,6 @@ import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 import static org.folio.rest.util.IdParser.resourceIdToString;
-import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;

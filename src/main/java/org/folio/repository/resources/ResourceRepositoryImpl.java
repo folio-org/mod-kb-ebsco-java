@@ -45,6 +45,7 @@ import org.springframework.stereotype.Component;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.ResourceId;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
 
@@ -92,23 +93,22 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbResource>> findByTagNameAndPackageId(List<String> tags, String resourceId,
-                                                                       int page, int count, UUID credentialsId,
-                                                                       String tenantId) {
+  public CompletableFuture<List<DbResource>> findByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
+    List<String> tags = tagFilter.getTags();
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
 
-    int offset = (page - 1) * count;
+    int offset = (tagFilter.getPage() - 1) * tagFilter.getCount();
 
     Tuple parameters = Tuple.tuple();
     tags.forEach(parameters::addString);
-    String likeExpression = resourceId + "-%";
+    String likeExpression = tagFilter.getRecordIdPrefix() + "%";
     parameters
       .addString(likeExpression)
       .addUUID(credentialsId)
       .addInteger(offset)
-      .addInteger(count);
+      .addInteger(tagFilter.getCount());
 
     final String query = prepareQuery(SELECT_RESOURCES_WITH_TAGS, getResourcesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));

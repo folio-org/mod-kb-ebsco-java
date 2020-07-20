@@ -11,9 +11,6 @@ import static org.folio.rest.util.IdParser.getResourceIds;
 import static org.folio.rest.util.IdParser.getTitleIds;
 import static org.folio.rest.util.IdParser.packageIdToString;
 import static org.folio.rest.util.IdParser.parsePackageId;
-import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
-import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
-import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
@@ -87,7 +84,8 @@ import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.model.filter.AccessTypeFilter;
+import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.RestConstants;
@@ -170,20 +168,30 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackages(String filterCustom, String q, String filterSelected, String filterType,
-                                   String filterTags, List<String> filterAccessType, String sort, int page, int count,
+                                   List<String> filterTags, List<String> filterAccessType, String sort, int page, int count,
                                    Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                    Context vertxContext) {
+
+    Filter filter = Filter.builder()
+      .recordType(RecordType.PACKAGE)
+      .query(q)
+      .filterTags(filterTags)
+      .filterCustom(filterCustom)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (isTagsSearch(filterTags, q)) {
-      List<String> tags = parseByComma(filterTags);
-      template.requestAction(context -> getPackagesByTags(tags, page, count, context));
-    } else if (isAccessTypeSearch(filterAccessType, q, filterCustom, filterSelected, filterTags)) {
-      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
-      accessTypeFilter.setAccessTypeNames(filterAccessType);
-      accessTypeFilter.setRecordType(RecordType.PACKAGE);
-      accessTypeFilter.setCount(count);
-      accessTypeFilter.setPage(page);
-      template.requestAction(context -> filteredEntitiesLoader.fetchPackagesByAccessTypeFilter(accessTypeFilter, context));
+    if (filter.isTagsFilter()) {
+      template.requestAction(context -> getPackagesByTags(filter.getTagFilter(), context));
+    } else if (filter.isAccessTypeFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchPackagesByAccessTypeFilter(filter.getAccessTypeFilter(), context)
+      );
     } else {
       if (Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)) {
         throw new ValidationException("Invalid Query Parameter for filter[custom]");
@@ -304,7 +312,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterTags,
+  public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, List<String> filterTags,
                                                        List<String> filterAccessType, String filterSelected,
                                                        String filterType, String filterName, String filterIsxn,
                                                        String filterSubject, String filterPublisher, int page, int count,
@@ -312,21 +320,29 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                                        Context vertxContext) {
 
+    Filter filter = Filter.builder()
+      .recordType(RecordType.RESOURCE)
+      .filterTags(filterTags)
+      .packageId(packageId)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
-    if (isTagsSearch(filterTags, filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher)) {
-      List<String> tags = parseByComma(filterTags);
-      template.requestAction(context -> getTitlesByPackageIdAndTags(packageId, tags, page, count, context));
-    } else if (isAccessTypeSearch(filterAccessType, filterTags, filterSelected, filterType, filterName, filterIsxn,
-      filterSubject, filterPublisher)) {
-      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
-      accessTypeFilter.setAccessTypeNames(filterAccessType);
-      accessTypeFilter.setRecordIdPrefix(packageId);
-      accessTypeFilter.setRecordType(RecordType.RESOURCE);
-      accessTypeFilter.setCount(count);
-      accessTypeFilter.setPage(page);
+    if (filter.isTagsFilter()) {
+      template.requestAction(context -> getResourcesByPackageIdAndTags(filter.getTagFilter(), context));
+    } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context ->
-        filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context)
+        filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.getAccessTypeFilter(), context)
           .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
       );
     } else {
@@ -474,9 +490,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 
-  private CompletableFuture<ResourceCollectionResult> getTitlesByPackageIdAndTags(String packageId, List<String> tags,
-                                                                                  int page, int count,
-                                                                                  RMAPITemplateContext context) {
+  private CompletableFuture<ResourceCollectionResult> getResourcesByPackageIdAndTags(TagFilter tagFilter,
+                                                                                     RMAPITemplateContext context) {
 
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<DbResource>> mutableDbTitles = new MutableObject<>();
@@ -485,10 +500,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     String credentialsId = context.getCredentialsId();
 
     return tagRepository
-      .countRecordsByTagsAndPrefix(tags, packageId + "-", tenant, RecordType.RESOURCE)
+      .countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(resourceCount -> {
         totalResults.setValue(resourceCount);
-        return resourceRepository.findByTagNameAndPackageId(tags, packageId, page, count, toUUID(credentialsId), tenant);
+        return resourceRepository.findByTagFilter(tagFilter, toUUID(credentialsId), tenant);
       })
       .thenCompose(resourcesResult -> {
         mutableDbTitles.setValue(resourcesResult);
@@ -510,17 +525,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resourceIds;
   }
 
-  private CompletableFuture<Packages> getPackagesByTags(List<String> tags, int page, int count,
-                                                        RMAPITemplateContext context) {
+  private CompletableFuture<Packages> getPackagesByTags(TagFilter tagFilter, RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
 
     return tagRepository
-      .countRecordsByTags(tags, RecordType.PACKAGE, credentialsId, tenant)
+      .countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.findByTagName(tags, page, count, credentialsId, tenant);
+        return packageRepository.findByTagFilter(tagFilter, credentialsId, tenant);
       })
       .thenCompose(dbPackages ->
         context.getPackagesService().retrievePackages(getPackageIds(dbPackages)))

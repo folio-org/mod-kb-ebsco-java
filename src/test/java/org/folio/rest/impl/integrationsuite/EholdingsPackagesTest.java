@@ -211,7 +211,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     setUpPackages(vertx, configuration.getId());
 
     PackageCollection packageCollection = getWithOk(
-      PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
+      PACKAGES_ENDPOINT + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
       .as(PackageCollection.class);
     List<PackageCollectionItem> packages = packageCollection.getData();
 

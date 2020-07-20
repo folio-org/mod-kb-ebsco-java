@@ -193,7 +193,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     setUpTaggedProviders();
 
     ProviderCollection providerCollection =
-      getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
+      getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
         .as(ProviderCollection.class);
 
     List<Providers> providers = providerCollection.getData();
@@ -213,8 +213,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     PackagesTestUtil.setUpPackages(vertx, configuration.getId());
 
-    PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE + ","
-      + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE
+      + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
 
     List<PackageCollectionItem> packages = packageCollection.getData();
 
@@ -237,7 +237,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
     PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE
-      + "," + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
+      + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
     List<PackageCollectionItem> packages = packageCollection.getData();
 
     assertEquals(3, (int) packageCollection.getMeta().getTotalResults());

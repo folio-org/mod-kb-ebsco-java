@@ -7,9 +7,6 @@ import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getPackageIds;
 import static org.folio.rest.util.IdParser.parseProviderId;
-import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
-import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
-import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
@@ -112,7 +109,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProviders(String q, String filterTags, String sort, int page, int count,
+  public void getEholdingsProviders(String q, List<String> filterTags, String sort, int page, int count,
                                     Map<String, String> okapiHeaders,
                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
@@ -196,7 +193,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, String filterTags,
+  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, List<String> filterTags,
                                                         List<String> filterAccessType, String filterSelected,
                                                         String filterType, String sort, int page, int count,
                                                         Map<String, String> okapiHeaders,
@@ -231,17 +228,16 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .executeWithResult(PackageCollection.class);
   }
 
-  private CompletableFuture<Vendors> getProvidersByTags(List<String> tags, int page, int count,
-                                                        RMAPITemplateContext context) {
+  private CompletableFuture<Vendors> getProvidersByTags(TagFilter tagFilter, RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
 
     return tagRepository
-      .countRecordsByTags(tags, RecordType.PROVIDER, credentialsId, tenant)
+      .countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(providerCount -> {
         totalResults.setValue(providerCount);
-        return providerRepository.findIdsByTagName(tags, page, count, credentialsId, tenant);
+        return providerRepository.findIdsByTagName(tagFilter, credentialsId, tenant);
       })
       .thenCompose(providerIds ->
         context.getProvidersService().retrieveProviders(providerIds))
@@ -252,18 +248,16 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       );
   }
 
-  private CompletableFuture<PackageCollectionResult> getPackagesByTagsAndProvider(List<String> tags, String providerId,
-                                                                                  int page, int count,
+  private CompletableFuture<PackageCollectionResult> getPackagesByTagsAndProvider(TagFilter tagFilter,
                                                                                   RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<DbPackage>> mutableDbPackages = new MutableObject<>();
     String tenant = context.getOkapiData().getTenant();
     return tagRepository
-      .countRecordsByTagsAndPrefix(tags, providerId + "-", tenant, RecordType.PACKAGE)
+      .countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(packageCount -> {
         totalResults.setValue(packageCount);
-        return packageRepository.findByTagNameAndProvider(tags, providerId, page, count, toUUID(context.getCredentialsId()),
-          tenant);
+        return packageRepository.findByTagFilter(tagFilter, toUUID(context.getCredentialsId()), tenant);
       })
       .thenCompose(dbPackages -> {
         mutableDbPackages.setValue(dbPackages);
@@ -276,20 +270,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
             .build(),
           mutableDbPackages.getValue())
       );
-  }
-
-  private CompletableFuture<PackageCollectionResult> getPackagesByAccessTypesAndProvider(List<String> accessTypeNames,
-                                                                                         String providerId,
-                                                                                         int page, int count,
-                                                                                         RMAPITemplateContext context) {
-    AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
-    accessTypeFilter.setAccessTypeNames(accessTypeNames);
-    accessTypeFilter.setRecordIdPrefix(providerId);
-    accessTypeFilter.setRecordType(RecordType.PACKAGE);
-    accessTypeFilter.setCount(count);
-    accessTypeFilter.setPage(page);
-    return filteredEntitiesLoader.fetchPackagesByAccessTypeFilter(accessTypeFilter, context)
-      .thenApply(packages -> new PackageCollectionResult(packages, emptyList()));
   }
 
   private String convertToHoldingsSelected(String filterSelected) {

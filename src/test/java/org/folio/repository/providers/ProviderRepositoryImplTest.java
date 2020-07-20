@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import org.folio.repository.RecordType;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.spring.config.TestConfig;
 
 @RunWith(SpringRunner.class)
@@ -25,7 +27,10 @@ public class ProviderRepositoryImplTest {
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<Long> providerIds = repository.findIdsByTagName(Collections.emptyList(), 1, 25, null, STUB_TENANT).join();
+    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+      .recordType(RecordType.PROVIDER)
+      .build();
+    List<Long> providerIds = repository.findIdsByTagName(filter, null, STUB_TENANT).join();
     assertThat(providerIds, empty());
   }
 }

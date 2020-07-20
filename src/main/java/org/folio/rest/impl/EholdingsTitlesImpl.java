@@ -6,9 +6,6 @@ import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
-import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
-import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
-import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -100,9 +97,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsTitles(String filterTags, List<String> filterAccessType, String filterSelected, String filterType,
-                                 String filterName, String filterIsxn, String filterSubject, String filterPublisher,
-                                 String sort, int page, int count, Map<String, String> okapiHeaders,
+  public void getEholdingsTitles(List<String> filterTags, List<String> filterAccessType, String filterSelected,
+                                 String filterType, String filterName, String filterIsxn, String filterSubject,
+                                 String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (isTagsSearch(filterTags, filterAccessType.toArray(new String[0]))) {
@@ -200,18 +197,17 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .executeWithResult(Title.class);
   }
 
-  private CompletableFuture<Titles> getResourcesByTags(List<String> tags, int page, int count,
-                                                       RMAPITemplateContext context) {
+  private CompletableFuture<Titles> getResourcesByTags(TagFilter tagFilter, RMAPITemplateContext context) {
     MutableObject<Integer> totalResults = new MutableObject<>();
     MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
 
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
 
-    return titlesRepository.countTitlesByResourceTags(tags, credentialsId, tenant)
+    return titlesRepository.countTitlesByResourceTags(tagFilter.getTags(), credentialsId, tenant)
       .thenCompose(resultsCount -> {
         totalResults.setValue(resultsCount);
-        return titlesRepository.getTitlesByResourceTags(tags, page, count, credentialsId, tenant);
+        return titlesRepository.getTitlesByTagFilter(tagFilter, credentialsId, tenant);
       })
       .thenCompose(dbTitles -> {
         mutableDbTitles.setValue(dbTitles);
