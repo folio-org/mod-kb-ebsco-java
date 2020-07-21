@@ -10,8 +10,8 @@ import static org.apache.commons.lang3.StringUtils.appendIfMissing;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
-import static org.folio.rest.util.RestConstants.SUPPORTED_FILTER_SELECTED_VALUES;
-import static org.folio.rest.util.RestConstants.SUPPORTED_FILTER_TYPE_VALUES;
+import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
+import static org.folio.rest.util.RestConstants.SUPPORTED_TITLE_FILTER_TYPE_VALUES;
 
 import java.util.List;
 import java.util.Objects;
@@ -177,17 +177,17 @@ public class Filter {
           validateQuery();
         } else if (this.recordType == RecordType.PACKAGE) {
           validateQuery();
-          validateFilterType();
+          validatePackageFilterType();
           validateFilterCustom();
           validateFilterSelected();
           validateProviderId();
         } else if (this.recordType == RecordType.RESOURCE) {
           validatePackageId();
-          validateFilterType();
+          validateTitleFilterType();
           validateFilterSelected();
           validateKeywordSearch(true);
         } else if (this.recordType == RecordType.TITLE) {
-          validateFilterType();
+          validateTitleFilterType();
           validateFilterSelected();
           validateKeywordSearch(false);
         }
@@ -211,19 +211,27 @@ public class Filter {
     }
 
     private void validateFilterSelected() {
-      if (this.filterSelected != null && !SUPPORTED_FILTER_SELECTED_VALUES.contains(this.filterSelected)) {
+      if (this.filterSelected != null && !FILTER_SELECTED_MAPPING.containsKey(this.filterSelected)) {
         throw new ValidationException(INVALID_FILTER_SELECTED_PARAMETER_MESSAGE);
       }
     }
 
-    private void validateFilterType() {
-      if (this.filterType != null && !SUPPORTED_FILTER_TYPE_VALUES.contains(this.filterType)) {
+    private void validatePackageFilterType() {
+      if (this.filterType != null &&
+        !SUPPORTED_PACKAGE_FILTER_TYPE_VALUES.contains(this.filterType)) {
+        throw new ValidationException(INVALID_FILTER_TYPE_PARAMETER_MESSAGE);
+      }
+    }
+
+    private void validateTitleFilterType() {
+      if (this.filterType != null &&
+        !SUPPORTED_TITLE_FILTER_TYPE_VALUES.contains(this.filterType)) {
         throw new ValidationException(INVALID_FILTER_TYPE_PARAMETER_MESSAGE);
       }
     }
 
     private void validateFilterCustom() {
-      if (filterCustom != null && !Boolean.parseBoolean(filterCustom)) {
+      if (this.filterCustom != null && !Boolean.parseBoolean(this.filterCustom)) {
         throw new ValidationException(INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE);
       }
     }

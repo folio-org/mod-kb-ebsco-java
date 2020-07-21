@@ -45,7 +45,6 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
-import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.packages.DbPackage;
@@ -116,8 +115,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private PackageTagsPutBodyValidator packageTagsPutBodyValidator;
   @Autowired
   private PackagesPostBodyValidator packagesPostBodyValidator;
-  @Autowired
-  private TitleParametersValidator titleParametersValidator;
   @Autowired
   private RMAPITemplateFactory templateFactory;
   @Autowired

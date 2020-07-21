@@ -29,7 +29,6 @@ import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.TitlePost;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
-import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.TagRepository;
@@ -66,8 +65,6 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private Converter<TitlePostRequest, TitlePost> titlePostRequestConverter;
   @Autowired
   private TitlePutRequestConverter titlePutRequestConverter;
-  @Autowired
-  private TitleParametersValidator parametersValidator;
   @Autowired
   private TitlesPostBodyValidator titlesPostBodyValidator;
   @Autowired
