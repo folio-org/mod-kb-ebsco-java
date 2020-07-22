@@ -1,6 +1,5 @@
 package org.folio.repository.resources;
 
-
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
@@ -16,18 +15,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import org.folio.repository.RecordType;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.spring.config.TestConfig;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)
 public class ResourcesRepositoryImplTest {
+
   @Autowired
   ResourceRepository repository;
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<DbResource> resources = repository.findByTagNameAndPackageId(Collections.emptyList(), STUB_PACKAGE_ID,
-      1, 25, null, STUB_TENANT).join();
+    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+      .recordIdPrefix(STUB_PACKAGE_ID).recordType(RecordType.RESOURCE)
+      .count(25).page(1).build();
+    List<DbResource> resources = repository.findByTagFilter(
+      filter, null, STUB_TENANT).join();
     assertThat(resources, empty());
   }
 }

@@ -7,9 +7,9 @@ import static org.junit.Assert.assertThat;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import org.folio.repository.RecordType;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.spring.config.TestConfig;
 
 @RunWith(SpringRunner.class)
@@ -29,13 +30,20 @@ public class TagRepositoryImplTest {
 
   @Test
   public void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTags() {
-    int count = repository.countRecordsByTags(emptyList(), RecordType.RESOURCE, UUID.randomUUID(), STUB_TENANT).join();
+    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+      .recordType(RecordType.RESOURCE)
+      .build();
+    int count = repository.countRecordsByTagFilter(filter, STUB_TENANT).join();
     assertEquals(0, count);
   }
 
   @Test
   public void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTagsAndPrefix() {
-    int count = repository.countRecordsByTagsAndPrefix(emptyList(), "123-", STUB_TENANT, RecordType.RESOURCE).join();
+    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+      .recordType(RecordType.RESOURCE)
+      .recordIdPrefix("123")
+      .build();
+    int count = repository.countRecordsByTagFilter(filter, STUB_TENANT).join();
     assertEquals(0, count);
   }
 

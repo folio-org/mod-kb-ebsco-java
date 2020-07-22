@@ -3,17 +3,12 @@ package org.folio.rest.impl;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toMap;
 
+import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
-import static org.folio.rest.util.IdParser.getPackageIds;
-import static org.folio.rest.util.IdParser.getResourceIds;
-import static org.folio.rest.util.IdParser.getTitleIds;
 import static org.folio.rest.util.IdParser.packageIdToString;
 import static org.folio.rest.util.IdParser.parsePackageId;
-import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
-import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
-import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
@@ -21,13 +16,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
-import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -37,7 +30,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -45,26 +37,18 @@ import org.springframework.core.convert.converter.Converter;
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
-import org.folio.holdingsiq.model.Packages;
-import org.folio.holdingsiq.model.ResourceId;
-import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
-import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
-import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.packages.DbPackage;
 import org.folio.repository.packages.PackageRepository;
-import org.folio.repository.resources.DbResource;
-import org.folio.repository.resources.ResourceRepository;
 import org.folio.repository.tag.DbTag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
@@ -87,10 +71,9 @@ import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.model.filter.AccessTypeFilter;
+import org.folio.rest.model.filter.Filter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
-import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
@@ -104,7 +87,6 @@ import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
-import org.folio.service.holdings.HoldingsService;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
@@ -134,8 +116,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   private PackagesPostBodyValidator packagesPostBodyValidator;
   @Autowired
-  private TitleParametersValidator titleParametersValidator;
-  @Autowired
   private RMAPITemplateFactory templateFactory;
   @Autowired
   @Qualifier("vendorIdCache")
@@ -144,10 +124,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private TagRepository tagRepository;
   @Autowired
   private PackageRepository packageRepository;
-  @Autowired
-  private ResourceRepository resourceRepository;
-  @Autowired
-  private HoldingsService holdingsService;
   @Autowired
   private Converter<Titles, TitleCollectionResult> titleCollectionConverter;
   @Autowired
@@ -170,38 +146,40 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackages(String filterCustom, String q, String filterSelected, String filterType,
-                                   String filterTags, List<String> filterAccessType, String sort, int page, int count,
+                                   List<String> filterTags, List<String> filterAccessType, String sort, int page, int count,
                                    Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                    Context vertxContext) {
+
+    Filter filter = Filter.builder()
+      .recordType(RecordType.PACKAGE)
+      .query(q)
+      .filterTags(filterTags)
+      .filterCustom(filterCustom)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (isTagsSearch(filterTags, q)) {
-      List<String> tags = parseByComma(filterTags);
-      template.requestAction(context -> getPackagesByTags(tags, page, count, context));
-    } else if (isAccessTypeSearch(filterAccessType, q, filterCustom, filterSelected, filterTags)) {
-      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
-      accessTypeFilter.setAccessTypeNames(filterAccessType);
-      accessTypeFilter.setRecordType(RecordType.PACKAGE);
-      accessTypeFilter.setCount(count);
-      accessTypeFilter.setPage(page);
-      template.requestAction(context -> filteredEntitiesLoader.fetchPackagesByAccessTypeFilter(accessTypeFilter, context));
+    if (filter.isTagsFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
+    } else if (filter.isAccessTypeFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
+      );
     } else {
-      if (Objects.nonNull(filterCustom) && !Boolean.parseBoolean(filterCustom)) {
-        throw new ValidationException("Invalid Query Parameter for filter[custom]");
-      }
-      String selected = RestConstants.FILTER_SELECTED_MAPPING.getOrDefault(filterSelected, filterSelected);
-      packageParametersValidator.validate(selected, filterType, sort, q);
-
-      boolean isFilterCustom = Boolean.parseBoolean(filterCustom);
-      Sort nameSort = Sort.valueOf(sort.toUpperCase());
-
       template
         .requestAction(context -> {
-          if (isFilterCustom) {
-            return getVendorId(context)
-              .thenCompose(vendorId ->
-                context.getPackagesService().retrievePackages(selected, filterType, vendorId, q, page, count, nameSort));
+          if (Boolean.TRUE.equals(filter.getFilterCustom())) {
+            return getCustomProviderId(context).thenCompose(providerId ->
+              context.getPackagesService()
+                .retrievePackages(filter.getFilterSelected(), filterType, providerId, q, page, count, filter.getSort()));
           } else {
-            return context.getPackagesService().retrievePackages(selected, filterType, null, q, page, count, nameSort);
+            return context.getPackagesService()
+              .retrievePackages(filter.getFilterSelected(), filterType, null, q, page, count, filter.getSort());
           }
         });
     }
@@ -304,7 +282,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, String filterTags,
+  public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, List<String> filterTags,
                                                        List<String> filterAccessType, String filterSelected,
                                                        String filterType, String filterName, String filterIsxn,
                                                        String filterSubject, String filterPublisher, int page, int count,
@@ -312,41 +290,42 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                                        Context vertxContext) {
 
+    Filter filter = Filter.builder()
+      .recordType(RecordType.RESOURCE)
+      .filterTags(filterTags)
+      .packageId(packageId)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
-    if (isTagsSearch(filterTags, filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher)) {
-      List<String> tags = parseByComma(filterTags);
-      template.requestAction(context -> getTitlesByPackageIdAndTags(packageId, tags, page, count, context));
-    } else if (isAccessTypeSearch(filterAccessType, filterTags, filterSelected, filterType, filterName, filterIsxn,
-      filterSubject, filterPublisher)) {
-      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
-      accessTypeFilter.setAccessTypeNames(filterAccessType);
-      accessTypeFilter.setRecordIdPrefix(packageId);
-      accessTypeFilter.setRecordType(RecordType.RESOURCE);
-      accessTypeFilter.setCount(count);
-      accessTypeFilter.setPage(page);
-      template.requestAction(context ->
-        filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context)
-          .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
+    if (filter.isTagsFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader.fetchResourcesByTagFilter(filter.createTagFilter(), context));
+    } else if (filter.isAccessTypeFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
+        .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
       );
     } else {
-      PackageId parsedPackageId = parsePackageId(packageId);
-
-      FilterQuery fq = FilterQuery.builder()
-        .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
-        .type(filterType)
-        .name(filterName).isxn(filterIsxn).subject(filterSubject)
-        .publisher(filterPublisher).build();
-
-      titleParametersValidator.validate(fq, sort, true);
-
-      Sort nameSort = Sort.valueOf(sort.toUpperCase());
-
       template.requestAction(context ->
-        context.getTitlesService().retrieveTitles(parsedPackageId.getProviderIdPart(), parsedPackageId.getPackageIdPart(),
-          fq, nameSort, page, count)
-          .thenApply(titles -> titleCollectionConverter.convert(titles))
-          .thenCompose(loadResourceTags(context))
+        {
+          PackageId pkgId = filter.getPackageId();
+          long providerIdPart = pkgId.getProviderIdPart();
+          long packageIdPart = pkgId.getPackageIdPart();
+          return context.getTitlesService()
+            .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), filter.getSort(), page, count)
+            .thenApply(titles -> titleCollectionConverter.convert(titles))
+            .thenCompose(loadResourceTags(context));
+        }
       );
     }
 
@@ -421,7 +400,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private CompletableFuture<PackageResult> postCustomPackage(PackagePost packagePost, RMAPITemplateContext context) {
-    return getVendorId(context)
+    return getCustomProviderId(context)
       .thenCompose(id -> context.getPackagesService().postPackage(packagePost, id))
       .thenApply(packageById -> new PackageResult(packageById, null, null));
   }
@@ -474,64 +453,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 
-  private CompletableFuture<ResourceCollectionResult> getTitlesByPackageIdAndTags(String packageId, List<String> tags,
-                                                                                  int page, int count,
-                                                                                  RMAPITemplateContext context) {
-
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<DbResource>> mutableDbTitles = new MutableObject<>();
-    MutableObject<List<DbHoldingInfo>> mutableDbHoldings = new MutableObject<>();
-    String tenant = context.getOkapiData().getTenant();
-    String credentialsId = context.getCredentialsId();
-
-    return tagRepository
-      .countRecordsByTagsAndPrefix(tags, packageId + "-", tenant, RecordType.RESOURCE)
-      .thenCompose(resourceCount -> {
-        totalResults.setValue(resourceCount);
-        return resourceRepository.findByTagNameAndPackageId(tags, packageId, page, count, toUUID(credentialsId), tenant);
-      })
-      .thenCompose(resourcesResult -> {
-        mutableDbTitles.setValue(resourcesResult);
-        return holdingsService.getHoldingsByIds(resourcesResult, context.getCredentialsId(), tenant);
-      }).thenCompose(dbHoldings -> {
-        mutableDbHoldings.setValue(dbHoldings);
-        return context.getResourcesService()
-          .retrieveResources(getRemainingResourceIds(dbHoldings, mutableDbTitles.getValue()), Collections.emptyList());
-      })
-      .thenApply(titles -> new ResourceCollectionResult(
-        titles.toBuilder().totalResults(totalResults.getValue()).build(),
-        mutableDbTitles.getValue(), mutableDbHoldings.getValue())
-      );
-  }
-
-  private List<ResourceId> getRemainingResourceIds(List<DbHoldingInfo> holdings, List<DbResource> resourcesResult) {
-    final List<ResourceId> resourceIds = getTitleIds(resourcesResult);
-    resourceIds.removeIf(dbResource -> getResourceIds(holdings).contains(dbResource));
-    return resourceIds;
-  }
-
-  private CompletableFuture<Packages> getPackagesByTags(List<String> tags, int page, int count,
-                                                        RMAPITemplateContext context) {
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    String tenant = context.getOkapiData().getTenant();
-    UUID credentialsId = toUUID(context.getCredentialsId());
-
-    return tagRepository
-      .countRecordsByTags(tags, RecordType.PACKAGE, credentialsId, tenant)
-      .thenCompose(packageCount -> {
-        totalResults.setValue(packageCount);
-        return packageRepository.findByTagName(tags, page, count, credentialsId, tenant);
-      })
-      .thenCompose(dbPackages ->
-        context.getPackagesService().retrievePackages(getPackageIds(dbPackages)))
-      .thenApply(packages ->
-        packages.toBuilder()
-          .totalResults(totalResults.getValue())
-          .build()
-      );
-  }
-
-  private CompletableFuture<Long> getVendorId(RMAPITemplateContext context) {
+  private CompletableFuture<Long> getCustomProviderId(RMAPITemplateContext context) {
     VendorIdCacheKey cacheKey = VendorIdCacheKey.builder()
       .tenant(context.getOkapiData().getTenant())
       .rmapiConfiguration(context.getConfiguration())

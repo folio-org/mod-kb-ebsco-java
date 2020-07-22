@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import org.folio.repository.RecordType;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.spring.config.TestConfig;
 
 
@@ -32,13 +34,19 @@ public class PackageRepositoryImplTest {
   }
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    List<DbPackage> packages = repository.findByTagName(Collections.emptyList(), 1, 25, null, STUB_TENANT).join();
+    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+      .recordType(RecordType.PACKAGE)
+      .count(25).page(1).build();
+    List<DbPackage> packages = repository.findByTagFilter(filter, null, STUB_TENANT).join();
     assertThat(packages, empty());
   }
 
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmptyAndProviderIdIsPresent() {
-    List<DbPackage> packages = repository.findByTagNameAndProvider(Collections.emptyList(),STUB_VENDOR_ID,1, 25, null, null).join();
+    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+      .recordIdPrefix(STUB_VENDOR_ID).recordType(RecordType.PACKAGE)
+      .count(25).page(1).build();
+    List<DbPackage> packages = repository.findByTagFilter(filter, null, null).join();
     assertThat(packages, empty());
   }
 }

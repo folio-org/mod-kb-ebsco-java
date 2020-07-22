@@ -26,7 +26,6 @@ import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_NAME;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
-import static org.folio.rest.util.RestConstants.OKAPI_TENANT_HEADER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
@@ -56,7 +55,6 @@ import static org.folio.util.TitlesTestUtil.buildTitle;
 import static org.folio.util.TitlesTestUtil.saveTitle;
 import static org.folio.util.UsersTestUtil.saveUser;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -64,6 +62,7 @@ import java.util.UUID;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import joptsimple.internal.Strings;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -71,6 +70,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.holdings.status.retry.RetryStatus;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
@@ -673,8 +673,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnSecuredCollection() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    Map<String, String> headers = new HashMap<>();
-    headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    Map<String, String> headers = new CaseInsensitiveMap<>();
+    headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
     KbCredentialsCollection collection = securedCredentialsService.findAll(headers).join();
     assertThat(collection.getMeta().getTotalResults(), equalTo(1));
     assertThat(collection.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
@@ -687,8 +687,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnNonSecuredCollection() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    Map<String, String> headers = new HashMap<>();
-    headers.put(OKAPI_TENANT_HEADER, STUB_TENANT);
+    Map<String, String> headers = new CaseInsensitiveMap<>();
+    headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
     KbCredentialsCollection collection = nonSecuredCredentialsService.findAll(headers).join();
     assertThat(collection.getMeta().getTotalResults(), equalTo(1));
     assertThat(collection.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));

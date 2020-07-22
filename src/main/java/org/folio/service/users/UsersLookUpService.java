@@ -4,8 +4,6 @@ import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
-import static org.folio.rest.util.RestConstants.OKAPI_URL_HEADER;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +58,7 @@ public class UsersLookUpService {
     }
     String userId = userInfo.get().getUserId();
 
-    String okapiURL = headers.get(OKAPI_URL_HEADER);
+    String okapiURL = headers.get(XOkapiHeaders.URL);
     String url = "/users/" + userId;
     try {
       final HttpClientInterface httpClient = HttpClientFactory.getHttpClient(okapiURL, tenantId);

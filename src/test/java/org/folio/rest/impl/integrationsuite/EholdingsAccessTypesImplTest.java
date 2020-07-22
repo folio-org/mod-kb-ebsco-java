@@ -73,7 +73,6 @@ import org.folio.rest.jaxrs.model.AccessTypePostRequest;
 import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.util.RestConstants;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAccessTypesImplTest extends WireMockTestBase {
@@ -410,7 +409,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     String error = RestAssured.given()
       .spec(givenWithUrl())
-      .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
+      .header(XOkapiHeaders.TENANT, STUB_TENANT)
       .body("NOT_JSON")
       .when()
       .post(resourcePath)
@@ -428,8 +427,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     String error = RestAssured.given()
       .spec(givenWithUrl())
-      .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
-      .header(RestConstants.OKAPI_TOKEN_HEADER, STUB_TOKEN)
+      .header(XOkapiHeaders.TENANT, STUB_TENANT)
+      .header(XOkapiHeaders.TOKEN, STUB_TOKEN)
       .header(CONTENT_TYPE_HEADER)
       .body("NOT_JSON")
       .when()

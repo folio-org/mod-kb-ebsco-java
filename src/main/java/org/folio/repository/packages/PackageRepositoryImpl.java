@@ -46,6 +46,7 @@ import org.springframework.stereotype.Component;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.PackageId;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
 
@@ -91,16 +92,8 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbPackage>> findByTagName(List<String> tags, int page, int count,
-                                                          UUID credentialsId, String tenantId) {
-    return getPackageIdsByTagAndIdPrefix(tags, "", page, count, credentialsId, tenantId);
-  }
-
-  @Override
-  public CompletableFuture<List<DbPackage>> findByTagNameAndProvider(List<String> tags, String providerId,
-                                                                     int page, int count, UUID credentialsId,
-                                                                     String tenantId) {
-    return getPackageIdsByTagAndIdPrefix(tags, providerId + "-", page, count, credentialsId, tenantId);
+  public CompletableFuture<List<DbPackage>> findByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
+    return getPackageIdsByTagAndIdPrefix(tagFilter, credentialsId, tenantId);
   }
 
   @Override
@@ -125,22 +118,22 @@ public class PackageRepositoryImpl implements PackageRepository {
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }
 
-  private CompletableFuture<List<DbPackage>> getPackageIdsByTagAndIdPrefix(List<String> tags, String prefix,
-                                                                           int page, int count, UUID credentialsId,
+  private CompletableFuture<List<DbPackage>> getPackageIdsByTagAndIdPrefix(TagFilter tagFilter, UUID credentialsId,
                                                                            String tenantId) {
+    List<String> tags = tagFilter.getTags();
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
-    int offset = (page - 1) * count;
+    int offset = (tagFilter.getPage() - 1) * tagFilter.getCount();
 
     Tuple parameters = Tuple.tuple();
     tags.forEach(parameters::addString);
-    String likeExpression = prefix + "%";
+    String likeExpression = tagFilter.getRecordIdPrefix() + "%";
     parameters
       .addString(likeExpression)
       .addUUID(credentialsId)
       .addInteger(offset)
-      .addInteger(count);
+      .addInteger(tagFilter.getCount());
 
     final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS, getPackagesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));

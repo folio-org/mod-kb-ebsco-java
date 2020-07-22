@@ -6,12 +6,7 @@ import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
-import static org.folio.rest.util.RequestFiltersUtils.isAccessTypeSearch;
-import static org.folio.rest.util.RequestFiltersUtils.isTagsSearch;
-import static org.folio.rest.util.RequestFiltersUtils.parseByComma;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,19 +21,14 @@ import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourcePut;
-import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.TitlePost;
-import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
-import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.TagRepository;
@@ -53,10 +43,9 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
-import org.folio.rest.model.filter.AccessTypeFilter;
+import org.folio.rest.model.filter.Filter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
-import org.folio.rest.util.RestConstants;
 import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
@@ -76,8 +65,6 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private Converter<TitlePostRequest, TitlePost> titlePostRequestConverter;
   @Autowired
   private TitlePutRequestConverter titlePutRequestConverter;
-  @Autowired
-  private TitleParametersValidator parametersValidator;
   @Autowired
   private TitlesPostBodyValidator titlesPostBodyValidator;
   @Autowired
@@ -100,34 +87,36 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsTitles(String filterTags, List<String> filterAccessType, String filterSelected, String filterType,
-                                 String filterName, String filterIsxn, String filterSubject, String filterPublisher,
-                                 String sort, int page, int count, Map<String, String> okapiHeaders,
+  public void getEholdingsTitles(List<String> filterTags, List<String> filterAccessType, String filterSelected,
+                                 String filterType, String filterName, String filterIsxn, String filterSubject,
+                                 String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    Filter filter = Filter.builder()
+      .recordType(RecordType.TITLE)
+      .filterTags(filterTags)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (isTagsSearch(filterTags, filterAccessType.toArray(new String[0]))) {
-      List<String> tags = parseByComma(filterTags);
-      template.requestAction(context -> getResourcesByTags(tags, page, count, context));
-    } else if (isAccessTypeSearch(filterAccessType, filterTags)) {
-      AccessTypeFilter accessTypeFilter = new AccessTypeFilter();
-      accessTypeFilter.setAccessTypeNames(filterAccessType);
-      accessTypeFilter.setRecordType(RecordType.RESOURCE);
-      accessTypeFilter.setCount(count);
-      accessTypeFilter.setPage(page);
-      template.requestAction(context -> filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(accessTypeFilter, context));
+    if (filter.isTagsFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context));
+    } else if (filter.isAccessTypeFilter()) {
+      template.requestAction(context -> filteredEntitiesLoader
+        .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
+      );
     } else {
-      FilterQuery fq = FilterQuery.builder()
-        .selected(RestConstants.FILTER_SELECTED_MAPPING.get(filterSelected))
-        .type(filterType).name(filterName).isxn(filterIsxn).subject(filterSubject)
-        .publisher(filterPublisher).build();
-
-      parametersValidator.validate(fq, sort);
-
-      Sort nameSort = Sort.valueOf(sort.toUpperCase());
-
       template
         .requestAction(context ->
-          context.getTitlesService().retrieveTitles(fq, nameSort, page, count)
+          context.getTitlesService().retrieveTitles(filter.createFilterQuery(), filter.getSort(), page, count)
         );
     }
     template.executeWithResult(TitleCollection.class);
@@ -198,49 +187,6 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             updateTags(new TitleResult(title, false), context, entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
-  }
-
-  private CompletableFuture<Titles> getResourcesByTags(List<String> tags, int page, int count,
-                                                       RMAPITemplateContext context) {
-    MutableObject<Integer> totalResults = new MutableObject<>();
-    MutableObject<List<DbTitle>> mutableDbTitles = new MutableObject<>();
-
-    String tenant = context.getOkapiData().getTenant();
-    UUID credentialsId = toUUID(context.getCredentialsId());
-
-    return titlesRepository.countTitlesByResourceTags(tags, credentialsId, tenant)
-      .thenCompose(resultsCount -> {
-        totalResults.setValue(resultsCount);
-        return titlesRepository.getTitlesByResourceTags(tags, page, count, credentialsId, tenant);
-      })
-      .thenCompose(dbTitles -> {
-        mutableDbTitles.setValue(dbTitles);
-        List<Long> missingTitleIds = dbTitles.stream()
-          .filter(title -> Objects.isNull(title.getTitle()))
-          .map(DbTitle::getId)
-          .collect(Collectors.toList());
-        return context.getTitlesService().retrieveTitles(missingTitleIds);
-      })
-      .thenApply(titles ->
-        titles.toBuilder()
-          .titleList(combineTitles(mutableDbTitles.getValue(), titles.getTitleList()))
-          .totalResults(totalResults.getValue())
-          .build()
-      );
-  }
-
-  private List<org.folio.holdingsiq.model.Title> combineTitles(List<DbTitle> dbTitles,
-                                                               List<org.folio.holdingsiq.model.Title> titleList) {
-    List<org.folio.holdingsiq.model.Title> resultList = new ArrayList<>(titleList);
-    resultList.addAll(
-      dbTitles.stream()
-        .filter(title -> Objects.nonNull(title.getTitle()))
-        .map(DbTitle::getTitle)
-        .collect(Collectors.toList())
-    );
-    resultList.sort(Comparator.comparing(org.folio.holdingsiq.model.Title::getTitleName));
-
-    return resultList;
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result,

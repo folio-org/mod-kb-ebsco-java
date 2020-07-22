@@ -8,7 +8,9 @@ import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.LogUtils.*;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getTagsTableName;
@@ -56,6 +58,7 @@ import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.persist.SQLConnection;
 
@@ -148,20 +151,14 @@ class TagRepositoryImpl implements TagRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> countRecordsByTags(List<String> tags, RecordType recordType, UUID credentialsId,
-                                                       String tenantId) {
-    return countRecordsByTagsAndPrefix(tags, "", tenantId, recordType);
-  }
-
-  @Override
-  public CompletableFuture<Integer> countRecordsByTagsAndPrefix(List<String> tags, String recordIdPrefix,
-                                                                String tenantId, RecordType recordType) {
+  public CompletableFuture<Integer> countRecordsByTagFilter(TagFilter tagFilter, String tenantId) {
+    List<String> tags = tagFilter.getTags();
     if (isEmpty(tags)) {
       return completedFuture(0);
     }
     Tuple parameters = createParams(tags);
-    parameters.addString(recordType.getValue());
-    parameters.addString(recordIdPrefix + "%");
+    parameters.addString(tagFilter.getRecordType().getValue());
+    parameters.addString(tagFilter.getRecordIdPrefix() + "%");
 
     String values = createPlaceholders(tags.size());
 

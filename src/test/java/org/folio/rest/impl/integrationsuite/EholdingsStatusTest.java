@@ -25,9 +25,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.ConfigurationStatus;
-import org.folio.rest.util.RestConstants;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsStatusTest extends WireMockTestBase {
@@ -68,9 +68,9 @@ public class EholdingsStatusTest extends WireMockTestBase {
   @Test
   public void shouldReturn500OnInvalidOkapiUrl() {
     RestAssured.given()
-      .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
-      .header(RestConstants.OKAPI_TOKEN_HEADER, STUB_TOKEN)
-      .header(RestConstants.OKAPI_URL_HEADER, "wrongUrl^")
+      .header(XOkapiHeaders.TENANT, STUB_TENANT)
+      .header(XOkapiHeaders.TOKEN, STUB_TOKEN)
+      .header(XOkapiHeaders.URL, "wrongUrl^")
       .baseUri("http://localhost")
       .port(port)
       .when()

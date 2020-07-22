@@ -174,7 +174,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .spec(getRequestSpecification())
       .header(STUB_TOKEN_HEADER)
       .when()
-      .get(EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+      .get(EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2)
       .then()
       .statusCode(200)
       .extract().asString();
@@ -197,7 +197,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       .spec(getRequestSpecification())
       .header(STUB_TOKEN_HEADER)
       .when()
-      .get(EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
+      .get(EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2)
       .then()
       .statusCode(200)
       .extract().as(TitleCollection.class);
