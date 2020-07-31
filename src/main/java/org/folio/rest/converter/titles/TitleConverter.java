@@ -27,6 +27,7 @@ import org.folio.repository.tag.DbTag;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Data;
+import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Resource;
@@ -90,8 +91,12 @@ public class TitleConverter implements Converter<TitleResult, Title> {
         .stream()
         .map(Resource::getData)
         .collect(Collectors.toList())).getData()
-        .withRelationships(new Relationships().withResources(new Resources()
-          .withData(convertResourcesRelationship(customerResourcesList))));
+        .withRelationships(new Relationships()
+          .withResources(new Resources()
+            .withData(convertResourcesRelationship(customerResourcesList))
+            .withMeta(new MetaDataIncluded().withIncluded(true))
+          )
+        );
       if (!Objects.isNull(titleResult.getResourceTagList())) {
         title.getIncluded()
           .forEach(resourceCollectionItem -> {

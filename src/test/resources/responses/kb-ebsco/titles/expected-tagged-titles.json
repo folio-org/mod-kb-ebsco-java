@@ -1,8 +1,8 @@
 {
   "data": [
     {
-      "type": "titles",
       "id": "762169",
+      "type": "titles",
       "attributes": {
         "identifiers": [
           {
@@ -39,11 +39,12 @@
             }
           }
         }
-      }
+      },
+      "included": []
     },
     {
-      "type": "titles",
       "id": "19412030",
+      "type": "titles",
       "attributes": {
         "identifiers": [],
         "name": "Test Title",
@@ -58,7 +59,8 @@
             }
           }
         }
-      }
+      },
+      "included": []
     }
   ],
   "meta": {

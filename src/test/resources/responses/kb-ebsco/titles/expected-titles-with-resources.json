@@ -67,7 +67,10 @@
                 "type": "resources",
                 "id": "22-1884903-1175655"
               }
-            ]
+            ],
+            "meta": {
+              "included": true
+            }
           }
         }
       },
