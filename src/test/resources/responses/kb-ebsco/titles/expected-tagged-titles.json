@@ -31,12 +31,12 @@
             "type": "author",
             "contributor": "Bloom, Harold"
           }
-        ]
-      },
-      "relationships": {
-        "resources": {
-          "meta": {
-            "included": false
+        ],
+        "relationships": {
+          "resources": {
+            "meta": {
+              "included": false
+            }
           }
         }
       }
@@ -50,12 +50,12 @@
         "publicationType": "Book",
         "publisherName": "Test one Press",
         "subjects": [],
-        "contributors": []
-      },
-      "relationships": {
-        "resources": {
-          "meta": {
-            "included": false
+        "contributors": [],
+        "relationships": {
+          "resources": {
+            "meta": {
+              "included": false
+            }
           }
         }
       }

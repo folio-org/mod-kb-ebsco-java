@@ -11,7 +11,7 @@
       "description": "List of titles",
       "items": {
         "type": "object",
-        "$ref": "titles.json"
+        "$ref": "titleCollectionItem.json"
       }
     },
     "meta": {

@@ -1,0 +1,595 @@
+{
+  "data": [
+    {
+      "id": "1175655",
+      "type": "titles",
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "7209484",
+            "subtype": "Print",
+            "type": "ISSN"
+          },
+          {
+            "id": "978-1-74216-894-4",
+            "subtype": "Print",
+            "type": "ISBN"
+          },
+          {
+            "id": "978-0-7303-7792-4",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "The $1 Million Reason to Change Your Mind",
+        "publicationType": "Book",
+        "subjects": [
+          {
+            "subject": "BUSINESS & ECONOMICS / Small Business",
+            "type": "BISAC"
+          }
+        ],
+        "contributors": [
+          {
+            "type": "Author",
+            "contributor": "Mesiti, Pat."
+          },
+          {
+            "type": "Co-Author",
+            "contributor": "Black, John"
+          }
+        ],
+        "relationships": {
+          "resources": {
+            "data": [
+              {
+                "type": "resources",
+                "id": "58251-22551-1175655"
+              },
+              {
+                "type": "resources",
+                "id": "977-6822-1175655"
+              },
+              {
+                "type": "resources",
+                "id": "19-3964-1175655"
+              },
+              {
+                "type": "resources",
+                "id": "58388-1861142-1175655"
+              },
+              {
+                "type": "resources",
+                "id": "22-1887786-1175655"
+              },
+              {
+                "type": "resources",
+                "id": "22-1884903-1175655"
+              }
+            ]
+          }
+        }
+      },
+      "included": [
+        {
+          "id": "58251-22551-1175655",
+          "type": "resources",
+          "attributes": {
+            "isTitleCustom": false,
+            "titleId": 1175655,
+            "contributors": [
+              {
+                "type": "Author",
+                "contributor": "Mesiti, Pat."
+              },
+              {
+                "type": "Co-Author",
+                "contributor": "Black, John"
+              }
+            ],
+            "identifiers": [
+              {
+                "id": "7209484",
+                "subtype": "Print",
+                "type": "ISSN"
+              },
+              {
+                "id": "978-1-74216-894-4",
+                "subtype": "Print",
+                "type": "ISBN"
+              },
+              {
+                "id": "978-0-7303-7792-4",
+                "subtype": "Online",
+                "type": "ISBN"
+              }
+            ],
+            "name": "The $1 Million Reason to Change Your Mind",
+            "publicationType": "Book",
+            "subjects": [
+              {
+                "subject": "BUSINESS & ECONOMICS / Small Business",
+                "type": "BISAC"
+              }
+            ],
+            "customEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "isPackageCustom": false,
+            "isSelected": false,
+            "isTokenNeeded": false,
+            "locationId": 8572506,
+            "managedEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "packageId": "58251-22551",
+            "packageName": "123Library eBooks",
+            "url": "http://www.123library.org/bookdetails/?id=31111",
+            "providerId": 58251,
+            "providerName": "123Library",
+            "visibilityData": {
+              "isHidden": false,
+              "reason": ""
+            },
+            "managedCoverages": [],
+            "customCoverages": []
+          },
+          "relationships": {
+            "provider": {
+              "meta": {
+                "included": false
+              }
+            },
+            "title": {
+              "meta": {
+                "included": false
+              }
+            },
+            "package": {
+              "meta": {
+                "included": false
+              }
+            }
+          }
+        },
+        {
+          "id": "977-6822-1175655",
+          "type": "resources",
+          "attributes": {
+            "isTitleCustom": false,
+            "titleId": 1175655,
+            "contributors": [
+              {
+                "type": "Author",
+                "contributor": "Mesiti, Pat."
+              },
+              {
+                "type": "Co-Author",
+                "contributor": "Black, John"
+              }
+            ],
+            "identifiers": [
+              {
+                "id": "7209484",
+                "subtype": "Print",
+                "type": "ISSN"
+              },
+              {
+                "id": "978-1-74216-894-4",
+                "subtype": "Print",
+                "type": "ISBN"
+              },
+              {
+                "id": "978-0-7303-7792-4",
+                "subtype": "Online",
+                "type": "ISBN"
+              }
+            ],
+            "name": "The $1 Million Reason to Change Your Mind",
+            "publicationType": "Book",
+            "subjects": [
+              {
+                "subject": "BUSINESS & ECONOMICS / Small Business",
+                "type": "BISAC"
+              }
+            ],
+            "customEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "isPackageCustom": false,
+            "isSelected": false,
+            "isTokenNeeded": false,
+            "locationId": 5491226,
+            "managedEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "packageId": "977-6822",
+            "packageName": "DawsonEra eBooks",
+            "url": "https://www.dawsonera.com/abstract/9780730377924",
+            "providerId": 977,
+            "providerName": "Dawson Books Ltd.",
+            "visibilityData": {
+              "isHidden": false,
+              "reason": ""
+            },
+            "managedCoverages": [
+              {
+                "beginCoverage": "2011-01-01",
+                "endCoverage": "2011-12-31"
+              }
+            ],
+            "customCoverages": []
+          },
+          "relationships": {
+            "provider": {
+              "meta": {
+                "included": false
+              }
+            },
+            "title": {
+              "meta": {
+                "included": false
+              }
+            },
+            "package": {
+              "meta": {
+                "included": false
+              }
+            }
+          }
+        },
+        {
+          "id": "19-3964-1175655",
+          "type": "resources",
+          "attributes": {
+            "isTitleCustom": false,
+            "titleId": 1175655,
+            "contributors": [
+              {
+                "type": "Author",
+                "contributor": "Mesiti, Pat."
+              },
+              {
+                "type": "Co-Author",
+                "contributor": "Black, John"
+              }
+            ],
+            "identifiers": [
+              {
+                "id": "7209484",
+                "subtype": "Print",
+                "type": "ISSN"
+              },
+              {
+                "id": "978-1-74216-894-4",
+                "subtype": "Print",
+                "type": "ISBN"
+              },
+              {
+                "id": "978-0-7303-7792-4",
+                "subtype": "Online",
+                "type": "ISBN"
+              }
+            ],
+            "name": "The $1 Million Reason to Change Your Mind",
+            "publicationType": "Book",
+            "subjects": [
+              {
+                "subject": "BUSINESS & ECONOMICS / Small Business",
+                "type": "BISAC"
+              }
+            ],
+            "customEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "isPackageCustom": false,
+            "isSelected": false,
+            "isTokenNeeded": false,
+            "locationId": 3982299,
+            "managedEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "packageId": "19-3964",
+            "packageName": "EBSCO eBooks",
+            "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=399486",
+            "providerId": 19,
+            "providerName": "EBSCO",
+            "visibilityData": {
+              "isHidden": false,
+              "reason": ""
+            },
+            "managedCoverages": [
+              {
+                "beginCoverage": "2009-01-01",
+                "endCoverage": "2009-12-31"
+              }
+            ],
+            "customCoverages": []
+          },
+          "relationships": {
+            "provider": {
+              "meta": {
+                "included": false
+              }
+            },
+            "title": {
+              "meta": {
+                "included": false
+              }
+            },
+            "package": {
+              "meta": {
+                "included": false
+              }
+            }
+          }
+        },
+        {
+          "id": "58388-1861142-1175655",
+          "type": "resources",
+          "attributes": {
+            "isTitleCustom": false,
+            "titleId": 1175655,
+            "contributors": [
+              {
+                "type": "Author",
+                "contributor": "Mesiti, Pat."
+              },
+              {
+                "type": "Co-Author",
+                "contributor": "Black, John"
+              }
+            ],
+            "identifiers": [
+              {
+                "id": "7209484",
+                "subtype": "Print",
+                "type": "ISSN"
+              },
+              {
+                "id": "978-1-74216-894-4",
+                "subtype": "Print",
+                "type": "ISBN"
+              },
+              {
+                "id": "978-0-7303-7792-4",
+                "subtype": "Online",
+                "type": "ISBN"
+              }
+            ],
+            "name": "The $1 Million Reason to Change Your Mind",
+            "publicationType": "Book",
+            "subjects": [
+              {
+                "subject": "BUSINESS & ECONOMICS / Small Business",
+                "type": "BISAC"
+              }
+            ],
+            "customEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "isPackageCustom": false,
+            "isSelected": false,
+            "isTokenNeeded": false,
+            "locationId": 9035313,
+            "managedEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "packageId": "58388-1861142",
+            "packageName": "MyiLibrary",
+            "url": "http://lib.myilibrary.com?id=329455",
+            "providerId": 58388,
+            "providerName": "Ingram Content Group, Inc.",
+            "visibilityData": {
+              "isHidden": false,
+              "reason": ""
+            },
+            "managedCoverages": [
+              {
+                "beginCoverage": "2011-01-01",
+                "endCoverage": "2011-12-31"
+              }
+            ],
+            "customCoverages": []
+          },
+          "relationships": {
+            "provider": {
+              "meta": {
+                "included": false
+              }
+            },
+            "title": {
+              "meta": {
+                "included": false
+              }
+            },
+            "package": {
+              "meta": {
+                "included": false
+              }
+            }
+          }
+        },
+        {
+          "id": "22-1887786-1175655",
+          "type": "resources",
+          "attributes": {
+            "isTitleCustom": false,
+            "titleId": 1175655,
+            "contributors": [
+              {
+                "type": "Author",
+                "contributor": "Mesiti, Pat."
+              },
+              {
+                "type": "Co-Author",
+                "contributor": "Black, John"
+              }
+            ],
+            "identifiers": [
+              {
+                "id": "7209484",
+                "subtype": "Print",
+                "type": "ISSN"
+              },
+              {
+                "id": "978-1-74216-894-4",
+                "subtype": "Print",
+                "type": "ISBN"
+              },
+              {
+                "id": "978-0-7303-7792-4",
+                "subtype": "Online",
+                "type": "ISBN"
+              }
+            ],
+            "name": "The $1 Million Reason to Change Your Mind",
+            "publicationType": "Book",
+            "subjects": [
+              {
+                "subject": "BUSINESS & ECONOMICS / Small Business",
+                "type": "BISAC"
+              }
+            ],
+            "customEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "isPackageCustom": false,
+            "isSelected": false,
+            "isTokenNeeded": true,
+            "locationId": 20692303,
+            "managedEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "packageId": "22-1887786",
+            "packageName": "ProQuest Ebook Central",
+            "url": "https://ebookcentral.proquest.com/lib/[[SiteID]]/detail.action?docID=818686",
+            "providerId": 22,
+            "providerName": "Proquest Info & Learning Co",
+            "visibilityData": {
+              "isHidden": false,
+              "reason": ""
+            },
+            "managedCoverages": [
+              {
+                "beginCoverage": "2011-01-01",
+                "endCoverage": "2011-12-31"
+              }
+            ],
+            "customCoverages": []
+          },
+          "relationships": {
+            "provider": {
+              "meta": {
+                "included": false
+              }
+            },
+            "title": {
+              "meta": {
+                "included": false
+              }
+            },
+            "package": {
+              "meta": {
+                "included": false
+              }
+            }
+          }
+        },
+        {
+          "id": "22-1884903-1175655",
+          "type": "resources",
+          "attributes": {
+            "isTitleCustom": false,
+            "titleId": 1175655,
+            "contributors": [
+              {
+                "type": "Author",
+                "contributor": "Mesiti, Pat."
+              },
+              {
+                "type": "Co-Author",
+                "contributor": "Black, John"
+              }
+            ],
+            "identifiers": [
+              {
+                "id": "7209484",
+                "subtype": "Print",
+                "type": "ISSN"
+              },
+              {
+                "id": "978-1-74216-894-4",
+                "subtype": "Print",
+                "type": "ISBN"
+              },
+              {
+                "id": "978-0-7303-7792-4",
+                "subtype": "Online",
+                "type": "ISBN"
+              }
+            ],
+            "name": "The $1 Million Reason to Change Your Mind",
+            "publicationType": "Book",
+            "subjects": [
+              {
+                "subject": "BUSINESS & ECONOMICS / Small Business",
+                "type": "BISAC"
+              }
+            ],
+            "customEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "isPackageCustom": false,
+            "isSelected": false,
+            "isTokenNeeded": true,
+            "locationId": 20482285,
+            "managedEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "packageId": "22-1884903",
+            "packageName": "ProQuest Ebook Library (EBL)",
+            "url": "http://[[SiteID]].eblib.com/patron/FullRecord.aspx?p=818686",
+            "providerId": 22,
+            "providerName": "Proquest Info & Learning Co",
+            "visibilityData": {
+              "isHidden": false,
+              "reason": ""
+            },
+            "managedCoverages": [
+              {
+                "beginCoverage": "2011-01-01",
+                "endCoverage": "2011-12-31"
+              }
+            ],
+            "customCoverages": []
+          },
+          "relationships": {
+            "provider": {
+              "meta": {
+                "included": false
+              }
+            },
+            "title": {
+              "meta": {
+                "included": false
+              }
+            },
+            "package": {
+              "meta": {
+                "included": false
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "totalResults": 8766
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

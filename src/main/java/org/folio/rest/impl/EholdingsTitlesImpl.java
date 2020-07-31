@@ -24,10 +24,12 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.common.ListUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.TitlePost;
+import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
@@ -51,6 +53,7 @@ import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitleCommonRequestAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
+import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
@@ -89,7 +92,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @HandleValidationErrors
   public void getEholdingsTitles(List<String> filterTags, List<String> filterAccessType, String filterSelected,
                                  String filterType, String filterName, String filterIsxn, String filterSubject,
-                                 String filterPublisher, String sort, int page, int count, Map<String, String> okapiHeaders,
+                                 String filterPublisher, String sort, int page, int count, String include,
+                                 Map<String, String> okapiHeaders,
                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     Filter filter = Filter.builder()
       .recordType(RecordType.TITLE)
@@ -114,9 +118,12 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
       );
     } else {
+      boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
       template
         .requestAction(context ->
           context.getTitlesService().retrieveTitles(filter.createFilterQuery(), filter.getSort(), page, count)
+            .thenApply(titles -> toTitleCollection(titles, includeResource)
+            )
         );
     }
     template.executeWithResult(TitleCollection.class);
@@ -134,7 +141,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().postTitle(titlePost, packageId)
-          .thenCompose(title -> completedFuture(new TitleResult(title, false)))
+          .thenCompose(title -> completedFuture(toTitleResult(false, title)))
           .thenCompose(titleResult ->
             updateTags(titleResult, context, entity.getData().getAttributes().getTags()))
       )
@@ -151,7 +158,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(titleIdLong)
-          .thenCompose(title -> completedFuture(new TitleResult(title, includeResource)))
+          .thenCompose(title -> completedFuture(toTitleResult(includeResource, title)))
           .thenCompose(result -> loadTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -184,9 +191,20 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           })
           .thenCompose(o -> context.getTitlesService().retrieveTitle(parsedTitleId))
           .thenCompose(title ->
-            updateTags(new TitleResult(title, false), context, entity.getData().getAttributes().getTags()))
+            updateTags(toTitleResult(false, title), context, entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
+  }
+
+  private TitleCollectionResult toTitleCollection(Titles titles, boolean includeResource) {
+    return TitleCollectionResult.builder()
+      .titleResults(ListUtils.mapItems(titles.getTitleList(), title -> toTitleResult(includeResource, title)))
+      .totalResults(titles.getTotalResults())
+      .build();
+  }
+
+  private TitleResult toTitleResult(boolean includeResource, org.folio.holdingsiq.model.Title title) {
+    return new TitleResult(title, includeResource);
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result,
