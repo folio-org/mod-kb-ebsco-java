@@ -76,6 +76,7 @@ public class EholdingsStatusImpl implements EholdingsStatus {
       ErrorHandler errorHandler = new ErrorHandler();
 
       errorHandler
+        .addRmApiMapping()
         .add(NotFoundException.class, notFoundToInvalidStatusMapper())
         .add(BadRequestException.class, error400BadRequestMapper())
         .add(NotAuthorizedException.class, error401NotAuthorizedMapper());
