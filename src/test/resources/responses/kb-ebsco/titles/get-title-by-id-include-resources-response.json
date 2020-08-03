@@ -55,7 +55,10 @@
             "type": "resources",
             "id": "19-0-762169"
           }
-        ]
+        ],
+        "meta": {
+          "included": true
+        }
       }
     }
   },

@@ -39,12 +39,12 @@
             "type": "Co-Author",
             "contributor": "Black, John"
           }
-        ]
-      },
-      "relationships": {
-        "resources": {
-          "meta": {
-            "included": false
+        ],
+        "relationships": {
+          "resources": {
+            "meta": {
+              "included": false
+            }
           }
         }
       }

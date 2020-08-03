@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Attributes object schema in titles collection",
   "description": "Attributes object schema in titles collection",
-  "javaType": "org.folio.rest.jaxrs.model.TitleListDataAttributes",
+  "javaType": "org.folio.rest.jaxrs.model.TitleCollectionItemDataAttributes",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -52,6 +52,11 @@
         "description": "The contributor's schema",
         "$ref": "../contributor.json"
       }
+    },
+    "relationships": {
+      "type": "object",
+      "description": "Displays title relationships",
+      "$ref": "../relationships.json"
     }
   }
 }
