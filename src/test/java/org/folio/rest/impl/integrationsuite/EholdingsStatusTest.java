@@ -28,6 +28,8 @@ import org.junit.runner.RunWith;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.ConfigurationStatus;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.util.AssertTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsStatusTest extends WireMockTestBase {
@@ -63,6 +65,26 @@ public class EholdingsStatusTest extends WireMockTestBase {
 
     final ConfigurationStatus status = getWithOk(EHOLDINGS_STATUS_PATH, STUB_TOKEN_HEADER).as(ConfigurationStatus.class);
     assertThat(status.getData().getAttributes().getIsConfigurationValid(), equalTo(false));
+  }
+
+  @Test
+  public void shouldReturnErrorWhenRMAPIRequestCompletesWith429() {
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(429).withBody("{\n"
+          + "  \"Errors\": [\n"
+          + "    {\n"
+          + "      \"Code\": 1010,\n"
+          + "      \"Message\": \"Too Many Requests.\",\n"
+          + "      \"SubCode\": 0\n"
+          + "    }\n"
+          + "  ]\n"
+          + "}")));
+
+    final JsonapiError error = getWithStatus(EHOLDINGS_STATUS_PATH, 429, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    AssertTestUtil.assertErrorContainsTitle(error, "Too Many Requests");
   }
 
   @Test
