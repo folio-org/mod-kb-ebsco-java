@@ -724,7 +724,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   private void mockVerifyFailedCredentialsRequest() {
     stubFor(
       get(urlPathMatching("/rm/rmaccounts/.*"))
-        .willReturn(aResponse().withStatus(SC_UNPROCESSABLE_ENTITY)));
+        .willReturn(aResponse().withStatus(SC_UNAUTHORIZED)));
   }
 
 }
