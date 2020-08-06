@@ -37,13 +37,13 @@
     <rmb.version>30.3.0-SNAPSHOT</rmb.version>
     <folio-di-support.version>1.1.0</folio-di-support.version>
     <folio-service-tools.version>1.5.1</folio-service-tools.version>
-    <folio-holdingsiq-client.version>1.9.0</folio-holdingsiq-client.version>
+    <folio-holdingsiq-client.version>1.9.1-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.0.0</folio-liquibase-util.version>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
 
     <vertx.version>3.9.1</vertx.version>
     <aspectj.version>1.9.5</aspectj.version>
-    <spring.version>5.2.7.RELEASE</spring.version>
+    <spring.version>5.2.8.RELEASE</spring.version>
     <jackson.version>2.11.0</jackson.version>
     <commons-configuration2.version>2.7</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -182,12 +182,6 @@
       <version>${jetbrains-annotations.version}</version>
       <scope>compile</scope>
     </dependency>
-    <!--<dependency>
-      <groupId>net.sf.jopt-simple</groupId>
-      <artifactId>jopt-simple</artifactId>
-      <version>5.0.4</version>
-      <scope>compile</scope>
-    </dependency>-->
     <!-- Test dependencies -->
     <dependency>
       <groupId>io.vertx</groupId>
