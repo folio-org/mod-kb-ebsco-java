@@ -25,9 +25,11 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.ConfigurationStatus;
-import org.folio.rest.util.RestConstants;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.util.AssertTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsStatusTest extends WireMockTestBase {
@@ -66,11 +68,31 @@ public class EholdingsStatusTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnErrorWhenRMAPIRequestCompletesWith429() {
+    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
+        .willReturn(new ResponseDefinitionBuilder().withStatus(429).withBody("{\n"
+          + "  \"Errors\": [\n"
+          + "    {\n"
+          + "      \"Code\": 1010,\n"
+          + "      \"Message\": \"Too Many Requests.\",\n"
+          + "      \"SubCode\": 0\n"
+          + "    }\n"
+          + "  ]\n"
+          + "}")));
+
+    final JsonapiError error = getWithStatus(EHOLDINGS_STATUS_PATH, 429, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    AssertTestUtil.assertErrorContainsTitle(error, "Too Many Requests");
+  }
+
+  @Test
   public void shouldReturn500OnInvalidOkapiUrl() {
     RestAssured.given()
-      .header(RestConstants.OKAPI_TENANT_HEADER, STUB_TENANT)
-      .header(RestConstants.OKAPI_TOKEN_HEADER, STUB_TOKEN)
-      .header(RestConstants.OKAPI_URL_HEADER, "wrongUrl^")
+      .header(XOkapiHeaders.TENANT, STUB_TENANT)
+      .header(XOkapiHeaders.TOKEN, STUB_TOKEN)
+      .header(XOkapiHeaders.URL, "wrongUrl^")
       .baseUri("http://localhost")
       .port(port)
       .when()

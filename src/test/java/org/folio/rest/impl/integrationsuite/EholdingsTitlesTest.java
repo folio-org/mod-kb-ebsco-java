@@ -84,7 +84,6 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -106,9 +105,9 @@ import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleCollection;
+import org.folio.rest.jaxrs.model.TitleCollectionItem;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
-import org.folio.rest.jaxrs.model.Titles;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TitlesTestUtil;
 
@@ -148,15 +147,23 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
 
-    String actualResponse = RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(STUB_TOKEN_HEADER)
-      .when()
-      .get(EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name")
-      .then()
-      .statusCode(200)
-      .extract().asString();
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name";
+    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, true);
+  }
+
+  @Test
+  public void shouldReturnTitlesOnGetWithResources() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/titles/searchTitles.json";
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile))));
+
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name&include=resources";
+    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles-with-resources.json"), actualResponse, true);
   }
 
   @Test
@@ -171,14 +178,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
     saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
-    String actualResponse = RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(STUB_TOKEN_HEADER)
-      .when()
-      .get(EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
-      .then()
-      .statusCode(200)
-      .extract().asString();
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
+    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, true);
   }
 
@@ -194,14 +195,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
     saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
-    TitleCollection response = RestAssured.given()
-      .spec(getRequestSpecification())
-      .header(STUB_TOKEN_HEADER)
-      .when()
-      .get(EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE + "," + STUB_TAG_VALUE_2)
-      .then()
-      .statusCode(200)
-      .extract().as(TitleCollection.class);
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]="
+      + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
+    TitleCollection response = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
     assertEquals(STUB_CUSTOM_TITLE_NAME, response.getData().get(0).getAttributes().getName());
   }
 
@@ -215,7 +211,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
     TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
-    List<Titles> titles = titleCollection.getData();
+    List<TitleCollectionItem> titles = titleCollection.getData();
 
     assertThat(titles, hasSize(2));
     assertEquals(2, (int) titleCollection.getMeta().getTotalResults());
@@ -235,7 +231,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
       + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
     TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
-    List<Titles> titles = titleCollection.getData();
+    List<TitleCollectionItem> titles = titleCollection.getData();
 
     assertThat(titles, hasSize(1));
     assertEquals(2, (int) titleCollection.getMeta().getTotalResults());
@@ -252,7 +248,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=Not Exist";
     TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
-    List<Titles> titles = titleCollection.getData();
+    List<TitleCollectionItem> titles = titleCollection.getData();
 
     assertThat(titles, hasSize(0));
     assertEquals(0, (int) titleCollection.getMeta().getTotalResults());

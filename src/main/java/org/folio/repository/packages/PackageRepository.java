@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.holdingsiq.model.PackageId;
+import org.folio.rest.model.filter.TagFilter;
 
 public interface PackageRepository {
 
@@ -12,12 +13,7 @@ public interface PackageRepository {
 
   CompletableFuture<Void> delete(PackageId packageId, UUID credentialsId, String tenantId);
 
-  CompletableFuture<List<DbPackage>> findByTagName(List<String> tags, int page, int count, UUID credentialsId,
-                                                   String tenantId);
+  CompletableFuture<List<DbPackage>> findByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId);
 
-  CompletableFuture<List<DbPackage>> findByTagNameAndProvider(List<String> tags, String providerId, int page,
-                                                              int count, UUID credentialsId, String tenantId);
-
-  CompletableFuture<List<DbPackage>> findByIds(List<PackageId> packageIds, UUID credentialsId,
-                                               String tenantId);
+  CompletableFuture<List<DbPackage>> findByIds(List<PackageId> packageIds, UUID credentialsId, String tenantId);
 }

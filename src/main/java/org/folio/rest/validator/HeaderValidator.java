@@ -8,7 +8,7 @@ import javax.validation.ValidationException;
 
 import org.springframework.stereotype.Component;
 
-import org.folio.rest.util.RestConstants;
+import org.folio.okapi.common.XOkapiHeaders;
 
 /**
  * Verifies that headers are valid
@@ -17,7 +17,7 @@ import org.folio.rest.util.RestConstants;
 public class HeaderValidator {
 
   private final Collection<String> expectedHeaders = Collections.singletonList(
-    RestConstants.OKAPI_URL_HEADER
+    XOkapiHeaders.URL
   );
 
   /**

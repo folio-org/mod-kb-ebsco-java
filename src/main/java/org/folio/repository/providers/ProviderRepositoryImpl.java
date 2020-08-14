@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
 
 @Component
@@ -82,20 +83,20 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<List<Long>> findIdsByTagName(List<String> tags, int page, int count, UUID credentialsId,
-                                                        String tenantId) {
+  public CompletableFuture<List<Long>> findIdsByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
+    List<String> tags = tagFilter.getTags();
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
 
-    int offset = (page - 1) * count;
+    int offset = (tagFilter.getPage() - 1) * tagFilter.getCount();
 
     Tuple parameters = Tuple.tuple();
     tags.forEach(parameters::addString);
     parameters
       .addUUID(credentialsId)
       .addInteger(offset)
-      .addInteger(count);
+      .addInteger(tagFilter.getCount());
 
     final String query = prepareQuery(SELECT_TAGGED_PROVIDERS, getProviderTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));

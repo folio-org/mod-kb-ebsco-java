@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Title object schema in titles collection",
   "description": "Title object schema in titles collection",
-  "javaType": "org.folio.rest.jaxrs.model.Titles",
+  "javaType": "org.folio.rest.jaxrs.model.TitleCollectionItem",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -14,17 +14,23 @@
     "type": {
       "type": "string",
       "description": "Type of resource",
+      "enum": [
+        "titles"
+      ],
       "example": "titles"
     },
     "attributes": {
       "type": "object",
       "description": "Title object data attributes",
-      "$ref": "titleListDataAttributes.json"
+      "$ref": "titleCollectionItemDataAttributes.json"
     },
-    "relationships": {
-      "type": "object",
-      "description": "Displays title relationships",
-      "$ref": "../relationships.json"
+    "included": {
+      "type": "array",
+      "description": "List of resources for a given title",
+      "items": {
+        "type": "object",
+        "$ref": "../resources/resourceCollectionItem.json"
+      }
     }
   }
 }

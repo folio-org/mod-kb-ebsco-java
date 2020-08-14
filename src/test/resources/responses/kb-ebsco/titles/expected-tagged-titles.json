@@ -1,8 +1,8 @@
 {
   "data": [
     {
-      "type": "titles",
       "id": "762169",
+      "type": "titles",
       "attributes": {
         "identifiers": [
           {
@@ -31,34 +31,36 @@
             "type": "author",
             "contributor": "Bloom, Harold"
           }
-        ]
-      },
-      "relationships": {
-        "resources": {
-          "meta": {
-            "included": false
+        ],
+        "relationships": {
+          "resources": {
+            "meta": {
+              "included": false
+            }
           }
         }
-      }
+      },
+      "included": []
     },
     {
-      "type": "titles",
       "id": "19412030",
+      "type": "titles",
       "attributes": {
         "identifiers": [],
         "name": "Test Title",
         "publicationType": "Book",
         "publisherName": "Test one Press",
         "subjects": [],
-        "contributors": []
-      },
-      "relationships": {
-        "resources": {
-          "meta": {
-            "included": false
+        "contributors": [],
+        "relationships": {
+          "resources": {
+            "meta": {
+              "included": false
+            }
           }
         }
-      }
+      },
+      "included": []
     }
   ],
   "meta": {
