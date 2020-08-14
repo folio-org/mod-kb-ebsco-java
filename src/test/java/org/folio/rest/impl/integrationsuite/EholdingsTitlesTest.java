@@ -84,9 +84,11 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
+
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
@@ -153,7 +155,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitlesOnGetWithResources() throws IOException, URISyntaxException {
+  public void shouldReturnTitlesOnGetWithResources() throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/titles/searchTitles.json";
 
     stubFor(
