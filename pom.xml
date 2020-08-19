@@ -34,7 +34,7 @@
   </licenses>
 
   <properties>
-    <rmb.version>30.3.0-SNAPSHOT</rmb.version>
+    <rmb.version>31.0.0</rmb.version>
     <folio-di-support.version>1.1.0</folio-di-support.version>
     <folio-service-tools.version>1.5.1</folio-service-tools.version>
     <folio-holdingsiq-client.version>1.9.1-SNAPSHOT</folio-holdingsiq-client.version>

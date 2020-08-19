@@ -84,11 +84,9 @@ import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
@@ -524,7 +522,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
       .as(Errors.class);
 
-    assertThat(error.getErrors().get(0).getMessage(), containsString("may not be null"));
+    assertThat(error.getErrors().get(0).getMessage(), containsString("must not be null"));
   }
 
   private String putTitle(List<String> tags) throws IOException, URISyntaxException {

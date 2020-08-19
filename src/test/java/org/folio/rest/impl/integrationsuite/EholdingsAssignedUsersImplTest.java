@@ -146,7 +146,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     Errors errors = postWithStatus(endpoint, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
 
     assertThat(errors.getErrors(), hasSize(5));
-    assertThat(errors.getErrors(), everyItem(hasProperty("message", equalTo("may not be null"))));
+    assertThat(errors.getErrors(), everyItem(hasProperty("message", equalTo("must not be null"))));
   }
 
   @Test
