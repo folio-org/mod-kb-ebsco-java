@@ -16,11 +16,11 @@ types:
   tagCollection: !include types/tags/tagCollection.json
   tagUniqueCollection: !include types/tags/tagUniqueCollection.json
   jsonapiError: !include types/jsonapiError.json
-#  recordType:
-#    type: string
-#    description: Eholdings record type. Possible values are provider, package, title, resource.
-#  recordTypes:
-#    type: recordType[]
+  recordType:
+    type: string
+    description: Eholdings record type. Possible values are provider, package, title, resource.
+  recordTypes:
+    type: recordType[]
 
 /eholdings/tags:
   displayName: Tags
@@ -29,16 +29,15 @@ types:
     queryParameters:
       filter[rectype]?:
         displayName: Query by Record type(s)
-#        type: recordTypes
-        type: string
-#        uniqueItems: true
-#        minItems: 1
+        type: recordTypes
+        uniqueItems: true
+        minItems: 1
         description: Filter tags by one or more record types.
             Several types can be specified in form of `filter[rectype]=provider&filter[rectype]=package`
             Possible values are `provider`, `package`, `title`, `resource`
-        example: provider
- #         - provider
-#          - package
+        example:
+          - provider
+          - package
     responses:
       200:
         description: OK
@@ -65,16 +64,15 @@ types:
       queryParameters:
         filter[rectype]?:
           displayName: Query by Record type(s)
-          type: string
-#          type: recordTypes
-#          uniqueItems: true
-#          minItems: 1
+          type: recordTypes
+          uniqueItems: true
+          minItems: 1
           description: Filter tags by one or more record types.
               Several types can be specified in form of `filter[rectype]=provider&filter[rectype]=package`
               Possible values are `provider`, `package`, `title`, `resource`
-          example: provider
-#            - provider
-#            - package
+          example:
+            - provider
+            - package
       responses:
         200:
           description: OK

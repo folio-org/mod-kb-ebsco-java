@@ -89,6 +89,11 @@
       <version>${rmb.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.raml.jaxrs</groupId>
+      <artifactId>jaxrs-code-generator</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <version>${vertx.version}</version>
