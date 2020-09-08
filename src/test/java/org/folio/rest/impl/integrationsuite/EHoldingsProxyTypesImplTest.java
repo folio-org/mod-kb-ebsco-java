@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProxyTypesWhenUserAssignedToKbCredentials() throws IOException, URISyntaxException {
+  public void shouldReturnProxyTypesWhenUserAssignedToKbCredentials() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
@@ -66,7 +67,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProxyTypesWhenOneCredentialsExistsAndUserNotAssigned() throws IOException, URISyntaxException {
+  public void shouldReturnProxyTypesWhenOneCredentialsExistsAndUserNotAssigned() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
@@ -78,7 +79,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnEmptyProxyTypesFromEmptyRMApiResponse() throws IOException, URISyntaxException {
+  public void shouldReturnEmptyProxyTypesFromEmptyRMApiResponse() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-empty-response.json");
@@ -131,7 +132,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProxyTypesCollection() throws IOException, URISyntaxException {
+  public void shouldReturnProxyTypesCollection() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
@@ -144,7 +145,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnEmptyCollection() throws IOException, URISyntaxException {
+  public void shouldReturnEmptyCollection() throws IOException, URISyntaxException, JSONException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");

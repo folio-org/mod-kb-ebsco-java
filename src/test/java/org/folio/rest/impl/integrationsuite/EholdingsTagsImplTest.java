@@ -34,7 +34,6 @@ import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.TagCollection;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
 import org.folio.rest.jaxrs.model.TagUniqueCollection;
-import org.folio.rest.jaxrs.model.TagUniqueCollectionItem;
 import org.folio.rest.util.RestConstants;
 
 @RunWith(VertxUnitRunner.class)
@@ -56,8 +55,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
 
   @Autowired
   private Converter<DbTag, TagCollectionItem> tagConverter;
-  @Autowired
-  private Converter<String, TagUniqueCollectionItem> tagUniqueConverter;
+  
 
   @After
   public void tearDown() {

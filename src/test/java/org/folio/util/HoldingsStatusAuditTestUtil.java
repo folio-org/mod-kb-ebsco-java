@@ -25,7 +25,6 @@ import io.vertx.sqlclient.Tuple;
 
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.ObjectMapperTool;
 
 public class HoldingsStatusAuditTestUtil {
 
@@ -56,7 +55,7 @@ public class HoldingsStatusAuditTestUtil {
 
   private static HoldingsLoadingStatus mapHoldingsLoadingStatus(Row row) {
     try {
-      return ObjectMapperTool.getMapper().readValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
+      return org.folio.dbschema.ObjectMapperTool.getMapper().readValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
     } catch (IOException e) {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse holdings status", e);

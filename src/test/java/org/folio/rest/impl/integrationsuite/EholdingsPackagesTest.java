@@ -97,6 +97,7 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.http.HttpStatus;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -190,7 +191,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException {
+  public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/packages/get-packages-response.json";
 
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/packages.*"), stubResponseFile);
@@ -293,7 +294,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesOnGetWithPackageId() throws IOException, URISyntaxException {
+  public void shouldReturnPackagesOnGetWithPackageId() throws IOException, URISyntaxException, JSONException {
     String packagesStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
     String providerIdByCustIdStubResponseFile = "responses/rmapi/proxiescustomlabels/get-success-response.json";
 
@@ -309,7 +310,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesOnGetById() throws IOException, URISyntaxException {
+  public void shouldReturnPackagesOnGetById() throws IOException, URISyntaxException, JSONException {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
     String packageData = getWithOk(PACKAGES_PATH, STUB_TOKEN_HEADER).asString();
@@ -456,7 +457,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourcesWhenIncludedFlagIsSetToResources() throws IOException, URISyntaxException {
+  public void shouldReturnResourcesWhenIncludedFlagIsSetToResources() throws IOException, URISyntaxException, JSONException {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
@@ -472,7 +473,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProviderWhenIncludedFlagIsSetToProvider() throws IOException, URISyntaxException {
+  public void shouldReturnProviderWhenIncludedFlagIsSetToProvider() throws IOException, URISyntaxException, JSONException {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID),
       VENDOR_BY_PACKAGE_ID_STUB_FILE);
@@ -1012,14 +1013,14 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnDefaultResourcesOnGetWithResources() throws IOException, URISyntaxException {
+  public void shouldReturnDefaultResourcesOnGetWithResources() throws IOException, URISyntaxException, JSONException {
     String query =
       "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(PACKAGE_RESOURCES_PATH, query);
   }
 
   @Test
-  public void shouldReturnResourcesWithPagingOnGetWithResources() throws IOException, URISyntaxException {
+  public void shouldReturnResourcesWithPagingOnGetWithResources() throws IOException, URISyntaxException, JSONException {
     String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?page=2";
     String query =
       "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=2&count=25&orderby=titlename";
@@ -1036,7 +1037,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourcesWithTagsOnGetWithResources() throws IOException, URISyntaxException {
+  public void shouldReturnResourcesWithTagsOnGetWithResources() throws IOException, URISyntaxException, JSONException {
     saveTag(vertx, "295-2545963-2099944", RESOURCE, STUB_TAG_VALUE);
     saveTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_2);
     saveTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_3);
@@ -1103,7 +1104,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourcesWithOnSearchByTags() throws IOException, URISyntaxException {
+  public void shouldReturnResourcesWithOnSearchByTags() throws IOException, URISyntaxException, JSONException {
     mockResourceById("responses/rmapi/resources/get-resource-by-id-success-response.json");
 
     ResourcesTestUtil.saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
@@ -1173,7 +1174,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldFetchPackagesInBulk() throws IOException, URISyntaxException {
+  public void shouldFetchPackagesInBulk() throws IOException, URISyntaxException, JSONException {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
     mockGet(new RegexPattern(PACKAGE_BY_ID_2_URL), PACKAGE_2_STUB_FILE);
 
@@ -1195,7 +1196,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesAndFailedIdsOnFetchPackagesInBulk() throws IOException, URISyntaxException {
+  public void shouldReturnPackagesAndFailedIdsOnFetchPackagesInBulk() throws IOException, URISyntaxException, JSONException {
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
     mockGet(new RegexPattern(PACKAGE_BY_ID_2_URL), PACKAGE_2_STUB_FILE);
 
@@ -1214,7 +1215,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnEmptyPackagesOnFetchPackagesInBulkIfNoPackageIds() throws IOException, URISyntaxException {
+  public void shouldReturnEmptyPackagesOnFetchPackagesInBulkIfNoPackageIds() throws IOException, URISyntaxException, JSONException {
     String postBody = readFile("requests/kb-ebsco/package/post-packages-bulk-empty.json");
     final String actualResponse = postWithOk(PACKAGES_BULK_FETCH_PATH, postBody, STUB_TOKEN_HEADER).asString();
 
@@ -1223,7 +1224,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   private void shouldReturnResourcesOnGetWithResources(String getURL, String rmAPIQuery)
-    throws IOException, URISyntaxException {
+    throws IOException, URISyntaxException, JSONException {
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 
     String actual = getWithOk(getURL, STUB_TOKEN_HEADER).asString();
