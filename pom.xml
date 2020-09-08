@@ -51,6 +51,7 @@
     <httpcore.version>4.4.13</httpcore.version>
     <log4j-slf4j-impl.version>2.13.3</log4j-slf4j-impl.version>
     <jetbrains-annotations.version>19.0.0</jetbrains-annotations.version>
+    <jaxrs-code-generator.version>3.0.2</jaxrs-code-generator.version>
 
     <junit.version>4.13</junit.version>
     <rest-assured.version>4.0.0</rest-assured.version>
@@ -91,7 +92,7 @@
     <dependency>
       <groupId>org.raml.jaxrs</groupId>
       <artifactId>jaxrs-code-generator</artifactId>
-      <version>3.0.2</version>
+      <version>${jaxrs-code-generator.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
