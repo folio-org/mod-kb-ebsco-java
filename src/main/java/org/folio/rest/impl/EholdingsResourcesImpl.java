@@ -92,7 +92,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private static final int MAX_TITLE_COUNT = 100;
 
-  private static final String RESOURCE_NOT_FOUND_MESSAGE = "Resource not found";
+  private static final String RESOURCE_NOT_FOUND_MESSAGE = "Title is no longer in this package.";
   private static final String RESOURCE_CANNOT_BE_DELETED_TITLE = "Resource cannot be deleted";
   private static final String RESOURCE_CANNOT_BE_DELETED_DETAIL = "Resource is not in a custom package";
 

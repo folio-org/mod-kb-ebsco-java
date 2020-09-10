@@ -298,7 +298,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "Resource not found");
+    assertErrorContainsTitle(error, "Title is no longer in this package.");
   }
 
   @Test
