@@ -52,6 +52,7 @@ import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.util.ErrorHandler;
@@ -124,6 +125,12 @@ public class ApplicationConfig {
   public VertxCache<ResourceCacheKey, Title> resourceCache(Vertx vertx,
       @Value("${resource.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "resourceCache");
+  }
+
+  @Bean
+  public VertxCache<String, CurrencyCollection> currenciesCache(Vertx vertx,
+                                                                @Value("${currencies.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "currenciesCache");
   }
 
   @Bean

@@ -1,0 +1,36 @@
+package org.folio.rest.impl.integrationsuite;
+
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.CurrencyCollection;
+
+@RunWith(VertxUnitRunner.class)
+public class EholdingsCurrenciesImplTest extends WireMockTestBase {
+
+  public static final String CURRENCIES_ENDPOINT = "/eholdings/currencies";
+
+  @Test
+  public void shouldReturnAccessTypeCollectionOnGet() {
+    CurrencyCollection actual = getWithStatus(CURRENCIES_ENDPOINT, SC_OK).as(CurrencyCollection.class);
+    getWithStatus(CURRENCIES_ENDPOINT, SC_OK).as(CurrencyCollection.class);
+
+    assertThat(actual.getMeta().getTotalResults(), greaterThan(0));
+    assertThat(actual.getData(), hasSize(greaterThan(0)));
+    assertThat(actual.getData().get(0), allOf(
+      hasProperty("code", equalTo("AFN")),
+      hasProperty("description", equalTo("Afghan Afghani"))
+      )
+    );
+  }
+}

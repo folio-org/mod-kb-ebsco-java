@@ -13,6 +13,7 @@ import org.folio.rest.impl.integrationsuite.EHoldingsProxyTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EHoldingsRootProxyImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsAccessTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsAssignedUsersImplTest;
+import org.folio.rest.impl.integrationsuite.EholdingsCurrenciesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCustomLabelsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsKbCredentialsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsPackagesTest;
@@ -41,7 +42,8 @@ import org.folio.test.util.TestSetUpHelper;
   TransactionLoadServiceFacadeTest.class,
   EholdingsAccessTypesImplTest.class,
   EholdingsKbCredentialsImplTest.class,
-  EholdingsAssignedUsersImplTest.class
+  EholdingsAssignedUsersImplTest.class,
+  EholdingsCurrenciesImplTest.class
 })
 @RunWith(Suite.class)
 public class IntegrationTestSuite {
