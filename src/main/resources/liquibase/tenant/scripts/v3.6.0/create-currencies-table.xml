@@ -1,7 +1,7 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
   <changeSet id="MODKBEKBJ-492@@create-currencies-table" author="psmagin">
     <createTable tableName="currencies">
@@ -15,7 +15,15 @@
   </changeSet>
 
   <changeSet id="MODKBEKBJ-492@@populate-currencies" author="psmagin">
-    <sqlFile path="populate-currencies.sql" relativeToChangelogFile="true"/>
+    <loadData tableName="currencies"
+              file="data/currencies.csv"
+              relativeToChangelogFile="true"
+              separator=";"
+              quotchar="'"
+              usePreparedStatements="true">
+      <column header="code" name="code" type="STRING"/>
+      <column header="description" name="description" type="STRING"/>
+    </loadData>
   </changeSet>
 
 </databaseChangeLog>
