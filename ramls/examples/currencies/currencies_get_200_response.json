@@ -1,0 +1,23 @@
+{
+  "data": [
+    {
+      "code": "AFN",
+      "description": "Afghan Afghani"
+    },
+    {
+      "code": "ALL",
+      "description": "Albanian Lek"
+    },
+    {
+      "code": "AMD",
+      "description": "Armenian Dram"
+    },
+    {
+      "code": "AOA",
+      "description": "Angolan Kwanza"
+    }
+  ],
+  "meta": {
+    "totalResults": 4
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Currencies Collection Schema",
+  "description": "Currencies Collection Schema",
+  "javaType": "org.folio.rest.jaxrs.model.CurrencyCollection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of currencies",
+      "items": {
+        "type": "object",
+        "$ref": "currency.json"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in collection",
+      "$ref": "../metaTotalResults.json",
+      "readonly": true
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "meta",
+    "jsonapi"
+  ]
+}

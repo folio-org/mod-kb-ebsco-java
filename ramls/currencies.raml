@@ -1,0 +1,28 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+types:
+  currencyCollection: !include types/currencies/currencyCollection.json
+
+/eholdings/currencies:
+  displayName: Currencies collection
+  get:
+    description: Retrieve a collection of currencies.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: An array of currencies sorted in alphabetical order.
+            type: currencyCollection
+            example:
+              strict: false
+              value: !include examples/currencies/currencies_get_200_response.json
