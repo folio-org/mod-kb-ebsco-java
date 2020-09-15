@@ -54,6 +54,7 @@ import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -66,6 +67,8 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
+import org.folio.service.uc.UCSettingsService;
+import org.folio.service.uc.UCSettingsServiceImpl;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -194,6 +197,16 @@ public class ApplicationConfig {
       AssignedUserRepository assignedUserRepository,
       @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter) {
     return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter);
+  }
+
+  @Bean("securedUCSettingsService")
+  public UCSettingsService securedUCSettingsService(@Qualifier("secured") Converter<UCSettings, UCSettings> converter) {
+    return new UCSettingsServiceImpl(converter);
+  }
+
+  @Bean("nonSecuredUCSettingsService")
+  public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecured") Converter<UCSettings, UCSettings> converter) {
+    return new UCSettingsServiceImpl(converter);
   }
 
   @Bean("securedCredentialsService")
