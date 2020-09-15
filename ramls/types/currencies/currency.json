@@ -6,19 +6,27 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "code": {
+    "id": {
       "type": "string",
-      "description": "Currency code",
+      "description": "Unique currency code",
       "example": "EUR"
     },
-    "description": {
+    "type": {
       "type": "string",
-      "description": "Currency full name",
-      "example": "Euro"
+      "description": "Type of resource",
+      "enum": [
+        "currencies"
+      ],
+      "example": "currencies"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Currency object data attributes",
+      "$ref": "currencyDataAttributes.json"
     }
   },
   "required": [
-    "code",
-    "description"
+    "type",
+    "attributes"
   ]
 }

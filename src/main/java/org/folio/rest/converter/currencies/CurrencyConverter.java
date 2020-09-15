@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.folio.repository.currencies.DbCurrency;
 import org.folio.rest.jaxrs.model.Currency;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
+import org.folio.rest.jaxrs.model.CurrencyDataAttributes;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
 
@@ -27,7 +28,11 @@ public class CurrencyConverter implements Converter<List<DbCurrency>, CurrencyCo
 
   private Currency toCurrency(DbCurrency dbCurrency) {
     return new Currency()
-      .withCode(dbCurrency.getCode())
-      .withDescription(dbCurrency.getDescription());
+      .withId(dbCurrency.getCode())
+      .withType(Currency.Type.CURRENCIES)
+      .withAttributes(new CurrencyDataAttributes()
+        .withCode(dbCurrency.getCode())
+        .withDescription(dbCurrency.getDescription())
+      );
   }
 }
