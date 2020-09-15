@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Currency object schema for a collection",
+  "description": "Currency object schema for a collection",
+  "javaType": "org.folio.rest.jaxrs.model.Currency",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique currency code",
+      "example": "EUR"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": [
+        "currencies"
+      ],
+      "example": "currencies"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Currency object data attributes",
+      "$ref": "currencyDataAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

@@ -301,6 +301,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/currencies",
+          "permissionsRequired": ["kb-ebsco.currencies.collection.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc",
           "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
         }
