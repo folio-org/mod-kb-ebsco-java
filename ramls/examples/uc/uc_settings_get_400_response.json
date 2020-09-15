@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Not supported currency: [AUR]"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
