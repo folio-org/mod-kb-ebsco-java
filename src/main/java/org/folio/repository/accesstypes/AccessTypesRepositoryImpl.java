@@ -19,9 +19,6 @@ import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USERNAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
@@ -35,9 +32,6 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USERNAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
 import static org.folio.util.FutureUtils.mapResult;
@@ -63,6 +57,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.common.ListUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.repository.DbUtil;
 import org.folio.repository.RecordType;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -211,25 +206,19 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   private DbAccessType mapAccessType(Row row) {
-    return DbAccessType.builder()
+    DbAccessType.DbAccessTypeBuilder<?, ?> builder = DbAccessType.builder()
       .id(row.getUUID(ID_COLUMN))
       .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .description(row.getString(DESCRIPTION_COLUMN))
       .usageNumber(ObjectUtils.defaultIfNull(row.getInteger(USAGE_NUMBER_COLUMN), 0))
-      .createdDate(row.getOffsetDateTime(CREATED_DATE_COLUMN))
-      .createdByUserId(row.getUUID(CREATED_BY_USER_ID_COLUMN))
-      .createdByUsername(row.getString(CREATED_BY_USERNAME_COLUMN))
       .createdByLastName(row.getString(CREATED_BY_LAST_NAME_COLUMN))
       .createdByFirstName(row.getString(CREATED_BY_FIRST_NAME_COLUMN))
       .createdByMiddleName(row.getString(CREATED_BY_MIDDLE_NAME_COLUMN))
-      .updatedDate(row.getOffsetDateTime(UPDATED_DATE_COLUMN))
-      .updatedByUserId(row.getUUID(UPDATED_BY_USER_ID_COLUMN))
-      .updatedByUsername(row.getString(UPDATED_BY_USERNAME_COLUMN))
       .updatedByLastName(row.getString(UPDATED_BY_LAST_NAME_COLUMN))
       .updatedByFirstName(row.getString(UPDATED_BY_FIRST_NAME_COLUMN))
-      .updatedByMiddleName(row.getString(UPDATED_BY_MIDDLE_NAME_COLUMN))
-      .build();
+      .updatedByMiddleName(row.getString(UPDATED_BY_MIDDLE_NAME_COLUMN));
+    return DbUtil.mapMetadata(builder, row).build();
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

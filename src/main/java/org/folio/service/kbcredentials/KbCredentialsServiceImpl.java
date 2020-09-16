@@ -55,10 +55,10 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Autowired
   private Converter<DbKbCredentials, Configuration> configurationConverter;
-  private Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
+  private final Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
   @Autowired
   private Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter;
-  private Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter;
+  private final Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter;
   @Autowired
   private Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter;
 
@@ -71,7 +71,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Autowired
   private ConfigurationService configurationService;
-  private UserKbCredentialsService userKbCredentialsService;
+  private final UserKbCredentialsService userKbCredentialsService;
   @Autowired
   private Context context;
 
@@ -156,9 +156,9 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .build();
   }
 
-  private DbKbCredentials.DbKbCredentialsBuilder setUpdateMeta(DbKbCredentials.DbKbCredentialsBuilder credentialsBuilder,
-                                                               UserInfo userInfo) {
-    return credentialsBuilder
+  private DbKbCredentials.DbKbCredentialsBuilder<?, ?> setUpdateMeta(DbKbCredentials.DbKbCredentialsBuilder<?, ?> builder,
+                                                                     UserInfo userInfo) {
+    return builder
       .updatedDate(OffsetDateTime.now())
       .updatedByUserId(toUUID(userInfo.getUserId()))
       .updatedByUserName(userInfo.getUserName());

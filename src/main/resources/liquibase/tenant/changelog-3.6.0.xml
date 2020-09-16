@@ -4,4 +4,6 @@
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
   <include file="liquibase/tenant/scripts/v3.6.0/create-currencies-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/create-usage-consolidation-settings-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/update-access-types-view-user-name-column.xml"/>
 </databaseChangeLog>
