@@ -20,7 +20,7 @@
       <column name="currency" type="varchar(3)">
         <constraints nullable="false"/>
       </column>
-      <column name="platformType" type="varchar(10)">
+      <column name="platform_type" type="varchar(10)">
         <constraints nullable="false"/>
       </column>
       <column name="created_date" type="timestamptz" defaultValueComputed="current_timestamp">
@@ -73,6 +73,14 @@
       ALTER TABLE ${database.defaultSchemaName}.usage_consolidation_settings
       ADD CONSTRAINT chk_usage_consolidation_settings_start_month
       CHECK (start_month IN ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'));
+    </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-494@@add-check-for-usage-consolidation-settings-platform-type" author="psmagin">
+    <sql>
+      ALTER TABLE ${database.defaultSchemaName}.usage_consolidation_settings
+      ADD CONSTRAINT chk_usage_consolidation_settings_platform_type
+      CHECK (platform_type IN ('all', 'publisher', 'nonPublisher'));
     </sql>
   </changeSet>
 

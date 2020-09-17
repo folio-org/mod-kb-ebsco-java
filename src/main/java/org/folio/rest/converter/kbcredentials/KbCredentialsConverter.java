@@ -80,7 +80,7 @@ public class KbCredentialsConverter {
 
     @Override
     public DbKbCredentials convert(@NotNull KbCredentials source) {
-      DbKbCredentials.DbKbCredentialsBuilder dbKbCredentialsBuilder = DbKbCredentials.builder();
+      DbKbCredentials.DbKbCredentialsBuilder<?, ?> dbKbCredentialsBuilder = DbKbCredentials.builder();
 
       KbCredentialsDataAttributes attributes = source.getAttributes();
       return dbKbCredentialsBuilder

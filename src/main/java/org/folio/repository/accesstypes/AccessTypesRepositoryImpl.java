@@ -206,7 +206,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   private DbAccessType mapAccessType(Row row) {
-    DbAccessType.DbAccessTypeBuilder<?, ?> builder = DbAccessType.builder()
+    var builder = DbAccessType.builder()
       .id(row.getUUID(ID_COLUMN))
       .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
       .name(row.getString(NAME_COLUMN))

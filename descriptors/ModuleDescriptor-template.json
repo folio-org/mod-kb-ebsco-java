@@ -682,6 +682,11 @@
       "description": "Put assigned users collection item"
     },
     {
+      "permissionName": "kb-ebsco.currencies.collection.get",
+      "displayName": "get currencies collection",
+      "description": "Get currencies collection"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.users.all",
       "displayName": "EBSCO KB Broker users assigned to credentials - all permissions",
       "description": "All permissions for manging users assigned to EBSCO KB Credentials",
@@ -734,7 +739,8 @@
         "kb-ebsco.kb-credentials.holdings-load.status.item.get",
         "kb-ebsco.custom-labels.collection.get",
         "kb-ebsco.access-types.collection.get",
-        "kb-ebsco.access-types.item.get"
+        "kb-ebsco.access-types.item.get",
+        "kb-ebsco.currencies.collection.get"
       ]
     }
   ],

@@ -16,4 +16,5 @@ public class DbUCSettings extends DbMetadata {
   String customerKey;
   String startMonth;
   String currency;
+  String platformType;
 }

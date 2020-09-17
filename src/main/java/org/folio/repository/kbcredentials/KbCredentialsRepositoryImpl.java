@@ -164,7 +164,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   }
 
   private DbKbCredentials mapCredentials(Row row) {
-    DbKbCredentials.DbKbCredentialsBuilder<?, ?> builder = DbKbCredentials.builder()
+    var builder = DbKbCredentials.builder()
       .id(row.getUUID(ID_COLUMN))
       .url(row.getString(URL_COLUMN))
       .name(row.getString(NAME_COLUMN))

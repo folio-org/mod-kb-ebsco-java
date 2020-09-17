@@ -51,6 +51,8 @@ import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
+import org.folio.repository.uc.DbUCSettings;
+import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -207,13 +209,15 @@ public class ApplicationConfig {
   }
 
   @Bean("securedUCSettingsService")
-  public UCSettingsService securedUCSettingsService(@Qualifier("secured") Converter<UCSettings, UCSettings> converter) {
-    return new UCSettingsServiceImpl(converter);
+  public UCSettingsService securedUCSettingsService(@Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+                                                    UCSettingsRepository repository) {
+    return new UCSettingsServiceImpl(repository, converter);
   }
 
   @Bean("nonSecuredUCSettingsService")
-  public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecured") Converter<UCSettings, UCSettings> converter) {
-    return new UCSettingsServiceImpl(converter);
+  public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+                                                       UCSettingsRepository repository) {
+    return new UCSettingsServiceImpl(repository, converter);
   }
 
   @Bean("securedCredentialsService")
