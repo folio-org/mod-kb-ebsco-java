@@ -57,7 +57,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.common.ListUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
-import org.folio.repository.DbUtil;
+import org.folio.repository.DbMetadataUtil;
 import org.folio.repository.RecordType;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -218,7 +218,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       .updatedByLastName(row.getString(UPDATED_BY_LAST_NAME_COLUMN))
       .updatedByFirstName(row.getString(UPDATED_BY_FIRST_NAME_COLUMN))
       .updatedByMiddleName(row.getString(UPDATED_BY_MIDDLE_NAME_COLUMN));
-    return DbUtil.mapMetadata(builder, row).build();
+    return DbMetadataUtil.mapMetadata(builder, row).build();
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

@@ -48,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
-import org.folio.repository.DbUtil;
+import org.folio.repository.DbMetadataUtil;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
 
@@ -169,9 +169,8 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       .url(row.getString(URL_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .apiKey(row.getString(API_KEY_COLUMN))
-      .customerId(row.getString(CUSTOMER_ID_COLUMN))
-      .updatedByUserId(row.getUUID(""));
-    return DbUtil.mapMetadata(builder, row).build();
+      .customerId(row.getString(CUSTOMER_ID_COLUMN));
+    return DbMetadataUtil.mapMetadata(builder, row).build();
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

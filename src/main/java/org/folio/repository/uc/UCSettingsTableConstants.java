@@ -1,11 +1,11 @@
 package org.folio.repository.uc;
 
-import static org.folio.repository.DbUtil.CREATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.DbUtil.CREATED_BY_USER_NAME_COLUMN;
-import static org.folio.repository.DbUtil.CREATED_DATE_COLUMN;
-import static org.folio.repository.DbUtil.UPDATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.DbUtil.UPDATED_BY_USER_NAME_COLUMN;
-import static org.folio.repository.DbUtil.UPDATED_DATE_COLUMN;
+import static org.folio.repository.DbMetadataUtil.CREATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.DbMetadataUtil.CREATED_BY_USER_NAME_COLUMN;
+import static org.folio.repository.DbMetadataUtil.CREATED_DATE_COLUMN;
+import static org.folio.repository.DbMetadataUtil.UPDATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.DbMetadataUtil.UPDATED_BY_USER_NAME_COLUMN;
+import static org.folio.repository.DbMetadataUtil.UPDATED_DATE_COLUMN;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;

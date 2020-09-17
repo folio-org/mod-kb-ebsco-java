@@ -34,6 +34,7 @@
     }
   },
   "required": [
-    "customerKey"
+    "customerKey",
+    "currency"
   ]
 }

@@ -2,12 +2,12 @@ package org.folio.util;
 
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.repository.DbUtil.CREATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.DbUtil.CREATED_BY_USER_NAME_COLUMN;
-import static org.folio.repository.DbUtil.CREATED_DATE_COLUMN;
-import static org.folio.repository.DbUtil.UPDATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.DbUtil.UPDATED_BY_USER_NAME_COLUMN;
-import static org.folio.repository.DbUtil.UPDATED_DATE_COLUMN;
+import static org.folio.repository.DbMetadataUtil.CREATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.DbMetadataUtil.CREATED_BY_USER_NAME_COLUMN;
+import static org.folio.repository.DbMetadataUtil.CREATED_DATE_COLUMN;
+import static org.folio.repository.DbMetadataUtil.UPDATED_BY_USER_ID_COLUMN;
+import static org.folio.repository.DbMetadataUtil.UPDATED_BY_USER_NAME_COLUMN;
+import static org.folio.repository.DbMetadataUtil.UPDATED_DATE_COLUMN;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;

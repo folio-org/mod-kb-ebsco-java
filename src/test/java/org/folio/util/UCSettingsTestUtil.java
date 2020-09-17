@@ -4,7 +4,7 @@ import static org.folio.db.RowSetUtils.fromDate;
 import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.repository.DbUtil.mapMetadata;
+import static org.folio.repository.DbMetadataUtil.mapMetadata;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.uc.UCSettingsTableConstants.CURRENCY_COLUMN;

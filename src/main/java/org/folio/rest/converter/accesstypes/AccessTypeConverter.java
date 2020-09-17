@@ -65,7 +65,7 @@ public class AccessTypeConverter {
     @Override
     public DbAccessType convert(@NotNull AccessType source) {
       AccessTypeDataAttributes attributes = source.getAttributes();
-      DbAccessType.DbAccessTypeBuilder<?, ?> builder = DbAccessType.builder()
+      var builder = DbAccessType.builder()
         .id(toUUID(source.getId()))
         .name(attributes.getName())
         .description(attributes.getDescription())

@@ -2,8 +2,8 @@ package org.folio.repository.uc;
 
 import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
+import static org.folio.repository.DbMetadataUtil.mapMetadata;
 import static org.folio.repository.DbUtil.getUCSettingsTableName;
-import static org.folio.repository.DbUtil.mapMetadata;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.uc.UCSettingsTableConstants.CURRENCY_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.CUSTOMER_KEY_COLUMN;
