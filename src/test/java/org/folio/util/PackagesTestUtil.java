@@ -51,7 +51,7 @@ public class PackagesTestUtil {
   public static List<DbPackage> getPackages(Vertx vertx) {
     CompletableFuture<List<DbPackage>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(), packageTestTable());
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), PackagesTestUtil::mapDbPackage)));
     return future.join();
   }
@@ -68,7 +68,7 @@ public class PackagesTestUtil {
       dbPackage.getName(),
       dbPackage.getContentType()
     );
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
   }
 

@@ -53,7 +53,7 @@ public final class KBTestUtil {
   public static void clearDataFromTable(Vertx vertx, String tableName) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(SqlQueryHelper.deleteQuery(), getTableName(STUB_TENANT, tableName));
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .execute(query,
         event -> {
           logger().info("Table cleaned up: " + tableName);

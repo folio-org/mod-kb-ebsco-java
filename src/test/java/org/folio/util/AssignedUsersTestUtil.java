@@ -42,7 +42,7 @@ public class AssignedUsersTestUtil {
     String insertStatement = DbUtil.prepareQuery(INSERT_ASSIGNED_USER_QUERY, kbAssignedUsersTestTable());
     Tuple params = DbUtils.createParams(toUUID(id), toUUID(credentialsId));
 
-    PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(insertStatement, params, event -> future.complete(null));
     future.join();
 
     return id;
@@ -51,7 +51,7 @@ public class AssignedUsersTestUtil {
   public static List<AssignedUser> getAssignedUsers(Vertx vertx) {
     CompletableFuture<List<AssignedUser>> future = new CompletableFuture<>();
     String query = DbUtil.prepareQuery(SqlQueryHelper.selectQuery(), kbAssignedUsersTestView());
-    PostgresClient.getInstance(vertx).select(query, event ->
+    PostgresClient.getInstance(vertx, STUB_TENANT).select(query, event ->
       future.complete(RowSetUtils.mapItems(event.result(), AssignedUsersTestUtil::parseAssignedUser))
     );
     return future.join();

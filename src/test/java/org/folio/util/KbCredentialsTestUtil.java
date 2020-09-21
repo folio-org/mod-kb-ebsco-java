@@ -85,7 +85,7 @@ public class KbCredentialsTestUtil {
       OffsetDateTime.now(), toUUID(STUB_USER_ID), STUB_USERNAME, null, null, null
     ));
 
-    PostgresClient.getInstance(vertx).execute(insertStatement, params, event -> {
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(insertStatement, params, event -> {
       if (event.succeeded()) {
         future.complete(null);
       } else {
@@ -109,7 +109,7 @@ public class KbCredentialsTestUtil {
                                                       Converter<DbKbCredentials, KbCredentials> converter) {
     CompletableFuture<List<KbCredentials>> future = new CompletableFuture<>();
     String query = prepareQuery(SELECT_CREDENTIALS_QUERY, kbCredentialsTestTable());
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), row -> converter.convert(mapKbCredentials(row)))));
     return future.join();
   }

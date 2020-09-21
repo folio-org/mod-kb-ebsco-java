@@ -75,7 +75,7 @@ public class AccessTypesTestUtil {
     String query = prepareQuery(AccessTypeMappingsTableConstants.UPSERT_QUERY, accessTypesMappingTestTable());
     Tuple params = Tuple.of(UUID.randomUUID(), recordId, recordType.getValue(), toUUID(accessTypeId));
 
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
   }
 
@@ -113,7 +113,7 @@ public class AccessTypesTestUtil {
   public static List<AccessTypeMapping> getAccessTypeMappings(Vertx vertx) {
     CompletableFuture<List<AccessTypeMapping>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(), accessTypesMappingTestTable());
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), AccessTypesTestUtil::mapAccessTypeMapping)));
     return future.join();
   }
@@ -121,7 +121,7 @@ public class AccessTypesTestUtil {
   public static List<AccessType> getAccessTypes(Vertx vertx) {
     CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(), accessTypesTestView());
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), AccessTypesTestUtil::mapAccessType)));
     return future.join();
   }
