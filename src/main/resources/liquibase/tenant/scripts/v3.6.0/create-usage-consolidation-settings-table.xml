@@ -40,7 +40,7 @@
 
   <changeSet id="MODKBEKBJ-494@@add-foreign-key-from-usage-consolidation-settings-to-kb-credentials" author="psmagin">
     <addForeignKeyConstraint
-      baseColumnNames="credentials_id"
+      baseColumnNames="kb_credentials_id"
       baseTableName="usage_consolidation_settings"
       baseTableSchemaName="${database.defaultSchemaName}"
       constraintName="fk_usage_consolidation_settings_kb_credentials"

@@ -5,7 +5,8 @@
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
   <changeSet id="MODKBEKBJ-435@@update-access-types-view-user-name-column-name" author="psmagin">
-    <createView viewName="access_types_view" replaceIfExists="true">
+    <dropView viewName="access_types_view" />
+    <createView viewName="access_types_view">
       SELECT
             a.id                 AS id,
             a.credentials_id     AS credentials_id,
