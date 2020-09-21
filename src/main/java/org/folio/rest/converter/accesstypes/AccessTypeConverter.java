@@ -42,10 +42,10 @@ public class AccessTypeConverter {
           .withMiddleName(source.getCreatedByMiddleName()))
         .withMetadata(new Metadata()
           .withCreatedByUserId(fromUUID(source.getCreatedByUserId()))
-          .withCreatedByUsername(source.getCreatedByUsername())
+          .withCreatedByUsername(source.getCreatedByUserName())
           .withCreatedDate(toDate(source.getCreatedDate()))
           .withUpdatedByUserId(fromUUID(source.getUpdatedByUserId()))
-          .withUpdatedByUsername(source.getUpdatedByUsername())
+          .withUpdatedByUsername(source.getUpdatedByUserName())
           .withUpdatedDate(toDate(source.getUpdatedDate())));
       if (!isAllBlank(source.getUpdatedByFirstName(), source.getUpdatedByLastName(), source.getUpdatedByMiddleName())) {
         accessType
@@ -65,7 +65,7 @@ public class AccessTypeConverter {
     @Override
     public DbAccessType convert(@NotNull AccessType source) {
       AccessTypeDataAttributes attributes = source.getAttributes();
-      DbAccessType.DbAccessTypeBuilder builder = DbAccessType.builder()
+      var builder = DbAccessType.builder()
         .id(toUUID(source.getId()))
         .name(attributes.getName())
         .description(attributes.getDescription())
@@ -92,10 +92,10 @@ public class AccessTypeConverter {
         builder
           .createdDate(fromDate(metadata.getCreatedDate()))
           .createdByUserId(toUUID(metadata.getCreatedByUserId()))
-          .createdByUsername(metadata.getCreatedByUsername())
+          .createdByUserName(metadata.getCreatedByUsername())
           .updatedDate(fromDate(metadata.getUpdatedDate()))
           .updatedByUserId(toUUID(metadata.getUpdatedByUserId()))
-          .updatedByUsername(metadata.getUpdatedByUsername());
+          .updatedByUserName(metadata.getUpdatedByUsername());
       }
       return builder.build();
     }

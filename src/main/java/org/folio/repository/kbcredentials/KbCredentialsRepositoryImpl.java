@@ -17,9 +17,6 @@ import static org.folio.repository.DbUtil.getKbCredentialsTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.API_KEY_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_BY_USER_NAME_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CREATED_DATE_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CUSTOMER_ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.DELETE_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ID_COLUMN;
@@ -27,9 +24,6 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAM
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_ID_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_USER_ID_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_QUERY;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_BY_USER_NAME_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
 import static org.folio.util.FutureUtils.mapResult;
@@ -54,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
+import org.folio.repository.DbMetadataUtil;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
 
@@ -169,19 +164,13 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   }
 
   private DbKbCredentials mapCredentials(Row row) {
-    return DbKbCredentials.builder()
+    var builder = DbKbCredentials.builder()
       .id(row.getUUID(ID_COLUMN))
       .url(row.getString(URL_COLUMN))
       .name(row.getString(NAME_COLUMN))
       .apiKey(row.getString(API_KEY_COLUMN))
-      .customerId(row.getString(CUSTOMER_ID_COLUMN))
-      .createdDate(row.getOffsetDateTime(CREATED_DATE_COLUMN))
-      .updatedDate(row.getOffsetDateTime(UPDATED_DATE_COLUMN))
-      .createdByUserId(row.getUUID(CREATED_BY_USER_ID_COLUMN))
-      .updatedByUserId(row.getUUID(UPDATED_BY_USER_ID_COLUMN))
-      .createdByUserName(row.getString(CREATED_BY_USER_NAME_COLUMN))
-      .updatedByUserName(row.getString(UPDATED_BY_USER_NAME_COLUMN))
-      .build();
+      .customerId(row.getString(CUSTOMER_ID_COLUMN));
+    return DbMetadataUtil.mapMetadata(builder, row).build();
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

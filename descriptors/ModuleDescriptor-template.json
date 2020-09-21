@@ -303,6 +303,11 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/currencies",
           "permissionsRequired": ["kb-ebsco.currencies.collection.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{id}/uc",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
         }
       ]
     },
@@ -644,6 +649,19 @@
       ]
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.uc.item.get",
+      "displayName": "get usage consolidation settings related to KB credentials",
+      "description": "Get usage consolidation settings related to KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.uc.all",
+      "displayName": "EBSCO KB Broker Usage Consolidation settings - all permissions",
+      "description": "All permissions for managing Usage Consolidation settings",
+      "subPermissions": [
+        "kb-ebsco.kb-credentials.uc.item.get"
+      ]
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.users.collection.get",
       "displayName": "get assigned users to KB credentials",
       "description": "Get assigned users to KB credentials"
@@ -686,6 +704,7 @@
       "subPermissions": [
         "kb-ebsco.kb-credentials.all",
         "kb-ebsco.kb-credentials.users.all",
+        "kb-ebsco.kb-credentials.uc.all",
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",

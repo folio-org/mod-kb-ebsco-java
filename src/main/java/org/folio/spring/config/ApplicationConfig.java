@@ -51,10 +51,13 @@ import org.folio.holdingsiq.service.validator.TitleParametersValidator;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
+import org.folio.repository.uc.DbUCSettings;
+import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -67,6 +70,8 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
+import org.folio.service.uc.UCSettingsService;
+import org.folio.service.uc.UCSettingsServiceImpl;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -201,6 +206,18 @@ public class ApplicationConfig {
       AssignedUserRepository assignedUserRepository,
       @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter) {
     return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter);
+  }
+
+  @Bean("securedUCSettingsService")
+  public UCSettingsService securedUCSettingsService(@Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+                                                    UCSettingsRepository repository) {
+    return new UCSettingsServiceImpl(repository, converter);
+  }
+
+  @Bean("nonSecuredUCSettingsService")
+  public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+                                                       UCSettingsRepository repository) {
+    return new UCSettingsServiceImpl(repository, converter);
   }
 
   @Bean("securedCredentialsService")

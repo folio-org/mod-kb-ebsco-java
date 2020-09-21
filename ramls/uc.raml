@@ -1,0 +1,40 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+types:
+  uCSettings: !include types/uc/uCSettings.json
+  jsonapiError: !include types/jsonapiError.json
+
+/eholdings/kb-credentials/{id}/uc:
+  displayName: Usage Consolidation settings
+  uriParameters:
+    id:
+      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  get:
+    description: Retrieve a Usage Consolidation settings.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Usage Consolidation settings
+            type: uCSettings
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_get_404_response.json
