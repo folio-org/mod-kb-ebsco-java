@@ -4,10 +4,10 @@ import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.GET_RETRY_STATUS_BY_CREDENTIALS;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ID_COLUMN;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.TIMER_ID_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
@@ -31,7 +31,7 @@ public class HoldingsRetryStatusTestUtil {
       holdingsStatusAuditTestTable()
     );
     Tuple params = Tuple.of(UUID.randomUUID(), toUUID(credentialsId), 2, null);
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     return future.join();
   }
 
@@ -39,7 +39,7 @@ public class HoldingsRetryStatusTestUtil {
     CompletableFuture<RetryStatus> future = new CompletableFuture<>();
     String query = prepareQuery(GET_RETRY_STATUS_BY_CREDENTIALS, holdingsStatusAuditTestTable());
     Tuple params = Tuple.of(toUUID(credentialsId));
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, params,
         event -> future.complete(mapFirstItem(event.result(), HoldingsRetryStatusTestUtil::parseRetryStatus))
       );

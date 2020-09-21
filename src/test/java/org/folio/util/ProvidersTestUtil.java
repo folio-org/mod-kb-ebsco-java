@@ -30,7 +30,7 @@ public class ProvidersTestUtil {
   public static List<DbProvider> getProviders(Vertx vertx) {
     CompletableFuture<List<DbProvider>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(), providerTestTable());
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), ProvidersTestUtil::mapDbProvider)));
     return future.join();
   }
@@ -39,7 +39,7 @@ public class ProvidersTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN), providerTestTable());
     Tuple params = Tuple.of(provider.getId(), provider.getCredentialsId(), provider.getName());
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
   }
 

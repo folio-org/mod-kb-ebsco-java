@@ -22,11 +22,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
-import org.folio.db.RowSetUtils;
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.persist.PostgresClient;
@@ -36,7 +34,7 @@ public class HoldingsTestUtil {
   public static List<DbHoldingInfo> getHoldings(Vertx vertx) {
     CompletableFuture<List<DbHoldingInfo>> future = new CompletableFuture<>();
     String query = prepareQuery(SqlQueryHelper.selectQuery(), holdingsTestTable());
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), HoldingsTestUtil::mapHoldingInfo)));
     return future.join();
   }
@@ -45,7 +43,7 @@ public class HoldingsTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS, holdingsTestTable(), createInsertPlaceholders(9, 1));
     Tuple params = getHoldingsInsertParams(credentialsId, holding, updatedAt);
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
   }
 
