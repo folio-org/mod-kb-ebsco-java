@@ -46,7 +46,7 @@
       constraintName="fk_usage_consolidation_settings_kb_credentials"
       deferrable="false"
       initiallyDeferred="false"
-      onDelete="RESTRICT"
+      onDelete="CASCADE"
       onUpdate="RESTRICT"
       referencedColumnNames="id"
       referencedTableName="kb_credentials"

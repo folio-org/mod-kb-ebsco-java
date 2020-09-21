@@ -654,7 +654,7 @@
       "description": "Get usage consolidation settings related to KB credentials"
     },
     {
-      "permissionName": "kb-ebsco.kb-credentials.uc",
+      "permissionName": "kb-ebsco.kb-credentials.uc.all",
       "displayName": "EBSCO KB Broker Usage Consolidation settings - all permissions",
       "description": "All permissions for managing Usage Consolidation settings",
       "subPermissions": [
@@ -704,7 +704,7 @@
       "subPermissions": [
         "kb-ebsco.kb-credentials.all",
         "kb-ebsco.kb-credentials.users.all",
-        "kb-ebsco.kb-credentials.uc",
+        "kb-ebsco.kb-credentials.uc.all",
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
