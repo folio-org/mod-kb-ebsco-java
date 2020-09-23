@@ -129,19 +129,25 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
   private CompletableFuture<Void> iterateOverCredentials(Map<String, String> okapiHeaders,
                                                          KbCredentialsCollection credentialsList) {
     final List<KbCredentials> kbCredentials = credentialsList.getData();
-    kbCredentials.forEach(credentials -> buldContextAndRun(okapiHeaders, credentials));
+    kbCredentials.forEach(credentials -> buildContextAndRun(okapiHeaders, credentials));
     return CompletableFuture.completedFuture(null);
   }
 
-  private void buldContextAndRun(Map<String, String> okapiHeaders, KbCredentials credentials) {
+  private void buildContextAndRun(Map<String, String> okapiHeaders, KbCredentials credentials) {
     final RMAPITemplateContext context = buildLoadingContext(credentials, okapiHeaders);
     getStatus(context).thenAccept(status -> {
-      final LoadStatusNameEnum name = status.getData().getAttributes().getStatus().getName();
-      logger.info("Current status for credentials - {} is {}", credentials.getId(), name.value());
-      if (LoadStatusNameEnum.NOT_STARTED.equals(name) || LoadStatusNameEnum.FAILED.equals(name)) {
+      final LoadStatusNameEnum statusName = status.getData().getAttributes().getStatus().getName();
+      logger.info("Current status for credentials - {} is {}", credentials.getId(), statusName.value());
+      if (canStartLoading(statusName)) {
         startLoading(context);
       }
     });
+  }
+
+  private boolean canStartLoading(LoadStatusNameEnum name) {
+    return LoadStatusNameEnum.NOT_STARTED.equals(name)
+      || LoadStatusNameEnum.FAILED.equals(name)
+      || LoadStatusNameEnum.COMPLETED.equals(name);
   }
 
   private CompletableFuture<HoldingsLoadingStatus> getStatus(RMAPITemplateContext context) {
