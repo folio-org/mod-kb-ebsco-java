@@ -27,7 +27,7 @@ public class UCAuthServiceClientImpl implements UCAuthServiceClient {
   private static final int TIMEOUT = 20000;
   private static final String REQUEST_URI = "/oauth-proxy/token";
 
-  private final HttpRequest<JsonObject> tokenRequest;
+  private HttpRequest<JsonObject> tokenRequest;
 
   public UCAuthServiceClientImpl(@Value("${kb.ebsco.uc.auth.host:apis.ebsco.com}") String host, Vertx vertx) {
     WebClient webClient = WebClient.create(vertx);
