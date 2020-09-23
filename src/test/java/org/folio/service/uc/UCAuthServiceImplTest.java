@@ -10,7 +10,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import io.vertx.core.AsyncResult;
@@ -60,10 +59,6 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
   public void setUp() throws Exception {
     super.setUp();
     openMocks(this).close();
-    when(httpRequest.expect(any())).then(invocation -> {
-      Method method = invocation.getMethod();
-      return httpRequest;
-    });
     doAnswer(httpResponseAnswer(httpResponse, 1)).when(httpRequest).sendForm(any(), any());
   }
 
