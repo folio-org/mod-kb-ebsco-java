@@ -1,4 +1,4 @@
-package org.folio.userlookup;
+package org.folio.service.users;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -31,8 +31,6 @@ import org.junit.runner.RunWith;
 
 import org.folio.common.OkapiParams;
 import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.service.users.User;
-import org.folio.service.users.UsersLookUpService;
 import org.folio.test.junit.TestStartLoggingRule;
 import org.folio.test.util.TestUtil;
 

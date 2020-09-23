@@ -24,6 +24,7 @@ import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TA
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 import static org.folio.repository.users.UsersTableConstants.USERS_TABLE_NAME;
 
@@ -121,6 +122,10 @@ public class DbUtil {
 
   public static String getUCSettingsTableName(String tenantId) {
     return getTableName(tenantId, UC_SETTINGS_TABLE_NAME);
+  }
+
+  public static String getUCCredentialsTableName(String tenantId) {
+    return getTableName(tenantId, UC_CREDENTIALS_TABLE_NAME);
   }
 
   public static String getUsersTableName(String tenantId) {
