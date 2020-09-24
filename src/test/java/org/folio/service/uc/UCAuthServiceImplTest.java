@@ -49,12 +49,6 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
   @Spy
   private HttpRequest<JsonObject> httpRequest;
 
-  private static <T> HandlerAnswer<AsyncResult<HttpResponse<T>>, Void> httpResponseAnswer(HttpResponse<T> httpResponse,
-                                                                                          int argumentIndex) {
-    AsyncResult<HttpResponse<T>> res = succeededFuture(httpResponse);
-    return new HandlerAnswer<>(res, argumentIndex);
-  }
-
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -82,6 +76,25 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
         return null;
       });
     async.await(TIMEOUT);
+  }
+
+  @Test
+  public void returnTokenWhenCredentialsAreNotExist(TestContext context) {
+    Async async = context.async();
+    ucAuthService.authenticate(new CaseInsensitiveMap<>(Map.of(XOkapiHeaders.TENANT, STUB_TENANT)))
+      .thenAccept(s -> context.fail())
+      .exceptionally(throwable -> {
+        context.assertEquals(UcAuthenticationException.class, throwable.getCause().getClass());
+        async.complete();
+        return null;
+      });
+    async.await(TIMEOUT);
+  }
+
+  private static <T> HandlerAnswer<AsyncResult<HttpResponse<T>>, Void> httpResponseAnswer(HttpResponse<T> httpResponse,
+                                                                                          int argumentIndex) {
+    AsyncResult<HttpResponse<T>> res = succeededFuture(httpResponse);
+    return new HandlerAnswer<>(res, argumentIndex);
   }
 
   private static class HandlerAnswer<H, R> implements Answer<R> {

@@ -38,7 +38,7 @@ public class UCAuthServiceImpl implements UCAuthService {
     return repository.find(tenantId)
       .thenCompose(dbUCCredentials -> {
         if (dbUCCredentials.isEmpty()) {
-          throw new UcAuthenticationException("");
+          throw new UcAuthenticationException("UC Credentials are not exist in database.");
         } else {
           DbUCCredentials credentials = dbUCCredentials.get();
           return authServiceClient.requestToken(credentials.getClientId(), credentials.getClientSecret());
