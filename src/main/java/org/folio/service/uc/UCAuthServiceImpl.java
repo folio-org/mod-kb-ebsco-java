@@ -16,6 +16,7 @@ import org.folio.rest.tools.utils.TenantTool;
 public class UCAuthServiceImpl implements UCAuthService {
 
   public static final String TOKEN_CACHE_KEY = "TOKEN_KEY";
+  public static final String INVALID_CREDENTIALS_MESSAGE = "Invalid UC API Credentials";
 
   private final UCCredentialsRepository repository;
   private final VertxCache<String, String> ucTokenCache;
@@ -38,7 +39,7 @@ public class UCAuthServiceImpl implements UCAuthService {
     return repository.find(tenantId)
       .thenCompose(dbUCCredentials -> {
         if (dbUCCredentials.isEmpty()) {
-          throw new UcAuthenticationException("UC Credentials are not exist in database.");
+          throw new UcAuthenticationException(INVALID_CREDENTIALS_MESSAGE);
         } else {
           DbUCCredentials credentials = dbUCCredentials.get();
           return authServiceClient.requestToken(credentials.getClientId(), credentials.getClientSecret());
