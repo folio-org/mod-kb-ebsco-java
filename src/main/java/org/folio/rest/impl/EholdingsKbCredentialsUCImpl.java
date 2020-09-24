@@ -8,12 +8,14 @@ import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdUc;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.uc.UCSettingsService;
@@ -48,5 +50,15 @@ public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc 
       .thenAccept(unused -> asyncResultHandler.handle(succeededFuture(
         PatchEholdingsKbCredentialsUcByIdResponse.respond204())))
       .exceptionally(errorHandler.handle(asyncResultHandler));
+  }
+
+  @Override
+  public void postEholdingsKbCredentialsUcById(String id, String contentType, UCSettingsPostRequest entity,
+                                               Map<String, String> okapiHeaders,
+                                               Handler<AsyncResult<Response>> asyncResultHandler,
+                                               Context vertxContext) {
+    asyncResultHandler.handle(Future.succeededFuture(
+      PostEholdingsKbCredentialsUcByIdResponse.status(Response.Status.NOT_IMPLEMENTED).build()
+    ));
   }
 }
