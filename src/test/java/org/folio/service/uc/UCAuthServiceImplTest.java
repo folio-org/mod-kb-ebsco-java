@@ -7,7 +7,9 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
 
 import java.util.Map;
@@ -21,6 +23,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +57,11 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
     super.setUp();
     openMocks(this).close();
     doAnswer(httpResponseAnswer(httpResponse, 1)).when(httpRequest).sendForm(any(), any());
+  }
+
+  @After
+  public void tearDown() {
+    clearDataFromTable(vertx, UC_CREDENTIALS_TABLE_NAME);
   }
 
   @Test
