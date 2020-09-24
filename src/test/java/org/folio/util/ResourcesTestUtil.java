@@ -32,7 +32,7 @@ public class ResourcesTestUtil {
   public static List<DbResource> getResources(Vertx vertx) {
     CompletableFuture<List<DbResource>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(), resourceTestTable());
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), ResourcesTestUtil::mapDbResource)));
     return future.join();
   }
@@ -41,7 +41,7 @@ public class ResourcesTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN), resourceTestTable());
     Tuple params = Tuple.of(resourceIdToString(dbResource.getId()), dbResource.getCredentialsId(), dbResource.getName());
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
   }
 

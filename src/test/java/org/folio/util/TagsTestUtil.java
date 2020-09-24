@@ -36,7 +36,7 @@ public class TagsTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(insertQuery(ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN), tagTestTable());
     Tuple params = Tuple.of(UUID.randomUUID(), recordId, recordType.getValue(), value);
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
   }
 
@@ -49,7 +49,7 @@ public class TagsTestUtil {
     );
     Tuple params = createParams(tags);
 
-    PostgresClient.getInstance(vertx).select(query, params, ar -> {
+    PostgresClient.getInstance(vertx, STUB_TENANT).select(query, params, ar -> {
       if (ar.succeeded()) {
         future.complete(ar.result());
       } else {

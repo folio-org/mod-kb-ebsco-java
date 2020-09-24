@@ -38,7 +38,7 @@ public class HoldingsStatusUtil {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
     String query = DbUtil.prepareQuery(INSERT_LOADING_STATUS, holdingsStatusTestTable(), createPlaceholders(4));
     Tuple params = Tuple.of(randomUUID(), toUUID(credentialsId), toJsonObject(status), toUUID(processId));
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     return future.join();
   }
 
@@ -46,7 +46,7 @@ public class HoldingsStatusUtil {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
     String query = DbUtil.prepareQuery(GET_HOLDINGS_STATUS_BY_ID, holdingsStatusTestTable());
     Tuple params = Tuple.of(toUUID(credentialsId));
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, params, event -> future.complete(mapStatus(event.result())));
     return future.join();
   }

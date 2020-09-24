@@ -40,7 +40,7 @@ public class TitlesTestUtil {
   public static List<DbTitle> getTitles(Vertx vertx) {
     CompletableFuture<List<DbTitle>> future = new CompletableFuture<>();
     String query = prepareQuery(SqlQueryHelper.selectQuery(), titlesTestTable());
-    PostgresClient.getInstance(vertx).select(query,
+    PostgresClient.getInstance(vertx, STUB_TENANT).select(query,
       event -> future.complete(RowSetUtils.mapItems(event.result(), TitlesTestUtil::mapDbTitle))
     );
     return future.join();
@@ -52,7 +52,7 @@ public class TitlesTestUtil {
     String query = prepareQuery(insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN), titlesTestTable());
     Tuple params = Tuple.of(dbTitle.getId(), dbTitle.getCredentialsId(), dbTitle.getName());
 
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
 
     future.join();
   }

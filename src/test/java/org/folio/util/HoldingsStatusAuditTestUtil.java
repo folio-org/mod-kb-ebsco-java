@@ -34,7 +34,7 @@ public class HoldingsStatusAuditTestUtil {
       selectQuery() + " " + orderByQuery(UPDATED_AT_COLUMN),
       holdingsStatusAuditTestTable()
     );
-    PostgresClient.getInstance(vertx)
+    PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query,
         event -> future.complete(mapItems(event.result(), HoldingsStatusAuditTestUtil::mapHoldingsLoadingStatus))
       );
@@ -49,7 +49,7 @@ public class HoldingsStatusAuditTestUtil {
       holdingsStatusAuditTestTable()
     );
     Tuple params = Tuple.of(toUUID(credentialsId), toJsonObject(status), "UPDATE", updatedAt);
-    PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     return future.join();
   }
 

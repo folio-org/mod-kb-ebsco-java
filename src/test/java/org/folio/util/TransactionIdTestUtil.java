@@ -21,7 +21,7 @@ public class TransactionIdTestUtil {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(insertQuery(CREDENTIALS_ID_COLUMN, TRANSACTION_ID_COLUMN), transactionIdsTestTable());
     Tuple params = Tuple.of(RowSetUtils.toUUID(credentialsId), transactionId);
-    PostgresClient.getInstance(vertx).execute(query, params,
+    PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params,
       event -> future.complete(null)
     );
     future.join();
