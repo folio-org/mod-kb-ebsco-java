@@ -77,6 +77,8 @@ public abstract class WireMockTestBase extends TestBase {
   private VertxCache<ResourceCacheKey, Title> resourceCache;
   @Autowired
   private VertxCache<TitleCacheKey, Title> titleCache;
+  @Autowired
+  private VertxCache<String, String> ucTokenCache;
 
   @BeforeClass
   public static void setUpClass(TestContext context) {
@@ -97,6 +99,7 @@ public abstract class WireMockTestBase extends TestBase {
     vendorCache.invalidateAll();
     resourceCache.invalidateAll();
     titleCache.invalidateAll();
+    ucTokenCache.invalidateAll();
   }
 
   protected void setUpTestUsers() {

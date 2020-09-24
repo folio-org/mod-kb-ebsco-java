@@ -90,7 +90,6 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
   public void returnTokenWhenCredentialsAreNotExist(TestContext context) {
     Async async = context.async();
     ucAuthService.authenticate(new CaseInsensitiveMap<>(Map.of(XOkapiHeaders.TENANT, STUB_TENANT)))
-      .thenAccept(s -> context.fail())
       .exceptionally(throwable -> {
         context.assertEquals(UcAuthenticationException.class, throwable.getCause().getClass());
         async.complete();
