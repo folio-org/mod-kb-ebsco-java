@@ -2,7 +2,7 @@ package org.folio.client.uc;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface UCAuthServiceClient {
+public interface UCAuthEbscoClient {
 
   CompletableFuture<UCAuthToken> requestToken(String clientId, String clientSecret);
 }

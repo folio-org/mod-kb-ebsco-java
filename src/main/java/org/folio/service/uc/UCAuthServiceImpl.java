@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.stereotype.Service;
 
 import org.folio.cache.VertxCache;
-import org.folio.client.uc.UCAuthServiceClient;
+import org.folio.client.uc.UCAuthEbscoClient;
 import org.folio.client.uc.UCAuthToken;
 import org.folio.repository.uc.DbUCCredentials;
 import org.folio.repository.uc.UCCredentialsRepository;
@@ -19,11 +19,11 @@ public class UCAuthServiceImpl implements UCAuthService {
 
   private final UCCredentialsRepository repository;
   private final VertxCache<String, String> ucTokenCache;
-  private final UCAuthServiceClient authServiceClient;
+  private final UCAuthEbscoClient authServiceClient;
 
   public UCAuthServiceImpl(UCCredentialsRepository repository,
                            VertxCache<String, String> ucTokenCache,
-                           UCAuthServiceClient authServiceClient) {
+                           UCAuthEbscoClient authServiceClient) {
     this.repository = repository;
     this.ucTokenCache = ucTokenCache;
     this.authServiceClient = authServiceClient;

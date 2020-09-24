@@ -33,7 +33,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.folio.client.uc.UCAuthServiceClient;
+import org.folio.client.uc.UCAuthEbscoClient;
 import org.folio.client.uc.UCAuthToken;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
@@ -46,7 +46,7 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
   private UCAuthService ucAuthService;
   @InjectMocks
   @Autowired
-  private UCAuthServiceClient authServiceClient;
+  private UCAuthEbscoClient authServiceClient;
   @Spy
   private HttpResponse<JsonObject> httpResponse;
   @Spy

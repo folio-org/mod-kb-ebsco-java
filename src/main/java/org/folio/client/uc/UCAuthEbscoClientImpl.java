@@ -24,9 +24,9 @@ import org.springframework.stereotype.Component;
 import org.folio.service.uc.UcAuthenticationException;
 
 @Component
-public class UCAuthServiceClientImpl implements UCAuthServiceClient {
+public class UCAuthEbscoClientImpl implements UCAuthEbscoClient {
 
-  private static final Logger LOG = LoggerFactory.getLogger(UCAuthServiceClientImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(UCAuthEbscoClientImpl.class);
 
   private static final int PORT = 443;
   private static final int TIMEOUT = 20000;
@@ -34,7 +34,7 @@ public class UCAuthServiceClientImpl implements UCAuthServiceClient {
 
   private HttpRequest<JsonObject> tokenRequest;
 
-  public UCAuthServiceClientImpl(@Value("${kb.ebsco.uc.auth.host:apis.ebsco.com}") String host, Vertx vertx) {
+  public UCAuthEbscoClientImpl(@Value("${kb.ebsco.uc.auth.host:apis.ebsco.com}") String host, Vertx vertx) {
     WebClientOptions options = new WebClientOptions();
     options.setLogActivity(true);
     WebClient webClient = WebClient.create(vertx, options);
