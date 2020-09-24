@@ -141,7 +141,7 @@ public class ApplicationConfig {
 
   @Bean
   public VertxCache<String, String> ucTokenCache(Vertx vertx,
-                                                                @Value("${currencies.cache.expire}") long expirationTime) {
+                                                 @Value("${uc.token.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "ucTokenCache");
   }
 
