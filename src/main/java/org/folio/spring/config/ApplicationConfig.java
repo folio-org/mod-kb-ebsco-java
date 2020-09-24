@@ -80,6 +80,7 @@ import org.folio.service.uc.UCSettingsServiceImpl;
   "org.folio.rest.util.template",
   "org.folio.repository",
   "org.folio.service",
+  "org.folio.client",
   "org.folio.common"})
 public class ApplicationConfig {
 
@@ -136,6 +137,12 @@ public class ApplicationConfig {
   public VertxCache<String, CurrencyCollection> currenciesCache(Vertx vertx,
                                                                 @Value("${currencies.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "currenciesCache");
+  }
+
+  @Bean
+  public VertxCache<String, String> ucTokenCache(Vertx vertx,
+                                                 @Value("${uc.token.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "ucTokenCache");
   }
 
   @Bean

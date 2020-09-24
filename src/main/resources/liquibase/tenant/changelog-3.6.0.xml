@@ -6,4 +6,5 @@
   <include file="liquibase/tenant/scripts/v3.6.0/create-currencies-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.6.0/create-usage-consolidation-settings-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.6.0/update-access-types-view-user-name-column.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/create-usage-consolidation-credentials-table.xml"/>
 </databaseChangeLog>
