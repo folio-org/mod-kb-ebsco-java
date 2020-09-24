@@ -13,10 +13,10 @@
   <include file="liquibase/tenant/scripts/v3.5.0/alter-access-types-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-access-type-mapping-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-holdings-table.xml"/>
-  <include file="liquibase/tenant/scripts/v3.5.0/create-holding-status-audit-trigger.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-holdings-status-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-holdings-status-audit-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-retry-status-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/alter-transaction-ids-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.5.0/create-holding-status-audit-trigger.xml"/>
   <include file="liquibase/tenant/scripts/v3.5.0/_clean-up.xml"/>
 </databaseChangeLog>
