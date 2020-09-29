@@ -37,7 +37,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.UCAuthEbscoClient;
-import org.folio.client.uc.UCAuthToken;
+import org.folio.client.uc.model.UCAuthToken;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Month;

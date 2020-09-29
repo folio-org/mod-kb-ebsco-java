@@ -27,6 +27,7 @@ import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
+import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.util.UserInfo;
 
 @Service
@@ -34,18 +35,27 @@ public class UCSettingsServiceImpl implements UCSettingsService {
 
   private static final String NOT_ENABLED_MESSAGE = "Usage Consolidation is not enabled for KB credentials with id [%s]";
 
+  private final KbCredentialsService kbCredentialsService;
   private final UCSettingsRepository repository;
   private final UCAuthService authService;
   private final UCApigeeEbscoClient ebscoClient;
   private final Converter<DbUCSettings, UCSettings> fromDbConverter;
 
-  public UCSettingsServiceImpl(UCSettingsRepository repository,
+  public UCSettingsServiceImpl(KbCredentialsService kbCredentialsService,
+                               UCSettingsRepository repository,
                                UCAuthService authService, UCApigeeEbscoClient ebscoClient,
                                Converter<DbUCSettings, UCSettings> converter) {
+    this.kbCredentialsService = kbCredentialsService;
     this.repository = repository;
     this.authService = authService;
     this.ebscoClient = ebscoClient;
     this.fromDbConverter = converter;
+  }
+
+  @Override
+  public CompletableFuture<UCSettings> fetchByUser(Map<String, String> okapiHeaders) {
+    return kbCredentialsService.findByUser(okapiHeaders)
+      .thenCompose(kbCredentials -> fetchByCredentialsId(kbCredentials.getId(), okapiHeaders));
   }
 
   @Override
@@ -93,13 +103,17 @@ public class UCSettingsServiceImpl implements UCSettingsService {
 
   private CompletableFuture<Void> validate(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
     return authService.authenticate(okapiHeaders)
-      .thenApply(authToken -> new UCConfiguration(ucSettings.getCustomerKey(), authToken))
+      .thenApply(authToken -> createConfiguration(ucSettings, authToken))
       .thenCompose(ebscoClient::verifyCredentials)
       .thenAccept(aBoolean -> {
         if (Boolean.FALSE.equals(aBoolean)) {
           throw new InputValidationException("Invalid UC Credentials", null);
         }
       });
+  }
+
+  private UCConfiguration createConfiguration(DbUCSettings ucSettings, String authToken) {
+    return UCConfiguration.builder().customerKey(ucSettings.getCustomerKey()).accessToken(authToken).build();
   }
 
   private DbUCSettings prepareUpdate(DbUCSettings dbUcSettings, UCSettingsPatchRequest patchRequest, UserInfo userInfo) {

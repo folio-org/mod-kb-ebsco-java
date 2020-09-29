@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import org.folio.client.uc.UCAuthEbscoClient;
-import org.folio.client.uc.UCAuthToken;
+import org.folio.client.uc.model.UCAuthToken;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
 

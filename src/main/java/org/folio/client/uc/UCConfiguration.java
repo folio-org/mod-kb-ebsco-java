@@ -1,10 +1,12 @@
 package org.folio.client.uc;
 
-import lombok.Value;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
-@Value
+@Getter
+@SuperBuilder
 public class UCConfiguration {
 
-  String customerKey;
-  String accessToken;
+  private final String customerKey;
+  private final String accessToken;
 }

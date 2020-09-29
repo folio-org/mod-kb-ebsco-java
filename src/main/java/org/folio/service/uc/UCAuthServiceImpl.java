@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import org.folio.cache.VertxCache;
 import org.folio.client.uc.UCAuthEbscoClient;
-import org.folio.client.uc.UCAuthToken;
+import org.folio.client.uc.model.UCAuthToken;
 import org.folio.repository.uc.DbUCCredentials;
 import org.folio.repository.uc.UCCredentialsRepository;
 import org.folio.rest.tools.utils.TenantTool;
