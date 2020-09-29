@@ -32,6 +32,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
+import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.config.ModConfiguration;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
@@ -70,6 +71,7 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
+import org.folio.service.uc.UCAuthService;
 import org.folio.service.uc.UCSettingsService;
 import org.folio.service.uc.UCSettingsServiceImpl;
 
@@ -217,14 +219,18 @@ public class ApplicationConfig {
 
   @Bean("securedUCSettingsService")
   public UCSettingsService securedUCSettingsService(@Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+                                                    UCAuthService authService,
+                                                    UCApigeeEbscoClient ebscoClient,
                                                     UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(repository, converter);
+    return new UCSettingsServiceImpl(repository, authService, ebscoClient, converter);
   }
 
   @Bean("nonSecuredUCSettingsService")
   public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+                                                       UCAuthService authService,
+                                                       UCApigeeEbscoClient ebscoClient,
                                                        UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(repository, converter);
+    return new UCSettingsServiceImpl(repository, authService, ebscoClient, converter);
   }
 
   @Bean("securedCredentialsService")

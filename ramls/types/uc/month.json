@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "Defines month",
+  "javaType": "org.folio.rest.jaxrs.model.Month",
   "type": "string",
   "enum": [
     "jan",
@@ -15,7 +16,5 @@
     "oct",
     "nov",
     "dec"
-  ],
-  "example": "jan",
-  "default": "jan"
+  ]
 }

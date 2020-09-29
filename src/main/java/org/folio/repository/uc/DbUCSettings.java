@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 import org.folio.repository.DbMetadata;
 
 @Getter
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class DbUCSettings extends DbMetadata {
 
   UUID id;
