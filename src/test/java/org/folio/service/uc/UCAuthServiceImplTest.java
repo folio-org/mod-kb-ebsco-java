@@ -3,6 +3,8 @@ package org.folio.service.uc;
 import static io.vertx.core.Future.succeededFuture;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -16,22 +18,26 @@ import java.util.Map;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.predicate.ResponsePredicate;
+import io.vertx.ext.web.codec.BodyCodec;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import org.folio.client.uc.UCAuthEbscoClient;
 import org.folio.client.uc.UCAuthToken;
@@ -44,19 +50,28 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
   public static final int TIMEOUT = 100000;
   @Autowired
   private UCAuthService ucAuthService;
-  @InjectMocks
   @Autowired
   private UCAuthEbscoClient authServiceClient;
   @Spy
+  private WebClient client;
+  @Spy
   private HttpResponse<JsonObject> httpResponse;
   @Spy
-  private HttpRequest<JsonObject> httpRequest;
+  private HttpRequest<Buffer> httpRequest;
+  @Spy
+  private HttpRequest<JsonObject> jsonHttpRequest;
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
     openMocks(this).close();
-    doAnswer(httpResponseAnswer(httpResponse, 1)).when(httpRequest).sendForm(any(), any());
+    ReflectionTestUtils.setField(authServiceClient, "webClient", client);
+
+    when(client.postAbs(anyString())).thenReturn(httpRequest);
+    doAnswer(httpResponseAnswer(httpResponse, 1)).when(jsonHttpRequest).sendForm(any(), any());
+    when(httpRequest.timeout(anyLong())).thenReturn(httpRequest);
+    when(httpRequest.expect(any(ResponsePredicate.class))).thenReturn(httpRequest);
+    when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonHttpRequest);
   }
 
   @After
