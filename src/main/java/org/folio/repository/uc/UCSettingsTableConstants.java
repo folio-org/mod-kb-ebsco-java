@@ -8,6 +8,7 @@ import static org.folio.repository.DbMetadataUtil.UPDATED_BY_USER_NAME_COLUMN;
 import static org.folio.repository.DbMetadataUtil.UPDATED_DATE_COLUMN;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
+import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
 
 public final class UCSettingsTableConstants {
@@ -40,7 +41,7 @@ public final class UCSettingsTableConstants {
       UPDATED_BY_USER_NAME_COLUMN
     };
     SELECT_UC_SETTINGS_BY_CREDENTIALS_ID = selectQuery() + " " + whereQuery(KB_CREDENTIALS_ID_COLUMN) + ";";
-    INSERT_UC_SETTINGS = insertQuery(allColumns) + ";";
+    INSERT_UC_SETTINGS = insertQuery(allColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, allColumns) + ";";
   }
 
   private UCSettingsTableConstants() {

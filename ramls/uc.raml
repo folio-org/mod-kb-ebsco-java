@@ -11,6 +11,7 @@ documentation:
 
 types:
   uCSettings: !include types/uc/uCSettings.json
+  uCSettingsPatchRequest: !include types/uc/uCSettingsPatchRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/kb-credentials/{id}/uc:
@@ -38,3 +39,31 @@ types:
             example:
               strict: false
               value: !include examples/uc/uc_settings_get_404_response.json
+  patch:
+    description: Create a new Usage Consolidation Settings
+    body:
+      application/vnd.api+json:
+        description: Create a Usage Consolidation
+        type: uCSettingsPatchRequest
+        example:
+          strict: false
+          value: !include examples/uc/uc_settings_patch_request.json
+    responses:
+      204:
+          description: No Content
+      404:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_patch_404_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_patch_422_response.json

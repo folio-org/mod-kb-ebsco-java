@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Usage Consolidation Settings Patch Request Schema",
+  "description": "Usage Consolidation Settings Patch Request Schema",
+  "javaType": "org.folio.rest.jaxrs.model.UCSettingsPatchRequest",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Patch request data object",
+      "$ref": "uCSettingsPatchRequestData.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

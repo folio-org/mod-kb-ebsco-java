@@ -12,7 +12,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -28,29 +27,29 @@ public class UCAuthEbscoClientImpl implements UCAuthEbscoClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(UCAuthEbscoClientImpl.class);
 
-  private static final int PORT = 443;
   private static final int TIMEOUT = 20000;
   private static final String REQUEST_URI = "/oauth-proxy/token";
 
-  private HttpRequest<JsonObject> tokenRequest;
+  private final String baseUrl;
+  private final WebClient webClient;
 
-  public UCAuthEbscoClientImpl(@Value("${kb.ebsco.uc.auth.host:apis.ebsco.com}") String host, Vertx vertx) {
+  public UCAuthEbscoClientImpl(@Value("${kb.ebsco.uc.auth.url}") String baseUrl, Vertx vertx) {
+    this.baseUrl = baseUrl;
     WebClientOptions options = new WebClientOptions();
     options.setLogActivity(true);
-    WebClient webClient = WebClient.create(vertx, options);
-    tokenRequest = webClient
-      .post(PORT, host, REQUEST_URI)
-      .ssl(true)
-      .timeout(TIMEOUT)
-      .expect(ResponsePredicate.SC_OK)
-      .as(BodyCodec.jsonObject());
+    this.webClient = WebClient.create(vertx, options);
   }
 
   @Override
   public CompletableFuture<UCAuthToken> requestToken(String clientId, String clientSecret) {
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
     LOG.info("Request UC Token");
-    tokenRequest.sendForm(createRequestBody(clientId, clientSecret), promise);
+    webClient
+      .postAbs(baseUrl + REQUEST_URI)
+      .timeout(TIMEOUT)
+      .expect(ResponsePredicate.SC_OK)
+      .as(BodyCodec.jsonObject())
+      .sendForm(createRequestBody(clientId, clientSecret), promise);
     return mapVertxFuture(promise.future().recover(mapException()))
       .thenApply(HttpResponse::body)
       .thenApply(jsonObject -> jsonObject.mapTo(UCAuthToken.class));
@@ -67,6 +66,7 @@ public class UCAuthEbscoClientImpl implements UCAuthEbscoClient {
   private Function<Throwable, Future<HttpResponse<JsonObject>>> mapException() {
     return throwable -> {
       LOG.error("Request UC Token failed", throwable);
-      return Future.failedFuture(new UcAuthenticationException(throwable.getMessage()));};
+      return Future.failedFuture(new UcAuthenticationException(throwable.getMessage()));
+    };
   }
 }

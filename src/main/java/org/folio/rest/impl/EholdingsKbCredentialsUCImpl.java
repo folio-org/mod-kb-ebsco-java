@@ -13,6 +13,7 @@ import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdUc;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.uc.UCSettingsService;
@@ -36,6 +37,16 @@ public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc 
     settingsService.fetchByCredentialsId(credentialsId, okapiHeaders)
       .thenAccept(ucSettings -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsUcByIdResponse.respond200WithApplicationVndApiJson(ucSettings))))
+      .exceptionally(errorHandler.handle(asyncResultHandler));
+  }
+
+  @Override
+  public void patchEholdingsKbCredentialsUcById(String credentialsId, UCSettingsPatchRequest entity,
+                                                Map<String, String> okapiHeaders,
+                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    settingsService.update(credentialsId, entity, okapiHeaders)
+      .thenAccept(unused -> asyncResultHandler.handle(succeededFuture(
+        PatchEholdingsKbCredentialsUcByIdResponse.respond204())))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 }

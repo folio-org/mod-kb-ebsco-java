@@ -9,6 +9,9 @@ import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.uc.UCSettingsTableConstants.CURRENCY_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.CUSTOMER_KEY_COLUMN;
+import static org.folio.repository.uc.UCSettingsTableConstants.ID_COLUMN;
+import static org.folio.repository.uc.UCSettingsTableConstants.INSERT_UC_SETTINGS;
+import static org.folio.repository.uc.UCSettingsTableConstants.KB_CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.PLATFORM_TYPE_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.START_MONTH_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
@@ -27,9 +30,10 @@ import io.vertx.sqlclient.Tuple;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.repository.uc.DbUCSettings;
-import org.folio.repository.uc.UCSettingsTableConstants;
 import org.folio.rest.converter.uc.UCSettingsConverter;
 import org.folio.rest.jaxrs.model.Meta;
+import org.folio.rest.jaxrs.model.Month;
+import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
 import org.folio.rest.persist.PostgresClient;
@@ -40,8 +44,8 @@ public class UCSettingsTestUtil {
 
   public static final String STUB_CUSTOMER_KEY = "stub-customer-key";
   public static final String STUB_CURRENCY = "USD";
-  public static final UCSettingsDataAttributes.StartMonth STUB_START_MONTH = UCSettingsDataAttributes.StartMonth.APR;
-  public static final UCSettingsDataAttributes.PlatformType STUB_PLATFORM_TYPE = UCSettingsDataAttributes.PlatformType.ALL;
+  public static final Month STUB_START_MONTH = Month.APR;
+  public static final PlatformType STUB_PLATFORM_TYPE = PlatformType.ALL;
 
   private static final Converter<DbUCSettings, UCSettings> CONVERTER = new UCSettingsConverter.FromDbSecuredConverter();
 
@@ -51,7 +55,7 @@ public class UCSettingsTestUtil {
     var attributes = ucSettings.getAttributes();
     var meta = ucSettings.getMeta();
 
-    var query = prepareQuery(UCSettingsTableConstants.INSERT_UC_SETTINGS, uCSettingsTestTable());
+    var query = prepareQuery(INSERT_UC_SETTINGS, uCSettingsTestTable());
     UUID id = toUUID(ucSettings.getId());
     if (id == null) {
       id = UUID.randomUUID();
@@ -86,7 +90,8 @@ public class UCSettingsTestUtil {
 
   private static UCSettings mapUCSettings(Row row) {
     var builder = DbUCSettings.builder()
-      .id(row.getUUID(UCSettingsTableConstants.ID_COLUMN))
+      .id(row.getUUID(ID_COLUMN))
+      .kbCredentialsId(row.getUUID(KB_CREDENTIALS_ID_COLUMN))
       .customerKey(row.getString(CUSTOMER_KEY_COLUMN))
       .currency(row.getString(CURRENCY_COLUMN))
       .startMonth(row.getString(START_MONTH_COLUMN))

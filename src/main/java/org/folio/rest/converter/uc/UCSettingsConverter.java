@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import org.folio.repository.uc.DbUCSettings;
 import org.folio.rest.jaxrs.model.Meta;
+import org.folio.rest.jaxrs.model.Month;
+import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
 
@@ -45,8 +47,8 @@ public final class UCSettingsConverter {
           .withCredentialsId(fromUUID(source.getKbCredentialsId()))
           .withCustomerKey(source.getCustomerKey())
           .withCurrency(source.getCurrency())
-          .withPlatformType(UCSettingsDataAttributes.PlatformType.fromValue(source.getPlatformType()))
-          .withStartMonth(UCSettingsDataAttributes.StartMonth.fromValue(source.getStartMonth()))
+          .withPlatformType(PlatformType.fromValue(source.getPlatformType()))
+          .withStartMonth(Month.fromValue(source.getStartMonth()))
         )
         .withMeta(new Meta()
           .withCreatedByUserId(fromUUID(source.getCreatedByUserId()))

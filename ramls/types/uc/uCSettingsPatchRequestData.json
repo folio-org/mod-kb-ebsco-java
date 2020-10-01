@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Usage Consolidation Settings object schema",
-  "description": "Usage Consolidation Settings object schema",
-  "type": "object",
-  "javaType": "org.folio.rest.jaxrs.model.UCSettings",
+  "title": "Usage Consolidation Settings Patch Request Data Schema",
+  "description": "Usage Consolidation Settings Patch Request Data Schema",
+  "javaType": "org.folio.rest.jaxrs.model.UCSettingsPatchRequestData",
   "additionalProperties": false,
+  "type": "object",
   "properties": {
     "id": {
       "type": "string",
@@ -21,13 +21,7 @@
     "attributes": {
       "type": "object",
       "description": "Usage Consolidation settings attributes",
-      "$ref": "uCSettingsDataAttributes.json"
-    },
-    "meta": {
-      "type": "object",
-      "description": "Metadata about creation and changes to item",
-      "$ref": "../../raml-util/schemas/metadata.schema",
-      "readonly": true
+      "$ref": "uCSettingsPatchRequestDataAttributes.json"
     }
   },
   "required": [
