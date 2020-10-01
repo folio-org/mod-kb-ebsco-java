@@ -8,7 +8,6 @@ import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +53,10 @@ public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc 
   @Override
   public void postEholdingsKbCredentialsUcById(String id, String contentType, UCSettingsPostRequest entity,
                                                Map<String, String> okapiHeaders,
-                                               Handler<AsyncResult<Response>> asyncResultHandler,
-                                               Context vertxContext) {
-    asyncResultHandler.handle(Future.succeededFuture(
-      PostEholdingsKbCredentialsUcByIdResponse.status(Response.Status.NOT_IMPLEMENTED).build()
-    ));
+                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    settingsService.save(id, entity, okapiHeaders)
+      .thenAccept(ucSettings -> asyncResultHandler.handle(succeededFuture(
+        PostEholdingsKbCredentialsUcByIdResponse.respond201WithApplicationVndApiJson(ucSettings))))
+      .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 }

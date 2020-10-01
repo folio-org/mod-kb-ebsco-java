@@ -6,20 +6,13 @@
   "javaType": "org.folio.rest.jaxrs.model.UCSettingsPostRequest",
   "additionalProperties": false,
   "properties": {
-    "type": {
-      "type": "string",
-      "description": "Type of resource",
-      "enum": ["ucSettings"],
-      "example": "ucSettings"
-    },
-    "attributes": {
+    "data": {
       "type": "object",
       "description": "Usage Consolidation Post Request Settings attributes",
       "$ref": "uCSettingsPostDataAttributes.json"
     }
   },
   "required": [
-    "type",
-    "attributes"
+    "data"
   ]
 }

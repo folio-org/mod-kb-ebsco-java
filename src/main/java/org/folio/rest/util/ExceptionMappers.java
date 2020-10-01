@@ -29,6 +29,7 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.exception.UnAuthorizedException;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.service.holdings.exception.ProcessInProgressException;
+import org.folio.service.uc.UcAuthenticationException;
 
 public final class ExceptionMappers {
 
@@ -248,6 +249,24 @@ public final class ExceptionMappers {
       Response.status(SC_UNPROCESSABLE_ENTITY)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(ErrorUtil.createError(exception.getErrors().get(0).getMessage()))
+        .build();
+  }
+
+  /**
+   * {@link UcAuthenticationException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 422}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<UcAuthenticationException, Response> error422UcSettingsInvalidMapper() {
+    return exception ->
+      Response.status(SC_UNPROCESSABLE_ENTITY)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(ErrorUtil.createError(exception.getMessage()))
         .build();
   }
 

@@ -1,5 +1,7 @@
 package org.folio.service.uc;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,8 @@ import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
+import org.folio.rest.validator.uc.UsageConsolidationPostBodyValidator;
 import org.folio.util.UserInfo;
 
 @Service
@@ -38,14 +43,21 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private final UCAuthService authService;
   private final UCApigeeEbscoClient ebscoClient;
   private final Converter<DbUCSettings, UCSettings> fromDbConverter;
+  private final Converter<UCSettingsPostRequest, DbUCSettings> toDbConverter;
+
+  @Autowired
+  private UsageConsolidationPostBodyValidator validator;
 
   public UCSettingsServiceImpl(UCSettingsRepository repository,
-                               UCAuthService authService, UCApigeeEbscoClient ebscoClient,
-                               Converter<DbUCSettings, UCSettings> converter) {
+                               UCAuthService authService,
+                               UCApigeeEbscoClient ebscoClient,
+                               Converter<DbUCSettings, UCSettings> fromConverter,
+                               Converter<UCSettingsPostRequest, DbUCSettings> toConverter) {
     this.repository = repository;
     this.authService = authService;
     this.ebscoClient = ebscoClient;
-    this.fromDbConverter = converter;
+    this.fromDbConverter = fromConverter;
+    this.toDbConverter = toConverter;
   }
 
   @Override
@@ -122,6 +134,24 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private CompletableFuture<DbUCSettings> fetchDbUCSettings(String credentialsId, Map<String, String> okapiHeaders) {
     return repository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
       .thenApply(getUCSettingsOrFail(credentialsId));
+  }
+
+  @Override
+  public CompletableFuture<UCSettings> save(String id, UCSettingsPostRequest request, Map<String, String> okapiHeaders) {
+    validator.validate(request);
+    request.getData().getAttributes().setCredentialsId(id);
+    return completedFuture(toDbConverter.convert(request))
+      .thenCombine(fetchUserInfo(okapiHeaders), this::setCreatorMetaInfo)
+      .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
+      .thenApply(fromDbConverter::convert);
+  }
+
+  private DbUCSettings setCreatorMetaInfo(DbUCSettings settings, UserInfo userInfo) {
+      return settings.toBuilder()
+        .createdDate(OffsetDateTime.now())
+        .createdByUserId(toUUID(userInfo.getUserId()))
+        .createdByUserName(userInfo.getUserName())
+        .build();
   }
 
   private Function<Optional<DbUCSettings>, DbUCSettings> getUCSettingsOrFail(String credentialsId) {

@@ -11,8 +11,8 @@ documentation:
 
 types:
   uCSettings: !include types/uc/uCSettings.json
-  uCSettingsPatchRequest: !include types/uc/uCSettingsPatchRequest.json
   uCSettingsPostRequest: !include types/uc/uCSettingsPostRequest.json
+  uCSettingsPatchRequest: !include types/uc/uCSettingsPatchRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/kb-credentials/{id}/uc:
@@ -53,11 +53,10 @@ types:
           strict: false
           value: !include examples/uc/uc_settings_post_request.json
     responses:
-      200:
-        description: OK
+      201:
+        description: Created
         body:
           application/vnd.api+json:
-            description: The server has successfully fulfilled the POST request.
             type: uCSettings
             example:
               strict: false

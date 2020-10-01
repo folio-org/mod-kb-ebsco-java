@@ -9,6 +9,7 @@ import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error409ProcessInProgressMapper;
 import static org.folio.rest.util.ExceptionMappers.error422ConfigurationInvalidMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
+import static org.folio.rest.util.ExceptionMappers.error422UcSettingsInvalidMapper;
 import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
 import java.util.Collection;
@@ -59,6 +60,7 @@ import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.UCSettings;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -74,6 +76,7 @@ import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
 import org.folio.service.uc.UCAuthService;
 import org.folio.service.uc.UCSettingsService;
 import org.folio.service.uc.UCSettingsServiceImpl;
+import org.folio.service.uc.UcAuthenticationException;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -189,6 +192,7 @@ public class ApplicationConfig {
       .add(DatabaseException.class, error400DatabaseMapper())
       .add(InputValidationException.class, error422InputValidationMapper())
       .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper())
+      .add(UcAuthenticationException.class, error422UcSettingsInvalidMapper())
       .add(ServiceResponseException.class, errorServiceResponseMapper());
   }
 
@@ -212,25 +216,27 @@ public class ApplicationConfig {
 
   @Bean
   public UserKbCredentialsService securedUserCredentialsService(KbCredentialsRepository credentialsRepository,
-      AssignedUserRepository assignedUserRepository,
-      @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter) {
+                                                                AssignedUserRepository assignedUserRepository,
+                                                                @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter) {
     return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter);
   }
 
   @Bean("securedUCSettingsService")
-  public UCSettingsService securedUCSettingsService(@Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+  public UCSettingsService securedUCSettingsService(@Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
+                                                    @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
                                                     UCAuthService authService,
                                                     UCApigeeEbscoClient ebscoClient,
                                                     UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(repository, authService, ebscoClient, converter);
+    return new UCSettingsServiceImpl(repository, authService, ebscoClient, fromConverter, toConverter);
   }
 
   @Bean("nonSecuredUCSettingsService")
-  public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
+  public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
+                                                       @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
                                                        UCAuthService authService,
                                                        UCApigeeEbscoClient ebscoClient,
                                                        UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(repository, authService, ebscoClient, converter);
+    return new UCSettingsServiceImpl(repository, authService, ebscoClient, fromConverter, toConverter);
   }
 
   @Bean("securedCredentialsService")

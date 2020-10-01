@@ -1,0 +1,10 @@
+{
+  "data" : {
+    "type" : "ucSettings",
+    "attributes" : {
+      "customerKey" : "zzz",
+      "currency" : "usd",
+      "platformType" : "aaa"
+    }
+  }
+}

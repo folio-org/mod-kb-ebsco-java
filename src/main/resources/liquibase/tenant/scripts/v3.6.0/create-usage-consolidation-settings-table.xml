@@ -20,7 +20,7 @@
       <column name="currency" type="varchar(3)">
         <constraints nullable="false"/>
       </column>
-      <column name="platform_type" type="varchar(10)">
+      <column name="platform_type" type="varchar(12)">
         <constraints nullable="false"/>
       </column>
       <column name="created_date" type="timestamptz" defaultValueComputed="current_timestamp">

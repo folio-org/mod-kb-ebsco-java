@@ -1,0 +1,11 @@
+{
+  "data" : {
+    "type" : "ucSettings",
+    "attributes" : {
+      "startMonth" : "may",
+      "customerKey" : "zzz",
+      "currency" : "usd",
+      "platformType" : "nonPublisher"
+    }
+  }
+}
