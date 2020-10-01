@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
@@ -28,10 +27,11 @@ import org.folio.db.exc.ConstraintViolationException;
 import org.folio.repository.uc.DbUCSettings;
 import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Month;
+import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
-import org.folio.rest.validator.uc.UsageConsolidationPostBodyValidator;
 import org.folio.util.UserInfo;
 
 @Service
@@ -44,9 +44,6 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private final UCApigeeEbscoClient ebscoClient;
   private final Converter<DbUCSettings, UCSettings> fromDbConverter;
   private final Converter<UCSettingsPostRequest, DbUCSettings> toDbConverter;
-
-  @Autowired
-  private UsageConsolidationPostBodyValidator validator;
 
   public UCSettingsServiceImpl(UCSettingsRepository repository,
                                UCAuthService authService,
@@ -138,16 +135,23 @@ public class UCSettingsServiceImpl implements UCSettingsService {
 
   @Override
   public CompletableFuture<UCSettings> save(String id, UCSettingsPostRequest request, Map<String, String> okapiHeaders) {
-    validator.validate(request);
-    request.getData().getAttributes().setCredentialsId(id);
-    return completedFuture(toDbConverter.convert(request))
-      .thenCombine(fetchUserInfo(okapiHeaders), this::setCreatorMetaInfo)
+    updateRequest(request, id);
+    return fetchUserInfo(okapiHeaders)
+      .thenCombine(completedFuture(toDbConverter.convert(request)),
+        (userInfo, dbUcSettings) -> prepareSave(dbUcSettings, userInfo))
       .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
       .thenApply(fromDbConverter::convert);
   }
 
-  private DbUCSettings setCreatorMetaInfo(DbUCSettings settings, UserInfo userInfo) {
-      return settings.toBuilder()
+  private void updateRequest(UCSettingsPostRequest request, String credentialsId) {
+    var attributes = request.getData().getAttributes();
+     attributes.setCredentialsId(credentialsId);
+     attributes.setPlatformType(ObjectUtils.defaultIfNull(attributes.getPlatformType(), PlatformType.ALL));
+     attributes.setStartMonth(ObjectUtils.defaultIfNull(attributes.getStartMonth(), Month.JAN));
+  }
+
+  private DbUCSettings prepareSave(DbUCSettings request, UserInfo userInfo) {
+      return request.toBuilder()
         .createdDate(OffsetDateTime.now())
         .createdByUserId(toUUID(userInfo.getUserId()))
         .createdByUserName(userInfo.getUserName())

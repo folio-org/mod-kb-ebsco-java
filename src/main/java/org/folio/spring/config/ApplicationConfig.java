@@ -9,7 +9,6 @@ import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error409ProcessInProgressMapper;
 import static org.folio.rest.util.ExceptionMappers.error422ConfigurationInvalidMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
-import static org.folio.rest.util.ExceptionMappers.error422UcSettingsInvalidMapper;
 import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
 import java.util.Collection;
@@ -76,7 +75,6 @@ import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
 import org.folio.service.uc.UCAuthService;
 import org.folio.service.uc.UCSettingsService;
 import org.folio.service.uc.UCSettingsServiceImpl;
-import org.folio.service.uc.UcAuthenticationException;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -192,7 +190,6 @@ public class ApplicationConfig {
       .add(DatabaseException.class, error400DatabaseMapper())
       .add(InputValidationException.class, error422InputValidationMapper())
       .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper())
-      .add(UcAuthenticationException.class, error422UcSettingsInvalidMapper())
       .add(ServiceResponseException.class, errorServiceResponseMapper());
   }
 

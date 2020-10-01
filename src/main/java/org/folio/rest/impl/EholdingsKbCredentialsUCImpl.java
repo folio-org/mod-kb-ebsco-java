@@ -2,8 +2,14 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 
-import java.util.Map;
+import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
+import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
+import static org.folio.rest.util.ExceptionMappers.error422UcSettingsInvalidMapper;
 
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
@@ -13,11 +19,13 @@ import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdUc;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.uc.UCSettingsService;
+import org.folio.service.uc.UcAuthenticationException;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc {
@@ -57,6 +65,20 @@ public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc 
     settingsService.save(id, entity, okapiHeaders)
       .thenAccept(ucSettings -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsKbCredentialsUcByIdResponse.respond201WithApplicationVndApiJson(ucSettings))))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+      .exceptionally(handleStatusException(asyncResultHandler));
+  }
+  private Function<Throwable, Void> handleStatusException(Handler<AsyncResult<Response>> asyncResultHandler) {
+    return e -> {
+      ErrorHandler handler = new ErrorHandler();
+
+      handler
+        .addRmApiMapping()
+        .add(InputValidationException.class,  error422InputValidationMapper())
+        .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
+        .add(UcAuthenticationException.class, error422UcSettingsInvalidMapper());
+
+      handler.handle(asyncResultHandler, e);
+      return null;
+    };
   }
 }
