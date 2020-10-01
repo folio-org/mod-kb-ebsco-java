@@ -67,12 +67,12 @@ public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc 
         PostEholdingsKbCredentialsUcByIdResponse.respond201WithApplicationVndApiJson(ucSettings))))
       .exceptionally(handleStatusException(asyncResultHandler));
   }
+
   private Function<Throwable, Void> handleStatusException(Handler<AsyncResult<Response>> asyncResultHandler) {
     return e -> {
       ErrorHandler handler = new ErrorHandler();
 
       handler
-        .addRmApiMapping()
         .add(InputValidationException.class,  error422InputValidationMapper())
         .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
         .add(UcAuthenticationException.class, error422UcSettingsInvalidMapper());
