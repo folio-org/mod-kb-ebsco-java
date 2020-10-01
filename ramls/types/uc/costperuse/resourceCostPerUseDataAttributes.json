@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource cost-per-use data attributes object schema",
+  "description": "Resource cost-per-use data attributes object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceCostPerUseDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "platforms": {
+      "type": "array",
+      "description": "List of platforms and their usage",
+      "items": {
+        "type": "object",
+        "$ref": "platformUsage.json"
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "description": "Cost of current resource",
+      "$ref": "analysisCost.json"
+    }
+  },
+  "required": [
+    "platforms",
+    "analysis"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cost analysis attributes object schema",
+  "description": "Cost analysis attributes object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.CostAnalysisAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "cost": {
+      "type": "number",
+      "description": "Cost of resource",
+      "example": "800.00"
+    },
+    "counts": {
+      "type": "array",
+      "description": "Counts of usage per month",
+      "items": {
+        "type": "integer"
+      },
+      "example": [100, 0, 100, 0, 0, 0, 0, null, 100, 100, 0, 100]
+    },
+    "usage": {
+      "type": "integer",
+      "description": "Count of usage",
+      "example": "800.00"
+    },
+    "costPerUse": {
+      "type": "number",
+      "description": "Cost-per-use of resource",
+      "example": "800.00"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

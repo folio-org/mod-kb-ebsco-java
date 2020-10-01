@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cost analysis object schema",
+  "description": "Cost analysis object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.CostAnalysis",
+  "additionalProperties": false,
+  "properties": {
+    "publisherPlatforms": {
+      "type": "object",
+      "description": "Publisher platforms analysis",
+      "$ref": "analysisCostAttributes.json"
+    },
+    "nonPublisherPlatforms": {
+      "type": "object",
+      "description": "Publisher platforms analysis",
+      "$ref": "analysisCostAttributes.json"
+    },
+    "allPlatforms": {
+      "type": "object",
+      "description": "Publisher platforms analysis",
+      "$ref": "analysisCostAttributes.json"
+    }
+  }
+}
