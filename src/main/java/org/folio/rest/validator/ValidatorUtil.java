@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.folio.rest.exception.InputValidationException;
@@ -30,7 +29,6 @@ public class ValidatorUtil {
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
   private static final String MUST_BE_EQUALS = "%s should be equals to '%s' but actual is '%s'";
-  private static final String MUST_BE_ONE_OF = "%s should have one of allowed values '%s' but actual is '%s'";
 
   private ValidatorUtil() {
   }
@@ -161,15 +159,6 @@ public class ValidatorUtil {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_EQUALS, paramName, expected, actual)
-      );
-    }
-  }
-
-  public static void checkEnumValue(Class enumClass, String value, String allowedValues, String paramName) {
-    if (EnumUtils.isValidEnum(enumClass, value)){
-      throw new InputValidationException(
-        String.format(INVALID_FIELD_FORMAT, paramName),
-        String.format(MUST_BE_ONE_OF, paramName, allowedValues, value)
       );
     }
   }
