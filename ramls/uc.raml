@@ -11,11 +11,8 @@ documentation:
 
 types:
   uCSettings: !include types/uc/uCSettings.json
-<<<<<<< HEAD
   uCSettingsPatchRequest: !include types/uc/uCSettingsPatchRequest.json
-=======
   uCSettingsPostRequest: !include types/uc/uCSettingsPostRequest.json
->>>>>>> 0e4b0a0... MODKBEKBJ-493 - Usage Consolidation: Implement endpoint POST /eholdings/kb-credentials/<id>/uc
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/kb-credentials/{id}/uc:
@@ -43,44 +40,44 @@ types:
             example:
               strict: false
               value: !include examples/uc/uc_settings_get_404_response.json
-    post:
-      description: Create a new Usage Consolidation Settings
-      headers:
-        Content-Type:
-          example: application/vnd.api+json
-      body:
-        application/vnd.api+json:
-          description: Create a Usage Consolidation
-          type: uCSettingsPostRequest
-          example:
-            strict: false
-            value: !include examples/uc/uc_settings_post_request.json
-      responses:
-        200:
-          description: OK
-          body:
-            application/vnd.api+json:
-              description: The server has successfully fulfilled the POST request.
-              type: uCSettings
-              example:
-                strict: false
-                value: !include examples/uc/uc_settings_post_200_response.json
-        400:
-          description: Bad Request
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/uc/uc_settings_post_400_response.json
-        422:
-          description: Unprocessable Entity
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/uc/uc_settings_post_422_response.json
+  post:
+    description: Create a new Usage Consolidation Settings
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        description: Create a Usage Consolidation
+        type: uCSettingsPostRequest
+        example:
+          strict: false
+          value: !include examples/uc/uc_settings_post_request.json
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: The server has successfully fulfilled the POST request.
+            type: uCSettings
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_422_response.json
   patch:
     description: Create a new Usage Consolidation Settings
     body:
