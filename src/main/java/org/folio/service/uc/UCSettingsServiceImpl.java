@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +42,7 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private final UCApigeeEbscoClient ebscoClient;
   private final Converter<DbUCSettings, UCSettings> fromDbConverter;
 
-  public UCSettingsServiceImpl(KbCredentialsService kbCredentialsService,
+  public UCSettingsServiceImpl(@Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
                                UCSettingsRepository repository,
                                UCAuthService authService, UCApigeeEbscoClient ebscoClient,
                                Converter<DbUCSettings, UCSettings> converter) {

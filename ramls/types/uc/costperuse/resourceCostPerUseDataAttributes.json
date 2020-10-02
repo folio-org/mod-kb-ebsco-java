@@ -6,13 +6,10 @@
   "javaType": "org.folio.rest.jaxrs.model.ResourceCostPerUseDataAttributes",
   "additionalProperties": false,
   "properties": {
-    "platforms": {
-      "type": "array",
-      "description": "List of platforms and their usage",
-      "items": {
-        "type": "object",
-        "$ref": "platformUsage.json"
-      }
+    "usage": {
+      "type": "object",
+      "description": "Usage of current resource",
+      "$ref": "usage.json"
     },
     "analysis": {
       "type": "object",
@@ -21,7 +18,7 @@
     }
   },
   "required": [
-    "platforms",
+    "usage",
     "analysis"
   ]
 }

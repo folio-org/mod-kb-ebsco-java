@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cost analysis object schema",
+  "description": "Cost analysis object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.Usage",
+  "additionalProperties": false,
+  "properties": {
+    "platforms": {
+      "type": "array",
+      "description": "List of platforms and their usage",
+      "items": {
+        "type": "object",
+        "$ref": "specificPlatformUsage.json"
+      }
+    },
+    "totals": {
+      "type": "object",
+      "description": "Totals of platform usage",
+      "$ref": "usageTotals.json"
+    }
+  }
+}

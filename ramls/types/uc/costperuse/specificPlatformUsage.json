@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Platform usage object schema",
+  "description": "Platform usage object schema",
+  "javaType": "org.folio.rest.jaxrs.model.SpecificPlatformUsage",
+  "additionalProperties": false,
+  "type": "object",
+  "extends": {
+    "$ref": "platformUsage.json"
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of platform",
+      "example": "InjentaConnect"
+    },
+    "isPublisherPlatform": {
+      "type": "boolean",
+      "description": "Publisher or non-publisher type of platform",
+      "example": true
+    }
+  },
+  "required": [
+    "name",
+    "isPublisherPlatform"
+  ]
+}

@@ -152,6 +152,11 @@
           "permissionsRequired": ["kb-ebsco.resources.item.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/resources/{resourceId}/costperuse",
+          "permissionsRequired": ["kb-ebsco.resources-costperuse.item.get"]
+        },
+        {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/resources/{resourceId}",
           "permissionsRequired": ["kb-ebsco.resources.item.put"]
@@ -664,12 +669,18 @@
       "description": "Patch usage consolidation settings related to KB credentials"
     },
     {
+      "permissionName": "kb-ebsco.resources-costperuse.item.get",
+      "displayName": "get usage consolidation resource related to KB credentials",
+      "description": "Patch usage consolidation settings related to KB credentials"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.uc.all",
       "displayName": "EBSCO KB Broker Usage Consolidation settings - all permissions",
       "description": "All permissions for managing Usage Consolidation settings",
       "subPermissions": [
         "kb-ebsco.kb-credentials.uc.item.get",
-        "kb-ebsco.kb-credentials.uc.item.patch"
+        "kb-ebsco.kb-credentials.uc.item.patch",
+        "kb-ebsco.resources-costperuse.item.get"
       ]
     },
     {

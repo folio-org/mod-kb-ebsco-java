@@ -13,12 +13,12 @@
     },
     "nonPublisherPlatforms": {
       "type": "object",
-      "description": "Publisher platforms analysis",
+      "description": "Non-publisher platforms analysis",
       "$ref": "analysisCostAttributes.json"
     },
     "allPlatforms": {
       "type": "object",
-      "description": "Publisher platforms analysis",
+      "description": "All platforms analysis",
       "$ref": "analysisCostAttributes.json"
     }
   }

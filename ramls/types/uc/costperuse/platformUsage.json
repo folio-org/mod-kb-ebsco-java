@@ -6,11 +6,6 @@
   "javaType": "org.folio.rest.jaxrs.model.PlatformUsage",
   "additionalProperties": false,
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Name of platform",
-      "example": "InjentaConnect"
-    },
     "counts": {
       "type": "array",
       "description": "Counts of usage per month",
@@ -19,14 +14,13 @@
       },
       "example": [100, 0, 100, 0, 0, 0, 0, null, 100, 100, 0, 100]
     },
-    "usage": {
+    "total": {
       "type": "integer",
       "description": "Total count of usage",
       "example": 500
     }
   },
   "required": [
-    "name",
     "counts",
     "total"
   ]
