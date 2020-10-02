@@ -148,6 +148,10 @@ public abstract class WireMockTestBase extends TestBase {
     return postWithStatus(endpoint, postBody, SC_CREATED, CONTENT_TYPE_HEADER);
   }
 
+  protected ExtractableResponse<Response> postWithCreated(String endpoint, String postBody, Header... headers) {
+    return postWithStatus(endpoint, postBody, SC_CREATED, addContentHeader(headers));
+  }
+
   @Override
   protected ExtractableResponse<Response> putWithNoContent(String resourcePath, String putBody, Header... headers) {
     return super.putWithNoContent(resourcePath, putBody, addContentHeader(headers));

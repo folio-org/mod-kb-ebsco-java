@@ -31,4 +31,6 @@ public class UCCredentialsTestUtil {
     PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
   }
+
+
 }
