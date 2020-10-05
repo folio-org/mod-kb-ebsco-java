@@ -15,10 +15,16 @@
       "type": "object",
       "description": "Cost of current resource",
       "$ref": "analysisCost.json"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Response's parameters",
+      "$ref": "costPerUseParameters.json"
     }
   },
   "required": [
     "usage",
-    "analysis"
+    "analysis",
+    "parameters"
   ]
 }

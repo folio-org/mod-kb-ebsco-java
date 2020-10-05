@@ -25,7 +25,7 @@ public class TestConfig {
   }
 
   @Bean
-  public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
+  public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
     PropertySourcesPlaceholderConfigurer configurer = new PropertySourcesPlaceholderConfigurer();
     configurer.setLocation(new ClassPathResource("test-application.properties"));
     return configurer;

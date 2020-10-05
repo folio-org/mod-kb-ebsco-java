@@ -16,12 +16,10 @@ import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Service;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
-import org.folio.client.uc.UCConfiguration;
+import org.folio.client.uc.configuration.UCConfiguration;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.repository.uc.DbUCSettings;
 import org.folio.repository.uc.UCSettingsRepository;
@@ -31,7 +29,6 @@ import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.util.UserInfo;
 
-@Service
 public class UCSettingsServiceImpl implements UCSettingsService {
 
   private static final String NOT_ENABLED_MESSAGE = "Usage Consolidation is not enabled for KB credentials with id [%s]";
@@ -42,7 +39,7 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private final UCApigeeEbscoClient ebscoClient;
   private final Converter<DbUCSettings, UCSettings> fromDbConverter;
 
-  public UCSettingsServiceImpl(@Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
+  public UCSettingsServiceImpl(KbCredentialsService kbCredentialsService,
                                UCSettingsRepository repository,
                                UCAuthService authService, UCApigeeEbscoClient ebscoClient,
                                Converter<DbUCSettings, UCSettings> converter) {

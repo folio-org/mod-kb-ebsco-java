@@ -12,6 +12,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.folio.rest.annotations.Validate;
+import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.resource.EholdingsResourcesResourceIdCostperuse;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.uc.UCCostPerUseService;
@@ -29,6 +31,8 @@ public class EholdingsCostperuseImpl implements EholdingsResourcesResourceIdCost
   }
 
   @Override
+  @Validate
+  @HandleValidationErrors
   public void getEholdingsResourcesCostperuseByResourceId(String resourceId, String platform, int fiscalYear,
                                                           Map<String, String> okapiHeaders,
                                                           Handler<AsyncResult<Response>> asyncResultHandler,

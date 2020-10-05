@@ -1,4 +1,4 @@
-package org.folio.client.uc;
+package org.folio.client.uc.configuration;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

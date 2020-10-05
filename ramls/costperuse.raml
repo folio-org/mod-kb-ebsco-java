@@ -41,6 +41,7 @@ types:
     resourceId:
       description: Identifier of the resource formed from Provider Id, Package Id, Title Id (see example)
       type: string
+      pattern: "^\\d+-\\d+-\\d+$"
       example: 22-1887786-1440285
   get:
     description: Retrieve cost-per-use information for a particular resource

@@ -1,6 +1,7 @@
 package org.folio.service.uc;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -9,8 +10,7 @@ import java.util.stream.IntStream;
 import org.springframework.stereotype.Component;
 
 import org.folio.client.uc.model.UCPlatformUsage;
-import org.folio.client.uc.model.UCTitleCost;
-import org.folio.client.uc.model.UCTitleCostUsage;
+import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.rest.jaxrs.model.CostAnalysis;
 import org.folio.rest.jaxrs.model.CostAnalysisAttributes;
 import org.folio.rest.jaxrs.model.PlatformType;
@@ -24,34 +24,24 @@ import org.folio.rest.jaxrs.model.UsageTotals;
 @Component
 public class ResourceCostPerUseConverter {
 
-  public ResourceCostPerUse convert(UCTitleCost ucTitleCost, PlatformType platformType) {
-    UCTitleCostUsage ucTitleCostUsage = ucTitleCost.getUsage();
+  public ResourceCostPerUse convert(UCTitleCostPerUse ucTitleCostPerUse, PlatformType platformType) {
+    var ucTitleCostUsage = ucTitleCostPerUse.getUsage();
     List<SpecificPlatformUsage> specificPlatformUsages = ucTitleCostUsage.getPlatforms().entrySet()
       .stream()
-      .map(entry -> {
-        String platformName = entry.getKey();
-        UCPlatformUsage ucPlatformUsage = entry.getValue();
-        List<Integer> ucPlatformUsageCounts = ucPlatformUsage.getCounts();
-        Boolean isPublisherPlatform = ucPlatformUsage.getPublisherPlatform();
-        return new SpecificPlatformUsage()
-          .withName(platformName)
-          .withCounts(ucPlatformUsageCounts)
-          .withIsPublisherPlatform(isPublisherPlatform)
-          .withTotal(sum(ucPlatformUsageCounts));
-      })
+      .map(this::toSpecificPlatformUsage)
       .collect(Collectors.toList());
 
-    Usage usage = new Usage().withTotals(new UsageTotals());
-    CostAnalysis analysis = new CostAnalysis();
+    var usage = new Usage().withTotals(new UsageTotals());
+    var analysis = new CostAnalysis();
     if (platformType == PlatformType.PUBLISHER) {
       setPublisherPlatform(specificPlatformUsages, usage);
 
-      CostAnalysisAttributes attributes = getCostAnalysisAttributes(ucTitleCost, usage.getTotals().getPublisher());
+      var attributes = getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getPublisher());
       analysis.setPublisherPlatforms(attributes);
     } else if (platformType == PlatformType.NON_PUBLISHER) {
       setNonPublisherPlatform(specificPlatformUsages, usage);
 
-      CostAnalysisAttributes attributes = getCostAnalysisAttributes(ucTitleCost, usage.getTotals().getNonPublisher());
+      var attributes = getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher());
       analysis.setNonPublisherPlatforms(attributes);
     } else {
       setPublisherPlatform(specificPlatformUsages, usage);
@@ -59,9 +49,9 @@ public class ResourceCostPerUseConverter {
       usage.setPlatforms(specificPlatformUsages);
       usage.getTotals().setAll(getTotalUsage(specificPlatformUsages));
 
-      analysis.setPublisherPlatforms(getCostAnalysisAttributes(ucTitleCost, usage.getTotals().getPublisher()));
-      analysis.setNonPublisherPlatforms(getCostAnalysisAttributes(ucTitleCost, usage.getTotals().getNonPublisher()));
-      analysis.setAllPlatforms(getCostAnalysisAttributes(ucTitleCost, usage.getTotals().getAll()));
+      analysis.setPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getPublisher()));
+      analysis.setNonPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
+      analysis.setAllPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getAll()));
     }
 
     return new ResourceCostPerUse().withType(ResourceCostPerUse.Type.RESOURCE_COST_PER_USE)
@@ -71,16 +61,30 @@ public class ResourceCostPerUseConverter {
       );
   }
 
-  private CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCost ucTitleCost, PlatformUsage publisher) {
-    CostAnalysisAttributes analysisAttributes = new CostAnalysisAttributes();
-    analysisAttributes.setCost(ucTitleCost.getAnalysis().getCurrent().getCost());
-    analysisAttributes.setUsage(publisher.getTotal());
-    analysisAttributes.setCostPerUse(analysisAttributes.getCost() / analysisAttributes.getUsage());
+  private SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UCPlatformUsage> entry) {
+    UCPlatformUsage ucPlatformUsage = entry.getValue();
+    List<Integer> ucPlatformUsageCounts = ucPlatformUsage.getCounts();
+    Boolean isPublisherPlatform = ucPlatformUsage.getPublisherPlatform();
+    return new SpecificPlatformUsage()
+      .withName(entry.getKey())
+      .withCounts(ucPlatformUsageCounts)
+      .withIsPublisherPlatform(isPublisherPlatform)
+      .withTotal(sum(ucPlatformUsageCounts));
+  }
+
+  private CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCostPerUse ucTitleCostPerUse, PlatformUsage publisher) {
+    var analysisAttributes = new CostAnalysisAttributes();
+    var cost = ucTitleCostPerUse.getAnalysis().getCurrent().getCost();
+    if (cost != null) {
+      analysisAttributes.setCost(cost);
+      analysisAttributes.setUsage(publisher.getTotal());
+      analysisAttributes.setCostPerUse(analysisAttributes.getCost() / analysisAttributes.getUsage());
+    }
     return analysisAttributes;
   }
 
   private void setNonPublisherPlatform(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
-    List<SpecificPlatformUsage> nonPublisherPlatformUsages = specificPlatformUsages.stream()
+    var nonPublisherPlatformUsages = specificPlatformUsages.stream()
       .filter(Predicate.not(SpecificPlatformUsage::getIsPublisherPlatform))
       .collect(Collectors.toList());
     usage.setPlatforms(nonPublisherPlatformUsages);
@@ -88,7 +92,7 @@ public class ResourceCostPerUseConverter {
   }
 
   private void setPublisherPlatform(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
-    List<SpecificPlatformUsage> publisherPlatformUsages = specificPlatformUsages.stream()
+    var publisherPlatformUsages = specificPlatformUsages.stream()
       .filter(SpecificPlatformUsage::getIsPublisherPlatform)
       .collect(Collectors.toList());
     usage.setPlatforms(publisherPlatformUsages);
@@ -96,8 +100,8 @@ public class ResourceCostPerUseConverter {
   }
 
   private PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
-    PlatformUsage totalUsage = new PlatformUsage();
-    List<Integer> totalCounts = IntStream.range(0, 12)
+    var totalUsage = new PlatformUsage();
+    var totalCounts = IntStream.range(0, 12)
       .map(monthIndex -> platformUsages.stream()
         .map(SpecificPlatformUsage::getCounts)
         .map(integers -> integers.get(monthIndex))
