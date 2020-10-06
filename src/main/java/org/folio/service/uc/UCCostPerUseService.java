@@ -7,6 +7,6 @@ import org.folio.rest.jaxrs.model.ResourceCostPerUse;
 
 public interface UCCostPerUseService {
 
-  CompletableFuture<ResourceCostPerUse> getResourceCostPerUse(String resourceId, String platform, int fiscalYear,
+  CompletableFuture<ResourceCostPerUse> getResourceCostPerUse(String resourceId, String platform, String fiscalYear,
                                                               Map<String, String> okapiHeaders);
 }

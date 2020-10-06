@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Platform usage object schema",
-  "description": "Platform usage object schema",
+  "title": "Specific platform usage object schema",
+  "description": "Specific platform usage object schema",
   "javaType": "org.folio.rest.jaxrs.model.SpecificPlatformUsage",
   "additionalProperties": false,
   "type": "object",

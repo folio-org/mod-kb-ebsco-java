@@ -21,10 +21,5 @@
       "description": "Cost-per-use of resource",
       "example": "800.00"
     }
-  },
-  "required": [
-    "cost",
-    "usage",
-    "costPerUse"
-  ]
+  }
 }

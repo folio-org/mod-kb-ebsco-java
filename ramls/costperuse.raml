@@ -25,8 +25,8 @@ traits:
         fiscalYear:
           displayName: Fiscal year
           description: Fiscal year of cost-per-use data
-          type: integer
-          example: 2019
+          type: string
+          pattern: "^\\d{4}$"
           required: true
 
 types:
@@ -55,12 +55,20 @@ types:
             type: resourceCostPerUse
             example:
               strict: false
-              value: !include examples/uc/uc_settings_get_200_response.json
-      404:
-        description: Not Found
+              value: !include examples/costPerUse/resource_cost_per_use_200_response.json
+      400:
+        description: Bad Request
         body:
           application/vnd.api+json:
             type: jsonapiError
             example:
               strict: false
-              value: !include examples/uc/uc_settings_get_404_response.json
+              value: !include examples/costPerUse/resource_cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/resource_cost_per_use_422_response.json

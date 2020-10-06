@@ -20,15 +20,15 @@ public class UCRequestException extends RuntimeException {
     this.errorMessage = message;
   }
 
-  private int getStatusCode() {
+  public int getStatusCode() {
     return statusCode;
   }
 
-  private JsonObject getResponseBody() {
+  public JsonObject getResponseBody() {
     return responseBody;
   }
 
-  private String getErrorMessage() {
+  public String getErrorMessage() {
     return errorMessage;
   }
 }

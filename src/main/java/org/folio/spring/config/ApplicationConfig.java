@@ -3,8 +3,10 @@ package org.folio.spring.config;
 import static org.folio.rest.util.ExceptionMappers.error400BadRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error400ConstraintViolationMapper;
 import static org.folio.rest.util.ExceptionMappers.error400DatabaseMapper;
+import static org.folio.rest.util.ExceptionMappers.error400UCRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error401AuthorizationMapper;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
+import static org.folio.rest.util.ExceptionMappers.error401UcAuthenticationMapper;
 import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error409ProcessInProgressMapper;
 import static org.folio.rest.util.ExceptionMappers.error422ConfigurationInvalidMapper;
@@ -33,6 +35,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
 import org.folio.client.uc.UCApigeeEbscoClient;
+import org.folio.client.uc.UCRequestException;
 import org.folio.config.ModConfiguration;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
@@ -74,6 +77,7 @@ import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
 import org.folio.service.uc.UCAuthService;
 import org.folio.service.uc.UCSettingsService;
 import org.folio.service.uc.UCSettingsServiceImpl;
+import org.folio.service.uc.UcAuthenticationException;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -203,8 +207,15 @@ public class ApplicationConfig {
       .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper())
       .add(DatabaseException.class, error400DatabaseMapper())
       .add(ServiceResponseException.class, errorServiceResponseMapper());
-
   }
+
+  @Bean
+  public ErrorHandler costPerUseErrorHandler() {
+    return errorHandler()
+      .add(UcAuthenticationException.class, error401UcAuthenticationMapper())
+      .add(UCRequestException.class, error400UCRequestMapper());
+  }
+
   @Bean
   public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
     return new ModConfiguration(module);

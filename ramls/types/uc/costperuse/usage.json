@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Cost analysis object schema",
-  "description": "Cost analysis object schema",
+  "title": "Usage object schema",
+  "description": "Usage object schema",
   "type": "object",
   "javaType": "org.folio.rest.jaxrs.model.Usage",
   "additionalProperties": false,

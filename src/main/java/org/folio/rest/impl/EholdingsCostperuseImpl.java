@@ -24,7 +24,7 @@ public class EholdingsCostperuseImpl implements EholdingsResourcesResourceIdCost
   @Autowired
   private UCCostPerUseService costPerUseService;
   @Autowired
-  private ErrorHandler errorHandler;
+  private ErrorHandler costPerUseErrorHandler;
 
   public EholdingsCostperuseImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -33,7 +33,7 @@ public class EholdingsCostperuseImpl implements EholdingsResourcesResourceIdCost
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsResourcesCostperuseByResourceId(String resourceId, String platform, int fiscalYear,
+  public void getEholdingsResourcesCostperuseByResourceId(String resourceId, String platform, String fiscalYear,
                                                           Map<String, String> okapiHeaders,
                                                           Handler<AsyncResult<Response>> asyncResultHandler,
                                                           Context vertxContext) {
@@ -42,6 +42,6 @@ public class EholdingsCostperuseImpl implements EholdingsResourcesResourceIdCost
         asyncResultHandler.handle(succeededFuture(
           GetEholdingsResourcesCostperuseByResourceIdResponse.respond200WithApplicationVndApiJson(costPerUse)))
       )
-      .exceptionally(errorHandler.handle(asyncResultHandler));
+      .exceptionally(costPerUseErrorHandler.handle(asyncResultHandler));
   }
 }

@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.collections4.IterableUtils;
 import org.springframework.stereotype.Component;
 
 import org.folio.client.uc.model.UCPlatformUsage;
@@ -25,6 +26,11 @@ import org.folio.rest.jaxrs.model.UsageTotals;
 public class ResourceCostPerUseConverter {
 
   public ResourceCostPerUse convert(UCTitleCostPerUse ucTitleCostPerUse, PlatformType platformType) {
+    ResourceCostPerUse resourceCostPerUse = new ResourceCostPerUse().withType(ResourceCostPerUse.Type.RESOURCE_COST_PER_USE);
+
+    if (ucTitleCostPerUse.getUsage() == null || ucTitleCostPerUse.getUsage().getPlatforms() == null) {
+      return resourceCostPerUse;
+    }
     var ucTitleCostUsage = ucTitleCostPerUse.getUsage();
     List<SpecificPlatformUsage> specificPlatformUsages = ucTitleCostUsage.getPlatforms().entrySet()
       .stream()
@@ -54,7 +60,7 @@ public class ResourceCostPerUseConverter {
       analysis.setAllPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getAll()));
     }
 
-    return new ResourceCostPerUse().withType(ResourceCostPerUse.Type.RESOURCE_COST_PER_USE)
+    return resourceCostPerUse
       .withAttributes(new ResourceCostPerUseDataAttributes()
         .withUsage(usage)
         .withAnalysis(analysis)
@@ -74,9 +80,10 @@ public class ResourceCostPerUseConverter {
 
   private CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCostPerUse ucTitleCostPerUse, PlatformUsage publisher) {
     var analysisAttributes = new CostAnalysisAttributes();
-    var cost = ucTitleCostPerUse.getAnalysis().getCurrent().getCost();
-    if (cost != null) {
-      analysisAttributes.setCost(cost);
+    if (ucTitleCostPerUse.getAnalysis() != null
+      && ucTitleCostPerUse.getAnalysis().getCurrent() != null
+      && ucTitleCostPerUse.getAnalysis().getCurrent().getCost() != null) {
+      analysisAttributes.setCost(ucTitleCostPerUse.getAnalysis().getCurrent().getCost());
       analysisAttributes.setUsage(publisher.getTotal());
       analysisAttributes.setCostPerUse(analysisAttributes.getCost() / analysisAttributes.getUsage());
     }
@@ -102,17 +109,30 @@ public class ResourceCostPerUseConverter {
   private PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
     var totalUsage = new PlatformUsage();
     var totalCounts = IntStream.range(0, 12)
-      .map(monthIndex -> platformUsages.stream()
-        .map(SpecificPlatformUsage::getCounts)
-        .map(integers -> integers.get(monthIndex))
-        .filter(Objects::nonNull)
-        .mapToInt(Integer::intValue)
-        .sum())
       .boxed()
+      .map(monthIndex -> getMonthSum(platformUsages, monthIndex))
       .collect(Collectors.toList());
+
+    if (IterableUtils.matchesAll(totalCounts, Objects::isNull)) {
+      return null;
+    }
     totalUsage.setCounts(totalCounts);
     totalUsage.setTotal(sum(totalCounts));
     return totalUsage;
+  }
+
+  private Integer getMonthSum(List<SpecificPlatformUsage> platformUsages, int monthIndex) {
+    List<Integer> countsByMonth = platformUsages.stream()
+      .map(SpecificPlatformUsage::getCounts)
+      .map(integers -> integers.get(monthIndex))
+      .collect(Collectors.toList());
+    if (IterableUtils.matchesAll(countsByMonth, Objects::isNull)) {
+      return null;
+    }
+    return countsByMonth.stream()
+      .filter(Objects::nonNull)
+      .mapToInt(Integer::intValue)
+      .sum();
   }
 
   private int sum(List<Integer> integers) {

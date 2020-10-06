@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Some APIGEE error message"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

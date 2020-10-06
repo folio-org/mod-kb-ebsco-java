@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Cost analysis object schema",
-  "description": "Cost analysis object schema",
+  "title": "Usage totals object schema",
+  "description": "Usage totals object schema",
   "type": "object",
   "javaType": "org.folio.rest.jaxrs.model.UsageTotals",
   "additionalProperties": false,
@@ -13,7 +13,7 @@
     },
     "nonPublisher": {
       "type": "object",
-      "description": "Non-ublisher platforms usage",
+      "description": "Non-publisher platforms usage",
       "$ref": "platformUsage.json"
     },
     "all": {
