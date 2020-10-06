@@ -9,8 +9,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.junit.Assert.assertEquals;
@@ -30,7 +28,6 @@ import static org.folio.util.UCSettingsTestUtil.getUCSettings;
 import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
 import static org.folio.util.UCSettingsTestUtil.stubSettings;
 
-import io.vertx.core.json.Json;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -47,12 +44,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.UCAuthEbscoClient;
 import org.folio.client.uc.model.UCAuthToken;
-import org.folio.client.uc.UCApigeeEbscoClient;
-import org.folio.client.uc.UCAuthEbscoClient;
-import org.folio.client.uc.UCAuthToken;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
@@ -62,9 +55,6 @@ import org.folio.rest.jaxrs.model.UCSettingsPatchRequestData;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequestDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
-import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
-import org.folio.rest.jaxrs.model.UCSettingsPatchRequestData;
-import org.folio.rest.jaxrs.model.UCSettingsPatchRequestDataAttributes;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
@@ -218,7 +208,7 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
     setUpUCCredentials(vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
-    String postBody =  Json.encode(getPostRequestNoDefault());
+    String postBody = Json.encode(getPostRequestNoDefault());
     UCSettings ucSettings = postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER).as(UCSettings.class);
 
     assertEquals(credentialsId, ucSettings.getAttributes().getCredentialsId());
@@ -237,7 +227,8 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
     var postRequest = getPostRequestNoDefault();
     postRequest.getData().getAttributes().setCurrency("aaa");
     String postBody = Json.encode(postRequest);
-    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error =
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
     assertErrorContainsDetail(error, "is invalid for 'currency'");
@@ -252,7 +243,8 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
     String credentialsId = UUID.randomUUID().toString();
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
-    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error =
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
 
     String expectedErrorMessage = String.format("'%s' is invalid for 'kb_credentials_id'", credentialsId);
     assertErrorContainsTitle(error, "Invalid value");
@@ -269,7 +261,8 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
     String postBody = Json.encode(getPostRequest());
     postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER);
 
-    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error =
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
 
     String expectedErrorMessage = String.format("'%s' is invalid for", credentialsId);
     assertErrorContainsTitle(error, "Invalid value");
@@ -282,7 +275,8 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
-    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error =
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
 
     String expectedErrorMessage = "Invalid UC API Credentials";
     assertErrorContainsTitle(error, expectedErrorMessage);
@@ -332,6 +326,7 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
       .willReturn(aResponse().withStatus(SC_OK).withBody(Json.encode(stubToken)))
     );
   }
+
   private UCSettingsPostRequest getPostRequest() {
     return new UCSettingsPostRequest()
       .withData(new UCSettingsPostDataAttributes()
