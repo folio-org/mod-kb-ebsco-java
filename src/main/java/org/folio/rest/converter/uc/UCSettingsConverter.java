@@ -2,6 +2,7 @@ package org.folio.rest.converter.uc;
 
 import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
+import static org.folio.db.RowSetUtils.toUUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 
 public final class UCSettingsConverter {
 
@@ -58,6 +60,22 @@ public final class UCSettingsConverter {
           .withCreatedDate(toDate(source.getCreatedDate()))
           .withUpdatedDate(toDate(source.getUpdatedDate()))
         );
+    }
+  }
+
+  @Component("postToUCSettingsConverter")
+  public static class PostRequestToDbConverter implements Converter<UCSettingsPostRequest, DbUCSettings>{
+
+    @Override
+    public DbUCSettings convert(UCSettingsPostRequest ucSettingsPostRequest) {
+      var attributes = ucSettingsPostRequest.getData().getAttributes();
+       return DbUCSettings.builder()
+         .customerKey(attributes.getCustomerKey())
+         .kbCredentialsId(toUUID(attributes.getCredentialsId()))
+         .currency(attributes.getCurrency().toUpperCase())
+         .platformType(attributes.getPlatformType().value())
+         .startMonth(attributes.getStartMonth().value())
+         .build();
     }
   }
 }

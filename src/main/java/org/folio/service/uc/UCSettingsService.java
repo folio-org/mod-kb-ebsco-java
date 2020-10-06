@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 
 public interface UCSettingsService {
 
@@ -14,4 +15,7 @@ public interface UCSettingsService {
 
   CompletableFuture<Void> update(String credentialsId, UCSettingsPatchRequest patchRequest,
                                  Map<String, String> okapiHeaders);
+
+  CompletableFuture<UCSettings> save(String credentialsId, UCSettingsPostRequest postRequest,
+                                     Map<String, String> okapiHeaders);
 }

@@ -1,7 +1,5 @@
 package org.folio.rest.validator;
 
-import java.util.UUID;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Rule;
 import org.junit.Test;

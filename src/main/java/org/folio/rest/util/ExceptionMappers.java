@@ -290,6 +290,24 @@ public final class ExceptionMappers {
   }
 
   /**
+   * {@link UcAuthenticationException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 422}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<UcAuthenticationException, Response> error422UcSettingsInvalidMapper() {
+    return exception ->
+      Response.status(SC_UNPROCESSABLE_ENTITY)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(ErrorUtil.createError(exception.getMessage()))
+        .build();
+  }
+
+  /**
    * {@link ServiceResponseException} to {@link Response} error mapper
    * <pre>
    * Response.status = {@code ServiceResponseException.code}

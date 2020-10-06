@@ -11,6 +11,7 @@ documentation:
 
 types:
   uCSettings: !include types/uc/uCSettings.json
+  uCSettingsPostRequest: !include types/uc/uCSettingsPostRequest.json
   uCSettingsPatchRequest: !include types/uc/uCSettingsPatchRequest.json
   jsonapiError: !include types/jsonapiError.json
 
@@ -39,6 +40,43 @@ types:
             example:
               strict: false
               value: !include examples/uc/uc_settings_get_404_response.json
+  post:
+    description: Create a new Usage Consolidation Settings
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        description: Create a Usage Consolidation
+        type: uCSettingsPostRequest
+        example:
+          strict: false
+          value: !include examples/uc/uc_settings_post_request.json
+    responses:
+      201:
+        description: Created
+        body:
+          application/vnd.api+json:
+            type: uCSettings
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_422_response.json
   patch:
     description: Create a new Usage Consolidation Settings
     body:

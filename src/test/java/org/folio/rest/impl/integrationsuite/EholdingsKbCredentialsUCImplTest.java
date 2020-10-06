@@ -10,9 +10,13 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.junit.Assert.assertEquals;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
@@ -27,6 +31,11 @@ import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
 import static org.folio.util.UCSettingsTestUtil.stubSettings;
 
 import io.vertx.core.json.Json;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.UUID;
+
+import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
 import org.junit.Before;
@@ -38,10 +47,21 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.UCAuthEbscoClient;
 import org.folio.client.uc.model.UCAuthToken;
+import org.folio.client.uc.UCApigeeEbscoClient;
+import org.folio.client.uc.UCAuthEbscoClient;
+import org.folio.client.uc.UCAuthToken;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Month;
+import org.folio.rest.jaxrs.model.Month;
+import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
+import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
+import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
+import org.folio.rest.jaxrs.model.UCSettingsPatchRequestData;
+import org.folio.rest.jaxrs.model.UCSettingsPatchRequestDataAttributes;
+import org.folio.rest.jaxrs.model.UCSettingsPostDataAttributes;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequestData;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequestDataAttributes;
@@ -159,7 +179,7 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPatchWithInvalidCustomerKey() {
     mockAuthToken();
-    mockFailedVerification();
+    mockFailed400Verification();
     setUpUCCredentials(vertx);
     saveUCSettings(stubSettings(credentialsId), vertx);
 
@@ -176,12 +196,134 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
     assertErrorContainsTitle(error, "Invalid UC Credentials");
   }
 
+  @Test
+  public void shouldReturn201OnPostSettingsWithDefaultValues() throws IOException, URISyntaxException {
+    mockAuthToken();
+    mockSuccessfulVerification();
+    setUpUCCredentials(vertx);
+
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String postBody = Json.encode(getPostRequest());
+    UCSettings ucSettings = postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER).as(UCSettings.class);
+
+    assertEquals(credentialsId, ucSettings.getAttributes().getCredentialsId());
+    assertEquals(Month.JAN, ucSettings.getAttributes().getStartMonth());
+    assertEquals(PlatformType.ALL, ucSettings.getAttributes().getPlatformType());
+  }
+
+  @Test
+  public void shouldReturn201OnPostSettingsWhenDataIsValid() throws IOException, URISyntaxException {
+    mockAuthToken();
+    mockSuccessfulVerification();
+    setUpUCCredentials(vertx);
+
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String postBody =  Json.encode(getPostRequestNoDefault());
+    UCSettings ucSettings = postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER).as(UCSettings.class);
+
+    assertEquals(credentialsId, ucSettings.getAttributes().getCredentialsId());
+    assertEquals(Month.FEB, ucSettings.getAttributes().getStartMonth());
+    assertEquals(PlatformType.NON_PUBLISHER, ucSettings.getAttributes().getPlatformType());
+    assertEquals("USD", ucSettings.getAttributes().getCurrency());
+  }
+
+  @Test
+  public void shouldReturn422OnPostSettingsWhenCurrencyIsInvalid() throws IOException, URISyntaxException {
+    mockAuthToken();
+    mockSuccessfulVerification();
+    setUpUCCredentials(vertx);
+
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    var postRequest = getPostRequestNoDefault();
+    postRequest.getData().getAttributes().setCurrency("aaa");
+    String postBody = Json.encode(postRequest);
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid value");
+    assertErrorContainsDetail(error, "is invalid for 'currency'");
+  }
+
+  @Test
+  public void shouldReturn422WhenKbCredentialsNotExist() throws IOException, URISyntaxException {
+    mockAuthToken();
+    mockSuccessfulVerification();
+    setUpUCCredentials(vertx);
+
+    String credentialsId = UUID.randomUUID().toString();
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String postBody = Json.encode(getPostRequest());
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+
+    String expectedErrorMessage = String.format("'%s' is invalid for 'kb_credentials_id'", credentialsId);
+    assertErrorContainsTitle(error, "Invalid value");
+    assertErrorContainsDetail(error, expectedErrorMessage);
+  }
+
+  @Test
+  public void shouldReturn422WhenSaveTwoEntitiesWithSameCredentialsId() throws IOException, URISyntaxException {
+    mockAuthToken();
+    mockSuccessfulVerification();
+    setUpUCCredentials(vertx);
+
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String postBody = Json.encode(getPostRequest());
+    postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER);
+
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+
+    String expectedErrorMessage = String.format("'%s' is invalid for", credentialsId);
+    assertErrorContainsTitle(error, "Invalid value");
+    assertErrorContainsDetail(error, expectedErrorMessage);
+  }
+
+  @Test
+  public void shouldReturn422WhenUCCredentialNotExist() throws IOException, URISyntaxException {
+    clearDataFromTable(vertx, UC_CREDENTIALS_TABLE_NAME);
+
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String postBody = Json.encode(getPostRequest());
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+
+    String expectedErrorMessage = "Invalid UC API Credentials";
+    assertErrorContainsTitle(error, expectedErrorMessage);
+  }
+
+  @Test
+  public void shouldReturn401WhenNoHeaderProvided() throws IOException, URISyntaxException {
+    mockAuthToken();
+    mockSuccessfulVerification();
+    setUpUCCredentials(vertx);
+
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String postBody = Json.encode(getPostRequest());
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNAUTHORIZED).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid token");
+  }
+
+  @Test
+  public void shouldReturn401WhenAuthTokenExpired() throws IOException, URISyntaxException {
+    mockAuthToken();
+    mockFailed401Verification();
+    setUpUCCredentials(vertx);
+
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String postBody = Json.encode(getPostRequest());
+    JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNAUTHORIZED).as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid token");
+  }
+
   private void mockSuccessfulVerification() {
     stubFor(get(urlMatching("/uc/costperuse.*")).willReturn(aResponse().withStatus(SC_OK)));
   }
 
-  private void mockFailedVerification() {
+  private void mockFailed400Verification() {
     stubFor(get(urlMatching("/uc/costperuse.*")).willReturn(aResponse().withStatus(SC_BAD_REQUEST)));
+  }
+
+  private void mockFailed401Verification() {
+    stubFor(get(urlMatching("/uc/costperuse.*")).willReturn(aResponse().withStatus(SC_UNAUTHORIZED)));
   }
 
   private void mockAuthToken() {
@@ -189,5 +331,26 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
     stubFor(post(urlPathMatching("/oauth-proxy/token"))
       .willReturn(aResponse().withStatus(SC_OK).withBody(Json.encode(stubToken)))
     );
+  }
+  private UCSettingsPostRequest getPostRequest() {
+    return new UCSettingsPostRequest()
+      .withData(new UCSettingsPostDataAttributes()
+        .withType(UCSettingsPostDataAttributes.Type.UC_SETTINGS)
+        .withAttributes(new UCSettingsDataAttributes()
+          .withCurrency("usd")
+          .withCustomerKey("zzz")));
+  }
+
+  private UCSettingsPostRequest getPostRequestNoDefault() {
+    return new UCSettingsPostRequest()
+      .withData(new UCSettingsPostDataAttributes()
+        .withType(UCSettingsPostDataAttributes.Type.UC_SETTINGS)
+        .withAttributes(new UCSettingsDataAttributes()
+          .withCurrency("usd")
+          .withCustomerKey("zzz")
+          .withPlatformType(PlatformType.NON_PUBLISHER)
+          .withStartMonth(Month.FEB)
+        )
+      );
   }
 }

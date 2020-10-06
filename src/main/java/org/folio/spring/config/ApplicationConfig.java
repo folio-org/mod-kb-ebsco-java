@@ -62,6 +62,7 @@ import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.UCSettings;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -87,7 +88,8 @@ import org.folio.service.uc.UcAuthenticationException;
   "org.folio.repository",
   "org.folio.service",
   "org.folio.client",
-  "org.folio.common"})
+  "org.folio.common"
+})
 public class ApplicationConfig {
 
   @Bean
@@ -223,50 +225,56 @@ public class ApplicationConfig {
 
   @Bean
   public UserKbCredentialsService securedUserCredentialsService(KbCredentialsRepository credentialsRepository,
-      AssignedUserRepository assignedUserRepository,
-      @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter) {
+                                                                AssignedUserRepository assignedUserRepository,
+                                                                @Qualifier("secured")
+                                                                  Converter<DbKbCredentials, KbCredentials> converter) {
     return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter);
   }
 
   @Bean("securedCredentialsService")
   public KbCredentialsService securedCredentialsService(
-      @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter,
-      @Qualifier("securedUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
-      @Qualifier("securedCredentialsCollection") Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter,
+    @Qualifier("securedUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
+    @Qualifier("securedCredentialsCollection")
+      Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
   }
 
   @Bean
   public UserKbCredentialsService nonSecuredUserCredentialsService(KbCredentialsRepository repository,
-      AssignedUserRepository assignedUserRepository,
-      @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter) {
+                                                                   AssignedUserRepository assignedUserRepository,
+                                                                   @Qualifier("nonSecured")
+                                                                     Converter<DbKbCredentials, KbCredentials> converter) {
     return new UserKbCredentialsServiceImpl(repository, assignedUserRepository, converter);
   }
 
   @Bean("nonSecuredCredentialsService")
   public KbCredentialsService nonSecuredCredentialsService(
-      @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter,
-      @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
-      @Qualifier("nonSecuredCredentialsCollection") Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter,
+    @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
+    @Qualifier("nonSecuredCredentialsCollection")
+      Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
   }
 
-
   @Bean("securedUCSettingsService")
-  public UCSettingsService securedUCSettingsService(@Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
-                                                    @Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
-                                                    UCAuthService authService,
-                                                    UCApigeeEbscoClient ebscoClient,
-                                                    UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(kbCredentialsService, repository, authService, ebscoClient, converter);
+  public UCSettingsService securedUCSettingsService(
+    @Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
+    @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
+    UCAuthService authService,
+    UCApigeeEbscoClient ebscoClient,
+    UCSettingsRepository repository) {
+    return new UCSettingsServiceImpl(repository, authService, ebscoClient, fromConverter, toConverter);
   }
 
   @Bean("nonSecuredUCSettingsService")
-  public UCSettingsService nonSecuredUCSettingsService(@Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> converter,
-                                                       @Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
-                                                       UCAuthService authService,
-                                                       UCApigeeEbscoClient ebscoClient,
-                                                       UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(kbCredentialsService, repository, authService, ebscoClient, converter);
+  public UCSettingsService nonSecuredUCSettingsService(
+    @Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
+    @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
+    UCAuthService authService,
+    UCApigeeEbscoClient ebscoClient,
+    UCSettingsRepository repository) {
+    return new UCSettingsServiceImpl(repository, authService, ebscoClient, fromConverter, toConverter);
   }
+
 }

@@ -1,5 +1,7 @@
 package org.folio.service.uc;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
@@ -24,8 +26,11 @@ import org.folio.db.exc.ConstraintViolationException;
 import org.folio.repository.uc.DbUCSettings;
 import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Month;
+import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
+import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.util.UserInfo;
 
@@ -38,16 +43,19 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private final UCAuthService authService;
   private final UCApigeeEbscoClient ebscoClient;
   private final Converter<DbUCSettings, UCSettings> fromDbConverter;
+  private final Converter<UCSettingsPostRequest, DbUCSettings> toDbConverter;
 
   public UCSettingsServiceImpl(KbCredentialsService kbCredentialsService,
                                UCSettingsRepository repository,
                                UCAuthService authService, UCApigeeEbscoClient ebscoClient,
-                               Converter<DbUCSettings, UCSettings> converter) {
+                               Converter<DbUCSettings, UCSettings> fromConverter,
+                               Converter<UCSettingsPostRequest, DbUCSettings> toConverter) {
     this.kbCredentialsService = kbCredentialsService;
     this.repository = repository;
     this.authService = authService;
     this.ebscoClient = ebscoClient;
-    this.fromDbConverter = converter;
+    this.fromDbConverter = fromConverter;
+    this.toDbConverter = toConverter;
   }
 
   @Override
@@ -69,6 +77,16 @@ public class UCSettingsServiceImpl implements UCSettingsService {
         (dbUcSettings, userInfo) -> prepareUpdate(dbUcSettings, patchRequest, userInfo))
       .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
       .thenApply(nothing());
+  }
+
+  @Override
+  public CompletableFuture<UCSettings> save(String id, UCSettingsPostRequest request, Map<String, String> okapiHeaders) {
+    updateRequest(request, id);
+    return fetchUserInfo(okapiHeaders)
+      .thenCombine(completedFuture(toDbConverter.convert(request)),
+        (userInfo, dbUcSettings) -> prepareSave(dbUcSettings, userInfo))
+      .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
+      .thenApply(fromDbConverter::convert);
   }
 
   private CompletableFuture<DbUCSettings> save(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
@@ -101,17 +119,13 @@ public class UCSettingsServiceImpl implements UCSettingsService {
 
   private CompletableFuture<Void> validate(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
     return authService.authenticate(okapiHeaders)
-      .thenApply(authToken -> createConfiguration(ucSettings, authToken))
+      .thenApply(authToken -> new UCConfiguration(ucSettings.getCustomerKey(), authToken))
       .thenCompose(ebscoClient::verifyCredentials)
       .thenAccept(aBoolean -> {
         if (Boolean.FALSE.equals(aBoolean)) {
           throw new InputValidationException("Invalid UC Credentials", null);
         }
       });
-  }
-
-  private UCConfiguration createConfiguration(DbUCSettings ucSettings, String authToken) {
-    return UCConfiguration.builder().customerKey(ucSettings.getCustomerKey()).accessToken(authToken).build();
   }
 
   private DbUCSettings prepareUpdate(DbUCSettings dbUcSettings, UCSettingsPatchRequest patchRequest, UserInfo userInfo) {
@@ -134,6 +148,21 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private CompletableFuture<DbUCSettings> fetchDbUCSettings(String credentialsId, Map<String, String> okapiHeaders) {
     return repository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
       .thenApply(getUCSettingsOrFail(credentialsId));
+  }
+
+  private void updateRequest(UCSettingsPostRequest request, String credentialsId) {
+    var attributes = request.getData().getAttributes();
+    attributes.setCredentialsId(credentialsId);
+    attributes.setPlatformType(ObjectUtils.defaultIfNull(attributes.getPlatformType(), PlatformType.ALL));
+    attributes.setStartMonth(ObjectUtils.defaultIfNull(attributes.getStartMonth(), Month.JAN));
+  }
+
+  private DbUCSettings prepareSave(DbUCSettings request, UserInfo userInfo) {
+    return request.toBuilder()
+      .createdDate(OffsetDateTime.now())
+      .createdByUserId(toUUID(userInfo.getUserId()))
+      .createdByUserName(userInfo.getUserName())
+      .build();
   }
 
   private Function<Optional<DbUCSettings>, DbUCSettings> getUCSettingsOrFail(String credentialsId) {

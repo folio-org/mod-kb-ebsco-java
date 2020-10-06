@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Usage Consolidation Settings Post Request Data Attributes Schema",
+  "description": "Usage Consolidation Settings Post Request Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.UCSettingsPostDataAttributes",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The UUID of entry",
+      "$ref": "../../raml-util/schemas/uuid.schema",
+      "examples": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": ["ucSettings"],
+      "example": "ucSettings"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Usage Consolidation Post Request Settings attributes",
+      "$ref": "uCSettingsDataAttributes.json"
+    },
+    "meta": {
+      "type": "object",
+      "description": "Creation Metadata",
+      "$ref": "../../raml-util/schemas/metadata.schema",
+      "readonly": true
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

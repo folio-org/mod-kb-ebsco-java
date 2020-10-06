@@ -315,6 +315,10 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
         },
         {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/kb-credentials/{id}/uc",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.collection.post"]},
+        {
           "methods": ["PATCH"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc",
           "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.patch"]
@@ -664,6 +668,11 @@
       "description": "Get usage consolidation settings related to KB credentials"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.uc.collection.post",
+      "displayName": "post usage consolidation settings related to KB credentials",
+      "description": "Post usage consolidation settings related to KB credentials"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.uc.item.patch",
       "displayName": "patch usage consolidation settings related to KB credentials",
       "description": "Patch usage consolidation settings related to KB credentials"
@@ -679,6 +688,7 @@
       "description": "All permissions for managing Usage Consolidation settings",
       "subPermissions": [
         "kb-ebsco.kb-credentials.uc.item.get",
+        "kb-ebsco.kb-credentials.uc.collection.post",
         "kb-ebsco.kb-credentials.uc.item.patch",
         "kb-ebsco.resources-costperuse.item.get"
       ]
