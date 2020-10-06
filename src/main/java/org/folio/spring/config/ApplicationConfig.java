@@ -259,22 +259,24 @@ public class ApplicationConfig {
 
   @Bean("securedUCSettingsService")
   public UCSettingsService securedUCSettingsService(
+    @Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
     @Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
     @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
     UCAuthService authService,
     UCApigeeEbscoClient ebscoClient,
     UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(repository, authService, ebscoClient, fromConverter, toConverter);
+    return new UCSettingsServiceImpl(kbCredentialsService, repository, authService, ebscoClient, fromConverter, toConverter);
   }
 
   @Bean("nonSecuredUCSettingsService")
   public UCSettingsService nonSecuredUCSettingsService(
+    @Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
     @Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
     @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
     UCAuthService authService,
     UCApigeeEbscoClient ebscoClient,
     UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(repository, authService, ebscoClient, fromConverter, toConverter);
+    return new UCSettingsServiceImpl(kbCredentialsService, repository, authService, ebscoClient, fromConverter, toConverter);
   }
 
 }

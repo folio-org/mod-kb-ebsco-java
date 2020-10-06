@@ -119,13 +119,17 @@ public class UCSettingsServiceImpl implements UCSettingsService {
 
   private CompletableFuture<Void> validate(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
     return authService.authenticate(okapiHeaders)
-      .thenApply(authToken -> new UCConfiguration(ucSettings.getCustomerKey(), authToken))
+      .thenApply(authToken -> createConfiguration(ucSettings, authToken))
       .thenCompose(ebscoClient::verifyCredentials)
       .thenAccept(aBoolean -> {
         if (Boolean.FALSE.equals(aBoolean)) {
           throw new InputValidationException("Invalid UC Credentials", null);
         }
       });
+  }
+
+  private UCConfiguration createConfiguration(DbUCSettings ucSettings, String authToken) {
+    return UCConfiguration.builder().customerKey(ucSettings.getCustomerKey()).accessToken(authToken).build();
   }
 
   private DbUCSettings prepareUpdate(DbUCSettings dbUcSettings, UCSettingsPatchRequest patchRequest, UserInfo userInfo) {
