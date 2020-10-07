@@ -35,7 +35,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
 import org.folio.client.uc.UCApigeeEbscoClient;
-import org.folio.client.uc.UCRequestException;
+import org.folio.client.uc.UCFailedRequestException;
 import org.folio.config.ModConfiguration;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
@@ -215,7 +215,7 @@ public class ApplicationConfig {
   public ErrorHandler costPerUseErrorHandler() {
     return errorHandler()
       .add(UcAuthenticationException.class, error401UcAuthenticationMapper())
-      .add(UCRequestException.class, error400UCRequestMapper());
+      .add(UCFailedRequestException.class, error400UCRequestMapper());
   }
 
   @Bean

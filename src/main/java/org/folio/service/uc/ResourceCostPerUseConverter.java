@@ -42,13 +42,11 @@ public class ResourceCostPerUseConverter {
     if (platformType == PlatformType.PUBLISHER) {
       setPublisherPlatform(specificPlatformUsages, usage);
 
-      var attributes = getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getPublisher());
-      analysis.setPublisherPlatforms(attributes);
+      analysis.setPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getPublisher()));
     } else if (platformType == PlatformType.NON_PUBLISHER) {
       setNonPublisherPlatform(specificPlatformUsages, usage);
 
-      var attributes = getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher());
-      analysis.setNonPublisherPlatforms(attributes);
+      analysis.setNonPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
     } else {
       setPublisherPlatform(specificPlatformUsages, usage);
       setNonPublisherPlatform(specificPlatformUsages, usage);

@@ -111,10 +111,10 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
       HttpResponse<Buffer> response = result.response();
       if (ContentType.APPLICATION_JSON.getMimeType().equals(response.getHeader(HttpHeaders.CONTENT_TYPE))) {
         JsonObject body = response.bodyAsJsonObject();
-        return new UCRequestException(response.statusCode(), body);
+        return new UCFailedRequestException(response.statusCode(), body);
       }
 
-      return new UCRequestException(response.statusCode(), response.bodyAsString());
+      return new UCFailedRequestException(response.statusCode(), response.bodyAsString());
     });
   }
 }
