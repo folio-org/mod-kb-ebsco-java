@@ -5,24 +5,34 @@ import static java.lang.String.valueOf;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.resourceIdToString;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
+import io.vertx.core.Promise;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.model.UCTitleCostPerUse;
+import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CostPerUseParameters;
 import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
+import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.rest.jaxrs.model.UCSettings;
+import org.folio.rest.util.template.RMAPITemplateContextBuilder;
+import org.folio.rest.util.template.RMAPITemplateFactory;
 
 @Service
 public class UCCostPerUseServiceImpl implements UCCostPerUseService {
@@ -36,6 +46,9 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   private final UCSettingsService settingsService;
   private final UCApigeeEbscoClient client;
   private final ResourceCostPerUseConverter converter;
+
+  @Autowired
+  private RMAPITemplateFactory templateFactory;
 
   public UCCostPerUseServiceImpl(@Qualifier("nonSecuredUCSettingsService") UCSettingsService settingsService,
                                  UCAuthService authService, UCApigeeEbscoClient client,
@@ -65,6 +78,51 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .thenCompose(configuration -> getTitleCost(id, configuration)
         .thenApply(ucTitleCostPerUse -> convert(ucTitleCostPerUse, platformType.getValue(), id, configuration))
       );
+  }
+
+  @Override
+  public CompletionStage<TitleCostPerUse> getTitleCostPerUse(String titleId, String platform, String fiscalYear,
+                                                             Map<String, String> okapiHeaders) {
+    validateParams(platform, fiscalYear);
+    MutableObject<PlatformType> platformType = new MutableObject<>();
+    return templateFactory.createTemplate(okapiHeaders, Promise.promise())
+      .getRmapiTemplateContext()
+      .thenCompose(rmapiTemplateContext ->
+
+        rmapiTemplateContext.getTitlesService().retrieveTitle(Long.parseLong(titleId), true)
+          .thenApply(title -> title.getCustomerResourcesList()
+            .stream().filter(CustomerResources::getIsSelected).collect(Collectors.toList()))
+      ).thenCompose(customerResources -> {
+        if (customerResources.isEmpty()) {
+          return CompletableFuture.completedFuture(new TitleCostPerUse());
+        } else {
+          return authService.authenticate(okapiHeaders)
+            .thenCombine(settingsService.fetchByUser(okapiHeaders),
+              (authToken, ucSettings) -> {
+                if (platform == null) {
+                  platformType.setValue(ucSettings.getAttributes().getPlatformType());
+                } else {
+                  platformType.setValue(PlatformType.fromValue(platform));
+                }
+                return createConfiguration(fiscalYear, ucSettings, authToken);
+              })
+            .thenCompose(configuration -> client
+              .getTitleCostPerUse(titleId, valueOf(customerResources.get(0).getPackageId()), configuration)
+              .thenApply(ucTitleCostPerUse -> convertTitle(ucTitleCostPerUse, platformType.getValue(), customerResources,
+                configuration))
+            );
+        }
+      });
+  }
+
+  private TitleCostPerUse convertTitle(UCTitleCostPerUse ucTitleCostPerUse, PlatformType value,
+                                       List<CustomerResources> customerResources, GetTitleUCConfiguration configuration) {
+    return null;
+  }
+
+  @Lookup
+  public RMAPITemplateContextBuilder lookupContextBuilder() {
+    return null;
   }
 
   private void validateParams(String platform, String fiscalYear) {
