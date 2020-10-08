@@ -10,24 +10,7 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 traits:
-  commonQueryParameters:
-      queryParameters:
-        platform:
-          displayName: Type of platform
-          description: |
-            Include publisher, non-publisher or all platforms
-            Possible values are
-             - publisher
-             - nonPublisher
-             - all
-          type: string
-          required: false
-        fiscalYear:
-          displayName: Fiscal year
-          description: Fiscal year of cost-per-use data
-          type: string
-          pattern: "^\\d{4}$"
-          required: true
+  costPerUseCommon: !include traits/costPerUseCommon.raml
 
 types:
   resourceCostPerUse: !include types/uc/costperuse/resourceCostPerUse.json
@@ -38,19 +21,19 @@ types:
   displayName: Cost-per-use
   uriParameters:
     resourceId:
-      description: Identifier of the resource formed from Provider Id, Package Id, Title Id (see example)
+      description: Identifier of the resource formed from Provider Id, Package Id, Title Id
       type: string
       pattern: "^\\d+-\\d+-\\d+$"
       example: 22-1887786-1440285
   get:
     description: Retrieve cost-per-use information for a particular resource
-    is: [commonQueryParameters]
+    is: [costPerUseCommon]
     responses:
       200:
         description: OK
         body:
           application/vnd.api+json:
-            description: Resource cost-per-use data
+            description: Resource cost-per-use
             type: resourceCostPerUse
             example:
               strict: false
@@ -81,7 +64,7 @@ types:
       example: "440285"
   get:
     description: Retrieve cost-per-use information for a particular title
-    is: [commonQueryParameters]
+    is: [costPerUseCommon]
     responses:
       200:
         description: OK

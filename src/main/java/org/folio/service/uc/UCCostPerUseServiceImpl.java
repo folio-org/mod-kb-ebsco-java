@@ -81,7 +81,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   }
 
   @Override
-  public CompletionStage<TitleCostPerUse> getTitleCostPerUse(String titleId, String platform, String fiscalYear,
+  public CompletableFuture<TitleCostPerUse> getTitleCostPerUse(String titleId, String platform, String fiscalYear,
                                                              Map<String, String> okapiHeaders) {
     validateParams(platform, fiscalYear);
     MutableObject<PlatformType> platformType = new MutableObject<>();

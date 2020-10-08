@@ -1,0 +1,17 @@
+queryParameters:
+  platform:
+    displayName: Type of platform
+    description: |
+      Include publisher, non-publisher or all platforms
+      Possible values are
+       - publisher
+       - nonPublisher
+       - all
+    type: string
+    required: false
+  fiscalYear:
+    displayName: Fiscal year
+    description: Fiscal year of cost-per-use data
+    type: string
+    pattern: "^\\d{4}$"
+    required: true

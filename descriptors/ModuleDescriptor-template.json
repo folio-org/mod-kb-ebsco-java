@@ -679,8 +679,8 @@
     },
     {
       "permissionName": "kb-ebsco.resources-costperuse.item.get",
-      "displayName": "get usage consolidation resource related to KB credentials",
-      "description": "Patch usage consolidation settings related to KB credentials"
+      "displayName": "get cost-per-use information for a resource",
+      "description": "Get cost-per-use information for a resource"
     },
     {
       "permissionName": "kb-ebsco.kb-credentials.uc.all",
