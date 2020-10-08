@@ -21,6 +21,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
+import org.folio.client.uc.UCFailedRequestException;
 import org.folio.db.exc.AuthorizationException;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DatabaseException;
@@ -109,6 +110,24 @@ public final class ExceptionMappers {
   }
 
   /**
+   * {@link UCFailedRequestException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 400}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<UCFailedRequestException, Response> error400UCRequestMapper() {
+    return exception ->
+      Response.status(SC_BAD_REQUEST)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(createError(exception.getMessage(), exception.getErrorMessage()))
+        .build();
+  }
+
+  /**
    * {@link DatabaseException} to {@link Response} error mapper
    * <pre>
    * Response.status = {@code 400}
@@ -155,6 +174,24 @@ public final class ExceptionMappers {
    * @return mapper
    */
   public static Function<AuthorizationException, Response> error401AuthorizationMapper() {
+    return exception ->
+      Response.status(SC_UNAUTHORIZED)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(createError(exception.getMessage()))
+        .build();
+  }
+
+  /**
+   * {@link UcAuthenticationException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 401}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<UcAuthenticationException, Response> error401UcAuthenticationMapper() {
     return exception ->
       Response.status(SC_UNAUTHORIZED)
         .header(CONTENT_TYPE, JSON_API_TYPE)

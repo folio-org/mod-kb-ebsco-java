@@ -58,6 +58,7 @@ public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc 
         PatchEholdingsKbCredentialsUcByIdResponse.respond204())))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
+
   @Override
   public void postEholdingsKbCredentialsUcById(String id, String contentType, UCSettingsPostRequest entity,
                                                Map<String, String> okapiHeaders,
@@ -73,7 +74,7 @@ public class EholdingsKbCredentialsUCImpl implements EholdingsKbCredentialsIdUc 
       ErrorHandler handler = new ErrorHandler();
 
       handler
-        .add(InputValidationException.class,  error422InputValidationMapper())
+        .add(InputValidationException.class, error422InputValidationMapper())
         .add(NotAuthorizedException.class, error401NotAuthorizedMapper())
         .add(UcAuthenticationException.class, error422UcSettingsInvalidMapper());
 

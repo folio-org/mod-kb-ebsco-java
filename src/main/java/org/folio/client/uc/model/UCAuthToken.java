@@ -1,9 +1,11 @@
-package org.folio.client.uc;
+package org.folio.client.uc.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Value;
 
 @Value
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UCAuthToken {
 
   @JsonProperty("access_token")

@@ -1,0 +1,19 @@
+{
+  "resourceId": "1-473-356",
+  "type": "resourceCostPerUse",
+  "attributes": {
+    "usage": {
+      "platforms": [],
+      "totals": {}
+    },
+    "analysis": {
+      "publisherPlatforms": {},
+      "nonPublisherPlatforms": {},
+      "allPlatforms": {}
+    },
+    "parameters": {
+      "startMonth": "apr",
+      "currency": "USD"
+    }
+  }
+}
