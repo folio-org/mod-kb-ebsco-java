@@ -6,7 +6,7 @@
   "javaType": "org.folio.rest.jaxrs.model.TitleCostPerUse",
   "additionalProperties": false,
   "properties": {
-    "resourceId": {
+    "titleId": {
       "type": "string",
       "description": "Title ID",
       "example": "1440285"

@@ -7,7 +7,7 @@ import lombok.Value;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UCTitleUsage {
+public class UCUsage {
 
   Map<String, UCPlatformUsage> platforms;
 }

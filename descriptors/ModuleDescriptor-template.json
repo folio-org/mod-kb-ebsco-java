@@ -157,6 +157,11 @@
           "permissionsRequired": ["kb-ebsco.resources-costperuse.item.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/titles/{titleId}/costperuse",
+          "permissionsRequired": ["kb-ebsco.titles-costperuse.item.get"]
+        },
+        {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/resources/{resourceId}",
           "permissionsRequired": ["kb-ebsco.resources.item.put"]
@@ -683,6 +688,11 @@
       "description": "Get cost-per-use information for a resource"
     },
     {
+      "permissionName": "kb-ebsco.titles-costperuse.item.get",
+      "displayName": "get cost-per-use information for a title",
+      "description": "Get cost-per-use information for a title"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.uc.all",
       "displayName": "EBSCO KB Broker Usage Consolidation settings - all permissions",
       "description": "All permissions for managing Usage Consolidation settings",
@@ -690,7 +700,8 @@
         "kb-ebsco.kb-credentials.uc.item.get",
         "kb-ebsco.kb-credentials.uc.collection.post",
         "kb-ebsco.kb-credentials.uc.item.patch",
-        "kb-ebsco.resources-costperuse.item.get"
+        "kb-ebsco.resources-costperuse.item.get",
+        "kb-ebsco.titles-costperuse.item.get"
       ]
     },
     {

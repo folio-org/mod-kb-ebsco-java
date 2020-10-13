@@ -47,6 +47,8 @@ public class EholdingsCostperuseImpl implements EholdingsResourcesResourceIdCost
   }
 
   @Override
+  @Validate
+  @HandleValidationErrors
   public void getEholdingsTitlesCostperuseByTitleId(String titleId, String platform, String fiscalYear,
                                                     Map<String, String> okapiHeaders,
                                                     Handler<AsyncResult<Response>> asyncResultHandler,

@@ -51,7 +51,6 @@ public class RMAPITemplate {
 
   private ErrorHandler errorHandler = new ErrorHandler();
 
-
   public RMAPITemplate(UserKbCredentialsService userKbCredentialsService, ConversionService conversionService,
                        HeaderValidator headerValidator, RMAPITemplateContextBuilder contextBuilder,
                        Map<String, String> okapiHeaders,
@@ -112,6 +111,18 @@ public class RMAPITemplate {
     );
   }
 
+  public CompletableFuture<RMAPITemplateContext> getRmapiTemplateContext() {
+    headerValidator.validate(okapiHeaders);
+    return CompletableFuture.completedFuture(null)
+      .thenCompose(o -> {
+        OkapiData okapiData = new OkapiData(okapiHeaders);
+        contextBuilder.okapiData(okapiData);
+        return userKbCredentialsService.findByUser(okapiHeaders);
+      })
+      .thenAccept(contextBuilder::kbCredentials)
+      .thenApply(unused -> contextBuilder.build());
+  }
+
   private void executeInternal(Function<Object, Response> successHandler) {
     getRmapiTemplateContext()
       .thenCompose(rmapiTemplateContext -> requestAction.apply(rmapiTemplateContext))
@@ -123,17 +134,5 @@ public class RMAPITemplate {
           .handle(asyncResultHandler, e);
         return null;
       });
-  }
-
-  public CompletableFuture<RMAPITemplateContext> getRmapiTemplateContext() {
-    headerValidator.validate(okapiHeaders);
-    return CompletableFuture.completedFuture(null)
-      .thenCompose(o -> {
-        OkapiData okapiData = new OkapiData(okapiHeaders);
-        contextBuilder.okapiData(okapiData);
-        return userKbCredentialsService.findByUser(okapiHeaders);
-      })
-      .thenAccept(contextBuilder::kbCredentials)
-      .thenApply(unused -> contextBuilder.build());
   }
 }
