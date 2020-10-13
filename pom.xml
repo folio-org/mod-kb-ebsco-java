@@ -53,7 +53,7 @@
     <jetbrains-annotations.version>19.0.0</jetbrains-annotations.version>
     <jaxrs-code-generator.version>3.0.2</jaxrs-code-generator.version>
 
-    <junit.version>4.13</junit.version>
+    <junit.version>4.13.1</junit.version>
     <rest-assured.version>4.0.0</rest-assured.version>
     <wiremock.version>2.20.0</wiremock.version>
     <mockito.version>3.0.0</mockito.version>
