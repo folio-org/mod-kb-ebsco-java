@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cost analysis object schema",
+  "description": "Cost analysis object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.TitleCostAnalysis",
+  "additionalProperties": false,
+  "properties": {
+    "holdingsSummary": {
+      "type": "array",
+      "description": "Holdings summary analysis",
+      "items": {
+        "$ref": "holdingsAnalysisCostAttributes.json"
+      }
+    }
+  }
+}

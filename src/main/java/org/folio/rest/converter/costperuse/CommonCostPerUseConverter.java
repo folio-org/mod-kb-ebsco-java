@@ -1,4 +1,4 @@
-package org.folio.service.uc;
+package org.folio.rest.converter.costperuse;
 
 import java.util.List;
 import java.util.Map;
@@ -8,64 +8,28 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.collections4.IterableUtils;
-import org.springframework.stereotype.Component;
 
+import org.folio.client.uc.configuration.CommonUCConfiguration;
 import org.folio.client.uc.model.UCPlatformUsage;
 import org.folio.client.uc.model.UCTitleCostPerUse;
-import org.folio.rest.jaxrs.model.CostAnalysis;
+import org.folio.client.uc.model.UCUsage;
 import org.folio.rest.jaxrs.model.CostAnalysisAttributes;
-import org.folio.rest.jaxrs.model.PlatformType;
+import org.folio.rest.jaxrs.model.CostPerUseParameters;
+import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformUsage;
-import org.folio.rest.jaxrs.model.ResourceCostPerUse;
-import org.folio.rest.jaxrs.model.ResourceCostPerUseDataAttributes;
 import org.folio.rest.jaxrs.model.SpecificPlatformUsage;
 import org.folio.rest.jaxrs.model.Usage;
-import org.folio.rest.jaxrs.model.UsageTotals;
 
-@Component
-public class ResourceCostPerUseConverter {
+abstract class CommonCostPerUseConverter {
 
-  public ResourceCostPerUse convert(UCTitleCostPerUse ucTitleCostPerUse, PlatformType platformType) {
-    ResourceCostPerUse resourceCostPerUse = new ResourceCostPerUse().withType(ResourceCostPerUse.Type.RESOURCE_COST_PER_USE);
-
-    if (ucTitleCostPerUse.getUsage() == null || ucTitleCostPerUse.getUsage().getPlatforms() == null) {
-      return resourceCostPerUse;
-    }
-    var ucTitleCostUsage = ucTitleCostPerUse.getUsage();
-    List<SpecificPlatformUsage> specificPlatformUsages = ucTitleCostUsage.getPlatforms().entrySet()
+  protected List<SpecificPlatformUsage> getSpecificPlatformUsages(UCUsage uCUsage) {
+    return uCUsage.getPlatforms().entrySet()
       .stream()
       .map(this::toSpecificPlatformUsage)
       .collect(Collectors.toList());
-
-    var usage = new Usage().withTotals(new UsageTotals());
-    var analysis = new CostAnalysis();
-    if (platformType == PlatformType.PUBLISHER) {
-      setPublisherPlatform(specificPlatformUsages, usage);
-
-      analysis.setPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getPublisher()));
-    } else if (platformType == PlatformType.NON_PUBLISHER) {
-      setNonPublisherPlatform(specificPlatformUsages, usage);
-
-      analysis.setNonPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
-    } else {
-      setPublisherPlatform(specificPlatformUsages, usage);
-      setNonPublisherPlatform(specificPlatformUsages, usage);
-      usage.setPlatforms(specificPlatformUsages);
-      usage.getTotals().setAll(getTotalUsage(specificPlatformUsages));
-
-      analysis.setPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getPublisher()));
-      analysis.setNonPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
-      analysis.setAllPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getAll()));
-    }
-
-    return resourceCostPerUse
-      .withAttributes(new ResourceCostPerUseDataAttributes()
-        .withUsage(usage)
-        .withAnalysis(analysis)
-      );
   }
 
-  private SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UCPlatformUsage> entry) {
+  protected SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UCPlatformUsage> entry) {
     UCPlatformUsage ucPlatformUsage = entry.getValue();
     List<Integer> ucPlatformUsageCounts = ucPlatformUsage.getCounts();
     Boolean isPublisherPlatform = ucPlatformUsage.getPublisherPlatform();
@@ -76,7 +40,7 @@ public class ResourceCostPerUseConverter {
       .withTotal(sum(ucPlatformUsageCounts));
   }
 
-  private CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCostPerUse ucTitleCostPerUse, PlatformUsage publisher) {
+  protected CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCostPerUse ucTitleCostPerUse, PlatformUsage publisher) {
     var analysisAttributes = new CostAnalysisAttributes();
     if (ucTitleCostPerUse.getAnalysis() != null
       && ucTitleCostPerUse.getAnalysis().getCurrent() != null
@@ -88,7 +52,7 @@ public class ResourceCostPerUseConverter {
     return analysisAttributes;
   }
 
-  private void setNonPublisherPlatform(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
+  protected void setNonPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
     var nonPublisherPlatformUsages = specificPlatformUsages.stream()
       .filter(Predicate.not(SpecificPlatformUsage::getIsPublisherPlatform))
       .collect(Collectors.toList());
@@ -96,7 +60,7 @@ public class ResourceCostPerUseConverter {
     usage.getTotals().setNonPublisher(getTotalUsage(nonPublisherPlatformUsages));
   }
 
-  private void setPublisherPlatform(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
+  protected void setPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
     var publisherPlatformUsages = specificPlatformUsages.stream()
       .filter(SpecificPlatformUsage::getIsPublisherPlatform)
       .collect(Collectors.toList());
@@ -104,7 +68,7 @@ public class ResourceCostPerUseConverter {
     usage.getTotals().setPublisher(getTotalUsage(publisherPlatformUsages));
   }
 
-  private PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
+  protected PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
     var totalUsage = new PlatformUsage();
     var totalCounts = IntStream.range(0, 12)
       .boxed()
@@ -119,7 +83,7 @@ public class ResourceCostPerUseConverter {
     return totalUsage;
   }
 
-  private Integer getMonthSum(List<SpecificPlatformUsage> platformUsages, int monthIndex) {
+  protected Integer getMonthSum(List<SpecificPlatformUsage> platformUsages, int monthIndex) {
     List<Integer> countsByMonth = platformUsages.stream()
       .map(SpecificPlatformUsage::getCounts)
       .map(integers -> integers.get(monthIndex))
@@ -133,7 +97,13 @@ public class ResourceCostPerUseConverter {
       .sum();
   }
 
-  private int sum(List<Integer> integers) {
+  protected int sum(List<Integer> integers) {
     return integers.stream().filter(Objects::nonNull).mapToInt(Integer::intValue).sum();
+  }
+
+  protected CostPerUseParameters convertParameters(CommonUCConfiguration configuration) {
+    return new CostPerUseParameters()
+      .withStartMonth(Month.fromValue(configuration.getFiscalMonth()))
+      .withCurrency(configuration.getAnalysisCurrency());
   }
 }

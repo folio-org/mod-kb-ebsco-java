@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cost analysis attributes object schema",
+  "description": "Cost analysis attributes object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.HoldingsCostAnalysisAttributes",
+  "additionalProperties": false,
+  "extends": {
+    "$ref": "analysisCostAttributes.json"
+  },
+  "properties": {
+    "packageId": {
+      "type": "string",
+      "description": "Package ID",
+      "pattern": "^\\d+-\\d+$",
+      "example": "12-567"
+    },
+    "packageName": {
+      "type": "string",
+      "description": "Package Name",
+      "example": "EBSCO eBooks"
+    },
+    "costPerUse": {
+      "type": "number",
+      "description": "Cost-per-use of resource",
+      "example": "800.00"
+    },
+    "coverageStatement": {
+      "type": "string",
+      "description": "Coverage statement",
+      "example": "Only 2000s issues available."
+    },
+    "coverages": {
+      "type": "array",
+      "description": "List of Coverages information",
+      "items": {
+        "type": "object",
+        "description": "Coverages information",
+        "$ref": "../../coverage.json"
+      }
+    },
+    "embargoPeriod": {
+      "type": "object",
+      "description": "Embargo Period information",
+      "$ref": "../../embargo.json"
+    }
+  }
+}

@@ -2,7 +2,10 @@ package org.folio.client.uc;
 
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -28,9 +31,12 @@ import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import org.folio.client.uc.configuration.GetTitlePackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.configuration.UCConfiguration;
+import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.client.uc.model.UCTitleCostPerUse;
+import org.folio.client.uc.model.UCTitlePackageId;
 
 @Component
 public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
@@ -41,6 +47,9 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
   private static final String VERIFY_URI = "/uc/costperuse/package/1"
     + "?fiscalYear=2018&fiscalMonth=DEC&analysisCurrency=USD&aggregatedFullText=true";
 
+  private static final String POST_TITLES_URI = "/uc/costperuse/titles";
+  private static final String POST_TITLE_URI_PARAMS =
+    "fiscalYear=%s&fiscalMonth=%s&analysisCurrency=%s&publisherPlatform=%s&previousYear=%s";
   private static final String GET_TITLE_URI = "/uc/costperuse/title/%s/%s";
   private static final String GET_TITLE_URI_PARAMS =
     "fiscalYear=%s&fiscalMonth=%s&analysisCurrency=%s&aggregatedFullText=%s";
@@ -78,11 +87,35 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
       .thenApply(jsonObject -> jsonObject.mapTo(UCTitleCostPerUse.class));
   }
 
+  @Override
+  public CompletableFuture<Map<String, UCCostAnalysis>> getTitlePackageCostPerUse(Set<UCTitlePackageId> ids,
+                                                                                  GetTitlePackageUCConfiguration configuration) {
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    constructPostRequest(constructPostTitlesUri(configuration), configuration)
+      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+      .as(BodyCodec.jsonObject())
+      .sendJson(ids, promise);
+    return mapVertxFuture(promise.future())
+      .thenApply(HttpResponse::body)
+      .thenApply(this::toCostAnalysisMap);
+  }
+
+  private Map<String, UCCostAnalysis> toCostAnalysisMap(JsonObject jsonObject) {
+    return jsonObject.stream()
+      .collect(Collectors.toMap(Map.Entry::getKey, o -> JsonObject.mapFrom(o.getValue()).mapTo(UCCostAnalysis.class)));
+  }
+
   private String constructGetTitleUri(String titleId, String packageId, GetTitleUCConfiguration configuration) {
     String uriPath = String.format(GET_TITLE_URI, titleId, packageId);
     String uriParams = String.format(GET_TITLE_URI_PARAMS, configuration.getFiscalYear(), configuration.getFiscalMonth(),
       configuration.getAnalysisCurrency(), configuration.isAggregatedFullText());
     return uriPath + "?" + uriParams;
+  }
+
+  private String constructPostTitlesUri(GetTitlePackageUCConfiguration configuration) {
+    String uriParams = String.format(POST_TITLE_URI_PARAMS, configuration.getFiscalYear(), configuration.getFiscalMonth(),
+      configuration.getAnalysisCurrency(), configuration.isPublisherPlatform(), configuration.isPreviousYear());
+    return POST_TITLES_URI + "?" + uriParams;
   }
 
   private Handler<HttpContext<?>> loggingInterceptor() {
@@ -99,8 +132,15 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
   }
 
   private HttpRequest<Buffer> constructGetRequest(String uri, UCConfiguration configuration) {
-    return webClient
-      .getAbs(baseUrl + uri)
+    return configureRequest(configuration, webClient.getAbs(baseUrl + uri));
+  }
+
+  private HttpRequest<Buffer> constructPostRequest(String uri, UCConfiguration configuration) {
+    return configureRequest(configuration, webClient.postAbs(baseUrl + uri));
+  }
+
+  private HttpRequest<Buffer> configureRequest(UCConfiguration configuration, HttpRequest<Buffer> httpRequest) {
+    return httpRequest
       .timeout(TIMEOUT)
       .bearerTokenAuthentication(configuration.getAccessToken())
       .putHeader("custkey", configuration.getCustomerKey());

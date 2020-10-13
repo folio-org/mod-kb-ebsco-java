@@ -5,7 +5,7 @@ import lombok.Value;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UCTitleCostAnalysisDetails {
+public class UCCostAnalysisDetails {
 
   Double cost;
   Integer usage;

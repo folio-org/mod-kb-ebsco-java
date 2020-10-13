@@ -5,8 +5,8 @@ import lombok.Value;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UCTitleCostAnalysis {
+public class UCCostAnalysis {
 
-  UCTitleCostAnalysisDetails current;
-  UCTitleCostAnalysisDetails previous;
+  UCCostAnalysisDetails current;
+  UCCostAnalysisDetails previous;
 }

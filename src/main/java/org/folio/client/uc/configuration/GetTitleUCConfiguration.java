@@ -5,10 +5,7 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
-public class GetTitleUCConfiguration extends UCConfiguration {
+public class GetTitleUCConfiguration extends CommonUCConfiguration {
 
-  private final String fiscalYear;
-  private final String fiscalMonth;
-  private final String analysisCurrency;
   private final boolean aggregatedFullText;
 }
