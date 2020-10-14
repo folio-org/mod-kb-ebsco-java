@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
-@SuperBuilder(toBuilder = true)
+@SuperBuilder
 public class UCConfiguration {
 
   private final String customerKey;

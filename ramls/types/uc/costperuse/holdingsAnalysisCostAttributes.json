@@ -20,11 +20,6 @@
       "description": "Package Name",
       "example": "EBSCO eBooks"
     },
-    "costPerUse": {
-      "type": "number",
-      "description": "Cost-per-use of resource",
-      "example": "800.00"
-    },
     "coverageStatement": {
       "type": "string",
       "description": "Coverage statement",
