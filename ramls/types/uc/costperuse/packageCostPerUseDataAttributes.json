@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package cost-per-use data attributes object schema",
+  "description": "Package cost-per-use data attributes object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.PackageCostPerUseDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "analysis": {
+      "type": "object",
+      "description": "Cost of current package",
+      "$ref": "analysisCost.json"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Response's parameters",
+      "$ref": "costPerUseParameters.json"
+    }
+  },
+  "required": [
+    "usage",
+    "analysis",
+    "parameters"
+  ]
+}

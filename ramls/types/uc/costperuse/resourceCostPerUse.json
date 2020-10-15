@@ -21,7 +21,7 @@
     },
     "attributes": {
       "type": "object",
-      "description": "Usage Consolidation settings attributes",
+      "description": "Resource cost-per-use attributes",
       "$ref": "resourceCostPerUseDataAttributes.json"
     }
   },
