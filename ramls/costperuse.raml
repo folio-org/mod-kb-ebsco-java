@@ -14,6 +14,7 @@ traits:
 
 types:
   resourceCostPerUse: !include types/uc/costperuse/resourceCostPerUse.json
+  titleCostPerUse: !include types/uc/costperuse/titleCostPerUse.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/resources/{resourceId}/costperuse:
@@ -34,6 +35,43 @@ types:
           application/vnd.api+json:
             description: Resource cost-per-use
             type: resourceCostPerUse
+            example:
+              strict: false
+              value: !include examples/costPerUse/resource_cost_per_use_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/resource_cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/resource_cost_per_use_422_response.json
+/eholdings/titles/{titleId}/costperuse:
+  displayName: Cost-per-use
+  uriParameters:
+    titleId:
+      description: Identifier of the title
+      type: string
+      pattern: "^\\d+$"
+      example: "440285"
+  get:
+    description: Retrieve cost-per-use information for a particular title
+    is: [costPerUseCommon]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Title cost-per-use data
+            type: titleCostPerUse
             example:
               strict: false
               value: !include examples/costPerUse/resource_cost_per_use_200_response.json

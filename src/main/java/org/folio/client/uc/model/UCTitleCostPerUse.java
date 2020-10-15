@@ -7,6 +7,6 @@ import lombok.Value;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UCTitleCostPerUse {
 
-  UCTitleUsage usage;
-  UCTitleCostAnalysis analysis;
+  UCUsage usage;
+  UCCostAnalysis analysis;
 }
