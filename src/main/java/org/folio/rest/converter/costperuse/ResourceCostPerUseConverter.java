@@ -1,5 +1,12 @@
 package org.folio.rest.converter.costperuse;
 
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getCostAnalysisAttributes;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getSpecificPlatformUsages;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNonPublisherUsage;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
+
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -16,8 +23,7 @@ import org.folio.rest.util.IdParser;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
 
 @Component
-public class ResourceCostPerUseConverter extends CommonCostPerUseConverter
-  implements Converter<ResourceCostPerUseResult, ResourceCostPerUse> {
+public class ResourceCostPerUseConverter implements Converter<ResourceCostPerUseResult, ResourceCostPerUse> {
 
   @Override
   public ResourceCostPerUse convert(@NotNull ResourceCostPerUseResult source) {

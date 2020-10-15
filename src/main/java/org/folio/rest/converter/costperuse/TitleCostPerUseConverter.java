@@ -3,6 +3,12 @@ package org.folio.rest.converter.costperuse;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getSpecificPlatformUsages;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNonPublisherUsage;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,8 +31,7 @@ import org.folio.rest.jaxrs.model.UsageTotals;
 import org.folio.rmapi.result.TitleCostPerUseResult;
 
 @Component
-public class TitleCostPerUseConverter extends CommonCostPerUseConverter
-  implements Converter<TitleCostPerUseResult, TitleCostPerUse> {
+public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult, TitleCostPerUse> {
 
   @Autowired
   private Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
@@ -66,7 +71,7 @@ public class TitleCostPerUseConverter extends CommonCostPerUseConverter
         var platformUsage = getTotalUsage(specificPlatformUsages);
         usage.getTotals().setAll(platformUsage);
 
-        totalUsage = platformUsage.getTotal();
+        totalUsage = platformUsage == null ? 0 : platformUsage.getTotal();
         break;
     }
 

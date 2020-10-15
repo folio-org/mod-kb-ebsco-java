@@ -20,16 +20,19 @@ import org.folio.rest.jaxrs.model.PlatformUsage;
 import org.folio.rest.jaxrs.model.SpecificPlatformUsage;
 import org.folio.rest.jaxrs.model.Usage;
 
-abstract class CommonCostPerUseConverter {
+final class CostPerUseConverterUtils {
 
-  protected List<SpecificPlatformUsage> getSpecificPlatformUsages(UCUsage uCUsage) {
+  private CostPerUseConverterUtils() {
+  }
+
+  static List<SpecificPlatformUsage> getSpecificPlatformUsages(UCUsage uCUsage) {
     return uCUsage.getPlatforms().entrySet()
       .stream()
-      .map(this::toSpecificPlatformUsage)
+      .map(CostPerUseConverterUtils::toSpecificPlatformUsage)
       .collect(Collectors.toList());
   }
 
-  protected SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UCPlatformUsage> entry) {
+  static SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UCPlatformUsage> entry) {
     UCPlatformUsage ucPlatformUsage = entry.getValue();
     List<Integer> ucPlatformUsageCounts = ucPlatformUsage.getCounts();
     Boolean isPublisherPlatform = ucPlatformUsage.getPublisherPlatform();
@@ -40,7 +43,7 @@ abstract class CommonCostPerUseConverter {
       .withTotal(sum(ucPlatformUsageCounts));
   }
 
-  protected CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCostPerUse ucTitleCostPerUse, PlatformUsage publisher) {
+  static CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCostPerUse ucTitleCostPerUse, PlatformUsage publisher) {
     var analysisAttributes = new CostAnalysisAttributes();
     if (ucTitleCostPerUse.getAnalysis() != null
       && ucTitleCostPerUse.getAnalysis().getCurrent() != null
@@ -52,7 +55,7 @@ abstract class CommonCostPerUseConverter {
     return analysisAttributes;
   }
 
-  protected void setNonPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
+  static void setNonPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
     var nonPublisherPlatformUsages = specificPlatformUsages.stream()
       .filter(Predicate.not(SpecificPlatformUsage::getIsPublisherPlatform))
       .collect(Collectors.toList());
@@ -60,7 +63,7 @@ abstract class CommonCostPerUseConverter {
     usage.getTotals().setNonPublisher(getTotalUsage(nonPublisherPlatformUsages));
   }
 
-  protected void setPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
+  static void setPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
     var publisherPlatformUsages = specificPlatformUsages.stream()
       .filter(SpecificPlatformUsage::getIsPublisherPlatform)
       .collect(Collectors.toList());
@@ -68,7 +71,7 @@ abstract class CommonCostPerUseConverter {
     usage.getTotals().setPublisher(getTotalUsage(publisherPlatformUsages));
   }
 
-  protected PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
+  static PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
     var totalUsage = new PlatformUsage();
     var totalCounts = IntStream.range(0, 12)
       .boxed()
@@ -83,7 +86,7 @@ abstract class CommonCostPerUseConverter {
     return totalUsage;
   }
 
-  protected Integer getMonthSum(List<SpecificPlatformUsage> platformUsages, int monthIndex) {
+  static Integer getMonthSum(List<SpecificPlatformUsage> platformUsages, int monthIndex) {
     List<Integer> countsByMonth = platformUsages.stream()
       .map(SpecificPlatformUsage::getCounts)
       .map(integers -> integers.get(monthIndex))
@@ -97,11 +100,11 @@ abstract class CommonCostPerUseConverter {
       .sum();
   }
 
-  protected int sum(List<Integer> integers) {
+  static int sum(List<Integer> integers) {
     return integers.stream().filter(Objects::nonNull).mapToInt(Integer::intValue).sum();
   }
 
-  protected CostPerUseParameters convertParameters(CommonUCConfiguration configuration) {
+  static CostPerUseParameters convertParameters(CommonUCConfiguration configuration) {
     return new CostPerUseParameters()
       .withStartMonth(Month.fromValue(configuration.getFiscalMonth()))
       .withCurrency(configuration.getAnalysisCurrency());
