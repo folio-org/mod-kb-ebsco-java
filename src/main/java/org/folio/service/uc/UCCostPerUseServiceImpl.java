@@ -1,7 +1,9 @@
 package org.folio.service.uc;
 
+import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 
+import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.Promise;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.configuration.CommonUCConfiguration;
+import org.folio.client.uc.configuration.GetPackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitlePackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
@@ -30,14 +34,17 @@ import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
+import org.folio.rmapi.result.PackageCostPerUseResult;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
 import org.folio.rmapi.result.TitleCostPerUseResult;
+import org.folio.service.holdings.HoldingsService;
 
 @Service
 public class UCCostPerUseServiceImpl implements UCCostPerUseService {
@@ -53,12 +60,16 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   @Autowired @Qualifier("nonSecuredUCSettingsService")
   private UCSettingsService settingsService;
   @Autowired
+  private HoldingsService holdingsService;
+  @Autowired
   private UCApigeeEbscoClient client;
   @Autowired
   private RMAPITemplateFactory templateFactory;
 
   @Autowired
   private Converter<ResourceCostPerUseResult, ResourceCostPerUse> resourceCostPerUseConverter;
+  @Autowired
+  private Converter<PackageCostPerUseResult, PackageCostPerUse> packageCostPerUseConverter;
   @Autowired
   private Converter<TitleCostPerUseResult, TitleCostPerUse> titleCostPerUseConverter;
 
@@ -97,6 +108,45 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
           return getTitleCostPerUse(titleId, platform, fiscalYear, customerResources, okapiHeaders);
         }
       });
+  }
+
+  @Override
+  public CompletableFuture<PackageCostPerUse> getPackageCostPerUse(String packageId, String platform, String fiscalYear,
+                                                                   Map<String, String> okapiHeaders) {
+    validateParams(platform, fiscalYear);
+    var id = parsePackageId(packageId);
+    MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
+    return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
+      .thenCompose(ucConfiguration -> {
+        var configuration = createGetPackageConfiguration(ucConfiguration);
+        return client.getPackageCostPerUse(valueOf(id.getPackageIdPart()), configuration)
+          .thenCompose(ucPackageCostPerUse -> {
+            var resultBuilder = PackageCostPerUseResult.builder()
+              .packageId(packageId)
+              .ucPackageCostPerUse(ucPackageCostPerUse)
+              .configuration(ucConfiguration)
+              .platformType(platformTypeHolder.getValue());
+
+            var cost = ucPackageCostPerUse.getAnalysis().getCurrent().getCost();
+            if (cost == null || cost.equals(NumberUtils.DOUBLE_ZERO)) {
+              return templateFactory.createTemplate(okapiHeaders, Promise.promise())
+                .getRmapiTemplateContext()
+                .thenCompose(context -> holdingsService
+                  .getHoldingsByPackageId(packageId, context.getCredentialsId(), context.getOkapiData().getTenant()))
+                .thenCompose(dbHoldingInfos -> {
+                  var titlePackageIds = dbHoldingInfos.stream()
+                    .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
+                    .collect(Collectors.toSet());
+                  return client
+                    .getTitlePackageCostPerUse(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration))
+                    .thenApply(titlePackageCost -> resultBuilder.titlePackageCostMap(titlePackageCost).build());
+                });
+            } else {
+              return CompletableFuture.completedFuture(resultBuilder.build());
+            }
+          });
+      })
+      .thenApply(packageCostPerUseConverter::convert);
   }
 
   private CompletableFuture<List<CustomerResources>> fetchTitleSelectedResources(String titleId,
@@ -196,6 +246,17 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   private GetTitleUCConfiguration createGetTitleConfiguration(CommonUCConfiguration ucConfiguration) {
     return GetTitleUCConfiguration.builder()
+      .accessToken(ucConfiguration.getAccessToken())
+      .customerKey(ucConfiguration.getCustomerKey())
+      .analysisCurrency(ucConfiguration.getAnalysisCurrency())
+      .fiscalMonth(ucConfiguration.getFiscalMonth())
+      .fiscalYear(ucConfiguration.getFiscalYear())
+      .aggregatedFullText(true)
+      .build();
+  }
+
+  private GetPackageUCConfiguration createGetPackageConfiguration(CommonUCConfiguration ucConfiguration) {
+    return GetPackageUCConfiguration.builder()
       .accessToken(ucConfiguration.getAccessToken())
       .customerKey(ucConfiguration.getCustomerKey())
       .analysisCurrency(ucConfiguration.getAnalysisCurrency())

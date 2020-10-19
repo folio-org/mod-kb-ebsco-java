@@ -4,7 +4,7 @@ import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
-import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getSpecificPlatformUsages;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNonPublisherUsage;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
@@ -49,7 +49,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
       return titleCostPerUse;
     }
 
-    List<SpecificPlatformUsage> specificPlatformUsages = getSpecificPlatformUsages(ucTitleCostPerUse.getUsage());
+    List<SpecificPlatformUsage> specificPlatformUsages = getAllPlatformUsages(ucTitleCostPerUse.getUsage());
 
     var usage = new Usage().withTotals(new UsageTotals());
     var analysis = new TitleCostAnalysis();
