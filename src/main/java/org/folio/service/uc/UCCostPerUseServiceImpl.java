@@ -115,11 +115,12 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
                                                                    Map<String, String> okapiHeaders) {
     validateParams(platform, fiscalYear);
     var id = parsePackageId(packageId);
+    var packageIdPart = valueOf(id.getPackageIdPart());
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
     return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
       .thenCompose(ucConfiguration -> {
         var configuration = createGetPackageConfiguration(ucConfiguration);
-        return client.getPackageCostPerUse(valueOf(id.getPackageIdPart()), configuration)
+        return client.getPackageCostPerUse(packageIdPart, configuration)
           .thenCompose(ucPackageCostPerUse -> {
             var resultBuilder = PackageCostPerUseResult.builder()
               .packageId(packageId)
@@ -132,7 +133,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
               return templateFactory.createTemplate(okapiHeaders, Promise.promise())
                 .getRmapiTemplateContext()
                 .thenCompose(context -> holdingsService
-                  .getHoldingsByPackageId(packageId, context.getCredentialsId(), context.getOkapiData().getTenant()))
+                  .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant()))
                 .thenCompose(dbHoldingInfos -> {
                   var titlePackageIds = dbHoldingInfos.stream()
                     .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))

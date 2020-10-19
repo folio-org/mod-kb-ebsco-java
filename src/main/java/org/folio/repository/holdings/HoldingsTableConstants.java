@@ -44,7 +44,7 @@ public final class HoldingsTableConstants {
 
     DELETE_BY_PK_HOLDINGS = "DELETE FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
     GET_BY_PK_HOLDINGS = "SELECT * FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
-    GET_BY_PACKAGE_ID_AND_CREDENTIALS = selectQuery() + whereQuery(PACKAGE_ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
+    GET_BY_PACKAGE_ID_AND_CREDENTIALS = selectQuery() + " " + whereQuery(PACKAGE_ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
 
     DELETE_OLD_RECORDS_BY_CREDENTIALS_ID = "DELETE FROM %s WHERE " + CREDENTIALS_ID_COLUMN + "=? AND "
       + UPDATED_AT_COLUMN + " < ?;";
