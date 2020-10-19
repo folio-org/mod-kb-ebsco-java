@@ -1,5 +1,8 @@
 package org.folio.rest.converter.costperuse;
 
+import static org.apache.commons.lang3.math.NumberUtils.DOUBLE_ZERO;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getNonPublisherUsages;
@@ -9,7 +12,6 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTo
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -69,10 +71,16 @@ public class PackageCostPerUseConverter implements Converter<PackageCostPerUseRe
 
   private CostAnalysisAttributes getCostAnalysisAttributes(List<SpecificPlatformUsage> usages, Double cost) {
     var platformUsage = getTotalUsage(usages);
-    var usageCount = platformUsage == null ? NumberUtils.INTEGER_ZERO : platformUsage.getTotal();
+    var usageCount = platformUsage == null ? INTEGER_ZERO : platformUsage.getTotal();
+    double costPerUse;
+    if (INTEGER_ZERO.equals(usageCount) && DOUBLE_ZERO.equals(cost)) {
+      costPerUse = DOUBLE_ZERO;
+    } else {
+      costPerUse = cost / usageCount;
+    }
     return new CostAnalysisAttributes()
       .withCost(cost)
       .withUsage(usageCount)
-      .withCostPerUse(cost / usageCount);
+      .withCostPerUse(costPerUse);
   }
 }
