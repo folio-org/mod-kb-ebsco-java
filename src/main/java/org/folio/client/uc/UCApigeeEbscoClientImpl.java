@@ -205,7 +205,7 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
     );
   }
 
-  private String param(String fiscalYearParam) {
-    return fiscalYearParam + "=%s";
+  private String param(String paramName) {
+    return paramName + "=%s";
   }
 }

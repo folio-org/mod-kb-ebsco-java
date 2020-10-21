@@ -130,9 +130,8 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
     var packageIdPart = valueOf(id.getPackageIdPart());
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
     return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
-      .thenCompose(ucConfiguration -> {
-        var configuration = createGetPackageConfiguration(ucConfiguration);
-        return client.getPackageCostPerUse(packageIdPart, configuration)
+      .thenCompose(ucConfiguration ->
+        client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
           .thenCompose(ucPackageCostPerUse -> {
             var resultBuilder = PackageCostPerUseResult.builder()
               .packageId(packageId)
@@ -142,22 +141,12 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
             var cost = ucPackageCostPerUse.getAnalysis().getCurrent().getCost();
             if (cost == null || cost.equals(NumberUtils.DOUBLE_ZERO)) {
-              return templateFactory.createTemplate(okapiHeaders, Promise.promise())
-                .getRmapiTemplateContext()
-                .thenCompose(context -> holdingsService
-                  .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant()))
-                .thenCompose(dbHoldingInfos -> {
-                  var titlePackageIds = dbHoldingInfos.stream()
-                    .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
-                    .collect(Collectors.toSet());
-                  return loadFromCache(titlePackageIds, ucConfiguration)
-                    .thenApply(titlePackageCost -> resultBuilder.titlePackageCostMap(titlePackageCost).build());
-                });
+              return fetchTitlePackageCost(packageIdPart, ucConfiguration, okapiHeaders)
+                .thenApply(titlePackageCost -> resultBuilder.titlePackageCostMap(titlePackageCost).build());
             } else {
               return CompletableFuture.completedFuture(resultBuilder.build());
             }
-          });
-      })
+          }))
       .thenApply(packageCostPerUseConverter::convert);
   }
 
@@ -223,6 +212,21 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .withTitleId(titleId)
       .withType(TitleCostPerUse.Type.TITLE_COST_PER_USE);
     return CompletableFuture.completedFuture(titleCostPerUse);
+  }
+
+  private CompletableFuture<Map<String, UCCostAnalysis>> fetchTitlePackageCost(String packageIdPart,
+                                                                               CommonUCConfiguration ucConfiguration,
+                                                                               Map<String, String> okapiHeaders) {
+    return templateFactory.createTemplate(okapiHeaders, Promise.promise())
+      .getRmapiTemplateContext()
+      .thenCompose(context -> holdingsService
+        .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant()))
+      .thenCompose(dbHoldingInfos -> {
+        var titlePackageIds = dbHoldingInfos.stream()
+          .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
+          .collect(Collectors.toSet());
+        return loadFromCache(titlePackageIds, ucConfiguration);
+      });
   }
 
   private CompletableFuture<Map<String, UCCostAnalysis>> fetchTitlePackagesCost(List<CustomerResources> customerResources,
