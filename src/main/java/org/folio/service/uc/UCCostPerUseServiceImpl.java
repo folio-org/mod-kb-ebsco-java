@@ -7,13 +7,19 @@ import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import com.google.common.collect.Iterables;
 import io.vertx.core.Promise;
+import io.vertx.core.json.Json;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -22,6 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
 
+import org.folio.cache.VertxCache;
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.configuration.CommonUCConfiguration;
 import org.folio.client.uc.configuration.GetPackageUCConfiguration;
@@ -30,6 +37,7 @@ import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCTitlePackageId;
+import org.folio.config.cache.UCTitlePackageCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
@@ -54,6 +62,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   public static final String INVALID_PLATFORM_MESSAGE = "Invalid platform";
   public static final String INVALID_PLATFORM_DETAILS =
     "Parameter 'platform' should by one of: 'all', 'publisher', 'nonPublisher'";
+  private static final int MAX_PARTITION_SIZE = 1000;
 
   @Autowired
   private UCAuthService authService;
@@ -72,6 +81,9 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   private Converter<PackageCostPerUseResult, PackageCostPerUse> packageCostPerUseConverter;
   @Autowired
   private Converter<TitleCostPerUseResult, TitleCostPerUse> titleCostPerUseConverter;
+
+  @Autowired
+  private VertxCache<UCTitlePackageCacheKey, Map<String, UCCostAnalysis>> ucTitlePackageCache;
 
   @Override
   public CompletableFuture<ResourceCostPerUse> getResourceCostPerUse(String resourceId, String platform, String fiscalYear,
@@ -138,8 +150,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
                   var titlePackageIds = dbHoldingInfos.stream()
                     .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
                     .collect(Collectors.toSet());
-                  return client
-                    .getTitlePackageCostPerUse(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration))
+                  return loadFromCache(titlePackageIds, ucConfiguration)
                     .thenApply(titlePackageCost -> resultBuilder.titlePackageCostMap(titlePackageCost).build());
                 });
             } else {
@@ -148,6 +159,34 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
           });
       })
       .thenApply(packageCostPerUseConverter::convert);
+  }
+
+  private CompletableFuture<Map<String, UCCostAnalysis>> loadFromCache(Set<UCTitlePackageId> titlePackageIds,
+                                                                       CommonUCConfiguration ucConfiguration) {
+    var configuration = createGetTitlePackageConfiguration(ucConfiguration);
+
+    var cacheKey = new UCTitlePackageCacheKey(configuration, DigestUtils.md5(Json.encode(titlePackageIds)));
+
+    return ucTitlePackageCache.getValueOrLoad(cacheKey, () -> loadInPartitions(titlePackageIds, configuration));
+  }
+
+  private CompletableFuture<Map<String, UCCostAnalysis>> loadInPartitions(Set<UCTitlePackageId> titlePackageIds,
+                                                                          GetTitlePackageUCConfiguration configuration) {
+    if (titlePackageIds.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptyMap());
+    } else if (titlePackageIds.size() > MAX_PARTITION_SIZE) {
+      var futures = StreamSupport.stream(Iterables.partition(titlePackageIds, MAX_PARTITION_SIZE).spliterator(), false)
+        .map(ids -> client.getTitlePackageCostPerUse(new HashSet<>(ids), configuration))
+        .collect(Collectors.toList());
+
+      return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+        .thenApply(unused -> futures.stream()
+          .map(CompletableFuture::join)
+          .flatMap(map -> map.entrySet().stream())
+          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    } else {
+      return client.getTitlePackageCostPerUse(titlePackageIds, configuration);
+    }
   }
 
   private CompletableFuture<List<CustomerResources>> fetchTitleSelectedResources(String titleId,
@@ -192,7 +231,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .map(cr -> new UCTitlePackageId(cr.getTitleId(), cr.getPackageId()))
       .collect(Collectors.toSet());
 
-    return client.getTitlePackageCostPerUse(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration));
+    return loadFromCache(titlePackageIds, ucConfiguration);
   }
 
   private CompletableFuture<CommonUCConfiguration> fetchCommonConfiguration(String platform, String fiscalYear,

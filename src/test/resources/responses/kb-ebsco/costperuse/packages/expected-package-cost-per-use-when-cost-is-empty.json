@@ -1,0 +1,27 @@
+{
+  "packageId": "1-222222",
+  "type": "packageCostPerUse",
+  "attributes": {
+    "analysis": {
+      "publisherPlatforms": {
+        "cost": 337255.53760000004,
+        "usage": 26,
+        "costPerUse": 12971.366830769231
+      },
+      "nonPublisherPlatforms": {
+        "cost": 337255.53760000004,
+        "usage": 10,
+        "costPerUse": 33725.55376
+      },
+      "allPlatforms": {
+        "cost": 337255.53760000004,
+        "usage": 36,
+        "costPerUse": 9368.209377777779
+      }
+    },
+    "parameters": {
+      "startMonth": "apr",
+      "currency": "USD"
+    }
+  }
+}

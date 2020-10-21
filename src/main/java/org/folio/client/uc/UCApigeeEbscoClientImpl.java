@@ -61,6 +61,7 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
   private static final String POST_TITLES_URI = "/uc/costperuse/titles";
   private static final String GET_TITLE_URI = "/uc/costperuse/title/%s/%s";
   private static final String GET_PACKAGE_URI = "/uc/costperuse/package/%s";
+
   private final String baseUrl;
   private final WebClient webClient;
 

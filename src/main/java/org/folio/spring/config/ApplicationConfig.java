@@ -15,6 +15,7 @@ import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
@@ -36,7 +37,9 @@ import org.springframework.core.io.ClassPathResource;
 import org.folio.cache.VertxCache;
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.UCFailedRequestException;
+import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.config.ModConfiguration;
+import org.folio.config.cache.UCTitlePackageCacheKey;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
 import org.folio.db.exc.ConstraintViolationException;
@@ -151,6 +154,12 @@ public class ApplicationConfig {
   public VertxCache<String, String> ucTokenCache(Vertx vertx,
                                                  @Value("${uc.token.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "ucTokenCache");
+  }
+
+  @Bean
+  public VertxCache<UCTitlePackageCacheKey, Map<String, UCCostAnalysis>> ucTitlePackageCache(Vertx vertx,
+                                                                                             @Value("${uc.title-package.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "ucTitlePackageCache");
   }
 
   @Bean
