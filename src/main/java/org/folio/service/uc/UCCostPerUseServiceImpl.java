@@ -8,12 +8,13 @@ import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Iterables;
@@ -35,21 +36,25 @@ import org.folio.client.uc.configuration.GetPackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitlePackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
+import org.folio.client.uc.model.UCCostAnalysisDetails;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCTitlePackageId;
 import org.folio.config.cache.UCTitlePackageCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
+import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rmapi.result.PackageCostPerUseResult;
+import org.folio.rmapi.result.ResourceCostPerUseCollectionResult;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
 import org.folio.rmapi.result.TitleCostPerUseResult;
 import org.folio.service.holdings.HoldingsService;
@@ -77,6 +82,8 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   @Autowired
   private Converter<ResourceCostPerUseResult, ResourceCostPerUse> resourceCostPerUseConverter;
+  @Autowired
+  private Converter<ResourceCostPerUseCollectionResult, ResourceCostPerUseCollection> resourceCostPerUseCollectionConverter;
   @Autowired
   private Converter<PackageCostPerUseResult, PackageCostPerUse> packageCostPerUseConverter;
   @Autowired
@@ -150,22 +157,54 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .thenApply(packageCostPerUseConverter::convert);
   }
 
-  private CompletableFuture<Map<String, UCCostAnalysis>> loadFromCache(Set<UCTitlePackageId> titlePackageIds,
-                                                                       CommonUCConfiguration ucConfiguration) {
-    var configuration = createGetTitlePackageConfiguration(ucConfiguration);
+  @Override
+  public CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(String packageId, String platform,
+                                                                                       String fiscalYear, int page, int size,
+                                                                                       Map<String, String> okapiHeaders) {
+    validateParams(platform, fiscalYear);
+    var id = parsePackageId(packageId);
+    var packageIdPart = valueOf(id.getPackageIdPart());
+    MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
 
+    return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
+      .thenCompose(
+        ucConfiguration -> {
+          var resultBuilder = ResourceCostPerUseCollectionResult.builder().configuration(ucConfiguration);
+          return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
+            .thenCompose(context -> fetchHoldings(packageIdPart, context))
+            .thenApply(dbHoldingInfos -> {
+              resultBuilder.holdingInfos(dbHoldingInfos);
+              return extractTitlePackageIds(dbHoldingInfos);
+            })
+            .thenCompose(ids -> fetchTitlePackageCost(ids, platformTypeHolder.getValue(), ucConfiguration))
+            .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
+        }
+      )
+      .thenApply(resourceCostPerUseCollectionConverter::convert)
+      .thenApply(resourceCostPerUseCollection -> {
+        var items = resourceCostPerUseCollection.getData().stream()
+          .sorted(Comparator.comparing(o -> o.getAttributes().getName()))
+          .skip((long) (page - 1) * size)
+          .limit(size)
+          .collect(Collectors.toList());
+        return resourceCostPerUseCollection.withData(items);
+      });
+  }
+
+  private CompletableFuture<Map<String, UCCostAnalysis>> loadFromCache(List<UCTitlePackageId> titlePackageIds,
+                                                                       GetTitlePackageUCConfiguration configuration) {
     var cacheKey = new UCTitlePackageCacheKey(configuration, DigestUtils.md5(Json.encode(titlePackageIds)));
 
     return ucTitlePackageCache.getValueOrLoad(cacheKey, () -> loadInPartitions(titlePackageIds, configuration));
   }
 
-  private CompletableFuture<Map<String, UCCostAnalysis>> loadInPartitions(Set<UCTitlePackageId> titlePackageIds,
+  private CompletableFuture<Map<String, UCCostAnalysis>> loadInPartitions(List<UCTitlePackageId> titlePackageIds,
                                                                           GetTitlePackageUCConfiguration configuration) {
     if (titlePackageIds.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptyMap());
     } else if (titlePackageIds.size() > MAX_PARTITION_SIZE) {
       var futures = StreamSupport.stream(Iterables.partition(titlePackageIds, MAX_PARTITION_SIZE).spliterator(), false)
-        .map(ids -> client.getTitlePackageCostPerUse(new HashSet<>(ids), configuration))
+        .map(ids -> client.getTitlePackageCostPerUse(ids, configuration))
         .collect(Collectors.toList());
 
       return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
@@ -219,23 +258,60 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
                                                                                Map<String, String> okapiHeaders) {
     return templateFactory.createTemplate(okapiHeaders, Promise.promise())
       .getRmapiTemplateContext()
-      .thenCompose(context -> holdingsService
-        .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant()))
+      .thenCompose(context -> fetchHoldings(packageIdPart, context))
       .thenCompose(dbHoldingInfos -> {
-        var titlePackageIds = dbHoldingInfos.stream()
-          .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
-          .collect(Collectors.toSet());
-        return loadFromCache(titlePackageIds, ucConfiguration);
+        var configuration = createGetTitlePackageConfiguration(ucConfiguration, true);
+        return loadFromCache(extractTitlePackageIds(dbHoldingInfos), configuration);
       });
   }
 
   private CompletableFuture<Map<String, UCCostAnalysis>> fetchTitlePackagesCost(List<CustomerResources> customerResources,
                                                                                 CommonUCConfiguration ucConfiguration) {
-    Set<UCTitlePackageId> titlePackageIds = customerResources.stream()
+    var titlePackageIds = customerResources.stream()
       .map(cr -> new UCTitlePackageId(cr.getTitleId(), cr.getPackageId()))
-      .collect(Collectors.toSet());
+      .distinct()
+      .collect(Collectors.toList());
+    var configuration = createGetTitlePackageConfiguration(ucConfiguration, true);
+    return loadFromCache(titlePackageIds, configuration);
+  }
 
-    return loadFromCache(titlePackageIds, ucConfiguration);
+  private CompletableFuture<Map<String, UCCostAnalysis>> fetchTitlePackageCost(List<UCTitlePackageId> titlePackageIds,
+                                                                               PlatformType platformType,
+                                                                               CommonUCConfiguration ucConfiguration) {
+    switch (platformType) {
+      case PUBLISHER:
+        return loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, true));
+      case NON_PUBLISHER:
+        return loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, false));
+      default:
+        return loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, true))
+          .thenCombine(loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, false)),
+            (costMap1, costMap2) -> Stream.concat(costMap1.entrySet().stream(), costMap2.entrySet().stream())
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, this::toAllPublisherUCCostAnalysis)));
+    }
+  }
+
+  private UCCostAnalysis toAllPublisherUCCostAnalysis(UCCostAnalysis ucCostAnalysis1, UCCostAnalysis ucCostAnalysis2) {
+    var current1 = ucCostAnalysis1.getCurrent();
+    var current2 = ucCostAnalysis2.getCurrent();
+
+    var cost = Optional.ofNullable(current1.getCost());
+    var usage1 = Optional.ofNullable(current1.getUsage());
+    var usage2 = Optional.ofNullable(current2.getUsage());
+
+    Optional<Integer> usage = usage1.flatMap(left -> usage2.map(right -> left + right));
+
+    var costPerUse = cost.flatMap(c -> usage.map(u -> c / u));
+    return new UCCostAnalysis(new UCCostAnalysisDetails(
+      cost.orElse(null),
+      usage.orElse(null),
+      costPerUse.orElse(null)
+    ), null);
+  }
+
+  private CompletableFuture<List<DbHoldingInfo>> fetchHoldings(String packageIdPart, RMAPITemplateContext context) {
+    return holdingsService
+      .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant());
   }
 
   private CompletableFuture<CommonUCConfiguration> fetchCommonConfiguration(String platform, String fiscalYear,
@@ -274,6 +350,13 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
     }
   }
 
+  private List<UCTitlePackageId> extractTitlePackageIds(List<DbHoldingInfo> dbHoldingInfos) {
+    return dbHoldingInfos.stream()
+      .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
+      .distinct()
+      .collect(Collectors.toList());
+  }
+
   private CompletableFuture<UCTitleCostPerUse> getTitleCost(ResourceId id, GetTitleUCConfiguration configuration) {
     return client.getTitleCostPerUse(valueOf(id.getTitleIdPart()), valueOf(id.getPackageIdPart()), configuration);
   }
@@ -310,14 +393,15 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .build();
   }
 
-  private GetTitlePackageUCConfiguration createGetTitlePackageConfiguration(CommonUCConfiguration ucConfiguration) {
+  private GetTitlePackageUCConfiguration createGetTitlePackageConfiguration(CommonUCConfiguration ucConfiguration,
+                                                                            boolean isPublisher) {
     return GetTitlePackageUCConfiguration.builder()
       .accessToken(ucConfiguration.getAccessToken())
       .customerKey(ucConfiguration.getCustomerKey())
       .analysisCurrency(ucConfiguration.getAnalysisCurrency())
       .fiscalMonth(ucConfiguration.getFiscalMonth())
       .fiscalYear(ucConfiguration.getFiscalYear())
-      .publisherPlatform(true)
+      .publisherPlatform(isPublisher)
       .previousYear(false)
       .build();
   }

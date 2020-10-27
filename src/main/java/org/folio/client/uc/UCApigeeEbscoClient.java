@@ -1,7 +1,7 @@
 package org.folio.client.uc;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.folio.client.uc.configuration.GetPackageUCConfiguration;
@@ -22,6 +22,6 @@ public interface UCApigeeEbscoClient {
 
   CompletableFuture<UCPackageCostPerUse> getPackageCostPerUse(String packageId, GetPackageUCConfiguration configuration);
 
-  CompletableFuture<Map<String, UCCostAnalysis>> getTitlePackageCostPerUse(Set<UCTitlePackageId> ids,
+  CompletableFuture<Map<String, UCCostAnalysis>> getTitlePackageCostPerUse(List<UCTitlePackageId> ids,
                                                                            GetTitlePackageUCConfiguration configuration);
 }

@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resources' cost-per-use collection object schema",
+  "description": "Resources' cost-per-use collection object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceCostPerUseCollection",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "List of resources' cost-per-use",
+      "items": {
+        "type": "object",
+        "$ref": "resourceCostPerUseCollectionItem.json"
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Response's parameters",
+      "$ref": "costPerUseParameters.json"
+    },
+    "meta": {
+      "type": "object",
+      "description": "metadata containing total results in collection",
+      "$ref": "../../metaTotalResults.json",
+      "readonly": true
+    },
+    "jsonapi": {
+      "type": "object",
+      "description": "version of json api",
+      "$ref": "../../jsonapi.json"
+    }
+  },
+  "required": [
+    "data",
+    "meta",
+    "jsonapi"
+  ]
+}

@@ -2,8 +2,8 @@ package org.folio.client.uc;
 
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -109,7 +109,7 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
   }
 
   @Override
-  public CompletableFuture<Map<String, UCCostAnalysis>> getTitlePackageCostPerUse(Set<UCTitlePackageId> ids,
+  public CompletableFuture<Map<String, UCCostAnalysis>> getTitlePackageCostPerUse(List<UCTitlePackageId> ids,
                                                                                   GetTitlePackageUCConfiguration configuration) {
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
     constructPostRequest(constructPostTitlesUri(configuration), configuration)
@@ -148,12 +148,17 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
 
   private Handler<HttpContext<?>> loggingInterceptor() {
     return httpContext -> {
-      if (httpContext.phase() == ClientPhase.SEND_REQUEST) {
+      if (ClientPhase.SEND_REQUEST == httpContext.phase()) {
         HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
         HttpMethod method = request.method();
         String uri = request.uri();
         Object body = httpContext.body();
-        LOG.info("Request APIGEE {} {} with body {}", method, uri, body);
+        LOG.info("Request sends to APIGEE {} {} with body {}", method, uri, body);
+      } else if (ClientPhase.RECEIVE_RESPONSE == httpContext.phase()) {
+        HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
+        HttpMethod method = request.method();
+        String uri = request.uri();
+        LOG.info("Response received from APIGEE {} {}", method, uri);
       }
       httpContext.next();
     };

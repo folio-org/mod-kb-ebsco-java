@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.resource.EholdingsPackagesPackageIdCostperuse;
+import org.folio.rest.jaxrs.resource.EholdingsPackagesPackageIdResourcesCostperuse;
 import org.folio.rest.jaxrs.resource.EholdingsResourcesResourceIdCostperuse;
 import org.folio.rest.jaxrs.resource.EholdingsTitlesTitleIdCostperuse;
 import org.folio.rest.util.ErrorHandler;
@@ -22,7 +23,8 @@ import org.folio.service.uc.UCCostPerUseService;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsCostperuseImpl
-  implements EholdingsResourcesResourceIdCostperuse, EholdingsTitlesTitleIdCostperuse, EholdingsPackagesPackageIdCostperuse {
+  implements EholdingsResourcesResourceIdCostperuse, EholdingsTitlesTitleIdCostperuse, EholdingsPackagesPackageIdCostperuse,
+  EholdingsPackagesPackageIdResourcesCostperuse {
 
   @Autowired
   private UCCostPerUseService costPerUseService;
@@ -74,6 +76,21 @@ public class EholdingsCostperuseImpl
       .thenAccept(costPerUse ->
         asyncResultHandler.handle(succeededFuture(
           GetEholdingsPackagesCostperuseByPackageIdResponse.respond200WithApplicationVndApiJson(costPerUse)))
+      )
+      .exceptionally(costPerUseErrorHandler.handle(asyncResultHandler));
+  }
+
+  @Override
+  @Validate
+  @HandleValidationErrors
+  public void getEholdingsPackagesResourcesCostperuseByPackageId(String packageId, String platform, String fiscalYear,
+                                                                 int page, int size, Map<String, String> okapiHeaders,
+                                                                 Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                 Context vertxContext) {
+    costPerUseService.getPackageResourcesCostPerUse(packageId, platform, fiscalYear, page, size, okapiHeaders)
+      .thenAccept(costPerUseCollection ->
+        asyncResultHandler.handle(succeededFuture(
+          GetEholdingsPackagesResourcesCostperuseByPackageIdResponse.respond200WithApplicationVndApiJson(costPerUseCollection)))
       )
       .exceptionally(costPerUseErrorHandler.handle(asyncResultHandler));
   }

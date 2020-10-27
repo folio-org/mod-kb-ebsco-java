@@ -10,4 +10,9 @@ public class UCTitlePackageId {
   Integer titleId;
   @JsonProperty("listId")
   Integer packageId;
+
+  @Override
+  public String toString() {
+    return String.format("%d.%d", titleId, packageId);
+  }
 }

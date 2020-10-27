@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource cost analysis object schema",
+  "description": "Resource cost analysis object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceCostAnalysisAttributes",
+  "additionalProperties": false,
+  "extends": {
+    "$ref": "analysisCostAttributes.json"
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Resource name",
+      "example": "American Journal of Undergraduate Research"
+    },
+    "publicationType": {
+      "type": "string",
+      "description": "Publication type",
+      "$ref": "../../publicationType.json"
+    }
+  }
+}
