@@ -24,6 +24,7 @@ import static org.folio.util.UCSettingsTestUtil.stubSettings;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -38,11 +39,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.UCAuthEbscoClient;
 import org.folio.client.uc.model.UCAuthToken;
+import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.test.util.TestUtil;
+import org.folio.util.HoldingsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsCostperuseImplTest extends WireMockTestBase {
@@ -52,12 +56,15 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Autowired
   private UCApigeeEbscoClient apigeeEbscoClient;
 
+  private String credentialsId;
+
   @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
 
-    String credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    String credentialsId = this.credentialsId;
     saveUCSettings(stubSettings(credentialsId), vertx);
     setUpUCCredentials(vertx);
 
@@ -156,7 +163,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
     mockRmApiGetTitle(titleId, stubRmapiResponseFile);
     String stubApigeeGetTitleResponseFile = "responses/uc/titles/get-title-cost-per-use-response.json";
-    String stubApigeeGetTitlePackageResponseFile = "responses/uc/titles/get-title-packages-cost-per-use-response.json";
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-title-packages-cost-per-use-response.json";
     mockSuccessfulTitleCostPerUse(titleId, packageId, stubApigeeGetTitleResponseFile);
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
@@ -223,6 +231,85 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertErrorContainsDetail(error, "Random error message");
   }
 
+  @Test
+  public void shouldReturnPackageCostPerUse() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "all";
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+
+    String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/packages/expected-package-cost-per-use.json";
+    PackageCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), PackageCostPerUse.class);
+
+    PackageCostPerUse actual = getWithOk(packageEndpoint(packageId, year, platform), JOHN_TOKEN_HEADER)
+      .as(PackageCostPerUse.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturnPackageCostPerUseWhenPackageCostIsEmpty() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "all";
+
+    var holding1 = new DbHoldingInfo("1", packageId, "1","Ionicis tormentos accelerare!", "Sunt hydraes", "Book");
+    var holding2 = new DbHoldingInfo("2", packageId, "1","Vortex, plasmator, et lixa.", "Est germanus byssus", "Book");
+    HoldingsTestUtil.saveHolding(credentialsId, holding1, OffsetDateTime.now(), vertx);
+    HoldingsTestUtil.saveHolding(credentialsId, holding2, OffsetDateTime.now(), vertx);
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/packages/expected-package-cost-per-use-when-cost-is-empty.json";
+    PackageCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), PackageCostPerUse.class);
+
+    PackageCostPerUse actual = getWithOk(packageEndpoint(packageId, year, platform), JOHN_TOKEN_HEADER)
+      .as(PackageCostPerUse.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturn422OnGetPackageCPUWhenYearIsNull() {
+    String packageId = "222222";
+    JsonapiError error = getWithStatus(packageEndpoint(packageId, null, null), SC_UNPROCESSABLE_ENTITY)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid fiscalYear");
+  }
+
+  @Test
+  public void shouldReturn422OnGetPackageCPUWhenPlatformIsInvalid() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "invalid";
+    JsonapiError error = getWithStatus(packageEndpoint(packageId, year, platform), SC_UNPROCESSABLE_ENTITY)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid platform");
+  }
+
+  @Test
+  public void shouldReturn400OnGetPackageCPUWhenApigeeFails() {
+    String packageId = "222222";
+    String year = "2019";
+
+    stubFor(get(urlPathMatching(String.format("/uc/costperuse/package/%s", packageId)))
+      .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
+    );
+
+    JsonapiError error = getWithStatus(packageEndpoint(packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsDetail(error, "Random error message");
+  }
+
   private void mockRmApiGetTitle(String titleId, String stubRmapiResponseFile) {
     stubFor(get(urlPathMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + titleId))
       .willReturn(aResponse().withBody(readFile(stubRmapiResponseFile)))
@@ -231,6 +318,12 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   private void mockSuccessfulTitleCostPerUse(String titleId, String packageId, String filePath) {
     stubFor(get(urlPathMatching(String.format("/uc/costperuse/title/%s/%s", titleId, packageId)))
+      .willReturn(aResponse().withStatus(SC_OK).withBody(readFile(filePath)))
+    );
+  }
+
+  private void mockSuccessfulPackageCostPerUse(String packageId, String filePath) {
+    stubFor(get(urlPathMatching(String.format("/uc/costperuse/package/%s", packageId)))
       .willReturn(aResponse().withStatus(SC_OK).withBody(readFile(filePath)))
     );
   }
@@ -267,6 +360,15 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   private String titleEndpoint(String packageId, String year, String platform) {
     String baseUrl = String.format("eholdings/titles/%s/costperuse", packageId);
+    StringBuilder paramsSb = getEndpointParams(year, platform);
+    return paramsSb.length() > 0
+      ? baseUrl + "?" + paramsSb.toString()
+      : baseUrl;
+  }
+
+
+  private String packageEndpoint(String packageId, String year, String platform) {
+    String baseUrl = String.format("eholdings/packages/1-%s/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
     return paramsSb.length() > 0
       ? baseUrl + "?" + paramsSb.toString()

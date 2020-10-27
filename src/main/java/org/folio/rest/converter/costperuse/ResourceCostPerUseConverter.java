@@ -1,8 +1,8 @@
 package org.folio.rest.converter.costperuse;
 
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getCostAnalysisAttributes;
-import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getSpecificPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNonPublisherUsage;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
@@ -35,7 +35,7 @@ public class ResourceCostPerUseConverter implements Converter<ResourceCostPerUse
     if (ucTitleCostPerUse.getUsage() == null || ucTitleCostPerUse.getUsage().getPlatforms() == null) {
       return resourceCostPerUse;
     }
-    List<SpecificPlatformUsage> specificPlatformUsages = getSpecificPlatformUsages(ucTitleCostPerUse.getUsage());
+    List<SpecificPlatformUsage> specificPlatformUsages = getAllPlatformUsages(ucTitleCostPerUse.getUsage());
 
     var usage = new Usage().withTotals(new UsageTotals());
     var analysis = new CostAnalysis();

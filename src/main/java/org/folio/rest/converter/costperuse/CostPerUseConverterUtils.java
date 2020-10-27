@@ -25,10 +25,22 @@ final class CostPerUseConverterUtils {
   private CostPerUseConverterUtils() {
   }
 
-  static List<SpecificPlatformUsage> getSpecificPlatformUsages(UCUsage uCUsage) {
+  static List<SpecificPlatformUsage> getAllPlatformUsages(UCUsage uCUsage) {
     return uCUsage.getPlatforms().entrySet()
       .stream()
       .map(CostPerUseConverterUtils::toSpecificPlatformUsage)
+      .collect(Collectors.toList());
+  }
+
+  static List<SpecificPlatformUsage> getNonPublisherUsages(List<SpecificPlatformUsage> specificPlatformUsages) {
+    return specificPlatformUsages.stream()
+      .filter(Predicate.not(SpecificPlatformUsage::getIsPublisherPlatform))
+      .collect(Collectors.toList());
+  }
+
+  static List<SpecificPlatformUsage> getPublisherUsages(List<SpecificPlatformUsage> specificPlatformUsages) {
+    return specificPlatformUsages.stream()
+      .filter(SpecificPlatformUsage::getIsPublisherPlatform)
       .collect(Collectors.toList());
   }
 
@@ -56,17 +68,13 @@ final class CostPerUseConverterUtils {
   }
 
   static void setNonPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
-    var nonPublisherPlatformUsages = specificPlatformUsages.stream()
-      .filter(Predicate.not(SpecificPlatformUsage::getIsPublisherPlatform))
-      .collect(Collectors.toList());
+    var nonPublisherPlatformUsages = getNonPublisherUsages(specificPlatformUsages);
     usage.setPlatforms(nonPublisherPlatformUsages);
     usage.getTotals().setNonPublisher(getTotalUsage(nonPublisherPlatformUsages));
   }
 
   static void setPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
-    var publisherPlatformUsages = specificPlatformUsages.stream()
-      .filter(SpecificPlatformUsage::getIsPublisherPlatform)
-      .collect(Collectors.toList());
+    var publisherPlatformUsages = getPublisherUsages(specificPlatformUsages);
     usage.setPlatforms(publisherPlatformUsages);
     usage.getTotals().setPublisher(getTotalUsage(publisherPlatformUsages));
   }

@@ -155,6 +155,12 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
+  public CompletableFuture<List<DbHoldingInfo>> getHoldingsByPackageId(String packageId, String credentialsId,
+                                                                       String tenantId) {
+    return holdingsRepository.findAllByPackageId(packageId, toUUID(credentialsId), tenantId);
+  }
+
+  @Override
   public void saveHolding(HoldingsMessage holdings) {
     final String tenantId = holdings.getTenantId();
     final UUID credentialsId = toUUID(holdings.getCredentialsId());
@@ -228,11 +234,6 @@ public class HoldingsServiceImpl implements HoldingsService {
       });
   }
 
-  private boolean isTransactionIsAlreadyLoaded(SnapshotCreatedMessage message, String previousTransactionId) {
-    final String transactionId = message.getTransactionId();
-    return transactionId != null && transactionId.equals(previousTransactionId);
-  }
-
   @Override
   public void snapshotFailed(SnapshotFailedMessage message) {
     final String tenantId = message.getTenantId();
@@ -300,6 +301,11 @@ public class HoldingsServiceImpl implements HoldingsService {
 
     return holdingsRepository.saveAll(holdingsToSave, updatedAt, credentialsId, tenantId)
       .thenCompose(o -> holdingsRepository.deleteAll(holdingsToDelete, credentialsId, tenantId));
+  }
+
+  private boolean isTransactionIsAlreadyLoaded(SnapshotCreatedMessage message, String previousTransactionId) {
+    final String transactionId = message.getTransactionId();
+    return transactionId != null && transactionId.equals(previousTransactionId);
   }
 
   private boolean hasLoadedLastPage(LoadStatusAttributes attributes) {

@@ -45,6 +45,11 @@ public interface HoldingsService {
     throw new UnsupportedOperationException();
   }
 
+  @GenIgnore
+  default CompletableFuture<List<DbHoldingInfo>> getHoldingsByPackageId(String packageId, String credentialsId, String tenant) {
+    throw new UnsupportedOperationException();
+  }
+
   void saveHolding(HoldingsMessage holdings);
 
   void processChanges(DeltaReportMessage holdings);

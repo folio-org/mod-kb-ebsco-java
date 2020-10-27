@@ -1,0 +1,243 @@
+{
+  "titleId": "50974",
+  "type": "titleCostPerUse",
+  "attributes": {
+    "usage": {
+      "platforms": [
+        {
+          "name": "OvidSP",
+          "isPublisherPlatform": true,
+          "counts": [
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            15,
+            27,
+            0,
+            2
+          ],
+          "total": 47
+        },
+        {
+          "name": "EBSCOhost",
+          "isPublisherPlatform": false,
+          "counts": [
+            11,
+            19,
+            29,
+            33,
+            14,
+            10,
+            7,
+            3,
+            7,
+            9,
+            17,
+            3
+          ],
+          "total": 162
+        },
+        {
+          "name": "ProQuest",
+          "isPublisherPlatform": false,
+          "counts": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            72,
+            145,
+            null
+          ],
+          "total": 217
+        }
+      ],
+      "totals": {
+        "publisher": {
+          "counts": [
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0,
+            15,
+            27,
+            0,
+            2
+          ],
+          "total": 47
+        },
+        "nonPublisher": {
+          "counts": [
+            11,
+            19,
+            29,
+            33,
+            14,
+            10,
+            7,
+            3,
+            7,
+            81,
+            162,
+            3
+          ],
+          "total": 379
+        },
+        "all": {
+          "counts": [
+            11,
+            20,
+            29,
+            33,
+            15,
+            11,
+            7,
+            3,
+            22,
+            108,
+            162,
+            5
+          ],
+          "total": 426
+        }
+      }
+    },
+    "analysis": {
+      "holdingsSummary": [
+        {
+          "packageId": "18-53",
+          "packageName": "Gale General OneFile",
+          "costPerUse": 0.0,
+          "coverageStatement": "",
+          "coverages": [
+            {
+              "beginCoverage": "2000-01-06",
+              "endCoverage": ""
+            }
+          ],
+          "embargoPeriod": {
+            "embargoValue": 0
+          },
+          "cost": 0.0,
+          "usage": 426
+        },
+        {
+          "packageId": "36-434",
+          "packageName": "Springer Nature Journals",
+          "costPerUse": 19.953051643192488,
+          "coverageStatement": "",
+          "coverages": [
+            {
+              "beginCoverage": "1869-01-01",
+              "endCoverage": ""
+            }
+          ],
+          "embargoPeriod": {
+            "embargoUnit": "Months",
+            "embargoValue": 10
+          },
+          "cost": 8500.0,
+          "usage": 426
+        },
+        {
+          "packageId": "273-1812",
+          "packageName": "EBSCO Open Access Journals",
+          "costPerUse": 0.0,
+          "coverages": [
+            {
+              "beginCoverage": "1869-01-01",
+              "endCoverage": "1875-12-31"
+            }
+          ],
+          "embargoPeriod": {
+            "embargoValue": 0
+          },
+          "cost": 0.0,
+          "usage": 426
+        },
+        {
+          "packageId": "19-1073",
+          "packageName": "Academic Search Alumni Edition",
+          "costPerUse": 0.0,
+          "coverages": [
+            {
+              "beginCoverage": "1997-06-05",
+              "endCoverage": "2015-11-27"
+            }
+          ],
+          "embargoPeriod": {
+            "embargoValue": 0
+          },
+          "cost": 0.0,
+          "usage": 426
+        },
+        {
+          "packageId": "22-4643",
+          "packageName": "Research Library",
+          "costPerUse": 0.0,
+          "coverages": [
+            {
+              "beginCoverage": "1990-01-04",
+              "endCoverage": ""
+            }
+          ],
+          "embargoPeriod": {
+            "embargoValue": 0
+          },
+          "cost": 0.0,
+          "usage": 426
+        },
+        {
+          "packageId": "22-2110355",
+          "packageName": "ProQuest Central",
+          "costPerUse": 0.0,
+          "coverages": [
+            {
+              "beginCoverage": "1990-01-04",
+              "endCoverage": ""
+            }
+          ],
+          "embargoPeriod": {
+            "embargoValue": 0
+          },
+          "cost": 0.0,
+          "usage": 426
+        },
+        {
+          "packageId": "36-3262872",
+          "packageName": "Academic Journals on Nature.com",
+          "costPerUse": 0.0,
+          "coverages": [
+            {
+              "beginCoverage": "1869-11-04",
+              "endCoverage": ""
+            }
+          ],
+          "embargoPeriod": {
+            "embargoValue": 0
+          },
+          "cost": 0.0,
+          "usage": 426
+        }
+      ]
+    },
+    "parameters": {
+      "startMonth": "jan",
+      "currency": "USD"
+    }
+  }
+}

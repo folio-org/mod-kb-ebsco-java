@@ -1,6 +1,8 @@
 package org.folio.repository.holdings;
 
 import static org.folio.repository.SqlQueryHelper.joinWithComma;
+import static org.folio.repository.SqlQueryHelper.selectQuery;
+import static org.folio.repository.SqlQueryHelper.whereQuery;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -8,6 +10,7 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
 public final class HoldingsTableConstants {
+
   public static final String HOLDINGS_TABLE = "holdings";
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
@@ -18,16 +21,15 @@ public final class HoldingsTableConstants {
   public static final String PUBLISHER_NAME_COLUMN = "publisher_name";
   public static final String PUBLICATION_TITLE_COLUMN = "publication_title";
   public static final String UPDATED_AT_COLUMN = "updated_at";
-  private static final String PK_HOLDINGS;
 
   public static final String INSERT_OR_UPDATE_HOLDINGS;
   public static final String GET_BY_PK_HOLDINGS;
+  public static final String GET_BY_PACKAGE_ID_AND_CREDENTIALS;
   public static final String DELETE_BY_PK_HOLDINGS;
   public static final String DELETE_OLD_RECORDS_BY_CREDENTIALS_ID;
+
+  private static final String PK_HOLDINGS;
   private static final String EXCLUDED_DELIMITER = "= EXCLUDED.";
-
-
-  private HoldingsTableConstants() { }
 
   static {
     PK_HOLDINGS = joinWithComma(CREDENTIALS_ID_COLUMN, ID_COLUMN);
@@ -41,7 +43,8 @@ public final class HoldingsTableConstants {
       RESOURCE_TYPE_COLUMN, PUBLISHER_NAME_COLUMN, PUBLICATION_TITLE_COLUMN, UPDATED_AT_COLUMN);
 
     DELETE_BY_PK_HOLDINGS = "DELETE FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
-    GET_BY_PK_HOLDINGS =  "SELECT * FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
+    GET_BY_PK_HOLDINGS = "SELECT * FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
+    GET_BY_PACKAGE_ID_AND_CREDENTIALS = selectQuery() + " " + whereQuery(PACKAGE_ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
 
     DELETE_OLD_RECORDS_BY_CREDENTIALS_ID = "DELETE FROM %s WHERE " + CREDENTIALS_ID_COLUMN + "=? AND "
       + UPDATED_AT_COLUMN + " < ?;";
@@ -51,8 +54,10 @@ public final class HoldingsTableConstants {
       "DO UPDATE SET " + getExcludedCause(excludedColumns) + ";";
   }
 
+  private HoldingsTableConstants() { }
+
   @NotNull
-  private static String getExcludedCause(CharSequence ... excludedColumns) {
+  private static String getExcludedCause(CharSequence... excludedColumns) {
     return Arrays.stream(excludedColumns)
       .map(column -> column + EXCLUDED_DELIMITER + column)
       .collect(Collectors.joining(","));

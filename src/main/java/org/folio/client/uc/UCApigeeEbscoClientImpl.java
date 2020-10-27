@@ -31,10 +31,12 @@ import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import org.folio.client.uc.configuration.GetPackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitlePackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.configuration.UCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
+import org.folio.client.uc.model.UCPackageCostPerUse;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCTitlePackageId;
 
@@ -44,15 +46,21 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
   private static final Logger LOG = LoggerFactory.getLogger(UCApigeeEbscoClientImpl.class);
 
   private static final int TIMEOUT = 20000;
+
+  private static final String FISCAL_YEAR_PARAM = "fiscalYear";
+  private static final String FISCAL_MONTH_PARAM = "fiscalMonth";
+  private static final String ANALYSIS_CURRENCY_PARAM = "analysisCurrency";
+  private static final String AGGREGATED_FULL_TEXT_PARAM = "aggregatedFullText";
+  private static final String PUBLISHER_PLATFORM_PARAM = "publisherPlatform";
+  private static final String PREVIOUS_YEAR_PARAM = "previousYear";
+
   private static final String VERIFY_URI = "/uc/costperuse/package/1"
-    + "?fiscalYear=2018&fiscalMonth=DEC&analysisCurrency=USD&aggregatedFullText=true";
+    + "?" + FISCAL_YEAR_PARAM + "=2018&" + FISCAL_MONTH_PARAM + "=DEC&" + ANALYSIS_CURRENCY_PARAM + "=USD&"
+    + AGGREGATED_FULL_TEXT_PARAM + "=true";
 
   private static final String POST_TITLES_URI = "/uc/costperuse/titles";
-  private static final String POST_TITLE_URI_PARAMS =
-    "fiscalYear=%s&fiscalMonth=%s&analysisCurrency=%s&publisherPlatform=%s&previousYear=%s";
   private static final String GET_TITLE_URI = "/uc/costperuse/title/%s/%s";
-  private static final String GET_TITLE_URI_PARAMS =
-    "fiscalYear=%s&fiscalMonth=%s&analysisCurrency=%s&aggregatedFullText=%s";
+  private static final String GET_PACKAGE_URI = "/uc/costperuse/package/%s";
 
   private final String baseUrl;
   private final WebClient webClient;
@@ -88,6 +96,19 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
   }
 
   @Override
+  public CompletableFuture<UCPackageCostPerUse> getPackageCostPerUse(String packageId,
+                                                                     GetPackageUCConfiguration configuration) {
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    constructGetRequest(constructGetPackageUri(packageId, configuration), configuration)
+      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+      .as(BodyCodec.jsonObject())
+      .send(promise);
+    return mapVertxFuture(promise.future())
+      .thenApply(HttpResponse::body)
+      .thenApply(jsonObject -> jsonObject.mapTo(UCPackageCostPerUse.class));
+  }
+
+  @Override
   public CompletableFuture<Map<String, UCCostAnalysis>> getTitlePackageCostPerUse(Set<UCTitlePackageId> ids,
                                                                                   GetTitlePackageUCConfiguration configuration) {
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
@@ -107,13 +128,20 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
 
   private String constructGetTitleUri(String titleId, String packageId, GetTitleUCConfiguration configuration) {
     String uriPath = String.format(GET_TITLE_URI, titleId, packageId);
-    String uriParams = String.format(GET_TITLE_URI_PARAMS, configuration.getFiscalYear(), configuration.getFiscalMonth(),
+    String uriParams = String.format(getRequestParams(), configuration.getFiscalYear(), configuration.getFiscalMonth(),
+      configuration.getAnalysisCurrency(), configuration.isAggregatedFullText());
+    return uriPath + "?" + uriParams;
+  }
+
+  private String constructGetPackageUri(String packageId, GetPackageUCConfiguration configuration) {
+    String uriPath = String.format(GET_PACKAGE_URI, packageId);
+    String uriParams = String.format(getRequestParams(), configuration.getFiscalYear(), configuration.getFiscalMonth(),
       configuration.getAnalysisCurrency(), configuration.isAggregatedFullText());
     return uriPath + "?" + uriParams;
   }
 
   private String constructPostTitlesUri(GetTitlePackageUCConfiguration configuration) {
-    String uriParams = String.format(POST_TITLE_URI_PARAMS, configuration.getFiscalYear(), configuration.getFiscalMonth(),
+    String uriParams = String.format(postRequestParams(), configuration.getFiscalYear(), configuration.getFiscalMonth(),
       configuration.getAnalysisCurrency(), configuration.isPublisherPlatform(), configuration.isPreviousYear());
     return POST_TITLES_URI + "?" + uriParams;
   }
@@ -156,5 +184,28 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
 
       return new UCFailedRequestException(response.statusCode(), response.bodyAsString());
     });
+  }
+
+  private String postRequestParams() {
+    return String.join("&",
+      param(FISCAL_YEAR_PARAM),
+      param(FISCAL_MONTH_PARAM),
+      param(ANALYSIS_CURRENCY_PARAM),
+      param(PUBLISHER_PLATFORM_PARAM),
+      param(PREVIOUS_YEAR_PARAM)
+    );
+  }
+
+  private String getRequestParams() {
+    return String.join("&",
+      param(FISCAL_YEAR_PARAM),
+      param(FISCAL_MONTH_PARAM),
+      param(ANALYSIS_CURRENCY_PARAM),
+      param(AGGREGATED_FULL_TEXT_PARAM)
+    );
+  }
+
+  private String param(String paramName) {
+    return paramName + "=%s";
   }
 }

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package cost-per-use object schema",
+  "description": "Package cost-per-use object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.PackageCostPerUse",
+  "additionalProperties": false,
+  "properties": {
+    "packageId": {
+      "type": "string",
+      "description": "Package ID",
+      "example": "15-1440285"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": [
+        "packageCostPerUse"
+      ],
+      "example": "packageCostPerUse"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Package cost-per-use attributes",
+      "$ref": "packageCostPerUseDataAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "1.222222": {
+    "current": {
+      "cost": 6810.2688,
+      "usage": 81,
+      "costPerUse": 84.07739259259259
+    },
+    "previous": {
+      "usage": 27
+    }
+  },
+  "2.222222": {
+    "current": {
+      "cost": 330445.2688,
+      "usage": 465,
+      "costPerUse": 84.07739259259259
+    },
+    "previous": {
+      "usage": 27
+    }
+  }
+}

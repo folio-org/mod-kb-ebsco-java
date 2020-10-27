@@ -14,6 +14,7 @@ traits:
 
 types:
   resourceCostPerUse: !include types/uc/costperuse/resourceCostPerUse.json
+  packageCostPerUse: !include types/uc/costperuse/packageCostPerUse.json
   titleCostPerUse: !include types/uc/costperuse/titleCostPerUse.json
   jsonapiError: !include types/jsonapiError.json
 
@@ -45,7 +46,7 @@ types:
             type: jsonapiError
             example:
               strict: false
-              value: !include examples/costPerUse/resource_cost_per_use_400_response.json
+              value: !include examples/costPerUse/cost_per_use_400_response.json
       422:
         description: Unprocessable Entity
         body:
@@ -53,7 +54,7 @@ types:
             type: jsonapiError
             example:
               strict: false
-              value: !include examples/costPerUse/resource_cost_per_use_422_response.json
+              value: !include examples/costPerUse/cost_per_use_422_response.json
 /eholdings/titles/{titleId}/costperuse:
   displayName: Cost-per-use
   uriParameters:
@@ -74,7 +75,7 @@ types:
             type: titleCostPerUse
             example:
               strict: false
-              value: !include examples/costPerUse/resource_cost_per_use_200_response.json
+              value: !include examples/costPerUse/title_cost_per_use_200_response.json
       400:
         description: Bad Request
         body:
@@ -82,7 +83,7 @@ types:
             type: jsonapiError
             example:
               strict: false
-              value: !include examples/costPerUse/resource_cost_per_use_400_response.json
+              value: !include examples/costPerUse/cost_per_use_400_response.json
       422:
         description: Unprocessable Entity
         body:
@@ -90,4 +91,41 @@ types:
             type: jsonapiError
             example:
               strict: false
-              value: !include examples/costPerUse/resource_cost_per_use_422_response.json
+              value: !include examples/costPerUse/cost_per_use_422_response.json
+/eholdings/packages/{packageId}/costperuse:
+  displayName: Cost-per-use
+  uriParameters:
+    packageId:
+      description: Identifier of the package
+      type: string
+      pattern: "^\\d+-\\d+$"
+      example: "15-440285"
+  get:
+    description: Retrieve cost-per-use information for a particular package
+    is: [costPerUseCommon]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Package cost-per-use data
+            type: packageCostPerUse
+            example:
+              strict: false
+              value: !include examples/costPerUse/package_cost_per_use_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_422_response.json

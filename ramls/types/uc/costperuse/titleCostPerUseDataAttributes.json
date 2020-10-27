@@ -8,12 +8,12 @@
   "properties": {
     "usage": {
       "type": "object",
-      "description": "Usage of current resource",
+      "description": "Usage of current title",
       "$ref": "usage.json"
     },
     "analysis": {
       "type": "object",
-      "description": "Cost of current resource",
+      "description": "Cost of current title",
       "$ref": "titleAnalysisCost.json"
     },
     "parameters": {

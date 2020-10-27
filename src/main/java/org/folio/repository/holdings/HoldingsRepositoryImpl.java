@@ -6,11 +6,13 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.common.LogUtils.logDeleteQuery;
 import static org.folio.common.LogUtils.logInsertQuery;
 import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_BY_PK_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_OLD_RECORDS_BY_CREDENTIALS_ID;
+import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PACKAGE_ID_AND_CREDENTIALS;
 import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PK_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
@@ -89,6 +91,17 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     logSelectQuery(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
+    return mapResult(promise.future(), this::mapHoldings);
+  }
+
+  @Override
+  public CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(String packageId, UUID credentialsId, String tenantId) {
+    var query = prepareQuery(GET_BY_PACKAGE_ID_AND_CREDENTIALS, getHoldingsTableName(tenantId));
+    var params = createParams(packageId, credentialsId);
+    logSelectQuery(LOG, query, params);
+
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapHoldings);
   }
 
