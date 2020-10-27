@@ -16,6 +16,8 @@ import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
@@ -158,8 +160,35 @@ public class ApplicationConfig {
 
   @Bean
   public VertxCache<UCTitlePackageCacheKey, Map<String, UCCostAnalysis>> ucTitlePackageCache(Vertx vertx,
-                                                                                             @Value("${uc.title-package.cache.expire}") long expirationTime) {
-    return new VertxCache<>(vertx, expirationTime, "ucTitlePackageCache");
+                                                                                             @Value("${uc.title-package.cache.expire}") long expirationTime,
+                                                                                             @Value("${uc.title-package.cache.enable:false}") boolean isEnabled) {
+    if (isEnabled) {
+      return new VertxCache<>(vertx, expirationTime, "ucTitlePackageCache");
+    } else {
+      return emptyCache(vertx);
+    }
+  }
+
+  /**
+   * {@link VertxCache} implementation is using when it is needed to disable cache
+   */
+  public <T,E> VertxCache<T, E> emptyCache(Vertx vertx) {
+    return new VertxCache<>(vertx, 0L, "emptyCache") {
+
+      @Override public E getValue(T key) {
+        return null;
+      }
+
+      @Override public CompletableFuture<E> getValueOrLoad(T key, Supplier<CompletableFuture<E>> loader) {
+        return loader.get();
+      }
+
+      @Override public void putValue(T key, E cacheValue) { }
+
+      @Override public void invalidate(T key) { }
+
+      @Override public void invalidateAll() { }
+    };
   }
 
   @Bean
