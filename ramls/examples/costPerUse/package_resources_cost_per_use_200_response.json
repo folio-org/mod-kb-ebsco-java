@@ -1,0 +1,36 @@
+{
+  "data": [
+    {
+      "resourceId": "1-222222-19",
+      "type": "resourceCostPerUseItem",
+      "attributes": {
+        "name": "Sample name 1",
+        "publicationType": "Book",
+        "cost": 100.0,
+        "usage": 2,
+        "costPerUse": 50.0
+      }
+    },
+    {
+      "resourceId": "1-222222-9",
+      "type": "resourceCostPerUseItem",
+      "attributes": {
+        "name": "Sample name 2",
+        "publicationType": "Book",
+        "cost": 100.0,
+        "usage": 2,
+        "costPerUse": 50.0
+      }
+    }
+  ],
+  "parameters": {
+    "startMonth": "apr",
+    "currency": "USD"
+  },
+  "meta": {
+    "totalResults": 20
+  },
+  "jsonapi": {
+    "version": "1.0"
+  }
+}
