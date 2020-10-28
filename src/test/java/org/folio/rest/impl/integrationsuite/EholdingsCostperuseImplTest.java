@@ -8,6 +8,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
@@ -15,6 +22,7 @@ import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
+import static org.folio.util.HoldingsTestUtil.saveHolding;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
@@ -28,6 +36,7 @@ import java.time.OffsetDateTime;
 
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.jeasy.random.EasyRandom;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,12 +53,14 @@ import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
+import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.test.util.TestUtil;
-import org.folio.util.HoldingsTestUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsCostperuseImplTest extends WireMockTestBase {
+
+  private final EasyRandom random = new EasyRandom();
 
   @Autowired
   private UCAuthEbscoClient authEbscoClient;
@@ -255,10 +266,10 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String year = "2019";
     String platform = "all";
 
-    var holding1 = new DbHoldingInfo("1", packageId, "1","Ionicis tormentos accelerare!", "Sunt hydraes", "Book");
-    var holding2 = new DbHoldingInfo("2", packageId, "1","Vortex, plasmator, et lixa.", "Est germanus byssus", "Book");
-    HoldingsTestUtil.saveHolding(credentialsId, holding1, OffsetDateTime.now(), vertx);
-    HoldingsTestUtil.saveHolding(credentialsId, holding2, OffsetDateTime.now(), vertx);
+    var holding1 = new DbHoldingInfo("1", packageId, "1", "Ionicis tormentos accelerare!", "Sunt hydraes", "Book");
+    var holding2 = new DbHoldingInfo("2", packageId, "1", "Vortex, plasmator, et lixa.", "Est germanus byssus", "Book");
+    saveHolding(credentialsId, holding1, OffsetDateTime.now(), vertx);
+    saveHolding(credentialsId, holding2, OffsetDateTime.now(), vertx);
 
     String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
@@ -266,7 +277,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       "responses/uc/title-packages/get-title-packages-cost-per-use-for-package-response.json";
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
-    String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/packages/expected-package-cost-per-use-when-cost-is-empty.json";
+    String kbEbscoResponseFile =
+      "responses/kb-ebsco/costperuse/packages/expected-package-cost-per-use-when-cost-is-empty.json";
     PackageCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), PackageCostPerUse.class);
 
     PackageCostPerUse actual = getWithOk(packageEndpoint(packageId, year, platform), JOHN_TOKEN_HEADER)
@@ -306,6 +318,95 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(packageEndpoint(packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
       .as(JsonapiError.class);
+
+    assertErrorContainsDetail(error, "Random error message");
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollection() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "all";
+
+    for (int i = 1; i <= 20; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-multiply-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(20));
+    assertThat(actual.getData(), hasSize(20));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(2)));
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollectionWithPagination() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "publisher";
+    var page = "2";
+    var size = "15";
+
+    for (int i = 1; i <= 20; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-multiply-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection actual =
+      getWithOk(packageResourcesEndpoint(packageId, year, platform, page, size), JOHN_TOKEN_HEADER)
+        .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(20));
+    assertThat(actual.getData(), hasSize(5));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(1)));
+  }
+
+  @Test
+  public void shouldReturn422OnGetPackageResourcesCPUWhenYearIsNull() {
+    String packageId = "222222";
+    JsonapiError error = getWithStatus(packageResourcesEndpoint(packageId, null, null, null, null), SC_UNPROCESSABLE_ENTITY)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid fiscalYear");
+  }
+
+  @Test
+  public void shouldReturn422OnGetPackageResourcesCPUWhenPlatformIsInvalid() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "invalid";
+    JsonapiError error =
+      getWithStatus(packageResourcesEndpoint(packageId, year, platform, null, null), SC_UNPROCESSABLE_ENTITY)
+        .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid platform");
+  }
+
+  @Test
+  public void shouldReturn400OnGetPackageResourcesCPUWhenApigeeFails() {
+    String packageId = "222222";
+    String year = "2019";
+
+    stubFor(get(urlPathMatching(String.format("/uc/costperuse/package/%s", packageId)))
+      .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
+    );
+
+    JsonapiError error =
+      getWithStatus(packageResourcesEndpoint(packageId, year, null, null, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+        .as(JsonapiError.class);
 
     assertErrorContainsDetail(error, "Random error message");
   }
@@ -366,7 +467,6 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       : baseUrl;
   }
 
-
   private String packageEndpoint(String packageId, String year, String platform) {
     String baseUrl = String.format("eholdings/packages/1-%s/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
@@ -375,17 +475,46 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       : baseUrl;
   }
 
-  private StringBuilder getEndpointParams(String year, String platform) {
+  private String packageResourcesEndpoint(String packageId, String year, String platform, String page, String size) {
+    String baseUrl = String.format("eholdings/packages/1-%s/resources/costperuse", packageId);
+    StringBuilder paramsSb = getEndpointParams(year, platform, page, size);
+    return paramsSb.length() > 0
+      ? baseUrl + "?" + paramsSb.toString()
+      : baseUrl;
+  }
+
+  private StringBuilder getEndpointParams(String year, String platform, String page, String size) {
     StringBuilder paramsSb = new StringBuilder();
     if (year != null) {
       paramsSb.append("fiscalYear=").append(year);
     }
+    addParam(platform, paramsSb, "platform=");
+    addParam(page, paramsSb, "page=");
+    addParam(size, paramsSb, "size=");
+    return paramsSb;
+  }
+
+  private void addParam(String platform, StringBuilder paramsSb, String s) {
     if (platform != null) {
       if (paramsSb.length() > 0) {
         paramsSb.append("&");
       }
-      paramsSb.append("platform=").append(platform);
+      paramsSb.append(s).append(platform);
     }
-    return paramsSb;
+  }
+
+  private StringBuilder getEndpointParams(String year, String platform) {
+    return getEndpointParams(year, platform, null, null);
+  }
+
+  private DbHoldingInfo generateHolding(String packageId, int titleId) {
+    return DbHoldingInfo.builder()
+      .packageId(packageId)
+      .titleId(String.valueOf(titleId))
+      .publicationTitle(random.nextObject(String.class))
+      .publisherName(random.nextObject(String.class))
+      .resourceType("Book")
+      .vendorId("1")
+      .build();
   }
 }
