@@ -400,7 +400,9 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String packageId = "222222";
     String year = "2019";
 
-    stubFor(get(urlPathMatching(String.format("/uc/costperuse/package/%s", packageId)))
+    saveHolding(credentialsId, generateHolding(packageId, 1), OffsetDateTime.now(), vertx);
+
+    stubFor(post(urlPathMatching("/uc/costperuse/titles"))
       .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
     );
 
