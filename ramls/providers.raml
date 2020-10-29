@@ -32,7 +32,7 @@ traits:
   description: Collection of available providers in eholdings.
   get:
     description: Get a list of providers based on the search query.
-    is: [queriable, taggable, sortable, pageable]
+    is: [queriable, taggable, sortable, pageable: {maxCountValue: 100, defaultCountValue: 25}]
     responses:
       200:
         description: OK
@@ -126,7 +126,7 @@ traits:
     /packages:
       get:
         description: Search within a list of packages associated with a given provider.
-        is: [queriable, taggable, accessible, filterable, sortable, pageable]
+        is: [queriable, taggable, accessible, filterable, sortable, pageable: {maxCountValue: 100, defaultCountValue: 25}]
         responses:
           200:
             description: OK

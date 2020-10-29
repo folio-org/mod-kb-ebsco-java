@@ -11,7 +11,7 @@ documentation:
 
 traits:
   costPerUseCommon: !include traits/costPerUseCommon.raml
-  costPerUsePageable: !include traits/costPerUsePageable.raml
+  pageable: !include traits/pageable.raml
 
 types:
   resourceCostPerUse: !include types/uc/costperuse/resourceCostPerUse.json
@@ -141,7 +141,7 @@ types:
       example: "15-440285"
   get:
     description: Retrieve cost-per-use information for package resources
-    is: [costPerUseCommon, costPerUsePageable]
+    is: [costPerUseCommon, pageable: {maxCountValue: 1000, defaultCountValue: 100}]
     responses:
       200:
         description: OK

@@ -84,10 +84,10 @@ public class EholdingsCostperuseImpl
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackagesResourcesCostperuseByPackageId(String packageId, String platform, String fiscalYear,
-                                                                 int page, int size, Map<String, String> okapiHeaders,
+                                                                 int page, int count, Map<String, String> okapiHeaders,
                                                                  Handler<AsyncResult<Response>> asyncResultHandler,
                                                                  Context vertxContext) {
-    costPerUseService.getPackageResourcesCostPerUse(packageId, platform, fiscalYear, page, size, okapiHeaders)
+    costPerUseService.getPackageResourcesCostPerUse(packageId, platform, fiscalYear, page, count, okapiHeaders)
       .thenAccept(costPerUseCollection ->
         asyncResultHandler.handle(succeededFuture(
           GetEholdingsPackagesResourcesCostperuseByPackageIdResponse.respond200WithApplicationVndApiJson(costPerUseCollection)))
