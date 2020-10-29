@@ -11,9 +11,11 @@ documentation:
 
 traits:
   costPerUseCommon: !include traits/costPerUseCommon.raml
+  costPerUsePageable: !include traits/costPerUsePageable.raml
 
 types:
   resourceCostPerUse: !include types/uc/costperuse/resourceCostPerUse.json
+  resourceCostPerUseCollection: !include types/uc/costperuse/resourceCostPerUseCollection.json
   packageCostPerUse: !include types/uc/costperuse/packageCostPerUse.json
   titleCostPerUse: !include types/uc/costperuse/titleCostPerUse.json
   jsonapiError: !include types/jsonapiError.json
@@ -113,6 +115,43 @@ types:
             example:
               strict: false
               value: !include examples/costPerUse/package_cost_per_use_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_422_response.json
+/eholdings/packages/{packageId}/resources/costperuse:
+  displayName: Cost-per-use
+  uriParameters:
+    packageId:
+      description: Identifier of the package
+      type: string
+      pattern: "^\\d+-\\d+$"
+      example: "15-440285"
+  get:
+    description: Retrieve cost-per-use information for package resources
+    is: [costPerUseCommon, costPerUsePageable]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Package resources cost-per-use data
+            type: resourceCostPerUseCollection
+            example:
+              strict: false
+              value: !include examples/costPerUse/package_resources_cost_per_use_200_response.json
       400:
         description: Bad Request
         body:

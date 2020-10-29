@@ -66,6 +66,14 @@ public final class IdParser {
     return concat(holding.getVendorId(), Long.parseLong(holding.getPackageId()), Long.parseLong(holding.getTitleId()));
   }
 
+  public static ResourceId getResourceId(DbHoldingInfo resource) {
+    return ResourceId.builder()
+      .providerIdPart(Long.parseLong(resource.getVendorId()))
+      .packageIdPart(Long.parseLong(resource.getPackageId()))
+      .titleIdPart(Long.parseLong(resource.getTitleId()))
+      .build();
+  }
+
   public static List<PackageId> getPackageIds(List<DbPackage> packageIds) {
     return mapItems(packageIds, DbPackage::getId);
   }
@@ -75,12 +83,7 @@ public final class IdParser {
   }
 
   public static List<ResourceId> getResourceIds(List<DbHoldingInfo> holdings) {
-    return mapItems(holdings, resource ->
-      ResourceId.builder()
-        .providerIdPart(Long.parseLong(resource.getVendorId()))
-        .packageIdPart(Long.parseLong(resource.getPackageId()))
-        .titleIdPart(Long.parseLong(resource.getTitleId()))
-        .build());
+    return mapItems(holdings, IdParser::getResourceId);
   }
 
   public static List<PackageId> getPackageIds(Packages packages) {
