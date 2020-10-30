@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
+import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
@@ -88,6 +89,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   public void after() {
     clearDataFromTable(vertx, UC_CREDENTIALS_TABLE_NAME);
     clearDataFromTable(vertx, UC_SETTINGS_TABLE_NAME);
+    clearDataFromTable(vertx, HOLDINGS_TABLE);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
 
@@ -492,7 +494,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     }
     addParam(platform, paramsSb, "platform=");
     addParam(page, paramsSb, "page=");
-    addParam(size, paramsSb, "size=");
+    addParam(size, paramsSb, "count=");
     return paramsSb;
   }
 
