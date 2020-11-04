@@ -48,6 +48,7 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
@@ -74,7 +75,9 @@ import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
   "org.folio.rest.util.template",
   "org.folio.repository",
   "org.folio.service",
-  "org.folio.common"})
+  "org.folio.common",
+  "org.folio.properties"
+})
 public class ApplicationConfig {
 
   @Bean
@@ -217,5 +220,11 @@ public class ApplicationConfig {
       @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
       @Qualifier("nonSecuredCredentialsCollection") Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
+  }
+
+  @Bean
+  public CustomLabelsProperties customLabelsProperties(
+    @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength) {
+    return new CustomLabelsProperties(labelMaxLength);
   }
 }
