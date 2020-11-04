@@ -1,3 +1,7 @@
+## v3.5.4 2020-11-04
+* MODKBEKBJ-516 Change custom labels' max label length
+* MODKBEKBJ-517 Change custom labels' max value length
+
 ## v3.5.2 2020-07-06
 * MODKBEKBJ-449 Prevent duplicate KB credentials
 * MODKBEKBJ-450 Remove restrictions to support deleting KB credentials
