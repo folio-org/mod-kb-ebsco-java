@@ -8,4 +8,5 @@ import org.springframework.stereotype.Component;
 public class CustomLabelsProperties {
 
   int labelMaxLength;
+  int valueMaxLength;
 }
