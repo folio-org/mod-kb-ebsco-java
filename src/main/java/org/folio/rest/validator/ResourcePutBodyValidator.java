@@ -4,12 +4,12 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-import static org.folio.rest.validator.ValidationConstants.USER_DEFINED_FIELD_MAX_LENGTH;
-
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
@@ -17,10 +17,13 @@ import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 
 @Component
+@RequiredArgsConstructor
 public class ResourcePutBodyValidator {
 
   private static final String INVALID_IS_SELECTED_TITLE = "Resource cannot be updated unless added to holdings";
   private static final String INVALID_IS_SELECTED_DETAILS = "Resource must be added to holdings to be able to update";
+
+  private final CustomLabelsProperties customLabelsProperties;
 
   public void validate(ResourcePutRequest request, boolean isTitleCustom) {
     ResourcePutDataAttributes attributes = request.getData().getAttributes();
@@ -56,11 +59,12 @@ public class ResourcePutBodyValidator {
         ValidatorUtil.checkDateValid("endCoverage", customCoverage.getEndCoverage());
       });
 
-      ValidatorUtil.checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), USER_DEFINED_FIELD_MAX_LENGTH);
-      ValidatorUtil.checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), USER_DEFINED_FIELD_MAX_LENGTH);
-      ValidatorUtil.checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), USER_DEFINED_FIELD_MAX_LENGTH);
-      ValidatorUtil.checkMaxLength("userDefinedField4", attributes.getUserDefinedField4(), USER_DEFINED_FIELD_MAX_LENGTH);
-      ValidatorUtil.checkMaxLength("userDefinedField5", attributes.getUserDefinedField5(), USER_DEFINED_FIELD_MAX_LENGTH);
+      int valueMaxLength = customLabelsProperties.getValueMaxLength();
+      ValidatorUtil.checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), valueMaxLength);
+      ValidatorUtil.checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), valueMaxLength);
+      ValidatorUtil.checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), valueMaxLength);
+      ValidatorUtil.checkMaxLength("userDefinedField4", attributes.getUserDefinedField4(), valueMaxLength);
+      ValidatorUtil.checkMaxLength("userDefinedField5", attributes.getUserDefinedField5(), valueMaxLength);
     } else {
       validateManagedResourceIfNotSelected(attributes, isTitleCustom, cvgStmt);
     }

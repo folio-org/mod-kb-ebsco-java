@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
 import org.folio.rest.jaxrs.model.PublicationType;
@@ -48,7 +49,10 @@ public class TitlePostBodyValidatorTest {
       + ". Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis s"
       + "ed, nonummy id, metus. Nullam accumsan lorem in dui. Cras ultricies mi";
   private static final String TITLE_TEST_NAME = "Title Test Name";
-  private TitlesPostBodyValidator validator = new TitlesPostBodyValidator(new TitleCommonRequestAttributesValidator());
+  private TitlesPostBodyValidator validator = new TitlesPostBodyValidator(
+    new TitleCommonRequestAttributesValidator(),
+    new CustomLabelsProperties(50, 100)
+  );
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPostBody() {

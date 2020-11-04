@@ -224,7 +224,8 @@ public class ApplicationConfig {
 
   @Bean
   public CustomLabelsProperties customLabelsProperties(
-    @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength) {
-    return new CustomLabelsProperties(labelMaxLength);
+    @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength,
+    @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
+    return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
   }
 }
