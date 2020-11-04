@@ -16,7 +16,7 @@ import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
 
 public class CustomLabelsPutBodyValidatorTest {
 
-  private final CustomLabelsPutBodyValidator validator = new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50));
+  private final CustomLabelsPutBodyValidator validator = new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50, 100));
 
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
