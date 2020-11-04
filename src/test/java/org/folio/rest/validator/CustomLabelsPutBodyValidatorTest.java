@@ -8,6 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
@@ -15,7 +16,7 @@ import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
 
 public class CustomLabelsPutBodyValidatorTest {
 
-  private final CustomLabelsPutBodyValidator validator = new CustomLabelsPutBodyValidator();
+  private final CustomLabelsPutBodyValidator validator = new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50, 100));
 
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();

@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
@@ -14,7 +15,7 @@ import org.folio.rest.jaxrs.model.VisibilityData;
 
 public class ResourcePutBodyValidatorTest {
 
-  private final ResourcePutBodyValidator validator = new ResourcePutBodyValidator();
+  private final ResourcePutBodyValidator validator = new ResourcePutBodyValidator(new CustomLabelsProperties(50, 100));
 
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();

@@ -1,5 +1,6 @@
 package org.folio.rest.converter.resources;
 
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 import static org.folio.rest.converter.resources.ResourceConverterUtils.createEmptyRelationship;
@@ -18,8 +19,9 @@ import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rmapi.result.TitleResult;
 
-
 public class ResourceCollectionItemConverters {
+
+  private ResourceCollectionItemConverters() { }
 
   @Component
   public static class FromTitle implements Converter<Title, ResourceCollectionItem> {
@@ -49,11 +51,9 @@ public class ResourceCollectionItemConverters {
 
     @Override
     public ResourceCollectionItem convert(@NonNull TitleResult titleResult) {
-      ResourceCollectionItem result = titleConverter.convert(titleResult.getTitle());
+      ResourceCollectionItem result = requireNonNull(titleConverter.convert(titleResult.getTitle()));
       result.getAttributes().setTags(tagsConverter.convert(emptyIfNull(titleResult.getResourceTagList())));
       return result;
     }
   }
-
-  private ResourceCollectionItemConverters() { }
 }

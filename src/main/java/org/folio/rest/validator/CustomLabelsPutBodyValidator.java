@@ -1,16 +1,23 @@
 package org.folio.rest.validator;
 
+import static org.folio.rest.validator.ValidatorUtil.checkInRange;
+import static org.folio.rest.validator.ValidatorUtil.checkIsNotNull;
+import static org.folio.rest.validator.ValidatorUtil.checkMaxLength;
+
 import java.util.Objects;
 
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
 
 @Component
+@RequiredArgsConstructor
 public class CustomLabelsPutBodyValidator {
 
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
@@ -21,7 +28,7 @@ public class CustomLabelsPutBodyValidator {
   private static final String FULL_TEXT_FINDER_PARAM = "Full Text Finder";
   private static final String PUBLICATION_FINDER_PARAM = "Publication Finder";
 
-  private static final int CUSTOM_LABEL_NAME_MAX_LENGTH = 50;
+  private final CustomLabelsProperties properties;
 
   public void validate(@NotNull CustomLabelsPutRequest request) {
     checkEachLabelIsValid(request);
@@ -34,10 +41,10 @@ public class CustomLabelsPutBodyValidator {
 
   private void validateCollectionItem(@NotNull CustomLabel customLabel) {
     CustomLabelDataAttributes attributes = customLabel.getAttributes();
-    ValidatorUtil.checkInRange(1, 5, attributes.getId(), CUSTOM_LABEL_ID_PARAM);
-    ValidatorUtil.checkMaxLength(CUSTOM_LABEL_NAME_PARAM, attributes.getDisplayLabel(), CUSTOM_LABEL_NAME_MAX_LENGTH);
-    ValidatorUtil.checkIsNotNull(FULL_TEXT_FINDER_PARAM, attributes.getDisplayOnFullTextFinder());
-    ValidatorUtil.checkIsNotNull(PUBLICATION_FINDER_PARAM, attributes.getDisplayOnPublicationFinder());
+    checkInRange(1, 5, attributes.getId(), CUSTOM_LABEL_ID_PARAM);
+    checkMaxLength(CUSTOM_LABEL_NAME_PARAM, attributes.getDisplayLabel(), properties.getLabelMaxLength());
+    checkIsNotNull(FULL_TEXT_FINDER_PARAM, attributes.getDisplayOnFullTextFinder());
+    checkIsNotNull(PUBLICATION_FINDER_PARAM, attributes.getDisplayOnPublicationFinder());
   }
 
   private void checkLabelsHaveUniqueIds(@NotNull CustomLabelsPutRequest request) {
