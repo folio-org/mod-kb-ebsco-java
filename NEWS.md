@@ -1,4 +1,8 @@
-## v3.6.0 2020-09-12
+## v3.6.1 2020-11-05
+* MODKBEKBJ-505 Log responses from HoldingsIQ/MODKBEKBJ
+* MODKBEKBJ-515 GET Titles search | change searchtype from advanced to contains
+
+## v3.6.0 2020-10-12
 * fix console logging
 * Upgrade RMB to v31.1.0
 * MODKBEKBJ-472 Return a better message when the title is no longer in a package
@@ -7,6 +11,10 @@
 * MODKBEKBJ-462 Support package information returned on GET /titles
 * MODKBEKBJ-454 Change search by Tags filter format
 * MODKBEKBJ-435 Update DB schema to have separate user table
+
+## v3.5.4 2020-11-05
+* MODKBEKBJ-516 Change custom labels' max label length
+* MODKBEKBJ-517 Change custom labels' max value length
 
 ## v3.5.3 2020-09-22
 * MODKBEKBJ-501 Load Holdings timer process does not update holdings
