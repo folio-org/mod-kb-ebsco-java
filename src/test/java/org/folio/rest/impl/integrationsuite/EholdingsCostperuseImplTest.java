@@ -598,6 +598,9 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
     saveHolding(credentialsId, generateHolding(packageId, 1), OffsetDateTime.now(), vertx);
 
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+
     stubFor(post(urlPathMatching("/uc/costperuse/titles"))
       .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
     );
