@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -39,16 +40,19 @@ import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.client.uc.model.UCCostAnalysisDetails;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCTitlePackageId;
+import org.folio.common.ComparatorUtils;
 import org.folio.config.cache.UCTitlePackageCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Order;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
+import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -67,6 +71,9 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   public static final String INVALID_PLATFORM_MESSAGE = "Invalid platform";
   public static final String INVALID_PLATFORM_DETAILS =
     "Parameter 'platform' should by one of: 'all', 'publisher', 'nonPublisher'";
+  public static final String INVALID_SORT_MESSAGE = "Invalid sort";
+  public static final String INVALID_SORT_DETAILS =
+    "Parameter 'sort' should by one of: 'name', 'type', 'cost', 'usage', 'costperuse'";
   private static final int MAX_PARTITION_SIZE = 1000;
 
   @Autowired
@@ -159,9 +166,10 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   @Override
   public CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(String packageId, String platform,
-                                                                                       String fiscalYear, int page, int size,
+                                                                                       String fiscalYear, String sort,
+                                                                                       Order order, int page, int size,
                                                                                        Map<String, String> okapiHeaders) {
-    validateParams(platform, fiscalYear);
+    validateParams(platform, fiscalYear, sort);
     var id = parsePackageId(packageId);
     var packageIdPart = valueOf(id.getPackageIdPart());
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
@@ -170,25 +178,65 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .thenCompose(
         ucConfiguration -> {
           var resultBuilder = ResourceCostPerUseCollectionResult.builder().configuration(ucConfiguration);
-          return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
-            .thenCompose(context -> fetchHoldings(packageIdPart, context))
-            .thenApply(dbHoldingInfos -> {
-              resultBuilder.holdingInfos(dbHoldingInfos);
-              return extractTitlePackageIds(dbHoldingInfos);
-            })
-            .thenCompose(ids -> fetchTitlePackageCost(ids, platformTypeHolder.getValue(), ucConfiguration))
-            .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
+          return
+            client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
+              .thenAccept(resultBuilder::packageCostPerUse)
+              .thenCompose(o -> templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext())
+              .thenCompose(context -> fetchHoldings(packageIdPart, context))
+              .thenApply(dbHoldingInfos -> {
+                resultBuilder.holdingInfos(dbHoldingInfos);
+                return extractTitlePackageIds(dbHoldingInfos);
+              })
+              .thenCompose(ids -> fetchTitlePackageCost(ids, platformTypeHolder.getValue(), ucConfiguration))
+              .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
         }
       )
       .thenApply(resourceCostPerUseCollectionConverter::convert)
       .thenApply(resourceCostPerUseCollection -> {
         var items = resourceCostPerUseCollection.getData().stream()
-          .sorted(Comparator.comparing(o -> o.getAttributes().getName()))
+          .sorted(getResourceCostPerUseComparator(CostPerUseSort.from(sort), order))
           .skip((long) (page - 1) * size)
           .limit(size)
           .collect(Collectors.toList());
         return resourceCostPerUseCollection.withData(items);
       });
+  }
+
+  private Comparator<ResourceCostPerUseCollectionItem> getResourceCostPerUseComparator(CostPerUseSort sort, Order order) {
+    Comparator<ResourceCostPerUseCollectionItem> comparator;
+
+    Function<ResourceCostPerUseCollectionItem, String> nameExtractor = o -> o.getAttributes().getName();
+    switch (sort) {
+      case TYPE:
+        comparator =
+          Comparator.<ResourceCostPerUseCollectionItem, String>comparing(o -> o.getAttributes().getPublicationType().value())
+            .thenComparing(nameExtractor);
+        break;
+      case COST:
+        comparator =
+          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstDouble(o -> o.getAttributes().getCost())
+            .thenComparing(nameExtractor);
+        break;
+      case USAGE:
+        comparator =
+          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstInteger(o -> o.getAttributes().getUsage())
+            .thenComparing(nameExtractor);
+        break;
+      case COSTPERUSE:
+        comparator =
+          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstDouble(o -> o.getAttributes().getCostPerUse())
+            .thenComparing(nameExtractor);
+        break;
+      case PERCENT:
+        comparator =
+          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstDouble(o -> o.getAttributes().getPercent())
+            .thenComparing(nameExtractor);
+        break;
+      default:
+        comparator = Comparator.comparing(nameExtractor);
+    }
+
+    return order == Order.ASC ? comparator : comparator.reversed();
   }
 
   private CompletableFuture<Map<String, UCCostAnalysis>> loadFromCache(List<UCTitlePackageId> titlePackageIds,
@@ -350,6 +398,13 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
     }
   }
 
+  private void validateParams(String platform, String fiscalYear, String sort) {
+    validateParams(platform, fiscalYear);
+    if (!CostPerUseSort.contains(sort)) {
+      throw new InputValidationException(INVALID_SORT_MESSAGE, INVALID_SORT_DETAILS);
+    }
+  }
+
   private List<UCTitlePackageId> extractTitlePackageIds(List<DbHoldingInfo> dbHoldingInfos) {
     return dbHoldingInfos.stream()
       .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
@@ -404,5 +459,23 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .publisherPlatform(isPublisher)
       .previousYear(false)
       .build();
+  }
+
+  private enum CostPerUseSort {
+
+    NAME, TYPE, COST, USAGE, COSTPERUSE, PERCENT;
+
+    public static CostPerUseSort from(String value) {
+      return CostPerUseSort.valueOf(value.toUpperCase());
+    }
+
+    public static boolean contains(String value) {
+      for (CostPerUseSort c : CostPerUseSort.values()) {
+        if (c.name().equalsIgnoreCase(value)) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
 }

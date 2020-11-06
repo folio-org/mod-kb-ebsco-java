@@ -3,6 +3,7 @@ package org.folio.service.uc;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import org.folio.rest.jaxrs.model.Order;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
@@ -20,7 +21,8 @@ public interface UCCostPerUseService {
                                                             Map<String, String> okapiHeaders);
 
   CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(String packageId, String platform,
-                                                                                String fiscalYear, int page, int size,
+                                                                                String fiscalYear, String sort, Order order,
+                                                                                int page, int size,
                                                                                 Map<String, String> okapiHeaders);
 
 }

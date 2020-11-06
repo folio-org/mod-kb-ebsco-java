@@ -6,18 +6,16 @@ import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getNonPublisherUsages;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPackageTitlesTotalCost;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPublisherUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
 
 import java.util.List;
-import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import org.folio.client.uc.model.UCCostAnalysis;
-import org.folio.client.uc.model.UCCostAnalysisDetails;
 import org.folio.rest.jaxrs.model.CostAnalysis;
 import org.folio.rest.jaxrs.model.CostAnalysisAttributes;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
@@ -35,13 +33,7 @@ public class PackageCostPerUseConverter implements Converter<PackageCostPerUseRe
 
     Double cost;
     if (titlePackageCost != null) {
-      cost = titlePackageCost.values().stream()
-        .map(UCCostAnalysis::getCurrent)
-        .filter(Objects::nonNull)
-        .map(UCCostAnalysisDetails::getCost)
-        .filter(Objects::nonNull)
-        .mapToDouble(Double::doubleValue)
-        .sum();
+      cost = getPackageTitlesTotalCost(titlePackageCost);
     } else {
       cost = ucPackageCostPerUse.getAnalysis().getCurrent().getCost();
     }

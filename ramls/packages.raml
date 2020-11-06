@@ -34,7 +34,9 @@ types:
   displayName: Packages
   get:
     description: Retrieve a collection of packages based on the search query.
-    is: [queriable, filterable, taggable, accessible, sortable, pageable: {maxCountValue: 100, defaultCountValue: 25}]
+    is: [queriable, filterable, taggable, accessible,
+    sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
+    pageable: {maxCountValue: 100, defaultCountValue: 25}]
     queryParameters:
       filter[custom]:
         displayName: Custom Packages List
@@ -218,7 +220,9 @@ types:
     /resources:
       get:
         description: Include all resources belonging to a specific package
-        is: [sortable, taggable, accessible, titleFilterable, pageable: {maxCountValue: 100, defaultCountValue: 25}]
+        is: [taggable, accessible, titleFilterable,
+        sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
+        pageable: {maxCountValue: 100, defaultCountValue: 25}]
         responses:
           200:
             description: OK

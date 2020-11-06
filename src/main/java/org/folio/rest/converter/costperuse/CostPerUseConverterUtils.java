@@ -10,6 +10,8 @@ import java.util.stream.IntStream;
 import org.apache.commons.collections4.IterableUtils;
 
 import org.folio.client.uc.configuration.CommonUCConfiguration;
+import org.folio.client.uc.model.UCCostAnalysis;
+import org.folio.client.uc.model.UCCostAnalysisDetails;
 import org.folio.client.uc.model.UCPlatformUsage;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCUsage;
@@ -116,5 +118,15 @@ final class CostPerUseConverterUtils {
     return new CostPerUseParameters()
       .withStartMonth(Month.fromValue(configuration.getFiscalMonth()))
       .withCurrency(configuration.getAnalysisCurrency());
+  }
+
+  public static double getPackageTitlesTotalCost(Map<String, UCCostAnalysis> titlePackageCost) {
+    return titlePackageCost.values().stream()
+      .map(UCCostAnalysis::getCurrent)
+      .filter(Objects::nonNull)
+      .map(UCCostAnalysisDetails::getCost)
+      .filter(Objects::nonNull)
+      .mapToDouble(Double::doubleValue)
+      .sum();
   }
 }

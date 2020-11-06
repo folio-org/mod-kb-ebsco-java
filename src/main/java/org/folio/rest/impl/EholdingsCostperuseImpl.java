@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
+import org.folio.rest.jaxrs.model.Order;
 import org.folio.rest.jaxrs.resource.EholdingsPackagesPackageIdCostperuse;
 import org.folio.rest.jaxrs.resource.EholdingsPackagesPackageIdResourcesCostperuse;
 import org.folio.rest.jaxrs.resource.EholdingsResourcesResourceIdCostperuse;
@@ -84,13 +85,15 @@ public class EholdingsCostperuseImpl
   @Validate
   @HandleValidationErrors
   public void getEholdingsPackagesResourcesCostperuseByPackageId(String packageId, String platform, String fiscalYear,
-                                                                 int page, int count, Map<String, String> okapiHeaders,
+                                                                 Order order, String sort, int page, int count,
+                                                                 Map<String, String> okapiHeaders,
                                                                  Handler<AsyncResult<Response>> asyncResultHandler,
                                                                  Context vertxContext) {
-    costPerUseService.getPackageResourcesCostPerUse(packageId, platform, fiscalYear, page, count, okapiHeaders)
+    costPerUseService.getPackageResourcesCostPerUse(packageId, platform, fiscalYear, sort, order, page, count, okapiHeaders)
       .thenAccept(costPerUseCollection ->
         asyncResultHandler.handle(succeededFuture(
-          GetEholdingsPackagesResourcesCostperuseByPackageIdResponse.respond200WithApplicationVndApiJson(costPerUseCollection)))
+          GetEholdingsPackagesResourcesCostperuseByPackageIdResponse
+            .respond200WithApplicationVndApiJson(costPerUseCollection)))
       )
       .exceptionally(costPerUseErrorHandler.handle(asyncResultHandler));
   }

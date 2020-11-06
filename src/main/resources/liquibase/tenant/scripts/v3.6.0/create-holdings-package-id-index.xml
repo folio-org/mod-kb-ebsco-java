@@ -1,0 +1,12 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <changeSet id="MODKBEKBJ-487@@create-holdings-package-id-index" author="psmagin">
+    <createIndex tableName="holdings" indexName="holdings_package_id_idx">
+      <column name="package_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>

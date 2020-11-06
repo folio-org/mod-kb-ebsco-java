@@ -1,12 +1,16 @@
 package org.folio.rest.converter.costperuse;
 
+import static org.apache.commons.lang3.math.NumberUtils.DOUBLE_ZERO;
+
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPackageTitlesTotalCost;
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.resourceIdToString;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
@@ -36,12 +40,15 @@ public class ResourceCostPerUseCollectionConverter
   }
 
   private List<ResourceCostPerUseCollectionItem> convertItems(ResourceCostPerUseCollectionResult source) {
+    Double packageCost = Optional.ofNullable(source.getPackageCostPerUse().getAnalysis().getCurrent().getCost())
+      .orElse(getPackageTitlesTotalCost(source.getTitlePackageCostMap()));
     return mapItems(source.getHoldingInfos(),
-      dbHoldingInfo -> toResourceCostPerUseCollectionItem(dbHoldingInfo, source.getTitlePackageCostMap()));
+      dbHoldingInfo -> toResourceCostPerUseCollectionItem(dbHoldingInfo, source.getTitlePackageCostMap(), packageCost));
   }
 
   private ResourceCostPerUseCollectionItem toResourceCostPerUseCollectionItem(DbHoldingInfo dbHoldingInfo,
-                                                                              Map<String, UCCostAnalysis> titlePackageCostMap) {
+                                                                              Map<String, UCCostAnalysis> titlePackageCostMap,
+                                                                              Double packageCost) {
     var ucCostAnalysis = titlePackageCostMap.get(getTitlePackageId(dbHoldingInfo));
     PublicationType publicationType = null;
     try {
@@ -49,6 +56,16 @@ public class ResourceCostPerUseCollectionConverter
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    Double costPercent;
+    if (DOUBLE_ZERO.equals(packageCost)) {
+      costPercent = DOUBLE_ZERO;
+    } else {
+      costPercent = Optional.ofNullable(ucCostAnalysis.getCurrent().getCost())
+        .map(titleCost -> titleCost / packageCost * 100)
+        .orElse(DOUBLE_ZERO);
+    }
+
     return new ResourceCostPerUseCollectionItem()
       .withResourceId(resourceIdToString(getResourceId(dbHoldingInfo)))
       .withType(ResourceCostPerUseCollectionItem.Type.RESOURCE_COST_PER_USE_ITEM)
@@ -58,6 +75,7 @@ public class ResourceCostPerUseCollectionConverter
         .withCost(ucCostAnalysis.getCurrent().getCost())
         .withUsage(ucCostAnalysis.getCurrent().getUsage())
         .withCostPerUse(ucCostAnalysis.getCurrent().getCostPerUse())
+        .withPercent(costPercent)
       );
   }
 
