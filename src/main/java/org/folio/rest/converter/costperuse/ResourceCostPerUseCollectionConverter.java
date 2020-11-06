@@ -50,12 +50,6 @@ public class ResourceCostPerUseCollectionConverter
                                                                               Map<String, UCCostAnalysis> titlePackageCostMap,
                                                                               Double packageCost) {
     var ucCostAnalysis = titlePackageCostMap.get(getTitlePackageId(dbHoldingInfo));
-    PublicationType publicationType = null;
-    try {
-      publicationType = PublicationType.fromValue(dbHoldingInfo.getResourceType());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
 
     Double costPercent;
     if (DOUBLE_ZERO.equals(packageCost)) {
@@ -71,7 +65,7 @@ public class ResourceCostPerUseCollectionConverter
       .withType(ResourceCostPerUseCollectionItem.Type.RESOURCE_COST_PER_USE_ITEM)
       .withAttributes(new ResourceCostAnalysisAttributes()
         .withName(dbHoldingInfo.getPublicationTitle())
-        .withPublicationType(publicationType)
+        .withPublicationType(PublicationType.fromValue(dbHoldingInfo.getResourceType()))
         .withCost(ucCostAnalysis.getCurrent().getCost())
         .withUsage(ucCostAnalysis.getCurrent().getUsage())
         .withCostPerUse(ucCostAnalysis.getCurrent().getCostPerUse())
