@@ -118,6 +118,12 @@ public class ApplicationConfig {
   }
 
   @Bean
+  public VertxCache<String, KbCredentials> userKbCredentialsCache(Vertx vertx,
+      @Value("${kb-credentials.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "userKbCredentialsCache");
+  }
+
+  @Bean
   public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx,
       @Value("${vendor.id.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorIdCache");
@@ -265,8 +271,9 @@ public class ApplicationConfig {
   public UserKbCredentialsService securedUserCredentialsService(KbCredentialsRepository credentialsRepository,
                                                                 AssignedUserRepository assignedUserRepository,
                                                                 @Qualifier("secured")
-                                                                  Converter<DbKbCredentials, KbCredentials> converter) {
-    return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter);
+                                                                  Converter<DbKbCredentials, KbCredentials> converter,
+                                                                VertxCache<String, KbCredentials> userKbCredentialsCache) {
+    return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter, userKbCredentialsCache);
   }
 
   @Bean("securedCredentialsService")
@@ -282,8 +289,9 @@ public class ApplicationConfig {
   public UserKbCredentialsService nonSecuredUserCredentialsService(KbCredentialsRepository repository,
                                                                    AssignedUserRepository assignedUserRepository,
                                                                    @Qualifier("nonSecured")
-                                                                     Converter<DbKbCredentials, KbCredentials> converter) {
-    return new UserKbCredentialsServiceImpl(repository, assignedUserRepository, converter);
+                                                                     Converter<DbKbCredentials, KbCredentials> converter,
+                                                                   VertxCache<String, KbCredentials> userKbCredentialsCache) {
+    return new UserKbCredentialsServiceImpl(repository, assignedUserRepository, converter, userKbCredentialsCache);
   }
 
   @Bean("nonSecuredCredentialsService")

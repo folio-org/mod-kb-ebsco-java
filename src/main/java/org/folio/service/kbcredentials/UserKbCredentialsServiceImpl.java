@@ -12,21 +12,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.ws.rs.NotFoundException;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.convert.converter.Converter;
 
+import org.folio.cache.VertxCache;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.util.UserInfo;
 
+@RequiredArgsConstructor
 public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
 
   private static final String USER_CREDS_NOT_FOUND_MESSAGE = "User credentials not found: userId = %s";
@@ -35,23 +37,18 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
   private final AssignedUserRepository assignedUserRepository;
   private final Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
 
-
-  public UserKbCredentialsServiceImpl(KbCredentialsRepository credentialsRepository,
-                                      AssignedUserRepository assignedUserRepository,
-                                      Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter) {
-    this.credentialsRepository = credentialsRepository;
-    this.assignedUserRepository = assignedUserRepository;
-    this.credentialsFromDBConverter = credentialsFromDBConverter;
-  }
+  private final VertxCache<String, KbCredentials> cache;
 
   @Override
   public CompletableFuture<KbCredentials> findByUser(Map<String, String> okapiHeaders) {
     return fetchUserInfo(okapiHeaders)
-      .thenCompose(userInfo -> findUserCredentials(userInfo, tenantId(okapiHeaders)))
-      .thenApply(credentialsFromDBConverter::convert);
+      .thenCompose(userInfo -> cache.getValueOrLoad(
+        userInfo.getUserId(),
+        () -> findUserCredentials(userInfo, tenantId(okapiHeaders)).thenApply(credentialsFromDBConverter::convert)
+      ));
   }
 
-  private CompletionStage<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
+  private CompletableFuture<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
     return credentialsRepository.findByUserId(UUID.fromString(userInfo.getUserId()), tenant)
       .thenCompose(ifEmpty(() -> findSingleKbCredentials(tenant)))
       .thenApply(getCredentialsOrFailWithUserId(userInfo.getUserId()));

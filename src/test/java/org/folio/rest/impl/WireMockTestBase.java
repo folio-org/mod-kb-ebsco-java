@@ -36,6 +36,7 @@ import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
+import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.cache.TitleCacheKey;
@@ -79,6 +80,8 @@ public abstract class WireMockTestBase extends TestBase {
   private VertxCache<TitleCacheKey, Title> titleCache;
   @Autowired
   private VertxCache<String, String> ucTokenCache;
+  @Autowired
+  private VertxCache<String, KbCredentials> userKbCredentialsCache;
 
   @BeforeClass
   public static void setUpClass(TestContext context) {
@@ -100,6 +103,7 @@ public abstract class WireMockTestBase extends TestBase {
     resourceCache.invalidateAll();
     titleCache.invalidateAll();
     ucTokenCache.invalidateAll();
+    userKbCredentialsCache.invalidateAll();
   }
 
   protected void setUpTestUsers() {
