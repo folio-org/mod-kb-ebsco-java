@@ -175,31 +175,37 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
 
     return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
-      .thenCompose(
-        ucConfiguration -> {
-          var resultBuilder = ResourceCostPerUseCollectionResult.builder().configuration(ucConfiguration);
-          return
-            client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
-              .thenAccept(resultBuilder::packageCostPerUse)
-              .thenCompose(o -> templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext())
-              .thenCompose(context -> fetchHoldings(packageIdPart, context))
-              .thenApply(dbHoldingInfos -> {
-                resultBuilder.holdingInfos(dbHoldingInfos);
-                return extractTitlePackageIds(dbHoldingInfos);
-              })
-              .thenCompose(ids -> fetchTitlePackageCost(ids, platformTypeHolder.getValue(), ucConfiguration))
-              .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
-        }
-      )
+      .thenCompose(ucConfiguration ->
+        composeResourceCostPerUseCollectionResult(packageIdPart, platformTypeHolder.getValue(), ucConfiguration, okapiHeaders
+        ))
       .thenApply(resourceCostPerUseCollectionConverter::convert)
-      .thenApply(resourceCostPerUseCollection -> {
-        var items = resourceCostPerUseCollection.getData().stream()
-          .sorted(getResourceCostPerUseComparator(CostPerUseSort.from(sort), order))
-          .skip((long) (page - 1) * size)
-          .limit(size)
-          .collect(Collectors.toList());
-        return resourceCostPerUseCollection.withData(items);
-      });
+      .thenApply(resourceCostPerUseCollection -> createResultPage(resourceCostPerUseCollection, page, size, sort, order));
+  }
+
+  private CompletableFuture<ResourceCostPerUseCollectionResult> composeResourceCostPerUseCollectionResult(
+    String packageIdPart, PlatformType platformType, CommonUCConfiguration ucConfiguration,
+    Map<String, String> okapiHeaders) {
+    var resultBuilder = ResourceCostPerUseCollectionResult.builder().configuration(ucConfiguration);
+    return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
+      .thenAccept(resultBuilder::packageCostPerUse)
+      .thenCompose(o -> templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext())
+      .thenCompose(context -> fetchHoldings(packageIdPart, context))
+      .thenApply(dbHoldingInfos -> {
+        resultBuilder.holdingInfos(dbHoldingInfos);
+        return extractTitlePackageIds(dbHoldingInfos);
+      })
+      .thenCompose(ids -> fetchTitlePackageCost(ids, platformType, ucConfiguration))
+      .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
+  }
+
+  private ResourceCostPerUseCollection createResultPage(ResourceCostPerUseCollection resourceCostPerUseCollection, int page,
+                                                        int size, String sort, Order order) {
+    var items = resourceCostPerUseCollection.getData().stream()
+      .sorted(getResourceCostPerUseComparator(CostPerUseSort.from(sort), order))
+      .skip((long) (page - 1) * size)
+      .limit(size)
+      .collect(Collectors.toList());
+    return resourceCostPerUseCollection.withData(items);
   }
 
   private Comparator<ResourceCostPerUseCollectionItem> getResourceCostPerUseComparator(CostPerUseSort sort, Order order) {
