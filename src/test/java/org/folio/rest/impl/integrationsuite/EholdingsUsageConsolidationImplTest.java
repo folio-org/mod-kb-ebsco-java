@@ -24,6 +24,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
 import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_ENDPOINT;
+import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_USER_ENDPOINT;
 import static org.folio.util.UCSettingsTestUtil.getUCSettings;
 import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
 import static org.folio.util.UCSettingsTestUtil.stubSettings;
@@ -57,7 +58,7 @@ import org.folio.rest.jaxrs.model.UCSettingsPostDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 
 @RunWith(VertxUnitRunner.class)
-public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
+public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
   private String credentialsId;
 
@@ -79,6 +80,18 @@ public class EholdingsKbCredentialsUCImplTest extends WireMockTestBase {
   public void tearDown() {
     clearDataFromTable(vertx, UC_SETTINGS_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
+  }
+
+  @Test
+  public void shouldReturnUCSettingsOnGetByUserHeaders() {
+    UCSettings stubSettings = stubSettings(credentialsId);
+    String settingsId = saveUCSettings(stubSettings, vertx);
+
+    UCSettings actual = getWithOk(UC_SETTINGS_USER_ENDPOINT, JOHN_TOKEN_HEADER).as(UCSettings.class);
+
+    UCSettings expected = stubSettings.withId(settingsId);
+    expected.getAttributes().withCustomerKey("*".repeat(40));
+    assertEquals(expected, actual);
   }
 
   @Test

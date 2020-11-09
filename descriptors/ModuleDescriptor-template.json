@@ -326,6 +326,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/uc",
+          "permissionsRequired": ["kb-ebsco.uc.item.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc",
           "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
         },
@@ -676,6 +681,11 @@
         "kb-ebsco.kb-credentials.access-types.item.put",
         "kb-ebsco.kb-credentials.access-types.item.delete"
       ]
+    },
+    {
+      "permissionName": "kb-ebsco.uc.item.get",
+      "displayName": "get usage consolidation settings",
+      "description": "Get usage consolidation settings"
     },
     {
       "permissionName": "kb-ebsco.kb-credentials.uc.item.get",
