@@ -8,12 +8,10 @@ import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -40,7 +38,6 @@ import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.client.uc.model.UCCostAnalysisDetails;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCTitlePackageId;
-import org.folio.common.ComparatorUtils;
 import org.folio.config.cache.UCTitlePackageCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourceId;
@@ -62,6 +59,8 @@ import org.folio.rmapi.result.ResourceCostPerUseCollectionResult;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
 import org.folio.rmapi.result.TitleCostPerUseResult;
 import org.folio.service.holdings.HoldingsService;
+import org.folio.service.uc.sorting.CostPerUseSort;
+import org.folio.service.uc.sorting.UCSortingComparatorProvider;
 
 @Service
 public class UCCostPerUseServiceImpl implements UCCostPerUseService {
@@ -98,6 +97,10 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   @Autowired
   private VertxCache<UCTitlePackageCacheKey, Map<String, UCCostAnalysis>> ucTitlePackageCache;
+
+  @Autowired
+  private UCSortingComparatorProvider<ResourceCostPerUseCollectionItem> sortingComparatorProvider;
+
 
   @Override
   public CompletableFuture<ResourceCostPerUse> getResourceCostPerUse(String resourceId, String platform, String fiscalYear,
@@ -201,48 +204,11 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   private ResourceCostPerUseCollection createResultPage(ResourceCostPerUseCollection resourceCostPerUseCollection, int page,
                                                         int size, String sort, Order order) {
     var items = resourceCostPerUseCollection.getData().stream()
-      .sorted(getResourceCostPerUseComparator(CostPerUseSort.from(sort), order))
+      .sorted(sortingComparatorProvider.get(CostPerUseSort.from(sort), order))
       .skip((long) (page - 1) * size)
       .limit(size)
       .collect(Collectors.toList());
     return resourceCostPerUseCollection.withData(items);
-  }
-
-  private Comparator<ResourceCostPerUseCollectionItem> getResourceCostPerUseComparator(CostPerUseSort sort, Order order) {
-    Comparator<ResourceCostPerUseCollectionItem> comparator;
-
-    Function<ResourceCostPerUseCollectionItem, String> nameExtractor = o -> o.getAttributes().getName();
-    switch (sort) {
-      case TYPE:
-        comparator =
-          Comparator.<ResourceCostPerUseCollectionItem, String>comparing(o -> o.getAttributes().getPublicationType().value())
-            .thenComparing(nameExtractor);
-        break;
-      case COST:
-        comparator =
-          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstDouble(o -> o.getAttributes().getCost())
-            .thenComparing(nameExtractor);
-        break;
-      case USAGE:
-        comparator =
-          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstInteger(o -> o.getAttributes().getUsage())
-            .thenComparing(nameExtractor);
-        break;
-      case COSTPERUSE:
-        comparator =
-          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstDouble(o -> o.getAttributes().getCostPerUse())
-            .thenComparing(nameExtractor);
-        break;
-      case PERCENT:
-        comparator =
-          ComparatorUtils.<ResourceCostPerUseCollectionItem>nullFirstDouble(o -> o.getAttributes().getPercent())
-            .thenComparing(nameExtractor);
-        break;
-      default:
-        comparator = Comparator.comparing(nameExtractor);
-    }
-
-    return order == Order.ASC ? comparator : comparator.reversed();
   }
 
   private CompletableFuture<Map<String, UCCostAnalysis>> loadFromCache(List<UCTitlePackageId> titlePackageIds,
@@ -467,21 +433,4 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .build();
   }
 
-  private enum CostPerUseSort {
-
-    NAME, TYPE, COST, USAGE, COSTPERUSE, PERCENT;
-
-    public static CostPerUseSort from(String value) {
-      return CostPerUseSort.valueOf(value.toUpperCase());
-    }
-
-    public static boolean contains(String value) {
-      for (CostPerUseSort c : CostPerUseSort.values()) {
-        if (c.name().equalsIgnoreCase(value)) {
-          return true;
-        }
-      }
-      return false;
-    }
-  }
 }

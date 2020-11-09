@@ -2,8 +2,10 @@ package org.folio.common;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.sqlclient.Tuple;
+import lombok.experimental.UtilityClass;
 
-public final class LogUtils {
+@UtilityClass
+public class LogUtils {
 
   private static final String COUNT_LOG_MESSAGE = "Do count query = {} with params = {}";
   private static final String DELETE_LOG_MESSAGE = "Do delete query = {} with params = {}";
@@ -11,7 +13,6 @@ public final class LogUtils {
   private static final String SELECT_LOG_MESSAGE = "Do select query = {} with params = {}";
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {} with params = {}";
 
-  private LogUtils(){}
 
   public static void logCountQuery(Logger logger, String query) {
     logCountQuery(logger, query, Tuple.tuple());

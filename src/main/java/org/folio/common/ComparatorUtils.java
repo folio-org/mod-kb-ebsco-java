@@ -6,10 +6,10 @@ import static java.util.Comparator.nullsFirst;
 import java.util.Comparator;
 import java.util.function.Function;
 
-public final class ComparatorUtils {
+import lombok.experimental.UtilityClass;
 
-  private ComparatorUtils() {
-  }
+@UtilityClass
+public final class ComparatorUtils {
 
   public static Comparator<Double> nullsFirstDouble() {
     return nullsFirst(Double::compare);

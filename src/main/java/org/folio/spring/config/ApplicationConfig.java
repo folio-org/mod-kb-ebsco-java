@@ -66,6 +66,7 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rest.util.ErrorHandler;
@@ -84,6 +85,8 @@ import org.folio.service.uc.UCAuthService;
 import org.folio.service.uc.UCSettingsService;
 import org.folio.service.uc.UCSettingsServiceImpl;
 import org.folio.service.uc.UcAuthenticationException;
+import org.folio.service.uc.sorting.UCSortingComparatorProvider;
+import org.folio.service.uc.sorting.UCSortingComparatorProviders;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -323,6 +326,11 @@ public class ApplicationConfig {
     UCApigeeEbscoClient ebscoClient,
     UCSettingsRepository repository) {
     return new UCSettingsServiceImpl(kbCredentialsService, repository, authService, ebscoClient, fromConverter, toConverter);
+  }
+
+  @Bean
+  public UCSortingComparatorProvider<ResourceCostPerUseCollectionItem> resourceUCSortingComparatorProvider() {
+    return UCSortingComparatorProviders.forResources();
   }
 
 }
