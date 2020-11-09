@@ -249,6 +249,18 @@ types:
                 example:
                   strict: false
                   value: !include examples/packages/packages_packageId_resources_get_404_response.json
+      /costperuse/export:
+        get:
+          description: |
+            Endpoint provides a cost-per-use information about the titles included into the package in csv format.
+          responses:
+            200:
+              description: OK
+              body:
+                text/csv:
+                  example:
+                    strict: false
+                    value: !include examples/export/export_package_title_get_response.csv
     /tags:
       put:
         description: Update tags assigned to package

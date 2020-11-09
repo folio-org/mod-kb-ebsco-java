@@ -107,6 +107,11 @@
           "permissionsRequired": ["kb-ebsco.package-resources.collection.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/packages/{packageId}/resources/costperuse/export",
+          "permissionsRequired": []
+        },
+        {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/packages/{packageId}/tags",
           "permissionsRequired": ["kb-ebsco.package-tags.put"]

@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -330,6 +331,14 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
         ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
       .executeWithResult(ResourceCollection.class);
+  }
+
+  @Validate
+  @Override
+  public void getEholdingsPackagesResourcesCostperuseExportByPackageId(String packageId, Map<String, String> okapiHeaders,
+                                                                       Handler<AsyncResult<Response>> asyncResultHandler,
+                                                                       Context vertxContext) {
+    asyncResultHandler.handle(Future.succeededFuture(Response.status(Status.NOT_IMPLEMENTED).build()));
   }
 
   @Override
