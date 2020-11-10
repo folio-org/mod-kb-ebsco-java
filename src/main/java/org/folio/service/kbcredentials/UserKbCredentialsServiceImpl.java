@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.core.convert.converter.Converter;
 
-import org.folio.cache.VertxCache;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
@@ -37,15 +36,11 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
   private final AssignedUserRepository assignedUserRepository;
   private final Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
 
-  private final VertxCache<String, KbCredentials> cache;
-
   @Override
   public CompletableFuture<KbCredentials> findByUser(Map<String, String> okapiHeaders) {
     return fetchUserInfo(okapiHeaders)
-      .thenCompose(userInfo -> cache.getValueOrLoad(
-        userInfo.getUserId(),
-        () -> findUserCredentials(userInfo, tenantId(okapiHeaders)).thenApply(credentialsFromDBConverter::convert)
-      ));
+      .thenCompose(userInfo -> findUserCredentials(userInfo, tenantId(okapiHeaders)))
+      .thenApply(credentialsFromDBConverter::convert);
   }
 
   private CompletableFuture<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
