@@ -326,6 +326,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/uc",
+          "permissionsRequired": ["kb-ebsco.uc.item.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc",
           "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
         },
@@ -678,6 +683,11 @@
       ]
     },
     {
+      "permissionName": "kb-ebsco.uc.item.get",
+      "displayName": "get usage consolidation settings",
+      "description": "Get usage consolidation settings"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.uc.item.get",
       "displayName": "get usage consolidation settings related to KB credentials",
       "description": "Get usage consolidation settings related to KB credentials"
@@ -717,6 +727,7 @@
       "displayName": "EBSCO KB Broker Usage Consolidation settings - all permissions",
       "description": "All permissions for managing Usage Consolidation settings",
       "subPermissions": [
+        "kb-ebsco.uc.item.get",
         "kb-ebsco.kb-credentials.uc.item.get",
         "kb-ebsco.kb-credentials.uc.collection.post",
         "kb-ebsco.kb-credentials.uc.item.patch",

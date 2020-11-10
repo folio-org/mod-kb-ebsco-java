@@ -17,13 +17,13 @@ import org.folio.rest.impl.integrationsuite.EholdingsCostperuseImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCurrenciesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCustomLabelsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsKbCredentialsImplTest;
-import org.folio.rest.impl.integrationsuite.EholdingsKbCredentialsUCImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsPackagesTest;
 import org.folio.rest.impl.integrationsuite.EholdingsProvidersImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsResourcesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsStatusTest;
 import org.folio.rest.impl.integrationsuite.EholdingsTagsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsTitlesTest;
+import org.folio.rest.impl.integrationsuite.EholdingsUsageConsolidationImplTest;
 import org.folio.rest.impl.integrationsuite.LoadHoldingsStatusImplTest;
 import org.folio.rest.impl.integrationsuite.TransactionLoadServiceFacadeTest;
 import org.folio.test.util.TestSetUpHelper;
@@ -46,7 +46,7 @@ import org.folio.test.util.TestSetUpHelper;
   EholdingsKbCredentialsImplTest.class,
   EholdingsAssignedUsersImplTest.class,
   EholdingsCurrenciesImplTest.class,
-  EholdingsKbCredentialsUCImplTest.class,
+  EholdingsUsageConsolidationImplTest.class,
   EholdingsCostperuseImplTest.class
 })
 @RunWith(Suite.class)
