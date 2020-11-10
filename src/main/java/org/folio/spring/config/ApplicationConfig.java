@@ -57,6 +57,7 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
@@ -93,7 +94,8 @@ import org.folio.service.uc.UcAuthenticationException;
   "org.folio.repository",
   "org.folio.service",
   "org.folio.client",
-  "org.folio.common"
+  "org.folio.common",
+  "org.folio.properties"
 })
 public class ApplicationConfig {
 
@@ -248,14 +250,6 @@ public class ApplicationConfig {
       .add(DatabaseException.class, error400DatabaseMapper())
       .add(ServiceResponseException.class, errorServiceResponseMapper());
   }
-
-  @Bean
-  public ErrorHandler costPerUseErrorHandler() {
-    return errorHandler()
-      .add(UcAuthenticationException.class, error401UcAuthenticationMapper())
-      .add(UCFailedRequestException.class, error400UCRequestMapper());
-  }
-
   @Bean
   public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
     return new ModConfiguration(module);
@@ -293,6 +287,13 @@ public class ApplicationConfig {
     @Qualifier("nonSecuredCredentialsCollection")
       Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
+  }
+
+  @Bean
+  public CustomLabelsProperties customLabelsProperties(
+      @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength,
+      @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
+    return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
   }
 
   @Bean("securedUCSettingsService")
