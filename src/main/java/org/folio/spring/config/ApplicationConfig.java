@@ -250,6 +250,14 @@ public class ApplicationConfig {
       .add(DatabaseException.class, error400DatabaseMapper())
       .add(ServiceResponseException.class, errorServiceResponseMapper());
   }
+
+  @Bean
+  public ErrorHandler costPerUseErrorHandler() {
+    return errorHandler()
+      .add(UcAuthenticationException.class, error401UcAuthenticationMapper())
+      .add(UCFailedRequestException.class, error400UCRequestMapper());
+  }
+
   @Bean
   public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
     return new ModConfiguration(module);

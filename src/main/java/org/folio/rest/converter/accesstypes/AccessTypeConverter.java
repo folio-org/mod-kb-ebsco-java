@@ -42,10 +42,10 @@ public class AccessTypeConverter {
           .withMiddleName(source.getCreatedByMiddleName()))
         .withMetadata(new Metadata()
           .withCreatedByUserId(fromUUID(source.getCreatedByUserId()))
-          .withCreatedByUsername(source.getCreatedByUserName())
+          .withCreatedByUsername(source.getCreatedByUsername())
           .withCreatedDate(toDate(source.getCreatedDate()))
           .withUpdatedByUserId(fromUUID(source.getUpdatedByUserId()))
-          .withUpdatedByUsername(source.getUpdatedByUserName())
+          .withUpdatedByUsername(source.getUpdatedByUsername())
           .withUpdatedDate(toDate(source.getUpdatedDate())));
       if (!isAllBlank(source.getUpdatedByFirstName(), source.getUpdatedByLastName(), source.getUpdatedByMiddleName())) {
         accessType
@@ -92,10 +92,10 @@ public class AccessTypeConverter {
         builder
           .createdDate(fromDate(metadata.getCreatedDate()))
           .createdByUserId(toUUID(metadata.getCreatedByUserId()))
-          .createdByUserName(metadata.getCreatedByUsername())
+          .createdByUsername(metadata.getCreatedByUsername())
           .updatedDate(fromDate(metadata.getUpdatedDate()))
           .updatedByUserId(toUUID(metadata.getUpdatedByUserId()))
-          .updatedByUserName(metadata.getUpdatedByUsername());
+          .updatedByUsername(metadata.getUpdatedByUsername());
       }
       return builder.build();
     }
