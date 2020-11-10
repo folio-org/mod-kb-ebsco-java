@@ -46,7 +46,7 @@ public class EholdingsUsageConsolidationImpl implements EholdingsKbCredentialsId
                              Context vertxContext) {
     settingsService.fetchByUser(okapiHeaders)
       .thenAccept(ucSettings -> asyncResultHandler.handle(succeededFuture(
-        GetEholdingsKbCredentialsUcByIdResponse.respond200WithApplicationVndApiJson(ucSettings))))
+        GetEholdingsUcResponse.respond200WithApplicationVndApiJson(ucSettings))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
