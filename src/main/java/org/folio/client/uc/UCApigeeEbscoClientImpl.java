@@ -45,7 +45,7 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(UCApigeeEbscoClientImpl.class);
 
-  private static final int TIMEOUT = 20000;
+  private static final int TIMEOUT = 50000;
 
   private static final String FISCAL_YEAR_PARAM = "fiscalYear";
   private static final String FISCAL_MONTH_PARAM = "fiscalMonth";

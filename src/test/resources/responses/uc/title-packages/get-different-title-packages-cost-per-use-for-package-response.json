@@ -1,0 +1,5 @@
+{
+  "1.222222": { "current": { "usage": 1 } },
+  "2.222222": { "current": { "cost": 100, "usage": 2, "costPerUse": 50 } },
+    "3.222222": { "current": { "cost": 200, "usage": 10, "costPerUse": 20 } }
+}

@@ -18,6 +18,11 @@
       "type": "string",
       "description": "Publication type",
       "$ref": "../../publicationType.json"
+    },
+    "percent": {
+      "type": "number",
+      "description": "Percent of usage",
+      "example": "20.5"
     }
   }
 }
