@@ -16,7 +16,7 @@ stages:
     steps:
       - applyAppConfig:
           catalogTemplate: p-9tp2k:spitfire-helmcharts-mod-kb-ebsco-java
-          version: 0.1.18
+          version: 0.1.32
           answers:
             image.repository: docker.dev.folio.org/mod-kb-ebsco-java
             image.tag: spitfire-latest
