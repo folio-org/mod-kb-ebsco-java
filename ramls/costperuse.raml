@@ -12,6 +12,8 @@ documentation:
 traits:
   costPerUseCommon: !include traits/costPerUseCommon.raml
   pageable: !include traits/pageable.raml
+  sortable: !include traits/sortable.raml
+  orderable: !include traits/orderable.raml
 
 types:
   resourceCostPerUse: !include types/uc/costperuse/resourceCostPerUse.json
@@ -19,6 +21,8 @@ types:
   packageCostPerUse: !include types/uc/costperuse/packageCostPerUse.json
   titleCostPerUse: !include types/uc/costperuse/titleCostPerUse.json
   jsonapiError: !include types/jsonapiError.json
+  order:
+    enum: [asc, desc]
 
 /eholdings/resources/{resourceId}/costperuse:
   displayName: Cost-per-use
@@ -141,7 +145,9 @@ types:
       example: "15-440285"
   get:
     description: Retrieve cost-per-use information for package resources
-    is: [costPerUseCommon, pageable: {maxCountValue: 1000, defaultCountValue: 100}]
+    is: [costPerUseCommon, orderable,
+    sortable: {defaultValue: 'name', possibleValues: 'name, type, cost, usage, costperuse, percent'},
+    pageable: {maxCountValue: 1000, defaultCountValue: 100}]
     responses:
       200:
         description: OK

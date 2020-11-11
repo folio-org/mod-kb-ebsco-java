@@ -24,7 +24,9 @@ types:
   description: Collection of available titles in eholdings.
   get:
     description: Get a set of titles matching the given search criteria.
-    is: [taggable, accessible, filterable, sortable, pageable: {maxCountValue: 100, defaultCountValue: 25}, includable]
+    is: [taggable, accessible, filterable, includable,
+    sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
+    pageable: {maxCountValue: 100, defaultCountValue: 25}]
     responses:
       200:
         description: OK

@@ -9,14 +9,14 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 
-public final class ListUtils {
+@UtilityClass
+public class ListUtils {
 
   private static final Pattern SPLIT_BY_COMMA_PATTERN = Pattern.compile("\\s*,\\s*");
 
-  private ListUtils() {
-  }
 
   public static <T, R> List<R> mapItems(Collection<T> source, Function<? super T, ? extends R> mapper) {
     Objects.requireNonNull(source, "Collection is null");

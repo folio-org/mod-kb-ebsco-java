@@ -282,11 +282,11 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsPackagesResourcesByPackageId(String packageId, String sort, List<String> filterTags,
+  public void getEholdingsPackagesResourcesByPackageId(String packageId, List<String> filterTags,
                                                        List<String> filterAccessType, String filterSelected,
                                                        String filterType, String filterName, String filterIsxn,
-                                                       String filterSubject, String filterPublisher, int page, int count,
-                                                       Map<String, String> okapiHeaders,
+                                                       String filterSubject, String filterPublisher, String sort, int page,
+                                                       int count, Map<String, String> okapiHeaders,
                                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                                        Context vertxContext) {
 

@@ -8,6 +8,7 @@ import lombok.Value;
 
 import org.folio.client.uc.configuration.CommonUCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
+import org.folio.client.uc.model.UCPackageCostPerUse;
 import org.folio.repository.holdings.DbHoldingInfo;
 
 @Value
@@ -16,5 +17,6 @@ public class ResourceCostPerUseCollectionResult {
 
   List<DbHoldingInfo> holdingInfos;
   Map<String, UCCostAnalysis> titlePackageCostMap;
+  UCPackageCostPerUse packageCostPerUse;
   CommonUCConfiguration configuration;
 }

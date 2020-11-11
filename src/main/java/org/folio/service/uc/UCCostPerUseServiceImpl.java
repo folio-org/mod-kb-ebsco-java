@@ -8,11 +8,11 @@ import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -45,10 +45,12 @@ import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.Order;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
+import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.util.template.RMAPITemplateContext;
@@ -58,6 +60,8 @@ import org.folio.rmapi.result.ResourceCostPerUseCollectionResult;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
 import org.folio.rmapi.result.TitleCostPerUseResult;
 import org.folio.service.holdings.HoldingsService;
+import org.folio.service.uc.sorting.CostPerUseSort;
+import org.folio.service.uc.sorting.UCSortingComparatorProvider;
 
 @Service
 public class UCCostPerUseServiceImpl implements UCCostPerUseService {
@@ -67,6 +71,9 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   public static final String INVALID_PLATFORM_MESSAGE = "Invalid platform";
   public static final String INVALID_PLATFORM_DETAILS =
     "Parameter 'platform' should by one of: 'all', 'publisher', 'nonPublisher'";
+  public static final String INVALID_SORT_MESSAGE = "Invalid sort";
+  public static final String INVALID_SORT_DETAILS =
+    "Parameter 'sort' should by one of: 'name', 'type', 'cost', 'usage', 'costperuse'";
   private static final int MAX_PARTITION_SIZE = 1000;
 
   @Autowired
@@ -91,6 +98,9 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   @Autowired
   private VertxCache<UCTitlePackageCacheKey, Map<String, UCCostAnalysis>> ucTitlePackageCache;
+
+  @Autowired
+  private UCSortingComparatorProvider<ResourceCostPerUseCollectionItem> sortingComparatorProvider;
 
   @Override
   public CompletableFuture<ResourceCostPerUse> getResourceCostPerUse(String resourceId, String platform, String fiscalYear,
@@ -119,76 +129,98 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
     validateParams(platform, fiscalYear);
     return templateFactory.createTemplate(okapiHeaders, Promise.promise())
       .getRmapiTemplateContext()
-      .thenCompose(rmapiTemplateContext -> fetchTitleSelectedResources(titleId, rmapiTemplateContext))
-      .thenCompose(customerResources -> {
-        if (customerResources.isEmpty()) {
-          return getEmptyTitleCostPerUse(titleId);
-        } else {
-          return getTitleCostPerUse(titleId, platform, fiscalYear, customerResources, okapiHeaders);
-        }
-      });
+      .thenCompose(context -> fetchTitleSelectedResources(titleId, context)
+        .thenCompose(customerResources -> {
+          if (customerResources.isEmpty()) {
+            return getEmptyTitleCostPerUse(titleId);
+          } else {
+            return getTitleCostPerUse(titleId, platform, fiscalYear, customerResources, context);
+          }
+        })
+      );
   }
 
   @Override
   public CompletableFuture<PackageCostPerUse> getPackageCostPerUse(String packageId, String platform, String fiscalYear,
                                                                    Map<String, String> okapiHeaders) {
     validateParams(platform, fiscalYear);
-    var id = parsePackageId(packageId);
-    var packageIdPart = valueOf(id.getPackageIdPart());
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
-    return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
-      .thenCompose(ucConfiguration ->
-        client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
-          .thenCompose(ucPackageCostPerUse -> {
-            var resultBuilder = PackageCostPerUseResult.builder()
-              .packageId(packageId)
-              .ucPackageCostPerUse(ucPackageCostPerUse)
-              .configuration(ucConfiguration)
-              .platformType(platformTypeHolder.getValue());
 
-            var cost = ucPackageCostPerUse.getAnalysis().getCurrent().getCost();
-            if (cost == null || cost.equals(NumberUtils.DOUBLE_ZERO)) {
-              return fetchTitlePackageCost(packageIdPart, ucConfiguration, okapiHeaders)
-                .thenApply(titlePackageCost -> resultBuilder.titlePackageCostMap(titlePackageCost).build());
-            } else {
-              return CompletableFuture.completedFuture(resultBuilder.build());
-            }
-          }))
+    return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
+      .thenCompose(context -> fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
+        .thenCompose(ucConfiguration ->
+          composePackageCostPerUseResult(packageId, platformTypeHolder.getValue(), context, ucConfiguration))
+      )
       .thenApply(packageCostPerUseConverter::convert);
   }
 
   @Override
   public CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(String packageId, String platform,
-                                                                                       String fiscalYear, int page, int size,
+                                                                                       String fiscalYear, String sort,
+                                                                                       Order order, int page, int size,
                                                                                        Map<String, String> okapiHeaders) {
-    validateParams(platform, fiscalYear);
+    validateParams(platform, fiscalYear, sort);
     var id = parsePackageId(packageId);
     var packageIdPart = valueOf(id.getPackageIdPart());
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
 
-    return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
-      .thenCompose(
-        ucConfiguration -> {
-          var resultBuilder = ResourceCostPerUseCollectionResult.builder().configuration(ucConfiguration);
-          return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
-            .thenCompose(context -> fetchHoldings(packageIdPart, context))
-            .thenApply(dbHoldingInfos -> {
-              resultBuilder.holdingInfos(dbHoldingInfos);
-              return extractTitlePackageIds(dbHoldingInfos);
-            })
-            .thenCompose(ids -> fetchTitlePackageCost(ids, platformTypeHolder.getValue(), ucConfiguration))
-            .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
-        }
-      )
+    return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
+      .thenCompose(context -> fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
+        .thenCompose(ucConfiguration ->
+          composeResourceCostPerUseCollectionResult(packageIdPart, context, ucConfiguration, platformTypeHolder.getValue())))
       .thenApply(resourceCostPerUseCollectionConverter::convert)
-      .thenApply(resourceCostPerUseCollection -> {
-        var items = resourceCostPerUseCollection.getData().stream()
-          .sorted(Comparator.comparing(o -> o.getAttributes().getName()))
-          .skip((long) (page - 1) * size)
-          .limit(size)
-          .collect(Collectors.toList());
-        return resourceCostPerUseCollection.withData(items);
+      .thenApply(resourceCostPerUseCollection -> createResultPage(resourceCostPerUseCollection, page, size, sort, order));
+  }
+
+  private CompletableFuture<PackageCostPerUseResult> composePackageCostPerUseResult(String packageId,
+                                                                                    PlatformType platformType,
+                                                                                    RMAPITemplateContext context,
+                                                                                    CommonUCConfiguration ucConfiguration) {
+    var packageIdPart = valueOf(parsePackageId(packageId).getPackageIdPart());
+    return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
+      .thenCompose(ucPackageCostPerUse -> {
+        var resultBuilder = PackageCostPerUseResult.builder()
+          .packageId(packageId)
+          .ucPackageCostPerUse(ucPackageCostPerUse)
+          .configuration(ucConfiguration)
+          .platformType(platformType);
+
+        var cost = ucPackageCostPerUse.getAnalysis().getCurrent().getCost();
+        if (cost == null || cost.equals(NumberUtils.DOUBLE_ZERO)) {
+          return fetchHoldings(packageIdPart, context)
+            .thenCompose(dbHoldingInfos -> {
+              var configuration = createGetTitlePackageConfiguration(ucConfiguration, true);
+              return loadFromCache(extractTitlePackageIds(dbHoldingInfos), configuration);
+            })
+            .thenApply(titlePackageCost -> resultBuilder.titlePackageCostMap(titlePackageCost).build());
+        } else {
+          return CompletableFuture.completedFuture(resultBuilder.build());
+        }
       });
+  }
+
+  private CompletableFuture<ResourceCostPerUseCollectionResult> composeResourceCostPerUseCollectionResult(
+    String packageIdPart, RMAPITemplateContext context, CommonUCConfiguration ucConfiguration, PlatformType platformType) {
+    var resultBuilder = ResourceCostPerUseCollectionResult.builder().configuration(ucConfiguration);
+    return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
+      .thenAccept(resultBuilder::packageCostPerUse)
+      .thenCompose(unused -> fetchHoldings(packageIdPart, context))
+      .thenApply(dbHoldingInfos -> {
+        resultBuilder.holdingInfos(dbHoldingInfos);
+        return extractTitlePackageIds(dbHoldingInfos);
+      })
+      .thenCompose(ids -> fetchTitlePackageCost(ids, platformType, ucConfiguration))
+      .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
+  }
+
+  private ResourceCostPerUseCollection createResultPage(ResourceCostPerUseCollection resourceCostPerUseCollection, int page,
+                                                        int size, String sort, Order order) {
+    var items = resourceCostPerUseCollection.getData().stream()
+      .sorted(sortingComparatorProvider.get(CostPerUseSort.from(sort), order))
+      .skip((long) (page - 1) * size)
+      .limit(size)
+      .collect(Collectors.toList());
+    return resourceCostPerUseCollection.withData(items);
   }
 
   private CompletableFuture<Map<String, UCCostAnalysis>> loadFromCache(List<UCTitlePackageId> titlePackageIds,
@@ -225,9 +257,9 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   private CompletableFuture<TitleCostPerUse> getTitleCostPerUse(String titleId, String platform, String fiscalYear,
                                                                 List<CustomerResources> customerResources,
-                                                                Map<String, String> okapiHeaders) {
+                                                                RMAPITemplateContext context) {
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
-    return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, okapiHeaders)
+    return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
       .thenCompose(ucConfiguration -> {
         var packageId = valueOf(customerResources.get(0).getPackageId());
 
@@ -251,18 +283,6 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .withTitleId(titleId)
       .withType(TitleCostPerUse.Type.TITLE_COST_PER_USE);
     return CompletableFuture.completedFuture(titleCostPerUse);
-  }
-
-  private CompletableFuture<Map<String, UCCostAnalysis>> fetchTitlePackageCost(String packageIdPart,
-                                                                               CommonUCConfiguration ucConfiguration,
-                                                                               Map<String, String> okapiHeaders) {
-    return templateFactory.createTemplate(okapiHeaders, Promise.promise())
-      .getRmapiTemplateContext()
-      .thenCompose(context -> fetchHoldings(packageIdPart, context))
-      .thenCompose(dbHoldingInfos -> {
-        var configuration = createGetTitlePackageConfiguration(ucConfiguration, true);
-        return loadFromCache(extractTitlePackageIds(dbHoldingInfos), configuration);
-      });
   }
 
   private CompletableFuture<Map<String, UCCostAnalysis>> fetchTitlePackagesCost(List<CustomerResources> customerResources,
@@ -319,15 +339,30 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
                                                                             Map<String, String> okapiHeaders) {
     return authService.authenticate(okapiHeaders)
       .thenCombine(settingsService.fetchByUser(okapiHeaders),
-        (authToken, ucSettings) -> {
-          if (platform == null) {
-            platformTypeHolder.setValue(ucSettings.getAttributes().getPlatformType());
-          } else {
-            platformTypeHolder.setValue(PlatformType.fromValue(platform));
-          }
-          return createCommonConfiguration(ucSettings, fiscalYear, authToken);
-        }
+        toCommonUCConfiguration(platform, fiscalYear, platformTypeHolder)
       );
+  }
+
+  private CompletableFuture<CommonUCConfiguration> fetchCommonConfiguration(String platform, String fiscalYear,
+                                                                            MutableObject<PlatformType> platformTypeHolder,
+                                                                            RMAPITemplateContext context) {
+    Map<String, String> okapiHeaders = context.getOkapiData().getOkapiHeaders();
+    return authService.authenticate(okapiHeaders)
+      .thenCombine(settingsService.fetchByCredentialsId(context.getCredentialsId(), okapiHeaders),
+        toCommonUCConfiguration(platform, fiscalYear, platformTypeHolder)
+      );
+  }
+
+  private BiFunction<String, UCSettings, CommonUCConfiguration> toCommonUCConfiguration(String platform, String fiscalYear,
+                                                                                        MutableObject<PlatformType> platformTypeHolder) {
+    return (authToken, ucSettings) -> {
+      if (platform == null) {
+        platformTypeHolder.setValue(ucSettings.getAttributes().getPlatformType());
+      } else {
+        platformTypeHolder.setValue(PlatformType.fromValue(platform));
+      }
+      return createCommonConfiguration(ucSettings, fiscalYear, authToken);
+    };
   }
 
   private List<CustomerResources> extractSelectedResources(Title title) {
@@ -347,6 +382,13 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       } catch (IllegalArgumentException e) {
         throw new InputValidationException(INVALID_PLATFORM_MESSAGE, INVALID_PLATFORM_DETAILS);
       }
+    }
+  }
+
+  private void validateParams(String platform, String fiscalYear, String sort) {
+    validateParams(platform, fiscalYear);
+    if (!CostPerUseSort.contains(sort)) {
+      throw new InputValidationException(INVALID_SORT_MESSAGE, INVALID_SORT_DETAILS);
     }
   }
 
@@ -405,4 +447,5 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
       .previousYear(false)
       .build();
   }
+
 }

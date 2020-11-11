@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
@@ -334,6 +335,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-multiply-title-packages-cost-per-use-for-package-response.json";
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
@@ -361,6 +364,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-multiply-title-packages-cost-per-use-for-package-response.json";
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
@@ -374,6 +379,182 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertThat(actual.getData(), hasSize(5));
     assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
     assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(1)));
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollectionWithSortByUsageAsc() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "publisher";
+    String sort = "usage";
+    String order = "asc";
+
+    for (int i = 1; i <= 3; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(3));
+    assertThat(actual.getData(), hasSize(3));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(1)));
+    assertThat(actual.getData().get(2).getAttributes(), hasProperty("usage", equalTo(10)));
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollectionWithSortByUsageDesc() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "publisher";
+    String sort = "usage";
+    String order = "desc";
+
+    for (int i = 1; i <= 3; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(3));
+    assertThat(actual.getData(), hasSize(3));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(10)));
+    assertThat(actual.getData().get(2).getAttributes(), hasProperty("usage", equalTo(1)));
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollectionWithSortByCost() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "publisher";
+    String sort = "cost";
+
+    for (int i = 1; i <= 3; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(3));
+    assertThat(actual.getData(), hasSize(3));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("cost", nullValue()));
+    assertThat(actual.getData().get(2).getAttributes(), hasProperty("cost", equalTo(200.0)));
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollectionWithSortByCostPerUse() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "publisher";
+    String sort = "costperuse";
+
+    for (int i = 1; i <= 3; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(3));
+    assertThat(actual.getData(), hasSize(3));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("costPerUse", nullValue()));
+    assertThat(actual.getData().get(2).getAttributes(), hasProperty("costPerUse", equalTo(50.0)));
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollectionWithSortByPercent() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "publisher";
+    String sort = "percent";
+
+    for (int i = 1; i <= 3; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(3));
+    assertThat(actual.getData(), hasSize(3));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("cost", nullValue()));
+    assertThat(actual.getData().get(2).getAttributes(), hasProperty("cost", equalTo(200.0)));
+  }
+
+  @Test
+  public void shouldReturnResourcesCostPerUseCollectionSortedByNameWhenSortingByEqualsValues() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "publisher";
+    String sort = "type";
+
+    for (int i = 1; i <= 3; i++) {
+      saveHolding(credentialsId, generateHolding(packageId, i, String.valueOf(i)), OffsetDateTime.now(), vertx);
+    }
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    ResourceCostPerUseCollection
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUseCollection.class);
+
+    assertThat(actual, notNullValue());
+    assertThat(actual.getMeta().getTotalResults(), equalTo(3));
+    assertThat(actual.getData(), hasSize(3));
+    assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("name", equalTo("1")));
+    assertThat(actual.getData().get(2).getAttributes(), hasProperty("name", equalTo("3")));
   }
 
   @Test
@@ -398,11 +579,27 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn422OnGetPackageResourcesCPUWhenSortIsInvalid() {
+    String packageId = "222222";
+    String year = "2019";
+    String platform = "all";
+    String sort = "invalid";
+    JsonapiError error =
+      getWithStatus(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), SC_UNPROCESSABLE_ENTITY)
+        .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Invalid sort");
+  }
+
+  @Test
   public void shouldReturn400OnGetPackageResourcesCPUWhenApigeeFails() {
     String packageId = "222222";
     String year = "2019";
 
     saveHolding(credentialsId, generateHolding(packageId, 1), OffsetDateTime.now(), vertx);
+
+    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
 
     stubFor(post(urlPathMatching("/uc/costperuse/titles"))
       .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
@@ -480,14 +677,24 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   private String packageResourcesEndpoint(String packageId, String year, String platform, String page, String size) {
+    return packageResourcesEndpoint(packageId, year, platform, page, size, null, null);
+  }
+
+  private String packageResourcesEndpoint(String packageId, String year, String platform, String page, String size,
+                                          String sort, String order) {
     String baseUrl = String.format("eholdings/packages/1-%s/resources/costperuse", packageId);
-    StringBuilder paramsSb = getEndpointParams(year, platform, page, size);
+    StringBuilder paramsSb = getEndpointParams(year, platform, page, size, sort, order);
     return paramsSb.length() > 0
       ? baseUrl + "?" + paramsSb.toString()
       : baseUrl;
   }
 
-  private StringBuilder getEndpointParams(String year, String platform, String page, String size) {
+  private StringBuilder getEndpointParams(String year, String platform) {
+    return getEndpointParams(year, platform, null, null, null, null);
+  }
+
+  private StringBuilder getEndpointParams(String year, String platform, String page, String size, String sort,
+                                          String order) {
     StringBuilder paramsSb = new StringBuilder();
     if (year != null) {
       paramsSb.append("fiscalYear=").append(year);
@@ -495,6 +702,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     addParam(platform, paramsSb, "platform=");
     addParam(page, paramsSb, "page=");
     addParam(size, paramsSb, "count=");
+    addParam(sort, paramsSb, "sort=");
+    addParam(order, paramsSb, "order=");
     return paramsSb;
   }
 
@@ -507,15 +716,22 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     }
   }
 
-  private StringBuilder getEndpointParams(String year, String platform) {
-    return getEndpointParams(year, platform, null, null);
-  }
-
   private DbHoldingInfo generateHolding(String packageId, int titleId) {
     return DbHoldingInfo.builder()
       .packageId(packageId)
       .titleId(String.valueOf(titleId))
       .publicationTitle(random.nextObject(String.class))
+      .publisherName(random.nextObject(String.class))
+      .resourceType("Book")
+      .vendorId("1")
+      .build();
+  }
+
+  private DbHoldingInfo generateHolding(String packageId, int titleId, String titleName) {
+    return DbHoldingInfo.builder()
+      .packageId(packageId)
+      .titleId(String.valueOf(titleId))
+      .publicationTitle(titleName)
       .publisherName(random.nextObject(String.class))
       .resourceType("Book")
       .vendorId("1")

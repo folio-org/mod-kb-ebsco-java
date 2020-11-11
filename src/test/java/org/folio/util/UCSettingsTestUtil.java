@@ -41,6 +41,7 @@ import org.folio.rest.persist.PostgresClient;
 public class UCSettingsTestUtil {
 
   public static final String UC_SETTINGS_ENDPOINT = "eholdings/kb-credentials/%s/uc";
+  public static final String UC_SETTINGS_USER_ENDPOINT = "eholdings/uc";
 
   public static final String STUB_CUSTOMER_KEY = "stub-customer-key";
   public static final String STUB_CURRENCY = "USD";
