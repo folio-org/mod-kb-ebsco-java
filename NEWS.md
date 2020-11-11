@@ -1,3 +1,6 @@
+## v3.6.2 2020-11-10
+* Update to RMB v31.1.5 and Vert.x 3.9.4
+
 ## v3.6.1 2020-11-05
 * MODKBEKBJ-505 Log responses from HoldingsIQ/MODKBEKBJ
 * MODKBEKBJ-515 GET Titles search | change searchtype from advanced to contains
