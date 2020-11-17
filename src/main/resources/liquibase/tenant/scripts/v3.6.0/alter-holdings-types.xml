@@ -1,0 +1,17 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <changeSet id="MODKBEKBJ-527@@change-holdings-package-id-type-to-integer" author="psmagin">
+    <modifyDataType tableName="holdings" columnName="package_id" newDataType="integer" />
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-527@@change-holdings-title-id-type-to-integer" author="psmagin">
+    <modifyDataType tableName="holdings" columnName="title_id" newDataType="integer" />
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-527@@change-holdings-vendor-id-type-to-integer" author="psmagin">
+    <modifyDataType tableName="holdings" columnName="vendor_id" newDataType="integer" />
+  </changeSet>
+</databaseChangeLog>

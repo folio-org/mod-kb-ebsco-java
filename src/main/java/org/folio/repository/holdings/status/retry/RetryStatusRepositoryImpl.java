@@ -1,7 +1,6 @@
 package org.folio.repository.holdings.status.retry;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDeleteQuery;
 import static org.folio.common.LogUtils.logInsertQuery;
 import static org.folio.common.LogUtils.logSelectQuery;
@@ -58,7 +57,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
 
   @Override
   public CompletableFuture<Void> save(RetryStatus status, UUID credentialsId, String tenantId) {
-    final String query = prepareQuery(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId), createPlaceholders(4));
+    final String query = prepareQuery(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId));
     final Tuple parameters = createInsertParameters(credentialsId, status);
     logInsertQuery(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();

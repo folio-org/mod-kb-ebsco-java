@@ -96,8 +96,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourceCostPerUse() {
-    String titleId = "356";
-    String packageId = "473";
+    int titleId = 356;
+    int packageId = 473;
     String year = "2019";
     String platform = "all";
     String stubApigeeResponseFile = "responses/uc/titles/get-title-cost-per-use-response.json";
@@ -114,8 +114,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyResourceCostPerUse() {
-    String titleId = "356";
-    String packageId = "473";
+    int titleId = 356;
+    int packageId = 473;
     String year = "2019";
     String stubApigeeResponseFile = "responses/uc/titles/get-empty-title-cost-per-use-response.json";
     mockSuccessfulTitleCostPerUse(titleId, packageId, stubApigeeResponseFile);
@@ -131,8 +131,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetResourceCPUWhenYearIsNull() {
-    String titleId = "356";
-    String packageId = "473";
+    int titleId = 356;
+    int packageId = 473;
     JsonapiError error = getWithStatus(resourceEndpoint(titleId, packageId, null, null), SC_UNPROCESSABLE_ENTITY)
       .as(JsonapiError.class);
 
@@ -141,8 +141,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetResourceCPUWhenPlatformIsInvalid() {
-    String titleId = "356";
-    String packageId = "473";
+    int titleId = 356;
+    int packageId = 473;
     String year = "2019";
     String platform = "invalid";
     JsonapiError error = getWithStatus(resourceEndpoint(titleId, packageId, year, platform), SC_UNPROCESSABLE_ENTITY)
@@ -153,8 +153,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnGetResourceCPUWhenApigeeFails() {
-    String titleId = "356";
-    String packageId = "473";
+    int titleId = 356;
+    int packageId = 473;
     String year = "2019";
 
     stubFor(get(urlPathMatching(String.format("/uc/costperuse/title/%s/%s", titleId, packageId)))
@@ -169,8 +169,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitleCostPerUse() {
-    String titleId = "1111111111";
-    String packageId = "222222";
+    int titleId = 1111111111;
+    int packageId = 222222;
     String year = "2019";
     String platform = "all";
     String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json";
@@ -193,7 +193,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyTitleCostPerUseWhenNoSelectedResources() {
-    String titleId = "1111111111";
+    int titleId = 1111111111;
     String year = "2019";
     String platform = "all";
 
@@ -211,7 +211,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetTitleCPUWhenYearIsNull() {
-    String titleId = "356";
+    int titleId = 356;
     JsonapiError error = getWithStatus(titleEndpoint(titleId, null, null), SC_UNPROCESSABLE_ENTITY)
       .as(JsonapiError.class);
 
@@ -220,7 +220,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetTitleCPUWhenPlatformIsInvalid() {
-    String titleId = "356";
+    int titleId = 356;
     String year = "2019";
     String platform = "invalid";
     JsonapiError error = getWithStatus(titleEndpoint(titleId, year, platform), SC_UNPROCESSABLE_ENTITY)
@@ -231,8 +231,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnGetTitleCPUWhenApigeeFails() {
-    String titleId = "356";
-    String packageId = "473";
+    int titleId = 356;
+    int packageId = 473;
     String year = "2019";
 
     stubFor(get(urlPathMatching(String.format("/uc/costperuse/title/%s/%s", titleId, packageId)))
@@ -247,7 +247,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnPackageCostPerUse() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "all";
 
@@ -265,12 +265,12 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnPackageCostPerUseWhenPackageCostIsEmpty() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "all";
 
-    var holding1 = new DbHoldingInfo("1", packageId, "1", "Ionicis tormentos accelerare!", "Sunt hydraes", "Book");
-    var holding2 = new DbHoldingInfo("2", packageId, "1", "Vortex, plasmator, et lixa.", "Est germanus byssus", "Book");
+    var holding1 = new DbHoldingInfo(1, packageId, 1, "Ionicis tormentos accelerare!", "Sunt hydraes", "Book");
+    var holding2 = new DbHoldingInfo(2, packageId, 1, "Vortex, plasmator, et lixa.", "Est germanus byssus", "Book");
     saveHolding(credentialsId, holding1, OffsetDateTime.now(), vertx);
     saveHolding(credentialsId, holding2, OffsetDateTime.now(), vertx);
 
@@ -292,7 +292,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetPackageCPUWhenYearIsNull() {
-    String packageId = "222222";
+    int packageId = 222222;
     JsonapiError error = getWithStatus(packageEndpoint(packageId, null, null), SC_UNPROCESSABLE_ENTITY)
       .as(JsonapiError.class);
 
@@ -301,7 +301,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetPackageCPUWhenPlatformIsInvalid() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "invalid";
     JsonapiError error = getWithStatus(packageEndpoint(packageId, year, platform), SC_UNPROCESSABLE_ENTITY)
@@ -312,7 +312,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnGetPackageCPUWhenApigeeFails() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
 
     stubFor(get(urlPathMatching(String.format("/uc/costperuse/package/%s", packageId)))
@@ -327,7 +327,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollection() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "all";
 
@@ -354,7 +354,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithPagination() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "publisher";
     var page = "2";
@@ -383,7 +383,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByUsageAsc() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "publisher";
     String sort = "usage";
@@ -413,7 +413,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByUsageDesc() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "publisher";
     String sort = "usage";
@@ -443,7 +443,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByCost() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "publisher";
     String sort = "cost";
@@ -472,7 +472,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByCostPerUse() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "publisher";
     String sort = "costperuse";
@@ -501,7 +501,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByPercent() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "publisher";
     String sort = "percent";
@@ -530,7 +530,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesCostPerUseCollectionSortedByNameWhenSortingByEqualsValues() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "publisher";
     String sort = "type";
@@ -559,7 +559,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetPackageResourcesCPUWhenYearIsNull() {
-    String packageId = "222222";
+    int packageId = 222222;
     JsonapiError error = getWithStatus(packageResourcesEndpoint(packageId, null, null, null, null), SC_UNPROCESSABLE_ENTITY)
       .as(JsonapiError.class);
 
@@ -568,7 +568,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetPackageResourcesCPUWhenPlatformIsInvalid() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "invalid";
     JsonapiError error =
@@ -580,7 +580,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn422OnGetPackageResourcesCPUWhenSortIsInvalid() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
     String platform = "all";
     String sort = "invalid";
@@ -593,7 +593,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400OnGetPackageResourcesCPUWhenApigeeFails() {
-    String packageId = "222222";
+    int packageId = 222222;
     String year = "2019";
 
     saveHolding(credentialsId, generateHolding(packageId, 1), OffsetDateTime.now(), vertx);
@@ -612,19 +612,19 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertErrorContainsDetail(error, "Random error message");
   }
 
-  private void mockRmApiGetTitle(String titleId, String stubRmapiResponseFile) {
+  private void mockRmApiGetTitle(int titleId, String stubRmapiResponseFile) {
     stubFor(get(urlPathMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + titleId))
       .willReturn(aResponse().withBody(readFile(stubRmapiResponseFile)))
     );
   }
 
-  private void mockSuccessfulTitleCostPerUse(String titleId, String packageId, String filePath) {
+  private void mockSuccessfulTitleCostPerUse(int titleId, int packageId, String filePath) {
     stubFor(get(urlPathMatching(String.format("/uc/costperuse/title/%s/%s", titleId, packageId)))
       .willReturn(aResponse().withStatus(SC_OK).withBody(readFile(filePath)))
     );
   }
 
-  private void mockSuccessfulPackageCostPerUse(String packageId, String filePath) {
+  private void mockSuccessfulPackageCostPerUse(int packageId, String filePath) {
     stubFor(get(urlPathMatching(String.format("/uc/costperuse/package/%s", packageId)))
       .willReturn(aResponse().withStatus(SC_OK).withBody(readFile(filePath)))
     );
@@ -652,7 +652,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     }
   }
 
-  private String resourceEndpoint(String titleId, String packageId, String year, String platform) {
+  private String resourceEndpoint(int titleId, int packageId, String year, String platform) {
     String baseUrl = String.format("eholdings/resources/1-%s-%s/costperuse", packageId, titleId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
     return paramsSb.length() > 0
@@ -660,15 +660,15 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       : baseUrl;
   }
 
-  private String titleEndpoint(String packageId, String year, String platform) {
-    String baseUrl = String.format("eholdings/titles/%s/costperuse", packageId);
+  private String titleEndpoint(int titleId, String year, String platform) {
+    String baseUrl = String.format("eholdings/titles/%s/costperuse", titleId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
     return paramsSb.length() > 0
       ? baseUrl + "?" + paramsSb.toString()
       : baseUrl;
   }
 
-  private String packageEndpoint(String packageId, String year, String platform) {
+  private String packageEndpoint(int packageId, String year, String platform) {
     String baseUrl = String.format("eholdings/packages/1-%s/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
     return paramsSb.length() > 0
@@ -676,11 +676,11 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       : baseUrl;
   }
 
-  private String packageResourcesEndpoint(String packageId, String year, String platform, String page, String size) {
+  private String packageResourcesEndpoint(int packageId, String year, String platform, String page, String size) {
     return packageResourcesEndpoint(packageId, year, platform, page, size, null, null);
   }
 
-  private String packageResourcesEndpoint(String packageId, String year, String platform, String page, String size,
+  private String packageResourcesEndpoint(int packageId, String year, String platform, String page, String size,
                                           String sort, String order) {
     String baseUrl = String.format("eholdings/packages/1-%s/resources/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform, page, size, sort, order);
@@ -716,25 +716,25 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     }
   }
 
-  private DbHoldingInfo generateHolding(String packageId, int titleId) {
+  private DbHoldingInfo generateHolding(int packageId, int titleId) {
     return DbHoldingInfo.builder()
       .packageId(packageId)
-      .titleId(String.valueOf(titleId))
+      .titleId(titleId)
       .publicationTitle(random.nextObject(String.class))
       .publisherName(random.nextObject(String.class))
       .resourceType("Book")
-      .vendorId("1")
+      .vendorId(1)
       .build();
   }
 
-  private DbHoldingInfo generateHolding(String packageId, int titleId, String titleName) {
+  private DbHoldingInfo generateHolding(int packageId, int titleId, String titleName) {
     return DbHoldingInfo.builder()
       .packageId(packageId)
-      .titleId(String.valueOf(titleId))
+      .titleId(titleId)
       .publicationTitle(titleName)
       .publisherName(random.nextObject(String.class))
       .resourceType("Book")
-      .vendorId("1")
+      .vendorId(1)
       .build();
   }
 }

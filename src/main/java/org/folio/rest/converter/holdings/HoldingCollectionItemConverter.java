@@ -22,7 +22,7 @@ public class HoldingCollectionItemConverter implements Converter<DbHoldingInfo, 
       .withType(ResourceCollectionItem.Type.RESOURCES)
       .withRelationships(createEmptyRelationship())
       .withAttributes(new ResourceDataAttributes()
-        .withTitleId(Integer.parseInt(holding.getTitleId()))
+        .withTitleId(holding.getTitleId())
         .withName(holding.getPublicationTitle())
         .withPublisherName(holding.getPublisherName())
         .withPublicationType(ConverterConsts.publicationTypes.get(holding.getResourceType().toLowerCase()))

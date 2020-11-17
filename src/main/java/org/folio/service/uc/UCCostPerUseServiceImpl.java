@@ -1,6 +1,5 @@
 package org.folio.service.uc;
 
-import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 
 import static org.folio.rest.util.IdParser.parsePackageId;
@@ -394,7 +393,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   private List<UCTitlePackageId> extractTitlePackageIds(List<DbHoldingInfo> dbHoldingInfos) {
     return dbHoldingInfos.stream()
-      .map(h -> new UCTitlePackageId(parseInt(h.getTitleId()), parseInt(h.getPackageId())))
+      .map(h -> new UCTitlePackageId(h.getTitleId(), h.getPackageId()))
       .distinct()
       .collect(Collectors.toList());
   }

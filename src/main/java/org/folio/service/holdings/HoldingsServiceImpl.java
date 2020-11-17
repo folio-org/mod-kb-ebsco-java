@@ -1,5 +1,7 @@
 package org.folio.service.holdings;
 
+import static java.lang.Integer.parseInt;
+
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_ADDED;
@@ -394,14 +396,14 @@ public class HoldingsServiceImpl implements HoldingsService {
                                                String tenantId) {
     Set<DbHoldingInfo> dbHoldings = holdings.stream()
       .filter(distinctByKey(this::getHoldingsId))
-      .map(holding -> new DbHoldingInfo(
-        holding.getTitleId(),
-        holding.getPackageId(),
-        String.valueOf(holding.getVendorId()),
-        holding.getPublicationTitle(),
-        holding.getPublisherName(),
-        holding.getResourceType()
-      ))
+      .map(holding -> DbHoldingInfo.builder()
+        .titleId(parseInt(holding.getTitleId()))
+        .packageId(parseInt(holding.getPackageId()))
+        .vendorId(holding.getVendorId())
+        .publicationTitle(holding.getPublicationTitle())
+        .publisherName(holding.getPublisherName())
+        .resourceType(holding.getResourceType())
+        .build())
       .collect(Collectors.toSet());
     logger.info(SAVING_HOLDINGS_MESSAGE);
     return holdingsRepository.saveAll(dbHoldings, updatedAt, credentialsId, tenantId);
@@ -414,14 +416,14 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private DbHoldingInfo mapToHoldingInfoInDb(HoldingInReport holding) {
-    return new DbHoldingInfo(
-      holding.getTitleId(),
-      holding.getPackageId(),
-      String.valueOf(holding.getVendorId()),
-      holding.getPublicationTitle(),
-      holding.getPublisherName(),
-      holding.getResourceType()
-    );
+    return DbHoldingInfo.builder()
+      .titleId(parseInt(holding.getTitleId()))
+      .packageId(parseInt(holding.getPackageId()))
+      .vendorId(holding.getVendorId())
+      .publicationTitle(holding.getPublicationTitle())
+      .publisherName(holding.getPublisherName())
+      .resourceType(holding.getResourceType())
+      .build();
   }
 
   private <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
