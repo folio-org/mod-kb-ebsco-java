@@ -93,7 +93,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(String packageId, UUID credentialsId, String tenantId) {
+  public CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(int packageId, UUID credentialsId, String tenantId) {
     var query = prepareQuery(GET_BY_PACKAGE_ID_AND_CREDENTIALS, getHoldingsTableName(tenantId));
     var params = createParams(packageId, credentialsId);
     logSelectQuery(LOG, query, params);

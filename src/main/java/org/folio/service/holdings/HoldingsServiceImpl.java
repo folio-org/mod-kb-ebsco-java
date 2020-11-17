@@ -159,7 +159,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   @Override
   public CompletableFuture<List<DbHoldingInfo>> getHoldingsByPackageId(String packageId, String credentialsId,
                                                                        String tenantId) {
-    return holdingsRepository.findAllByPackageId(packageId, toUUID(credentialsId), tenantId);
+    return holdingsRepository.findAllByPackageId(Integer.parseInt(packageId), toUUID(credentialsId), tenantId);
   }
 
   @Override
