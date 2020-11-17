@@ -25,6 +25,7 @@ import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -81,6 +82,9 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   @Override
   public CompletableFuture<List<DbHoldingInfo>> findAllById(List<String> resourceIds, UUID credentialsId, String tenantId) {
+    if (resourceIds.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptyList());
+    }
     var params = getHoldingsPkKeysParams(credentialsId, resourceIds);
     var query = prepareQuery(GET_BY_PK_HOLDINGS,
       getHoldingsTableName(tenantId),
