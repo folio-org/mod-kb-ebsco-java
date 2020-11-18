@@ -8,4 +8,5 @@
   <include file="liquibase/tenant/scripts/v3.6.0/update-access-types-view-user-name-column.xml"/>
   <include file="liquibase/tenant/scripts/v3.6.0/create-usage-consolidation-credentials-table.xml"/>
   <include file="liquibase/tenant/scripts/v3.6.0/create-holdings-package-id-index.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/alter-holdings-types.xml"/>
 </databaseChangeLog>

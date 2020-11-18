@@ -17,12 +17,13 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class DbHoldingInfo {
+
   @JsonProperty("title_id")
-  private final String titleId;
+  private final int titleId;
   @JsonProperty("package_id")
-  private final String packageId;
+  private final int packageId;
   @JsonProperty("vendor_id")
-  private final String vendorId;
+  private final int vendorId;
   @JsonProperty("publication_title")
   private final String publicationTitle;
   @JsonProperty("publisher_name")

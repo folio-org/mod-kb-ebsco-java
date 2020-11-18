@@ -170,9 +170,9 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   private Optional<DbHoldingInfo> readHolding(Row row) {
     if (row.getUUID(CREDENTIALS_ID_COLUMN) != null && row.getString(HOLDINGS_ID_COLUMN) != null) {
       DbHoldingInfo holdingInfo = DbHoldingInfo.builder()
-        .titleId(row.getString(TITLE_ID_COLUMN))
-        .packageId(row.getString(PACKAGE_ID_COLUMN))
-        .vendorId(row.getString(VENDOR_ID_COLUMN))
+        .titleId(row.getInteger(TITLE_ID_COLUMN))
+        .packageId(row.getInteger(PACKAGE_ID_COLUMN))
+        .vendorId(row.getInteger(VENDOR_ID_COLUMN))
         .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
         .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
         .resourceType(row.getString(RESOURCE_TYPE_COLUMN))
@@ -186,7 +186,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   private Title mapHoldingToTitle(DbHoldingInfo holding) {
     return Title.builder()
       .titleName(holding.getPublicationTitle())
-      .titleId(Integer.parseInt(holding.getTitleId()))
+      .titleId(holding.getTitleId())
       .pubType(holding.getResourceType())
       .publisherName(holding.getPublisherName())
       .build();

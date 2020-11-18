@@ -17,7 +17,6 @@ public class ListUtils {
 
   private static final Pattern SPLIT_BY_COMMA_PATTERN = Pattern.compile("\\s*,\\s*");
 
-
   public static <T, R> List<R> mapItems(Collection<T> source, Function<? super T, ? extends R> mapper) {
     Objects.requireNonNull(source, "Collection is null");
     return source.stream().map(mapper).collect(Collectors.toList());
@@ -27,7 +26,7 @@ public class ListUtils {
     return String.join(",", Collections.nCopies(size, "?"));
   }
 
-  public static String createInsertPlaceholders(int placeholderSize, int copiesSize) {
+  public static String createPlaceholders(int placeholderSize, int copiesSize) {
     final String pattern = String.format("(%s)", createPlaceholders(placeholderSize));
     return String.join(",", Collections.nCopies(copiesSize, pattern));
   }

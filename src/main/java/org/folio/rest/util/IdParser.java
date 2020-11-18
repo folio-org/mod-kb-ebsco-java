@@ -68,9 +68,9 @@ public final class IdParser {
 
   public static ResourceId getResourceId(DbHoldingInfo resource) {
     return ResourceId.builder()
-      .providerIdPart(Long.parseLong(resource.getVendorId()))
-      .packageIdPart(Long.parseLong(resource.getPackageId()))
-      .titleIdPart(Long.parseLong(resource.getTitleId()))
+      .providerIdPart(resource.getVendorId())
+      .packageIdPart(resource.getPackageId())
+      .titleIdPart(resource.getTitleId())
       .build();
   }
 
