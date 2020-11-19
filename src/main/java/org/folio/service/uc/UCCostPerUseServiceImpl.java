@@ -158,6 +158,15 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
                                                                                        String fiscalYear, String sort,
                                                                                        Order order, int page, int size,
                                                                                        Map<String, String> okapiHeaders) {
+
+    return fetchHoldings(packageId, platform, fiscalYear, sort, okapiHeaders)
+      .thenApply(resourceCostPerUseCollectionConverter::convert)
+      .thenApply(collection -> createResultPage(collection, page, size, sort, order));
+  }
+
+  private CompletableFuture<ResourceCostPerUseCollectionResult> fetchHoldings(String packageId, String platform,
+                                                                              String fiscalYear, String sort,
+                                                                              Map<String, String> okapiHeaders) {
     validateParams(platform, fiscalYear, sort);
     var id = parsePackageId(packageId);
     var packageIdPart = valueOf(id.getPackageIdPart());
@@ -166,9 +175,13 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
     return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
       .thenCompose(context -> fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
         .thenCompose(ucConfiguration ->
-          composeResourceCostPerUseCollectionResult(packageIdPart, context, ucConfiguration, platformTypeHolder.getValue())))
-      .thenApply(resourceCostPerUseCollectionConverter::convert)
-      .thenApply(resourceCostPerUseCollection -> createResultPage(resourceCostPerUseCollection, page, size, sort, order));
+          composeResourceCostPerUseCollectionResult(packageIdPart, context, ucConfiguration, platformTypeHolder.getValue())));
+  }
+
+  @Override
+  public CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(String packageId, String platform, String fiscalYear, Map<String, String> okapiHeaders) {
+    return fetchHoldings(packageId, platform, fiscalYear, CostPerUseSort.COST.name(), okapiHeaders)
+      .thenApply(resourceCostPerUseCollectionConverter::convert);
   }
 
   private CompletableFuture<PackageCostPerUseResult> composePackageCostPerUseResult(String packageId,

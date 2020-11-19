@@ -7,9 +7,9 @@ import lombok.Value;
 public class UCTitlePackageId {
 
   @JsonProperty("kbid")
-  Integer titleId;
+  int titleId;
   @JsonProperty("listId")
-  Integer packageId;
+  int packageId;
 
   @Override
   public String toString() {

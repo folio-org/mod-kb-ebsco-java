@@ -25,4 +25,9 @@ public interface UCCostPerUseService {
                                                                                 int page, int size,
                                                                                 Map<String, String> okapiHeaders);
 
+
+  CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(String packageId, String platform,
+                                                                                String fiscalYear,
+                                                                                Map<String, String> okapiHeaders);
+
 }
