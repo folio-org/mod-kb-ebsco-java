@@ -20,6 +20,7 @@ stages:
           answers:
             image.repository: docker.dev.folio.org/mod-kb-ebsco-java
             image.tag: spitfire-poc
+            postJob.tenantId: exportpoc
           targetNamespace: spitfire
           name: mod-kb-ebsco-java-poc
 timeout: 60

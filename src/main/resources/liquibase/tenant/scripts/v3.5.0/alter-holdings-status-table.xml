@@ -4,16 +4,16 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="MODKBEKBJ-444@@disable-holdings-status-audit-trigger" author="dmtkachenko">
-    <preConditions onFail="MARK_RAN">
-      <sqlCheck expectedResult="true">
-        SELECT ${database.defaultSchemaName}.trigger_exists('holdings_status_audit');
-      </sqlCheck>
-    </preConditions>
-    <sql>
-      ALTER TABLE ${database.defaultSchemaName}.holdings_status DISABLE TRIGGER holdings_status_audit;
-    </sql>
-  </changeSet>
+<!--  <changeSet id="MODKBEKBJ-444@@disable-holdings-status-audit-trigger" author="dmtkachenko">-->
+<!--    <preConditions onFail="MARK_RAN">-->
+<!--      <sqlCheck expectedResult="true">-->
+<!--        SELECT ${database.defaultSchemaName}.trigger_exists('holdings_status_audit');-->
+<!--      </sqlCheck>-->
+<!--    </preConditions>-->
+<!--    <sql>-->
+<!--      ALTER TABLE ${database.defaultSchemaName}.holdings_status DISABLE TRIGGER holdings_status_audit;-->
+<!--    </sql>-->
+<!--  </changeSet>-->
 
   <changeSet id="MODKBEKBJ-444@@disable-update-started-date-before-insertion-trigger" author="dmtkachenko">
     <sql>
@@ -74,16 +74,16 @@
       referencedTableSchemaName="${database.defaultSchemaName}"/>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-444@@enable-holdings-status-audit-trigger" author="dmtkachenko">
-    <preConditions onFail="MARK_RAN">
-      <sqlCheck expectedResult="true">
-        SELECT ${database.defaultSchemaName}.trigger_exists('holdings_status_audit');
-      </sqlCheck>
-    </preConditions>
-    <sql>
-      ALTER TABLE ${database.defaultSchemaName}.holdings_status ENABLE TRIGGER holdings_status_audit;
-    </sql>
-  </changeSet>
+<!--  <changeSet id="MODKBEKBJ-444@@enable-holdings-status-audit-trigger" author="dmtkachenko">-->
+<!--    <preConditions onFail="MARK_RAN">-->
+<!--      <sqlCheck expectedResult="true">-->
+<!--        SELECT ${database.defaultSchemaName}.trigger_exists('holdings_status_audit');-->
+<!--      </sqlCheck>-->
+<!--    </preConditions>-->
+<!--    <sql>-->
+<!--      ALTER TABLE ${database.defaultSchemaName}.holdings_status ENABLE TRIGGER holdings_status_audit;-->
+<!--    </sql>-->
+<!--  </changeSet>-->
 
   <changeSet id="MODKBEKBJ-444@@enable-update-started-date-before-insertion-trigger" author="dmtkachenko">
     <sql>
