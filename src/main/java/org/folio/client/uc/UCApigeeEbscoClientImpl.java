@@ -45,7 +45,7 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(UCApigeeEbscoClientImpl.class);
 
-  private static final int TIMEOUT = 50000;
+//  private static final int TIMEOUT = 50000;
 
   private static final String FISCAL_YEAR_PARAM = "fiscalYear";
   private static final String FISCAL_MONTH_PARAM = "fiscalMonth";
@@ -174,7 +174,7 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
 
   private HttpRequest<Buffer> configureRequest(UCConfiguration configuration, HttpRequest<Buffer> httpRequest) {
     return httpRequest
-      .timeout(TIMEOUT)
+//      .timeout(TIMEOUT)
       .bearerTokenAuthentication(configuration.getAccessToken())
       .putHeader("custkey", configuration.getCustomerKey());
   }

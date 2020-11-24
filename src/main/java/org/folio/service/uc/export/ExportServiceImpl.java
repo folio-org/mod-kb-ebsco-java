@@ -6,7 +6,6 @@ import static com.opencsv.ICSVWriter.NO_ESCAPE_CHARACTER;
 import static com.opencsv.ICSVWriter.NO_QUOTE_CHARACTER;
 
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +45,7 @@ public class ExportServiceImpl implements ExportService {
   }
 
   private CompletableFuture<String> mapToCSV(List<TitleExportModel> entities) {
-    LOG.info("Start MAPPING TO SCV" + entities.size());
+    LOG.info("Start MAPPING TO SCV: " + entities.size());
     StringWriter writer = new StringWriter();
 
     // mapping of columns by position
@@ -75,8 +74,8 @@ public class ExportServiceImpl implements ExportService {
     }
 
     String s = writer.toString();
-    byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
-    LOG.info("Finished MAPPING TO SCV: " + bytes.length + " bytes");
+//    byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+//    LOG.info("Finished MAPPING TO SCV: " + bytes.length + " bytes");
     return CompletableFuture.completedFuture(s);
   }
 
