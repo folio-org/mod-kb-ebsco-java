@@ -1,13 +1,16 @@
 package org.folio.service.loader;
 
+import static java.util.Collections.emptyList;
+
 import static org.folio.db.RowSetUtils.toUUID;
+import static org.folio.rest.util.IdParser.dbResourcesToIdStrings;
 import static org.folio.rest.util.IdParser.getPackageIds;
 import static org.folio.rest.util.IdParser.getResourceIds;
 import static org.folio.rest.util.IdParser.getTitleIds;
+import static org.folio.rest.util.IdParser.resourceIdsToStrings;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +89,21 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   }
 
   @Override
+  public CompletableFuture<ResourceCollectionResult> fetchResourcesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
+                                                                                      RMAPITemplateContext context) {
+    String tenant = context.getOkapiData().getTenant();
+    AtomicInteger totalCount = new AtomicInteger();
+    return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
+      .thenApply(this::extractResourceIds)
+      .thenCompose(resourceIds -> holdingsService
+        .getHoldingsByIds(resourceIdsToStrings(resourceIds), context.getCredentialsId(), tenant)
+        .thenCompose(dbHoldings -> context.getResourcesService()
+          .retrieveResources(getMissingResourceIds(dbHoldings, resourceIds))
+          .thenApply(resources -> toResourceCollectionResult(resources, emptyList(), dbHoldings, totalCount.get()))
+        ));
+  }
+
+  @Override
   public CompletableFuture<Titles> fetchTitlesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                  RMAPITemplateContext context) {
     AtomicInteger totalCount = new AtomicInteger();
@@ -132,11 +150,14 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
     return tagRepository.countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(resourcesCount -> resourceRepository.findByTagFilter(tagFilter, credentialsId, tenant)
-        .thenCompose(dbResources -> holdingsService.getHoldingsByIds(dbResources, context.getCredentialsId(), tenant)
-          .thenCompose(dbHoldings -> context.getResourcesService()
-            .retrieveResources(getMissingResourceIds(dbHoldings, dbResources), Collections.emptyList())
-            .thenApply(resources -> toResourceCollectionResult(resources, dbResources, dbHoldings, resourcesCount))
-          )
+        .thenCompose(dbResources -> {
+            List<String> ids = dbResourcesToIdStrings(dbResources);
+            return holdingsService.getHoldingsByIds(ids, context.getCredentialsId(), tenant)
+              .thenCompose(dbHoldings -> context.getResourcesService()
+                .retrieveResources(getMissingResourceIds(dbHoldings, getTitleIds(dbResources)))
+                .thenApply(resources -> toResourceCollectionResult(resources, dbResources, dbHoldings, resourcesCount))
+              );
+          }
         )
       );
   }
@@ -191,10 +212,9 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .collect(Collectors.toList());
   }
 
-  private List<ResourceId> getMissingResourceIds(List<DbHoldingInfo> holdings, List<DbResource> resourcesResult) {
-    final List<ResourceId> resourceIds = getTitleIds(resourcesResult);
-    resourceIds.removeIf(dbResource -> getResourceIds(holdings).contains(dbResource));
-    return resourceIds;
+  private List<ResourceId> getMissingResourceIds(List<DbHoldingInfo> holdings, List<ResourceId> resourceIds) {
+    List<ResourceId> holdingsIds = getResourceIds(holdings);
+    return org.apache.commons.collections4.ListUtils.select(resourceIds, resourceId -> !holdingsIds.contains(resourceId));
   }
 
   private CompletableFuture<Collection<AccessTypeMapping>> fetchAccessTypeMappings(AccessTypeFilter accessTypeFilter,
@@ -241,6 +261,13 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .map(AccessTypeMapping::getRecordId)
       .map(IdParser::parseResourceId)
       .map(ResourceId::getTitleIdPart)
+      .collect(Collectors.toList());
+  }
+
+  private List<ResourceId> extractResourceIds(Collection<AccessTypeMapping> accessTypeMappings) {
+    return accessTypeMappings.stream()
+      .map(AccessTypeMapping::getRecordId)
+      .map(IdParser::parseResourceId)
       .collect(Collectors.toList());
   }
 

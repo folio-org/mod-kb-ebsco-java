@@ -11,7 +11,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
 import org.folio.repository.holdings.DbHoldingInfo;
-import org.folio.repository.resources.DbResource;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.message.DeltaReportCreatedMessage;
 import org.folio.service.holdings.message.DeltaReportMessage;
@@ -41,7 +40,7 @@ public interface HoldingsService {
   }
 
   @GenIgnore
-  default CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<DbResource> resourcesResult, String credentialsId, String tenant) {
+  default CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<String> ids, String credentialsId, String tenant) {
     throw new UnsupportedOperationException();
   }
 
