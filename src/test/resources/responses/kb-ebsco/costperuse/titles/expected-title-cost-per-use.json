@@ -101,6 +101,7 @@
       "holdingsSummary": [
         {
           "packageId": "19-222222",
+          "resourceId": "19-222222-1111111111",
           "packageName": "test-custom-title-132a648d",
           "costPerUse": 189.17413333333332,
           "coverageStatement": "Test Coverage Statement",
