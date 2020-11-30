@@ -1,3 +1,6 @@
+## v3.6.3 2020-11-30
+* MODKBEKBJ-532 Fix filtering resources in packages by access types
+
 ## v3.6.2 2020-11-10
 * Update to RMB v31.1.5 and Vert.x 3.9.4
 

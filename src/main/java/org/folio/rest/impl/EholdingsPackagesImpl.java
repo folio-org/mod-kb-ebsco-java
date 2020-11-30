@@ -13,7 +13,6 @@ import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -82,7 +81,6 @@ import org.folio.rest.validator.PackagePutBodyValidator;
 import org.folio.rest.validator.PackageTagsPutBodyValidator;
 import org.folio.rest.validator.PackagesPostBodyValidator;
 import org.folio.rmapi.result.PackageResult;
-import org.folio.rmapi.result.ResourceCollectionResult;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
@@ -312,8 +310,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       template.requestAction(context -> filteredEntitiesLoader.fetchResourcesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
-        .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
-        .thenApply(titles -> new ResourceCollectionResult(titles, Collections.emptyList(), Collections.emptyList()))
+        .fetchResourcesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
       );
     } else {
       template.requestAction(context ->

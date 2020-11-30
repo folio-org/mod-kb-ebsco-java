@@ -100,6 +100,10 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
     return resourceCache.getValueOrLoad(cacheKey, () -> retrieveResource(resourceId));
   }
 
+  public CompletableFuture<Titles> retrieveResources(List<ResourceId> resourceIds) {
+    return retrieveResources(resourceIds, Collections.emptyList());
+  }
+
   public CompletableFuture<Titles> retrieveResources(List<ResourceId> resourceIds, List<String> includes) {
     Set<CompletableFuture<ResourceResult>> futures = resourceIds.stream()
       .map(id -> retrieveResource(id, includes, true))

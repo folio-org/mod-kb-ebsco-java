@@ -75,7 +75,6 @@ import static org.folio.util.PackagesTestUtil.savePackage;
 import static org.folio.util.PackagesTestUtil.setUpPackages;
 import static org.folio.util.ResourcesTestUtil.buildResource;
 import static org.folio.util.TagsTestUtil.saveTag;
-import static org.folio.util.TitlesTestUtil.mockGetTitles;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -1061,7 +1060,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
 
-    mockGetTitles();
+    mockResourceById("responses/rmapi/titles/get-title-by-id-response.json");
 
     String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources"
       + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
@@ -1081,7 +1080,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(1).getId(), vertx);
 
-    mockGetTitles();
+    mockResourceById("responses/rmapi/titles/get-title-by-id-response.json");
 
     String resourcePath = PACKAGES_ENDPOINT + "/" + FULL_PACKAGE_ID + "/resources?page=2&count=1&"
       + "filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;

@@ -58,8 +58,16 @@ public final class IdParser {
     return concat(resourceId.getProviderIdPart(), resourceId.getPackageIdPart(), resourceId.getTitleIdPart());
   }
 
+  public static List<String> resourceIdsToStrings(List<ResourceId> resourceIds) {
+    return mapItems(resourceIds, IdParser::resourceIdToString);
+  }
+
   public static String getResourceId(CustomerResources resource) {
     return concat(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
+  }
+
+  public static List<String> dbResourcesToIdStrings(List<DbResource> resources) {
+    return mapItems(resources, dbResource -> resourceIdToString(dbResource.getId()));
   }
 
   public static String getResourceId(HoldingsId holding) {

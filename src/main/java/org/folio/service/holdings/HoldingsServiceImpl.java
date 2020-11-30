@@ -2,7 +2,6 @@ package org.folio.service.holdings;
 
 import static java.lang.Integer.parseInt;
 
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_ADDED;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_DELETED;
@@ -58,11 +57,9 @@ import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.repository.holdings.status.retry.RetryStatus;
 import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.repository.holdings.transaction.TransactionIdRepository;
-import org.folio.repository.resources.DbResource;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
-import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.holdings.message.ConfigurationMessage;
@@ -148,12 +145,6 @@ public class HoldingsServiceImpl implements HoldingsService {
         })
     );
     return mapVertxFuture(executeFuture);
-  }
-
-  @Override
-  public CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<DbResource> resourcesResult, String credentialsId,
-                                                                 String tenantId) {
-    return holdingsRepository.findAllById(getTitleIdsAsList(resourcesResult), toUUID(credentialsId), tenantId);
   }
 
   @Override
@@ -292,6 +283,12 @@ public class HoldingsServiceImpl implements HoldingsService {
           )));
   }
 
+  @Override
+  public CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<String> ids, String credentialsId,
+                                                                 String tenantId) {
+    return holdingsRepository.findAllById(ids, toUUID(credentialsId), tenantId);
+  }
+
   public CompletableFuture<Void> processChanges(List<HoldingInReport> holdings, OffsetDateTime updatedAt, UUID credentialsId,
                                                 String tenantId) {
     Set<DbHoldingInfo> holdingsToSave = getDbHoldingsByType(holdings, ADDED_OR_UPDATED_CHANGE_TYPES)
@@ -386,10 +383,6 @@ public class HoldingsServiceImpl implements HoldingsService {
       return null;
     });
     return responsePromise.future();
-  }
-
-  private List<String> getTitleIdsAsList(List<DbResource> resources) {
-    return mapItems(resources, dbResource -> IdParser.resourceIdToString(dbResource.getId()));
   }
 
   private CompletableFuture<Void> saveHoldings(List<Holding> holdings, OffsetDateTime updatedAt, UUID credentialsId,

@@ -16,6 +16,9 @@ public interface FilteredEntitiesLoader {
   CompletableFuture<Packages> fetchPackagesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                               RMAPITemplateContext context);
 
+  CompletableFuture<ResourceCollectionResult> fetchResourcesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
+                                                                               RMAPITemplateContext context);
+
   CompletableFuture<Titles> fetchTitlesByAccessTypeFilter(AccessTypeFilter accessTypeFilter, RMAPITemplateContext context);
 
   CompletableFuture<Vendors> fetchProvidersByTagFilter(TagFilter tagFilter, RMAPITemplateContext context);
