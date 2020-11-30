@@ -110,6 +110,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
     var cost = defaultIfNull(ucCostAnalysis.getCost(), NumberUtils.DOUBLE_ZERO);
     return new HoldingsCostAnalysisAttributes()
       .withPackageId(vendorId + "-" + packageId)
+      .withResourceId(vendorId + "-" + packageId + "-" + titleId)
       .withPackageName(customerResource.getPackageName())
       .withCost(cost)
       .withUsage(totalUsage)
