@@ -214,8 +214,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     PackagesTestUtil.setUpPackages(vertx, configuration.getId());
 
-    PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE
-      + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    String endpoint = PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE;
+    PackageCollection packageCollection = getWithOk(endpoint, STUB_TOKEN_HEADER).as(PackageCollection.class);
 
     List<PackageCollectionItem> packages = packageCollection.getData();
 
