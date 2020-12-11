@@ -10,6 +10,12 @@
     </sql>
   </changeSet>
 
+  <changeSet id="MODKBEKBJ-537@@drop-trigger-exist-for-table-function" author="psmahin">
+    <sql>
+      DROP FUNCTION IF EXISTS ${database.defaultSchemaName}.trigger_exist_for_table(text, text);
+    </sql>
+  </changeSet>
+
   <changeSet id="MODKBEKBJ-444-datamigration@@drop-get-single-credentials-id-function" author="dmtkachenko">
     <sql>
       DROP FUNCTION IF EXISTS ${database.defaultSchemaName}.get_single_credentials_id();

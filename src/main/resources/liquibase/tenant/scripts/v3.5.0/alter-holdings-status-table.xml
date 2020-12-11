@@ -7,7 +7,7 @@
   <changeSet id="MODKBEKBJ-444@@disable-holdings-status-audit-trigger" author="dmtkachenko">
     <preConditions onFail="MARK_RAN">
       <sqlCheck expectedResult="true">
-        SELECT ${database.defaultSchemaName}.trigger_exists('holdings_status_audit');
+        SELECT ${database.defaultSchemaName}.trigger_exist_for_table('holdings_status_audit', 'holdings_status');
       </sqlCheck>
     </preConditions>
     <sql>
@@ -77,7 +77,7 @@
   <changeSet id="MODKBEKBJ-444@@enable-holdings-status-audit-trigger" author="dmtkachenko">
     <preConditions onFail="MARK_RAN">
       <sqlCheck expectedResult="true">
-        SELECT ${database.defaultSchemaName}.trigger_exists('holdings_status_audit');
+        SELECT ${database.defaultSchemaName}.trigger_exist_for_table('holdings_status_audit', 'holdings_status');
       </sqlCheck>
     </preConditions>
     <sql>
