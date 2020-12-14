@@ -15,6 +15,12 @@
       "pattern": "^\\d+-\\d+$",
       "example": "12-567"
     },
+    "resourceId": {
+      "type": "string",
+      "description": "Resource ID",
+      "pattern": "^\\d+-\\d+-\\d+$",
+      "example": "12-567-897456"
+    },
     "packageName": {
       "type": "string",
       "description": "Package Name",
