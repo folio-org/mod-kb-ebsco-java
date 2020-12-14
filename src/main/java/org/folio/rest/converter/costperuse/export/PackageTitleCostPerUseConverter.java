@@ -13,7 +13,7 @@ import org.folio.service.uc.export.TitleExportModel;
 @Component
 public class PackageTitleCostPerUseConverter {
 
-  public TitleExportModel convert(ResourceCostPerUseCollectionItem resourceCostPerUseCollectionItem, String platform, String year) {
+  public TitleExportModel convert(ResourceCostPerUseCollectionItem resourceCostPerUseCollectionItem, String platform, String year, String currency) {
     return TitleExportModel.builder()
       .title(resourceCostPerUseCollectionItem.getAttributes().getName())
       .type(resourceCostPerUseCollectionItem.getAttributes().getPublicationType().value())
@@ -22,6 +22,7 @@ public class PackageTitleCostPerUseConverter {
       .percent(defaultIfNull(resourceCostPerUseCollectionItem.getAttributes().getPercent(), DOUBLE_ZERO))
       .costPerUse(defaultIfNull(resourceCostPerUseCollectionItem.getAttributes().getCostPerUse(), DOUBLE_ZERO))
       .platform(defaultIfNull(platform, PlatformType.ALL.value()))
+      .currency(currency)
       .year(year)
       .build();
   }

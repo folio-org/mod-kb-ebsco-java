@@ -11,13 +11,14 @@ import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
 import org.folio.service.uc.export.TitleExportModel;
 
 @Component
-public class PackageTitlesCollectionConverter {
+public class PackageTitlesCostPerUseCollectionToExportConverter {
 
   @Autowired
   private PackageTitleCostPerUseConverter resourceCostPerUseExportItemConverter;
 
   public List<TitleExportModel> convert(ResourceCostPerUseCollection resourceCostPerUseCollection, String platform, String year) {
     var data = resourceCostPerUseCollection.getData();
-    return mapItems(data, item -> resourceCostPerUseExportItemConverter.convert(item, platform, year));
+    var currency = resourceCostPerUseCollection.getParameters().getCurrency();
+    return mapItems(data, item -> resourceCostPerUseExportItemConverter.convert(item, platform, year, currency));
   }
 }

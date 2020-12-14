@@ -2,7 +2,6 @@ package org.folio.service.uc.export;
 
 import static com.opencsv.ICSVWriter.DEFAULT_LINE_END;
 import static com.opencsv.ICSVWriter.NO_ESCAPE_CHARACTER;
-import static com.opencsv.ICSVWriter.NO_QUOTE_CHARACTER;
 
 import java.io.StringWriter;
 import java.util.List;
@@ -18,7 +17,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import org.folio.rest.converter.costperuse.export.PackageTitlesCollectionConverter;
+import org.folio.rest.converter.costperuse.export.PackageTitlesCostPerUseCollectionToExportConverter;
 import org.folio.service.uc.UCCostPerUseService;
 
 @Service
@@ -28,7 +27,7 @@ public class ExportServiceImpl implements ExportService {
   @Autowired
   private UCCostPerUseService costPerUseService;
   @Autowired
-  private PackageTitlesCollectionConverter converter;
+  private PackageTitlesCostPerUseCollectionToExportConverter converter;
 
   public CompletableFuture<String> exportCSV(String packageId, String platform, String year,
                                              Map<String, String> okapiHeaders) {
@@ -49,17 +48,16 @@ public class ExportServiceImpl implements ExportService {
 
     StatefulBeanToCsv<TitleExportModel> csvToBean = new StatefulBeanToCsvBuilder<TitleExportModel>(writer)
       .withMappingStrategy(mappingStrategy)
-      .withQuotechar(NO_QUOTE_CHARACTER)
       .withEscapechar(NO_ESCAPE_CHARACTER)
       .withLineEnd(DEFAULT_LINE_END)
       .withSeparator('|')
+      .withApplyQuotesToAll(true)
       .build();
 
     try {
       csvToBean.write(entities);
     } catch (CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
-      LOG.error("Error occurred during mapping");
-      e.printStackTrace();
+      LOG.error("Error occurred during mapping", e);
       result.completeExceptionally(new ExportException(e.getMessage()));
     }
     result.complete(writer.toString());

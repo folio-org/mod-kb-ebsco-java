@@ -23,20 +23,24 @@ public class TitleExportModel {
   @CsvBindByPosition(position = 3)
   private final double cost;
 
-  @CsvBindByName(column = "Cost per use")
+  @CsvBindByName(column = "Cost_per_use")
   @CsvBindByPosition(position = 4)
   private final double costPerUse;
 
-  @CsvBindByName(column = "Percentage_of_usage")
+  @CsvBindByName(column = "Currency_selected")
   @CsvBindByPosition(position = 5)
+  private final String currency;
+
+  @CsvBindByName(column = "Percentage_of_usage")
+  @CsvBindByPosition(position = 6)
   private final double percent;
 
   @CsvBindByName(column = "Year_selection")
-  @CsvBindByPosition(position = 6)
+  @CsvBindByPosition(position = 7)
   private final String year;
 
   @CsvBindByName(column = "Platform")
-  @CsvBindByPosition(position = 7)
+  @CsvBindByPosition(position = 8)
   private final String platform;
 
 }
