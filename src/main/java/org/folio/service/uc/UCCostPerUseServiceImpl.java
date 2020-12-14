@@ -180,8 +180,15 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   @Override
   public CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(String packageId, String platform, String fiscalYear, Map<String, String> okapiHeaders) {
-    return fetchHoldings(packageId, platform, fiscalYear, CostPerUseSort.COST.name(), okapiHeaders)
-      .thenApply(resourceCostPerUseCollectionConverter::convert);
+    return fetchHoldings(packageId, platform, fiscalYear, CostPerUseSort.NAME.name(), okapiHeaders)
+      .thenApply(resourceCostPerUseCollectionConverter::convert)
+      .thenApply(collection -> {
+        var items = collection.getData().stream()
+          .sorted(sortingComparatorProvider.get(CostPerUseSort.NAME, Order.ASC))
+          .collect(Collectors.toList());
+        collection.withData(items);
+        return collection;
+      });
   }
 
   private CompletableFuture<PackageCostPerUseResult> composePackageCostPerUseResult(String packageId,

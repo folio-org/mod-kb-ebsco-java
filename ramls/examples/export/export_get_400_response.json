@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "'fiscalYear' parameter is incorrect. parameter value {20d9} is not valid: must match \"^\\d{4}$\""
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

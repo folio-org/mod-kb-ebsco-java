@@ -109,7 +109,7 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages/{packageId}/resources/costperuse/export",
-          "permissionsRequired": []
+          "permissionsRequired": ["kb-ebsco.package-resources.export.collection.get"]
         },
         {
           "methods": ["PUT"],
@@ -342,7 +342,8 @@
         {
           "methods": ["POST"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.collection.post"]},
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.collection.post"]
+        },
         {
           "methods": ["PATCH"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc",
@@ -528,6 +529,11 @@
       "permissionName": "kb-ebsco.package-resources.collection.get",
       "displayName": "get resources for a single package",
       "description": "get resources for a single package"
+    },
+    {
+      "permissionName": "kb-ebsco.package-resources.export.collection.get",
+      "displayName": "get exported resources for a single package",
+      "description": "get exported resources for a single package"
     },
     {
       "permissionName": "kb-ebsco.package-tags.put",
@@ -803,6 +809,7 @@
         "kb-ebsco.packages.collection.post",
         "kb-ebsco.packages.item.delete",
         "kb-ebsco.package-resources.collection.get",
+        "kb-ebsco.package-resources.export.collection.get",
         "kb-ebsco.package-tags.put",
         "kb-ebsco.titles.item.get",
         "kb-ebsco.packages.item.get",

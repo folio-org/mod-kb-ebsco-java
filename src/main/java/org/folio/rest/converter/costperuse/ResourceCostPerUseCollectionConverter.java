@@ -65,25 +65,12 @@ public class ResourceCostPerUseCollectionConverter
       .withType(ResourceCostPerUseCollectionItem.Type.RESOURCE_COST_PER_USE_ITEM)
       .withAttributes(new ResourceCostAnalysisAttributes()
         .withName(dbHoldingInfo.getPublicationTitle())
-        .withPublicationType(getPublicationTitle(dbHoldingInfo))
+        .withPublicationType(PublicationType.fromValue(dbHoldingInfo.getResourceType()))
         .withCost(ucCostAnalysis.getCurrent().getCost())
         .withUsage(ucCostAnalysis.getCurrent().getUsage())
         .withCostPerUse(ucCostAnalysis.getCurrent().getCostPerUse())
         .withPercent(costPercent)
       );
-  }
-
-  private PublicationType getPublicationTitle(DbHoldingInfo dbHoldingInfo) {
-    String resourceType = dbHoldingInfo.getResourceType();
-    PublicationType publicationType;
-    if (resourceType.equals("Audio Book")) {
-      publicationType = PublicationType.AUDIOBOOK;
-    } else if (resourceType.equals("Web Site")){
-      publicationType = PublicationType.WEBSITE;
-    } else {
-      publicationType = PublicationType.fromValue(dbHoldingInfo.getResourceType());
-    }
-    return publicationType;
   }
 
   private String getTitlePackageId(org.folio.repository.holdings.DbHoldingInfo dbHoldingInfo) {

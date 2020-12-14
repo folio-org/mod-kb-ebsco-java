@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CustomBeanToCSVMappingStrategy<T> extends ColumnPositionMappingStrategy<T> {
 
-
 /**
  * overrides default behavior of parent method because {@link com.opencsv.bean.ColumnPositionMappingStrategy}
  * assumes that there is no header and do not include it into the result file

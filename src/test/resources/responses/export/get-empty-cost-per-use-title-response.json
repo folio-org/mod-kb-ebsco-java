@@ -1,0 +1,5 @@
+{
+  "1.456": { "current": { "usage": 0 } },
+  "2.456": { "current": { "cost": 0, "usage": 0, "costPerUse": 0 } },
+  "3.456": { "current": { "cost": 0, "usage": 0, "costPerUse": 0 } }
+}

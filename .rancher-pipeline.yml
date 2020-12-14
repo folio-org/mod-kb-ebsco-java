@@ -9,7 +9,7 @@ stages:
       - publishImageConfig:
           dockerfilePath: ./Dockerfile
           buildContext: .
-          tag: docker.dev.folio.org/mod-kb-ebsco-java:spitfire-poc
+          tag: docker.dev.folio.org/mod-kb-ebsco-java:spitfire-latest
           pushRemote: true
           registry: docker.dev.folio.org
   - name: Deploy
@@ -19,9 +19,8 @@ stages:
           version: 0.1.32
           answers:
             image.repository: docker.dev.folio.org/mod-kb-ebsco-java
-            image.tag: spitfire-poc
-            postJob.tenantId: exportpoc
+            image.tag: spitfire-latest
           targetNamespace: spitfire
-          name: mod-kb-ebsco-java-poc
+          name: mod-kb-ebsco-java
 timeout: 60
 notification: {}

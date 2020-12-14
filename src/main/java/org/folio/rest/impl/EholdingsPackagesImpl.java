@@ -20,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
-import javax.validation.constraints.Pattern;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -89,7 +88,6 @@ import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
-import org.folio.service.uc.export.ExportService;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsPackagesImpl implements EholdingsPackages {
@@ -137,10 +135,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
-  @Autowired
-  private ExportService exporterService;
-  @Autowired
-  private ErrorHandler costPerUseErrorHandler;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -336,21 +330,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
         ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
       .executeWithResult(ResourceCollection.class);
-  }
-
-  @Validate
-  @Override
-  public void getEholdingsPackagesResourcesCostperuseExportByPackageId(String packageId, String platform,
-                                                                       @Pattern(regexp = "^\\d{4}$") String fiscalYear,
-                                                                       Map<String, String> okapiHeaders,
-                                                                       Handler<AsyncResult<Response>> asyncResultHandler,
-                                                                       Context vertxContext) {
-
-    exporterService.exportCSV(packageId, platform, fiscalYear, okapiHeaders)
-      .thenAccept(result ->
-      asyncResultHandler.handle(Future.succeededFuture(
-        GetEholdingsPackagesResourcesCostperuseExportByPackageIdResponse.respond200WithTextCsv(result))))
-      .exceptionally(costPerUseErrorHandler.handle(asyncResultHandler));
   }
 
   @Override

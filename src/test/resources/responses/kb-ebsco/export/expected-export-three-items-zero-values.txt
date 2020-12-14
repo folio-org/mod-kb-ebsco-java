@@ -1,0 +1,4 @@
+Title|Type|Usage|Cost|Cost per use|Percentage_of_usage|Year_selection|Platform
+A title|Book|0|0.0|0.0|0.0|2019|publisher
+B title|Book|0|0.0|0.0|0.0|2019|publisher
+C title|Book|0|0.0|0.0|0.0|2019|publisher
