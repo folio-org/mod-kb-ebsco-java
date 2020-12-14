@@ -25,4 +25,26 @@
     </createProcedure>
   </changeSet>
 
+  <changeSet id="MODKBEKBJ-537@@create-trigger-exist-for-table-function" author="psmahin">
+    <createProcedure>
+      CREATE OR REPLACE FUNCTION ${database.defaultSchemaName}.trigger_exist_for_table(trigger_name text, table_name text)
+        RETURNS text AS $$
+      DECLARE
+        rowCount int;
+      BEGIN
+        SELECT COUNT(*) INTO rowCount
+          FROM pg_trigger
+          WHERE tgname = trigger_name
+            AND tgrelid = ('${database.defaultSchemaName}.' || table_name)::regclass;
+
+        IF rowCount = 1 THEN
+          RETURN 'true';
+        ELSE
+          RETURN 'false';
+        END IF;
+      END;
+      $$ LANGUAGE 'plpgsql';
+    </createProcedure>
+  </changeSet>
+
 </databaseChangeLog>
