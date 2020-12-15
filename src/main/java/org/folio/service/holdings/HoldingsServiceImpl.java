@@ -355,7 +355,7 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
         logger.info(CURRENT_STATUS_MESSAGE, credentialsId, attributes.getStatus().getName());
-        if (processTimedOut(status)) {
+        if (!isInProgress(status) || processTimedOut(status)) {
           return holdingsStatusRepository.delete(credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, credentialsId, tenantId));
         }
