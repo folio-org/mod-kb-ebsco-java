@@ -161,7 +161,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   @Override
   public CompletableFuture<Boolean> canStartLoading(String credentialsId, String tenant) {
     return holdingsStatusRepository.findByCredentialsId(toUUID(credentialsId), tenant)
-      .thenApply(this::canStartLoading);
+      .thenApply(this::canChangeStatus);
   }
 
   @Override
@@ -308,16 +308,15 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private CompletableFuture<Boolean> canStartLoading(List<HoldingsLoadingStatus> statuses) {
-    return CompletableFuture.completedFuture(statuses.stream().allMatch(this::canStartLoading));
+    return CompletableFuture.completedFuture(statuses.stream().allMatch(this::canChangeStatus));
   }
 
-  private boolean canStartLoading(HoldingsLoadingStatus status) {
+  private boolean canChangeStatus(HoldingsLoadingStatus status) {
     return !isInProgress(status) || isHangedLoading(status);
   }
 
   private boolean isHangedLoading(HoldingsLoadingStatus status) {
-    String started = status.getData().getAttributes().getStarted();
-    OffsetDateTime startDate = OffsetDateTime.parse(started, POSTGRES_TIMESTAMP_FORMATTER);
+    OffsetDateTime startDate = getZonedDateTime(status.getData().getAttributes().getStarted());
     return isInProgress(status)
       && OffsetDateTime.now().minus(5, ChronoUnit.DAYS).isAfter(startDate);
   }
@@ -356,7 +355,7 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
         logger.info(CURRENT_STATUS_MESSAGE, credentialsId, attributes.getStatus().getName());
-        if (attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)) {
+        if (processTimedOut(status)) {
           return holdingsStatusRepository.delete(credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, credentialsId, tenantId));
         }
@@ -459,7 +458,8 @@ public class HoldingsServiceImpl implements HoldingsService {
       return true;
     }
     OffsetDateTime updated = getZonedDateTime(updatedString);
-    return OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
+    return isInProgress(status)
+      && OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
   }
 
   private OffsetDateTime getZonedDateTime(String stringToParse) {
