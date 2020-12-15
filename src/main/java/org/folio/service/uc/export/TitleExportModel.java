@@ -2,9 +2,9 @@ package org.folio.service.uc.export;
 
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 
-@SuperBuilder(toBuilder = true)
+@Builder
 public class TitleExportModel {
 
   @CsvBindByName(column = "Title")
