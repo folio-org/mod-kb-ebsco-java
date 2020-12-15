@@ -166,7 +166,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldStartLoadingWhenStatusInProgressAndStartedMoreThen5DaysBefore() {
+  public void shouldStartLoadingWhenStatusInProgressAndStartedMoreThen5DaysBefore(TestContext context)
+    throws IOException, URISyntaxException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     OffsetDateTime dateTime = OffsetDateTime.now().minus(6, ChronoUnit.DAYS);
     HoldingsLoadingStatus statusLoadingHoldings = getStatusLoadingHoldings(1000, 500, 10, 5);
@@ -174,9 +175,11 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     saveStatus(STUB_CREDENTIALS_ID,
       statusLoadingHoldings,
       PROCESS_ID, dateTime, vertx);
-    interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> {});
-    vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
+    runPostHoldingsWithMocks(context);
+
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    assertThat(holdingsList.size(), Matchers.notNullValue());
   }
 
 
