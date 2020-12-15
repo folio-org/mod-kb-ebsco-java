@@ -75,6 +75,14 @@ public class RMAPITemplate {
   }
 
   /**
+   * Register external errorHandler
+   */
+  public RMAPITemplate withErrorHandler(ErrorHandler errorHandler) {
+    this.errorHandler = errorHandler;
+    return this;
+  }
+
+  /**
    * Register error mapper for exceptionClass
    *
    * @param exceptionClass class of exception that this mapper will handle
