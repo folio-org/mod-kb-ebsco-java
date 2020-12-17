@@ -9,6 +9,16 @@ documentation:
   - title: mod-kb-ebsco-java
     content: Implements the eholdings interface using EBSCO KB as backend.
 
+traits:
+  metricType:
+    queryParameters:
+      metrictype:
+        displayName: Metric Type
+        description: Indicates that metric type should be included
+        type: boolean
+        required: false
+        default: false
+
 types:
   uCSettings: !include types/uc/uCSettings.json
   uCSettingsPostRequest: !include types/uc/uCSettingsPostRequest.json
@@ -22,6 +32,7 @@ types:
       pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
   get:
     description: Retrieve a Usage Consolidation settings.
+    is: [metricType]
     responses:
       200:
         description: OK
@@ -109,6 +120,7 @@ types:
   displayName: Usage Consolidation settings
   get:
     description: Retrieve a Usage Consolidation settings.
+    is: [metricType]
     responses:
       200:
         description: OK

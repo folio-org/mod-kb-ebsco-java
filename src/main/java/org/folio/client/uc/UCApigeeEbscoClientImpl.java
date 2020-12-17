@@ -36,6 +36,7 @@ import org.folio.client.uc.configuration.GetTitlePackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.configuration.UCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
+import org.folio.client.uc.model.UCMetricType;
 import org.folio.client.uc.model.UCPackageCostPerUse;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCTitlePackageId;
@@ -61,6 +62,7 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
   private static final String POST_TITLES_URI = "/uc/costperuse/titles";
   private static final String GET_TITLE_URI = "/uc/costperuse/title/%s/%s";
   private static final String GET_PACKAGE_URI = "/uc/costperuse/package/%s";
+  private static final String GET_METRIC_URI = "/uc/usageanalysis/analysismetrictype";
 
   private final String baseUrl;
   private final WebClient webClient;
@@ -119,6 +121,18 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
     return mapVertxFuture(promise.future())
       .thenApply(HttpResponse::body)
       .thenApply(this::toCostAnalysisMap);
+  }
+
+  @Override
+  public CompletableFuture<UCMetricType> getUsageMetricType(UCConfiguration configuration) {
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    constructGetRequest(GET_METRIC_URI, configuration)
+      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+      .as(BodyCodec.jsonObject())
+      .send(promise);
+    return mapVertxFuture(promise.future())
+      .thenApply(HttpResponse::body)
+      .thenApply(jsonObject -> jsonObject.mapTo(UCMetricType.class));
   }
 
   private Map<String, UCCostAnalysis> toCostAnalysisMap(JsonObject jsonObject) {

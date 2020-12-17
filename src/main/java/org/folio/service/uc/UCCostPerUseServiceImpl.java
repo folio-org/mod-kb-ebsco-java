@@ -337,7 +337,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
                                                                             MutableObject<PlatformType> platformTypeHolder,
                                                                             Map<String, String> okapiHeaders) {
     return authService.authenticate(okapiHeaders)
-      .thenCombine(settingsService.fetchByUser(okapiHeaders),
+      .thenCombine(settingsService.fetchByUser(false, okapiHeaders),
         toCommonUCConfiguration(platform, fiscalYear, platformTypeHolder)
       );
   }
@@ -347,7 +347,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
                                                                             RMAPITemplateContext context) {
     Map<String, String> okapiHeaders = context.getOkapiData().getOkapiHeaders();
     return authService.authenticate(okapiHeaders)
-      .thenCombine(settingsService.fetchByCredentialsId(context.getCredentialsId(), okapiHeaders),
+      .thenCombine(settingsService.fetchByCredentialsId(context.getCredentialsId(), false, okapiHeaders),
         toCommonUCConfiguration(platform, fiscalYear, platformTypeHolder)
       );
   }

@@ -35,6 +35,21 @@
       "$ref": "platformType.json",
       "example": "publisher",
       "default": "all"
+    },
+    "metricType": {
+      "type": "string",
+      "description": "Metric usage type",
+      "readonly": true,
+      "enum": [
+        "Total Item Requests",
+        "Unique Item Requests",
+        "Unknown"
+      ],
+      "javaEnumNames": [
+        "TOTAL",
+        "UNIQUE",
+        "UNKNOWN"
+      ]
     }
   },
   "required": [

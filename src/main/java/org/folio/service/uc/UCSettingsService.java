@@ -9,9 +9,10 @@ import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 
 public interface UCSettingsService {
 
-  CompletableFuture<UCSettings> fetchByUser(Map<String, String> okapiHeaders);
+  CompletableFuture<UCSettings> fetchByUser(boolean includeMetricType, Map<String, String> okapiHeaders);
 
-  CompletableFuture<UCSettings> fetchByCredentialsId(String credentialsId, Map<String, String> okapiHeaders);
+  CompletableFuture<UCSettings> fetchByCredentialsId(String credentialsId, boolean includeMetricType,
+                                                     Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> update(String credentialsId, UCSettingsPatchRequest patchRequest,
                                  Map<String, String> okapiHeaders);

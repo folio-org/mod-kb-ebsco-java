@@ -17,11 +17,13 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.NotFoundException;
 
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.configuration.UCConfiguration;
+import org.folio.client.uc.model.UCMetricType;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.repository.uc.DbUCSettings;
 import org.folio.repository.uc.UCSettingsRepository;
@@ -31,9 +33,11 @@ import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
+import org.folio.rmapi.result.UCSettingsResult;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.util.UserInfo;
 
+@AllArgsConstructor
 public class UCSettingsServiceImpl implements UCSettingsService {
 
   private static final String NOT_ENABLED_MESSAGE = "Usage Consolidation is not enabled for KB credentials with id [%s]";
@@ -42,31 +46,20 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private final UCSettingsRepository repository;
   private final UCAuthService authService;
   private final UCApigeeEbscoClient ebscoClient;
-  private final Converter<DbUCSettings, UCSettings> fromDbConverter;
+  private final Converter<UCSettingsResult, UCSettings> resultUCSettingsConverter;
   private final Converter<UCSettingsPostRequest, DbUCSettings> toDbConverter;
 
-  public UCSettingsServiceImpl(KbCredentialsService kbCredentialsService,
-                               UCSettingsRepository repository,
-                               UCAuthService authService, UCApigeeEbscoClient ebscoClient,
-                               Converter<DbUCSettings, UCSettings> fromConverter,
-                               Converter<UCSettingsPostRequest, DbUCSettings> toConverter) {
-    this.kbCredentialsService = kbCredentialsService;
-    this.repository = repository;
-    this.authService = authService;
-    this.ebscoClient = ebscoClient;
-    this.fromDbConverter = fromConverter;
-    this.toDbConverter = toConverter;
-  }
-
   @Override
-  public CompletableFuture<UCSettings> fetchByUser(Map<String, String> okapiHeaders) {
+  public CompletableFuture<UCSettings> fetchByUser(boolean includeMetricType, Map<String, String> okapiHeaders) {
     return kbCredentialsService.findByUser(okapiHeaders)
-      .thenCompose(kbCredentials -> fetchByCredentialsId(kbCredentials.getId(), okapiHeaders));
+      .thenCompose(kbCredentials -> fetchByCredentialsId(kbCredentials.getId(), includeMetricType, okapiHeaders));
   }
 
   @Override
-  public CompletableFuture<UCSettings> fetchByCredentialsId(String credentialsId, Map<String, String> okapiHeaders) {
-    return fetchDbUCSettings(credentialsId, okapiHeaders).thenApply(fromDbConverter::convert);
+  public CompletableFuture<UCSettings> fetchByCredentialsId(String credentialsId, boolean includeMetricType,
+                                                            Map<String, String> okapiHeaders) {
+    return fetchUCSettings(credentialsId, includeMetricType, okapiHeaders)
+      .thenApply(resultUCSettingsConverter::convert);
   }
 
   @Override
@@ -86,7 +79,8 @@ public class UCSettingsServiceImpl implements UCSettingsService {
       .thenCombine(completedFuture(toDbConverter.convert(request)),
         (userInfo, dbUcSettings) -> prepareSave(dbUcSettings, userInfo))
       .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
-      .thenApply(fromDbConverter::convert);
+      .thenApply(dbUCSettings -> new UCSettingsResult(dbUCSettings, null))
+      .thenApply(resultUCSettingsConverter::convert);
   }
 
   private CompletableFuture<DbUCSettings> save(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
@@ -118,14 +112,18 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   }
 
   private CompletableFuture<Void> validate(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
-    return authService.authenticate(okapiHeaders)
-      .thenApply(authToken -> createConfiguration(ucSettings, authToken))
+    return getUCConfiguration(ucSettings, okapiHeaders)
       .thenCompose(ebscoClient::verifyCredentials)
       .thenAccept(aBoolean -> {
         if (Boolean.FALSE.equals(aBoolean)) {
           throw new InputValidationException("Invalid UC Credentials", null);
         }
       });
+  }
+
+  private CompletableFuture<UCConfiguration> getUCConfiguration(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
+    return authService.authenticate(okapiHeaders)
+      .thenApply(authToken -> createConfiguration(ucSettings, authToken));
   }
 
   private UCConfiguration createConfiguration(DbUCSettings ucSettings, String authToken) {
@@ -172,5 +170,23 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private Function<Optional<DbUCSettings>, DbUCSettings> getUCSettingsOrFail(String credentialsId) {
     return dbUCSettings -> dbUCSettings
       .orElseThrow(() -> new NotFoundException(String.format(NOT_ENABLED_MESSAGE, credentialsId)));
+  }
+
+  private CompletableFuture<UCSettingsResult> fetchUCSettings(String credentialsId,
+                                                              boolean includeMetricType,
+                                                              Map<String, String> okapiHeaders) {
+    return fetchDbUCSettings(credentialsId, okapiHeaders)
+      .thenCompose(dbUCSettings ->
+        fetchMetricTypeIfNeeded(includeMetricType, okapiHeaders, dbUCSettings)
+          .thenApply(ucMetricType -> new UCSettingsResult(dbUCSettings, ucMetricType))
+      );
+  }
+
+  private CompletableFuture<UCMetricType> fetchMetricTypeIfNeeded(boolean includeMetricType,
+                                                                  Map<String, String> okapiHeaders,
+                                                                  DbUCSettings dbUCSettings) {
+    return includeMetricType
+      ? getUCConfiguration(dbUCSettings, okapiHeaders).thenCompose(ebscoClient::getUsageMetricType)
+      : CompletableFuture.completedFuture(null);
   }
 }
