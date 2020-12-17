@@ -3,6 +3,7 @@ package org.folio.spring.config;
 import static org.folio.rest.util.ExceptionMappers.error400BadRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error400ConstraintViolationMapper;
 import static org.folio.rest.util.ExceptionMappers.error400DatabaseMapper;
+import static org.folio.rest.util.ExceptionMappers.error400ExportMapper;
 import static org.folio.rest.util.ExceptionMappers.error400UCRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error401AuthorizationMapper;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
@@ -86,6 +87,7 @@ import org.folio.service.uc.UCAuthService;
 import org.folio.service.uc.UCSettingsService;
 import org.folio.service.uc.UCSettingsServiceImpl;
 import org.folio.service.uc.UcAuthenticationException;
+import org.folio.service.uc.export.ExportException;
 import org.folio.service.uc.sorting.UCSortingComparatorProvider;
 import org.folio.service.uc.sorting.UCSortingComparatorProviders;
 
@@ -259,6 +261,12 @@ public class ApplicationConfig {
     return errorHandler()
       .add(UcAuthenticationException.class, error401UcAuthenticationMapper())
       .add(UCFailedRequestException.class, error400UCRequestMapper());
+  }
+
+  @Bean
+  public ErrorHandler exportErrorHandler() {
+    return costPerUseErrorHandler()
+      .add(ExportException.class, error400ExportMapper());
   }
 
   @Bean

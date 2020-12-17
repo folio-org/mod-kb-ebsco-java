@@ -2,17 +2,16 @@ package org.folio.repository.packages;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.groupingBy;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.ListUtils.mapItems;
 import static org.folio.common.LogUtils.logDeleteQuery;
 import static org.folio.common.LogUtils.logInsertQuery;
 import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getPackagesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
+import static org.folio.repository.DbUtil.pgClient;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
@@ -23,14 +22,13 @@ import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS;
 import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS_BY_IDS;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
+import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -47,7 +45,6 @@ import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.rest.model.filter.TagFilter;
-import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
 
 @Component
@@ -74,7 +71,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logInsertQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameters, promise);
+    pgClient(tenantId, vertx).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
@@ -87,7 +84,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logDeleteQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameters, promise);
+    pgClient(tenantId, vertx).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
@@ -113,7 +110,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logSelectQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId, vertx).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }
@@ -127,11 +124,11 @@ public class PackageRepositoryImpl implements PackageRepository {
     int offset = (tagFilter.getPage() - 1) * tagFilter.getCount();
 
     Tuple parameters = Tuple.tuple();
-    tags.forEach(parameters::addString);
-    String likeExpression = tagFilter.getRecordIdPrefix() + "%";
     parameters
-      .addString(likeExpression)
-      .addUUID(credentialsId)
+      .addString(tagFilter.getRecordIdPrefix() + "%")
+      .addUUID(credentialsId);
+    tags.forEach(parameters::addString);
+    parameters
       .addInteger(offset)
       .addInteger(tagFilter.getCount());
 
@@ -141,7 +138,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logSelectQuery(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId, vertx).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }
@@ -151,34 +148,14 @@ public class PackageRepositoryImpl implements PackageRepository {
   }
 
   private List<DbPackage> mapPackages(RowSet<Row> resultSet) {
-    Map<PackageId, List<Row>> rowsById = RowSetUtils.streamOf(resultSet)
-      .collect(groupingBy(this::readPackageId));
-    return mapItems(rowsById.entrySet(), this::readPackage);
-  }
-
-  private PackageId readPackageId(Row row) {
-    return IdParser.parsePackageId(row.getString(ID_COLUMN));
-  }
-
-  private DbPackage readPackage(Map.Entry<PackageId, List<Row>> entry) {
-    PackageId packageId = entry.getKey();
-    List<Row> rows = entry.getValue();
-
-    Row firstRow = rows.get(0);
-    List<String> tags = rows.stream()
-      .map(row -> row.getString(TAG_COLUMN))
-      .collect(Collectors.toList());
-    return DbPackage.builder()
-      .id(packageId)
-      .credentialsId(firstRow.getUUID(CREDENTIALS_ID_COLUMN))
-      .contentType(firstRow.getString(CONTENT_TYPE_COLUMN))
-      .name(firstRow.getString(NAME_COLUMN))
-      .tags(tags)
-      .build();
-  }
-
-  private PostgresClient pgClient(String tenantId) {
-    return PostgresClient.getInstance(vertx, tenantId);
+    return RowSetUtils.mapItems(resultSet, entry -> DbPackage.builder()
+      .id(parsePackageId(entry.getString(ID_COLUMN)))
+      .credentialsId(entry.getUUID(CREDENTIALS_ID_COLUMN))
+      .contentType(entry.getString(CONTENT_TYPE_COLUMN))
+      .name(entry.getString(NAME_COLUMN))
+      .tags(asList(entry.getStringArray(TAG_COLUMN)))
+      .build()
+    );
   }
 
 }

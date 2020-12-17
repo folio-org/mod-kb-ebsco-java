@@ -31,6 +31,7 @@ import org.folio.holdingsiq.service.exception.UnAuthorizedException;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.uc.UcAuthenticationException;
+import org.folio.service.uc.export.ExportException;
 
 public final class ExceptionMappers {
 
@@ -124,6 +125,24 @@ public final class ExceptionMappers {
       Response.status(SC_BAD_REQUEST)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(createError(exception.getMessage(), exception.getErrorMessage()))
+        .build();
+  }
+
+  /**
+   * {@link ExportException} to {@link Response} error mapper
+   * <pre>
+   * Response.status = {@code 400}
+   * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
+   * Response.header.Content-Type = {@code application/vnd.api+json}
+   * </pre>
+   *
+   * @return mapper
+   */
+  public static Function<ExportException, Response> error400ExportMapper() {
+    return exception ->
+      Response.status(SC_BAD_REQUEST)
+        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .entity(createError(exception.getMessage(), exception.getMessage()))
         .build();
   }
 
