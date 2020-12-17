@@ -22,6 +22,7 @@ import org.folio.service.holdings.message.SnapshotFailedMessage;
 @ProxyGen
 @VertxGen
 public interface HoldingsService {
+
   @GenIgnore
   static HoldingsService createProxy(Vertx vertx, String address) {
     return new HoldingsServiceVertxEBProxy(vertx, address);
@@ -41,6 +42,16 @@ public interface HoldingsService {
 
   @GenIgnore
   default CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<String> ids, String credentialsId, String tenant) {
+    throw new UnsupportedOperationException();
+  }
+
+  @GenIgnore
+  default CompletableFuture<Boolean> canStartLoading(String tenant) {
+    throw new UnsupportedOperationException();
+  }
+
+  @GenIgnore
+  default CompletableFuture<Boolean> canStartLoading(String credentialsId, String tenant) {
     throw new UnsupportedOperationException();
   }
 

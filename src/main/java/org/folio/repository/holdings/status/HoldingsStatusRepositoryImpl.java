@@ -130,7 +130,10 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   }
 
   private HoldingsLoadingStatus mapItem(Row row) {
-    return Json.decodeValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
+    String statusJson = row.getValue(JSONB_COLUMN).toString();
+    HoldingsLoadingStatus holdingsLoadingStatus = Json.decodeValue(statusJson, HoldingsLoadingStatus.class);
+    holdingsLoadingStatus.getData().getAttributes().setCredentialsId(row.getUUID(CREDENTIALS_COLUMN).toString());
+    return holdingsLoadingStatus;
   }
 
   private CompletableFuture<HoldingsLoadingStatus> get(UUID credentialsId, String tenantId,
@@ -155,12 +158,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   }
 
   private HoldingsLoadingStatus mapStatus(RowSet<Row> resultSet) {
-    return mapFirstItem(resultSet, row -> {
-      String statusJson = row.getValue(JSONB_COLUMN).toString();
-      HoldingsLoadingStatus holdingsLoadingStatus = Json.decodeValue(statusJson, HoldingsLoadingStatus.class);
-      holdingsLoadingStatus.getData().getAttributes().setCredentialsId(row.getUUID(CREDENTIALS_COLUMN).toString());
-      return holdingsLoadingStatus;
-    });
+    return mapFirstItem(resultSet, this::mapItem);
   }
 
   private PostgresClient pgClient(String tenantId) {
