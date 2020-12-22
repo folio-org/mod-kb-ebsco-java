@@ -1,4 +1,4 @@
 "Title"|"Type"|"Usage"|"Cost"|"Cost_per_use"|"Currency_selected"|"Percentage_of_usage"|"Year_selection"|"Platform"
-"A | title"|"Book"|"0"|"0.0"|"0.0"|"USD"|"0.0"|"2019"|"publisher"
-"B title"|"Book"|"0"|"0.0"|"0.0"|"USD"|"0.0"|"2019"|"publisher"
-"C title"|"Book"|"0"|"0.0"|"0.0"|"USD"|"0.0"|"2019"|"publisher"
+"A | title"|"Book"|"0"|"0.00"|"0.00"|"USD"|"0"|"2019"|"publisher"
+"B title"|"Book"|"0"|"0.00"|"0.00"|"USD"|"0"|"2019"|"publisher"
+"C title"|"Book"|"0"|"0.00"|"0.00"|"USD"|"0"|"2019"|"publisher"

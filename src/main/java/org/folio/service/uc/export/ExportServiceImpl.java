@@ -17,7 +17,9 @@ import io.vertx.core.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.converter.costperuse.export.PackageTitlesCostPerUseCollectionToExportConverter;
+import org.folio.service.locale.LocaleSettingsService;
 import org.folio.service.uc.UCCostPerUseService;
 
 @Service
@@ -27,14 +29,18 @@ public class ExportServiceImpl implements ExportService {
   @Autowired
   private UCCostPerUseService costPerUseService;
   @Autowired
+  private LocaleSettingsService localeSettingsService;
+  @Autowired
   private PackageTitlesCostPerUseCollectionToExportConverter converter;
 
   public CompletableFuture<String> exportCSV(String packageId, String platform, String year,
                                              Map<String, String> okapiHeaders) {
     LOG.info("Perform export for package - " + packageId);
     return costPerUseService.getPackageResourcesCostPerUse(packageId, platform, year, okapiHeaders)
-        .thenApply(collection -> converter.convert(collection, platform, year))
-        .thenCompose(this::mapToCSV);
+      .thenCombine(localeSettingsService.retrieveSettings(new OkapiData(okapiHeaders)),
+        ((collection, localeSettings) -> converter.convert(collection, platform, year, localeSettings))
+      )
+      .thenCompose(this::mapToCSV);
   }
 
   private CompletableFuture<String> mapToCSV(List<TitleExportModel> entities) {

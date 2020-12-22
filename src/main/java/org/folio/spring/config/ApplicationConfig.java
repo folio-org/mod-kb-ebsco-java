@@ -55,6 +55,7 @@ import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
+import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
@@ -78,6 +79,8 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
+import org.folio.service.locale.LocaleSettingsService;
+import org.folio.service.locale.LocaleSettingsServiceImpl;
 import org.folio.service.uc.UcAuthenticationException;
 import org.folio.service.uc.export.ExportException;
 
@@ -306,4 +309,8 @@ public class ApplicationConfig {
     return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
   }
 
+  @Bean
+  public LocaleSettingsService localeSettingsService (){
+    return new LocaleSettingsServiceImpl(new ConfigurationClientProvider());
+  }
 }
