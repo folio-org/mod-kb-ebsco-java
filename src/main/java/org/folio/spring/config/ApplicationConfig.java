@@ -310,7 +310,7 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public LocaleSettingsService localeSettingsService (){
+  public LocaleSettingsService localeSettingsService() {
     return new LocaleSettingsServiceImpl(new ConfigurationClientProvider());
   }
 }

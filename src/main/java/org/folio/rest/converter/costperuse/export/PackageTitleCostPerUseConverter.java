@@ -30,17 +30,19 @@ public class PackageTitleCostPerUseConverter {
   }
 
   private String roundPercent(Double percent) {
+    String result;
     if (DOUBLE_ZERO.equals(percent) || percent == null) {
-      return INTEGER_ZERO.toString();
+      result = INTEGER_ZERO.toString();
     } else if (percent < 1){
-      return "< 1 %";
+      result = "< 1";
     } else {
-      return String.valueOf(Math.round(percent));
+      result = String.valueOf(Math.round(percent));
     }
+    return result + " %";
   }
 
   private String roundCost(Double cost, NumberFormat currencyFormatter) {
-    if (DOUBLE_ZERO.equals(cost) || cost == null) {
+    if (cost == null) {
       cost = DOUBLE_ZERO;
     }
     return currencyFormatter.format(cost).replace("\u00a0", " ").trim();

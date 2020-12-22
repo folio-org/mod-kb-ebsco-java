@@ -43,7 +43,7 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   private ConfigurationClientProvider configurationClientProvider ;
   private ConfigurationsClient mockConfigurationsClient;
   @Autowired
-  private LocaleSettingsService configurationService;
+  private LocaleSettingsService localeSettingsService;
 
   private OkapiData okapiParams;
 
@@ -67,7 +67,7 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
     String configFileName = "responses/configuration/locale-settings.json";
     mockSuccessfulConfigurationResponse(configFileName);
 
-    CompletableFuture<LocaleSettings> future = configurationService.retrieveSettings(okapiParams);
+    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
 
     future.thenCompose(result -> {
       context.assertEquals(result.getCurrency(), "EUR");
@@ -89,7 +89,7 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
     String configFileName = "responses/configuration/locale-settings-empty.json";
     mockSuccessfulConfigurationResponse(configFileName);
 
-    CompletableFuture<LocaleSettings> future = configurationService.retrieveSettings(okapiParams);
+    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
 
     future.thenCompose(result -> {
       context.assertEquals(result.getCurrency(), "USD");
@@ -108,7 +108,7 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   public void shouldCompleteExceptionallyWhenConfigurationFailed(TestContext context) {
     Async async = context.async();
     mockFailedConfigurationResponse(SC_BAD_REQUEST);
-    CompletableFuture<LocaleSettings> future = configurationService.retrieveSettings(okapiParams);
+    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
     future.thenCompose(result -> {
       async.complete();
       return null;

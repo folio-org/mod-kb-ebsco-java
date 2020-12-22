@@ -13,7 +13,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTimeZone;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
@@ -28,7 +27,6 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
   private ConfigurationClientProvider configurationClientProvider;
 
-  @Autowired
   public LocaleSettingsServiceImpl(ConfigurationClientProvider configurationClientProvider) {
     this.configurationClientProvider = configurationClientProvider;
   }

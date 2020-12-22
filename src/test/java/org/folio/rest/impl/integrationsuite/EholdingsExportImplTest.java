@@ -112,7 +112,6 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     saveHoldingFromFile("responses/kb-ebsco/export/holding-for-export-1.json",
                                        "responses/kb-ebsco/export/holding-for-export-2.json",
                                        "responses/kb-ebsco/export/holding-for-export-3.json");
-//    String configFileName = "responses/configuration/locale-settings.json";
     String configFileName = "responses/configuration/locale-settings-empty.json";
     mockSuccessfulConfigurationResponse(configFileName);
 

@@ -60,7 +60,7 @@ public class PackageTitleCostPerUseConverterTest {
       );
     setNumberFormat(Locale.US);
     TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
-    assertEquals("3", itemConverted.getPercent());
+    assertEquals("3 %", itemConverted.getPercent());
   }
 
   @Test
@@ -77,7 +77,7 @@ public class PackageTitleCostPerUseConverterTest {
       );
     setNumberFormat(Locale.US);
     TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
-    assertEquals("4", itemConverted.getPercent());
+    assertEquals("4 %", itemConverted.getPercent());
   }
 
   @Test

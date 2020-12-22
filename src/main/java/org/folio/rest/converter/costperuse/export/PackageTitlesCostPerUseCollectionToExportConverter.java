@@ -22,22 +22,21 @@ public class PackageTitlesCostPerUseCollectionToExportConverter {
   @Autowired
   private PackageTitleCostPerUseConverter resourceCostPerUseExportItemConverter;
 
-  private NumberFormat currencyFormatter;
-
   public List<TitleExportModel> convert(ResourceCostPerUseCollection resourceCostPerUseCollection, String platform, String year, LocaleSettings localeSettings) {
     var data = resourceCostPerUseCollection.getData();
     var currency = resourceCostPerUseCollection.getParameters().getCurrency();
-    setLocaleSettings(localeSettings);
-    return mapItems(data, item -> resourceCostPerUseExportItemConverter.convert(item, platform, year, currency, currencyFormatter));
+    NumberFormat numberFormat = getLocaleSettings(localeSettings);
+    return mapItems(data, item -> resourceCostPerUseExportItemConverter.convert(item, platform, year, currency, numberFormat));
   }
 
-  private void setLocaleSettings(LocaleSettings localeSettings) {
+  private NumberFormat getLocaleSettings(LocaleSettings localeSettings) {
     Locale userLocale = Locale.forLanguageTag(localeSettings.getLocale());
-    currencyFormatter = NumberFormat.getCurrencyInstance(userLocale);
+    NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(userLocale);
     currencyFormatter.setRoundingMode(RoundingMode.HALF_UP);
     currencyFormatter.setMaximumFractionDigits(2);
     DecimalFormatSymbols decimalFormatSymbols = ((DecimalFormat) currencyFormatter).getDecimalFormatSymbols();
     decimalFormatSymbols.setCurrencySymbol("");
     ((DecimalFormat) currencyFormatter).setDecimalFormatSymbols(decimalFormatSymbols);
+    return currencyFormatter;
   }
 }
