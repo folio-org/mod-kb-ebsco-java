@@ -37,7 +37,7 @@
     <rmb.version>31.1.5</rmb.version>
     <folio-di-support.version>1.1.0</folio-di-support.version>
     <folio-service-tools.version>1.6.0</folio-service-tools.version>
-    <folio-holdingsiq-client.version>1.10.2</folio-holdingsiq-client.version>
+    <folio-holdingsiq-client.version>1.10.3</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.0.0</folio-liquibase-util.version>
     <mod-configuration-client.version>4.0.3</mod-configuration-client.version>
 
@@ -627,7 +627,7 @@
     <repository>
       <id>folio-nexus</id>
       <name>FOLIO Maven Repository</name>
-      <url>https://repository.folio.org/repository/maven-folio</url>
+      <url>https://repository.folio.org/repository/maven-folio/</url>
     </repository>
   </repositories>
 
