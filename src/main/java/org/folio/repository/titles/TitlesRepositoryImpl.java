@@ -126,13 +126,12 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
-    int offset = (tagFilter.getPage() - 1) * tagFilter.getCount();
 
     Tuple parameters = Tuple.tuple();
     tags.forEach(parameters::addString);
     parameters
       .addUUID(credentialsId)
-      .addInteger(offset)
+      .addInteger(tagFilter.getOffset())
       .addInteger(tagFilter.getCount());
 
     final String query = prepareQuery(SELECT_TITLES_BY_RESOURCE_TAGS,

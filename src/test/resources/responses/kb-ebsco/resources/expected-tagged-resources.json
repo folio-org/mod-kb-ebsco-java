@@ -70,7 +70,8 @@
       },
       "tags": {
         "tagList": [
-          "tag one"
+          "tag one",
+          "tag 2"
         ]
       }
     },

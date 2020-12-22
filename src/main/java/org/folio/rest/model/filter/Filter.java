@@ -95,8 +95,8 @@ public class Filter {
     TagFilter.TagFilterBuilder builder = TagFilter.builder()
       .tags(filterTags)
       .recordType(recordType)
-      .count(count)
-      .page(page);
+      .offset((page - 1) * count)
+      .count(count);
 
     if (recordType == RecordType.PACKAGE) {
       builder.recordIdPrefix(createRecordIdPrefix(providerId));

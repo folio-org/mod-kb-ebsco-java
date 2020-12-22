@@ -121,7 +121,6 @@ public class PackageRepositoryImpl implements PackageRepository {
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
     }
-    int offset = (tagFilter.getPage() - 1) * tagFilter.getCount();
 
     Tuple parameters = Tuple.tuple();
     parameters
@@ -129,7 +128,7 @@ public class PackageRepositoryImpl implements PackageRepository {
       .addUUID(credentialsId);
     tags.forEach(parameters::addString);
     parameters
-      .addInteger(offset)
+      .addInteger(tagFilter.getOffset())
       .addInteger(tagFilter.getCount());
 
     final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS, getPackagesTableName(tenantId),
