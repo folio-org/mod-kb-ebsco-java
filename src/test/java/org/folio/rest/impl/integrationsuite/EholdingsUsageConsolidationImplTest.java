@@ -23,14 +23,13 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
+import static org.folio.util.UCSettingsTestUtil.METRIC_TYPE_PARAM_TRUE;
 import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_ENDPOINT;
 import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_USER_ENDPOINT;
 import static org.folio.util.UCSettingsTestUtil.getUCSettings;
 import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
 import static org.folio.util.UCSettingsTestUtil.stubSettings;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.UUID;
 
 import io.vertx.core.json.Json;
@@ -91,6 +90,23 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
     UCSettings expected = stubSettings.withId(settingsId);
     expected.getAttributes().withCustomerKey("*".repeat(40));
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturnUCSettingsOnGetByUserHeadersWithMetricType() {
+    UCSettings stubSettings = stubSettings(credentialsId);
+    String settingsId = saveUCSettings(stubSettings, vertx);
+    setUpUCCredentials(vertx);
+    mockMetricTypeWithExpectedTypeId();
+    mockAuthToken();
+
+    UCSettings actual = getWithOk(UC_SETTINGS_USER_ENDPOINT + METRIC_TYPE_PARAM_TRUE, JOHN_TOKEN_HEADER)
+      .as(UCSettings.class);
+
+    UCSettings expected = stubSettings.withId(settingsId);
+    expected.getAttributes().withCustomerKey("*".repeat(40));
+    expected.getAttributes().withMetricType(UCSettingsDataAttributes.MetricType.TOTAL);
     assertEquals(expected, actual);
   }
 
@@ -200,7 +216,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn201OnPostSettingsWithDefaultValues() throws IOException, URISyntaxException {
+  public void shouldReturn201OnPostSettingsWithDefaultValues() {
     mockAuthToken();
     mockSuccessfulVerification();
     setUpUCCredentials(vertx);
@@ -215,7 +231,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn201OnPostSettingsWhenDataIsValid() throws IOException, URISyntaxException {
+  public void shouldReturn201OnPostSettingsWhenDataIsValid() {
     mockAuthToken();
     mockSuccessfulVerification();
     setUpUCCredentials(vertx);
@@ -231,7 +247,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnPostSettingsWhenCurrencyIsInvalid() throws IOException, URISyntaxException {
+  public void shouldReturn422OnPostSettingsWhenCurrencyIsInvalid() {
     mockAuthToken();
     mockSuccessfulVerification();
     setUpUCCredentials(vertx);
@@ -248,7 +264,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenKbCredentialsNotExist() throws IOException, URISyntaxException {
+  public void shouldReturn422WhenKbCredentialsNotExist() {
     mockAuthToken();
     mockSuccessfulVerification();
     setUpUCCredentials(vertx);
@@ -265,7 +281,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenSaveTwoEntitiesWithSameCredentialsId() throws IOException, URISyntaxException {
+  public void shouldReturn422WhenSaveTwoEntitiesWithSameCredentialsId() {
     mockAuthToken();
     mockSuccessfulVerification();
     setUpUCCredentials(vertx);
@@ -283,7 +299,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenUCCredentialNotExist() throws IOException, URISyntaxException {
+  public void shouldReturn422WhenUCCredentialNotExist() {
     clearDataFromTable(vertx, UC_CREDENTIALS_TABLE_NAME);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
@@ -296,7 +312,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenNoHeaderProvided() throws IOException, URISyntaxException {
+  public void shouldReturn401WhenNoHeaderProvided() {
     mockAuthToken();
     mockSuccessfulVerification();
     setUpUCCredentials(vertx);
@@ -309,7 +325,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenAuthTokenExpired() throws IOException, URISyntaxException {
+  public void shouldReturn401WhenAuthTokenExpired() {
     mockAuthToken();
     mockFailed401Verification();
     setUpUCCredentials(vertx);
@@ -338,6 +354,12 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     stubFor(post(urlPathMatching("/oauth-proxy/token"))
       .willReturn(aResponse().withStatus(SC_OK).withBody(Json.encode(stubToken)))
     );
+  }
+
+  private void mockMetricTypeWithExpectedTypeId() {
+    stubFor(get(urlMatching("/uc/usageanalysis/analysismetrictype"))
+      .willReturn(aResponse().withStatus(SC_OK)
+        .withBody("{\"metricTypeId\":33,\"description\":\"R5 - Total_Item_Requests\"}")));
   }
 
   private UCSettingsPostRequest getPostRequest() {

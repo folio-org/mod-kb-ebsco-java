@@ -9,6 +9,7 @@ import org.folio.client.uc.configuration.GetTitlePackageUCConfiguration;
 import org.folio.client.uc.configuration.GetTitleUCConfiguration;
 import org.folio.client.uc.configuration.UCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
+import org.folio.client.uc.model.UCMetricType;
 import org.folio.client.uc.model.UCPackageCostPerUse;
 import org.folio.client.uc.model.UCTitleCostPerUse;
 import org.folio.client.uc.model.UCTitlePackageId;
@@ -24,4 +25,6 @@ public interface UCApigeeEbscoClient {
 
   CompletableFuture<Map<String, UCCostAnalysis>> getTitlePackageCostPerUse(List<UCTitlePackageId> ids,
                                                                            GetTitlePackageUCConfiguration configuration);
+
+  CompletableFuture<UCMetricType> getUsageMetricType(UCConfiguration configuration);
 }

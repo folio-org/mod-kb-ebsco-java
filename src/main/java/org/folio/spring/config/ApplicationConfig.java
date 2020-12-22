@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -38,7 +39,6 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
-import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.UCFailedRequestException;
 import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.config.ModConfiguration;
@@ -62,15 +62,10 @@ import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
-import org.folio.repository.uc.DbUCSettings;
-import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
-import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
-import org.folio.rest.jaxrs.model.UCSettings;
-import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -83,13 +78,8 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
-import org.folio.service.uc.UCAuthService;
-import org.folio.service.uc.UCSettingsService;
-import org.folio.service.uc.UCSettingsServiceImpl;
 import org.folio.service.uc.UcAuthenticationException;
 import org.folio.service.uc.export.ExportException;
-import org.folio.service.uc.sorting.UCSortingComparatorProvider;
-import org.folio.service.uc.sorting.UCSortingComparatorProviders;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -102,6 +92,7 @@ import org.folio.service.uc.sorting.UCSortingComparatorProviders;
   "org.folio.common",
   "org.folio.properties"
 })
+@Import(UCConfig.class)
 public class ApplicationConfig {
 
   @Bean
@@ -313,33 +304,6 @@ public class ApplicationConfig {
       @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength,
       @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
     return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
-  }
-
-  @Bean("securedUCSettingsService")
-  public UCSettingsService securedUCSettingsService(
-    @Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
-    @Qualifier("securedUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
-    @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
-    UCAuthService authService,
-    UCApigeeEbscoClient ebscoClient,
-    UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(kbCredentialsService, repository, authService, ebscoClient, fromConverter, toConverter);
-  }
-
-  @Bean("nonSecuredUCSettingsService")
-  public UCSettingsService nonSecuredUCSettingsService(
-    @Qualifier("nonSecuredCredentialsService") KbCredentialsService kbCredentialsService,
-    @Qualifier("nonSecuredUCSettingsConverter") Converter<DbUCSettings, UCSettings> fromConverter,
-    @Qualifier("postToUCSettingsConverter") Converter<UCSettingsPostRequest, DbUCSettings> toConverter,
-    UCAuthService authService,
-    UCApigeeEbscoClient ebscoClient,
-    UCSettingsRepository repository) {
-    return new UCSettingsServiceImpl(kbCredentialsService, repository, authService, ebscoClient, fromConverter, toConverter);
-  }
-
-  @Bean
-  public UCSortingComparatorProvider<ResourceCostPerUseCollectionItem> resourceUCSortingComparatorProvider() {
-    return UCSortingComparatorProviders.forResources();
   }
 
 }

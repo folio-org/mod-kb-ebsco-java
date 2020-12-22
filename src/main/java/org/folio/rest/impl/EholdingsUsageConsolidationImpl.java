@@ -42,18 +42,18 @@ public class EholdingsUsageConsolidationImpl implements EholdingsKbCredentialsId
   }
 
   @Override
-  public void getEholdingsUc(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-                             Context vertxContext) {
-    settingsService.fetchByUser(okapiHeaders)
+  public void getEholdingsUc(boolean metricType, Map<String, String> okapiHeaders,
+                             Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    settingsService.fetchByUser(metricType, okapiHeaders)
       .thenAccept(ucSettings -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsUcResponse.respond200WithApplicationVndApiJson(ucSettings))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
   @Override
-  public void getEholdingsKbCredentialsUcById(String credentialsId, Map<String, String> okapiHeaders,
+  public void getEholdingsKbCredentialsUcById(String credentialsId, boolean metricType, Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    settingsService.fetchByCredentialsId(credentialsId, okapiHeaders)
+    settingsService.fetchByCredentialsId(credentialsId, metricType, okapiHeaders)
       .thenAccept(ucSettings -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsUcByIdResponse.respond200WithApplicationVndApiJson(ucSettings))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
