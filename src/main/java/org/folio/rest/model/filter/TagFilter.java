@@ -14,6 +14,6 @@ public class TagFilter {
   List<String> tags;
   String recordIdPrefix;
   RecordType recordType;
-  int page;
+  int offset;
   int count;
 }

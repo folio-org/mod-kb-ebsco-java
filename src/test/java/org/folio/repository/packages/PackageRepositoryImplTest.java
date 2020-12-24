@@ -1,7 +1,7 @@
 package org.folio.repository.packages;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
 
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
@@ -32,11 +32,12 @@ public class PackageRepositoryImplTest {
     List<DbPackage> packages = repository.findByIds(Collections.emptyList(), null, null).join();
     assertThat(packages, empty());
   }
+
   @Test
   public void shouldReturnEmptyListWhenTagListIsEmpty() {
     TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
       .recordType(RecordType.PACKAGE)
-      .count(25).page(1).build();
+      .count(25).offset(0).build();
     List<DbPackage> packages = repository.findByTagFilter(filter, null, STUB_TENANT).join();
     assertThat(packages, empty());
   }
@@ -45,7 +46,7 @@ public class PackageRepositoryImplTest {
   public void shouldReturnEmptyListWhenTagListIsEmptyAndProviderIdIsPresent() {
     TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
       .recordIdPrefix(STUB_VENDOR_ID).recordType(RecordType.PACKAGE)
-      .count(25).page(1).build();
+      .count(25).offset(0).build();
     List<DbPackage> packages = repository.findByTagFilter(filter, null, null).join();
     assertThat(packages, empty());
   }

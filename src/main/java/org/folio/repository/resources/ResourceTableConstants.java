@@ -23,14 +23,15 @@ public class ResourceTableConstants {
 
   public static final String SELECT_RESOURCES_WITH_TAGS =
     "SELECT resources.id as id, resources.credentials_id as credentials_id, " +
-          "resources.name as name, tags.tag as tag " +
+          "resources.name as name, array_agg(tags.tag) as tag " +
       "FROM %s " +
       "INNER JOIN %s as tags ON " +
       "tags.record_id = resources.id " +
       "AND tags.record_type = 'resource' " +
-      "AND tags.tag IN (%s) " +
       "WHERE resources.id LIKE ? " +
       "AND " + CREDENTIALS_ID_COLUMN + "=? " +
+      "GROUP BY resources.id, resources.credentials_id " +
+      "HAVING array_agg(tags.tag) && array[%s]::varchar[] " +
       "ORDER BY resources.name " +
       "OFFSET ? " +
       "LIMIT ?";

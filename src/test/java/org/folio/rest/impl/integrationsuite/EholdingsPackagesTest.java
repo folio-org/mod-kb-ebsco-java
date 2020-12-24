@@ -1109,6 +1109,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     ResourcesTestUtil.saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
 
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RESOURCE, STUB_TAG_VALUE);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RESOURCE, STUB_TAG_VALUE_2);
 
     String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?filter[tags]=" + STUB_TAG_VALUE;
 
