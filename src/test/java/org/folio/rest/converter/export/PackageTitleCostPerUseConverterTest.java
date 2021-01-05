@@ -170,10 +170,64 @@ public class PackageTitleCostPerUseConverterTest {
     assertEquals("3 333,33", itemConverted.getCostPerUse());
   }
 
+  @Test
+  public void shouldFormatCostsToUKFormat() {
+    ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
+      .withAttributes(
+        new ResourceCostAnalysisAttributes()
+          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withPublicationType(PublicationType.PROCEEDINGS)
+          .withCost(10000.0)
+          .withCostPerUse(3333.33733333333333)
+          .withUsage(3)
+          .withPercent(3.3)
+      );
+    setNumberFormat(Locale.UK);
+    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    assertEquals("10,000.00", itemConverted.getCost());
+    assertEquals("3,333.34", itemConverted.getCostPerUse());
+  }
+
+  @Test
+  public void shouldFormatCostsToKoreanFormat() {
+    ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
+      .withAttributes(
+        new ResourceCostAnalysisAttributes()
+          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withPublicationType(PublicationType.PROCEEDINGS)
+          .withCost(10000.0)
+          .withCostPerUse(3333.33733333333333)
+          .withUsage(3)
+          .withPercent(3.3)
+      );
+    setNumberFormat(Locale.KOREA);
+    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    assertEquals("10,000", itemConverted.getCost());
+    assertEquals("3,333", itemConverted.getCostPerUse());
+  }
+
+  @Test
+  public void shouldFormatCostsToJordanFormat() {
+    ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
+      .withAttributes(
+        new ResourceCostAnalysisAttributes()
+          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withPublicationType(PublicationType.PROCEEDINGS)
+          .withCost(10000.0)
+          .withCostPerUse(3333.33733333333333)
+          .withUsage(3)
+          .withPercent(3.3)
+      );
+    Locale jordanLocale = new Locale("ar", "JO");
+    setNumberFormat(jordanLocale);
+    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    assertEquals("١٠٬٠٠٠٫٠٠٠", itemConverted.getCost());
+    assertEquals("٣٬٣٣٣٫٣٣٧", itemConverted.getCostPerUse());
+  }
+
   private void setNumberFormat(Locale userLocale) {
     currencyFormatter = NumberFormat.getCurrencyInstance(userLocale);
     currencyFormatter.setRoundingMode(RoundingMode.HALF_UP);
-    currencyFormatter.setMaximumFractionDigits(2);
     DecimalFormatSymbols decimalFormatSymbols = ((DecimalFormat) currencyFormatter).getDecimalFormatSymbols();
     decimalFormatSymbols.setCurrencySymbol("");
     ((DecimalFormat) currencyFormatter).setDecimalFormatSymbols(decimalFormatSymbols);

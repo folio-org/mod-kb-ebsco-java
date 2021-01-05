@@ -33,7 +33,6 @@ public class PackageTitlesCostPerUseCollectionToExportConverter {
     Locale userLocale = Locale.forLanguageTag(localeSettings.getLocale());
     NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(userLocale);
     currencyFormatter.setRoundingMode(RoundingMode.HALF_UP);
-    currencyFormatter.setMaximumFractionDigits(2);
     DecimalFormatSymbols decimalFormatSymbols = ((DecimalFormat) currencyFormatter).getDecimalFormatSymbols();
     decimalFormatSymbols.setCurrencySymbol("");
     ((DecimalFormat) currencyFormatter).setDecimalFormatSymbols(decimalFormatSymbols);
