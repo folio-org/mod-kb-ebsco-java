@@ -2,6 +2,7 @@ package org.folio.spring.config;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -39,10 +40,10 @@ public class UCConfig {
   public UCSettingsService nonSecuredUCSettingsService(KbCredentialsService nonSecuredCredentialsService,
                                                        UCAuthService authService, UCApigeeEbscoClient ebscoClient,
                                                        UCSettingsRepository repository,
-                                                       Converter<UCSettingsResult, UCSettings> nonSecuredUCSettingsConverter,
+                                                       Converter<UCSettingsResult, UCSettings> nonSecuredUCSettingsResultConverter,
                                                        Converter<UCSettingsPostRequest, DbUCSettings> toConverter) {
     return new UCSettingsServiceImpl(nonSecuredCredentialsService, repository, authService, ebscoClient,
-      nonSecuredUCSettingsConverter, toConverter);
+      nonSecuredUCSettingsResultConverter, toConverter);
   }
 
   @Bean
@@ -53,10 +54,11 @@ public class UCConfig {
   }
 
   @Bean
-  public Converter<UCSettingsResult, UCSettings> nonSecuredUCSettingsConverter(
-    Converter<DbUCSettings, UCSettings> securedUCSettingsConverter,
+  public Converter<UCSettingsResult, UCSettings> nonSecuredUCSettingsResultConverter(
+    @Qualifier("nonSecuredUCSettingsConverter")
+      Converter<DbUCSettings, UCSettings> nonSecuredUCSettingsConverter,
     Map<Integer, UCSettingsDataAttributes.MetricType> metricTypeMapper) {
-    return new UCSettingsConverter.UCSettingsResultConverter(securedUCSettingsConverter, metricTypeMapper);
+    return new UCSettingsConverter.UCSettingsResultConverter(nonSecuredUCSettingsConverter, metricTypeMapper);
   }
 
   @Bean
