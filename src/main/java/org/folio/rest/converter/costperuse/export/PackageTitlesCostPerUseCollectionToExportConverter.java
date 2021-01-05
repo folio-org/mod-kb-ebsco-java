@@ -25,11 +25,11 @@ public class PackageTitlesCostPerUseCollectionToExportConverter {
   public List<TitleExportModel> convert(ResourceCostPerUseCollection resourceCostPerUseCollection, String platform, String year, LocaleSettings localeSettings) {
     var data = resourceCostPerUseCollection.getData();
     var currency = resourceCostPerUseCollection.getParameters().getCurrency();
-    NumberFormat numberFormat = getLocaleSettings(localeSettings);
+    NumberFormat numberFormat = getNumberFormat(localeSettings);
     return mapItems(data, item -> resourceCostPerUseExportItemConverter.convert(item, platform, year, currency, numberFormat));
   }
 
-  private NumberFormat getLocaleSettings(LocaleSettings localeSettings) {
+  private NumberFormat getNumberFormat(LocaleSettings localeSettings) {
     Locale userLocale = Locale.forLanguageTag(localeSettings.getLocale());
     NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(userLocale);
     currencyFormatter.setRoundingMode(RoundingMode.HALF_UP);

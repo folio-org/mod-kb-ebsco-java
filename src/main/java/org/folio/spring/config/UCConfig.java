@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
+import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.repository.uc.DbUCSettings;
 import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.converter.uc.UCSettingsConverter;
@@ -17,6 +18,8 @@ import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rmapi.result.UCSettingsResult;
 import org.folio.service.kbcredentials.KbCredentialsService;
+import org.folio.service.locale.LocaleSettingsService;
+import org.folio.service.locale.LocaleSettingsServiceImpl;
 import org.folio.service.uc.UCAuthService;
 import org.folio.service.uc.UCSettingsService;
 import org.folio.service.uc.UCSettingsServiceImpl;
@@ -72,5 +75,10 @@ public class UCConfig {
   @Bean
   public UCSortingComparatorProvider<ResourceCostPerUseCollectionItem> resourceUCSortingComparatorProvider() {
     return UCSortingComparatorProviders.forResources();
+  }
+
+  @Bean
+  public LocaleSettingsService localeSettingsService() {
+    return new LocaleSettingsServiceImpl(new ConfigurationClientProvider());
   }
 }
