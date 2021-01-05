@@ -3,7 +3,9 @@ package org.folio.service.uc.export;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 @Builder
 public class TitleExportModel {
 
@@ -21,11 +23,11 @@ public class TitleExportModel {
 
   @CsvBindByName(column = "Cost")
   @CsvBindByPosition(position = 3)
-  private final double cost;
+  private final String cost;
 
   @CsvBindByName(column = "Cost_per_use")
   @CsvBindByPosition(position = 4)
-  private final double costPerUse;
+  private final String costPerUse;
 
   @CsvBindByName(column = "Currency_selected")
   @CsvBindByPosition(position = 5)
@@ -33,7 +35,7 @@ public class TitleExportModel {
 
   @CsvBindByName(column = "Percentage_of_usage")
   @CsvBindByPosition(position = 6)
-  private final double percent;
+  private final String percent;
 
   @CsvBindByName(column = "Year_selection")
   @CsvBindByPosition(position = 7)

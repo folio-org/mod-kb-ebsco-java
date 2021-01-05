@@ -305,5 +305,4 @@ public class ApplicationConfig {
       @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
     return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
   }
-
 }
