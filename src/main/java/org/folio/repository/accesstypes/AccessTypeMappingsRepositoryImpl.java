@@ -4,9 +4,9 @@ import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.LogUtils.logDeleteQuery;
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
+import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
@@ -70,7 +70,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
       getAccessTypesTableName(tenantId));
     Tuple params = createParams(asList(recordId, recordType.getValue(), credentialsId));
 
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -98,7 +98,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     String query = prepareQuery(SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
       createPlaceholders(accessTypeIds.size()));
 
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
@@ -116,7 +116,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
       mapping.getAccessTypeId()
     ));
 
-    logInsertQuery(LOG, query, params);
+    logInsertQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
@@ -130,7 +130,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
       getAccessTypesTableName(tenantId));
     Tuple params = createParams(recordId, recordType.getValue(), credentialsId);
 
-    logDeleteQuery(LOG, query, params);
+    logDeleteQueryInfoLevel(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -144,7 +144,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
       getAccessTypesTableName(tenantId));
     Tuple params = createParams(asList(recordIdPrefix + "%", recordType.getValue(), credentialsId));
 
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);

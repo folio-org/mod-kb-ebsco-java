@@ -2,8 +2,8 @@ package org.folio.repository.holdings.transaction;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
+import static org.folio.common.LogUtils.logSelectQueryDebugLevel;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.repository.DbUtil.getTransactionIdTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
@@ -45,7 +45,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
       getTransactionIdTableName(tenantId),
       createPlaceholders(params.size())
     );
-    logInsertQuery(LOG, query, params);
+    logInsertQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
@@ -55,7 +55,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
   public CompletableFuture<String> getLastTransactionId(UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId);
     final String query = prepareQuery(GET_LAST_TRANSACTION_ID_BY_CREDENTIALS, getTransactionIdTableName(tenantId));
-    logSelectQuery(LOG, query, params);
+    logSelectQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapId);
