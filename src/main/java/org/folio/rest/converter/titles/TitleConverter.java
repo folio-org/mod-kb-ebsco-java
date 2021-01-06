@@ -12,7 +12,6 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +38,7 @@ import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
@@ -125,17 +125,15 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   }
 
   private List<ResourceCollectionItem> extractResourceCollectionItems(org.folio.holdingsiq.model.Title rmapiTitle) {
-    return Objects.requireNonNull(resourcesConverter.convert(new ResourceResult(rmapiTitle, null, null, false)))
-      .stream()
-      .map(Resource::getData)
-      .collect(Collectors.toList());
+    ResourceResult resourceResult = new ResourceResult(rmapiTitle, null, null, false);
+    return mapItems(resourcesConverter.convert(resourceResult), Resource::getData);
   }
 
   private List<RelationshipData> convertResourcesRelationship(List<CustomerResources> customerResources) {
-    return mapItems(customerResources,
-      resourceData -> new RelationshipData()
-        .withId(resourceData.getVendorId() + "-" + resourceData.getPackageId() + "-" + resourceData.getTitleId())
-        .withType(RESOURCES_TYPE));
+    return mapItems(customerResources, resourceData -> new RelationshipData()
+      .withId(IdParser.getResourceId(resourceData))
+      .withType(RESOURCES_TYPE)
+    );
   }
 
   private static class PackageNameCustomComparator implements Comparator<CustomerResources> {
