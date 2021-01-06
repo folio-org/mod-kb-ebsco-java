@@ -365,7 +365,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       STUB_TOKEN_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-with-tags-response.json");
 
-    JSONAssert.assertEquals(expected, actual, false);
+    JSONAssert.assertEquals(expected, actual, true);
   }
 
   @Test

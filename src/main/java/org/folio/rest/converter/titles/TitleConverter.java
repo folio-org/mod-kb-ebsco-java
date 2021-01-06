@@ -3,6 +3,8 @@ package org.folio.rest.converter.titles;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.comparingInt;
 import static java.util.Comparator.nullsLast;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.collections4.IterableUtils.matchesAny;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
@@ -10,7 +12,6 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,11 +32,13 @@ import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Resource;
+import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Resources;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
+import org.folio.rest.util.IdParser;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
@@ -83,41 +86,54 @@ public class TitleConverter implements Converter<TitleResult, Title> {
       .withIncluded(null)
       .withJsonapi(RestConstants.JSONAPI);
 
-    boolean include = titleResult.isIncludeResource();
+    title.getData().getAttributes()
+      .setHasSelectedResources(matchesAny(rmapiTitle.getCustomerResourcesList(), CustomerResources::getIsSelected));
+
+    includeResourcesIfNeeded(title, titleResult);
+    return title;
+  }
+
+  private void includeResourcesIfNeeded(Title title, TitleResult titleResult) {
+    org.folio.holdingsiq.model.Title rmapiTitle = titleResult.getTitle();
     List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
-    if (include && Objects.nonNull(customerResourcesList)) {
+    if (titleResult.isIncludeResource() && nonNull(customerResourcesList)) {
       customerResourcesList.sort(PACKAGE_NAME_CUSTOM_COMPARATOR);
-      title.withIncluded(resourcesConverter.convert(new ResourceResult(rmapiTitle, null, null, false))
-        .stream()
-        .map(Resource::getData)
-        .collect(Collectors.toList())).getData()
+      List<ResourceCollectionItem> resourceCollectionItems = extractResourceCollectionItems(rmapiTitle);
+      title.withIncluded(resourceCollectionItems).getData()
         .withRelationships(new Relationships()
           .withResources(new Resources()
             .withData(convertResourcesRelationship(customerResourcesList))
             .withMeta(new MetaDataIncluded().withIncluded(true))
           )
         );
-      if (!Objects.isNull(titleResult.getResourceTagList())) {
-        title.getIncluded()
-          .forEach(resourceCollectionItem -> {
 
-            List<DbTag> tags = titleResult.getResourceTagList()
-              .stream().filter(tag ->
-                resourceCollectionItem.getId().equals(tag.getRecordId()))
-              .collect(Collectors.toList());
 
-            resourceCollectionItem.getAttributes().withTags(tagsConverter.convert(tags));
-          });
+      includeTagsIfNeeded(title, titleResult);
+    }
+  }
+
+  private void includeTagsIfNeeded(Title title, TitleResult titleResult) {
+    if (nonNull(titleResult.getResourceTagList())) {
+      for (ResourceCollectionItem resourceCollectionItem : title.getIncluded()) {
+        List<DbTag> tags = titleResult.getResourceTagList().stream()
+          .filter(tag -> resourceCollectionItem.getId().equals(tag.getRecordId()))
+          .collect(Collectors.toList());
+
+        resourceCollectionItem.getAttributes().withTags(tagsConverter.convert(tags));
       }
     }
-    return title;
+  }
+
+  private List<ResourceCollectionItem> extractResourceCollectionItems(org.folio.holdingsiq.model.Title rmapiTitle) {
+    ResourceResult resourceResult = new ResourceResult(rmapiTitle, null, null, false);
+    return mapItems(resourcesConverter.convert(resourceResult), Resource::getData);
   }
 
   private List<RelationshipData> convertResourcesRelationship(List<CustomerResources> customerResources) {
-    return mapItems(customerResources,
-      resourceData -> new RelationshipData()
-        .withId(resourceData.getVendorId() + "-" + resourceData.getPackageId() + "-" + resourceData.getTitleId())
-        .withType(RESOURCES_TYPE));
+    return mapItems(customerResources, resourceData -> new RelationshipData()
+      .withId(IdParser.getResourceId(resourceData))
+      .withType(RESOURCES_TYPE)
+    );
   }
 
   private static class PackageNameCustomComparator implements Comparator<CustomerResources> {

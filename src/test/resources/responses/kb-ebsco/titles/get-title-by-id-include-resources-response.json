@@ -6,6 +6,7 @@
       "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
       "publisherName": "Chelsea House Publishers",
       "isTitleCustom": false,
+      "hasSelectedResources": true,
       "subjects": [
         {
           "subject": "LITERARY CRITICISM / American / General",
@@ -102,6 +103,7 @@
         },
         "isPackageCustom": false,
         "isSelected": true,
+        "titleHasSelectedResources": true,
         "isTokenNeeded": false,
         "locationId": 3464602,
         "managedEmbargoPeriod": {
@@ -192,6 +194,7 @@
         },
         "isPackageCustom": false,
         "isSelected": true,
+        "titleHasSelectedResources": true,
         "isTokenNeeded": false,
         "locationId": 3464602,
         "managedEmbargoPeriod": {
@@ -282,6 +285,7 @@
         },
         "isPackageCustom": false,
         "isSelected": true,
+        "titleHasSelectedResources": true,
         "isTokenNeeded": false,
         "locationId": 3464602,
         "managedEmbargoPeriod": {
@@ -372,6 +376,7 @@
         },
         "isPackageCustom": false,
         "isSelected": true,
+        "titleHasSelectedResources": true,
         "isTokenNeeded": false,
         "locationId": 3464602,
         "managedEmbargoPeriod": {

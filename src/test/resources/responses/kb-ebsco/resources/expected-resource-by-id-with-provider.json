@@ -79,8 +79,9 @@
     },
     "relationships": {
       "provider": {
-        "meta": {
-          "included": false
+        "data": {
+          "type": "providers",
+          "id": "19"
         }
       },
       "title": {
@@ -95,7 +96,29 @@
       }
     }
   },
-  "included": [],
+  "included": [
+    {
+      "id": "19",
+      "type": "providers",
+      "attributes": {
+        "name": "ABC-CLIO",
+        "packagesTotal": 34,
+        "packagesSelected": 1,
+        "supportsCustomPackages": false,
+        "proxy": {
+          "id": "Proxy-ID-123",
+          "inherited": true
+        }
+      },
+      "relationships": {
+        "packages": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
   "jsonapi": {
     "version": "1.0"
   }

@@ -95,6 +95,11 @@
       "description": "Defines if this item is selected. Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
       "example": false
     },
+    "titleHasSelectedResources": {
+      "type": "boolean",
+      "description": "Indicates if the title that contains this resource has selected resources",
+      "example": true
+    },
     "isTokenNeeded": {
       "type": "boolean",
       "readonly": true,
