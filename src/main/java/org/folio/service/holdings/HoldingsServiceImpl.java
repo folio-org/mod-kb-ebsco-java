@@ -59,6 +59,7 @@ import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.repository.holdings.transaction.TransactionIdRepository;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
+import org.folio.rest.jaxrs.model.LoadStatusInformation;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.service.holdings.exception.ProcessInProgressException;
@@ -154,6 +155,18 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
+  public CompletableFuture<Boolean> canStartLoading(String tenant) {
+    return holdingsStatusRepository.findAll(tenant)
+      .thenCompose(this::canStartLoading);
+  }
+
+  @Override
+  public CompletableFuture<Boolean> canStartLoading(String credentialsId, String tenant) {
+    return holdingsStatusRepository.findByCredentialsId(toUUID(credentialsId), tenant)
+      .thenApply(this::canChangeStatus);
+  }
+
+  @Override
   public void saveHolding(HoldingsMessage holdings) {
     final String tenantId = holdings.getTenantId();
     final UUID credentialsId = toUUID(holdings.getCredentialsId());
@@ -163,7 +176,7 @@ public class HoldingsServiceImpl implements HoldingsService {
       )
       .thenCompose(status -> {
           LoadStatusAttributes attributes = status.getData().getAttributes();
-          if (hasLoadedLastPage(attributes)) {
+          if (hasLoadedLastPage(status)) {
             return holdingsRepository
               .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()), credentialsId, tenantId)
               .thenCompose(o -> holdingsStatusRepository
@@ -190,7 +203,7 @@ public class HoldingsServiceImpl implements HoldingsService {
       )
       .thenCompose(status -> {
           LoadStatusAttributes attributes = status.getData().getAttributes();
-          if (hasLoadedLastPage(attributes)) {
+          if (hasLoadedLastPage(status)) {
             return holdingsStatusRepository
               .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
               .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
@@ -302,6 +315,32 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(o -> holdingsRepository.deleteAll(holdingsToDelete, credentialsId, tenantId));
   }
 
+  private CompletableFuture<Boolean> canStartLoading(List<HoldingsLoadingStatus> statuses) {
+    return CompletableFuture.completedFuture(statuses.stream().allMatch(this::canChangeStatus));
+  }
+
+  private boolean canChangeStatus(HoldingsLoadingStatus status) {
+    return !isInProgress(status) || isHangedLoading(status);
+  }
+
+  private boolean isHangedLoading(HoldingsLoadingStatus status) {
+    OffsetDateTime startDate = getZonedDateTime(status.getData().getAttributes().getStarted());
+    return isInProgress(status)
+      && OffsetDateTime.now().minus(5, ChronoUnit.DAYS).isAfter(startDate);
+  }
+
+  private boolean isInProgress(HoldingsLoadingStatus status) {
+    LoadStatusInformation statusInfo = status.getData().getAttributes().getStatus();
+    return statusInfo.getName() == LoadStatusNameEnum.IN_PROGRESS;
+  }
+
+  private boolean isTransactionIsAlreadyLoaded(SnapshotCreatedMessage message, String previousTransactionId) {
+    final String transactionId = message.getTransactionId();
+    return transactionId != null && transactionId.equals(previousTransactionId);
+  }
+
+  private boolean hasLoadedLastPage(HoldingsLoadingStatus status) {
+    LoadStatusAttributes attributes = status.getData().getAttributes();
   private boolean isTransactionIsAlreadyLoaded(SnapshotCreatedMessage message, String previousTransactionId) {
     final String transactionId = message.getTransactionId();
     return transactionId != null && transactionId.equals(previousTransactionId);
@@ -310,8 +349,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   private boolean hasLoadedLastPage(LoadStatusAttributes attributes) {
     final Integer importedPages = attributes.getImportedPages();
     final Integer totalPages = attributes.getTotalPages();
-    return attributes.getStatus().getName() == LoadStatusNameEnum.IN_PROGRESS &&
-      importedPages.equals(totalPages);
+    return isInProgress(status) && importedPages.equals(totalPages);
   }
 
   private CompletableFuture<Void> resetRetries(UUID credentialsId, String tenantId, int retryCount) {
@@ -331,7 +369,7 @@ public class HoldingsServiceImpl implements HoldingsService {
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
         logger.info(CURRENT_STATUS_MESSAGE, credentialsId, attributes.getStatus().getName());
-        if (attributes.getStatus().getName() != LoadStatusNameEnum.IN_PROGRESS || processTimedOut(status)) {
+        if (!isInProgress(status) || processTimedOut(status)) {
           return holdingsStatusRepository.delete(credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, credentialsId, tenantId));
         }
@@ -434,7 +472,8 @@ public class HoldingsServiceImpl implements HoldingsService {
       return true;
     }
     OffsetDateTime updated = getZonedDateTime(updatedString);
-    return OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
+    return isInProgress(status)
+      && OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
   }
 
   private OffsetDateTime getZonedDateTime(String stringToParse) {

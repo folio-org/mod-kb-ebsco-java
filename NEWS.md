@@ -1,3 +1,11 @@
+## v3.6.5 2020-12-22
+* MODKBEKBJ-528 Fix hanged holding loading
+* Upgrade to folio-holdingsiq-client v1.10.3
+
+## v3.6.4 2020-12-14
+* MODKBEKBJ-522 Fix filtering packages by tags
+* MODKBEKBJ-537 Fix migration scripts
+
 ## v3.6.3 2020-11-30
 * MODKBEKBJ-532 Fix filtering resources in packages by access types
 
