@@ -341,12 +341,6 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   private boolean hasLoadedLastPage(HoldingsLoadingStatus status) {
     LoadStatusAttributes attributes = status.getData().getAttributes();
-  private boolean isTransactionIsAlreadyLoaded(SnapshotCreatedMessage message, String previousTransactionId) {
-    final String transactionId = message.getTransactionId();
-    return transactionId != null && transactionId.equals(previousTransactionId);
-  }
-
-  private boolean hasLoadedLastPage(LoadStatusAttributes attributes) {
     final Integer importedPages = attributes.getImportedPages();
     final Integer totalPages = attributes.getTotalPages();
     return isInProgress(status) && importedPages.equals(totalPages);
