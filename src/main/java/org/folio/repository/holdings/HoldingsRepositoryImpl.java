@@ -43,7 +43,6 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.LogUtils;
 import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.persist.SQLConnection;
@@ -75,7 +74,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
     final String query = prepareQuery(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId));
     final Tuple params = Tuple.of(credentialsId, timestamp);
-    LogUtils.logDeleteQueryInfoLevel(LOG, query, params);
+    logDeleteQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
@@ -118,7 +117,6 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     final String parameters = getHoldingsPkKeys(credentialsId, mapItems(holdings, IdParser::getResourceId));
     final String query = prepareQuery(DELETE_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), parameters);
     logDeleteQueryDebugLevel(LOG, query);
-    logDeleteQueryInfoLevel(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
