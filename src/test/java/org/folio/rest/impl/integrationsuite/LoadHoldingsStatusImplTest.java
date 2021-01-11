@@ -190,7 +190,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void shouldReturn404WhenNoKbCredentialsFound() {
     final String url = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, UUID.randomUUID().toString());
     final JsonapiError error = getWithStatus(url, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("not found"));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("not exist"));
   }
 
   @Test
