@@ -99,7 +99,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
     JsonapiError error = getWithStatus(EHOLDINGS_PROXY_TYPES_URL, SC_NOT_FOUND, JANE_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "User credentials not found: userId = " + JANE_ID);
+    assertErrorContainsTitle(error, "KB Credentials do not exist or user with userId = " + JANE_ID + " is not assigned to any available knowledgebase.");
   }
 
   @Test
