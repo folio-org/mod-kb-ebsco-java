@@ -1,0 +1,74 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="MODKBEKBJ-556@@create-get-single-credentials-id-function" author="psmagin">
+    <createProcedure>
+      CREATE OR REPLACE FUNCTION ${database.defaultSchemaName}.get_single_credentials_id()
+        RETURNS uuid AS $$
+      DECLARE
+        rowCount int;
+      BEGIN
+        rowCount = (SELECT count(*) FROM ${database.defaultSchemaName}.kb_credentials);
+
+        IF rowCount = 1 THEN
+          RETURN (SELECT id FROM ${database.defaultSchemaName}.kb_credentials);
+        ELSE
+          RAISE EXCEPTION 'Single credentials record expected but % found', rowCount;
+        END IF;
+      END;
+      $$ LANGUAGE 'plpgsql';
+    </createProcedure>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-556@@save-status-not-started-for-dummy-credentials" author="psmagin">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">
+        SELECT count(*) FROM ${database.defaultSchemaName}.holdings_status WHERE credentials_id = (SELECT ${database.defaultSchemaName}.get_single_credentials_id());
+      </sqlCheck>
+    </preConditions>
+    <sql>
+      INSERT INTO ${database.defaultSchemaName}.holdings_status(id, jsonb, lock, process_id, credentials_id)
+	    VALUES ('9e12026a-6e7c-46e0-bc60-4ef6fc9b19e2',
+	    		'{
+	    			"data": {
+	    				"type": "status",
+	    				"attributes": {
+	    					"errors": [],
+	    					"status": {
+	    						"name": "Not Started"
+	    					}
+	    				}
+	    			},
+	    			"jsonapi": {
+	    				"version": "1.0"
+	    			}
+	    		}'
+	    		, 'true',
+	    		'ab6e433b-dcaa-404a-a89c-d4c1cfaef658',
+	    		(SELECT ${database.defaultSchemaName}.get_single_credentials_id())
+      );
+    </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-556@@save-retry-status-for-dummy-credentials" author="psmagin">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">
+        SELECT count(*) FROM ${database.defaultSchemaName}.retry_status WHERE credentials_id = (SELECT ${database.defaultSchemaName}.get_single_credentials_id());
+      </sqlCheck>
+    </preConditions>
+    <sql>
+      INSERT INTO ${database.defaultSchemaName}.retry_status(id, attempts_left, credentials_id)
+      VALUES ('9e12026a-6e7c-46e0-bc60-4ef6fc9b19e2', 5, (SELECT ${database.defaultSchemaName}.get_single_credentials_id()));
+    </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-556@@drop-get-single-credentials-id-function" author="psmagin">
+    <sql>
+      DROP FUNCTION IF EXISTS ${database.defaultSchemaName}.get_single_credentials_id();
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
