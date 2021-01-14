@@ -18,43 +18,71 @@ public final class LogUtils {
   }
 
   public static void logCountQuery(Logger logger, String query, Tuple params) {
-    logQuery(logger, COUNT_LOG_MESSAGE, query, params);
+    logInfoLevel(logger, COUNT_LOG_MESSAGE, query, params);
   }
 
-  public static void logUpdateQuery(Logger logger, String query) {
-    logUpdateQuery(logger, query, Tuple.tuple());
+  public static void logUpdateQueryInfoLevel(Logger logger, String query) {
+    logUpdateQueryInfoLevel(logger, query, Tuple.tuple());
   }
 
-  public static void logUpdateQuery(Logger logger, String query, Tuple params) {
-    logQuery(logger, UPDATE_LOG_MESSAGE, query, params);
+  public static void logUpdateQueryInfoLevel(Logger logger, String query, Tuple params) {
+    logInfoLevel(logger, UPDATE_LOG_MESSAGE, query, params);
   }
 
-  public static void logInsertQuery(Logger logger, String query) {
-    logInsertQuery(logger, query, Tuple.tuple());
+  public static void logUpdateQueryDebugLevel(Logger logger, String query, Tuple params) {
+    logDebugLevel(logger, UPDATE_LOG_MESSAGE, query, params);
   }
 
-  public static void logInsertQuery(Logger logger, String query, Tuple params) {
-    logQuery(logger, INSERT_LOG_MESSAGE, query, params);
+  public static void logInsertQueryInfoLevel(Logger logger, String query) {
+    logInsertQueryInfoLevel(logger, query, Tuple.tuple());
   }
 
-  public static void logDeleteQuery(Logger logger, String query) {
-    logDeleteQuery(logger, query, Tuple.tuple());
+  public static void logInsertQueryInfoLevel(Logger logger, String query, Tuple params) {
+    logInfoLevel(logger, INSERT_LOG_MESSAGE, query, params);
   }
 
-  public static void logDeleteQuery(Logger logger, String query, Tuple params) {
-    logQuery(logger, DELETE_LOG_MESSAGE, query, params);
+  public static void logInsertQueryDebugLevel(Logger logger, String query, Tuple params) {
+    logDebugLevel(logger, INSERT_LOG_MESSAGE, query, params);
   }
 
-  public static void logSelectQuery(Logger logger, String query) {
-    logSelectQuery(logger, query, Tuple.tuple());
+  public static void logDeleteQueryInfoLevel(Logger logger, String query) {
+    logDeleteQueryInfoLevel(logger, query, Tuple.tuple());
   }
 
-  public static void logSelectQuery(Logger logger, String query, Tuple params) {
-    logQuery(logger, SELECT_LOG_MESSAGE, query, params);
+  public static void logDeleteQueryInfoLevel(Logger logger, String query, Tuple params) {
+    logInfoLevel(logger, DELETE_LOG_MESSAGE, query, params);
   }
 
-  public static void logQuery(Logger logger, String logMessage, String query, Tuple params) {
+  public static void logDeleteQueryDebugLevel(Logger logger, String query) {
+    logDeleteQueryDebugLevel(logger, query, Tuple.tuple());
+  }
+
+  public static void logDeleteQueryDebugLevel(Logger logger, String query, Tuple params) {
+    logDebugLevel(logger, DELETE_LOG_MESSAGE, query, params);
+  }
+
+  public static void logSelectQueryInfoLevel(Logger logger, String query) {
+    logSelectQueryInfoLevel(logger, query, Tuple.tuple());
+  }
+
+  public static void logSelectQueryDebugLevel(Logger logger, String query) {
+    logSelectQueryDebugLevel(logger, query, Tuple.tuple());
+  }
+
+  public static void logSelectQueryInfoLevel(Logger logger, String query, Tuple params) {
+    logInfoLevel(logger, SELECT_LOG_MESSAGE, query, params);
+  }
+
+  public static void logSelectQueryDebugLevel(Logger logger, String query, Tuple params) {
+    logDebugLevel(logger, SELECT_LOG_MESSAGE, query, params);
+  }
+
+  public static void logInfoLevel(Logger logger, String logMessage, String query, Tuple params) {
     logger.info(logMessage, query, tupleToString(params));
+  }
+
+  public static void logDebugLevel(Logger logger, String logMessage, String query, Tuple params) {
+    logger.debug(logMessage, query, tupleToString(params));
   }
 
   private static String tupleToString(Tuple params) {

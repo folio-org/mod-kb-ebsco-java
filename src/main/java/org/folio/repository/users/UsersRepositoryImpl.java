@@ -1,8 +1,8 @@
 package org.folio.repository.users;
 
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
-import static org.folio.common.LogUtils.logUpdateQuery;
+import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logUpdateQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getUsersTableName;
 import static org.folio.repository.DbUtil.pgClient;
@@ -50,7 +50,7 @@ public class UsersRepositoryImpl implements UsersRepository {
     String query = prepareQuery(SELECT_BY_ID_QUERY, getUsersTableName(tenant));
     Tuple params = createParams(id);
 
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).select(query, params, promise);
 
@@ -70,7 +70,7 @@ public class UsersRepositoryImpl implements UsersRepository {
       user.getPatronGroup()
     );
 
-    logInsertQuery(LOG, query, params);
+    logInsertQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
@@ -90,7 +90,7 @@ public class UsersRepositoryImpl implements UsersRepository {
       user.getId()
     );
 
-    logUpdateQuery(LOG, query, params);
+    logUpdateQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
