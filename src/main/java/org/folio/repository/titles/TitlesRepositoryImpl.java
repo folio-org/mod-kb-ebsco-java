@@ -5,9 +5,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.LogUtils.logDeleteQuery;
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
+import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.getResourcesTableName;
@@ -76,7 +76,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     final String query = prepareQuery(INSERT_OR_UPDATE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    logInsertQuery(LOG, query, parameters);
+    logInsertQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -90,7 +90,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     final String query = prepareQuery(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
 
-    logDeleteQuery(LOG, query, params);
+    logDeleteQueryInfoLevel(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -112,7 +112,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     final String query = prepareQuery(COUNT_TITLES_BY_RESOURCE_TAGS,
       getResourcesTableName(tenantId), getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    logSelectQuery(LOG, query, parameters);
+    logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -138,7 +138,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId),
       createPlaceholders(tags.size()));
 
-    logSelectQuery(LOG, query, parameters);
+    logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
