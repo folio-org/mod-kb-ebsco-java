@@ -1,8 +1,9 @@
 {
   "usage": {
-    "platforms": {
-    }
+    "platforms": {}
   },
   "analysis": {
+    "current": {},
+    "previous": {}
   }
 }

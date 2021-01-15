@@ -22,6 +22,7 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.HoldingsCostAnalysisAttributes;
+import org.folio.rest.jaxrs.model.PlatformUsage;
 import org.folio.rest.jaxrs.model.SpecificPlatformUsage;
 import org.folio.rest.jaxrs.model.TitleCostAnalysis;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
@@ -53,16 +54,22 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
 
     var usage = new Usage().withTotals(new UsageTotals());
     var analysis = new TitleCostAnalysis();
-    Integer totalUsage;
+    Integer totalUsage = NumberUtils.INTEGER_ZERO;
 
     switch (source.getPlatformType()) {
       case PUBLISHER:
         setPublisherUsage(specificPlatformUsages, usage);
-        totalUsage = usage.getTotals().getPublisher().getTotal();
+        PlatformUsage publisherPlatformUsage = usage.getTotals().getPublisher();
+        if (publisherPlatformUsage!= null) {
+          totalUsage = publisherPlatformUsage.getTotal();
+        }
         break;
       case NON_PUBLISHER:
         setNonPublisherUsage(specificPlatformUsages, usage);
-        totalUsage = usage.getTotals().getNonPublisher().getTotal();
+        PlatformUsage nonPublisherPlatformUsage = usage.getTotals().getNonPublisher();
+        if (nonPublisherPlatformUsage!= null) {
+          totalUsage = nonPublisherPlatformUsage.getTotal();
+        }
         break;
       default:
         setPublisherUsage(specificPlatformUsages, usage);
