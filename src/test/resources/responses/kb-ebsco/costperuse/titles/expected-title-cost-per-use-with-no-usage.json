@@ -1,0 +1,41 @@
+{
+  "titleId": "1111111111",
+  "type": "titleCostPerUse",
+  "attributes": {
+    "usage": {
+      "platforms": [],
+      "totals": {}
+    },
+    "analysis": {
+      "holdingsSummary": [
+        {
+          "packageId": "19-222222",
+          "resourceId": "19-222222-1111111111",
+          "packageName": "test-custom-title-132a648d",
+          "coverageStatement": "Test Coverage Statement",
+          "coverages": [
+            {
+              "beginCoverage": "2001-01-01",
+              "endCoverage": "2004-02-01"
+            },
+            {
+              "beginCoverage": "2004-03-01",
+              "endCoverage": "2004-03-04"
+            }
+          ],
+          "embargoPeriod": {
+            "embargoUnit": "Months",
+            "embargoValue": 5
+          },
+          "cost": 6810.2688,
+          "usage": 0,
+          "costPerUse": "Infinity"
+        }
+      ]
+    },
+    "parameters": {
+      "startMonth": "apr",
+      "currency": "USD"
+    }
+  }
+}

@@ -191,6 +191,31 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertEquals(expected, actual);
   }
 
+
+  @Test
+  public void shouldReturnEmptyTitleCostPerUseWhenNoCostPerUseDataAvailable() {
+    int titleId = 1111111111;
+    int packageId = 222222;
+    String year = "2019";
+    String platform = "publisher";
+    String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json";
+
+    mockRmApiGetTitle(titleId, stubRmapiResponseFile);
+    String stubApigeeGetTitleResponseFile = "responses/uc/titles/get-empty-title-cost-per-use-response.json";
+    String stubApigeeGetTitlePackageResponseFile =
+      "responses/uc/title-packages/get-title-packages-cost-per-use-response.json";
+    mockSuccessfulTitleCostPerUse(titleId, packageId, stubApigeeGetTitleResponseFile);
+    mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
+
+    String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/titles/expected-title-cost-per-use-with-no-usage.json";
+    TitleCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), TitleCostPerUse.class);
+
+    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_TOKEN_HEADER)
+      .as(TitleCostPerUse.class);
+
+    assertEquals(expected, actual);
+  }
+
   @Test
   public void shouldReturnEmptyTitleCostPerUseWhenNoSelectedResources() {
     int titleId = 1111111111;
