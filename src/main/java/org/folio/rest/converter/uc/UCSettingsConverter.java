@@ -21,6 +21,8 @@ import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
+import org.folio.rest.jaxrs.model.UCSettingsKey;
+import org.folio.rest.jaxrs.model.UCSettingsKeyDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rmapi.result.UCSettingsResult;
 
@@ -101,6 +103,21 @@ public final class UCSettingsConverter {
         ucSettings.getAttributes().setMetricType(metricType);
       }
       return ucSettings;
+    }
+  }
+
+  @Component
+  public static class UCSettingsKeyConverter implements Converter<DbUCSettings, UCSettingsKey> {
+
+    @Override
+    public UCSettingsKey convert(DbUCSettings source) {
+      return new UCSettingsKey()
+        .withId(fromUUID(source.getId()))
+        .withType(UCSettingsKey.Type.UC_SETTINGS_KEY)
+        .withAttributes(new UCSettingsKeyDataAttributes()
+          .withCredentialsId(fromUUID(source.getKbCredentialsId()))
+          .withCustomerKey(source.getCustomerKey())
+        );
     }
   }
 }

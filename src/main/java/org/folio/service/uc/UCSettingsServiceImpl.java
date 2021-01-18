@@ -19,7 +19,7 @@ import javax.ws.rs.NotFoundException;
 
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.ConversionService;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.configuration.UCConfiguration;
@@ -31,6 +31,7 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
+import org.folio.rest.jaxrs.model.UCSettingsKey;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rmapi.result.UCSettingsResult;
@@ -46,8 +47,7 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   private final UCSettingsRepository repository;
   private final UCAuthService authService;
   private final UCApigeeEbscoClient ebscoClient;
-  private final Converter<UCSettingsResult, UCSettings> resultUCSettingsConverter;
-  private final Converter<UCSettingsPostRequest, DbUCSettings> toDbConverter;
+  private final ConversionService conversionService;
 
   @Override
   public CompletableFuture<UCSettings> fetchByUser(boolean includeMetricType, Map<String, String> okapiHeaders) {
@@ -59,7 +59,13 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   public CompletableFuture<UCSettings> fetchByCredentialsId(String credentialsId, boolean includeMetricType,
                                                             Map<String, String> okapiHeaders) {
     return fetchUCSettings(credentialsId, includeMetricType, okapiHeaders)
-      .thenApply(resultUCSettingsConverter::convert);
+      .thenApply(this::convertResult);
+  }
+
+  @Override
+  public CompletableFuture<UCSettingsKey> fetchKeyByCredentialsId(String credentialsId, Map<String, String> okapiHeaders) {
+    return fetchDbUCSettings(credentialsId, okapiHeaders)
+      .thenApply(this::convertToKey);
   }
 
   @Override
@@ -76,11 +82,11 @@ public class UCSettingsServiceImpl implements UCSettingsService {
   public CompletableFuture<UCSettings> save(String id, UCSettingsPostRequest request, Map<String, String> okapiHeaders) {
     updateRequest(request, id);
     return fetchUserInfo(okapiHeaders)
-      .thenCombine(completedFuture(toDbConverter.convert(request)),
+      .thenCombine(completedFuture(convertToDb(request)),
         (userInfo, dbUcSettings) -> prepareSave(dbUcSettings, userInfo))
       .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
       .thenApply(dbUCSettings -> new UCSettingsResult(dbUCSettings, null))
-      .thenApply(resultUCSettingsConverter::convert);
+      .thenApply(this::convertResult);
   }
 
   private CompletableFuture<DbUCSettings> save(DbUCSettings ucSettings, Map<String, String> okapiHeaders) {
@@ -188,5 +194,17 @@ public class UCSettingsServiceImpl implements UCSettingsService {
     return includeMetricType
       ? getUCConfiguration(dbUCSettings, okapiHeaders).thenCompose(ebscoClient::getUsageMetricType)
       : CompletableFuture.completedFuture(null);
+  }
+
+  private UCSettingsKey convertToKey(DbUCSettings dbUCSettings) {
+    return conversionService.convert(dbUCSettings, UCSettingsKey.class);
+  }
+
+  private DbUCSettings convertToDb(UCSettingsPostRequest request) {
+    return conversionService.convert(request, DbUCSettings.class);
+  }
+
+  private UCSettings convertResult(UCSettingsResult ucSettingsResult) {
+    return conversionService.convert(ucSettingsResult, UCSettings.class);
   }
 }

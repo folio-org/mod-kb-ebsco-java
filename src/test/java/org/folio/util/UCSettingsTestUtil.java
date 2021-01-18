@@ -41,6 +41,7 @@ import org.folio.rest.persist.PostgresClient;
 public class UCSettingsTestUtil {
 
   public static final String UC_SETTINGS_ENDPOINT = "eholdings/kb-credentials/%s/uc";
+  public static final String UC_SETTINGS_KEY_ENDPOINT = UC_SETTINGS_ENDPOINT + "/key";
   public static final String UC_SETTINGS_USER_ENDPOINT = "eholdings/uc";
   public static final String METRIC_TYPE_PARAM_TRUE = "?metrictype=true";
 
