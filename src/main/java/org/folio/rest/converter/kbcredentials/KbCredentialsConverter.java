@@ -1,5 +1,7 @@
 package org.folio.rest.converter.kbcredentials;
 
+import static java.util.Objects.requireNonNull;
+
 import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
 import static org.folio.db.RowSetUtils.toUUID;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
+import org.folio.rest.jaxrs.model.KbCredentialsKey;
+import org.folio.rest.jaxrs.model.KbCredentialsKeyDataAttributes;
 import org.folio.rest.jaxrs.model.Meta;
 
 public class KbCredentialsConverter {
@@ -30,7 +34,7 @@ public class KbCredentialsConverter {
 
     @Override
     public KbCredentials convert(@NotNull DbKbCredentials source) {
-      return hideApiKey(super.convert(source));
+      return hideApiKey(requireNonNull(super.convert(source)));
     }
 
     private KbCredentials hideApiKey(KbCredentials source) {
@@ -90,6 +94,20 @@ public class KbCredentialsConverter {
         .customerId(attributes.getCustomerId())
         .url(attributes.getUrl())
         .build();
+    }
+  }
+
+  @Component
+  public static class KbCredentialsKeyConverter implements Converter<DbKbCredentials, KbCredentialsKey> {
+
+    @Override
+    public KbCredentialsKey convert(@NotNull DbKbCredentials source) {
+      return new KbCredentialsKey()
+        .withId(fromUUID(source.getId()))
+        .withType(KbCredentialsKey.Type.KB_CREDENTIALS_KEY)
+        .withAttributes(new KbCredentialsKeyDataAttributes()
+          .withApiKey(source.getApiKey())
+        );
     }
   }
 }

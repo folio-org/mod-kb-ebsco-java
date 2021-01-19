@@ -22,6 +22,11 @@
           "permissionsRequired": ["kb-ebsco.kb-credentials.item.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/key",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.get", "kb-ebsco.kb-credentials.item.patch"]
+        },
+        {
           "methods": ["PATCH"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
           "permissionsRequired": ["kb-ebsco.kb-credentials.item.patch"]

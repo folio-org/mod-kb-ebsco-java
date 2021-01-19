@@ -66,6 +66,8 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.KbCredentialsKey;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -275,11 +277,9 @@ public class ApplicationConfig {
 
   @Bean("securedCredentialsService")
   public KbCredentialsService securedCredentialsService(
-    @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter,
     @Qualifier("securedUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
-    @Qualifier("securedCredentialsCollection")
-      Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
-    return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
+    ConversionService securedKbCredentialsConversionService) {
+    return new KbCredentialsServiceImpl(userKbCredentialsService, securedKbCredentialsConversionService);
   }
 
   @Bean
@@ -292,11 +292,9 @@ public class ApplicationConfig {
 
   @Bean("nonSecuredCredentialsService")
   public KbCredentialsService nonSecuredCredentialsService(
-    @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter,
     @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
-    @Qualifier("nonSecuredCredentialsCollection")
-      Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
-    return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
+    ConversionService nonSecuredKbCredentialsConversionService) {
+    return new KbCredentialsServiceImpl(userKbCredentialsService, nonSecuredKbCredentialsConversionService);
   }
 
   @Bean
@@ -305,4 +303,41 @@ public class ApplicationConfig {
       @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
     return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
   }
+
+  @Bean
+  public ConversionService securedKbCredentialsConversionService(Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter,
+                                                                 Converter<DbKbCredentials, org.folio.holdingsiq.model.Configuration> configurationConverter,
+                                                                 Converter<DbKbCredentials, KbCredentialsKey> keyConverter,
+                                                                 Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter,
+                                                                 @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
+                                                                 @Qualifier("securedCredentialsCollection")
+                                                                     Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    DefaultConversionService conversionService = new DefaultConversionService();
+    conversionService.addConverter(credentialsToDBConverter);
+    conversionService.addConverter(configurationConverter);
+    conversionService.addConverter(keyConverter);
+    conversionService.addConverter(pathRequestConverter);
+    conversionService.addConverter(credentialsFromDBConverter);
+    conversionService.addConverter(credentialsCollectionConverter);
+    return conversionService;
+  }
+
+  @Bean
+  public ConversionService nonSecuredKbCredentialsConversionService(Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter,
+                                                                 Converter<DbKbCredentials, org.folio.holdingsiq.model.Configuration> configurationConverter,
+                                                                 Converter<DbKbCredentials, KbCredentialsKey> keyConverter,
+                                                                 Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter,
+                                                                 @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
+                                                                 @Qualifier("nonSecuredCredentialsCollection")
+                                                                   Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    DefaultConversionService conversionService = new DefaultConversionService();
+    conversionService.addConverter(credentialsToDBConverter);
+    conversionService.addConverter(configurationConverter);
+    conversionService.addConverter(keyConverter);
+    conversionService.addConverter(pathRequestConverter);
+    conversionService.addConverter(credentialsFromDBConverter);
+    conversionService.addConverter(credentialsCollectionConverter);
+    return conversionService;
+  }
+
 }

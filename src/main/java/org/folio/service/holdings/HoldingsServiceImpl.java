@@ -12,6 +12,7 @@ import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getLo
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getLoadStatusFailed;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusCompleted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
+import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusPopulatingStagingArea;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.util.FutureUtils.failedFuture;
@@ -93,6 +94,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   private static final String FAILED_RETRY_LOADING_HOLDINGS_MESSAGE = "Failed to retry loading holdings";
   private static final String FAILED_SAVE_HOLDINGS_MESSAGE = "Failed to save holdings";
   private static final String FAILED_UPDATE_STATUS_TO_FAILED_MESSAGE = "Failed to update status to failed";
+  private static final String FAILED_SAVE_STATUS_MESSAGE = "Failed to save status";
   private static final String LOADING_STATUS_IN_PROGRESS_MESSAGE = "Loading status is already In Progress";
   private static final String SAVING_HOLDINGS_MESSAGE = "Saving holdings to database.";
   private static final String SKIPPING_LOADING_SNAPSHOT_MESSAGE = "Skipping loading snapshot, "
@@ -139,7 +141,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     final String credentialsId = context.getCredentialsId();
     Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
       tryChangingStatusToInProgress(getStatusPopulatingStagingArea(), toUUID(credentialsId), tenantId)
-        .thenCompose(o -> resetRetries(toUUID(credentialsId), tenantId, snapshotRetryCount - 1))
+        .thenCompose(o -> resetRetries(snapshotRetryCount - 1, toUUID(credentialsId), tenantId))
         .thenAccept(o -> {
           ConfigurationMessage configuration = new ConfigurationMessage(context.getConfiguration(), credentialsId, tenantId);
           loadServiceFacade.createSnapshot(configuration);
@@ -164,6 +166,13 @@ public class HoldingsServiceImpl implements HoldingsService {
   public CompletableFuture<Boolean> canStartLoading(String credentialsId, String tenant) {
     return holdingsStatusRepository.findByCredentialsId(toUUID(credentialsId), tenant)
       .thenApply(this::canChangeStatus);
+  }
+
+  @Override
+  public CompletableFuture<Void> setUpCredentials(String credentialsId, String tenant) {
+    UUID credentialsUuid = toUUID(credentialsId);
+    return setStatusToNotStarted(credentialsUuid, tenant)
+      .thenCompose(v -> resetRetries(0, credentialsUuid, tenant));
   }
 
   @Override
@@ -226,7 +235,7 @@ public class HoldingsServiceImpl implements HoldingsService {
         if (!isTransactionIsAlreadyLoaded(message, previousTransactionId)) {
           holdingsStatusRepository.update(getStatusLoadingHoldings(
             message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
-            .thenCompose(o -> resetRetries(credentialsId, tenantId, loadHoldingsRetryCount - 1))
+            .thenCompose(o -> resetRetries(loadHoldingsRetryCount - 1, credentialsId, tenantId))
             .thenAccept(o -> loadServiceFacade.loadHoldings(getLoadHoldingsMessage(message, previousTransactionId)))
             .exceptionally(e -> {
               logger.error(FAILED_CREATE_SNAPSHOT_MESSAGE, e);
@@ -346,14 +355,18 @@ public class HoldingsServiceImpl implements HoldingsService {
     return isInProgress(status) && importedPages.equals(totalPages);
   }
 
-  private CompletableFuture<Void> resetRetries(UUID credentialsId, String tenantId, int retryCount) {
+  private CompletableFuture<Void> resetRetries(int retryCount, UUID credentialsId, String tenantId) {
     return retryStatusRepository
       .findByCredentialsId(credentialsId, tenantId)
       .thenCompose(status -> {
-        if (status.getTimerId() != null) {
-          vertx.cancelTimer(status.getTimerId());
+        if (status == null) {
+          return retryStatusRepository.save(new RetryStatus(retryCount, null), credentialsId, tenantId);
+        } else {
+          if (status.getTimerId() != null) {
+            vertx.cancelTimer(status.getTimerId());
+          }
+          return retryStatusRepository.update(new RetryStatus(retryCount, null), credentialsId, tenantId);
         }
-        return retryStatusRepository.update(new RetryStatus(retryCount, null), credentialsId, tenantId);
       });
   }
 
@@ -393,6 +406,14 @@ public class HoldingsServiceImpl implements HoldingsService {
       credentialsId, tenantId)
       .exceptionally(e -> {
         logger.error(FAILED_UPDATE_STATUS_TO_FAILED_MESSAGE, e);
+        return null;
+      });
+  }
+
+  private CompletableFuture<Void> setStatusToNotStarted(UUID credentialsId, String tenantId) {
+    return holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
+      .exceptionally(e -> {
+        logger.error(FAILED_SAVE_STATUS_MESSAGE, e);
         return null;
       });
   }
