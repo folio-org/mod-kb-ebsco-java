@@ -25,6 +25,7 @@ import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
 import static org.folio.util.UCSettingsTestUtil.METRIC_TYPE_PARAM_TRUE;
 import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_ENDPOINT;
+import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_KEY_ENDPOINT;
 import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_USER_ENDPOINT;
 import static org.folio.util.UCSettingsTestUtil.getUCSettings;
 import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
@@ -50,6 +51,7 @@ import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
+import org.folio.rest.jaxrs.model.UCSettingsKey;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequestData;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequestDataAttributes;
@@ -91,6 +93,18 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     UCSettings expected = stubSettings.withId(settingsId);
     expected.getAttributes().withCustomerKey("*".repeat(40));
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void shouldReturnUCSettingsKeyOnGet() {
+    UCSettings stubSettings = stubSettings(credentialsId);
+    String settingsId = saveUCSettings(stubSettings, vertx);
+
+    String resourcePath = String.format(UC_SETTINGS_KEY_ENDPOINT, credentialsId);
+    UCSettingsKey actual = getWithOk(resourcePath, JOHN_TOKEN_HEADER).as(UCSettingsKey.class);
+
+    assertEquals(settingsId, actual.getId());
+    assertEquals(stubSettings.getAttributes().getCustomerKey(), actual.getAttributes().getCustomerKey());
   }
 
   @Test

@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Usage Consolidation Settings Customer Key object schema",
+  "description": "Usage Consolidation Settings Customer Key object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.UCSettingsKey",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "The UUID of entry",
+      "$ref": "../../raml-util/schemas/uuid.schema",
+      "examples": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": ["ucSettingsKey"],
+      "example": "ucSettingsKey"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Usage Consolidation settings customer key attributes",
+      "$ref": "uCSettingsKeyDataAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

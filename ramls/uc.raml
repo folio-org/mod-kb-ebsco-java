@@ -21,6 +21,7 @@ traits:
 
 types:
   uCSettings: !include types/uc/uCSettings.json
+  uCSettingsKey: !include types/uc/uCSettingsKey.json
   uCSettingsPostRequest: !include types/uc/uCSettingsPostRequest.json
   uCSettingsPatchRequest: !include types/uc/uCSettingsPatchRequest.json
   jsonapiError: !include types/jsonapiError.json
@@ -116,6 +117,27 @@ types:
             example:
               strict: false
               value: !include examples/uc/uc_settings_patch_422_response.json
+  /key:
+    get:
+      description: Retrieve a Usage Consolidation settings customer key.
+      responses:
+        200:
+          description: OK
+          body:
+            application/vnd.api+json:
+              description: Usage Consolidation settings customer key
+              type: uCSettingsKey
+              example:
+                strict: false
+                value: !include examples/uc/uc_settings_key_get_200_response.json
+        404:
+          description: Not Found
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/uc/uc_settings_get_404_response.json
 /eholdings/uc:
   displayName: Usage Consolidation settings
   get:

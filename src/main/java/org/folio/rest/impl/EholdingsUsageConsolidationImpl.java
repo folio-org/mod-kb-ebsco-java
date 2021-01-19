@@ -60,10 +60,10 @@ public class EholdingsUsageConsolidationImpl implements EholdingsKbCredentialsId
   }
 
   @Override
-  public void postEholdingsKbCredentialsUcById(String id, String contentType, UCSettingsPostRequest entity,
+  public void postEholdingsKbCredentialsUcById(String credentialsId, String contentType, UCSettingsPostRequest entity,
                                                Map<String, String> okapiHeaders,
                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    settingsService.save(id, entity, okapiHeaders)
+    settingsService.save(credentialsId, entity, okapiHeaders)
       .thenAccept(ucSettings -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsKbCredentialsUcByIdResponse.respond201WithApplicationVndApiJson(ucSettings))))
       .exceptionally(handleStatusException(asyncResultHandler));
@@ -76,6 +76,15 @@ public class EholdingsUsageConsolidationImpl implements EholdingsKbCredentialsId
     settingsService.update(credentialsId, entity, okapiHeaders)
       .thenAccept(unused -> asyncResultHandler.handle(succeededFuture(
         PatchEholdingsKbCredentialsUcByIdResponse.respond204())))
+      .exceptionally(errorHandler.handle(asyncResultHandler));
+  }
+
+  @Override
+  public void getEholdingsKbCredentialsUcKeyById(String credentialsId, Map<String, String> okapiHeaders,
+                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    settingsService.fetchKeyByCredentialsId(credentialsId, okapiHeaders)
+      .thenAccept(ucSettingsKey -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsKbCredentialsUcKeyByIdResponse.respond200WithApplicationVndApiJson(ucSettingsKey))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 

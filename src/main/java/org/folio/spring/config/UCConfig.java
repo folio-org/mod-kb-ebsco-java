@@ -5,7 +5,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.DefaultConversionService;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
@@ -15,6 +17,7 @@ import org.folio.rest.converter.uc.UCSettingsConverter;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
+import org.folio.rest.jaxrs.model.UCSettingsKey;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rmapi.result.UCSettingsResult;
 import org.folio.service.kbcredentials.KbCredentialsService;
@@ -33,20 +36,18 @@ public class UCConfig {
   public UCSettingsService securedUCSettingsService(KbCredentialsService nonSecuredCredentialsService,
                                                     UCAuthService authService, UCApigeeEbscoClient ebscoClient,
                                                     UCSettingsRepository repository,
-                                                    Converter<UCSettingsResult, UCSettings> securedUCSettingsResultConverter,
-                                                    Converter<UCSettingsPostRequest, DbUCSettings> toConverter) {
+                                                    ConversionService securedUCConversionService) {
     return new UCSettingsServiceImpl(nonSecuredCredentialsService, repository, authService, ebscoClient,
-      securedUCSettingsResultConverter, toConverter);
+      securedUCConversionService);
   }
 
   @Bean
   public UCSettingsService nonSecuredUCSettingsService(KbCredentialsService nonSecuredCredentialsService,
                                                        UCAuthService authService, UCApigeeEbscoClient ebscoClient,
                                                        UCSettingsRepository repository,
-                                                       Converter<UCSettingsResult, UCSettings> nonSecuredUCSettingsResultConverter,
-                                                       Converter<UCSettingsPostRequest, DbUCSettings> toConverter) {
+                                                       ConversionService nonSecuredUCConversionService) {
     return new UCSettingsServiceImpl(nonSecuredCredentialsService, repository, authService, ebscoClient,
-      nonSecuredUCSettingsResultConverter, toConverter);
+      nonSecuredUCConversionService);
   }
 
   @Bean
@@ -80,5 +81,27 @@ public class UCConfig {
   @Bean
   public LocaleSettingsService localeSettingsService() {
     return new LocaleSettingsServiceImpl(new ConfigurationClientProvider());
+  }
+
+  @Bean
+  public ConversionService nonSecuredUCConversionService(Converter<UCSettingsResult, UCSettings> nonSecuredUCSettingsResultConverter,
+                                                         Converter<UCSettingsPostRequest, DbUCSettings> postRequestConverter,
+                                                         Converter<DbUCSettings, UCSettingsKey> ucSettingsKeyConverter) {
+    DefaultConversionService conversionService = new DefaultConversionService();
+    conversionService.addConverter(nonSecuredUCSettingsResultConverter);
+    conversionService.addConverter(postRequestConverter);
+    conversionService.addConverter(ucSettingsKeyConverter);
+    return conversionService;
+  }
+
+  @Bean
+  public ConversionService securedUCConversionService(Converter<UCSettingsResult, UCSettings> securedUCSettingsResultConverter,
+                                                      Converter<UCSettingsPostRequest, DbUCSettings> postRequestConverter,
+                                                      Converter<DbUCSettings, UCSettingsKey> ucSettingsKeyConverter) {
+    DefaultConversionService conversionService = new DefaultConversionService();
+    conversionService.addConverter(securedUCSettingsResultConverter);
+    conversionService.addConverter(postRequestConverter);
+    conversionService.addConverter(ucSettingsKeyConverter);
+    return conversionService;
   }
 }
