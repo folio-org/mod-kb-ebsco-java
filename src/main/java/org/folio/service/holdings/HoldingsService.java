@@ -56,6 +56,11 @@ public interface HoldingsService {
   }
 
   @GenIgnore
+  default CompletableFuture<Void> setUpCredentials(String credentialsId, String tenant) {
+    throw new UnsupportedOperationException();
+  }
+
+  @GenIgnore
   default CompletableFuture<List<DbHoldingInfo>> getHoldingsByPackageId(String packageId, String credentialsId, String tenant) {
     throw new UnsupportedOperationException();
   }

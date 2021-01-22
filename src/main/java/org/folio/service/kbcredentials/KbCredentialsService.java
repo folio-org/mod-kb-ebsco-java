@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.KbCredentialsKey;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
@@ -16,6 +17,8 @@ public interface KbCredentialsService {
   CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders);
 
   CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders);
+
+  CompletableFuture<KbCredentialsKey> findKeyById(String id, Map<String, String> okapiHeaders);
 
   CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders);
 

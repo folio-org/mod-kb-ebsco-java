@@ -113,6 +113,15 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
   }
 
   @Override
+  public void getEholdingsKbCredentialsKeyById(String id, Map<String, String> okapiHeaders,
+                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    nonSecuredCredentialsService.findKeyById(id, okapiHeaders)
+      .thenAccept(kbCredentialsKey -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsKbCredentialsKeyByIdResponse.respond200WithApplicationVndApiJson(kbCredentialsKey))))
+      .exceptionally(errorHandler.handle(asyncResultHandler));
+  }
+
+  @Override
   @Validate
   @HandleValidationErrors
   public void getEholdingsUserKbCredential(Map<String, String> okapiHeaders,
