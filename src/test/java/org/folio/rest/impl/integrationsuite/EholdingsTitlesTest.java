@@ -184,6 +184,23 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnTitlesOnSearchByTagsWithResources() throws IOException, URISyntaxException, JSONException {
+    mockGetManagedTitleById();
+    saveHolding(configuration.getId(),
+      readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class),
+      OffsetDateTime.now(), vertx);
+
+    saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
+    saveResource(buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
+    saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE+ "&filter[tags]=" + STUB_TAG_VALUE_2+"&include=resources";
+    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles-with-resources.json"), actualResponse, true);
+  }
+
+  @Test
   public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
     mockGetManagedTitleById();
     saveHolding(configuration.getId(),
