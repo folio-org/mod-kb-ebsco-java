@@ -110,19 +110,22 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .count(count)
       .build();
 
+    boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
     RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
-      template.requestAction(context -> filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context));
+      template.requestAction(context ->
+        filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context)
+          .thenApply(titles -> toTitleCollectionResult(titles, includeResource))
+      );
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
       );
     } else {
-      boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
       template
         .requestAction(context ->
           context.getTitlesService().retrieveTitles(filter.createFilterQuery(), filter.getSort(), page, count)
-            .thenApply(titles -> toTitleCollection(titles, includeResource)
+            .thenApply(titles -> toTitleCollectionResult(titles, includeResource)
             )
         );
     }
@@ -196,7 +199,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .executeWithResult(Title.class);
   }
 
-  private TitleCollectionResult toTitleCollection(Titles titles, boolean includeResource) {
+  private TitleCollectionResult toTitleCollectionResult(Titles titles, boolean includeResource) {
     return TitleCollectionResult.builder()
       .titleResults(ListUtils.mapItems(titles.getTitleList(), title -> toTitleResult(includeResource, title)))
       .totalResults(titles.getTotalResults())
