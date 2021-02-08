@@ -91,7 +91,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
       getHoldingsTableName(tenantId),
       createPlaceholders(2, resourceIds.size())
     );
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapHoldings);

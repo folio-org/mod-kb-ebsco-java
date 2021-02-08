@@ -1,7 +1,7 @@
 package org.folio.repository.uc;
 
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbMetadataUtil.mapMetadata;
 import static org.folio.repository.DbUtil.getUCSettingsTableName;
@@ -52,7 +52,7 @@ public class UCSettingsRepositoryImpl implements UCSettingsRepository {
     String query = prepareQuery(SELECT_UC_SETTINGS_BY_CREDENTIALS_ID, getUCSettingsTableName(tenant));
     Tuple params = createParams(credentialsId);
 
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
@@ -79,7 +79,7 @@ public class UCSettingsRepositoryImpl implements UCSettingsRepository {
       ucSettings.getUpdatedByUserName()
     );
 
-    logInsertQuery(LOG, query, params);
+    logInsertQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
@@ -90,15 +90,15 @@ public class UCSettingsRepositoryImpl implements UCSettingsRepository {
     return RowSetUtils.isEmpty(rows)
       ? Optional.empty()
       : RowSetUtils.mapFirstItem(rows, row -> {
-        var builder = DbUCSettings.builder()
-          .id(row.getUUID(ID_COLUMN))
-          .kbCredentialsId(row.getUUID(KB_CREDENTIALS_ID_COLUMN))
-          .customerKey(row.getString(CUSTOMER_KEY_COLUMN))
-          .currency(row.getString(CURRENCY_COLUMN))
-          .startMonth(row.getString(START_MONTH_COLUMN))
-          .platformType(row.getString(PLATFORM_TYPE_COLUMN));
-        return Optional.of(mapMetadata(builder, row).build());
-      });
+      var builder = DbUCSettings.builder()
+        .id(row.getUUID(ID_COLUMN))
+        .kbCredentialsId(row.getUUID(KB_CREDENTIALS_ID_COLUMN))
+        .customerKey(row.getString(CUSTOMER_KEY_COLUMN))
+        .currency(row.getString(CURRENCY_COLUMN))
+        .startMonth(row.getString(START_MONTH_COLUMN))
+        .platformType(row.getString(PLATFORM_TYPE_COLUMN));
+      return Optional.of(mapMetadata(builder, row).build());
+    });
   }
 
   private Function<RowSet<Row>, DbUCSettings> setId(DbUCSettings ucSettings, UUID id) {

@@ -1,6 +1,6 @@
 package org.folio.repository.uc;
 
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.repository.DbUtil.getUCCredentialsTableName;
@@ -41,7 +41,7 @@ public class UCCredentialsRepositoryImpl implements UCCredentialsRepository {
   public CompletableFuture<Optional<DbUCCredentials>> find(String tenant) {
     String query = prepareQuery(SELECT_UC_CREDENTIALS, getUCCredentialsTableName(tenant));
 
-    logSelectQuery(LOG, query);
+    logSelectQueryInfoLevel(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     DbUtil.pgClient(tenant, vertx).execute(query, promise);
 
@@ -52,9 +52,9 @@ public class UCCredentialsRepositoryImpl implements UCCredentialsRepository {
     return isEmpty(rows)
       ? Optional.empty()
       : mapFirstItem(rows, row -> {
-        String clientId = row.getString(CLIENT_ID_COLUMN);
-        String clientSecret = row.getString(CLIENT_SECRET_COLUMN);
-        return Optional.of(new DbUCCredentials(clientId, clientSecret));
-      });
+      String clientId = row.getString(CLIENT_ID_COLUMN);
+      String clientSecret = row.getString(CLIENT_SECRET_COLUMN);
+      return Optional.of(new DbUCCredentials(clientId, clientSecret));
+    });
   }
 }
