@@ -42,6 +42,7 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_OTHER_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USERNAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_OTHER_ID;
 import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentialsNonSecured;
@@ -651,7 +652,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn404OnGetByUserWhenAssignedUserIsMissingAndNoKBCredentialsAtAll() {
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "User credentials not found");
+    assertErrorContainsTitle(error, "KB Credentials do not exist ");
   }
 
   @Test
@@ -662,7 +663,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_OTHER_HEADER).as(
       JsonapiError.class);
 
-    assertErrorContainsTitle(error, "User credentials not found");
+    assertErrorContainsTitle(error, "KB Credentials do not exist or user with userId = " + STUB_USER_OTHER_ID + " is not assigned to any available knowledgebase.");
   }
 
   @Test

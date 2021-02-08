@@ -48,7 +48,6 @@ import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.filter.Filter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
-import org.folio.rest.util.template.RMAPITemplate;
 import org.folio.rest.util.template.RMAPITemplateContext;
 import org.folio.rest.util.template.RMAPITemplateFactory;
 import org.folio.rest.validator.TitleCommonRequestAttributesValidator;
@@ -110,23 +109,10 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .count(count)
       .build();
 
-    RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    if (filter.isTagsFilter()) {
-      template.requestAction(context -> filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context));
-    } else if (filter.isAccessTypeFilter()) {
-      template.requestAction(context -> filteredEntitiesLoader
-        .fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
-      );
-    } else {
-      boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
-      template
-        .requestAction(context ->
-          context.getTitlesService().retrieveTitles(filter.createFilterQuery(), filter.getSort(), page, count)
-            .thenApply(titles -> toTitleCollection(titles, includeResource)
-            )
-        );
-    }
-    template.executeWithResult(TitleCollection.class);
+    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+      .requestAction(context -> fetchTitlesByFilter(filter, context)
+        .thenApply(titles -> toTitleCollectionResult(titles, shouldIncludeResources(include))))
+      .executeWithResult(TitleCollection.class);
   }
 
   @Override
@@ -141,7 +127,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().postTitle(titlePost, packageId)
-          .thenCompose(title -> completedFuture(toTitleResult(false, title)))
+          .thenCompose(title -> completedFuture(toTitleResult(title, false)))
           .thenCompose(titleResult ->
             updateTags(titleResult, context, entity.getData().getAttributes().getTags()))
       )
@@ -153,12 +139,11 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     long titleIdLong = parseTitleId(titleId);
-    boolean includeResource = INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(titleIdLong)
-          .thenCompose(title -> completedFuture(toTitleResult(includeResource, title)))
+          .thenCompose(title -> completedFuture(toTitleResult(title, shouldIncludeResources(include))))
           .thenCompose(result -> loadTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -191,20 +176,35 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           })
           .thenCompose(o -> context.getTitlesService().retrieveTitle(parsedTitleId))
           .thenCompose(title ->
-            updateTags(toTitleResult(false, title), context, entity.getData().getAttributes().getTags()))
+            updateTags(toTitleResult(title, false), context, entity.getData().getAttributes().getTags()))
       )
       .executeWithResult(Title.class);
   }
 
-  private TitleCollectionResult toTitleCollection(Titles titles, boolean includeResource) {
+  private CompletableFuture<Titles> fetchTitlesByFilter(Filter filter, RMAPITemplateContext context) {
+    if (filter.isTagsFilter()) {
+      return filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context);
+    } else if (filter.isAccessTypeFilter()) {
+      return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context);
+    } else {
+      return context.getTitlesService()
+        .retrieveTitles(filter.createFilterQuery(), filter.getSort(), filter.getPage(), filter.getCount());
+    }
+  }
+
+  private TitleCollectionResult toTitleCollectionResult(Titles titles, boolean includeResource) {
     return TitleCollectionResult.builder()
-      .titleResults(ListUtils.mapItems(titles.getTitleList(), title -> toTitleResult(includeResource, title)))
+      .titleResults(ListUtils.mapItems(titles.getTitleList(), title -> toTitleResult(title, includeResource)))
       .totalResults(titles.getTotalResults())
       .build();
   }
 
-  private TitleResult toTitleResult(boolean includeResource, org.folio.holdingsiq.model.Title title) {
+  private TitleResult toTitleResult(org.folio.holdingsiq.model.Title title, boolean includeResource) {
     return new TitleResult(title, includeResource);
+  }
+
+  private boolean shouldIncludeResources(String include) {
+    return INCLUDE_RESOURCES_VALUE.equalsIgnoreCase(include);
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result,

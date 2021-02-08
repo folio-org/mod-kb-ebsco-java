@@ -4,9 +4,9 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.LogUtils.logDeleteQuery;
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
+import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
@@ -73,7 +73,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<Collection<DbKbCredentials>> findAll(String tenant) {
     String query = prepareQuery(SELECT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
 
-    logSelectQuery(LOG, query);
+    logSelectQueryInfoLevel(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, promise);
 
@@ -84,7 +84,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<Optional<DbKbCredentials>> findById(UUID id, String tenant) {
     String query = prepareQuery(SELECT_CREDENTIALS_BY_ID_QUERY, getKbCredentialsTableName(tenant));
     Tuple params = Tuple.of(id);
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, params, promise);
@@ -114,7 +114,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       credentials.getUpdatedByUserName()
     ));
 
-    logInsertQuery(LOG, query, params);
+    logInsertQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -130,7 +130,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     String query = prepareQuery(DELETE_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
     Tuple params = Tuple.of(id);
 
-    logDeleteQuery(LOG, query, params);
+    logDeleteQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -146,7 +146,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       getAssignedUsersTableName(tenant));
     Tuple params = Tuple.of(userId);
 
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, params, promise);
 

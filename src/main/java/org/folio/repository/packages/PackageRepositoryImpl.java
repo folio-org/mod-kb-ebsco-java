@@ -5,9 +5,9 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.LogUtils.logDeleteQuery;
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
+import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.getPackagesTableName;
 import static org.folio.repository.DbUtil.getTagsTableName;
@@ -68,7 +68,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = prepareQuery(INSERT_OR_UPDATE_STATEMENT, getPackagesTableName(tenantId));
 
-    logInsertQuery(LOG, query, parameters);
+    logInsertQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -81,7 +81,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = prepareQuery(DELETE_STATEMENT, getPackagesTableName(tenantId));
 
-    logDeleteQuery(LOG, query, parameters);
+    logDeleteQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -107,7 +107,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getPackagesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(packageIds.size()));
 
-    logSelectQuery(LOG, query, parameters);
+    logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);
@@ -134,7 +134,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS, getPackagesTableName(tenantId),
       getTagsTableName(tenantId), createPlaceholders(tags.size()));
 
-    logSelectQuery(LOG, query, parameters);
+    logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);

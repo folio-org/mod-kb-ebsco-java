@@ -1,9 +1,9 @@
 package org.folio.repository.assigneduser;
 
 import static org.folio.common.LogUtils.logCountQuery;
-import static org.folio.common.LogUtils.logDeleteQuery;
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
+import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
@@ -67,7 +67,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     String query = prepareQuery(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY, getAssignedUsersViewName(tenant));
     Tuple params = createParams(credentialsId);
 
-    logSelectQuery(LOG, query, params);
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, params, promise);
 
@@ -97,7 +97,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
       entity.getCredentialsId()
     ));
 
-    logInsertQuery(LOG, query, params);
+    logInsertQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -114,7 +114,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     String query = prepareQuery(DELETE_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
     Tuple params = createParams(credentialsId, userId);
 
-    logDeleteQuery(LOG, query, params);
+    logDeleteQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 

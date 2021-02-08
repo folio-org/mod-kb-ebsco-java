@@ -30,7 +30,8 @@ import org.folio.util.UserInfo;
 @RequiredArgsConstructor
 public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
 
-  private static final String USER_CREDS_NOT_FOUND_MESSAGE = "User credentials not found: userId = %s";
+  private static final String USER_CREDS_NOT_FOUND_MESSAGE = "KB Credentials do not exist or user with userId = %s " +
+    "is not assigned to any available knowledgebase.";
 
   private final KbCredentialsRepository credentialsRepository;
   private final AssignedUserRepository assignedUserRepository;

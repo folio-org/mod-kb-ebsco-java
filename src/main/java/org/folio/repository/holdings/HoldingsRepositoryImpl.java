@@ -3,9 +3,10 @@ package org.folio.repository.holdings;
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.common.LogUtils.logDeleteQuery;
-import static org.folio.common.LogUtils.logInsertQuery;
-import static org.folio.common.LogUtils.logSelectQuery;
+import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
+import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
+import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
+import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
@@ -74,7 +75,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
     final String query = prepareQuery(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId));
     final Tuple params = Tuple.of(credentialsId, timestamp);
-    logDeleteQuery(LOG, query, params);
+    logDeleteQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
@@ -100,8 +101,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   public CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(int packageId, UUID credentialsId, String tenantId) {
     var query = prepareQuery(GET_BY_PACKAGE_ID_AND_CREDENTIALS, getHoldingsTableName(tenantId));
     var params = createParams(packageId, credentialsId);
-    logSelectQuery(LOG, query, params);
-
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapHoldings);
@@ -122,7 +122,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
       getHoldingsTableName(tenantId),
       createPlaceholders(9, holdings.size())
     );
-    logInsertQuery(LOG, query, parameters);
+    logInsertQueryDebugLevel(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
@@ -135,7 +135,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
       getHoldingsTableName(tenantId),
       createPlaceholders(2, holdings.size())
     );
-    logDeleteQuery(LOG, query, params);
+    logDeleteQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
