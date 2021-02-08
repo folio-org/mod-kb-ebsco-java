@@ -86,6 +86,7 @@
             },
             "isPackageCustom": false,
             "isSelected": true,
+            "titleHasSelectedResources": true,
             "isTokenNeeded": false,
             "locationId": 3464602,
             "managedEmbargoPeriod": {
