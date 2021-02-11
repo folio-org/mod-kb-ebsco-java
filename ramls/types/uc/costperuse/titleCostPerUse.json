@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Title cost-per-use object schema",
+  "description": "Title cost-per-use object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.TitleCostPerUse",
+  "additionalProperties": false,
+  "properties": {
+    "titleId": {
+      "type": "string",
+      "description": "Title ID",
+      "example": "1440285"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": [
+        "titleCostPerUse"
+      ],
+      "example": "titleCostPerUse"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Title cost-per-use attributes",
+      "$ref": "titleCostPerUseDataAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

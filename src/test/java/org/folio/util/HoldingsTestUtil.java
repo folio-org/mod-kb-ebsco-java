@@ -1,6 +1,6 @@
 package org.folio.util;
 
-import static org.folio.common.ListUtils.createInsertPlaceholders;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbUtil.prepareQuery;
@@ -41,7 +41,7 @@ public class HoldingsTestUtil {
 
   public static void saveHolding(String credentialsId, DbHoldingInfo holding, OffsetDateTime updatedAt, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS, holdingsTestTable(), createInsertPlaceholders(9, 1));
+    String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS, holdingsTestTable(), createPlaceholders(9, 1));
     Tuple params = getHoldingsInsertParams(credentialsId, holding, updatedAt);
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
@@ -71,9 +71,9 @@ public class HoldingsTestUtil {
 
   private static DbHoldingInfo mapHoldingInfo(Row row) {
     return DbHoldingInfo.builder()
-      .titleId(row.getString(TITLE_ID_COLUMN))
-      .packageId(row.getString(PACKAGE_ID_COLUMN))
-      .vendorId(row.getString(VENDOR_ID_COLUMN))
+      .titleId(row.getInteger(TITLE_ID_COLUMN))
+      .packageId(row.getInteger(PACKAGE_ID_COLUMN))
+      .vendorId(row.getInteger(VENDOR_ID_COLUMN))
       .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
       .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
       .resourceType(row.getString(RESOURCE_TYPE_COLUMN))

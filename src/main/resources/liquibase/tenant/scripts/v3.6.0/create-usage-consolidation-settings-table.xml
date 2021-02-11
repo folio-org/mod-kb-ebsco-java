@@ -1,0 +1,87 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <changeSet id="MODKBEKBJ-494@@create-usage-consolidation-settings-table" author="psmagin">
+    <createTable tableName="usage_consolidation_settings">
+      <column name="id" type="uuid">
+        <constraints primaryKey="true" primaryKeyName="pk_usage_consolidation_settings" nullable="false"/>
+      </column>
+      <column name="kb_credentials_id" type="uuid">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="customer_key" type="varchar(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="start_month" type="varchar(3)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="currency" type="varchar(3)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="platform_type" type="varchar(12)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_date" type="timestamptz" defaultValueComputed="current_timestamp">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by_user_id" type="uuid">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by_user_name" type="varchar(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="updated_date" type="timestamptz"/>
+      <column name="updated_by_user_id" type="uuid"/>
+      <column name="updated_by_user_name" type="varchar(100)"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-494@@add-foreign-key-from-usage-consolidation-settings-to-kb-credentials" author="psmagin">
+    <addForeignKeyConstraint
+      baseColumnNames="kb_credentials_id"
+      baseTableName="usage_consolidation_settings"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_usage_consolidation_settings_kb_credentials"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="CASCADE"
+      onUpdate="RESTRICT"
+      referencedColumnNames="id"
+      referencedTableName="kb_credentials"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-494@@add-foreign-key-from-usage-consolidation-settings-to-currencies" author="psmagin">
+    <addForeignKeyConstraint
+      baseColumnNames="currency"
+      baseTableName="usage_consolidation_settings"
+      baseTableSchemaName="${database.defaultSchemaName}"
+      constraintName="fk_usage_consolidation_settings_currency"
+      deferrable="false"
+      initiallyDeferred="false"
+      onDelete="RESTRICT"
+      onUpdate="RESTRICT"
+      referencedColumnNames="code"
+      referencedTableName="currencies"
+      referencedTableSchemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-494@@add-check-for-usage-consolidation-settings-start-month" author="psmagin">
+    <sql>
+      ALTER TABLE ${database.defaultSchemaName}.usage_consolidation_settings
+      ADD CONSTRAINT chk_usage_consolidation_settings_start_month
+      CHECK (start_month IN ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'));
+    </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-494@@add-check-for-usage-consolidation-settings-platform-type" author="psmagin">
+    <sql>
+      ALTER TABLE ${database.defaultSchemaName}.usage_consolidation_settings
+      ADD CONSTRAINT chk_usage_consolidation_settings_platform_type
+      CHECK (platform_type IN ('all', 'publisher', 'nonPublisher'));
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

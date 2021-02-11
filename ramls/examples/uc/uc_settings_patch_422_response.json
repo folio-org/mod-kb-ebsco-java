@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Invalid Usage Consolidation ID"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

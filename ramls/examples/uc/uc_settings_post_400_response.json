@@ -1,0 +1,15 @@
+{
+  "errors": [
+    {
+      "message": "must not be null",
+      "type": "1",
+      "code": "-1",
+      "parameters": [
+        {
+          "key": "data.attributes",
+          "value": "null"
+        }
+      ]
+    }
+  ]
+}

@@ -14,5 +14,7 @@ public interface HoldingsRepository {
 
   CompletableFuture<List<DbHoldingInfo>> findAllById(List<String> resourceIds, UUID credentialsId, String tenantId);
 
+  CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(int packageId, UUID credentialsId, String tenantId);
+
   CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, UUID credentialsId, String tenantId);
 }

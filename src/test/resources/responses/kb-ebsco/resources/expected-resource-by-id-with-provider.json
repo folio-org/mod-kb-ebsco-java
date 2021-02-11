@@ -1,0 +1,125 @@
+{
+  "data": {
+    "id": "19-3964-762169",
+    "type": "resources",
+    "attributes": {
+      "isPeerReviewed": false,
+      "isTitleCustom": false,
+      "publisherName": "Praeger",
+      "titleId": 762169,
+      "contributors": [
+        {
+          "type": "author",
+          "contributor": "Beeman, William O."
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "978-0-275-98214-0",
+          "subtype": "Print",
+          "type": "ISBN"
+        },
+        {
+          "id": "978-0-313-06800-3",
+          "subtype": "Online",
+          "type": "ISBN"
+        },
+        {
+          "id": "978-1-282-40979-8",
+          "subtype": "Online",
+          "type": "ISBN"
+        }
+      ],
+      "name": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+      "publicationType": "Book",
+      "subjects": [
+        {
+          "subject": "SOCIAL SCIENCE / Ethnic Studies / General",
+          "type": "BISAC"
+        }
+      ],
+      "customEmbargoPeriod": {
+        "embargoValue": 0
+      },
+      "isPackageCustom": false,
+      "isSelected": true,
+      "titleHasSelectedResources": true,
+      "isTokenNeeded": false,
+      "locationId": 2863717,
+      "managedEmbargoPeriod": {
+        "embargoValue": 0
+      },
+      "packageId": "19-3964",
+      "packageName": "ABC-CLIO eBook Collection",
+      "url": "https://publisher.abc-clio.com/9780313068003/",
+      "providerId": 19,
+      "providerName": "ABC-CLIO",
+      "visibilityData": {
+        "isHidden": true,
+        "reason": ""
+      },
+      "managedCoverages": [
+        {
+          "beginCoverage": "2005-01-01",
+          "endCoverage": "2005-12-31"
+        }
+      ],
+      "customCoverages": [],
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
+      },
+      "tags": {
+        "tagList": []
+      },
+      "userDefinedField1": "test 1",
+      "userDefinedField2": "test 2",
+      "userDefinedField3": "",
+      "userDefinedField5": "test 5"
+    },
+    "relationships": {
+      "provider": {
+        "data": {
+          "type": "providers",
+          "id": "19"
+        }
+      },
+      "title": {
+        "meta": {
+          "included": false
+        }
+      },
+      "package": {
+        "meta": {
+          "included": false
+        }
+      }
+    }
+  },
+  "included": [
+    {
+      "id": "19",
+      "type": "providers",
+      "attributes": {
+        "name": "ABC-CLIO",
+        "packagesTotal": 34,
+        "packagesSelected": 1,
+        "supportsCustomPackages": false,
+        "proxy": {
+          "id": "Proxy-ID-123",
+          "inherited": true
+        }
+      },
+      "relationships": {
+        "packages": {
+          "meta": {
+            "included": false
+          }
+        }
+      }
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

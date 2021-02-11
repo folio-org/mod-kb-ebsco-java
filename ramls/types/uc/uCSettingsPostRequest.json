@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Usage Consolidation Settings Post Request object schema",
+  "description": "Usage Consolidation Settings Post Request object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.UCSettingsPostRequest",
+  "additionalProperties": false,
+  "properties": {
+    "data": {
+      "type": "object",
+      "description": "Usage Consolidation Post Request Settings attributes",
+      "$ref": "uCSettingsPostDataAttributes.json"
+    }
+  },
+  "required": [
+    "data"
+  ]
+}

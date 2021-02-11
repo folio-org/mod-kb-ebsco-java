@@ -2,10 +2,10 @@ package org.folio.common;
 
 import java.util.function.Function;
 
-public final class FunctionUtils {
+import lombok.experimental.UtilityClass;
 
-  private FunctionUtils() {
-  }
+@UtilityClass
+public class FunctionUtils {
 
   public static  <T> Function<T, Void> nothing() {
     return result -> null;

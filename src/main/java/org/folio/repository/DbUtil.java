@@ -12,6 +12,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_VIEW_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_VIEW_NAME;
+import static org.folio.repository.currencies.CurrenciesConstants.CURRENCIES_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.HOLDINGS_STATUS_AUDIT_TABLE;
@@ -23,6 +24,8 @@ import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TA
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
+import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 import static org.folio.repository.users.UsersTableConstants.USERS_TABLE_NAME;
 
 import java.util.List;
@@ -113,6 +116,18 @@ public class DbUtil {
     return getTableName(tenantId, ASSIGNED_USERS_VIEW_NAME);
   }
 
+  public static String getCurrenciesTableName(String tenantId) {
+    return getTableName(tenantId, CURRENCIES_TABLE_NAME);
+  }
+
+  public static String getUCSettingsTableName(String tenantId) {
+    return getTableName(tenantId, UC_SETTINGS_TABLE_NAME);
+  }
+
+  public static String getUCCredentialsTableName(String tenantId) {
+    return getTableName(tenantId, UC_CREDENTIALS_TABLE_NAME);
+  }
+
   public static String getUsersTableName(String tenantId) {
     return getTableName(tenantId, USERS_TABLE_NAME);
   }
@@ -155,4 +170,5 @@ public class DbUtil {
     }
     return sb.toString();
   }
+
 }

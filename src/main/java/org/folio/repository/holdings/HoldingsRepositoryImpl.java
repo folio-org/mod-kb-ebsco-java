@@ -1,17 +1,19 @@
 package org.folio.repository.holdings;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createInsertPlaceholders;
+import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.DbUtil.getHoldingsTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_BY_PK_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_OLD_RECORDS_BY_CREDENTIALS_ID;
+import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PACKAGE_ID_AND_CREDENTIALS;
 import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PK_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
@@ -24,13 +26,12 @@ import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
@@ -83,13 +84,26 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   @Override
   public CompletableFuture<List<DbHoldingInfo>> findAllById(List<String> resourceIds, UUID credentialsId, String tenantId) {
     if (resourceIds.isEmpty()) {
-      return CompletableFuture.completedFuture(new ArrayList<>());
+      return CompletableFuture.completedFuture(Collections.emptyList());
     }
-    final String resourceIdString = getHoldingsPkKeys(credentialsId, resourceIds);
-    final String query = prepareQuery(GET_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), resourceIdString);
-    logSelectQueryInfoLevel(LOG, query);
+    var params = getHoldingsPkKeysParams(credentialsId, resourceIds);
+    var query = prepareQuery(GET_BY_PK_HOLDINGS,
+      getHoldingsTableName(tenantId),
+      createPlaceholders(2, resourceIds.size())
+    );
+    logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, promise);
+    pgClient(tenantId).select(query, params, promise);
+    return mapResult(promise.future(), this::mapHoldings);
+  }
+
+  @Override
+  public CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(int packageId, UUID credentialsId, String tenantId) {
+    var query = prepareQuery(GET_BY_PACKAGE_ID_AND_CREDENTIALS, getHoldingsTableName(tenantId));
+    var params = createParams(packageId, credentialsId);
+    logSelectQueryInfoLevel(LOG, query, params);
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapHoldings);
   }
 
@@ -104,8 +118,10 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
                                                String tenantId, AsyncResult<SQLConnection> connection,
                                                PostgresClient postgresClient) {
     final Tuple parameters = createParameters(credentialsId, holdings, updatedAt);
-    final String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS, getHoldingsTableName(tenantId),
-      createInsertPlaceholders(9, holdings.size()));
+    final String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS,
+      getHoldingsTableName(tenantId),
+      createPlaceholders(9, holdings.size())
+    );
     logInsertQueryDebugLevel(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
@@ -114,11 +130,14 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   private CompletableFuture<Void> deleteHoldings(List<HoldingsId> holdings, UUID credentialsId, String tenantId,
                                                  AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
-    final String parameters = getHoldingsPkKeys(credentialsId, mapItems(holdings, IdParser::getResourceId));
-    final String query = prepareQuery(DELETE_BY_PK_HOLDINGS, getHoldingsTableName(tenantId), parameters);
-    logDeleteQueryDebugLevel(LOG, query);
+    var params = getHoldingsPkKeysParams(credentialsId, mapItems(holdings, IdParser::getResourceId));
+    var query = prepareQuery(DELETE_BY_PK_HOLDINGS,
+      getHoldingsTableName(tenantId),
+      createPlaceholders(2, holdings.size())
+    );
+    logDeleteQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    postgresClient.execute(connection, query, promise);
+    postgresClient.execute(connection, query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
@@ -142,9 +161,9 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   private List<DbHoldingInfo> mapHoldings(RowSet<Row> resultSet) {
     return RowSetUtils.mapItems(resultSet, row -> DbHoldingInfo.builder()
-      .titleId(row.getString(TITLE_ID_COLUMN))
-      .packageId(row.getString(PACKAGE_ID_COLUMN))
-      .vendorId(row.getString(VENDOR_ID_COLUMN))
+      .titleId(row.getInteger(TITLE_ID_COLUMN))
+      .packageId(row.getInteger(PACKAGE_ID_COLUMN))
+      .vendorId(row.getInteger(VENDOR_ID_COLUMN))
       .publicationTitle(row.getString(PUBLICATION_TITLE_COLUMN))
       .publisherName(row.getString(PUBLISHER_NAME_COLUMN))
       .resourceType(row.getString(RESOURCE_TYPE_COLUMN))
@@ -172,9 +191,12 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     return params;
   }
 
-  private String getHoldingsPkKeys(UUID credentialsId, List<String> resourceIds) {
-    return resourceIds.stream()
-      .collect(Collectors.joining(",", "('" + credentialsId + "', '", "')"));
+  private Tuple getHoldingsPkKeysParams(UUID credentialsId, List<String> resourceIds) {
+    var parameters = Tuple.tuple();
+    for (String resourceId : resourceIds) {
+      parameters.addUUID(credentialsId).addString(resourceId);
+    }
+    return parameters;
   }
 
   private PostgresClient pgClient(String tenantId) {

@@ -4,8 +4,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
+import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
@@ -13,28 +13,24 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import io.vertx.core.Context;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.ConversionService;
 
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
-import org.folio.repository.holdings.status.HoldingsStatusRepository;
-import org.folio.repository.holdings.status.retry.RetryStatus;
-import org.folio.repository.holdings.status.retry.RetryStatusRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
+import org.folio.rest.jaxrs.model.KbCredentialsKey;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
@@ -42,45 +38,33 @@ import org.folio.rest.validator.kbcredentials.KbCredentialsPatchBodyValidator;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPostBodyValidator;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPutBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
+import org.folio.service.holdings.HoldingsService;
 import org.folio.util.UserInfo;
 
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
+  private final UserKbCredentialsService userKbCredentialsService;
+  private final ConversionService conversionService;
   @Autowired
   private KbCredentialsRepository repository;
   @Autowired
-  private HoldingsStatusRepository holdingsStatusRepository;
-  @Autowired
-  private RetryStatusRepository retryStatusRepository;
-
-  @Autowired
-  private Converter<DbKbCredentials, Configuration> configurationConverter;
-  private Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter;
-  @Autowired
-  private Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter;
-  private Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter;
-  @Autowired
-  private Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter;
-
+  private HoldingsService holdingsService;
   @Autowired
   private KbCredentialsPostBodyValidator postBodyValidator;
   @Autowired
   private KbCredentialsPutBodyValidator putBodyValidator;
   @Autowired
   private KbCredentialsPatchBodyValidator patchBodyValidator;
-
   @Autowired
   private ConfigurationService configurationService;
-  private UserKbCredentialsService userKbCredentialsService;
   @Autowired
   private Context context;
 
-  public KbCredentialsServiceImpl(Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
-                                  UserKbCredentialsService userKbCredentialsService,
-                                  Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
-    this.credentialsFromDBConverter = credentialsFromDBConverter;
+
+  public KbCredentialsServiceImpl(UserKbCredentialsService userKbCredentialsService,
+                                  ConversionService conversionService) {
+    this.conversionService = conversionService;
     this.userKbCredentialsService = userKbCredentialsService;
-    this.credentialsCollectionConverter = credentialsCollectionConverter;
   }
 
   @Override
@@ -91,23 +75,29 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Override
   public CompletableFuture<KbCredentialsCollection> findAll(Map<String, String> okapiHeaders) {
     return repository.findAll(tenantId(okapiHeaders))
-      .thenApply(credentialsCollectionConverter::convert);
+      .thenApply(this::convertToCollection);
   }
 
   @Override
   public CompletableFuture<KbCredentials> findById(String id, Map<String, String> okapiHeaders) {
     return fetchDbKbCredentials(id, okapiHeaders)
-      .thenApply(credentialsFromDBConverter::convert);
+      .thenApply(this::convertToCredentials);
+  }
+
+  @Override
+  public CompletableFuture<KbCredentialsKey> findKeyById(String id, Map<String, String> okapiHeaders) {
+    return fetchDbKbCredentials(id, okapiHeaders)
+      .thenApply(this::convertToCredentialsKey);
   }
 
   @Override
   public CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders) {
     postBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
-    return prepareAndSave(completedFuture(requireNonNull(credentialsToDBConverter.convert(kbCredentials))),
-      this::prepareSaveEntity, okapiHeaders)
-      .thenApply(credentialsFromDBConverter::convert)
-      .thenApply(credentials -> insertLoadingStatusNotStarted(credentials, tenantId(okapiHeaders)));
+    return prepareAndSave(completedFuture(convertToDb(kbCredentials)), this::prepareSaveEntity, okapiHeaders)
+      .thenCompose(credentials -> holdingsService.setUpCredentials(fromUUID(credentials.getId()), tenantId(okapiHeaders))
+        .thenApply(unused -> convertToCredentials(credentials))
+      );
   }
 
   @Override
@@ -123,7 +113,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Override
   public CompletableFuture<Void> updatePartially(String id, KbCredentialsPatchRequest entity,
                                                  Map<String, String> okapiHeaders) {
-    KbCredentials patchRequestData = requireNonNull(pathRequestConverter.convert(entity));
+    KbCredentials patchRequestData = convertPatchToCredentials(entity);
     patchBodyValidator.validate(patchRequestData);
     KbCredentialsDataAttributes attributes = patchRequestData.getAttributes();
     return prepareAndSave(fetchDbKbCredentials(id, okapiHeaders),
@@ -156,9 +146,9 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .build();
   }
 
-  private DbKbCredentials.DbKbCredentialsBuilder setUpdateMeta(DbKbCredentials.DbKbCredentialsBuilder credentialsBuilder,
-                                                               UserInfo userInfo) {
-    return credentialsBuilder
+  private DbKbCredentials.DbKbCredentialsBuilder<?, ?> setUpdateMeta(DbKbCredentials.DbKbCredentialsBuilder<?, ?> builder,
+                                                                     UserInfo userInfo) {
+    return builder
       .updatedDate(OffsetDateTime.now())
       .updatedByUserId(toUUID(userInfo.getUserId()))
       .updatedByUserName(userInfo.getUserName());
@@ -180,18 +170,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .build();
   }
 
-  private KbCredentials insertLoadingStatusNotStarted(KbCredentials credentials, String tenantId) {
-    final UUID credentialsId = toUUID(credentials.getId());
-    holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
-      .thenCompose(v -> resetRetryStatus(credentialsId, tenantId));
-    return credentials;
-  }
-
-  private CompletionStage<Void> resetRetryStatus(UUID credentialsId, String tenantId) {
-    return retryStatusRepository.delete(credentialsId, tenantId)
-      .thenCompose(o -> retryStatusRepository.save(new RetryStatus(0, null), credentialsId, tenantId));
-  }
-
   private CompletableFuture<DbKbCredentials> verifyAndSave(DbKbCredentials dbKbCredentials,
                                                            Map<String, String> okapiHeaders) {
     return verifyCredentials(dbKbCredentials, okapiHeaders)
@@ -199,7 +177,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   private CompletableFuture<Void> verifyCredentials(DbKbCredentials dbKbCredentials, Map<String, String> okapiHeaders) {
-    Configuration configuration = configurationConverter.convert(dbKbCredentials);
+    Configuration configuration = convertToConfiguration(dbKbCredentials);
     return configurationService.verifyCredentials(configuration, context, new OkapiData(okapiHeaders))
       .thenCompose(errors -> {
         if (!errors.isEmpty()) {
@@ -219,4 +197,28 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(KbCredentials.class, id));
   }
 
+
+  private KbCredentialsCollection convertToCollection(Collection<DbKbCredentials> dbKbCredentials) {
+    return requireNonNull(conversionService.convert(dbKbCredentials, KbCredentialsCollection.class));
+  }
+
+  private KbCredentials convertToCredentials(DbKbCredentials dbKbCredentials) {
+    return requireNonNull(conversionService.convert(dbKbCredentials, KbCredentials.class));
+  }
+
+  private KbCredentialsKey convertToCredentialsKey(DbKbCredentials dbKbCredentials) {
+    return requireNonNull(conversionService.convert(dbKbCredentials, KbCredentialsKey.class));
+  }
+
+  private DbKbCredentials convertToDb(KbCredentials kbCredentials) {
+    return requireNonNull(conversionService.convert(kbCredentials, DbKbCredentials.class));
+  }
+
+  private KbCredentials convertPatchToCredentials(KbCredentialsPatchRequest entity) {
+    return requireNonNull(conversionService.convert(entity, KbCredentials.class));
+  }
+
+  private Configuration convertToConfiguration(DbKbCredentials dbKbCredentials) {
+    return requireNonNull(conversionService.convert(dbKbCredentials, Configuration.class));
+  }
 }

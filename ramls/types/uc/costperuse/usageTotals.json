@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Usage totals object schema",
+  "description": "Usage totals object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.UsageTotals",
+  "additionalProperties": false,
+  "properties": {
+    "publisher": {
+      "type": "object",
+      "description": "Publisher platforms usage",
+      "$ref": "platformUsage.json"
+    },
+    "nonPublisher": {
+      "type": "object",
+      "description": "Non-publisher platforms usage",
+      "$ref": "platformUsage.json"
+    },
+    "all": {
+      "type": "object",
+      "description": "All platforms usage",
+      "$ref": "platformUsage.json"
+    }
+  }
+}

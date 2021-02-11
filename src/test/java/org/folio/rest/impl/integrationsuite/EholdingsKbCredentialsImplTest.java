@@ -80,6 +80,7 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
+import org.folio.rest.jaxrs.model.KbCredentialsKey;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestData;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestDataAttributes;
@@ -241,6 +242,16 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
 
     assertEquals(getKbCredentials(vertx).get(0), actual);
+  }
+
+  @Test
+  public void shouldReturnKbCredentialsKeyOnGet() {
+    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
+    String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId + "/key";
+    KbCredentialsKey actual = getWithOk(resourcePath).as(KbCredentialsKey.class);
+
+    assertEquals(STUB_API_KEY, actual.getAttributes().getApiKey());
   }
 
   @Test

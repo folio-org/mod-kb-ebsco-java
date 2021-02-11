@@ -1,0 +1,10 @@
+{
+  "errors": [
+    {
+      "title": "Invalid UC Credentials"
+    }
+  ],
+  "jsonapi": {
+    "version": "1.0"
+  }
+}

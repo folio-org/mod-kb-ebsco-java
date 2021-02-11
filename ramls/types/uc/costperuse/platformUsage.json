@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Platform usage object schema",
+  "description": "Platform usage object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.PlatformUsage",
+  "additionalProperties": false,
+  "properties": {
+    "counts": {
+      "type": "array",
+      "description": "Counts of usage per month",
+      "items": {
+        "type": "integer"
+      },
+      "example": [100, 0, 100, 0, 0, 0, 0, null, 100, 100, 0, 100]
+    },
+    "total": {
+      "type": "integer",
+      "description": "Total count of usage",
+      "example": 500
+    }
+  },
+  "required": [
+    "counts",
+    "total"
+  ]
+}

@@ -25,7 +25,7 @@ public final class SqlQueryHelper {
 
   public static String insertQuery(int size, String... columns) {
     return "INSERT INTO %s (" + joinWithComma(columns) + ") VALUES "
-      + ListUtils.createInsertPlaceholders(columns.length, size);
+      + ListUtils.createPlaceholders(columns.length, size);
   }
 
   public static String deleteQuery() {
@@ -97,6 +97,10 @@ public final class SqlQueryHelper {
 
   public static String equalCondition(String column) {
     return column + " = ?";
+  }
+
+  public static String lessThanCondition(String column) {
+    return column + " < ?";
   }
 
   public static String likeCondition(String column) {

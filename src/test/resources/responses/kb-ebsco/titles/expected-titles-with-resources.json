@@ -121,6 +121,7 @@
             },
             "isPackageCustom": false,
             "isSelected": false,
+            "titleHasSelectedResources": false,
             "isTokenNeeded": false,
             "locationId": 8572506,
             "managedEmbargoPeriod": {
@@ -202,6 +203,7 @@
             },
             "isPackageCustom": false,
             "isSelected": false,
+            "titleHasSelectedResources": false,
             "isTokenNeeded": false,
             "locationId": 5491226,
             "managedEmbargoPeriod": {
@@ -288,6 +290,7 @@
             },
             "isPackageCustom": false,
             "isSelected": false,
+            "titleHasSelectedResources": false,
             "isTokenNeeded": false,
             "locationId": 3982299,
             "managedEmbargoPeriod": {
@@ -374,6 +377,7 @@
             },
             "isPackageCustom": false,
             "isSelected": false,
+            "titleHasSelectedResources": false,
             "isTokenNeeded": false,
             "locationId": 9035313,
             "managedEmbargoPeriod": {
@@ -460,6 +464,7 @@
             },
             "isPackageCustom": false,
             "isSelected": false,
+            "titleHasSelectedResources": false,
             "isTokenNeeded": true,
             "locationId": 20692303,
             "managedEmbargoPeriod": {
@@ -546,6 +551,7 @@
             },
             "isPackageCustom": false,
             "isSelected": false,
+            "titleHasSelectedResources": false,
             "isTokenNeeded": true,
             "locationId": 20482285,
             "managedEmbargoPeriod": {

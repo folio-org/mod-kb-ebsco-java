@@ -1,0 +1,12 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <include file="liquibase/tenant/scripts/v3.6.0/create-currencies-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/create-usage-consolidation-settings-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/update-access-types-view-user-name-column.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/create-usage-consolidation-credentials-table.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/create-holdings-package-id-index.xml"/>
+  <include file="liquibase/tenant/scripts/v3.6.0/alter-holdings-types.xml"/>
+</databaseChangeLog>

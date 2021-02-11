@@ -1,0 +1,176 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+traits:
+  costPerUseCommon: !include traits/costPerUseCommon.raml
+  pageable: !include traits/pageable.raml
+  sortable: !include traits/sortable.raml
+  orderable: !include traits/orderable.raml
+
+types:
+  resourceCostPerUse: !include types/uc/costperuse/resourceCostPerUse.json
+  resourceCostPerUseCollection: !include types/uc/costperuse/resourceCostPerUseCollection.json
+  packageCostPerUse: !include types/uc/costperuse/packageCostPerUse.json
+  titleCostPerUse: !include types/uc/costperuse/titleCostPerUse.json
+  jsonapiError: !include types/jsonapiError.json
+  order:
+    enum: [asc, desc]
+
+/eholdings/resources/{resourceId}/costperuse:
+  displayName: Cost-per-use
+  uriParameters:
+    resourceId:
+      description: Identifier of the resource formed from Provider Id, Package Id, Title Id
+      type: string
+      pattern: "^\\d+-\\d+-\\d+$"
+      example: 22-1887786-1440285
+  get:
+    description: Retrieve cost-per-use information for a particular resource
+    is: [costPerUseCommon]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Resource cost-per-use
+            type: resourceCostPerUse
+            example:
+              strict: false
+              value: !include examples/costPerUse/resource_cost_per_use_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_422_response.json
+/eholdings/titles/{titleId}/costperuse:
+  displayName: Cost-per-use
+  uriParameters:
+    titleId:
+      description: Identifier of the title
+      type: string
+      pattern: "^\\d+$"
+      example: "440285"
+  get:
+    description: Retrieve cost-per-use information for a particular title
+    is: [costPerUseCommon]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Title cost-per-use data
+            type: titleCostPerUse
+            example:
+              strict: false
+              value: !include examples/costPerUse/title_cost_per_use_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_422_response.json
+/eholdings/packages/{packageId}/costperuse:
+  displayName: Cost-per-use
+  uriParameters:
+    packageId:
+      description: Identifier of the package
+      type: string
+      pattern: "^\\d+-\\d+$"
+      example: "15-440285"
+  get:
+    description: Retrieve cost-per-use information for a particular package
+    is: [costPerUseCommon]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Package cost-per-use data
+            type: packageCostPerUse
+            example:
+              strict: false
+              value: !include examples/costPerUse/package_cost_per_use_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_422_response.json
+/eholdings/packages/{packageId}/resources/costperuse:
+  displayName: Cost-per-use
+  uriParameters:
+    packageId:
+      description: Identifier of the package
+      type: string
+      pattern: "^\\d+-\\d+$"
+      example: "15-440285"
+  get:
+    description: Retrieve cost-per-use information for package resources
+    is: [costPerUseCommon, orderable,
+    sortable: {defaultValue: 'name', possibleValues: 'name, type, cost, usage, costperuse, percent'},
+    pageable: {maxCountValue: 1000, defaultCountValue: 100}]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Package resources cost-per-use data
+            type: resourceCostPerUseCollection
+            example:
+              strict: false
+              value: !include examples/costPerUse/package_resources_cost_per_use_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/costPerUse/cost_per_use_422_response.json

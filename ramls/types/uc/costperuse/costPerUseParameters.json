@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Cost-per-use response parameters object schema",
+  "description": "Cost-per-use response parameters object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.CostPerUseParameters",
+  "additionalProperties": false,
+  "properties": {
+    "startMonth" : {
+      "type": "string",
+      "description": "Fiscal starting month",
+      "$ref": "../month.json",
+      "example": "jan"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency",
+      "example": "USD"
+    }
+  },
+  "required": [
+    "startMonth",
+    "currency"
+  ]
+}

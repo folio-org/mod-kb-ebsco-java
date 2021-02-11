@@ -1,0 +1,40 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="MODKBEKBJ-435@@update-access-types-view-user-name-column-name" author="psmagin">
+    <dropView viewName="access_types_view" />
+    <createView viewName="access_types_view">
+      SELECT
+            a.id                 AS id,
+            a.credentials_id     AS credentials_id,
+            a.name               AS name,
+            a.description        AS description,
+            a.created_date       AS created_date,
+            a.created_by_user_id AS created_by_user_id,
+            u1.user_name         AS created_by_user_name,
+            u1.last_name         AS created_by_last_name,
+            u1.first_name        AS created_by_first_name,
+            u1.middle_name       AS created_by_middle_name,
+            a.updated_date       AS updated_date,
+            a.updated_by_user_id AS updated_by_user_id,
+            u2.user_name         AS updated_by_user_name,
+            u2.last_name         AS updated_by_last_name,
+            u2.first_name        AS updated_by_first_name,
+            u2.middle_name       AS updated_by_middle_name,
+			      am.usage_number      AS usage_number
+      FROM access_types a
+        LEFT JOIN kb_users u1
+              ON a.created_by_user_id = u1.id
+        LEFT JOIN kb_users u2
+              ON a.updated_by_user_id = u2.id
+		    LEFT JOIN (SELECT access_type_id, COUNT(access_type_id) AS usage_number
+                   FROM access_types_mappings
+                   GROUP BY access_type_id) as am
+              ON a.id = am.access_type_id
+      ORDER BY a.created_date ASC
+    </createView>
+  </changeSet>
+</databaseChangeLog>

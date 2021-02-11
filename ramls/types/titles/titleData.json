@@ -21,6 +21,11 @@
       "description": "Defines if the title is custom",
       "example": false
     },
+    "hasSelectedResources": {
+      "type": "boolean",
+      "description": "Indicate that the title has selected resources",
+      "example": true
+    },
     "subjects": {
       "type": "array",
       "description": "List of title subjects",

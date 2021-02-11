@@ -3,8 +3,11 @@ package org.folio.spring.config;
 import static org.folio.rest.util.ExceptionMappers.error400BadRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error400ConstraintViolationMapper;
 import static org.folio.rest.util.ExceptionMappers.error400DatabaseMapper;
+import static org.folio.rest.util.ExceptionMappers.error400ExportMapper;
+import static org.folio.rest.util.ExceptionMappers.error400UCRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error401AuthorizationMapper;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
+import static org.folio.rest.util.ExceptionMappers.error401UcAuthenticationMapper;
 import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error409ProcessInProgressMapper;
 import static org.folio.rest.util.ExceptionMappers.error422ConfigurationInvalidMapper;
@@ -13,6 +16,9 @@ import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
@@ -25,6 +31,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.converter.Converter;
@@ -32,7 +39,10 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.io.ClassPathResource;
 
 import org.folio.cache.VertxCache;
+import org.folio.client.uc.UCFailedRequestException;
+import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.config.ModConfiguration;
+import org.folio.config.cache.UCTitlePackageCacheKey;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
 import org.folio.db.exc.ConstraintViolationException;
@@ -53,8 +63,11 @@ import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.KbCredentialsKey;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rmapi.LocalConfigurationServiceImpl;
 import org.folio.rmapi.cache.PackageCacheKey;
@@ -67,6 +80,8 @@ import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.kbcredentials.KbCredentialsServiceImpl;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
+import org.folio.service.uc.UcAuthenticationException;
+import org.folio.service.uc.export.ExportException;
 
 @Configuration
 @ComponentScan(basePackages = {
@@ -75,9 +90,11 @@ import org.folio.service.kbcredentials.UserKbCredentialsServiceImpl;
   "org.folio.rest.util.template",
   "org.folio.repository",
   "org.folio.service",
+  "org.folio.client",
   "org.folio.common",
   "org.folio.properties"
 })
+@Import(UCConfig.class)
 public class ApplicationConfig {
 
   @Bean
@@ -127,6 +144,51 @@ public class ApplicationConfig {
   public VertxCache<ResourceCacheKey, Title> resourceCache(Vertx vertx,
       @Value("${resource.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "resourceCache");
+  }
+
+  @Bean
+  public VertxCache<String, CurrencyCollection> currenciesCache(Vertx vertx,
+                                                                @Value("${currencies.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "currenciesCache");
+  }
+
+  @Bean
+  public VertxCache<String, String> ucTokenCache(Vertx vertx,
+                                                 @Value("${uc.token.cache.expire}") long expirationTime) {
+    return new VertxCache<>(vertx, expirationTime, "ucTokenCache");
+  }
+
+  @Bean
+  public VertxCache<UCTitlePackageCacheKey, Map<String, UCCostAnalysis>> ucTitlePackageCache(Vertx vertx,
+                                                                                             @Value("${uc.title-package.cache.expire}") long expirationTime,
+                                                                                             @Value("${uc.title-package.cache.enable:false}") boolean isEnabled) {
+    if (isEnabled) {
+      return new VertxCache<>(vertx, expirationTime, "ucTitlePackageCache");
+    } else {
+      return emptyCache(vertx);
+    }
+  }
+
+  /**
+   * {@link VertxCache} implementation is using when it is needed to disable cache
+   */
+  public <T,E> VertxCache<T, E> emptyCache(Vertx vertx) {
+    return new VertxCache<>(vertx, 0L, "emptyCache") {
+
+      @Override public E getValue(T key) {
+        return null;
+      }
+
+      @Override public CompletableFuture<E> getValueOrLoad(T key, Supplier<CompletableFuture<E>> loader) {
+        return loader.get();
+      }
+
+      @Override public void putValue(T key, E cacheValue) { }
+
+      @Override public void invalidate(T key) { }
+
+      @Override public void invalidateAll() { }
+    };
   }
 
   @Bean
@@ -185,8 +247,21 @@ public class ApplicationConfig {
       .add(ConfigurationInvalidException.class, error422ConfigurationInvalidMapper())
       .add(DatabaseException.class, error400DatabaseMapper())
       .add(ServiceResponseException.class, errorServiceResponseMapper());
-
   }
+
+  @Bean
+  public ErrorHandler costPerUseErrorHandler() {
+    return errorHandler()
+      .add(UcAuthenticationException.class, error401UcAuthenticationMapper())
+      .add(UCFailedRequestException.class, error400UCRequestMapper());
+  }
+
+  @Bean
+  public ErrorHandler exportErrorHandler() {
+    return costPerUseErrorHandler()
+      .add(ExportException.class, error400ExportMapper());
+  }
+
   @Bean
   public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
     return new ModConfiguration(module);
@@ -194,38 +269,75 @@ public class ApplicationConfig {
 
   @Bean
   public UserKbCredentialsService securedUserCredentialsService(KbCredentialsRepository credentialsRepository,
-      AssignedUserRepository assignedUserRepository,
-      @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter) {
+                                                                AssignedUserRepository assignedUserRepository,
+                                                                @Qualifier("secured")
+                                                                  Converter<DbKbCredentials, KbCredentials> converter) {
     return new UserKbCredentialsServiceImpl(credentialsRepository, assignedUserRepository, converter);
   }
 
   @Bean("securedCredentialsService")
   public KbCredentialsService securedCredentialsService(
-      @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> converter,
-      @Qualifier("securedUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
-      @Qualifier("securedCredentialsCollection") Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
-    return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
+    @Qualifier("securedUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
+    ConversionService securedKbCredentialsConversionService) {
+    return new KbCredentialsServiceImpl(userKbCredentialsService, securedKbCredentialsConversionService);
   }
 
   @Bean
   public UserKbCredentialsService nonSecuredUserCredentialsService(KbCredentialsRepository repository,
-      AssignedUserRepository assignedUserRepository,
-      @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter) {
+                                                                   AssignedUserRepository assignedUserRepository,
+                                                                   @Qualifier("nonSecured")
+                                                                     Converter<DbKbCredentials, KbCredentials> converter) {
     return new UserKbCredentialsServiceImpl(repository, assignedUserRepository, converter);
   }
 
   @Bean("nonSecuredCredentialsService")
   public KbCredentialsService nonSecuredCredentialsService(
-      @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> converter,
-      @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
-      @Qualifier("nonSecuredCredentialsCollection") Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
-    return new KbCredentialsServiceImpl(converter, userKbCredentialsService, credentialsCollectionConverter);
+    @Qualifier("nonSecuredUserCredentialsService") UserKbCredentialsService userKbCredentialsService,
+    ConversionService nonSecuredKbCredentialsConversionService) {
+    return new KbCredentialsServiceImpl(userKbCredentialsService, nonSecuredKbCredentialsConversionService);
   }
 
   @Bean
   public CustomLabelsProperties customLabelsProperties(
-    @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength,
-    @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
+      @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength,
+      @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
     return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
   }
+
+  @Bean
+  public ConversionService securedKbCredentialsConversionService(Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter,
+                                                                 Converter<DbKbCredentials, org.folio.holdingsiq.model.Configuration> configurationConverter,
+                                                                 Converter<DbKbCredentials, KbCredentialsKey> keyConverter,
+                                                                 Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter,
+                                                                 @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
+                                                                 @Qualifier("securedCredentialsCollection")
+                                                                     Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    DefaultConversionService conversionService = new DefaultConversionService();
+    conversionService.addConverter(credentialsToDBConverter);
+    conversionService.addConverter(configurationConverter);
+    conversionService.addConverter(keyConverter);
+    conversionService.addConverter(pathRequestConverter);
+    conversionService.addConverter(credentialsFromDBConverter);
+    conversionService.addConverter(credentialsCollectionConverter);
+    return conversionService;
+  }
+
+  @Bean
+  public ConversionService nonSecuredKbCredentialsConversionService(Converter<KbCredentials, DbKbCredentials> credentialsToDBConverter,
+                                                                 Converter<DbKbCredentials, org.folio.holdingsiq.model.Configuration> configurationConverter,
+                                                                 Converter<DbKbCredentials, KbCredentialsKey> keyConverter,
+                                                                 Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter,
+                                                                 @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> credentialsFromDBConverter,
+                                                                 @Qualifier("nonSecuredCredentialsCollection")
+                                                                   Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    DefaultConversionService conversionService = new DefaultConversionService();
+    conversionService.addConverter(credentialsToDBConverter);
+    conversionService.addConverter(configurationConverter);
+    conversionService.addConverter(keyConverter);
+    conversionService.addConverter(pathRequestConverter);
+    conversionService.addConverter(credentialsFromDBConverter);
+    conversionService.addConverter(credentialsCollectionConverter);
+    return conversionService;
+  }
+
 }

@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Defines platform type",
+  "javaType": "org.folio.rest.jaxrs.model.PlatformType",
+  "type": "string",
+  "enum": [
+    "publisher",
+    "nonPublisher",
+    "all"
+  ]
+}

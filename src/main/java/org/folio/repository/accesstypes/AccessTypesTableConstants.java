@@ -45,25 +45,25 @@ public class AccessTypesTableConstants {
 
   static {
     String[] insertColumns = new String[] {
-      ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, DESCRIPTION_COLUMN, CREATED_DATE_COLUMN,
-      CREATED_BY_USER_ID_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN
+        ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, DESCRIPTION_COLUMN, CREATED_DATE_COLUMN,
+        CREATED_BY_USER_ID_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN
     };
 
     SELECT_IDS_BY_CREDENTIALS_ID_QUERY = selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
     SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY = selectQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
     SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY = selectQuery() + " " +
-      whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
+        whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
     SELECT_BY_CREDENTIALS_AND_NAMES_QUERY = selectQuery() + " " + whereConditionsQuery(
-      equalCondition(CREDENTIALS_ID_COLUMN), inCondition(NAME_COLUMN)) + ";";
+        equalCondition(CREDENTIALS_ID_COLUMN), inCondition(NAME_COLUMN)) + ";";
     SELECT_COUNT_BY_CREDENTIALS_ID_QUERY = selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
     SELECT_BY_CREDENTIALS_AND_RECORD_QUERY = selectQuery() + " " + whereConditionsQuery(
-      equalCondition(CREDENTIALS_ID_COLUMN),
-      inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY)
+        equalCondition(CREDENTIALS_ID_COLUMN),
+        inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY)
     ) + " " + limitQuery(1) + ";";
 
     UPSERT_ACCESS_TYPE_QUERY = insertQuery(insertColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, insertColumns) + ";";
     DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY =
-      deleteQuery() + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
+        deleteQuery() + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
   }
 
   private AccessTypesTableConstants() {

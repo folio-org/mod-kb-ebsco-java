@@ -1,0 +1,163 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+traits:
+  metricType:
+    queryParameters:
+      metrictype:
+        displayName: Metric Type
+        description: Indicates that metric type should be included
+        type: boolean
+        required: false
+        default: false
+
+types:
+  uCSettings: !include types/uc/uCSettings.json
+  uCSettingsKey: !include types/uc/uCSettingsKey.json
+  uCSettingsPostRequest: !include types/uc/uCSettingsPostRequest.json
+  uCSettingsPatchRequest: !include types/uc/uCSettingsPatchRequest.json
+  jsonapiError: !include types/jsonapiError.json
+
+/eholdings/kb-credentials/{id}/uc:
+  displayName: Usage Consolidation settings
+  uriParameters:
+    id:
+      pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+  get:
+    description: Retrieve a Usage Consolidation settings.
+    is: [metricType]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Usage Consolidation settings
+            type: uCSettings
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_get_404_response.json
+  post:
+    description: Create a new Usage Consolidation Settings
+    headers:
+      Content-Type:
+        example: application/vnd.api+json
+    body:
+      application/vnd.api+json:
+        description: Create a Usage Consolidation
+        type: uCSettingsPostRequest
+        example:
+          strict: false
+          value: !include examples/uc/uc_settings_post_request.json
+    responses:
+      201:
+        description: Created
+        body:
+          application/vnd.api+json:
+            type: uCSettings
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_200_response.json
+      400:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_400_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_post_422_response.json
+  patch:
+    description: Create a new Usage Consolidation Settings
+    body:
+      application/vnd.api+json:
+        description: Create a Usage Consolidation
+        type: uCSettingsPatchRequest
+        example:
+          strict: false
+          value: !include examples/uc/uc_settings_patch_request.json
+    responses:
+      204:
+          description: No Content
+      404:
+        description: Bad Request
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_patch_404_response.json
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_patch_422_response.json
+  /key:
+    get:
+      description: Retrieve a Usage Consolidation settings customer key.
+      responses:
+        200:
+          description: OK
+          body:
+            application/vnd.api+json:
+              description: Usage Consolidation settings customer key
+              type: uCSettingsKey
+              example:
+                strict: false
+                value: !include examples/uc/uc_settings_key_get_200_response.json
+        404:
+          description: Not Found
+          body:
+            application/vnd.api+json:
+              type: jsonapiError
+              example:
+                strict: false
+                value: !include examples/uc/uc_settings_get_404_response.json
+/eholdings/uc:
+  displayName: Usage Consolidation settings
+  get:
+    description: Retrieve a Usage Consolidation settings.
+    is: [metricType]
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Usage Consolidation settings
+            type: uCSettings
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_get_200_response.json
+      404:
+        description: Not Found
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_get_404_response.json

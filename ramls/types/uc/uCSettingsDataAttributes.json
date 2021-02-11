@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Usage Consolidation Settings Data Attributes Schema",
+  "description": "Usage Consolidation Settings Data Attributes Schema",
+  "javaType": "org.folio.rest.jaxrs.model.UCSettingsDataAttributes",
+  "additionalProperties": false,
+  "type": "object",
+  "extends": {
+    "$ref": "uCSettingsKeyDataAttributes.json"
+  },
+  "properties": {
+    "startMonth": {
+      "type": "string",
+      "description": "Fiscal starting month",
+      "$ref": "month.json",
+      "example": "jan",
+      "default": "jan"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency",
+      "examples": "USD"
+    },
+    "platformType": {
+      "type": "string",
+      "description": "Type of platform",
+      "$ref": "platformType.json",
+      "example": "publisher",
+      "default": "all"
+    },
+    "metricType": {
+      "type": "string",
+      "description": "Metric usage type",
+      "readonly": true,
+      "enum": [
+        "Total Item Requests",
+        "Unique Item Requests",
+        "Unknown"
+      ],
+      "javaEnumNames": [
+        "TOTAL",
+        "UNIQUE",
+        "UNKNOWN"
+      ]
+    }
+  },
+  "required": [
+    "currency"
+  ]
+}

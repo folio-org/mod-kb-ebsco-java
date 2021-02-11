@@ -8,6 +8,7 @@
       "enum": [
         "All",
         "Audiobook",
+        "Audio book",
         "Book",
         "Book Series",
         "Database",
@@ -19,7 +20,9 @@
         "Streaming Audio",
         "Streaming Video",
         "Thesis & Dissertation",
+        "Thesis/Dissertation",
         "Website",
+        "Web site",
         "Unspecified"
       ],
       "example": "Journal"

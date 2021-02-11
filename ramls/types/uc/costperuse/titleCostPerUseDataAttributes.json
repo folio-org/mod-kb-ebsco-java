@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Title cost-per-use data attributes object schema",
+  "description": "Title cost-per-use data attributes object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.TitleCostPerUseDataAttributes",
+  "additionalProperties": false,
+  "properties": {
+    "usage": {
+      "type": "object",
+      "description": "Usage of current title",
+      "$ref": "usage.json"
+    },
+    "analysis": {
+      "type": "object",
+      "description": "Cost of current title",
+      "$ref": "titleAnalysisCost.json"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Response's parameters",
+      "$ref": "costPerUseParameters.json"
+    }
+  },
+  "required": [
+    "usage",
+    "analysis",
+    "parameters"
+  ]
+}

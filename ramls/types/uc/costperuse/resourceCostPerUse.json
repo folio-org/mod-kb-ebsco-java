@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Resource cost-per-use object schema",
+  "description": "Resource cost-per-use object schema",
+  "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.ResourceCostPerUse",
+  "additionalProperties": false,
+  "properties": {
+    "resourceId": {
+      "type": "string",
+      "description": "Resource ID",
+      "example": "22-1887786-1440285"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": [
+        "resourceCostPerUse"
+      ],
+      "example": "resourceCostPerUse"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Resource cost-per-use attributes",
+      "$ref": "resourceCostPerUseDataAttributes.json"
+    }
+  },
+  "required": [
+    "type",
+    "attributes"
+  ]
+}

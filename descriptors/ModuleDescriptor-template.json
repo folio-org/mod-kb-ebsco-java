@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "eholdings",
-      "version": "2.1",
+      "version": "3.0",
       "handlers": [
         {
           "methods": ["GET"],
@@ -20,6 +20,11 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}",
           "permissionsRequired": ["kb-ebsco.kb-credentials.item.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/key",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.item.get", "kb-ebsco.kb-credentials.item.patch"]
         },
         {
           "methods": ["PATCH"],
@@ -107,6 +112,11 @@
           "permissionsRequired": ["kb-ebsco.package-resources.collection.get"]
         },
         {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/packages/{packageId}/resources/costperuse/export",
+          "permissionsRequired": ["kb-ebsco.package-resources.export.collection.get"]
+        },
+        {
           "methods": ["PUT"],
           "pathPattern": "/eholdings/packages/{packageId}/tags",
           "permissionsRequired": ["kb-ebsco.package-tags.put"]
@@ -150,6 +160,26 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/resources/{resourceId}",
           "permissionsRequired": ["kb-ebsco.resources.item.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/resources/{resourceId}/costperuse",
+          "permissionsRequired": ["kb-ebsco.resources-costperuse.item.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/titles/{titleId}/costperuse",
+          "permissionsRequired": ["kb-ebsco.titles-costperuse.item.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/packages/{packageId}/costperuse",
+          "permissionsRequired": ["kb-ebsco.packages-costperuse.item.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/packages/{packageId}/resources/costperuse",
+          "permissionsRequired": ["kb-ebsco.package-resources-costperuse.collection.get"]
         },
         {
           "methods": ["PUT"],
@@ -298,6 +328,36 @@
           "methods": ["DELETE"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/access-types/{accessTypeId}",
           "permissionsRequired": ["kb-ebsco.kb-credentials.access-types.item.delete"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/currencies",
+          "permissionsRequired": ["kb-ebsco.currencies.collection.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/uc",
+          "permissionsRequired": ["kb-ebsco.uc.item.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{id}/uc",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/kb-credentials/{id}/uc/key",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get", "kb-ebsco.kb-credentials.uc.item.patch"]
+        },
+        {
+          "methods": ["POST"],
+          "pathPattern": "/eholdings/kb-credentials/{id}/uc",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.collection.post"]
+        },
+        {
+          "methods": ["PATCH"],
+          "pathPattern": "/eholdings/kb-credentials/{id}/uc",
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.patch"]
         }
       ]
     },
@@ -481,6 +541,11 @@
       "description": "get resources for a single package"
     },
     {
+      "permissionName": "kb-ebsco.package-resources.export.collection.get",
+      "displayName": "get exported resources for a single package",
+      "description": "get exported resources for a single package"
+    },
+    {
       "permissionName": "kb-ebsco.package-tags.put",
       "displayName": "update tags for a single package",
       "description": "Update tags for a single package"
@@ -639,6 +704,61 @@
       ]
     },
     {
+      "permissionName": "kb-ebsco.uc.item.get",
+      "displayName": "get usage consolidation settings",
+      "description": "Get usage consolidation settings"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.uc.item.get",
+      "displayName": "get usage consolidation settings related to KB credentials",
+      "description": "Get usage consolidation settings related to KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.uc.collection.post",
+      "displayName": "post usage consolidation settings related to KB credentials",
+      "description": "Post usage consolidation settings related to KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.uc.item.patch",
+      "displayName": "patch usage consolidation settings related to KB credentials",
+      "description": "Patch usage consolidation settings related to KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.resources-costperuse.item.get",
+      "displayName": "get cost-per-use information for a resource",
+      "description": "Get cost-per-use information for a resource"
+    },
+    {
+      "permissionName": "kb-ebsco.titles-costperuse.item.get",
+      "displayName": "get cost-per-use information for a title",
+      "description": "Get cost-per-use information for a title"
+    },
+    {
+      "permissionName": "kb-ebsco.packages-costperuse.item.get",
+      "displayName": "get cost-per-use information for a package",
+      "description": "Get cost-per-use information for a package"
+    },
+    {
+      "permissionName": "kb-ebsco.package-resources-costperuse.collection.get",
+      "displayName": "get cost-per-use information for a package resources",
+      "description": "Get cost-per-use information for a package resources"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.uc.all",
+      "displayName": "EBSCO KB Broker Usage Consolidation settings - all permissions",
+      "description": "All permissions for managing Usage Consolidation settings",
+      "subPermissions": [
+        "kb-ebsco.uc.item.get",
+        "kb-ebsco.kb-credentials.uc.item.get",
+        "kb-ebsco.kb-credentials.uc.collection.post",
+        "kb-ebsco.kb-credentials.uc.item.patch",
+        "kb-ebsco.resources-costperuse.item.get",
+        "kb-ebsco.packages-costperuse.item.get",
+        "kb-ebsco.package-resources-costperuse.collection.get",
+        "kb-ebsco.titles-costperuse.item.get"
+      ]
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.users.collection.get",
       "displayName": "get assigned users to KB credentials",
       "description": "Get assigned users to KB credentials"
@@ -659,6 +779,11 @@
       "description": "Put assigned users collection item"
     },
     {
+      "permissionName": "kb-ebsco.currencies.collection.get",
+      "displayName": "get currencies collection",
+      "description": "Get currencies collection"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.users.all",
       "displayName": "EBSCO KB Broker users assigned to credentials - all permissions",
       "description": "All permissions for manging users assigned to EBSCO KB Credentials",
@@ -676,6 +801,7 @@
       "subPermissions": [
         "kb-ebsco.kb-credentials.all",
         "kb-ebsco.kb-credentials.users.all",
+        "kb-ebsco.kb-credentials.uc.all",
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
@@ -693,6 +819,7 @@
         "kb-ebsco.packages.collection.post",
         "kb-ebsco.packages.item.delete",
         "kb-ebsco.package-resources.collection.get",
+        "kb-ebsco.package-resources.export.collection.get",
         "kb-ebsco.package-tags.put",
         "kb-ebsco.titles.item.get",
         "kb-ebsco.packages.item.get",
@@ -710,7 +837,8 @@
         "kb-ebsco.kb-credentials.holdings-load.status.item.get",
         "kb-ebsco.custom-labels.collection.get",
         "kb-ebsco.access-types.collection.get",
-        "kb-ebsco.access-types.item.get"
+        "kb-ebsco.access-types.item.get",
+        "kb-ebsco.currencies.collection.get"
       ]
     }
   ],
@@ -718,6 +846,10 @@
     {
       "id": "users",
       "version": "15.0"
+    },
+    {
+      "id": "configuration",
+      "version": "2.0"
     }
   ],
   "launchDescriptor": {

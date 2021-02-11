@@ -91,9 +91,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @HandleValidationErrors
   public void getEholdingsTitles(List<String> filterTags, List<String> filterAccessType, String filterSelected,
                                  String filterType, String filterName, String filterIsxn, String filterSubject,
-                                 String filterPublisher, String sort, int page, int count, String include,
-                                 Map<String, String> okapiHeaders,
-                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                 String filterPublisher, String include, String sort, int page, int count,
+                                 Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+                                 Context vertxContext) {
     Filter filter = Filter.builder()
       .recordType(RecordType.TITLE)
       .filterTags(filterTags)

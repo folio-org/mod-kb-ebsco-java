@@ -1,10 +1,16 @@
 {
   "data": {
+    "id": "762169",
+    "type": "titles",
     "attributes": {
-      "contributors": [
+      "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
+      "publisherName": "Chelsea House Publishers",
+      "isTitleCustom": false,
+      "hasSelectedResources": true,
+      "subjects": [
         {
-          "type": "author",
-          "contributor": "Bloom, Harold"
+          "subject": "LITERARY CRITICISM / American / General",
+          "type": "BISAC"
         }
       ],
       "identifiers": [
@@ -19,19 +25,18 @@
           "type": "ISBN"
         }
       ],
-      "isPeerReviewed": false,
-      "isTitleCustom": false,
-      "name": "F. Scott Fitzgerald's The Great Gatsby (Great Gatsby)",
       "publicationType": "Book",
-      "publisherName": "Chelsea House Publishers",
-      "subjects": [
+      "isPeerReviewed": false,
+      "contributors": [
         {
-          "subject": "LITERARY CRITICISM / American / General",
-          "type": "BISAC"
+          "type": "author",
+          "contributor": "Bloom, Harold"
         }
-      ]
+      ],
+      "tags": {
+        "tagList": []
+      }
     },
-    "id": "762169",
     "relationships": {
       "resources": {
         "data": [
@@ -39,10 +44,12 @@
             "type": "resources",
             "id": "19-3964-762169"
           }
-        ]
+        ],
+        "meta": {
+          "included": true
+        }
       }
-    },
-    "type": "titles"
+    }
   },
   "included": [
     {
@@ -84,6 +91,7 @@
         },
         "isPackageCustom": false,
         "isSelected": true,
+        "titleHasSelectedResources": true,
         "isTokenNeeded": false,
         "locationId": 3464602,
         "managedEmbargoPeriod": {
@@ -113,7 +121,11 @@
           "tagList": [
             "tag one"
           ]
-        }
+        },
+        "userDefinedField1": "test 1",
+        "userDefinedField2": "test 2",
+        "userDefinedField3": "",
+        "userDefinedField5": "test 5"
       },
       "relationships": {
         "provider": {

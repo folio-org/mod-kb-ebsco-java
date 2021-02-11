@@ -1,0 +1,41 @@
+#%RAML 1.0
+title: mod-kb-ebsco-java
+baseUri: https://github.com/folio-org/mod-kb-ebsco-java
+protocols: [ HTTPS ]
+version: v1
+mediaType: "application/vnd.api+json"
+
+documentation:
+  - title: mod-kb-ebsco-java
+    content: Implements the eholdings interface using EBSCO KB as backend.
+
+traits:
+  costPerUseCommon: !include traits/costPerUseCommon.raml
+
+types:
+  jsonapiError: !include types/jsonapiError.json
+
+/eholdings/packages/{packageId}/resources/costperuse/export:
+  uriParameters:
+    packageId:
+      description: Identifier of the package
+      type: string
+      pattern: "^\\d+-\\d+$"
+      example: "19-4478"
+  get:
+    is: [costPerUseCommon]
+    description: |
+      Endpoint provides a cost-per-use information about the titles included into the package in csv format.
+    responses:
+      200:
+        description: OK
+        body:
+          text/csv:
+            example:
+              strict: false
+              value: !include examples/export/export_package_title_get_response.csv
+      500:
+        description: "Internal server error"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"
