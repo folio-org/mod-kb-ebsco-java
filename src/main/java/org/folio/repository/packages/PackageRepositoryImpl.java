@@ -32,12 +32,12 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +50,7 @@ import org.folio.rest.util.IdParser;
 @Component
 public class PackageRepositoryImpl implements PackageRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PackageRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(PackageRepositoryImpl.class);
 
   @Autowired
   private Vertx vertx;
@@ -152,7 +152,7 @@ public class PackageRepositoryImpl implements PackageRepository {
       .credentialsId(entry.getUUID(CREDENTIALS_ID_COLUMN))
       .contentType(entry.getString(CONTENT_TYPE_COLUMN))
       .name(entry.getString(NAME_COLUMN))
-      .tags(asList(entry.getStringArray(TAG_COLUMN)))
+      .tags(asList(entry.getArrayOfStrings(TAG_COLUMN)))
       .build()
     );
   }

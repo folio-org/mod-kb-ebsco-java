@@ -7,8 +7,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
@@ -20,7 +20,7 @@ import org.folio.util.FutureUtils;
 
 public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TitlesServiceImpl.class);
+  private static final Logger LOG = LogManager.getLogger(TitlesServiceImpl.class);
 
   private VertxCache<TitleCacheKey, Title> titleCache;
   private Configuration configuration;

@@ -9,8 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
@@ -28,7 +28,7 @@ import org.folio.util.FutureUtils;
 public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
 
   private static final String INCLUDE_PACKAGES_VALUE = "packages";
-  private static final Logger LOG = LoggerFactory.getLogger(ProvidersServiceImpl.class);
+  private static final Logger LOG = LogManager.getLogger(ProvidersServiceImpl.class);
 
 
   private PackagesHoldingsIQService packagesService;

@@ -1,7 +1,7 @@
 package org.folio.repository.providers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 

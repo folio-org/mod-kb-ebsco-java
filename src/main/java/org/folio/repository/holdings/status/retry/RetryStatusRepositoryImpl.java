@@ -21,11 +21,11 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.RowSetUtils;
@@ -35,7 +35,7 @@ import org.folio.rest.persist.PostgresClient;
 @Component
 public class RetryStatusRepositoryImpl implements RetryStatusRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RetryStatusRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(RetryStatusRepositoryImpl.class);
 
   private final Vertx vertx;
   private final DBExceptionTranslator excTranslator;

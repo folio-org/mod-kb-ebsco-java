@@ -12,8 +12,8 @@ import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ import org.folio.service.uc.UCCostPerUseService;
 
 @Service
 public class ExportServiceImpl implements ExportService {
-  private static final Logger LOG = LoggerFactory.getLogger(ExportServiceImpl.class);
+  private static final Logger LOG = LogManager.getLogger(ExportServiceImpl.class);
 
   @Autowired
   private UCCostPerUseService costPerUseService;

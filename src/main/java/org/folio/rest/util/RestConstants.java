@@ -1,9 +1,5 @@
 package org.folio.rest.util;
 
-import static java.util.Arrays.asList;
-
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -34,14 +30,12 @@ public final class RestConstants {
     );
 
   public static final List<String> SUPPORTED_PACKAGE_FILTER_TYPE_VALUES =
-    Collections.unmodifiableList(
-      asList("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference")
-    );
+    List.of("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference");
 
   public static final List<String> SUPPORTED_TITLE_FILTER_TYPE_VALUES =
-    Collections.unmodifiableList(Arrays.asList("audiobook", "book", "bookseries", "database",
-      "journal", "newsletter", "newspaper", "proceedings", "report", "streamingaudio", "streamingvideo",
-      "thesisdissertation", "website", "unspecified"));
+    List.of("audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report",
+      "streamingaudio", "streamingvideo", "thesisdissertation", "website", "unspecified");
 
-  private RestConstants() { }
+  private RestConstants() {
+  }
 }

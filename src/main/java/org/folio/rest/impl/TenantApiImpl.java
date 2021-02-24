@@ -6,72 +6,39 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.folio.liquibase.LiquibaseUtil;
-import org.folio.rest.annotations.Validate;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.tools.utils.TenantTool;
-import org.folio.spring.SpringContextUtil;
 
 public class TenantApiImpl extends TenantAPI {
 
-  private static final Logger logger = LoggerFactory.getLogger(TenantApiImpl.class);
+  private static final Logger logger = LogManager.getLogger(TenantApiImpl.class);
 
   private static final String TEST_DATA_SQL = "templates/db_scripts/test-data.sql";
   private static final String TENANT_PLACEHOLDER = "${myuniversity}";
   private static final String MODULE_PLACEHOLDER = "${mymodule}";
   private static final String TEST_MODE = "test.mode";
 
-
-  public TenantApiImpl() {
-    super();
-    SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
-  }
-
-  @Validate
   @Override
-  public void postTenant(TenantAttributes entity, Map<String, String> headers, Handler<AsyncResult<Response>> handlers,
-                         Context context) {
-    super.postTenant(entity, headers, ar -> {
-      if (ar.failed()) {
-        handlers.handle(ar);
-      } else {
-        String tenantId = TenantTool.tenantId(headers);
+  Future<Integer> loadData(TenantAttributes attributes, String tenantId,
+                           Map<String, String> headers, Context context) {
+    return super.loadData(attributes, tenantId, headers, context)
+      .compose(num -> {
         Vertx vertx = context.owner();
-
-        vertx.executeBlocking(
-          executeSchemaUpdates(tenantId, vertx),
-
-          result -> setupTestData(vertx, tenantId)
-            .onComplete(event -> handlers.handle(ar))
-        );
-      }
-    }, context);
-  }
-
-  private Handler<Promise<Object>> executeSchemaUpdates(String tenantId, Vertx vertx) {
-    return blocking -> {
-      logger.info("************ Running schema updates ************");
-
-      LiquibaseUtil.initializeSchemaForTenant(vertx, tenantId);
-
-      logger.info("Schema updated for tenant: {}", tenantId);
-
-      blocking.complete();
-    };
+        logger.info("************ Running schema updates ************");
+        LiquibaseUtil.initializeSchemaForTenant(vertx, tenantId);
+        logger.info("Schema updated for tenant: {}", tenantId);
+        return setupTestData(vertx, tenantId).map(num);
+      });
   }
 
   private Future<List<String>> setupTestData(Vertx vertx, String tenantId) {

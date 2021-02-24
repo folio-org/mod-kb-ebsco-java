@@ -13,10 +13,10 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import org.folio.db.RowSetUtils;
@@ -26,7 +26,7 @@ import org.folio.repository.DbUtil;
 @Repository
 public class CurrenciesRepositoryImpl implements CurrenciesRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(CurrenciesRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(CurrenciesRepositoryImpl.class);
 
   private final Vertx vertx;
   private final DBExceptionTranslator excTranslator;

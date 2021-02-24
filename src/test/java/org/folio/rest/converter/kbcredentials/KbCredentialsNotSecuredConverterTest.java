@@ -1,7 +1,7 @@
 package org.folio.rest.converter.kbcredentials;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_KEY;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;

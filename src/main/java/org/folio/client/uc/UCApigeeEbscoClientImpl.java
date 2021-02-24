@@ -13,8 +13,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -28,6 +26,8 @@ import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -44,7 +44,7 @@ import org.folio.client.uc.model.UCTitlePackageId;
 @Component
 public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
 
-  private static final Logger LOG = LoggerFactory.getLogger(UCApigeeEbscoClientImpl.class);
+  private static final Logger LOG = LogManager.getLogger(UCApigeeEbscoClientImpl.class);
 
   private static final String FISCAL_YEAR_PARAM = "fiscalYear";
   private static final String FISCAL_MONTH_PARAM = "fiscalMonth";

@@ -1,9 +1,9 @@
 package org.folio.repository.tag;
 
 import static java.util.Collections.emptyList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 

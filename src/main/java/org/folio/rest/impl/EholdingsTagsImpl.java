@@ -16,9 +16,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
@@ -37,7 +37,7 @@ import org.folio.spring.SpringContextUtil;
 
 public class EholdingsTagsImpl implements EholdingsTags {
 
-  private final Logger log = LoggerFactory.getLogger(EholdingsTagsImpl.class);
+  private final Logger log = LogManager.getLogger(EholdingsTagsImpl.class);
 
   @Autowired
   private RectypeParameterValidator recordTypeValidator;

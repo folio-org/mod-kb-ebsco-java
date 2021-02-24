@@ -15,10 +15,6 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
@@ -53,9 +49,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.folio.client.uc.UCApigeeEbscoClient;
 import org.folio.client.uc.UCAuthEbscoClient;
 import org.folio.client.uc.model.UCAuthToken;
-import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.repository.holdings.DbHoldingInfo;
-import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.service.locale.LocaleSettingsService;
@@ -81,8 +75,6 @@ public class EholdingsExportImplTest extends WireMockTestBase {
   private UCApigeeEbscoClient apigeeEbscoClient;
   @Autowired
   private LocaleSettingsService configurationService;
-  private ConfigurationClientProvider configurationClientProvider;
-  private ConfigurationsClient mockConfigurationsClient;
 
   @Override
   @Before
@@ -92,9 +84,6 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     ReflectionTestUtils.setField(authEbscoClient, "baseUrl", getWiremockUrl());
     ReflectionTestUtils.setField(apigeeEbscoClient, "baseUrl", getWiremockUrl());
     credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    configurationClientProvider = mock(ConfigurationClientProvider.class);
-    mockConfigurationsClient = mock(ConfigurationsClient.class);
-    when(configurationClientProvider.createClient(anyString(), anyInt(), anyString(), anyString())).thenReturn(mockConfigurationsClient);
   }
 
   @After

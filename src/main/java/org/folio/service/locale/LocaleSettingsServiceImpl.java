@@ -9,27 +9,20 @@ import java.util.function.BiConsumer;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTimeZone;
 
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
 
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LocaleSettingsServiceImpl.class);
-  private final String query = "module=ORG and configName=localeSettings";
-
-  private ConfigurationClientProvider configurationClientProvider;
-
-  public LocaleSettingsServiceImpl(ConfigurationClientProvider configurationClientProvider) {
-    this.configurationClientProvider = configurationClientProvider;
-  }
+  private static final Logger LOG = LogManager.getLogger(LocaleSettingsServiceImpl.class);
+  private static final String QUERY = "module=ORG and configName=localeSettings";
 
   public CompletableFuture<LocaleSettings> retrieveSettings(OkapiData okapiData) {
     CompletableFuture<LocaleSettings> future = new CompletableFuture<>();
@@ -55,10 +48,11 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     final String tenantId = TenantTool.calculateTenantId(okapiData.getTenant());
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
     try {
-      ConfigurationsClient configurationsClient = configurationClientProvider
-        .createClient(okapiData.getOkapiHost(), okapiData.getOkapiPort(), tenantId, okapiData.getApiToken());
-      LOG.info("Send GET request to mod-configuration {}", query);
-      configurationsClient.getEntries(query, 0, 100, null, null, response ->
+
+      ConfigurationsClient configurationsClient =
+        new ConfigurationsClient(okapiData.getOkapiHost(), okapiData.getOkapiPort(), tenantId, okapiData.getApiToken());
+      LOG.info("Send GET request to mod-configuration {}", QUERY);
+      configurationsClient.getEntries(QUERY, 0, 100, null, null, response ->
         response.bodyHandler(body -> {
           if (isSuccessfulResponse(response, body, future)) {
             future.complete(body.toJsonObject());
