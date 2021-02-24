@@ -63,10 +63,6 @@ public class TitleConverter implements Converter<TitleResult, Title> {
 
   @Override
   public Title convert(@NonNull TitleResult titleResult) {
-    for (DbTag f:
-         titleResult.getResourceTagList()) {
-
-    }
     org.folio.holdingsiq.model.Title rmapiTitle = titleResult.getTitle();
     Title title = new Title()
       .withData(new Data()
