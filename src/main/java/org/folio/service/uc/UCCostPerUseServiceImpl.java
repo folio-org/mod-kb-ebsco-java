@@ -365,7 +365,7 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
   private CompletableFuture<CommonUCConfiguration> fetchCommonConfiguration(String platform, String fiscalYear,
                                                                             MutableObject<PlatformType> platformTypeHolder,
                                                                             RMAPITemplateContext context) {
-    Map<String, String> okapiHeaders = context.getOkapiData().getOkapiHeaders();
+    Map<String, String> okapiHeaders = context.getOkapiData().getHeaders();
     return authService.authenticate(okapiHeaders)
       .thenCombine(settingsService.fetchByCredentialsId(context.getCredentialsId(), false, okapiHeaders),
         toCommonUCConfiguration(platform, fiscalYear, platformTypeHolder)

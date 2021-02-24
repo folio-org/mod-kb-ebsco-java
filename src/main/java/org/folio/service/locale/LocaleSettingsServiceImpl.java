@@ -6,9 +6,10 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -48,30 +49,37 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     final String tenantId = TenantTool.calculateTenantId(okapiData.getTenant());
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
     try {
-
-      ConfigurationsClient configurationsClient =
-        new ConfigurationsClient(okapiData.getOkapiHost(), okapiData.getOkapiPort(), tenantId, okapiData.getApiToken());
+      var configurationsClient = new ConfigurationsClient(okapiData.getOkapiUrl(), tenantId, okapiData.getApiToken());
       LOG.info("Send GET request to mod-configuration {}", QUERY);
-      configurationsClient.getEntries(QUERY, 0, 100, null, null, response ->
-        response.bodyHandler(body -> {
-          if (isSuccessfulResponse(response, body, future)) {
-            future.complete(body.toJsonObject());
+      Promise<HttpResponse<Buffer>> promise = Promise.promise();
+      configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null, promise);
+
+      promise.future()
+        .onSuccess(event -> {
+          try {
+            if (isSuccessfulResponse(event)) {
+              future.complete(event.body().toJsonObject());
+            }
+          } catch (IllegalStateException e) {
+            future.completeExceptionally(e);
           }
-        }));
-    } catch (Throwable throwable) {
-      LOG.error("Request to mod-configuration failed:", throwable);
-      future.completeExceptionally(throwable);
+        })
+        .onFailure(future::completeExceptionally);
+
+    } catch (Exception e) {
+      LOG.error("Request to mod-configuration failed:", e);
+      future.completeExceptionally(e);
     }
     return future;
   }
 
-  private boolean isSuccessfulResponse(HttpClientResponse response, Buffer responseBody, CompletableFuture<?> future) {
+  private boolean isSuccessfulResponse(HttpResponse<Buffer> response) {
     if (!Response.isSuccess(response.statusCode())) {
       String errorMessage = String.format(
-        "Request to mod-configuration failed: error code - %s response body - %s", response.statusCode(), responseBody);
+        "Request to mod-configuration failed: error code - %s response body - %s", response.statusCode(),
+        response.bodyAsString());
       LOG.error(errorMessage);
-      future.completeExceptionally(new IllegalStateException(errorMessage));
-      return false;
+      throw new IllegalStateException(errorMessage);
     }
     return true;
   }

@@ -382,7 +382,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       RMAPITemplateContext context) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.PACKAGE, context.getCredentialsId(),
-      context.getOkapiData().getOkapiHeaders());
+      context.getOkapiData().getHeaders());
   }
 
   private CompletableFuture<AccessType> fetchAccessType(PackagePutRequest entity,
@@ -392,7 +392,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       return CompletableFuture.completedFuture(null);
     } else {
       return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId,
-        context.getOkapiData().getOkapiHeaders());
+        context.getOkapiData().getHeaders());
     }
   }
 
