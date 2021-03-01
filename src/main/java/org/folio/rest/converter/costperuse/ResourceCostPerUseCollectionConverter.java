@@ -1,10 +1,14 @@
 package org.folio.rest.converter.costperuse;
 
 import static org.apache.commons.lang3.math.NumberUtils.DOUBLE_ZERO;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
-import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPackageTitlesTotalCost;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getNonPublisherUsages;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPublisherUsages;
+import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.resourceIdToString;
 
@@ -19,6 +23,8 @@ import org.springframework.stereotype.Component;
 import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.jaxrs.model.PlatformType;
+import org.folio.rest.jaxrs.model.PlatformUsage;
 import org.folio.rest.jaxrs.model.PublicationType;
 import org.folio.rest.jaxrs.model.ResourceCostAnalysisAttributes;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
@@ -40,23 +46,36 @@ public class ResourceCostPerUseCollectionConverter
   }
 
   private List<ResourceCostPerUseCollectionItem> convertItems(ResourceCostPerUseCollectionResult source) {
-    Double packageCost = Optional.ofNullable(source.getPackageCostPerUse().getAnalysis().getCurrent().getCost())
-      .orElse(getPackageTitlesTotalCost(source.getTitlePackageCostMap()));
+    Integer packageUsage = calcPackageUsage(source);
     return mapItems(source.getHoldingInfos(),
-      dbHoldingInfo -> toResourceCostPerUseCollectionItem(dbHoldingInfo, source.getTitlePackageCostMap(), packageCost));
+      dbHoldingInfo -> toResourceCostPerUseCollectionItem(dbHoldingInfo, source.getTitlePackageCostMap(), packageUsage));
+  }
+
+  private Integer calcPackageUsage(ResourceCostPerUseCollectionResult source) {
+    PlatformUsage totalUsage;
+    var platformType = source.getPlatformType();
+    var allPlatformUsages = getAllPlatformUsages(source.getPackageCostPerUse().getUsage());
+    if (PlatformType.NON_PUBLISHER == platformType) {
+      totalUsage = getTotalUsage(getNonPublisherUsages(allPlatformUsages));
+    } else if (PlatformType.PUBLISHER == platformType) {
+      totalUsage = getTotalUsage(getPublisherUsages(allPlatformUsages));
+    } else {
+      totalUsage = getTotalUsage(allPlatformUsages);
+    }
+    return Optional.ofNullable(totalUsage).map(PlatformUsage::getTotal).orElse(INTEGER_ZERO);
   }
 
   private ResourceCostPerUseCollectionItem toResourceCostPerUseCollectionItem(DbHoldingInfo dbHoldingInfo,
                                                                               Map<String, UCCostAnalysis> titlePackageCostMap,
-                                                                              Double packageCost) {
+                                                                              Integer packageUsage) {
     var ucCostAnalysis = titlePackageCostMap.get(getTitlePackageId(dbHoldingInfo));
 
-    Double costPercent;
-    if (DOUBLE_ZERO.equals(packageCost)) {
-      costPercent = DOUBLE_ZERO;
+    Double usagePercent;
+    if (INTEGER_ZERO.equals(packageUsage)) {
+      usagePercent = DOUBLE_ZERO;
     } else {
-      costPercent = Optional.ofNullable(ucCostAnalysis.getCurrent().getCost())
-        .map(titleCost -> titleCost / packageCost * 100)
+      usagePercent = Optional.ofNullable(ucCostAnalysis.getCurrent().getUsage())
+        .map(titleUsage -> (double) titleUsage / packageUsage * 100)
         .orElse(DOUBLE_ZERO);
     }
 
@@ -69,7 +88,7 @@ public class ResourceCostPerUseCollectionConverter
         .withCost(ucCostAnalysis.getCurrent().getCost())
         .withUsage(ucCostAnalysis.getCurrent().getUsage())
         .withCostPerUse(ucCostAnalysis.getCurrent().getCostPerUse())
-        .withPercent(costPercent)
+        .withPercent(usagePercent)
       );
   }
 

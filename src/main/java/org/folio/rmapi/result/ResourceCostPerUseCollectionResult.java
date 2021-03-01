@@ -10,6 +10,7 @@ import org.folio.client.uc.configuration.CommonUCConfiguration;
 import org.folio.client.uc.model.UCCostAnalysis;
 import org.folio.client.uc.model.UCPackageCostPerUse;
 import org.folio.repository.holdings.DbHoldingInfo;
+import org.folio.rest.jaxrs.model.PlatformType;
 
 @Value
 @Builder
@@ -19,4 +20,5 @@ public class ResourceCostPerUseCollectionResult {
   Map<String, UCCostAnalysis> titlePackageCostMap;
   UCPackageCostPerUse packageCostPerUse;
   CommonUCConfiguration configuration;
+  PlatformType platformType;
 }

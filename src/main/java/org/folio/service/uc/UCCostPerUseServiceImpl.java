@@ -220,7 +220,9 @@ public class UCCostPerUseServiceImpl implements UCCostPerUseService {
 
   private CompletableFuture<ResourceCostPerUseCollectionResult> composeResourceCostPerUseCollectionResult(
     String packageIdPart, RMAPITemplateContext context, CommonUCConfiguration ucConfiguration, PlatformType platformType) {
-    var resultBuilder = ResourceCostPerUseCollectionResult.builder().configuration(ucConfiguration);
+    var resultBuilder = ResourceCostPerUseCollectionResult.builder()
+      .configuration(ucConfiguration)
+      .platformType(platformType);
     return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
       .thenAccept(resultBuilder::packageCostPerUse)
       .thenCompose(unused -> fetchHoldings(packageIdPart, context))
