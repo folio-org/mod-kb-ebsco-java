@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.internal.util.Producer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
@@ -46,7 +46,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     .append(DateTimeFormatter.ISO_LOCAL_TIME)
     .toFormatter();
   protected static final int MAX_COUNT = 5000;
-  private static final Logger logger = LoggerFactory.getLogger(AbstractLoadServiceFacade.class);
+  private static final Logger logger = LogManager.getLogger(AbstractLoadServiceFacade.class);
   protected final HoldingsService holdingsService;
   protected final int loadPageRetries;
   protected final int loadPageDelay;

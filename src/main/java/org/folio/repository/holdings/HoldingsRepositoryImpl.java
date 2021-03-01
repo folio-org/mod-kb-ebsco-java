@@ -37,11 +37,11 @@ import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.RowSetUtils;
@@ -52,7 +52,7 @@ import org.folio.rest.util.IdParser;
 @Component
 public class HoldingsRepositoryImpl implements HoldingsRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HoldingsRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(HoldingsRepositoryImpl.class);
 
   private static final int MAX_BATCH_SIZE = 200;
 

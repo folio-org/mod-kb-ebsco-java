@@ -52,12 +52,12 @@ import java.util.function.Function;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -72,7 +72,7 @@ import org.folio.service.exc.ServiceExceptions;
 @Component
 public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AccessTypesRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(AccessTypesRepositoryImpl.class);
 
   private static final String NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String NAME_UNIQUENESS_DETAILS = "Access type with name '%s' already exist";
@@ -219,29 +219,28 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       .usageNumber(getIntValueOrDefault(row, USAGE_NUMBER_COLUMN, 0))
       .createdDate(row.getOffsetDateTime(CREATED_DATE_COLUMN))
       .createdByUserId(row.getUUID(CREATED_BY_USER_ID_COLUMN))
-      .createdByUsername(getStringValueOrDefault(row, CREATED_BY_USERNAME_COLUMN, null))
-      .createdByLastName(getStringValueOrDefault(row, CREATED_BY_LAST_NAME_COLUMN, null))
-      .createdByFirstName(getStringValueOrDefault(row, CREATED_BY_FIRST_NAME_COLUMN, null))
-      .createdByMiddleName(getStringValueOrDefault(row, CREATED_BY_MIDDLE_NAME_COLUMN, null))
+      .createdByUsername(getStringValueOrNull(row, CREATED_BY_USERNAME_COLUMN))
+      .createdByLastName(getStringValueOrNull(row, CREATED_BY_LAST_NAME_COLUMN))
+      .createdByFirstName(getStringValueOrNull(row, CREATED_BY_FIRST_NAME_COLUMN))
+      .createdByMiddleName(getStringValueOrNull(row, CREATED_BY_MIDDLE_NAME_COLUMN))
       .updatedDate(row.getOffsetDateTime(UPDATED_DATE_COLUMN))
       .updatedByUserId(row.getUUID(UPDATED_BY_USER_ID_COLUMN))
-      .updatedByUsername(getStringValueOrDefault(row, UPDATED_BY_USERNAME_COLUMN, null))
-      .updatedByLastName(getStringValueOrDefault(row, UPDATED_BY_LAST_NAME_COLUMN, null))
-      .updatedByFirstName(getStringValueOrDefault(row, UPDATED_BY_FIRST_NAME_COLUMN, null))
-      .updatedByMiddleName(getStringValueOrDefault(row, UPDATED_BY_MIDDLE_NAME_COLUMN, null))
+      .updatedByUsername(getStringValueOrNull(row, UPDATED_BY_USERNAME_COLUMN))
+      .updatedByLastName(getStringValueOrNull(row, UPDATED_BY_LAST_NAME_COLUMN))
+      .updatedByFirstName(getStringValueOrNull(row, UPDATED_BY_FIRST_NAME_COLUMN))
+      .updatedByMiddleName(getStringValueOrNull(row, UPDATED_BY_MIDDLE_NAME_COLUMN))
       .build();
   }
 
 
   private int getIntValueOrDefault(Row row, String columnName, int defaultValue) {
-    return  row.getColumnIndex(columnName) != -1 ?
+    return row.getColumnIndex(columnName) != -1 ?
       ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
       : defaultValue;
   }
 
-  private String getStringValueOrDefault(Row row, String columnName, String defaultValue) {
-    return row.getColumnIndex(columnName) != -1 ?  row.getString(columnName)
-      : defaultValue;
+  private String getStringValueOrNull(Row row, String columnName) {
+    return row.getColumnIndex(columnName) != -1 ? row.getString(columnName) : null;
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

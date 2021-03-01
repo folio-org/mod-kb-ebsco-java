@@ -15,10 +15,10 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import org.folio.db.exc.translation.DBExceptionTranslator;
@@ -27,7 +27,7 @@ import org.folio.repository.DbUtil;
 @Component
 public class UCCredentialsRepositoryImpl implements UCCredentialsRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(UCCredentialsRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(UCCredentialsRepositoryImpl.class);
 
   private final Vertx vertx;
   private final DBExceptionTranslator excTranslator;

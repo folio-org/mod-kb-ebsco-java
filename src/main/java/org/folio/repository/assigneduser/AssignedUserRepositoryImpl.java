@@ -37,11 +37,11 @@ import javax.ws.rs.BadRequestException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +53,7 @@ import org.folio.service.users.User;
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(AssignedUserRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(AssignedUserRepositoryImpl.class);
 
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
 

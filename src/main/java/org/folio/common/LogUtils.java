@@ -1,8 +1,8 @@
 package org.folio.common;
 
-import io.vertx.core.logging.Logger;
 import io.vertx.sqlclient.Tuple;
 import lombok.experimental.UtilityClass;
+import org.apache.logging.log4j.Logger;
 
 @UtilityClass
 public class LogUtils {

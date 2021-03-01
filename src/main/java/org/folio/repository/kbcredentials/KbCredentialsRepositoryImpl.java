@@ -39,11 +39,11 @@ import javax.ws.rs.BadRequestException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +55,7 @@ import org.folio.rest.persist.PostgresClient;
 @Component
 public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(KbCredentialsRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(KbCredentialsRepositoryImpl.class);
 
   private static final String CREDENTIALS_NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String CREDENTIALS_NAME_UNIQUENESS_DETAILS = "Credentials with name '%s' already exist";

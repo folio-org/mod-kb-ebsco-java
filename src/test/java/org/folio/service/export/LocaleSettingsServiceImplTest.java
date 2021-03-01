@@ -4,10 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
@@ -31,17 +27,14 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.service.locale.LocaleSettings;
 import org.folio.service.locale.LocaleSettingsService;
 
 @RunWith(VertxUnitRunner.class)
 public class LocaleSettingsServiceImplTest extends WireMockTestBase {
-  private ConfigurationClientProvider configurationClientProvider ;
-  private ConfigurationsClient mockConfigurationsClient;
+
   @Autowired
   private LocaleSettingsService localeSettingsService;
 
@@ -55,9 +48,6 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
     headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
     headers.put(XOkapiHeaders.URL, getWiremockUrl());
     okapiParams = new OkapiData(headers);
-    configurationClientProvider = mock(ConfigurationClientProvider.class);
-    mockConfigurationsClient = mock(ConfigurationsClient.class);
-    when(configurationClientProvider.createClient(anyString(), anyInt(), anyString(), anyString())).thenReturn(mockConfigurationsClient);
   }
 
   @Test
@@ -83,7 +73,8 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenNoLocaleSettingsExists(TestContext context) throws IOException, URISyntaxException {
+  public void shouldReturnDefaultSettingsWhenNoLocaleSettingsExists(TestContext context)
+    throws IOException, URISyntaxException {
     Async async = context.async();
 
     String configFileName = "responses/configuration/locale-settings-empty.json";

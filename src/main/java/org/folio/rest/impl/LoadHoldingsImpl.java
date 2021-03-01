@@ -16,8 +16,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -40,7 +40,7 @@ import org.folio.spring.SpringContextUtil;
 
 public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LoadHoldingsImpl.class);
+  private static final Logger LOG = LogManager.getLogger(LoadHoldingsImpl.class);
 
   private static final String LOADING_IN_PROGRESS_MESSAGE = "Holdings loading is already in progress";
 

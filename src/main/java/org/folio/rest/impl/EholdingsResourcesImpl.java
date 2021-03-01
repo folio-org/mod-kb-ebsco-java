@@ -253,7 +253,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       return CompletableFuture.completedFuture(null);
     } else {
       return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId,
-        context.getOkapiData().getOkapiHeaders());
+        context.getOkapiData().getHeaders());
     }
   }
 
@@ -271,7 +271,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       RMAPITemplateContext context) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.RESOURCE, context.getCredentialsId(),
-      context.getOkapiData().getOkapiHeaders());
+      context.getOkapiData().getHeaders());
   }
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RMAPITemplateContext context) {

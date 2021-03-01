@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 import javax.validation.ValidationException;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
@@ -35,7 +35,7 @@ import org.folio.util.FutureUtils;
 
 public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ResourcesServiceImpl.class);
+  private static final Logger LOG = LogManager.getLogger(ResourcesServiceImpl.class);
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
 

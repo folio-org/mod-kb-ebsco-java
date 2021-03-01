@@ -10,7 +10,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 
 import org.folio.client.uc.UCApigeeEbscoClient;
-import org.folio.holdingsiq.service.impl.ConfigurationClientProvider;
 import org.folio.repository.uc.DbUCSettings;
 import org.folio.repository.uc.UCSettingsRepository;
 import org.folio.rest.converter.uc.UCSettingsConverter;
@@ -80,7 +79,7 @@ public class UCConfig {
 
   @Bean
   public LocaleSettingsService localeSettingsService() {
-    return new LocaleSettingsServiceImpl(new ConfigurationClientProvider());
+    return new LocaleSettingsServiceImpl();
   }
 
   @Bean

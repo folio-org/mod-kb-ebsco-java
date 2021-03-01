@@ -131,7 +131,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    MockitoAnnotations.initMocks(this);
+    MockitoAnnotations.openMocks(this).close();
     stubConfiguration = Configuration.builder()
       .apiKey(STUB_API_KEY)
       .customerId(STUB_CUSTOMER_ID)

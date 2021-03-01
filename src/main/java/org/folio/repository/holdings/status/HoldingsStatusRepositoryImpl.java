@@ -35,11 +35,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import org.folio.common.VertxIdProvider;
@@ -51,7 +51,7 @@ import org.folio.rest.persist.SQLConnection;
 @Component
 public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HoldingsStatusRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(HoldingsStatusRepositoryImpl.class);
 
   private final Vertx vertx;
   private final VertxIdProvider vertxIdProvider;

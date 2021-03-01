@@ -1,5 +1,6 @@
 package org.folio.rest.converter.providers;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ public class ProviderByIdConverter implements Converter<VendorById, Provider> {
   private Converter<VendorResult, Provider> vendorConverter;
 
   @Override
-  public Provider convert(VendorById vendor) {
+  public Provider convert(@NotNull VendorById vendor) {
     return vendorConverter.convert(new VendorResult(vendor, null));
   }
 }

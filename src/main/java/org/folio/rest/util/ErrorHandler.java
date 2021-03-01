@@ -18,8 +18,8 @@ import javax.ws.rs.core.Response;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.exception.UnAuthorizedException;
@@ -37,7 +37,7 @@ import org.folio.rest.exception.InputValidationException;
  */
 public class ErrorHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(ErrorHandler.class);
 
   private static final Function<Throwable, Response> DEFAULT_MAPPER = error500ThrowableMapper();
 

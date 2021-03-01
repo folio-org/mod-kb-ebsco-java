@@ -31,7 +31,7 @@ public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
   @Override
   public CompletableFuture<Void> loadAccessType(Accessible accessible, RecordKey recordKey, RMAPITemplateContext context) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    accessTypesService.findByRecord(recordKey, context.getCredentialsId(), context.getOkapiData().getOkapiHeaders())
+    accessTypesService.findByRecord(recordKey, context.getCredentialsId(), context.getOkapiData().getHeaders())
       .whenComplete((accessType, throwable) -> {
         if (throwable != null && !(throwable.getCause() instanceof NotFoundException)) {
           future.completeExceptionally(throwable.getCause());

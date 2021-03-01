@@ -24,11 +24,11 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +38,7 @@ import org.folio.db.exc.translation.DBExceptionTranslator;
 @Component
 public class UsersRepositoryImpl implements UsersRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(UsersRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(UsersRepositoryImpl.class);
 
   @Autowired
   private Vertx vertx;

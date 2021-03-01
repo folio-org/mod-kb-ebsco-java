@@ -10,13 +10,13 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +26,7 @@ import org.folio.service.uc.UcAuthenticationException;
 @Component
 public class UCAuthEbscoClientImpl implements UCAuthEbscoClient {
 
-  private static final Logger LOG = LoggerFactory.getLogger(UCAuthEbscoClientImpl.class);
+  private static final Logger LOG = LogManager.getLogger(UCAuthEbscoClientImpl.class);
 
   private static final int TIMEOUT = 20000;
   private static final String REQUEST_URI = "/oauth-proxy/token";

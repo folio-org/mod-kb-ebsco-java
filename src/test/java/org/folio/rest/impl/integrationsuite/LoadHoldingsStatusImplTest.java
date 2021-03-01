@@ -91,7 +91,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    MockitoAnnotations.initMocks(this);
+    MockitoAnnotations.openMocks(this).close();
   }
 
   @After

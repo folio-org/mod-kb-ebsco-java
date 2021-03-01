@@ -13,8 +13,8 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import org.folio.common.OkapiParams;
@@ -32,7 +32,7 @@ import org.folio.util.UserInfo;
 @Component
 public class UsersLookUpService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(UsersLookUpService.class);
+  private static final Logger LOG = LogManager.getLogger(UsersLookUpService.class);
 
   private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
   private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
@@ -52,7 +52,7 @@ public class UsersLookUpService {
     Optional<UserInfo> userInfo = TokenUtils.userInfoFromToken(headers.get(XOkapiHeaders.TOKEN));
 
     CompletableFuture<User> future = new CompletableFuture<>();
-    if (!userInfo.isPresent()) {
+    if (userInfo.isEmpty()) {
       future.completeExceptionally(new NotAuthorizedException(AUTHORIZATION_FAIL_ERROR_MESSAGE));
       return future;
     }

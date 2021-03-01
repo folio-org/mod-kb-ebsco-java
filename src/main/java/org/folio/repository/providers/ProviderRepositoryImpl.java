@@ -26,12 +26,12 @@ import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +42,7 @@ import org.folio.rest.persist.PostgresClient;
 @Component
 public class ProviderRepositoryImpl implements ProviderRepository {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ProviderRepositoryImpl.class);
+  private static final Logger LOG = LogManager.getLogger(ProviderRepositoryImpl.class);
 
   @Autowired
   private Vertx vertx;

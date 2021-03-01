@@ -220,7 +220,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   private CompletableFuture<Collection<AccessTypeMapping>> fetchAccessTypeMappings(AccessTypeFilter accessTypeFilter,
                                                                                    RMAPITemplateContext context,
                                                                                    AtomicInteger totalCount) {
-    Map<String, String> okapiHeaders = context.getOkapiData().getOkapiHeaders();
+    Map<String, String> okapiHeaders = context.getOkapiData().getHeaders();
     String credentialsId = context.getCredentialsId();
     RecordType recordType = accessTypeFilter.getRecordType();
     String recordIdPrefix = createRecordIdPrefix(accessTypeFilter);
