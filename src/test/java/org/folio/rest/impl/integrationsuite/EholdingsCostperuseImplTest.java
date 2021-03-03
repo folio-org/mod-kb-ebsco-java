@@ -375,6 +375,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertThat(actual.getData(), hasSize(20));
     assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
     assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(2)));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("percent", equalTo(2.0 / 36 * 100)));
   }
 
   @Test
@@ -549,8 +550,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertThat(actual.getMeta().getTotalResults(), equalTo(3));
     assertThat(actual.getData(), hasSize(3));
     assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
-    assertThat(actual.getData().get(0).getAttributes(), hasProperty("cost", nullValue()));
-    assertThat(actual.getData().get(2).getAttributes(), hasProperty("cost", equalTo(200.0)));
+    assertThat(actual.getData().get(0).getAttributes(), hasProperty("percent", equalTo(1.0 / 26 * 100)));
+    assertThat(actual.getData().get(2).getAttributes(), hasProperty("percent", equalTo(10.0 / 26 * 100)));
   }
 
   @Test
