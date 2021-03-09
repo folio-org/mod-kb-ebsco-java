@@ -1,3 +1,14 @@
+## v3.7.0 2021-03-09
+* MODKBEKBJ-570 Fix percent of usage calculation
+* MODKBEKBJ-551 Upgrade to RMB v32.1 and Vert.X v4
+* Usage consolidation feature
+* MODKBEKBJ-566 Fix processing include parameter while search titles by access types
+* MODKBEKBJ-563 Add personal data disclosure form
+* MODKBEKBJ-556 Fix holdings loading after dummy credentials update
+* MODKBEKBJ-549 Suppress unnecessary logs
+* MODKBEKBJ-536 Load holdings by id doesn't load when there are more than one credentials
+* MODKBEKBJ-535 Fix titles in package filtering by tags
+
 ## v3.6.5 2020-12-22
 * MODKBEKBJ-528 Fix hanged holding loading
 * Upgrade to folio-holdingsiq-client v1.10.3
@@ -56,7 +67,7 @@
 * MODKBEKBJ-429 - Support POST /eholdings/loading/kb-credentials/{credentialsId} to load holdings for certain KB Credentials
 * MODKBEKBJ 413 - Update mapping and filtering by access types for packages and resources
 * MODKBEKBJ-433 - Update RMAPITemplate to use new configuration routine
-* MODKBEKBJ-432 - Modify configuration routine to support user related KB credentials
+* MODKBEKBJ-432 - Modify configuration routine to support user related KB credentials
 * MODKBEKBJ-438 - Update default RM API url
 * MODKBEKBJ-406 - Update DELETE /eholdings/access-types/{id} to support multiple KB credentials
 * MODKBEKBJ-418 - Update PUT /eholdings/root-proxy to support multiple KB credentials
@@ -82,7 +93,7 @@
 * MODKBEKBJ-356 - Filter titles by access type
 * MODKBEKBJ-376 - Filter titles by access type into package
 * MODKBEKBJ-384 - Apply sort to packages into title
-* MODKBEKBJ-386 - Implement endpoint to bulk load packages records
+* MODKBEKBJ-386 - Implement endpoint to bulk load packages records
 * MODKBEKBJ-392 - Fix migrating from v3.2.0 to v3.3.1
 * MODKBEKBJ-426 - Fix embargo time units are not properly converted
 
@@ -114,7 +125,7 @@
 * MODKBEKBJ-344 - Use new HoldingsIQ endpoints to use delta reports
 * MODKBEKBJ-345 - Custom Labels: update existing implementation
 * MODKBEKBJ-346 - Fix bug where resource is not removed if request has userDefinedFields
-* MODKBEKBJ-348 - Settings: CRUD Access Status Types
+* MODKBEKBJ-348 - Settings: CRUD Access Status Types
 
 ## v3.1.0 2019-12-02
 * MODKBEKBJ-333 - Set fromModuleVersion attribute for all tables
