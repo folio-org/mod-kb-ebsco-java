@@ -1,6 +1,133 @@
 {
   "data": [
     {
+      "id": "1108525",
+      "type": "titles",
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+        "publicationType": "Book",
+        "publisherName": "Praeger",
+        "subjects": [
+          {
+            "subject": "SOCIAL SCIENCE / Ethnic Studies / General",
+            "type": "BISAC"
+          }
+        ],
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Beeman, William O."
+          }
+        ],
+        "relationships": {
+          "resources": {
+            "data": [
+              {
+                "type": "resources",
+                "id": "19-3964-1108525"
+              }
+            ],
+            "meta": {
+              "included": true
+            }
+          }
+        }
+      },
+      "included": [
+        {
+          "id": "19-3964-1108525",
+          "type": "resources",
+          "attributes": {
+            "isPeerReviewed": false,
+            "isTitleCustom": false,
+            "publisherName": "Praeger",
+            "titleId": 1108525,
+            "contributors": [
+              {
+                "type": "author",
+                "contributor": "Beeman, William O."
+              }
+            ],
+            "identifiers": [
+              {
+                "id": "978-0-585-24731-1",
+                "subtype": "Online",
+                "type": "ISBN"
+              }
+            ],
+            "name": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+            "publicationType": "Book",
+            "subjects": [
+              {
+                "subject": "SOCIAL SCIENCE / Ethnic Studies / General",
+                "type": "BISAC"
+              }
+            ],
+            "customEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "isPackageCustom": false,
+            "isSelected": true,
+            "titleHasSelectedResources": true,
+            "isTokenNeeded": false,
+            "locationId": 3464602,
+            "managedEmbargoPeriod": {
+              "embargoValue": 0
+            },
+            "packageId": "19-3964",
+            "packageName": "EBSCO eBooks",
+            "url": "http://search.ebscohost.com/login.aspx?direct=true&scope=site&db=nlebk&db=nlabk&AN=38624",
+            "providerId": 19,
+            "providerName": "EBSCO",
+            "visibilityData": {
+              "isHidden": false,
+              "reason": ""
+            },
+            "managedCoverages": [
+              {
+                "beginCoverage": "1996-01-01",
+                "endCoverage": "1996-12-31"
+              }
+            ],
+            "customCoverages": [],
+            "proxy": {
+              "id": "EZProxy",
+              "inherited": true
+            },
+            "userDefinedField1": "test 1",
+            "userDefinedField2": "test 2",
+            "userDefinedField3": "",
+            "userDefinedField5": "test 5"
+          },
+          "relationships": {
+            "provider": {
+              "meta": {
+                "included": false
+              }
+            },
+            "title": {
+              "meta": {
+                "included": false
+              }
+            },
+            "package": {
+              "meta": {
+                "included": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "762169",
       "type": "titles",
       "attributes": {
@@ -136,25 +263,6 @@
           }
         }
       ]
-    },
-    {
-      "id": "19412030",
-      "type": "titles",
-      "attributes": {
-        "identifiers": [],
-        "name": "Test Title",
-        "publicationType": "Book",
-        "publisherName": "Test one Press",
-        "subjects": [],
-        "contributors": [],
-        "relationships": {
-          "resources": {
-            "meta": {
-              "included": false
-            }
-          }
-        }
-      }
     }
   ],
   "meta": {

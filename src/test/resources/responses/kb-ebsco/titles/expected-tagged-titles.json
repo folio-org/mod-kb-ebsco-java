@@ -1,6 +1,42 @@
 {
   "data": [
     {
+      "id": "1108525",
+      "type": "titles",
+      "attributes": {
+        "identifiers": [
+          {
+            "id": "978-0-585-24731-1",
+            "subtype": "Online",
+            "type": "ISBN"
+          }
+        ],
+        "isTitleCustom": false,
+        "name": "\"Great Satan\" Vs. the \"Mad Mullahs\": How the United States and Iran Demonize Each Other",
+        "publicationType": "Book",
+        "publisherName": "Praeger",
+        "subjects": [
+          {
+            "subject": "SOCIAL SCIENCE / Ethnic Studies / General",
+            "type": "BISAC"
+          }
+        ],
+        "contributors": [
+          {
+            "type": "author",
+            "contributor": "Beeman, William O."
+          }
+        ],
+        "relationships": {
+          "resources": {
+            "meta": {
+              "included": false
+            }
+          }
+        }
+      }
+    },
+    {
       "id": "762169",
       "type": "titles",
       "attributes": {
@@ -32,25 +68,6 @@
             "contributor": "Bloom, Harold"
           }
         ],
-        "relationships": {
-          "resources": {
-            "meta": {
-              "included": false
-            }
-          }
-        }
-      }
-    },
-    {
-      "id": "19412030",
-      "type": "titles",
-      "attributes": {
-        "identifiers": [],
-        "name": "Test Title",
-        "publicationType": "Book",
-        "publisherName": "Test one Press",
-        "subjects": [],
-        "contributors": [],
         "relationships": {
           "resources": {
             "meta": {
