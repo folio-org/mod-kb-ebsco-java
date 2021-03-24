@@ -1,5 +1,6 @@
 package org.folio.rest.impl.integrationsuite;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -7,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -38,7 +40,6 @@ import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
-import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_2;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
@@ -53,7 +54,6 @@ import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_NAME;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME;
 import static org.folio.util.AccessTypesTestUtil.STUB_ACCESS_TYPE_NAME_2;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
@@ -61,7 +61,6 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertEqualsLong;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.HoldingsTestUtil.saveHolding;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
@@ -73,7 +72,6 @@ import static org.folio.util.TitlesTestUtil.mockGetTitles;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -96,7 +94,6 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import org.folio.repository.RecordType;
-import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.titles.DbTitle;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
@@ -169,15 +166,21 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitlesOnSearchByTags() throws IOException, URISyntaxException, JSONException {
-    mockGetManagedTitleById();
-    saveHolding(configuration.getId(),
-      readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class),
-      OffsetDateTime.now(), vertx);
+    String stubResponseFile1 = "responses/rmapi/titles/get-title-by-id-response.json";
+    String stubResponseFile2 = "responses/rmapi/titles/get-title-by-id-2-response.json";
+
+    stubFor(
+      get(urlMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID))
+        .willReturn(aResponse().withBody(readFile(stubResponseFile1))));
+
+    stubFor(
+      get(urlMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID_2))
+        .willReturn(aResponse().withBody(readFile(stubResponseFile2))));
 
     saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
-    saveResource(buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
+    saveResource(buildResource(STUB_MANAGED_RESOURCE_ID_2, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-    saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID_2, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
     String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
@@ -186,15 +189,21 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnTitlesOnSearchByTagsWithResources() throws IOException, URISyntaxException, JSONException {
-    mockGetManagedTitleById();
-    saveHolding(configuration.getId(),
-      readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class),
-      OffsetDateTime.now(), vertx);
+    String stubResponseFile1 = "responses/rmapi/titles/get-title-by-id-response.json";
+    String stubResponseFile2 = "responses/rmapi/titles/get-title-by-id-2-response.json";
+
+    stubFor(
+      get(urlMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID))
+        .willReturn(aResponse().withBody(readFile(stubResponseFile1))));
+
+    stubFor(
+      get(urlMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID_2))
+        .willReturn(aResponse().withBody(readFile(stubResponseFile2))));
 
     saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
-    saveResource(buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
+    saveResource(buildResource(STUB_MANAGED_RESOURCE_ID_2, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-    saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID_2, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE+ "&filter[tags]=" + STUB_TAG_VALUE_2+"&include=resources";
     String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
@@ -203,20 +212,26 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnSecondTitleOnSearchByTagsWithPagination() throws IOException, URISyntaxException {
-    mockGetManagedTitleById();
-    saveHolding(configuration.getId(),
-      readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class),
-      OffsetDateTime.now(), vertx);
+    String stubResponseFile1 = "responses/rmapi/titles/get-title-by-id-response.json";
+    String stubResponseFile2 = "responses/rmapi/titles/get-title-by-id-2-response.json";
+
+    stubFor(
+      get(urlMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID))
+        .willReturn(aResponse().withBody(readFile(stubResponseFile1))));
+
+    stubFor(
+      get(urlMatching("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_MANAGED_TITLE_ID_2))
+        .willReturn(aResponse().withBody(readFile(stubResponseFile2))));
 
     saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
-    saveResource(buildResource(STUB_CUSTOM_RESOURCE_ID, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
+    saveResource(buildResource(STUB_MANAGED_RESOURCE_ID_2, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
-    saveTag(vertx, STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID_2, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]="
       + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
     TitleCollection response = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
-    assertEquals(STUB_CUSTOM_TITLE_NAME, response.getData().get(0).getAttributes().getName());
+    assertEquals(STUB_MANAGED_TITLE_ID_2, response.getData().get(0).getId());
   }
 
   @Test

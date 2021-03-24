@@ -9,12 +9,9 @@ import static org.folio.rest.util.IdParser.getResourceIds;
 import static org.folio.rest.util.IdParser.getTitleIds;
 import static org.folio.rest.util.IdParser.resourceIdsToStrings;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +37,6 @@ import org.folio.repository.providers.ProviderRepository;
 import org.folio.repository.resources.DbResource;
 import org.folio.repository.resources.ResourceRepository;
 import org.folio.repository.tag.TagRepository;
-import org.folio.repository.titles.DbTitle;
 import org.folio.repository.titles.TitlesRepository;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
@@ -109,9 +105,18 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     AtomicInteger totalCount = new AtomicInteger();
     TitlesServiceImpl titlesService = context.getTitlesService();
     return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
-      .thenApply(this::extractTitleIds)
-      .thenCompose(titlesService::retrieveTitles)
-      .thenApply(titles -> titles.toBuilder().totalResults(totalCount.get()).build());
+      .thenCompose(accessTypeMappings -> {
+        var resourceIds = IdParser.resourceIdsToStrings(extractResourceIds(accessTypeMappings));
+        var titleIds = extractTitleIds(accessTypeMappings);
+
+        return titlesService.retrieveTitles(titleIds)
+          .thenApply(titles -> titles.toBuilder()
+            .titleList(filterResourcesInTitles(titles, resourceIds))
+            .totalResults(totalCount.get())
+            .build()
+          );
+      });
+
   }
 
   @Override
@@ -168,18 +173,32 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     UUID credentialsId = toUUID(context.getCredentialsId());
 
     return titlesRepository.countTitlesByResourceTags(tagFilter.getTags(), credentialsId, tenant)
-      .thenCompose(titlesCount -> titlesRepository.findByTagFilter(tagFilter, credentialsId, tenant)
-        .thenCompose(dbTitles -> context.getTitlesService().retrieveTitles(getMissingTitleIds(dbTitles))
-          .thenApply(titles -> toTitles(titles, dbTitles, titlesCount))
+      .thenCompose(titlesCount -> resourceRepository.findByTagFilter(tagFilter, credentialsId, tenant)
+        .thenCompose(dbResources -> {
+            var resourceIds = dbResourcesToIdStrings(dbResources);
+            var titleIds = extractTitleIds(dbResources);
+            return context.getTitlesService().retrieveTitles(titleIds)
+              .thenApply(titles -> titles.toBuilder()
+                .titleList(filterResourcesInTitles(titles, resourceIds))
+                .totalResults(titlesCount)
+                .build()
+              );
+          }
         )
       );
   }
 
-  private Titles toTitles(Titles titles, List<DbTitle> dbTitles, Integer titlesCount) {
-    return titles.toBuilder()
-      .titleList(combineTitles(dbTitles, titles.getTitleList()))
-      .totalResults(titlesCount)
-      .build();
+  private List<Title> filterResourcesInTitles(Titles titles, List<String> resourceIds) {
+    return titles.getTitleList().stream()
+      .map(title -> {
+        var filteredCustomerResources = title.getCustomerResourcesList().stream()
+          .filter(resource -> resourceIds.contains(IdParser.getResourceId(resource)))
+          .collect(Collectors.toList());
+        return title.toBuilder()
+          .customerResourcesList(filteredCustomerResources)
+          .build();
+      })
+      .collect(Collectors.toList());
   }
 
   private ResourceCollectionResult toResourceCollectionResult(Titles titles, List<DbResource> resourcesResult,
@@ -190,26 +209,6 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   private PackageCollectionResult toPackageCollectionResult(Packages packages, List<DbPackage> dbPackages,
                                                             Integer packageCount) {
     return new PackageCollectionResult(packages.toBuilder().totalResults(packageCount).build(), dbPackages);
-  }
-
-  private List<Title> combineTitles(List<DbTitle> dbTitles, List<Title> titles) {
-    List<Title> resultList = new ArrayList<>(titles);
-
-    dbTitles.stream()
-      .map(DbTitle::getTitle)
-      .filter(Objects::nonNull)
-      .forEach(resultList::add);
-
-    resultList.sort(Comparator.comparing(Title::getTitleName));
-
-    return resultList;
-  }
-
-  private List<Long> getMissingTitleIds(List<DbTitle> dbTitles) {
-    return dbTitles.stream()
-      .filter(title -> Objects.isNull(title.getTitle()))
-      .map(DbTitle::getId)
-      .collect(Collectors.toList());
   }
 
   private List<ResourceId> getMissingResourceIds(List<DbHoldingInfo> holdings, List<ResourceId> resourceIds) {
@@ -260,6 +259,14 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     return accessTypeMappings.stream()
       .map(AccessTypeMapping::getRecordId)
       .map(IdParser::parseResourceId)
+      .map(ResourceId::getTitleIdPart)
+      .distinct()
+      .collect(Collectors.toList());
+  }
+
+  private List<Long> extractTitleIds(List<DbResource> dbResources) {
+    return dbResources.stream()
+      .map(DbResource::getId)
       .map(ResourceId::getTitleIdPart)
       .collect(Collectors.toList());
   }
