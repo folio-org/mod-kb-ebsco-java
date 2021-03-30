@@ -1,13 +1,13 @@
 package org.folio.rest.impl;
 
 import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
+import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_2;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_PACKAGE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_VENDOR_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID_2;
-import static org.folio.rest.impl.TitlesTestData.STUB_TITLE_ID;
 
 import java.util.Collections;
 
@@ -36,8 +36,8 @@ public class ResourcesTestData {
 
   public static final String STUB_MANAGED_RESOURCE_ID = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "-" + STUB_MANAGED_TITLE_ID;
   public static final String STUB_MANAGED_RESOURCE_ID_2 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "-" + STUB_MANAGED_TITLE_ID_2;
+  public static final String STUB_MANAGED_RESOURCE_ID_3 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID_2 + "-" + STUB_MANAGED_TITLE_ID_2;
   public static final String STUB_CUSTOM_RESOURCE_ID = STUB_CUSTOM_VENDOR_ID + "-" + STUB_CUSTOM_PACKAGE_ID + "-" + STUB_CUSTOM_TITLE_ID;
-  public static final String STUB_RESOURCE_ID = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "-" + STUB_TITLE_ID;
 
   public static ResourcePutRequest getResourcePutRequest(ResourcePutDataAttributes attributes) {
     return new ResourcePutRequest()

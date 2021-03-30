@@ -268,6 +268,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     return dbResources.stream()
       .map(DbResource::getId)
       .map(ResourceId::getTitleIdPart)
+      .distinct()
       .collect(Collectors.toList());
   }
 
