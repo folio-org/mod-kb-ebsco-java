@@ -42,6 +42,7 @@ import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
 import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID;
 import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_2;
+import static org.folio.rest.impl.ResourcesTestData.STUB_MANAGED_RESOURCE_ID_3;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE;
 import static org.folio.rest.impl.TagsTestData.STUB_TAG_VALUE_2;
 import static org.folio.rest.impl.TitlesTestData.CUSTOM_RESOURCE_ENDPOINT;
@@ -202,8 +203,10 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, configuration.getId(), STUB_TITLE_NAME), vertx);
     saveResource(buildResource(STUB_MANAGED_RESOURCE_ID_2, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
+    saveResource(buildResource(STUB_MANAGED_RESOURCE_ID_3, configuration.getId(), STUB_CUSTOM_TITLE_NAME), vertx);
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID_2, RecordType.RESOURCE, STUB_TAG_VALUE_2);
+    saveTag(vertx, STUB_MANAGED_RESOURCE_ID_3, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE+ "&filter[tags]=" + STUB_TAG_VALUE_2+"&include=resources";
     String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
