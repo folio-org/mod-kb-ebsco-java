@@ -45,7 +45,6 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     .appendLiteral(' ')
     .append(DateTimeFormatter.ISO_LOCAL_TIME)
     .toFormatter();
-  protected static final int MAX_COUNT = 5000;
   private static final Logger logger = LogManager.getLogger(AbstractLoadServiceFacade.class);
   protected final HoldingsService holdingsService;
   protected final int loadPageRetries;
