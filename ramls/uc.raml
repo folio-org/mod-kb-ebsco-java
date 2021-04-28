@@ -20,6 +20,7 @@ traits:
         default: false
 
 types:
+  uCCredentials: !include types/uc/uCCredentials.json
   uCCredentialsPresence: !include types/uc/uCCredentialsPresence.json
   uCSettings: !include types/uc/uCSettings.json
   uCSettingsKey: !include types/uc/uCSettingsKey.json
@@ -176,3 +177,23 @@ types:
             example:
               strict: false
               value: !include examples/uc/uc_credentials_get_200_response.json
+  put:
+    description: Update Usage Consolidation credentials
+    body:
+      application/vnd.api+json:
+        description: Update Usage Consolidation credentials
+        type: uCCredentials
+        example:
+          strict: false
+          value: !include examples/uc/uc_credentials_put_request.json
+    responses:
+      204:
+          description: No Content
+      422:
+        description: Unprocessable Entity
+        body:
+          application/vnd.api+json:
+            type: jsonapiError
+            example:
+              strict: false
+              value: !include examples/uc/uc_settings_patch_422_response.json
