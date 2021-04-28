@@ -15,14 +15,19 @@ import org.folio.service.holdings.message.LoadHoldingsMessage;
 
 @Component("DefaultLoadServiceFacade")
 public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
+
+  private final int loadPageSize;
+
   @Autowired
   public DefaultLoadServiceFacade(@Value("${holdings.status.check.delay}") long statusRetryDelay,
                                   @Value("${holdings.status.retry.count}") int statusRetryCount,
                                   @Value("${holdings.page.retry.delay}") int loadPageRetryDelay,
                                   @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
                                   @Value("${holdings.page.retry.count}") int loadPageRetryCount,
+                                  @Value("${holdings.page.size:2500}") int loadPageSize,
                                   Vertx vertx) {
     super(statusRetryDelay, statusRetryCount, loadPageRetryDelay, snapshotRefreshPeriod, loadPageRetryCount, vertx);
+    this.loadPageSize = loadPageSize;
   }
 
   @Override
@@ -50,7 +55,7 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected int getMaxPageSize() {
-    return MAX_COUNT;
+    return loadPageSize;
   }
 
   private HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
