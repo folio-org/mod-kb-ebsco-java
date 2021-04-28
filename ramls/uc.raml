@@ -20,6 +20,7 @@ traits:
         default: false
 
 types:
+  uCCredentialsPresence: !include types/uc/uCCredentialsPresence.json
   uCSettings: !include types/uc/uCSettings.json
   uCSettingsKey: !include types/uc/uCSettingsKey.json
   uCSettingsPostRequest: !include types/uc/uCSettingsPostRequest.json
@@ -161,3 +162,17 @@ types:
             example:
               strict: false
               value: !include examples/uc/uc_settings_get_404_response.json
+/eholdings/uc-credentials:
+  displayName: Usage Consolidation credentials
+  get:
+    description: Check if Usage Consolidation credentials exists.
+    responses:
+      200:
+        description: OK
+        body:
+          application/vnd.api+json:
+            description: Usage Consolidation credentials
+            type: uCCredentialsPresence
+            example:
+              strict: false
+              value: !include examples/uc/uc_credentials_get_200_response.json

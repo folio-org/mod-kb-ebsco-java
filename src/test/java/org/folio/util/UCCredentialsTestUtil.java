@@ -16,6 +16,8 @@ import org.folio.rest.persist.PostgresClient;
 
 public class UCCredentialsTestUtil {
 
+  public static final String UC_CREDENTIALS_ENDPOINT = "eholdings/uc-credentials";
+
   public static final String STUB_CLIENT_ID = "client-id";
   public static final String STUB_CLIENT_SECRET = "client-secret";
 

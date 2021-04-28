@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "eholdings",
-      "version": "3.0",
+      "version": "3.1",
       "handlers": [
         {
           "methods": ["GET"],
@@ -333,6 +333,11 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/currencies",
           "permissionsRequired": ["kb-ebsco.currencies.collection.get"]
+        },
+        {
+          "methods": ["GET"],
+          "pathPattern": "/eholdings/uc-credentials",
+          "permissionsRequired": ["kb-ebsco.uc-credentials.item.get"]
         },
         {
           "methods": ["GET"],
@@ -708,6 +713,11 @@
       ]
     },
     {
+      "permissionName": "kb-ebsco.uc-credentials.item.get",
+      "displayName": "get usage consolidation credentials",
+      "description": "Get usage consolidation credentials"
+    },
+    {
       "permissionName": "kb-ebsco.uc.item.get",
       "displayName": "get usage consolidation settings",
       "description": "Get usage consolidation settings"
@@ -746,6 +756,14 @@
       "permissionName": "kb-ebsco.package-resources-costperuse.collection.get",
       "displayName": "get cost-per-use information for a package resources",
       "description": "Get cost-per-use information for a package resources"
+    },
+    {
+      "permissionName": "kb-ebsco.uc-credentials.all",
+      "displayName": "EBSCO KB Broker Usage Consolidation credentials - all permissions",
+      "description": "All permissions for managing Usage Consolidation credentials",
+      "subPermissions": [
+        "kb-ebsco.uc-credentials.item.get"
+      ]
     },
     {
       "permissionName": "kb-ebsco.kb-credentials.uc.all",
@@ -806,6 +824,7 @@
         "kb-ebsco.kb-credentials.all",
         "kb-ebsco.kb-credentials.users.all",
         "kb-ebsco.kb-credentials.uc.all",
+        "kb-ebsco.uc-credentials.all",
         "kb-ebsco.configuration.get",
         "kb-ebsco.configuration.put",
         "kb-ebsco.status.get",
