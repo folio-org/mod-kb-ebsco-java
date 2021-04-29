@@ -26,6 +26,7 @@ import org.folio.rest.impl.integrationsuite.EholdingsTitlesTest;
 import org.folio.rest.impl.integrationsuite.EholdingsUsageConsolidationImplTest;
 import org.folio.rest.impl.integrationsuite.LoadHoldingsStatusImplTest;
 import org.folio.rest.impl.integrationsuite.TransactionLoadServiceFacadeTest;
+import org.folio.rest.impl.integrationsuite.UsageConsolidationCredentialsApiTest;
 import org.folio.test.util.TestSetUpHelper;
 
 @Suite.SuiteClasses({
@@ -47,7 +48,8 @@ import org.folio.test.util.TestSetUpHelper;
   EholdingsAssignedUsersImplTest.class,
   EholdingsCurrenciesImplTest.class,
   EholdingsUsageConsolidationImplTest.class,
-  EholdingsCostperuseImplTest.class
+  EholdingsCostperuseImplTest.class,
+  UsageConsolidationCredentialsApiTest.class
 })
 @RunWith(Suite.class)
 public class IntegrationTestSuite {
