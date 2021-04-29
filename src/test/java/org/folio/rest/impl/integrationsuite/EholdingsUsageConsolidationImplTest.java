@@ -150,6 +150,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateUCSettingsOnPatch() {
+    setUpUCCredentials(vertx);
     mockAuthToken();
     mockSuccessfulVerification();
     UCSettings stubSettings = stubSettings(credentialsId);
