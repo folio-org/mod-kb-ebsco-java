@@ -12,7 +12,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.UCCredentialsTestUtil.STUB_CLIENT_ID;
 import static org.folio.util.UCCredentialsTestUtil.STUB_CLIENT_SECRET;
 import static org.folio.util.UCCredentialsTestUtil.UC_CREDENTIALS_ENDPOINT;
@@ -21,6 +23,7 @@ import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
 
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +49,11 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
   public void setUp() throws Exception {
     super.setUp();
     ReflectionTestUtils.setField(authEbscoClient, "baseUrl", getWiremockUrl());
+  }
+
+  @After
+  public void tearDown() {
+    clearDataFromTable(vertx, UC_CREDENTIALS_TABLE_NAME);
   }
 
   @Test
