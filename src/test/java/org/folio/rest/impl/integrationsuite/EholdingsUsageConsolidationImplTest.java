@@ -79,6 +79,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
   @After
   public void tearDown() {
+    clearDataFromTable(vertx, UC_CREDENTIALS_TABLE_NAME);
     clearDataFromTable(vertx, UC_SETTINGS_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
   }
@@ -149,6 +150,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
   @Test
   public void shouldUpdateUCSettingsOnPatch() {
+    setUpUCCredentials(vertx);
     mockAuthToken();
     mockSuccessfulVerification();
     UCSettings stubSettings = stubSettings(credentialsId);
