@@ -439,7 +439,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       .extract()
       .asString();
 
-    assertThat(error, containsString("Json content error"));
+    assertThat(error, containsString("Unrecognized token"));
   }
 
   @Test
