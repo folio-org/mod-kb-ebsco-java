@@ -2,7 +2,6 @@ package org.folio.service.users;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.junit.Assert.assertThrows;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
@@ -25,7 +24,6 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -55,11 +53,6 @@ public class UsersLookUpServiceTest {
     WireMockConfiguration.wireMockConfig()
       .dynamicPort()
       .notifier(new Slf4jNotifier(true)));
-
-  @After
-  public void tearDown() throws Exception {
-    OKAPI_HEADERS.clear();
-  }
 
   @Test
   public void shouldReturn200WhenUserIdIsValid(TestContext context) throws IOException, URISyntaxException {
@@ -148,13 +141,6 @@ public class UsersLookUpServiceTest {
       async.complete();
       return null;
     });
-  }
-
-  @Test
-  public void shouldReturnErrorWhenMissingOkapiURLHeader() {
-    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
-
-    assertThrows(IllegalArgumentException.class, () -> usersLookUpService.lookUpUser(new OkapiParams(OKAPI_HEADERS)));
   }
 
   private String getWiremockUrl() {
