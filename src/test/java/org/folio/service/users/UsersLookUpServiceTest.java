@@ -25,6 +25,7 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -48,11 +49,17 @@ public class UsersLookUpServiceTest {
 
   @Rule
   public TestRule watcher = TestStartLoggingRule.instance();
+
   @Rule
   public WireMockRule userMockServer = new WireMockRule(
     WireMockConfiguration.wireMockConfig()
       .dynamicPort()
       .notifier(new Slf4jNotifier(true)));
+
+  @After
+  public void tearDown() throws Exception {
+    OKAPI_HEADERS.clear();
+  }
 
   @Test
   public void shouldReturn200WhenUserIdIsValid(TestContext context) throws IOException, URISyntaxException {
