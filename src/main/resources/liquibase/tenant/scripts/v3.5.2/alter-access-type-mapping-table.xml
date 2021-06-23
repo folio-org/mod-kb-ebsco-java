@@ -20,6 +20,7 @@
         SELECT count(1) FROM pg_constraint
           WHERE conname = 'access_types_mapping_pkey'
             AND contype = 'p'
+            AND conrelid = '${database.defaultSchemaName}.access_types_mappings'::regclass;
       </sqlCheck>
     </preConditions>
 

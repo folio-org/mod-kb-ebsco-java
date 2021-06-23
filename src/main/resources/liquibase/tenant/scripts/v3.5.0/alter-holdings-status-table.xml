@@ -42,7 +42,8 @@
       <sqlCheck  expectedResult="1">
         SELECT COUNT(1) from pg_constraint
           WHERE conname = 'holdings_status_lock_key'
-            AND contype = 'u';
+            AND contype = 'u'
+            AND conrelid = '${database.defaultSchemaName}.holdings_status'::regclass;
       </sqlCheck>
     </preConditions>
 
