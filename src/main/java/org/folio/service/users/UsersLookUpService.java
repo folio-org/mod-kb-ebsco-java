@@ -8,6 +8,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -20,6 +21,7 @@ import io.vertx.ext.web.client.predicate.ErrorConverter;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,7 @@ public class UsersLookUpService {
   public CompletableFuture<User> lookUpUser(final OkapiParams okapiParams) {
     MultiMap headers = new HeadersMultiMap();
     headers.addAll(okapiParams.getHeaders());
+    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
     String userId = headers.get(XOkapiHeaders.USER_ID);
