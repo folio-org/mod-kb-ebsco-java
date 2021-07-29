@@ -29,14 +29,12 @@ public class ResourceRequestConverter {
   public ResourcePut convertToRMAPICustomResourcePutRequest(ResourcePutRequest entity, Title oldTitle) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
-    CustomerResources oldResource = oldTitle.getCustomerResourcesList().get(0);
     ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldTitle);
     //Map attributes specific to custom resources to RM API fields
     builder.titleName(oldTitle.getTitleName());
     builder.publisherName(oldTitle.getPublisherName());
     builder.edition(oldTitle.getEdition());
     builder.description(oldTitle.getDescription());
-    builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
 
     builder.identifiersList(oldTitle.getIdentifiersList());
     builder.contributorsList(oldTitle.getContributorsList());
@@ -63,6 +61,7 @@ public class ResourceRequestConverter {
       attributes.getVisibilityData().getIsHidden() : oldHidden;
 
     builder.isHidden(isHidden);
+    builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
 
     String coverageStatement = valueOrDefault(attributes.getCoverageStatement(), oldResource.getCoverageStatement());
     builder.coverageStatement(coverageStatement);
