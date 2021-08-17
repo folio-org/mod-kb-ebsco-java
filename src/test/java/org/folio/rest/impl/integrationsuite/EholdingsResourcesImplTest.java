@@ -287,7 +287,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
-
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
     String accessTypeId = accessTypes.get(0).getId();
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypeId, vertx);
