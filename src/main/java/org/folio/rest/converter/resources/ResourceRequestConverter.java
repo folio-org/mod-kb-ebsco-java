@@ -61,7 +61,9 @@ public class ResourceRequestConverter {
       attributes.getVisibilityData().getIsHidden() : oldHidden;
 
     builder.isHidden(isHidden);
-    builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
+    if (Boolean.TRUE == oldResource.getIsPackageCustom()) {
+      builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
+    }
 
     String coverageStatement = valueOrDefault(attributes.getCoverageStatement(), oldResource.getCoverageStatement());
     builder.coverageStatement(coverageStatement);
