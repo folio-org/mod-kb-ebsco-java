@@ -193,17 +193,25 @@ public class ResourceRequestConverterTest {
 
   @Test
   public void shouldCreateRequestToUpdateUrlForCustomResource() {
+    CustomerResources.CustomerResourcesBuilder customerResourcesBuilder = resourceData.getCustomerResourcesList().get(0).toBuilder();
+    CustomerResources resources = customerResourcesBuilder.isPackageCustom(true).build();
+    Title title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
+
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
-        .withUrl("test url")), resourceData);
+        .withUrl("test url")), title);
     assertEquals("test url", resourcePut.getUrl());
   }
 
   @Test
   public void shouldCreateRequestWithOldDataWhenUpdateFieldsAreMissing() {
+    CustomerResources.CustomerResourcesBuilder customerResourcesBuilder = resourceData.getCustomerResourcesList().get(0).toBuilder();
+    CustomerResources resources = customerResourcesBuilder.isPackageCustom(true).build();
+    Title title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
+
     ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()), resourceData);
+      new ResourcePutDataAttributes()), title);
     assertEquals(OLD_PROXY_ID, resourcePut.getProxy().getId());
     assertEquals(OLD_COVERAGE_STATEMENT, resourcePut.getCoverageStatement());
     assertEquals(OLD_URL, resourcePut.getUrl());
