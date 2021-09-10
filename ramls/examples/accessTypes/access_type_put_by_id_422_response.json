@@ -1,8 +1,15 @@
 {
   "errors": [
     {
-      "title": "Invalid id '99999999-9999-2-9999-9999-999999999999'",
-      "detail": "Id should follow UUID format %s"
+      "message": "must not be null",
+      "type": "1",
+      "code": "-1",
+      "parameters": [
+        {
+          "key": "data.attributes",
+          "value": "null"
+        }
+      ]
     }
   ],
   "jsonapi": {

@@ -68,14 +68,6 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_item_get_404_response.json
-        422:
-          description: Unprocessable Entity
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/accessTypes/access_type_item_get_422_response.json
 /eholdings/kb-credentials/{id}/access-types:
   displayName: Access Types
   description: Access Types belongs to specific KB Credentials
@@ -169,14 +161,6 @@ types:
               example:
                 strict: false
                 value: !include examples/accessTypes/access_type_item_get_404_response.json
-        422:
-          description: Unprocessable Entity
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/accessTypes/access_type_item_get_422_response.json
     put:
       description: Update a Access Type by Id related to specific KB credentials
       body:
