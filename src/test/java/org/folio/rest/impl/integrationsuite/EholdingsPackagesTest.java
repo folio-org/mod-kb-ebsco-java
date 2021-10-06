@@ -682,6 +682,18 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn422OnPutWhenCustomPackageUpdateLikeNotCustom() throws URISyntaxException, IOException {
+    String putBody = readFile("requests/kb-ebsco/package/put-package-selected.json");
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
+    JsonapiError error = putWithStatus(PACKAGES_PATH, putBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER,
+      STUB_TOKEN_HEADER).as(JsonapiError.class);
+
+    verify(0, putRequestedFor(PACKAGE_URL_PATTERN));
+
+    assertErrorContainsTitle(error, "Package isCustom not matched");
+  }
+
+  @Test
   public void shouldPassIsFullPackageAttributeToRMAPI() throws URISyntaxException, IOException {
     PackageByIdData updatedPackage = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class)
       .toByIdBuilder().isSelected(true).build();
