@@ -238,18 +238,18 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = parsePackageId(packageId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> {
-        validateIsCustomMatch(entity, parsedPackageId, context);
-        return fetchAccessType(entity, context)
-          .thenCompose(accessType -> processUpdateRequest(entity, parsedPackageId, context)
+      .requestAction(context -> context.getPackagesService().retrievePackage(parsedPackageId)
+        .thenCompose(packageByIdData -> fetchAccessType(entity, context)
+          .thenCompose(accessType -> processUpdateRequest(entity, packageByIdData, context)
             .thenCompose(o -> {
               CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
               return handleDeletedPackage(future, parsedPackageId, context);
             })
             .thenApply(packageById -> new PackageResult(packageById, null, null))
             .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))
-          );
-      })
+          )
+        )
+      )
       .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
       .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .executeWithResult(Package.class);
@@ -489,8 +489,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return packageRepository.delete(pkg.getId(), pkg.getCredentialsId(), tenant);
   }
 
-  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId,
+  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageByIdData originalPackage,
                                                        RMAPITemplateContext context) {
+    validateIsCustomMatch(originalPackage, entity);
     PackagePut packagePutBody;
     if (BooleanUtils.isTrue(entity.getData().getAttributes().getIsCustom())) {
       customPackagePutBodyValidator.validate(entity);
@@ -499,18 +500,14 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       packagePutBodyValidator.validate(entity);
       packagePutBody = converter.convertToRMAPIPackagePutRequest(entity);
     }
-    return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
+    return context.getPackagesService().updatePackage(parsePackageId(originalPackage.getFullPackageId()), packagePutBody);
   }
 
-  private void validateIsCustomMatch(PackagePutRequest entity, PackageId parsedPackageId, RMAPITemplateContext context) {
-    context.getPackagesService().retrievePackage(parsedPackageId)
-      .thenAccept(packageByIdData -> {
-        Boolean isOriginalCustom = packageByIdData.getIsCustom();
-        if (!isOriginalCustom.equals(entity.getData().getAttributes().getIsCustom())) {
-          throw new InputValidationException(PACKAGE_IS_CUSTOM_NOT_MATCHED,
-            String.format(PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS, isOriginalCustom));
-        }
-      });
+  private void validateIsCustomMatch(PackageByIdData originalPackage, PackagePutRequest entity) {
+    if (!originalPackage.getIsCustom().equals(entity.getData().getAttributes().getIsCustom())) {
+      throw new InputValidationException(PACKAGE_IS_CUSTOM_NOT_MATCHED,
+        String.format(PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS, originalPackage.getIsCustom()));
+    }
   }
 
   /**

@@ -8,6 +8,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -170,7 +171,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private final ObjectMapper mapper = new ObjectMapper();
   private KbCredentials configuration;
 
-  @Override @Before
+  @Override
+  @Before
   public void setUp() throws Exception {
     super.setUp();
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
@@ -649,10 +651,18 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
-    stubFor(get(PACKAGE_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withStatus(SC_NOT_FOUND)));
 
+    String getByIdBody = readFile(CUSTOM_PACKAGE_STUB_FILE);
     String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
       newAccessTypeId);
+    stubFor(get(PACKAGE_URL_PATTERN).inScenario("Put package")
+      .whenScenarioStateIs(STARTED)
+      .willReturn(new ResponseDefinitionBuilder().withBody(getByIdBody))
+      .willSetStateTo("Not found"));
+    stubFor(get(PACKAGE_URL_PATTERN).inScenario("Put package")
+      .whenScenarioStateIs("Not found")
+      .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NOT_FOUND)));
+
     putWithStatus(PACKAGES_PATH, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER);
 
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
@@ -662,6 +672,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPutWhenPackageIsNotUpdatable() throws URISyntaxException, IOException {
     String putBody = readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json");
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
     JsonapiError error = putWithStatus(PACKAGES_PATH, putBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER,
       STUB_TOKEN_HEADER).as(JsonapiError.class);
 
@@ -1118,7 +1129,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String actualResponse = getWithOk(packageResourcesUrl, STUB_TOKEN_HEADER).asString();
 
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/resources/expected-tagged-resources.json"), actualResponse,
-        false);
+      false);
   }
 
   @Test
