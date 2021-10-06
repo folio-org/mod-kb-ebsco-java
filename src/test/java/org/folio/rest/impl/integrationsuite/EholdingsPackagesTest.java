@@ -896,6 +896,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturn400OnPutPackageWithNotExistedAccessType() throws URISyntaxException, IOException {
     String requestBody = readFile("requests/kb-ebsco/package/put-package-with-not-existed-access-type.json");
+    mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
     JsonapiError error = putWithStatus(PACKAGES_PATH, requestBody, SC_BAD_REQUEST, CONTENT_TYPE_HEADER, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);
@@ -968,6 +969,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturn400OnPostPackageWithNotExistedAccessType() throws URISyntaxException, IOException {
     String requestBody = readFile("requests/kb-ebsco/package/post-package-with-not-existed-access-type-request.json");
+    mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE));
 
     JsonapiError error = postWithStatus(PACKAGES_ENDPOINT, requestBody, SC_BAD_REQUEST, CONTENT_TYPE_HEADER,
       STUB_TOKEN_HEADER).as(JsonapiError.class);

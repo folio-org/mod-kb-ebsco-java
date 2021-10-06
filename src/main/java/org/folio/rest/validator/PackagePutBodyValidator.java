@@ -11,6 +11,8 @@ public class PackagePutBodyValidator {
 
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
+  private static final String PACKAGE_NOT_UPDATABLE_TITLE = "Package is not updatable";
+  private static final String PACKAGE_NOT_UPDATABLE_DETAILS = "Non-custom packages must be selected";
   private static final int MAX_TOKEN_LENGTH = 500;
 
   public void validate(PackagePutRequest request) {
@@ -21,9 +23,7 @@ public class PackagePutBodyValidator {
     }
     PackagePutDataAttributes attributes = request.getData().getAttributes();
     Boolean isSelected = attributes.getIsSelected();
-    Boolean allowKbToAddTitles = attributes.getAllowKbToAddTitles();
 
-    Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
     String beginCoverage = null;
     String endCoverage = null;
     if (attributes.getCustomCoverage() != null) {
@@ -34,11 +34,7 @@ public class PackagePutBodyValidator {
     String value = attributes.getPackageToken() != null ? attributes.getPackageToken().getValue() : null;
 
     if (isSelected == null || !isSelected) {
-      ValidatorUtil.checkFalseOrNull("allowKbToAddTitles", allowKbToAddTitles);
-      ValidatorUtil.checkFalseOrNull("visibilityData.isHidden", isHidden);
-      ValidatorUtil.checkIsEmpty("customCoverage.beginCoverage", beginCoverage);
-      ValidatorUtil.checkIsEmpty("customCoverage.endCoverage", endCoverage);
-      ValidatorUtil.checkIsNull("packageToken.value", value);
+      throw new InputValidationException(PACKAGE_NOT_UPDATABLE_TITLE, PACKAGE_NOT_UPDATABLE_DETAILS);
     }
     ValidatorUtil.checkMaxLength("value", value, MAX_TOKEN_LENGTH);
     ValidatorUtil.checkDateValid("beginCoverage", beginCoverage);

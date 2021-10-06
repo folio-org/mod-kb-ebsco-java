@@ -8,8 +8,7 @@ import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 
 @Component
-public class CustomPackagePutBodyValidator
-{
+public class CustomPackagePutBodyValidator {
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
 
@@ -25,8 +24,8 @@ public class CustomPackagePutBodyValidator
 
     String beginCoverage = null;
     String endCoverage = null;
-    if(attributes.getCustomCoverage() !=null){
-      beginCoverage =attributes.getCustomCoverage().getBeginCoverage();
+    if (attributes.getCustomCoverage() != null) {
+      beginCoverage = attributes.getCustomCoverage().getBeginCoverage();
       endCoverage = attributes.getCustomCoverage().getEndCoverage();
     }
 
