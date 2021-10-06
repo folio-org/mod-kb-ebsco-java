@@ -34,6 +34,17 @@ public class PackagePutBodyValidatorTest {
   }
 
   @Test
+  public void shouldThrowExceptionWhenPackageIsNotSelectedAndIsHiddenIsTrue() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage(containsString("isHidden"));
+    validator.validate(PackagesTestData.getPackagePutRequest(
+      new PackagePutDataAttributes()
+      .withIsSelected(false)
+      .withVisibilityData(new VisibilityData()
+        .withIsHidden(true))));
+  }
+
+  @Test
   public void shouldThrowExceptionWhenPackageIsNotSelectedAndCoverageIsNotEmpty() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("beginCoverage"));
@@ -45,6 +56,16 @@ public class PackagePutBodyValidatorTest {
   }
 
   @Test
+  public void shouldThrowExceptionWhenPackageIsNotSelectedAndAllowToAddTitlesTrue() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage(containsString("allowKbToAddTitles"));
+    validator.validate(PackagesTestData.getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withIsSelected(false)
+        .withAllowKbToAddTitles(true)));
+  }
+
+  @Test
   public void shouldThrowExceptionWhenPackageIsNotSelectedAndTokenIsNotEmpty() {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage(containsString("value"));
@@ -52,6 +73,27 @@ public class PackagePutBodyValidatorTest {
       new PackagePutDataAttributes()
         .withIsSelected(false)
         .withPackageToken(new Token().withValue("tokenValue"))));
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenPackageIsSelectedAndTokenIsTooLong() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage(containsString("value"));
+    validator.validate(PackagesTestData.getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withIsSelected(true)
+        .withPackageToken(new Token().withValue(StringUtils.repeat("tokenvalue",200)))));
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenPackageIsSelectedAndCoverageDateIsInvalid() {
+    expectedEx.expect(InputValidationException.class);
+    expectedEx.expectMessage(containsString("beginCoverage"));
+    validator.validate(PackagesTestData.getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withIsSelected(true)
+        .withCustomCoverage(new Coverage()
+          .withBeginCoverage("abcd-ab-ab"))));
   }
 
   @Test

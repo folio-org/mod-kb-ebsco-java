@@ -60,6 +60,7 @@ import org.folio.rest.jaxrs.model.PackageBulkFetchCollection;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackagePostBulkFetchRequest;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.jaxrs.model.PackageTags;
 import org.folio.rest.jaxrs.model.PackageTagsDataAttributes;
@@ -94,6 +95,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private static final String INVALID_PACKAGE_TITLE = "Package cannot be deleted";
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
+  private static final String PACKAGE_NOT_UPDATABLE_TITLE = "Package is not updatable";
+  private static final String PACKAGE_NOT_UPDATABLE_DETAILS = "Package's 'isCustom' and 'isSelected' are 'false'";
   private static final String PACKAGE_IS_CUSTOM_NOT_MATCHED = "Package isCustom not matched";
   private static final String PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS = "Package isCustom: %s";
 
@@ -236,23 +239,27 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   public void putEholdingsPackagesByPackageId(String packageId, String contentType, PackagePutRequest entity,
                                               Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    PackageId parsedPackageId = parsePackageId(packageId);
-    templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> context.getPackagesService().retrievePackage(parsedPackageId)
-        .thenCompose(packageByIdData -> fetchAccessType(entity, context)
-          .thenCompose(accessType -> processUpdateRequest(entity, packageByIdData, context)
-            .thenCompose(o -> {
-              CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
-              return handleDeletedPackage(future, parsedPackageId, context);
-            })
-            .thenApply(packageById -> new PackageResult(packageById, null, null))
-            .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))
+    if (!isPackageUpdatable(entity)) {
+      throw new InputValidationException(PACKAGE_NOT_UPDATABLE_TITLE, PACKAGE_NOT_UPDATABLE_DETAILS);
+    } else {
+      PackageId parsedPackageId = parsePackageId(packageId);
+      templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
+        .requestAction(context -> context.getPackagesService().retrievePackage(parsedPackageId)
+          .thenCompose(packageByIdData -> fetchAccessType(entity, context)
+            .thenCompose(accessType -> processUpdateRequest(entity, packageByIdData, context)
+              .thenCompose(o -> {
+                CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
+                return handleDeletedPackage(future, parsedPackageId, context);
+              })
+              .thenApply(packageById -> new PackageResult(packageById, null, null))
+              .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))
+            )
           )
         )
-      )
-      .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
-      .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
-      .executeWithResult(Package.class);
+        .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
+        .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
+        .executeWithResult(Package.class);
+    }
   }
 
   @Override
@@ -501,6 +508,19 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       packagePutBody = converter.convertToRMAPIPackagePutRequest(entity);
     }
     return context.getPackagesService().updatePackage(parsePackageId(originalPackage.getFullPackageId()), packagePutBody);
+  }
+
+  private boolean isPackageUpdatable(PackagePutRequest entity) {
+    PackagePutDataAttributes packageData = entity.getData().getAttributes();
+    if (BooleanUtils.isFalse(packageData.getIsCustom()) &&
+      BooleanUtils.isFalse(packageData.getIsSelected())) {
+      try {
+        packagePutBodyValidator.validate(entity);
+      } catch (InputValidationException ex) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void validateIsCustomMatch(PackageByIdData originalPackage, PackagePutRequest entity) {
