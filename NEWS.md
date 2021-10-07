@@ -1,3 +1,7 @@
+## v3.9.0 2021-10-07
+* MODKBEKBJ-596 Packages, error message when "isCustom" not provided
+* MODKBEKBJ-597 Packages, deny creating package with empty name
+
 ## v3.8.0 2021-06-10
 * MODKBEKBJ-570 Filter resources in title
 * MODKBEKBJ-578 Fix duplicate titles on GET by tags with included resources 
@@ -5,8 +9,6 @@
 * MODKBEKBJ-576 Implement GET UC credentials endpoint
 * MODKBEKBJ-579 Implement PUT UC credentials endpoint
 * MODKBEKBJ-581 Upgrade to RMB v33 and Vert.X v4.1.0.CR1
-* MODKBEKBJ-596 Packages, error message when "isCustom" not provided
-* MODKBEKBJ-597 Packages, deny creating package with empty name
 
 ## v3.7.0 2021-03-09
 * MODKBEKBJ-570 Fix percent of usage calculation
