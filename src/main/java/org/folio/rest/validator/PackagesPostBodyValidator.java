@@ -28,7 +28,7 @@ public class PackagesPostBodyValidator {
       throw new InputValidationException(INVALID_POST_BODY, "");
     }
 
-    ValidatorUtil.checkIsNotEmpty("name", entity.getData().getAttributes().getName());
+    ValidatorUtil.checkIsNotBlank("name", entity.getData().getAttributes().getName());
     ValidatorUtil.checkMaxLength("name", entity.getData().getAttributes().getName(), 200);
     ValidatorUtil.checkIsNotNull("Content type", entity.getData().getAttributes().getContentType());
 
