@@ -19,7 +19,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -98,6 +97,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private static final String INVALID_PACKAGE_DETAILS = "Invalid package";
   private static final String PACKAGE_NOT_UPDATABLE_TITLE = "Package is not updatable";
   private static final String PACKAGE_NOT_UPDATABLE_DETAILS = "Package's 'isCustom' and 'isSelected' are 'false'";
+  private static final String PACKAGE_IS_CUSTOM_NOT_MATCHED = "Package isCustom not matched";
+  private static final String PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS = "Package isCustom: %s";
 
   @Autowired
   private PackageRequestConverter converter;
@@ -199,7 +200,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       template.requestAction(context -> postCustomPackage(packagePost, context));
     } else {
       template.requestAction(context -> accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(),
-        accessTypeId, okapiHeaders)
+          accessTypeId, okapiHeaders)
         .thenCompose(accessType -> postCustomPackage(packagePost, context)
           .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))));
     }
@@ -225,8 +226,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
               .recordType(RecordType.PACKAGE)
               .build();
             return CompletableFuture.allOf(
-              relatedEntitiesLoader.loadAccessType(packageResult, recordKey, context),
-              relatedEntitiesLoader.loadTags(packageResult, recordKey, context))
+                relatedEntitiesLoader.loadAccessType(packageResult, recordKey, context),
+                relatedEntitiesLoader.loadTags(packageResult, recordKey, context))
               .thenApply(aVoid -> packageResult);
           })
       ))
@@ -243,14 +244,16 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     } else {
       PackageId parsedPackageId = parsePackageId(packageId);
       templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-        .requestAction(context -> fetchAccessType(entity, context)
-          .thenCompose(accessType -> processUpdateRequest(entity, parsedPackageId, context)
-            .thenCompose(o -> {
-              CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
-              return handleDeletedPackage(future, parsedPackageId, context);
-            })
-            .thenApply(packageById -> new PackageResult(packageById, null, null))
-            .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))
+        .requestAction(context -> context.getPackagesService().retrievePackage(parsedPackageId)
+          .thenCompose(packageByIdData -> fetchAccessType(entity, context)
+            .thenCompose(accessType -> processUpdateRequest(entity, packageByIdData, context)
+              .thenCompose(voidEntity -> {
+                CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
+                return handleDeletedPackage(future, parsedPackageId, context);
+              })
+              .thenApply(packageById -> new PackageResult(packageById, null, null))
+              .thenCompose(packageResult -> updateAccessTypeMapping(accessType, packageResult, context))
+            )
           )
         )
         .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
@@ -313,22 +316,20 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         .fetchResourcesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
       );
     } else {
-      template.requestAction(context ->
-        {
-          PackageId pkgId = filter.getPackageId();
-          long providerIdPart = pkgId.getProviderIdPart();
-          long packageIdPart = pkgId.getPackageIdPart();
-          return context.getTitlesService()
-            .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), filter.getSort(), page, count)
-            .thenApply(titles -> titleCollectionConverter.convert(titles))
-            .thenCompose(loadResourceTags(context));
-        }
-      );
+      template.requestAction(context -> {
+        PackageId pkgId = filter.getPackageId();
+        long providerIdPart = pkgId.getProviderIdPart();
+        long packageIdPart = pkgId.getPackageIdPart();
+        return context.getTitlesService()
+          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), filter.getSort(), page, count)
+          .thenApply(titles -> titleCollectionConverter.convert(titles))
+          .thenCompose(loadResourceTags(context));
+      });
     }
 
     template.addErrorMapper(ResourceNotFoundException.class, exception ->
-      GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
-        ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
+        GetEholdingsPackagesResourcesByPackageIdResponse.respond404WithApplicationVndApiJson(
+          ErrorUtil.createError(PACKAGE_NOT_FOUND_MESSAGE)))
       .executeWithResult(ResourceCollection.class);
   }
 
@@ -425,8 +426,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       Map<String, TitleResult> resourceIdToTitle = mapResourceIdToTitleResult(titleCollection);
 
       return tagRepository.findPerRecord(context.getOkapiData().getTenant(),
-        new ArrayList<>(resourceIdToTitle.keySet()),
-        RecordType.RESOURCE)
+          new ArrayList<>(resourceIdToTitle.keySet()),
+          RecordType.RESOURCE)
         .thenApply(tagMap -> {
           populateResourceTags(resourceIdToTitle, tagMap);
           return titleCollection;
@@ -495,17 +496,20 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return packageRepository.delete(pkg.getId(), pkg.getCredentialsId(), tenant);
   }
 
-  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageId parsedPackageId,
+  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageByIdData originalPackage,
                                                        RMAPITemplateContext context) {
+    Boolean isEntityCustom = entity.getData().getAttributes().getIsCustom();
+    validateIsCustomMatch(originalPackage.getIsCustom(), isEntityCustom);
+
     PackagePut packagePutBody;
-    if (BooleanUtils.isTrue(entity.getData().getAttributes().getIsCustom())) {
+    if (BooleanUtils.isTrue(isEntityCustom)) {
       customPackagePutBodyValidator.validate(entity);
       packagePutBody = converter.convertToRMAPICustomPackagePutRequest(entity);
     } else {
       packagePutBodyValidator.validate(entity);
       packagePutBody = converter.convertToRMAPIPackagePutRequest(entity);
     }
-    return context.getPackagesService().updatePackage(parsedPackageId, packagePutBody);
+    return context.getPackagesService().updatePackage(parsePackageId(originalPackage.getFullPackageId()), packagePutBody);
   }
 
   private boolean isPackageUpdatable(PackagePutRequest entity) {
@@ -519,6 +523,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       }
     }
     return true;
+  }
+
+  private void validateIsCustomMatch(Boolean isOriginalCustom, Boolean isUpdatableCustom) {
+    if (!isOriginalCustom.equals(isUpdatableCustom)) {
+      throw new InputValidationException(PACKAGE_IS_CUSTOM_NOT_MATCHED,
+        String.format(PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS, isOriginalCustom));
+    }
   }
 
   /**
