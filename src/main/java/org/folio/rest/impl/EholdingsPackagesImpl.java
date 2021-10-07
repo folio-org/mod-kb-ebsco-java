@@ -247,7 +247,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         .requestAction(context -> context.getPackagesService().retrievePackage(parsedPackageId)
           .thenCompose(packageByIdData -> fetchAccessType(entity, context)
             .thenCompose(accessType -> processUpdateRequest(entity, packageByIdData, context)
-              .thenCompose(o -> {
+              .thenCompose(voidEntity -> {
                 CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
                 return handleDeletedPackage(future, parsedPackageId, context);
               })
@@ -498,9 +498,11 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageByIdData originalPackage,
                                                        RMAPITemplateContext context) {
-    validateIsCustomMatch(originalPackage, entity);
+    Boolean isEntityCustom = entity.getData().getAttributes().getIsCustom();
+    validateIsCustomMatch(originalPackage.getIsCustom(), isEntityCustom);
+
     PackagePut packagePutBody;
-    if (BooleanUtils.isTrue(entity.getData().getAttributes().getIsCustom())) {
+    if (BooleanUtils.isTrue(isEntityCustom)) {
       customPackagePutBodyValidator.validate(entity);
       packagePutBody = converter.convertToRMAPICustomPackagePutRequest(entity);
     } else {
@@ -523,10 +525,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return true;
   }
 
-  private void validateIsCustomMatch(PackageByIdData originalPackage, PackagePutRequest entity) {
-    if (!originalPackage.getIsCustom().equals(entity.getData().getAttributes().getIsCustom())) {
+  private void validateIsCustomMatch(Boolean isOriginalCustom, Boolean isUpdatableCustom) {
+    if (!isOriginalCustom.equals(isUpdatableCustom)) {
       throw new InputValidationException(PACKAGE_IS_CUSTOM_NOT_MATCHED,
-        String.format(PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS, originalPackage.getIsCustom()));
+        String.format(PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS, isOriginalCustom));
     }
   }
 
