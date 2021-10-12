@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -30,6 +31,7 @@ import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.cache.VertxCache;
@@ -136,6 +138,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
+  @Value("${kb.ebsco.search-type.packages}")
+  private String packagesSearchType;
+  @Value("${kb.ebsco.search-type.titles}")
+  private String titlesSearchType;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -175,10 +181,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           if (Boolean.TRUE.equals(filter.getFilterCustom())) {
             return getCustomProviderId(context).thenCompose(providerId ->
               context.getPackagesService()
-                .retrievePackages(filter.getFilterSelected(), filterType, providerId, q, page, count, filter.getSort()));
+                .retrievePackages(filter.getFilterSelected(), filterType, packagesSearchType, providerId, q, page, count, filter.getSort()));
           } else {
             return context.getPackagesService()
-              .retrievePackages(filter.getFilterSelected(), filterType, null, q, page, count, filter.getSort());
+              .retrievePackages(filter.getFilterSelected(), filterType, packagesSearchType, null, q, page, count, filter.getSort());
           }
         });
     }
@@ -321,7 +327,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         long providerIdPart = pkgId.getProviderIdPart();
         long packageIdPart = pkgId.getPackageIdPart();
         return context.getTitlesService()
-          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), filter.getSort(), page, count)
+          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), titlesSearchType, filter.getSort(), page, count)
           .thenApply(titles -> titleCollectionConverter.convert(titles))
           .thenCompose(loadResourceTags(context));
       });
