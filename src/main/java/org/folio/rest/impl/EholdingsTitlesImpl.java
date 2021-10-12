@@ -22,6 +22,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.common.ListUtils;
@@ -81,6 +82,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private RelatedEntitiesLoader relatedEntitiesLoader;
   @Autowired
   private FilteredEntitiesLoader filteredEntitiesLoader;
+  @Value("${kb.ebsco.search-type.titles}")
+  private String titlesSearchType;
 
   public EholdingsTitlesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -188,7 +191,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context);
     } else {
       return context.getTitlesService()
-        .retrieveTitles(filter.createFilterQuery(), filter.getSort(), filter.getPage(), filter.getCount());
+        .retrieveTitles(filter.createFilterQuery(), titlesSearchType, filter.getSort(), filter.getPage(), filter.getCount());
     }
   }
 

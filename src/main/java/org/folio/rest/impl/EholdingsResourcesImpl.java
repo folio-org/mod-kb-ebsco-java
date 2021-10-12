@@ -36,6 +36,7 @@ import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.CustomerResources;
@@ -119,7 +120,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
-
+  @Value("${kb.ebsco.search-type.titles}")
+  private String titlesSearchType;
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -318,7 +320,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .name(titleFuture.join().getTitleName())
           .build();
         return titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
-          filterByName, Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
+          filterByName, titlesSearchType, Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
       })
       .thenCompose(titles -> CompletableFuture.completedFuture(
         new ObjectsForPostResourceResult(titleFuture.join(), packageFuture.join(), titles)));

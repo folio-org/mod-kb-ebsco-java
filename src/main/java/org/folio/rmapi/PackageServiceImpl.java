@@ -21,6 +21,7 @@ import javax.validation.ValidationException;
 import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
@@ -50,6 +51,8 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
   private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
   private Configuration configuration;
   private String tenantId;
+  @Value("${kb.ebsco.search-type.titles}")
+  private String titlesSearchType;
 
   public PackageServiceImpl(Configuration config, Vertx vertx, String tenantId, ProvidersServiceImpl providerService,
                             TitlesHoldingsIQService titlesService, VertxCache<PackageCacheKey, PackageByIdData> packageCache) {
@@ -76,7 +79,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     CompletableFuture<Titles> titlesFuture;
     if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
       titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(),
-        Sort.NAME, 1, 25);
+        titlesSearchType, Sort.NAME, 1, 25);
     } else {
       titlesFuture = completedFuture(null);
     }
