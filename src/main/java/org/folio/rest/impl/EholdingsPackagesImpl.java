@@ -31,7 +31,6 @@ import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.cache.VertxCache;
@@ -45,6 +44,7 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
+import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.packages.DbPackage;
@@ -138,10 +138,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
-  @Value("${kb.ebsco.search-type.packages}")
-  private String packagesSearchType;
-  @Value("${kb.ebsco.search-type.titles}")
-  private String titlesSearchType;
+  @Autowired
+  private SearchProperties searchProperties;
 
   public EholdingsPackagesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -181,10 +179,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           if (Boolean.TRUE.equals(filter.getFilterCustom())) {
             return getCustomProviderId(context).thenCompose(providerId ->
               context.getPackagesService()
-                .retrievePackages(filter.getFilterSelected(), filterType, packagesSearchType, providerId, q, page, count, filter.getSort()));
+                .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.getPackagesSearchType(),
+                  providerId, q, page, count, filter.getSort())
+            );
           } else {
             return context.getPackagesService()
-              .retrievePackages(filter.getFilterSelected(), filterType, packagesSearchType, null, q, page, count, filter.getSort());
+              .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.getPackagesSearchType(),
+                null, q, page, count, filter.getSort());
           }
         });
     }
@@ -327,7 +328,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         long providerIdPart = pkgId.getProviderIdPart();
         long packageIdPart = pkgId.getPackageIdPart();
         return context.getTitlesService()
-          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), titlesSearchType, filter.getSort(), page, count)
+          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), searchProperties.getTitlesSearchType(),
+            filter.getSort(), page, count)
           .thenApply(titles -> titleCollectionConverter.convert(titles))
           .thenCompose(loadResourceTags(context));
       });

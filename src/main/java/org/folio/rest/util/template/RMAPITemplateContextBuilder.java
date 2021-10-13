@@ -16,6 +16,7 @@ import org.folio.holdingsiq.service.HoldingsIQService;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
+import org.folio.properties.common.SearchProperties;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rmapi.PackageServiceImpl;
 import org.folio.rmapi.ProvidersServiceImpl;
@@ -43,6 +44,8 @@ public class RMAPITemplateContextBuilder {
   private VertxCache<ResourceCacheKey, Title> resourceCache;
   @Autowired
   private VertxCache<TitleCacheKey, Title> titleCache;
+  @Autowired
+  private SearchProperties searchProperties;
 
   @Autowired
   private Vertx vertx;
@@ -67,7 +70,7 @@ public class RMAPITemplateContextBuilder {
     final ProvidersServiceImpl providersService =
       new ProvidersServiceImpl(configuration, vertx, tenant, holdingsService, vendorCache);
     final PackageServiceImpl packagesService =
-      new PackageServiceImpl(configuration, vertx, tenant, providersService, titlesService, packageCache);
+      new PackageServiceImpl(configuration, vertx, tenant, providersService, titlesService, packageCache, searchProperties);
     final ResourcesServiceImpl resourcesService =
       new ResourcesServiceImpl(configuration, vertx, tenant, providersService, packagesService, resourceCache);
     final LoadService loadService = new LoadServiceImpl(configuration, vertx);
