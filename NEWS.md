@@ -1,7 +1,9 @@
+## v3.10.0 xxxx-xx-xx
+* MODKBEKBJ-598 Packages, clarify error message when unselect non-custom package
+
 ## v3.9.0 2021-10-07
 * MODKBEKBJ-596 Packages, error message when "isCustom" not provided
 * MODKBEKBJ-597 Packages, deny creating package with empty name
-* MODKBEKBJ-598 Packages, clarify error message when unselect non-custom package 
 
 ## v3.8.0 2021-06-10
 * MODKBEKBJ-570 Filter resources in title
