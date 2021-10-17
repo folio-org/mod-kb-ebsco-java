@@ -1,3 +1,6 @@
+## v3.10.0 xxxx-xx-xx
+* MODKBEKBJ-600 Providers, deny updating tags with empty name
+
 ## v3.9.0 2021-10-07
 * MODKBEKBJ-596 Packages, error message when "isCustom" not provided
 * MODKBEKBJ-597 Packages, deny creating package with empty name
