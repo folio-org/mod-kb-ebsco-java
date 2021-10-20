@@ -1,4 +1,5 @@
 ## v3.10.0 xxxx-xx-xx
+* MODKBEKBJ-598 Packages, clarify error message when unselect non-custom package
 * MODKBEKBJ-600 Providers, deny updating tags with empty name
 * MODKBEKBJ-601 User-assigment, deny assign user with empty name
 
