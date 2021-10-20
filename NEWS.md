@@ -1,5 +1,7 @@
 ## v3.10.0 xxxx-xx-xx
+* MODKBEKBJ-593 Apply searchtype=advanced to Packages search query
 * MODKBEKBJ-598 Packages, clarify error message when unselect non-custom package
+* MODKBEKBJ-599 Apply searchtype=advanced to Titles search query
 * MODKBEKBJ-600 Providers, deny updating tags with empty name
 * MODKBEKBJ-601 User-assigment, deny assign user with empty name
 
