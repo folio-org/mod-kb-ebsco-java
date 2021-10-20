@@ -3,6 +3,7 @@ package org.folio.rest.validator;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ProviderTagsDataAttributes;
 import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +19,7 @@ public class ProviderTagsPutBodyValidator {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
 
-    ValidatorUtil.checkIsNotEmpty("name", attributes.getName());
+    ValidatorUtil.checkIsNotBlank("name", attributes.getName());
     ValidatorUtil.checkMaxLength("name", attributes.getName(), 200);
     ValidatorUtil.checkIsNotNull("tags", attributes.getTags());
   }

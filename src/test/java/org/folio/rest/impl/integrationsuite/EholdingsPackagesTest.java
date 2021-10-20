@@ -670,7 +670,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnPutWhenPackageIsNotUpdatable() throws URISyntaxException, IOException {
+  public void shouldReturn422OnPutWhenUnselectNonCustomPackageIsHidden() throws URISyntaxException, IOException {
     String putBody = readFile("requests/kb-ebsco/package/put-package-not-selected-non-empty-fields.json");
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), PACKAGE_STUB_FILE);
     JsonapiError error = putWithStatus(PACKAGES_PATH, putBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER,
@@ -678,7 +678,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     verify(0, putRequestedFor(PACKAGE_URL_PATTERN));
 
-    assertErrorContainsTitle(error, "Package is not updatable");
+    assertErrorContainsTitle(error, "Invalid visibilityData.isHidden");
   }
 
   @Test

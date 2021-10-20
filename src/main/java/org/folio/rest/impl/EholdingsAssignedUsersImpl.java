@@ -18,11 +18,14 @@ import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.rest.jaxrs.model.AssignedUserPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdUsers;
 import org.folio.rest.util.ErrorHandler;
+import org.folio.rest.validator.AssignedUsersBodyValidator;
 import org.folio.service.assignedusers.AssignedUsersService;
 import org.folio.spring.SpringContextUtil;
 
 public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers {
 
+  @Autowired
+  private AssignedUsersBodyValidator assignedUsersBodyValidator;
   @Autowired
   private AssignedUsersService assignedUsersService;
   @Autowired
@@ -49,6 +52,7 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
   public void postEholdingsKbCredentialsUsersById(String credentialsId, String contentType, AssignedUserPostRequest entity,
                                                   Map<String, String> okapiHeaders,
                                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    assignedUsersBodyValidator.validate(entity.getData());
     assignedUsersService.save(entity, okapiHeaders)
       .thenAccept(assignedUser -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsKbCredentialsUsersByIdResponse.respond201WithApplicationVndApiJson(assignedUser))))
@@ -62,6 +66,7 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
                                                           Map<String, String> okapiHeaders,
                                                           Handler<AsyncResult<Response>> asyncResultHandler,
                                                           Context vertxContext) {
+    assignedUsersBodyValidator.validate(entity.getData());
     assignedUsersService.update(credentialsId, userId, entity, okapiHeaders)
       .thenAccept(o -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsKbCredentialsUsersByIdAndUserIdResponse.respond204())))
