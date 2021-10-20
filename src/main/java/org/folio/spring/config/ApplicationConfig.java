@@ -58,6 +58,7 @@ import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceCache;
 import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.holdingsiq.service.validator.TitleParametersValidator;
+import org.folio.properties.common.SearchProperties;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
@@ -302,6 +303,12 @@ public class ApplicationConfig {
       @Value("${kb.ebsco.custom.labels.label.length.max:200}") int labelMaxLength,
       @Value("${kb.ebsco.custom.labels.value.length.max:500}") int valueMaxLength) {
     return new CustomLabelsProperties(labelMaxLength, valueMaxLength);
+  }
+
+  @Bean
+  public SearchProperties searchProperties(@Value("${kb.ebsco.search-type.titles}") String titlesSearchType,
+                                           @Value("${kb.ebsco.search-type.packages}") String packagesSearchType) {
+    return new SearchProperties(titlesSearchType, packagesSearchType);
   }
 
   @Bean

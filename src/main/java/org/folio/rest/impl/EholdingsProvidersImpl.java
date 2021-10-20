@@ -25,6 +25,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 
 import org.folio.holdingsiq.model.OkapiData;
@@ -92,6 +93,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
+  @Value("${kb.ebsco.search-type.packages}")
+  private String packagesSearchType;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -218,8 +221,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       template
         .requestAction(context ->
           context.getPackagesService()
-            .retrievePackages(filter.getFilterSelected(), filterType, filter.getProviderId(), q, page, count,
-              filter.getSort())
+            .retrievePackages(filter.getFilterSelected(), filterType, packagesSearchType,filter.getProviderId(), q, page,
+              count, filter.getSort())
             .thenCompose(packages -> loadTags(packages, context))
         );
     }

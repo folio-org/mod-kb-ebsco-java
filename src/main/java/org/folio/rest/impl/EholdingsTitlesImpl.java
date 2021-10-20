@@ -31,6 +31,7 @@ import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.TitlePost;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.TagRepository;
@@ -81,6 +82,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private RelatedEntitiesLoader relatedEntitiesLoader;
   @Autowired
   private FilteredEntitiesLoader filteredEntitiesLoader;
+  @Autowired
+  private SearchProperties searchProperties;
 
   public EholdingsTitlesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -188,7 +191,9 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context);
     } else {
       return context.getTitlesService()
-        .retrieveTitles(filter.createFilterQuery(), filter.getSort(), filter.getPage(), filter.getCount());
+        .retrieveTitles(filter.createFilterQuery(), searchProperties.getTitlesSearchType(),
+          filter.getSort(), filter.getPage(), filter.getCount()
+        );
     }
   }
 

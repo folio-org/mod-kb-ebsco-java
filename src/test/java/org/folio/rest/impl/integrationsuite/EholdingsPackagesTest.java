@@ -1039,7 +1039,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnDefaultResourcesOnGetWithResources() throws IOException, URISyntaxException, JSONException {
     String query =
-      "?searchfield=titlename&selection=all&resourcetype=all&searchtype=contains&search=&offset=1&count=25&orderby=titlename";
+      "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(PACKAGE_RESOURCES_PATH, query);
   }
 
@@ -1047,7 +1047,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturnResourcesWithPagingOnGetWithResources() throws IOException, URISyntaxException, JSONException {
     String packageResourcesUrl = PACKAGE_RESOURCES_PATH + "?page=2";
     String query =
-      "?searchfield=titlename&selection=all&resourcetype=all&searchtype=contains&search=&offset=2&count=25&orderby=titlename";
+      "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=2&count=25&orderby=titlename";
     shouldReturnResourcesOnGetWithResources(packageResourcesUrl, query);
   }
 
@@ -1067,7 +1067,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     saveTag(vertx, "295-2545963-2172685", RESOURCE, STUB_TAG_VALUE_3);
 
     String query =
-      "?searchfield=titlename&selection=all&resourcetype=all&searchtype=contains&search=&offset=1&count=25&orderby=titlename";
+      "?searchfield=titlename&selection=all&resourcetype=all&searchtype=advanced&search=&offset=1&count=25&orderby=titlename";
 
     mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
 

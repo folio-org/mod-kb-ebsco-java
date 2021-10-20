@@ -33,6 +33,7 @@ import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.impl.PackagesHoldingsIQServiceImpl;
+import org.folio.properties.common.SearchProperties;
 import org.folio.rest.util.IdParser;
 import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.result.PackageBulkResult;
@@ -48,17 +49,20 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
   private ProvidersServiceImpl providerService;
   private TitlesHoldingsIQService titlesService;
   private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private SearchProperties searchProperties;
   private Configuration configuration;
   private String tenantId;
 
   public PackageServiceImpl(Configuration config, Vertx vertx, String tenantId, ProvidersServiceImpl providerService,
-                            TitlesHoldingsIQService titlesService, VertxCache<PackageCacheKey, PackageByIdData> packageCache) {
+                            TitlesHoldingsIQService titlesService, VertxCache<PackageCacheKey, PackageByIdData> packageCache,
+                            SearchProperties searchProperties) {
     super(config, vertx);
     this.providerService = providerService;
     this.titlesService = titlesService;
     this.packageCache = packageCache;
     this.tenantId = tenantId;
     this.configuration = config;
+    this.searchProperties = searchProperties;
   }
 
   public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects) {
@@ -76,7 +80,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     CompletableFuture<Titles> titlesFuture;
     if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
       titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(),
-        Sort.NAME, 1, 25);
+        searchProperties.getTitlesSearchType(), Sort.NAME, 1, 25);
     } else {
       titlesFuture = completedFuture(null);
     }

@@ -51,6 +51,7 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.service.PackagesHoldingsIQService;
 import org.folio.holdingsiq.service.TitlesHoldingsIQService;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.resources.DbResource;
@@ -87,7 +88,6 @@ import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 
-
 public class EholdingsResourcesImpl implements EholdingsResources {
 
   private static final int MAX_TITLE_COUNT = 100;
@@ -119,7 +119,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
-
+  @Autowired
+  private SearchProperties searchProperties;
 
   public EholdingsResourcesImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -222,7 +223,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         ResourceTagsDataAttributes attributes = entity.getData().getAttributes();
         resourceTagsPutBodyValidator.validate(entity, attributes);
         return updateResourceTags(createDbResource(resourceId, creds.getId(), attributes),
-            new OkapiData(okapiHeaders).getTenant())
+          new OkapiData(okapiHeaders).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
             Future.succeededFuture(PutEholdingsResourcesTagsByResourceIdResponse.respond200WithApplicationVndApiJson(
               convertToResourceTags(attributes)))));
@@ -278,8 +279,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
     RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resource)).recordType(RecordType.RESOURCE).build();
     return CompletableFuture.allOf(
-      relatedEntitiesLoader.loadAccessType(result, recordKey, context),
-      relatedEntitiesLoader.loadTags(result, recordKey, context))
+        relatedEntitiesLoader.loadAccessType(result, recordKey, context),
+        relatedEntitiesLoader.loadTags(result, recordKey, context))
       .thenApply(aVoid -> result);
   }
 
@@ -318,7 +319,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .name(titleFuture.join().getTitleName())
           .build();
         return titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
-          filterByName, Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
+          filterByName, searchProperties.getTitlesSearchType(), Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
       })
       .thenCompose(titles -> CompletableFuture.completedFuture(
         new ObjectsForPostResourceResult(titleFuture.join(), packageFuture.join(), titles)));
@@ -367,8 +368,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         .build();
   }
 
-  private DbResource createDbResource(String resourceId, String credentialsId,
-    ResourceTagsDataAttributes attributes) {
+  private DbResource createDbResource(String resourceId, String credentialsId, ResourceTagsDataAttributes attributes) {
     return DbResource.builder()
       .id(IdParser.parseResourceId(resourceId))
       .credentialsId(UUID.fromString(credentialsId))

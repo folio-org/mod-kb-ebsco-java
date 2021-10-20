@@ -15,9 +15,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
-
 import io.vertx.core.Vertx;
-
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -48,7 +46,7 @@ public class PackageServiceImplTest {
       .apiKey("API KEY")
       .build();
     PackageServiceImpl service = new PackageServiceImpl(configuration, Vertx.vertx(), STUB_TENANT, null, null,
-      new VertxCache<>(Vertx.vertx(), 60, "packageCache"));
+      new VertxCache<>(Vertx.vertx(), 60, "packageCache"), null);
 
     mockGet(getPackagePattern, CUSTOM_PACKAGE_STUB_FILE);
 
