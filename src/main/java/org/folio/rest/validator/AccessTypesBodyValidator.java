@@ -31,7 +31,7 @@ public class AccessTypesBodyValidator {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
     AccessTypeDataAttributes attributes = request.getAttributes();
-    ValidatorUtil.checkIsNotEmpty("name", attributes.getName());
+    ValidatorUtil.checkIsNotBlank("name", attributes.getName());
     ValidatorUtil.checkMaxLength("name", attributes.getName(), maxNameLength);
 
     if (attributes.getDescription() != null) {

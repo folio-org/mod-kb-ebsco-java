@@ -23,7 +23,7 @@ public class TitleCommonRequestAttributesValidator {
    */
   public void validate(TitleCommonRequestAttributes attributes) {
     ValidatorUtil.checkIsNotNull(TITLE_NAME, attributes.getName());
-    ValidatorUtil.checkIsNotEmpty(TITLE_NAME, attributes.getName());
+    ValidatorUtil.checkIsNotBlank(TITLE_NAME, attributes.getName());
     ValidatorUtil.checkMaxLength(TITLE_NAME, attributes.getName(), 400);
 
     ValidatorUtil.checkMaxLength("Publisher name", attributes.getPublisherName(), 250);

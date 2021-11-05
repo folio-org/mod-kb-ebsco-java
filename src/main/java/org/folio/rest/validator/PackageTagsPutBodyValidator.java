@@ -19,7 +19,7 @@ public class PackageTagsPutBodyValidator {
     }
     PackageTagsDataAttributes attributes = request.getData().getAttributes();
 
-    ValidatorUtil.checkIsNotEmpty("name", attributes.getName());
+    ValidatorUtil.checkIsNotBlank("name", attributes.getName());
     ValidatorUtil.checkMaxLength("name", attributes.getName(), 200);
     ValidatorUtil.checkIsNotNull("contentType", attributes.getContentType());
     ValidatorUtil.checkIsNotNull("tags", attributes.getTags());
