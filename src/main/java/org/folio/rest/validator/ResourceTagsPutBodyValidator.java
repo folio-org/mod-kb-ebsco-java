@@ -19,7 +19,7 @@ public class ResourceTagsPutBodyValidator {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
 
-    ValidatorUtil.checkIsNotEmpty("name", attributes.getName());
+    ValidatorUtil.checkIsNotBlank("name", attributes.getName());
     ValidatorUtil.checkMaxLength("name", attributes.getName(), 200);
     ValidatorUtil.checkIsNotNull("tags", attributes.getTags());
   }

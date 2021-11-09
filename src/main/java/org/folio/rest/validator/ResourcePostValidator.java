@@ -17,11 +17,11 @@ public class ResourcePostValidator {
   public void validate(ResourcePostRequest request) {
     ResourcePostDataAttributes attributes = request.getData().getAttributes();
     String url = attributes.getUrl();
-    if (StringUtils.isNotEmpty(url)) {
+    if (StringUtils.isNotBlank(url)) {
       ValidatorUtil.checkUrlFormat("Url", attributes.getUrl());
     }
-    ValidatorUtil.checkIsNotEmpty("Package Id", attributes.getPackageId());
-    ValidatorUtil.checkIsNotEmpty("Title Id", attributes.getTitleId());
+    ValidatorUtil.checkIsNotBlank("Package Id", attributes.getPackageId());
+    ValidatorUtil.checkIsNotBlank("Title Id", attributes.getTitleId());
   }
 
   public void validateRelatedObjects(PackageByIdData packageData, Title title, Titles existingTitles) {
