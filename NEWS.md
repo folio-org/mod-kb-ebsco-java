@@ -1,4 +1,7 @@
-## v3.9.0 2021-10-07
+## v3.9.1 2021-12-16
+* MODKBEKBJ-605 Log4j vulnerability verification and correction
+
+* ## v3.9.0 2021-10-07
 * MODKBEKBJ-596 Packages, error message when "isCustom" not provided
 * MODKBEKBJ-597 Packages, deny creating package with empty name
 
