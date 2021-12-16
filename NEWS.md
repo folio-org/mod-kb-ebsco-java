@@ -1,3 +1,6 @@
+## v3.8.1 2021-12-16
+* MODKBEKBJ-607 Juniper R2 2021 - Log4j vulnerability verification and correction
+
 ## v3.8.0 2021-06-10
 * MODKBEKBJ-570 Filter resources in title
 * MODKBEKBJ-578 Fix duplicate titles on GET by tags with included resources 
