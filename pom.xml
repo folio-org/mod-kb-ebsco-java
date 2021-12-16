@@ -49,7 +49,7 @@
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.18</lombok.version>
     <httpcore.version>4.4.14</httpcore.version>
-    <log4j-slf4j-impl.version>2.14.0</log4j-slf4j-impl.version>
+    <log4j.version>2.16.0</log4j.version>
     <jetbrains-annotations.version>20.1.0</jetbrains-annotations.version>
     <jaxrs-code-generator.version>3.0.2</jaxrs-code-generator.version>
 
@@ -153,8 +153,18 @@
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
-      <version>${log4j-slf4j-impl.version}</version>
+      <version>${log4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
