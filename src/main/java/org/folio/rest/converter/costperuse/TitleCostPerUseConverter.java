@@ -128,9 +128,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
 
   private EmbargoPeriod defineEmbargoType(org.folio.holdingsiq.model.CustomerResources customerResource) {
     var customEmbargoPeriod = customerResource.getCustomEmbargoPeriod();
-    if (customEmbargoPeriod != null
-        && customEmbargoPeriod.getEmbargoUnit() != null
-        && customEmbargoPeriod.getEmbargoValue() > 0) {
+    if (customEmbargoPeriod != null && customEmbargoPeriod.getEmbargoUnit() != null) {
       return customEmbargoPeriod;
     } else {
       return customerResource.getManagedEmbargoPeriod();
