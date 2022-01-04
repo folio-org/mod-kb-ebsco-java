@@ -7,13 +7,11 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.jaxrs.model.Coverage;
-import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 
@@ -42,22 +40,22 @@ public class ResourceRequestConverter {
   }
 
   private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(ResourcePutDataAttributes attributes, Title oldTitle) {
-    ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
-    CustomerResources oldResource = oldTitle.getCustomerResourcesList().get(0);
+    var builder = ResourcePut.builder();
+    var oldResource = oldTitle.getCustomerResourcesList().get(0);
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
-    Proxy proxy = attributes.getProxy();
-    String proxyId = proxy != null && proxy.getId() != null ? proxy.getId() : oldResource.getProxy().getId();
+    var proxy = attributes.getProxy();
+    var proxyId = proxy != null && proxy.getId() != null ? proxy.getId() : oldResource.getProxy().getId();
     //RM API gives an error when we pass inherited as true along with updated proxy value
     //Hard code it to false; it should not affect the state of inherited that RM API maintains
-    org.folio.holdingsiq.model.Proxy rmApiProxy = org.folio.holdingsiq.model.Proxy.builder()
+    var rmApiProxy = org.folio.holdingsiq.model.Proxy.builder()
       .id(proxyId)
       .inherited(false)
       .build();
     builder.proxy(rmApiProxy);
 
-    Boolean oldHidden = oldResource.getVisibilityData() != null ? oldResource.getVisibilityData().getIsHidden() : null;
-    Boolean isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null ?
+    var oldHidden = oldResource.getVisibilityData() != null ? oldResource.getVisibilityData().getIsHidden() : null;
+    var isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null ?
       attributes.getVisibilityData().getIsHidden() : oldHidden;
 
     builder.isHidden(isHidden);
@@ -65,25 +63,20 @@ public class ResourceRequestConverter {
       builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
     }
 
-    String coverageStatement = valueOrDefault(attributes.getCoverageStatement(), oldResource.getCoverageStatement());
+    var coverageStatement = valueOrDefault(attributes.getCoverageStatement(), oldResource.getCoverageStatement());
     builder.coverageStatement(coverageStatement);
 
-    org.folio.rest.jaxrs.model.EmbargoPeriod embargoPeriod = attributes.getCustomEmbargoPeriod();
+    var embargoPeriod = attributes.getCustomEmbargoPeriod();
+    if (embargoPeriod != null && embargoPeriod.getEmbargoUnit() != null
+      && embargoPeriod.getEmbargoValue() != null && embargoPeriod.getEmbargoValue() > 0) {
+      var customEmbargo = EmbargoPeriod.builder()
+        .embargoUnit(embargoPeriod.getEmbargoUnit().value())
+        .embargoValue(embargoPeriod.getEmbargoValue())
+        .build();
+      builder.customEmbargoPeriod(customEmbargo);
+    }
 
-    String oldEmbargoUnit = oldResource.getCustomEmbargoPeriod() != null ? oldResource.getCustomEmbargoPeriod().getEmbargoUnit() : null;
-    String embargoUnit = embargoPeriod != null && embargoPeriod.getEmbargoUnit() != null ?
-      embargoPeriod.getEmbargoUnit().value() : oldEmbargoUnit;
-    int oldEmbargoValue = oldResource.getCustomEmbargoPeriod() != null ?
-      oldResource.getCustomEmbargoPeriod().getEmbargoValue() : 0;
-    int embargoValue = embargoPeriod != null && embargoPeriod.getEmbargoValue() != null ?
-      embargoPeriod.getEmbargoValue() : oldEmbargoValue;
-    EmbargoPeriod customEmbargo = EmbargoPeriod.builder()
-      .embargoUnit(embargoUnit)
-      .embargoValue(embargoValue)
-      .build();
-    builder.customEmbargoPeriod(customEmbargo);
-
-    List<CoverageDates> coverageDates = attributes.getCustomCoverages() != null ?
+    var coverageDates = attributes.getCustomCoverages() != null ?
       convertToRMAPICustomCoverageList(attributes.getCustomCoverages()) : oldResource.getCustomCoverageList();
     builder.customCoverageList(coverageDates);
 

@@ -2,6 +2,7 @@ package org.folio.rest.converter.resources;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class ResourceRequestConverterTest {
   public static final String OLD_END_COVERAGE = "2003-10-10";
   public static final String OLD_EMBARGO_UNIT = "Day";
   public static final int OLD_EMBARGO_VALUE = 5;
-  private ResourceRequestConverter resourcesConverter = new ResourceRequestConverter();
+  private final ResourceRequestConverter resourcesConverter = new ResourceRequestConverter();
   private Title resourceData;
 
   @Before
@@ -205,18 +206,19 @@ public class ResourceRequestConverterTest {
   }
 
   @Test
-  public void shouldCreateRequestWithOldDataWhenUpdateFieldsAreMissing() {
-    CustomerResources.CustomerResourcesBuilder customerResourcesBuilder = resourceData.getCustomerResourcesList().get(0).toBuilder();
-    CustomerResources resources = customerResourcesBuilder.isPackageCustom(true).build();
-    Title title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
+  public void shouldCreateRequestWithOldDataExceptEmbargoWhenUpdateFieldsAreMissing() {
+    var customerResourcesBuilder = resourceData.getCustomerResourcesList().get(0).toBuilder();
+    var resources = customerResourcesBuilder.isPackageCustom(true).build();
+    var title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
 
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()), title);
+    var resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(
+      ResourcesTestData.getResourcePutRequest(new ResourcePutDataAttributes()),
+      title
+    );
     assertEquals(OLD_PROXY_ID, resourcePut.getProxy().getId());
     assertEquals(OLD_COVERAGE_STATEMENT, resourcePut.getCoverageStatement());
     assertEquals(OLD_URL, resourcePut.getUrl());
     assertEquals(OLD_VISIBILITY_DATA, resourcePut.getIsHidden());
-    assertEquals(OLD_EMBARGO_UNIT, resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
-    assertEquals(OLD_EMBARGO_VALUE, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
+    assertNull(resourcePut.getCustomEmbargoPeriod());
   }
 }

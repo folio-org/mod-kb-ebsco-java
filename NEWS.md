@@ -4,6 +4,7 @@
 * MODKBEKBJ-599 Apply searchtype=advanced to Titles search query
 * MODKBEKBJ-600 Providers, deny updating tags with empty name
 * MODKBEKBJ-601 User-assigment, deny assign user with empty name
+* MODKBEKBJ-609 Unable to update title-package record when user removes custom embargo
 
 ## v3.9.0 2021-10-07
 * MODKBEKBJ-596 Packages, error message when "isCustom" not provided
