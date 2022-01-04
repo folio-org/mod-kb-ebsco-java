@@ -60,14 +60,14 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
       case PUBLISHER:
         setPublisherUsage(specificPlatformUsages, usage);
         PlatformUsage publisherPlatformUsage = usage.getTotals().getPublisher();
-        if (publisherPlatformUsage!= null) {
+        if (publisherPlatformUsage != null) {
           totalUsage = publisherPlatformUsage.getTotal();
         }
         break;
       case NON_PUBLISHER:
         setNonPublisherUsage(specificPlatformUsages, usage);
         PlatformUsage nonPublisherPlatformUsage = usage.getTotals().getNonPublisher();
-        if (nonPublisherPlatformUsage!= null) {
+        if (nonPublisherPlatformUsage != null) {
           totalUsage = nonPublisherPlatformUsage.getTotal();
         }
         break;
@@ -108,8 +108,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
     var titlePackageId = titleId + "." + packageId;
     var ucCostAnalysis = titlePackageCostMap.get(titlePackageId).getCurrent();
 
-    var embargoPeriod =
-      defaultIfNull(customerResource.getCustomEmbargoPeriod(), customerResource.getManagedEmbargoPeriod());
+    var embargoPeriod = defineEmbargoType(customerResource);
 
     var customCoverageList = emptyIfNull(customerResource.getCustomCoverageList());
     var managedCoverageList = emptyIfNull(customerResource.getManagedCoverageList());
@@ -125,5 +124,14 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
       .withCoverageStatement(customerResource.getCoverageStatement())
       .withEmbargoPeriod(embargoPeriodConverter.convert(embargoPeriod))
       .withCoverages(coveragesConverter.convert(coverageDates));
+  }
+
+  private EmbargoPeriod defineEmbargoType(org.folio.holdingsiq.model.CustomerResources customerResource) {
+    var customEmbargoPeriod = customerResource.getCustomEmbargoPeriod();
+    if (customEmbargoPeriod != null && customEmbargoPeriod.getEmbargoUnit() != null) {
+      return customEmbargoPeriod;
+    } else {
+      return customerResource.getManagedEmbargoPeriod();
+    }
   }
 }
