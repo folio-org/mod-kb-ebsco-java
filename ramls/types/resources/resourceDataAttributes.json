@@ -6,6 +6,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "alternateTitles": {
+      "type": "array",
+      "description": "Alternate Title Schema",
+      "items": {
+        "type": "object",
+        "description": "Alternate Title Schema",
+        "$ref": "../alternateTitle.json"
+      }
+    },
     "description": {
       "type": "string",
       "description": "Description of Resource. Note that this attribute can be updated ONLY FOR A CUSTOM RESOURCE.",
