@@ -51,6 +51,12 @@
           "subject": "BUSINESS & ECONOMICS / Small Business"
         }
       ],
+      "alternateTitleList": [
+        {
+          "alternateTitle": "Boston Coll Law Rev",
+          "titleType": "Abbreviated"
+        }
+      ],
       "isTitleCustom": false,
       "pubType": "Book",
       "customerResourcesList": [

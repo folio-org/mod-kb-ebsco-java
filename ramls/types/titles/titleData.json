@@ -72,6 +72,15 @@
         "$ref": "../contributor.json"
       }
     },
+    "alternateTitles": {
+      "type": "array",
+      "description": "List of alternate titles",
+      "items": {
+        "type": "object",
+        "description": "Alternate Title Schema",
+        "$ref": "../alternateTitle.json"
+      }
+    },
     "tags": {
       "type": "object",
       "description": "Title tags",
