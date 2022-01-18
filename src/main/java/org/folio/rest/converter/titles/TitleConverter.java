@@ -26,6 +26,7 @@ import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.Subject;
 import org.folio.repository.tag.DbTag;
 import org.folio.rest.converter.common.ConverterConsts;
+import org.folio.rest.jaxrs.model.AlternateTitle;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Data;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -60,6 +61,8 @@ public class TitleConverter implements Converter<TitleResult, Title> {
   private Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
   @Autowired
   private Converter<List<DbTag>, Tags> tagsConverter;
+  @Autowired
+  private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
 
   @Override
   public Title convert(@NonNull TitleResult titleResult) {
@@ -75,8 +78,9 @@ public class TitleConverter implements Converter<TitleResult, Title> {
           .withPublicationType(ConverterConsts.publicationTypes.get(rmapiTitle.getPubType().toLowerCase()))
           .withSubjects(subjectsConverter.convert(rmapiTitle.getSubjectsList()))
           .withIdentifiers(identifiersConverter.convert(rmapiTitle.getIdentifiersList()))
-          .withEdition(rmapiTitle.getEdition())
           .withContributors(contributorsConverter.convert(rmapiTitle.getContributorsList()))
+          .withAlternateTitles(alternateTitleConverter.convert(rmapiTitle.getAlternateTitleList()))
+          .withEdition(rmapiTitle.getEdition())
           .withDescription(rmapiTitle.getDescription())
           .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
           .withTags(titleResult.getTags())

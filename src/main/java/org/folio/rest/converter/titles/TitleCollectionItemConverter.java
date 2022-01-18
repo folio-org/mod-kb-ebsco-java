@@ -20,6 +20,7 @@ import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleCollectionItem;
 import org.folio.rest.jaxrs.model.TitleCollectionItemDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
+import org.folio.rest.jaxrs.model.AlternateTitle;
 
 public class TitleCollectionItemConverter {
 
@@ -35,6 +36,8 @@ public class TitleCollectionItemConverter {
     private Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
     @Autowired
     private Converter<List<Contributor>, List<Contributors>> contributorsConverter;
+    @Autowired
+    private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
 
     @Override
     public TitleCollectionItem convert(@NonNull Title title) {
@@ -50,6 +53,7 @@ public class TitleCollectionItemConverter {
           .withIdentifiers(identifiersConverter.convert(title.getIdentifiersList()))
           .withContributors(contributorsConverter.convert(title.getContributorsList()))
           .withRelationships(createEmptyResourcesRelationships())
+          .withAlternateTitles(alternateTitleConverter.convert(title.getAlternateTitleList()))
         );
     }
   }
@@ -74,6 +78,7 @@ public class TitleCollectionItemConverter {
           .withPublisherName(attributes.getPublisherName())
           .withSubjects(attributes.getSubjects())
           .withRelationships(sourceData.getRelationships())
+          .withAlternateTitles(attributes.getAlternateTitles())
         );
     }
   }

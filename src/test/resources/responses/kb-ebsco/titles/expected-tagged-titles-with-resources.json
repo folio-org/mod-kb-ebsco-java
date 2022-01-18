@@ -27,6 +27,12 @@
             "contributor": "Beeman, William O."
           }
         ],
+        "alternateTitles": [
+          {
+            "alternateTitle": "Boston Coll Law Rev",
+            "titleType": "Abbreviated"
+          }
+        ],
         "relationships": {
           "resources": {
             "data": [
@@ -157,6 +163,12 @@
           {
             "type": "author",
             "contributor": "Bloom, Harold"
+          }
+        ],
+        "alternateTitles": [
+          {
+            "alternateTitle": "Boston Coll Law Rev",
+            "titleType": "Abbreviated"
           }
         ],
         "relationships": {
