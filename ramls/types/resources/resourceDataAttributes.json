@@ -8,7 +8,7 @@
   "properties": {
     "alternateTitles": {
       "type": "array",
-      "description": "Alternate Titles Schema",
+      "description": "List of alternate titles",
       "items": {
         "type": "object",
         "description": "Alternate Title Schema",
