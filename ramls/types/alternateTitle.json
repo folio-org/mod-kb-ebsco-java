@@ -1,19 +1,19 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Alternate title object schema",
-  "description": "Alternate title object schema",
-  "javaType": "org.folio.rest.jaxrs.model.AlternateTitle",
+  "title": "Alternate Title Schema",
+  "description": "Alternate Title Schema",
   "type": "object",
+  "javaType": "org.folio.rest.jaxrs.model.AlternateTitle",
   "additionalProperties": false,
   "properties": {
     "alternateTitle": {
       "type": "string",
-      "description": "Alternate Title Value",
+      "description": "alternate title name",
       "example": "Boston Coll Law Rev"
     },
     "titleType": {
       "type": "string",
-      "description": "Title Type Value",
+      "description": "alternate title type",
       "example": "Abbreviated"
     }
   }

@@ -7,6 +7,12 @@
         "isTitleCustom": false,
         "publisherName": "IGI Global",
         "titleId": 2099944,
+        "alternateTitles": [
+          {
+            "alternateTitle": "Colorado Coll Law Rev",
+            "titleType": "Abbreviated"
+          }
+        ],
         "identifiers": [
           {
             "id": "978-1-4666-4518-9",
@@ -107,6 +113,12 @@
         "isTitleCustom": false,
         "publisherName": "IGI Global",
         "titleId": 2324668,
+        "alternateTitles": [
+          {
+            "alternateTitle": "Boston Coll Law Rev",
+            "titleType": "Abbreviated"
+          }
+        ],
         "identifiers": [
           {
             "id": "978-1-4666-4797-8",
@@ -194,6 +206,12 @@
         "isTitleCustom": false,
         "publisherName": "IGI Global",
         "titleId": 2172685,
+        "alternateTitles": [
+          {
+            "alternateTitle": "Detroit Coll Law Rev",
+            "titleType": "Abbreviated"
+          }
+        ],
         "identifiers": [
           {
             "id": "978-1-4666-4590-5",
@@ -273,6 +291,12 @@
         "isTitleCustom": false,
         "publisherName": "IGI Global",
         "titleId": 2423505,
+        "alternateTitles": [
+          {
+            "alternateTitle": "Dallas Coll Law Rev",
+            "titleType": "Abbreviated"
+          }
+        ],
         "identifiers": [
           {
             "id": "978-1-4666-4490-8",
@@ -352,6 +376,12 @@
         "isTitleCustom": false,
         "publisherName": "IGI Global",
         "titleId": 2733268,
+        "alternateTitles": [
+          {
+            "alternateTitle": "Atlanta Coll Law Rev",
+            "titleType": "Abbreviated"
+          }
+        ],
         "identifiers": [
           {
             "id": "978-1-4666-5780-9",
