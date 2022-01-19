@@ -7,6 +7,12 @@
       "isTitleCustom": false,
       "publisherName": "Praeger",
       "titleId": 762169,
+      "alternateTitles": [
+        {
+          "alternateTitle": "Detroit Coll Law Rev",
+          "titleType": "Abbreviated"
+        }
+      ],
       "contributors": [
         {
           "type": "author",

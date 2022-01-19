@@ -56,6 +56,12 @@
             "isTitleCustom": false,
             "publisherName": "Praeger",
             "titleId": 1108525,
+            "alternateTitles": [
+              {
+                "alternateTitle": "Boston Coll Law Rev",
+                "titleType": "Abbreviated"
+              }
+            ],
             "contributors": [
               {
                 "type": "author",
@@ -194,6 +200,12 @@
             "isTitleCustom": false,
             "publisherName": "Chelsea House Publishers",
             "titleId": 762169,
+            "alternateTitles": [
+              {
+                "alternateTitle": "Boston Coll Law Rev",
+                "titleType": "Abbreviated"
+              }
+            ],
             "contributors": [
               {
                 "type": "author",

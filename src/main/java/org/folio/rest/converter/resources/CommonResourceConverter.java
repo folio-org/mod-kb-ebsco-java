@@ -18,6 +18,7 @@ import org.folio.holdingsiq.model.Subject;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.converter.common.ConverterConsts;
+import org.folio.rest.jaxrs.model.AlternateTitle;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
@@ -41,10 +42,13 @@ public class CommonResourceConverter {
   private Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
   @Autowired
   private Converter<Proxy, org.folio.rest.jaxrs.model.Proxy> proxyConverter;
+  @Autowired
+  private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
 
 
   public ResourceDataAttributes createResourceDataAttributes(Title title, CustomerResources resource) {
     return new ResourceDataAttributes()
+      .withAlternateTitles(alternateTitleConverter.convert(title.getAlternateTitleList()))
       .withDescription(title.getDescription())
       .withEdition(title.getEdition())
       .withIsPeerReviewed(title.getIsPeerReviewed())
