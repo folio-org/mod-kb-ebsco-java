@@ -68,7 +68,7 @@ public class UCAuthServiceImplTest extends WireMockTestBase {
     ReflectionTestUtils.setField(authServiceClient, "webClient", client);
 
     when(client.postAbs(anyString())).thenReturn(httpRequest);
-    doAnswer(httpResponseAnswer(httpResponse, 1)).when(jsonHttpRequest).sendForm(any(), any());
+    doAnswer(httpResponseAnswer(httpResponse, 1)).when(jsonHttpRequest).sendForm(any(), any(Handler.class));
     when(httpRequest.timeout(anyLong())).thenReturn(httpRequest);
     when(httpRequest.expect(any(ResponsePredicate.class))).thenReturn(httpRequest);
     when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonHttpRequest);
