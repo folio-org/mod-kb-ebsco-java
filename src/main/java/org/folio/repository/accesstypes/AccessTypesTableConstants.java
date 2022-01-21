@@ -43,11 +43,19 @@ public class AccessTypesTableConstants {
   public static final String SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
   public static final String DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
 
+  //Access types fields
+  public static final String RECORD_ID_COLUMN = "record_id";
+  public static final String RECORD_TYPE_COLUMN = "record_type";
+  public static final String ACCESS_TYPE_ID_COLUMN = "access_type_id";
+  public static final String SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY;
+
   static {
     String[] insertColumns = new String[] {
         ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, DESCRIPTION_COLUMN, CREATED_DATE_COLUMN,
         CREATED_BY_USER_ID_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN
     };
+    SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN) + " " +
+      whereQuery(RECORD_ID_COLUMN, RECORD_TYPE_COLUMN);
 
     SELECT_IDS_BY_CREDENTIALS_ID_QUERY = selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
     SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY = selectQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
@@ -58,7 +66,7 @@ public class AccessTypesTableConstants {
     SELECT_COUNT_BY_CREDENTIALS_ID_QUERY = selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
     SELECT_BY_CREDENTIALS_AND_RECORD_QUERY = selectQuery() + " " + whereConditionsQuery(
         equalCondition(CREDENTIALS_ID_COLUMN),
-        inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY)
+        inCondition(ID_COLUMN, SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY)
     ) + " " + limitQuery(1) + ";";
 
     UPSERT_ACCESS_TYPE_QUERY = insertQuery(insertColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, insertColumns) + ";";
