@@ -34,21 +34,21 @@
   </licenses>
 
   <properties>
-    <rmb.version>33.0.0</rmb.version>
-    <folio-di-support.version>1.4.0</folio-di-support.version>
-    <folio-service-tools.version>1.7.0</folio-service-tools.version>
+    <rmb.version>33.2.4</rmb.version>
+    <folio-di-support.version>1.5.0-SNAPSHOT</folio-di-support.version>
+    <folio-service-tools.version>1.8.0-SNAPSHOT</folio-service-tools.version>
     <folio-holdingsiq-client.version>2.0.0-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.2.0</folio-liquibase-util.version>
     <mod-configuration-client.version>5.7.0</mod-configuration-client.version>
 
-    <vertx.version>4.1.0.CR1</vertx.version>
+    <vertx.version>4.2.4</vertx.version>
     <aspectj.version>1.9.6</aspectj.version>
     <spring.version>5.3.14</spring.version>
     <jackson.version>2.11.3</jackson.version>
     <commons-configuration2.version>2.7</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.18</lombok.version>
-    <httpcore.version>4.4.14</httpcore.version>
+    <httpcore.version>4.4.15</httpcore.version>
     <log4j.version>2.17.1</log4j.version>
     <jetbrains-annotations.version>20.1.0</jetbrains-annotations.version>
     <jaxrs-code-generator.version>3.0.2</jaxrs-code-generator.version>
@@ -56,7 +56,7 @@
     <junit.version>4.13.2</junit.version>
     <rest-assured.version>4.3.3</rest-assured.version>
     <wiremock.version>2.20.0</wiremock.version>
-    <mockito.version>3.8.0</mockito.version>
+    <mockito.version>4.2.0</mockito.version>
     <jsonassert.version>1.5.0</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
 
