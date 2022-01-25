@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.impl.TitlesHoldingsIQServiceImpl;
@@ -70,15 +69,18 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
 
   public void updateCache(Title title) {
     var cacheKey = buildTitleCacheKey(title.getTitleId());
-    mergeCustomerResources(cacheKey, title);
+    Title cachedTitle = titleCache.getValue(cacheKey);
+    if (!Objects.isNull(cachedTitle)) {
+      mergeCustomerResources(cachedTitle, title);
+    }
     titleCache.putValue(cacheKey, title);
   }
 
-  private void mergeCustomerResources(TitleCacheKey cacheKey, Title title) {
-    List<CustomerResources> updatedCustomerResources = title.getCustomerResourcesList();
-    List<CustomerResources> customerResources = titleCache.getValue(cacheKey).getCustomerResourcesList();
+  private void mergeCustomerResources(Title cachedTitle, Title title) {
+    var updatedCustomerResources = title.getCustomerResourcesList();
+    var customerResources = cachedTitle.getCustomerResourcesList();
 
-    if (!updatedCustomerResources.isEmpty() && !Objects.isNull(customerResources)) {
+    if (!updatedCustomerResources.isEmpty()) {
       var updatedCustomerResourceId = updatedCustomerResources.get(0).getPackageId();
       var oldCustomerResources = customerResources.stream()
         .filter(resource -> !Objects.equals(resource.getPackageId(), updatedCustomerResourceId))
