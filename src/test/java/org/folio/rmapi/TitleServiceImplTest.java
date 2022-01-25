@@ -5,6 +5,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGet;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -17,6 +21,12 @@ import com.github.tomakehurst.wiremock.matching.UrlPattern;
 
 import io.vertx.core.Vertx;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Title;
+import org.folio.rmapi.cache.TitleCacheKey;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -28,21 +38,27 @@ public class TitleServiceImplTest {
   private static final int STUB_TITLE_ID = 123456;
   private static final String TITLE_STUB_FILE = "responses/rmapi/titles/get-title-by-id-response.json";
 
+  private Configuration configuration;
+
   @Rule
   public WireMockRule userMockServer = new WireMockRule(
     WireMockConfiguration.wireMockConfig()
       .dynamicPort()
       .notifier(new Slf4jNotifier(true)));
 
-  @Test
-  public void shouldReturnCachedTitleOnSecondRequest() throws IOException, URISyntaxException {
-    RegexPattern getTitlePattern = new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_TITLE_ID);
-
-    Configuration configuration = Configuration.builder()
+  @Before
+  public void setUp() throws Exception {
+    configuration = Configuration.builder()
       .url("http://127.0.0.1:" + userMockServer.port())
       .customerId(STUB_CUSTOMER_ID)
       .apiKey("API KEY")
       .build();
+  }
+
+  @Test
+  public void shouldReturnCachedTitleOnSecondRequest() throws IOException, URISyntaxException {
+    RegexPattern getTitlePattern = new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_TITLE_ID);
+
     TitlesServiceImpl service = new TitlesServiceImpl(configuration, Vertx.vertx(), STUB_TENANT,
       new VertxCache<>(Vertx.vertx(), 60, "titleCache"));
 
@@ -52,4 +68,42 @@ public class TitleServiceImplTest {
 
     verify(1, getRequestedFor(new UrlPattern(getTitlePattern, true)));
   }
+
+  @Test
+  public void shouldNotUseCache() throws IOException, URISyntaxException {
+    RegexPattern getTitlePattern = new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles/" + STUB_TITLE_ID);
+
+    TitlesServiceImpl service = new TitlesServiceImpl(configuration, Vertx.vertx(), STUB_TENANT,
+      new VertxCache<>(Vertx.vertx(), 60, "titleCache"));
+
+    mockGet(getTitlePattern, TITLE_STUB_FILE);
+    service.retrieveTitle(STUB_TITLE_ID, false).join();
+
+    verify(1, getRequestedFor(new UrlPattern(getTitlePattern, true)));
+  }
+
+  @Test
+  public void shouldUpdateCachedTitle() {
+    var titleCache = mock(VertxCache.class);
+    var service = new TitlesServiceImpl(configuration, Vertx.vertx(), STUB_TENANT, titleCache);
+
+    when(titleCache.getValue(any(TitleCacheKey.class))).thenReturn(buildTitleWithCustomerResource(1));
+
+    Title title = buildTitleWithCustomerResource(2);
+    service.updateCache(title);
+
+    assertEquals(2, title.getCustomerResourcesList().size());
+  }
+
+  private Title buildTitleWithCustomerResource(int packageId) {
+    var customerResource = CustomerResources.builder()
+      .packageId(packageId)
+      .build();
+
+    return Title.builder()
+      .titleId(STUB_TITLE_ID)
+      .customerResourcesList(new ArrayList<>(List.of(customerResource)))
+      .build();
+  }
+
 }
