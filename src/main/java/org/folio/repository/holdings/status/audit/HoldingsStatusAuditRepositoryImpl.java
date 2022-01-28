@@ -2,9 +2,7 @@ package org.folio.repository.holdings.status.audit;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
-import static org.folio.repository.DbUtil.getHoldingsStatusAuditTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
-import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.DELETE_BEFORE_TIMESTAMP_FOR_CREDENTIALS;
+import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.deleteBeforeTimestampForCredentials;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
@@ -37,7 +35,7 @@ public class HoldingsStatusAuditRepositoryImpl implements HoldingsStatusAuditRep
 
   @Override
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
-    String query = prepareQuery(DELETE_BEFORE_TIMESTAMP_FOR_CREDENTIALS, getHoldingsStatusAuditTableName(tenantId));
+    String query = deleteBeforeTimestampForCredentials(tenantId);
     Tuple params = Tuple.of(timestamp, credentialsId);
     logDeleteQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();

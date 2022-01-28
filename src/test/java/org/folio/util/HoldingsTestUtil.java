@@ -4,8 +4,8 @@ import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.holdings.HoldingsTableConstants.insertOrUpdateHoldings;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
-import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
@@ -41,7 +41,7 @@ public class HoldingsTestUtil {
 
   public static void saveHolding(String credentialsId, DbHoldingInfo holding, OffsetDateTime updatedAt, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS, holdingsTestTable(), createPlaceholders(9, 1));
+    String query = prepareQuery(insertOrUpdateHoldings(), holdingsTestTable(), createPlaceholders(9, 1));
     Tuple params = getHoldingsInsertParams(credentialsId, holding, updatedAt);
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();

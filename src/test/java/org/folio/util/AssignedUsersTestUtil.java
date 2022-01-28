@@ -5,7 +5,7 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_VIEW_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.INSERT_ASSIGNED_USER_QUERY;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
 import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
@@ -39,7 +39,7 @@ public class AssignedUsersTestUtil {
   public static String saveAssignedUser(String id, String credentialsId, Vertx vertx) {
     CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
-    String insertStatement = DbUtil.prepareQuery(INSERT_ASSIGNED_USER_QUERY, kbAssignedUsersTestTable());
+    String insertStatement = DbUtil.prepareQuery(insertAssignedUserQuery(), kbAssignedUsersTestTable());
     Tuple params = DbUtils.createParams(toUUID(id), toUUID(credentialsId));
 
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(insertStatement, params, event -> future.complete(null));

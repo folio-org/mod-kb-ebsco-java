@@ -4,23 +4,19 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.getPackagesTableName;
-import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.DbUtil.pgClient;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.packages.PackageTableConstants.DELETE_STATEMENT;
-import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
-import static org.folio.repository.packages.PackageTableConstants.INSERT_OR_UPDATE_STATEMENT;
 import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
-import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS;
-import static org.folio.repository.packages.PackageTableConstants.SELECT_PACKAGES_WITH_TAGS_BY_IDS;
+import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.deleteStatement;
+import static org.folio.repository.packages.PackageTableConstants.insertOrUpdateStatement;
+import static org.folio.repository.packages.PackageTableConstants.selectPackagesWithTags;
+import static org.folio.repository.packages.PackageTableConstants.selectPackagesWithTagsByIds;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.util.FutureUtils.mapResult;
@@ -66,7 +62,7 @@ public class PackageRepositoryImpl implements PackageRepository {
       packageData.getContentType()
     );
 
-    final String query = prepareQuery(INSERT_OR_UPDATE_STATEMENT, getPackagesTableName(tenantId));
+    final String query = insertOrUpdateStatement(tenantId);
 
     logInsertQueryInfoLevel(LOG, query, parameters);
 
@@ -79,7 +75,7 @@ public class PackageRepositoryImpl implements PackageRepository {
   public CompletableFuture<Void> delete(PackageId packageId, UUID credentialsId, String tenantId) {
     Tuple parameters = createParams(asList(IdParser.packageIdToString(packageId), credentialsId));
 
-    final String query = prepareQuery(DELETE_STATEMENT, getPackagesTableName(tenantId));
+    final String query = deleteStatement(tenantId);
 
     logDeleteQueryInfoLevel(LOG, query, parameters);
 
@@ -104,8 +100,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     packageIds.forEach(packageId -> parameters.addString(IdParser.packageIdToString(packageId)));
     parameters.addUUID(credentialsId);
 
-    final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS_BY_IDS, getPackagesTableName(tenantId),
-      getTagsTableName(tenantId), createPlaceholders(packageIds.size()));
+    final String query = selectPackagesWithTagsByIds(tenantId, packageIds);
 
     logSelectQueryInfoLevel(LOG, query, parameters);
 
@@ -131,8 +126,7 @@ public class PackageRepositoryImpl implements PackageRepository {
       .addInteger(tagFilter.getOffset())
       .addInteger(tagFilter.getCount());
 
-    final String query = prepareQuery(SELECT_PACKAGES_WITH_TAGS, getPackagesTableName(tenantId),
-      getTagsTableName(tenantId), createPlaceholders(tags.size()));
+    final String query = selectPackagesWithTags(tenantId, tags);
 
     logSelectQueryInfoLevel(LOG, query, parameters);
 

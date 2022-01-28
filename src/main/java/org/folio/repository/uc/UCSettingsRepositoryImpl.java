@@ -4,17 +4,15 @@ import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbMetadataUtil.mapMetadata;
-import static org.folio.repository.DbUtil.getUCSettingsTableName;
 import static org.folio.repository.DbUtil.pgClient;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.uc.UCSettingsTableConstants.CURRENCY_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.CUSTOMER_KEY_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.ID_COLUMN;
-import static org.folio.repository.uc.UCSettingsTableConstants.INSERT_UC_SETTINGS;
+import static org.folio.repository.uc.UCSettingsTableConstants.START_MONTH_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.KB_CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.PLATFORM_TYPE_COLUMN;
-import static org.folio.repository.uc.UCSettingsTableConstants.SELECT_UC_SETTINGS_BY_CREDENTIALS_ID;
-import static org.folio.repository.uc.UCSettingsTableConstants.START_MONTH_COLUMN;
+import static org.folio.repository.uc.UCSettingsTableConstants.selectUcSettingsByCredentialsId;
+import static org.folio.repository.uc.UCSettingsTableConstants.insertUcSettings;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Optional;
@@ -49,7 +47,7 @@ public class UCSettingsRepositoryImpl implements UCSettingsRepository {
 
   @Override
   public CompletableFuture<Optional<DbUCSettings>> findByCredentialsId(UUID credentialsId, String tenant) {
-    String query = prepareQuery(SELECT_UC_SETTINGS_BY_CREDENTIALS_ID, getUCSettingsTableName(tenant));
+    String query = selectUcSettingsByCredentialsId(tenant);
     Tuple params = createParams(credentialsId);
 
     logSelectQueryInfoLevel(LOG, query, params);
@@ -61,7 +59,7 @@ public class UCSettingsRepositoryImpl implements UCSettingsRepository {
 
   @Override
   public CompletableFuture<DbUCSettings> save(DbUCSettings ucSettings, String tenant) {
-    String query = prepareQuery(INSERT_UC_SETTINGS, getUCSettingsTableName(tenant));
+    String query = insertUcSettings(tenant);
 
     UUID id = ucSettings.getId() == null ? UUID.randomUUID() : ucSettings.getId();
     Tuple params = createParams(

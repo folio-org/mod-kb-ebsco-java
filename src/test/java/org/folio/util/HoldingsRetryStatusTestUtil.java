@@ -6,7 +6,7 @@ import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.GET_RETRY_STATUS_BY_CREDENTIALS;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.getRetryStatusByCredentials;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ID_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.TIMER_ID_COLUMN;
@@ -37,7 +37,7 @@ public class HoldingsRetryStatusTestUtil {
 
   public static RetryStatus getRetryStatus(String credentialsId, Vertx vertx) {
     CompletableFuture<RetryStatus> future = new CompletableFuture<>();
-    String query = prepareQuery(GET_RETRY_STATUS_BY_CREDENTIALS, holdingsStatusAuditTestTable());
+    String query = prepareQuery(getRetryStatusByCredentials(), holdingsStatusAuditTestTable());
     Tuple params = Tuple.of(toUUID(credentialsId));
     PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, params,

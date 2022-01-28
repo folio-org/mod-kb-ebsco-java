@@ -6,14 +6,12 @@ import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryDebugLevel;
 import static org.folio.common.LogUtils.logUpdateQueryDebugLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.getRetryStatusTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.ATTEMPTS_LEFT_COLUMN;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.DELETE_RETRY_STATUS;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.GET_RETRY_STATUS_BY_CREDENTIALS;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.INSERT_RETRY_STATUS;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.TIMER_ID_COLUMN;
-import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.UPDATE_RETRY_STATUS;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.deleteRetryStatus;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.getRetryStatusByCredentials;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.insertRetryStatus;
+import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.updateRetryStatus;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.UUID;
@@ -47,7 +45,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
 
   @Override
   public CompletableFuture<RetryStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
-    final String query = prepareQuery(GET_RETRY_STATUS_BY_CREDENTIALS, getRetryStatusTableName(tenantId));
+    final String query = getRetryStatusByCredentials(tenantId);
     final Tuple parameters = Tuple.of(credentialsId);
     logSelectQueryDebugLevel(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -57,7 +55,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
 
   @Override
   public CompletableFuture<Void> save(RetryStatus status, UUID credentialsId, String tenantId) {
-    final String query = prepareQuery(INSERT_RETRY_STATUS, getRetryStatusTableName(tenantId));
+    final String query = insertRetryStatus(tenantId);
     final Tuple parameters = createInsertParameters(credentialsId, status);
     logInsertQueryDebugLevel(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -67,7 +65,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
 
   @Override
   public CompletableFuture<Void> update(RetryStatus retryStatus, UUID credentialsId, String tenantId) {
-    final String query = prepareQuery(UPDATE_RETRY_STATUS, getRetryStatusTableName(tenantId));
+    final String query = updateRetryStatus(tenantId);
     final Tuple parameters = createUpdateParameters(credentialsId, retryStatus);
     logUpdateQueryDebugLevel(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -77,7 +75,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
 
   @Override
   public CompletableFuture<Void> delete(UUID credentialsId, String tenantId) {
-    final String query = prepareQuery(DELETE_RETRY_STATUS, getRetryStatusTableName(tenantId));
+    final String query = deleteRetryStatus(tenantId);
     final Tuple parameters = Tuple.of(credentialsId);
     logDeleteQueryInfoLevel(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();

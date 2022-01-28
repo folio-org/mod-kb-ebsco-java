@@ -15,9 +15,9 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CUS
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAME_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_QUERY;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.selectCredentialsQuery;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.upsertCredentialsQuery;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TokenTestUtil.createTokenHeader;
 
@@ -80,7 +80,7 @@ public class KbCredentialsTestUtil {
                                          Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String insertStatement = prepareQuery(UPSERT_CREDENTIALS_QUERY, kbCredentialsTestTable());
+    String insertStatement = prepareQuery(upsertCredentialsQuery(), kbCredentialsTestTable());
     Tuple params = createParams(Arrays.asList(toUUID(id), url, name, apiKey, customerId,
       OffsetDateTime.now(), toUUID(STUB_USER_ID), STUB_USERNAME, null, null, null
     ));
@@ -108,7 +108,7 @@ public class KbCredentialsTestUtil {
   private static List<KbCredentials> getKbCredentials(Vertx vertx,
                                                       Converter<DbKbCredentials, KbCredentials> converter) {
     CompletableFuture<List<KbCredentials>> future = new CompletableFuture<>();
-    String query = prepareQuery(SELECT_CREDENTIALS_QUERY, kbCredentialsTestTable());
+    String query = prepareQuery(selectCredentialsQuery(), kbCredentialsTestTable());
     PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), row -> converter.convert(mapKbCredentials(row)))));
     return future.join();

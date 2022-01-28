@@ -6,14 +6,12 @@ import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
-import static org.folio.repository.DbUtil.getUCCredentialsTableName;
 import static org.folio.repository.DbUtil.pgClient;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.uc.UCCredentialsTableConstants.CLIENT_ID_COLUMN;
 import static org.folio.repository.uc.UCCredentialsTableConstants.CLIENT_SECRET_COLUMN;
-import static org.folio.repository.uc.UCCredentialsTableConstants.DELETE_UC_CREDENTIALS;
-import static org.folio.repository.uc.UCCredentialsTableConstants.SAVE_UC_CREDENTIALS;
-import static org.folio.repository.uc.UCCredentialsTableConstants.SELECT_UC_CREDENTIALS;
+import static org.folio.repository.uc.UCCredentialsTableConstants.deleteUcCredentials;
+import static org.folio.repository.uc.UCCredentialsTableConstants.saveUcCredentials;
+import static org.folio.repository.uc.UCCredentialsTableConstants.selectUcCredentials;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Optional;
@@ -45,7 +43,7 @@ public class UCCredentialsRepositoryImpl implements UCCredentialsRepository {
 
   @Override
   public CompletableFuture<Optional<DbUCCredentials>> find(String tenant) {
-    String query = prepareQuery(SELECT_UC_CREDENTIALS, getUCCredentialsTableName(tenant));
+    String query = selectUcCredentials(tenant);
 
     logSelectQueryInfoLevel(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -56,7 +54,7 @@ public class UCCredentialsRepositoryImpl implements UCCredentialsRepository {
 
   @Override
   public CompletableFuture<Void> save(DbUCCredentials credentials, String tenant) {
-    String query = prepareQuery(SAVE_UC_CREDENTIALS, getUCCredentialsTableName(tenant));
+    String query = saveUcCredentials(tenant);
 
     var params = Tuple.of(credentials.getClientId(), credentials.getClientSecret());
     logInsertQueryInfoLevel(LOG, query);
@@ -68,7 +66,7 @@ public class UCCredentialsRepositoryImpl implements UCCredentialsRepository {
 
   @Override
   public CompletableFuture<Void> delete(String tenant) {
-    String query = prepareQuery(DELETE_UC_CREDENTIALS, getUCCredentialsTableName(tenant));
+    String query = deleteUcCredentials(tenant);
 
     logDeleteQueryInfoLevel(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();

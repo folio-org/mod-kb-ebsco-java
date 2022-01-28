@@ -7,7 +7,7 @@ import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.PATRON_GROUP_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.SAVE_USER_QUERY;
+import static org.folio.repository.users.UsersTableConstants.saveUserQuery;
 import static org.folio.repository.users.UsersTableConstants.USERS_TABLE_NAME;
 import static org.folio.repository.users.UsersTableConstants.USER_NAME_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
@@ -39,7 +39,7 @@ public class UsersTestUtil {
                                 String patronGroup, Vertx vertx) {
     CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
-    String insertStatement = DbUtil.prepareQuery(SAVE_USER_QUERY, kbUsersTestTable());
+    String insertStatement = DbUtil.prepareQuery(saveUserQuery(), kbUsersTestTable());
     Tuple params = DbUtils.createParams(toUUID(id), username, firstName, middleName, lastName, patronGroup);
 
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(insertStatement, params, event -> future.complete(null));

@@ -9,16 +9,13 @@ import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
-import static org.folio.repository.DbUtil.getAssignedUsersTableName;
-import static org.folio.repository.DbUtil.getAssignedUsersViewName;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.DELETE_ASSIGNED_USER_QUERY;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.INSERT_ASSIGNED_USER_QUERY;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.deleteAssignedUserQuery;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.selectAssignedUsersByCredentialsIdQuery;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.selectCountByCredentialsIdQuery;
 import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
@@ -64,7 +61,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   @Override
   public CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(UUID credentialsId, String tenant) {
-    String query = prepareQuery(SELECT_ASSIGNED_USERS_BY_CREDENTIALS_ID_QUERY, getAssignedUsersViewName(tenant));
+    String query = selectAssignedUsersByCredentialsIdQuery(tenant);
     Tuple params = createParams(credentialsId);
 
     logSelectQueryInfoLevel(LOG, query, params);
@@ -76,7 +73,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   @Override
   public CompletableFuture<Integer> count(UUID credentialsId, String tenant) {
-    String query = prepareQuery(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAssignedUsersTableName(tenant));
+    String query = selectCountByCredentialsIdQuery(tenant);
     Tuple params = Tuple.of(credentialsId);
 
     logCountQuery(LOG, query, params);
@@ -90,7 +87,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   @Override
   public CompletableFuture<DbAssignedUser> save(DbAssignedUser entity, String tenant) {
-    String query = prepareQuery(INSERT_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
+    String query = insertAssignedUserQuery(tenant);
 
     Tuple params = createParams(Arrays.asList(
       entity.getId(),
@@ -111,7 +108,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   @Override
   public CompletableFuture<Void> delete(UUID credentialsId, UUID userId, String tenant) {
-    String query = prepareQuery(DELETE_ASSIGNED_USER_QUERY, getAssignedUsersTableName(tenant));
+    String query = deleteAssignedUserQuery(tenant);
     Tuple params = createParams(credentialsId, userId);
 
     logDeleteQueryInfoLevel(LOG, query, params);

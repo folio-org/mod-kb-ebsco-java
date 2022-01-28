@@ -4,19 +4,15 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.getResourcesTableName;
-import static org.folio.repository.DbUtil.getTagsTableName;
 import static org.folio.repository.DbUtil.pgClient;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.resources.ResourceTableConstants.DELETE_RESOURCE_STATEMENT;
-import static org.folio.repository.resources.ResourceTableConstants.INSERT_OR_UPDATE_RESOURCE_STATEMENT;
-import static org.folio.repository.resources.ResourceTableConstants.SELECT_RESOURCES_WITH_TAGS;
+import static org.folio.repository.resources.ResourceTableConstants.deleteResourceStatement;
+import static org.folio.repository.resources.ResourceTableConstants.insertOrUpdateResourceStatement;
+import static org.folio.repository.resources.ResourceTableConstants.selectResourcesWithTags;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.ID_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.NAME_COLUMN;
@@ -63,7 +59,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
       resource.getName()
     ));
 
-    final String query = prepareQuery(INSERT_OR_UPDATE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
+    final String query = insertOrUpdateResourceStatement(tenantId);
 
     logInsertQueryInfoLevel(LOG, query, parameters);
 
@@ -77,7 +73,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
   public CompletableFuture<Void> delete(String resourceId, UUID credentialsId, String tenantId) {
     Tuple params = createParams(resourceId, credentialsId);
 
-    final String query = prepareQuery(DELETE_RESOURCE_STATEMENT, getResourcesTableName(tenantId));
+    final String query = deleteResourceStatement(tenantId);
 
     logDeleteQueryInfoLevel(LOG, query, params);
 
@@ -103,8 +99,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
       .addInteger(tagFilter.getOffset())
       .addInteger(tagFilter.getCount());
 
-    final String query = prepareQuery(SELECT_RESOURCES_WITH_TAGS, getResourcesTableName(tenantId),
-      getTagsTableName(tenantId), createPlaceholders(tags.size()));
+    final String query = selectResourcesWithTags(tenantId, tags);
 
     logSelectQueryInfoLevel(LOG, query, parameters);
 

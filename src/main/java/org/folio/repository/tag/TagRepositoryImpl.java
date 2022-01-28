@@ -13,22 +13,20 @@ import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
-import static org.folio.repository.DbUtil.getTagsTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.tag.TagTableConstants.COUNT_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX;
-import static org.folio.repository.tag.TagTableConstants.DELETE_TAG_RECORD;
+import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_DISTINCT_TAGS;
-import static org.folio.repository.tag.TagTableConstants.SELECT_ALL_TAGS;
-import static org.folio.repository.tag.TagTableConstants.SELECT_DISTINCT_TAGS_BY_RECORD_TYPES;
-import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE;
-import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RECORD_TYPES;
-import static org.folio.repository.tag.TagTableConstants.SELECT_TAGS_BY_RESOURCE_IDS;
-import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.UPDATE_INSERT_STATEMENT_FOR_PROVIDER;
+import static org.folio.repository.tag.TagTableConstants.getCountRecordsByTagValueAndTypeAndRecordIdPrefix;
+import static org.folio.repository.tag.TagTableConstants.deleteTagRecord;
+import static org.folio.repository.tag.TagTableConstants.selectAllDistinctTags;
+import static org.folio.repository.tag.TagTableConstants.selectAllTags;
+import static org.folio.repository.tag.TagTableConstants.selectDistinctTagsByRecordTypes;
+import static org.folio.repository.tag.TagTableConstants.selectTagsByRecordIdAndRecordType;
+import static org.folio.repository.tag.TagTableConstants.selectTagsByRecordTypes;
+import static org.folio.repository.tag.TagTableConstants.selectTagsByResourceIds;
+import static org.folio.repository.tag.TagTableConstants.updateInsertStatementForProvider;
 import static org.folio.util.FutureUtils.failedFuture;
 import static org.folio.util.FutureUtils.mapResult;
 
@@ -74,7 +72,7 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<List<DbTag>> findAll(String tenantId) {
-    String query = prepareQuery(SELECT_ALL_TAGS, getTagsTableName(tenantId));
+    String query = selectAllTags(tenantId);
     logSelectQueryInfoLevel(LOG, query);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -87,7 +85,7 @@ class TagRepositoryImpl implements TagRepository {
   public CompletableFuture<List<DbTag>> findByRecord(String tenantId, String recordId, RecordType recordType) {
     Tuple parameters = Tuple.of(recordId, recordType.getValue());
 
-    String query = prepareQuery(SELECT_TAGS_BY_RECORD_ID_AND_RECORD_TYPE, getTagsTableName(tenantId));
+    String query = selectTagsByRecordIdAndRecordType(tenantId);
     logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -105,7 +103,7 @@ class TagRepositoryImpl implements TagRepository {
     Tuple parameters = createParams(toValues(recordTypes));
     String placeholders = createPlaceholders(parameters.size());
 
-    String query = prepareQuery(SELECT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders);
+    String query = selectTagsByRecordTypes(tenantId, placeholders);
     logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -162,7 +160,7 @@ class TagRepositoryImpl implements TagRepository {
 
     String values = createPlaceholders(tags.size());
 
-    String query = prepareQuery(COUNT_RECORDS_BY_TAG_VALUE_AND_TYPE_AND_RECORD_ID_PREFIX, getTagsTableName(tenantId), values);
+    String query = getCountRecordsByTagValueAndTypeAndRecordIdPrefix(tenantId, values);
     logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -173,7 +171,7 @@ class TagRepositoryImpl implements TagRepository {
 
   @Override
   public CompletableFuture<List<String>> findDistinctRecordTags(String tenantId) {
-    String query = prepareQuery(SELECT_ALL_DISTINCT_TAGS, getTagsTableName(tenantId));
+    String query = selectAllDistinctTags(tenantId);
     logSelectQueryInfoLevel(LOG, query);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -191,7 +189,7 @@ class TagRepositoryImpl implements TagRepository {
     Tuple parameters = createParams(toValues(recordTypes));
     String placeholders = createPlaceholders(parameters.size());
 
-    String query = prepareQuery(SELECT_DISTINCT_TAGS_BY_RECORD_TYPES, getTagsTableName(tenantId), placeholders);
+    String query = selectDistinctTagsByRecordTypes(tenantId, placeholders);
     logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -204,7 +202,7 @@ class TagRepositoryImpl implements TagRepository {
     String placeholders = createPlaceholders(recordIds.size());
     Tuple parameters = createParametersWithRecordType(recordIds, recordType);
 
-    String query = prepareQuery(SELECT_TAGS_BY_RESOURCE_IDS, getTagsTableName(tenantId), placeholders);
+    String query = selectTagsByResourceIds(tenantId, placeholders);
     logSelectQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -269,7 +267,7 @@ class TagRepositoryImpl implements TagRepository {
     Tuple parameters = Tuple.tuple();
     String updatedValues = createInsertStatement(recordId, recordType, tags, parameters);
 
-    final String query = prepareQuery(UPDATE_INSERT_STATEMENT_FOR_PROVIDER, getTagsTableName(tenantId), updatedValues);
+    final String query = updateInsertStatementForProvider(tenantId, updatedValues);
     logInsertQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -282,7 +280,7 @@ class TagRepositoryImpl implements TagRepository {
                                                   RecordType recordType) {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
 
-    final String query = prepareQuery(DELETE_TAG_RECORD, getTagsTableName(tenantId));
+    final String query = deleteTagRecord(tenantId);
     Tuple parameters = Tuple.of(recordId, recordType.getValue());
 
     logDeleteQueryInfoLevel(LOG, query, parameters);

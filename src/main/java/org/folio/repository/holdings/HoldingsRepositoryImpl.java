@@ -1,7 +1,6 @@
 package org.folio.repository.holdings;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
@@ -9,13 +8,11 @@ import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.DbUtils.executeInTransaction;
-import static org.folio.repository.DbUtil.getHoldingsTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
-import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_BY_PK_HOLDINGS;
-import static org.folio.repository.holdings.HoldingsTableConstants.DELETE_OLD_RECORDS_BY_CREDENTIALS_ID;
-import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PACKAGE_ID_AND_CREDENTIALS;
-import static org.folio.repository.holdings.HoldingsTableConstants.GET_BY_PK_HOLDINGS;
-import static org.folio.repository.holdings.HoldingsTableConstants.INSERT_OR_UPDATE_HOLDINGS;
+import static org.folio.repository.holdings.HoldingsTableConstants.deleteByPkHoldings;
+import static org.folio.repository.holdings.HoldingsTableConstants.deleteOldRecordsByCredentialsId;
+import static org.folio.repository.holdings.HoldingsTableConstants.selectByPackageIdAndCredentials;
+import static org.folio.repository.holdings.HoldingsTableConstants.selectByPkHoldings;
+import static org.folio.repository.holdings.HoldingsTableConstants.insertOrUpdateHoldings;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
@@ -73,7 +70,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   @Override
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
-    final String query = prepareQuery(DELETE_OLD_RECORDS_BY_CREDENTIALS_ID, getHoldingsTableName(tenantId));
+    final String query = deleteOldRecordsByCredentialsId(tenantId);
     final Tuple params = Tuple.of(credentialsId, timestamp);
     logDeleteQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -87,10 +84,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
     var params = getHoldingsPkKeysParams(credentialsId, resourceIds);
-    var query = prepareQuery(GET_BY_PK_HOLDINGS,
-      getHoldingsTableName(tenantId),
-      createPlaceholders(2, resourceIds.size())
-    );
+    var query = selectByPkHoldings(tenantId, resourceIds);
     logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -99,7 +93,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   @Override
   public CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(int packageId, UUID credentialsId, String tenantId) {
-    var query = prepareQuery(GET_BY_PACKAGE_ID_AND_CREDENTIALS, getHoldingsTableName(tenantId));
+    var query = selectByPackageIdAndCredentials(tenantId);
     var params = createParams(packageId, credentialsId);
     logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -118,10 +112,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
                                                String tenantId, AsyncResult<SQLConnection> connection,
                                                PostgresClient postgresClient) {
     final Tuple parameters = createParameters(credentialsId, holdings, updatedAt);
-    final String query = prepareQuery(INSERT_OR_UPDATE_HOLDINGS,
-      getHoldingsTableName(tenantId),
-      createPlaceholders(9, holdings.size())
-    );
+    final String query = insertOrUpdateHoldings(tenantId, holdings);
     logInsertQueryDebugLevel(LOG, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, parameters, promise);
@@ -131,10 +122,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   private CompletableFuture<Void> deleteHoldings(List<HoldingsId> holdings, UUID credentialsId, String tenantId,
                                                  AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
     var params = getHoldingsPkKeysParams(credentialsId, mapItems(holdings, IdParser::getResourceId));
-    var query = prepareQuery(DELETE_BY_PK_HOLDINGS,
-      getHoldingsTableName(tenantId),
-      createPlaceholders(2, holdings.size())
-    );
+    var query = deleteByPkHoldings(tenantId, holdings);
     logDeleteQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     postgresClient.execute(connection, query, params, promise);
