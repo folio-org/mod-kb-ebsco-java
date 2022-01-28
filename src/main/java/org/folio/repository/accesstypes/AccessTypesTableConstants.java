@@ -1,5 +1,13 @@
 package org.folio.repository.accesstypes;
 
+import org.folio.common.ListUtils;
+
+import java.util.Collection;
+
+import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
+import static org.folio.repository.DbUtil.getAccessTypesTableName;
+import static org.folio.repository.DbUtil.getAccessTypesViewName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.count;
 import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.equalCondition;
@@ -11,7 +19,7 @@ import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereConditionsQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
 
-public class AccessTypesTableConstants {
+public final class AccessTypesTableConstants {
 
   public static final String ACCESS_TYPES_TABLE_NAME = "access_types";
   public static final String ACCESS_TYPES_VIEW_NAME = "access_types_view";
@@ -34,46 +42,78 @@ public class AccessTypesTableConstants {
   public static final String UPDATED_BY_MIDDLE_NAME_COLUMN = "updated_by_middle_name";
   public static final String USAGE_NUMBER_COLUMN = "usage_number";
 
-  public static final String UPSERT_ACCESS_TYPE_QUERY;
-  public static final String SELECT_IDS_BY_CREDENTIALS_ID_QUERY;
-  public static final String SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY;
-  public static final String SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
-  public static final String SELECT_BY_CREDENTIALS_AND_RECORD_QUERY;
-  public static final String SELECT_BY_CREDENTIALS_AND_NAMES_QUERY;
-  public static final String SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
-  public static final String DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
-
-  //Access types fields
-  public static final String RECORD_ID_COLUMN = "record_id";
-  public static final String RECORD_TYPE_COLUMN = "record_type";
-  public static final String ACCESS_TYPE_ID_COLUMN = "access_type_id";
-  public static final String SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY;
-
-  static {
-    String[] insertColumns = new String[] {
-        ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, DESCRIPTION_COLUMN, CREATED_DATE_COLUMN,
-        CREATED_BY_USER_ID_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN
-    };
-    SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY = selectQuery(ACCESS_TYPE_ID_COLUMN) + " " +
-      whereQuery(RECORD_ID_COLUMN, RECORD_TYPE_COLUMN);
-
-    SELECT_IDS_BY_CREDENTIALS_ID_QUERY = selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
-    SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY = selectQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
-    SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY = selectQuery() + " " +
-        whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
-    SELECT_BY_CREDENTIALS_AND_NAMES_QUERY = selectQuery() + " " + whereConditionsQuery(
-        equalCondition(CREDENTIALS_ID_COLUMN), inCondition(NAME_COLUMN)) + ";";
-    SELECT_COUNT_BY_CREDENTIALS_ID_QUERY = selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
-    SELECT_BY_CREDENTIALS_AND_RECORD_QUERY = selectQuery() + " " + whereConditionsQuery(
-        equalCondition(CREDENTIALS_ID_COLUMN),
-        inCondition(ID_COLUMN, SELECT_ACCESS_TYPE_IDS_BY_RECORD_QUERY)
-    ) + " " + limitQuery(1) + ";";
-
-    UPSERT_ACCESS_TYPE_QUERY = insertQuery(insertColumns) + " " + updateOnConflictedIdQuery(ID_COLUMN, insertColumns) + ";";
-    DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY =
-        deleteQuery() + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
-  }
+  private static final String[] INSERT_COLUMNS = new String[]{
+    ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, DESCRIPTION_COLUMN, CREATED_DATE_COLUMN,
+    CREATED_BY_USER_ID_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN
+  };
 
   private AccessTypesTableConstants() {
+  }
+
+  public static String selectByCredentialsIdWithCountQuery(String tenantId) {
+    return prepareQuery(selectByCredentialsIdWithCountQuery(), getAccessTypesViewName(tenantId));
+  }
+
+  public static String selectByCredentialsAndAccessTypeIdQuery(String tenantId) {
+    return prepareQuery(selectByCredentialsAndAccessTypeIdQuery(), getAccessTypesViewName(tenantId));
+  }
+
+  public static String selectByCredentialsAndNamesQuery(Collection<String> accessTypeNames, String tenantId) {
+    return prepareQuery(selectByCredentialsAndNamesQuery(),
+      getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(accessTypeNames.size()));
+  }
+
+  public static String selectCountByCredentialsIdQuery(String tenantId) {
+    return prepareQuery(selectCountByCredentialsIdQuery(), getAccessTypesTableName(tenantId));
+  }
+
+  public static String selectByCredentialsAndRecordQuery(String tenantId) {
+    return prepareQuery(selectByCredentialsAndRecordQuery(),
+      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+  }
+
+  public static String deleteByCredentialsAndAccessTypeIdQuery(String tenantId) {
+    return prepareQuery(deleteByCredentialsAndAccessTypeIdQuery(), getAccessTypesTableName(tenantId));
+  }
+
+  public static String upsertAccessTypeQuery(String tenantId) {
+    return prepareQuery(upsertAccessTypeQuery(), getAccessTypesTableName(tenantId));
+  }
+
+  public static String upsertAccessTypeQuery() {
+    return insertQuery(INSERT_COLUMNS) + " " + updateOnConflictedIdQuery(ID_COLUMN, INSERT_COLUMNS) + ";";
+  }
+
+  protected static String selectIdsByCredentialsIdQuery() {
+    return selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
+  }
+
+  private static String selectByCredentialsIdWithCountQuery() {
+    return selectQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
+  }
+
+  private static String selectByCredentialsAndAccessTypeIdQuery() {
+    return selectQuery() + " " +
+      whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
+  }
+
+  private static String selectByCredentialsAndNamesQuery() {
+    return selectQuery() + " " + whereConditionsQuery(
+      equalCondition(CREDENTIALS_ID_COLUMN), inCondition(NAME_COLUMN)) + ";";
+  }
+
+  private static String selectCountByCredentialsIdQuery() {
+    return selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
+  }
+
+  private static String selectByCredentialsAndRecordQuery() {
+    return selectQuery() + " " + whereConditionsQuery(
+      equalCondition(CREDENTIALS_ID_COLUMN),
+      inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.selectAccessTypeIdsByRecordQuery())
+    ) + " " + limitQuery(1) + ";";
+  }
+
+  private static String deleteByCredentialsAndAccessTypeIdQuery() {
+    return deleteQuery() + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
   }
 }

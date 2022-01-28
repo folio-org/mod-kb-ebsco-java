@@ -10,11 +10,11 @@ import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.uc.UCSettingsTableConstants.CURRENCY_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.CUSTOMER_KEY_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.ID_COLUMN;
-import static org.folio.repository.uc.UCSettingsTableConstants.INSERT_UC_SETTINGS;
 import static org.folio.repository.uc.UCSettingsTableConstants.KB_CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.PLATFORM_TYPE_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.START_MONTH_COLUMN;
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
+import static org.folio.repository.uc.UCSettingsTableConstants.insertUcSettings;
 import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
 import static org.folio.rest.impl.WireMockTestBase.JOHN_USERNAME;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
@@ -58,7 +58,7 @@ public class UCSettingsTestUtil {
     var attributes = ucSettings.getAttributes();
     var meta = ucSettings.getMeta();
 
-    var query = prepareQuery(INSERT_UC_SETTINGS, uCSettingsTestTable());
+    var query = prepareQuery(insertUcSettings(), uCSettingsTestTable());
     UUID id = toUUID(ucSettings.getId());
     if (id == null) {
       id = UUID.randomUUID();

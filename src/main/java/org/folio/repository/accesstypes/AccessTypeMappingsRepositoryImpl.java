@@ -3,7 +3,6 @@ package org.folio.repository.accesstypes;
 import static java.util.Arrays.asList;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
@@ -12,19 +11,16 @@ import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.streamOf;
-import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
-import static org.folio.repository.DbUtil.getAccessTypesTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_BY_RECORD_ID_PREFIX_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.COUNT_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.DELETE_BY_RECORD_QUERY;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.SELECT_BY_RECORD_QUERY;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.UPSERT_QUERY;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.selectCountByRecordIdPrefixQuery;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.deleteByRecordQuery;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.selectByAccessTypeIdsAndRecordQuery;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.selectByRecordQuery;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.upsertQuery;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
@@ -66,8 +62,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType,
                                                                      UUID credentialsId, String tenantId) {
-    String query = prepareQuery(SELECT_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
-      getAccessTypesTableName(tenantId));
+    String query = selectByRecordQuery(tenantId);
     Tuple params = createParams(asList(recordId, recordType.getValue(), credentialsId));
 
     logSelectQueryInfoLevel(LOG, query, params);
@@ -95,8 +90,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     params.addInteger(offset);
     params.addInteger(count);
 
-    String query = prepareQuery(SELECT_BY_ACCESS_TYPE_IDS_AND_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
-      createPlaceholders(accessTypeIds.size()));
+    String query = selectByAccessTypeIdsAndRecordQuery(tenantId, accessTypeIds);
 
     logSelectQueryInfoLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -107,7 +101,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
   @Override
   public CompletableFuture<AccessTypeMapping> save(AccessTypeMapping mapping, String tenantId) {
-    String query = prepareQuery(UPSERT_QUERY, getAccessTypesMappingTableName(tenantId));
+    String query = upsertQuery(tenantId);
 
     Tuple params = createParams(asList(
       mapping.getId(),
@@ -126,8 +120,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Void> deleteByRecord(String recordId, RecordType recordType, UUID credentialsId,
                                                 String tenantId) {
-    String query = prepareQuery(DELETE_BY_RECORD_QUERY, getAccessTypesMappingTableName(tenantId),
-      getAccessTypesTableName(tenantId));
+    String query = deleteByRecordQuery(tenantId);
     Tuple params = createParams(recordId, recordType.getValue(), credentialsId);
 
     logDeleteQueryInfoLevel(LOG, query, params);
@@ -140,8 +133,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
   @Override
   public CompletableFuture<Map<UUID, Integer>> countByRecordIdPrefix(String recordIdPrefix, RecordType recordType,
                                                                      UUID credentialsId, String tenantId) {
-    String query = prepareQuery(COUNT_BY_RECORD_ID_PREFIX_QUERY, getAccessTypesMappingTableName(tenantId),
-      getAccessTypesTableName(tenantId));
+    String query = selectCountByRecordIdPrefixQuery(tenantId);
     Tuple params = createParams(asList(recordIdPrefix + "%", recordType.getValue(), credentialsId));
 
     logSelectQueryInfoLevel(LOG, query, params);

@@ -4,18 +4,16 @@ import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.common.LogUtils.logUpdateQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.getUsersTableName;
 import static org.folio.repository.DbUtil.pgClient;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.ID_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
 import static org.folio.repository.users.UsersTableConstants.PATRON_GROUP_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.SAVE_USER_QUERY;
-import static org.folio.repository.users.UsersTableConstants.SELECT_BY_ID_QUERY;
-import static org.folio.repository.users.UsersTableConstants.UPDATE_USER_QUERY;
 import static org.folio.repository.users.UsersTableConstants.USER_NAME_COLUMN;
+import static org.folio.repository.users.UsersTableConstants.saveUserQuery;
+import static org.folio.repository.users.UsersTableConstants.selectByIdQuery;
+import static org.folio.repository.users.UsersTableConstants.updateUserQuery;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Optional;
@@ -47,7 +45,7 @@ public class UsersRepositoryImpl implements UsersRepository {
 
   @Override
   public CompletableFuture<Optional<DbUser>> findById(UUID id, String tenant) {
-    String query = prepareQuery(SELECT_BY_ID_QUERY, getUsersTableName(tenant));
+    String query = selectByIdQuery(tenant);
     Tuple params = createParams(id);
 
     logSelectQueryInfoLevel(LOG, query, params);
@@ -59,7 +57,7 @@ public class UsersRepositoryImpl implements UsersRepository {
 
   @Override
   public CompletableFuture<DbUser> save(DbUser user, String tenant) {
-    String query = prepareQuery(SAVE_USER_QUERY, getUsersTableName(tenant));
+    String query = saveUserQuery(tenant);
 
     Tuple params = createParams(
       user.getId(),
@@ -79,7 +77,7 @@ public class UsersRepositoryImpl implements UsersRepository {
 
   @Override
   public CompletableFuture<Boolean> update(DbUser user, String tenant) {
-    String query = prepareQuery(UPDATE_USER_QUERY, getUsersTableName(tenant));
+    String query = updateUserQuery(tenant);
 
     Tuple params = createParams(
       user.getUsername(),
