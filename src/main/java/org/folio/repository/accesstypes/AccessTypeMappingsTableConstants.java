@@ -20,6 +20,7 @@ import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereConditionsQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
+import static org.folio.repository.SqlQueryHelper.groupByQuery;
 
 public final class AccessTypeMappingsTableConstants {
 
@@ -73,7 +74,8 @@ public final class AccessTypeMappingsTableConstants {
     return selectQuery(ACCESS_TYPE_ID_COLUMN, count()) + " " + whereConditionsQuery(
       likeCondition(RECORD_ID_COLUMN),
       equalCondition(RECORD_TYPE_COLUMN),
-      inCondition(ACCESS_TYPE_ID_COLUMN, AccessTypesTableConstants.selectIdsByCredentialsIdQuery()));
+      inCondition(ACCESS_TYPE_ID_COLUMN, AccessTypesTableConstants.selectIdsByCredentialsIdQuery())
+    ) + " " + groupByQuery(ACCESS_TYPE_ID_COLUMN) + ";";
   }
 
   private static String selectByRecordQuery() {
