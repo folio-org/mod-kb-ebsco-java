@@ -4,19 +4,15 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.mapItems;
-import static org.folio.repository.DbUtil.getProviderTableName;
-import static org.folio.repository.DbUtil.getTagsTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
-import static org.folio.repository.providers.ProviderTableConstants.DELETE_PROVIDER_STATEMENT;
 import static org.folio.repository.providers.ProviderTableConstants.ID_COLUMN;
-import static org.folio.repository.providers.ProviderTableConstants.INSERT_OR_UPDATE_PROVIDER_STATEMENT;
-import static org.folio.repository.providers.ProviderTableConstants.SELECT_TAGGED_PROVIDERS;
+import static org.folio.repository.providers.ProviderTableConstants.deleteProviderStatement;
+import static org.folio.repository.providers.ProviderTableConstants.insertOrUpdateProviderStatement;
+import static org.folio.repository.providers.ProviderTableConstants.selectTaggedProviders;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collections;
@@ -58,7 +54,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
       provider.getName())
     );
 
-    final String query = prepareQuery(INSERT_OR_UPDATE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
+    final String query = insertOrUpdateProviderStatement(tenantId);
 
     logInsertQueryInfoLevel(LOG, query, parameters);
 
@@ -72,7 +68,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   public CompletableFuture<Void> delete(String vendorId, UUID credentialsId, String tenantId) {
     Tuple parameters = createParams(vendorId, credentialsId);
 
-    final String query = prepareQuery(DELETE_PROVIDER_STATEMENT, getProviderTableName(tenantId));
+    final String query = deleteProviderStatement(tenantId);
 
     logDeleteQueryInfoLevel(LOG, query, parameters);
 
@@ -96,8 +92,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
       .addInteger(tagFilter.getOffset())
       .addInteger(tagFilter.getCount());
 
-    final String query = prepareQuery(SELECT_TAGGED_PROVIDERS, getProviderTableName(tenantId),
-      getTagsTableName(tenantId), createPlaceholders(tags.size()));
+    final String query = selectTaggedProviders(tenantId, tags);
 
     logSelectQueryInfoLevel(LOG, query, parameters);
 

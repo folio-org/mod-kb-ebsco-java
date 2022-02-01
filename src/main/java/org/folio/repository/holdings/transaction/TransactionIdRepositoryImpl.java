@@ -1,14 +1,11 @@
 package org.folio.repository.holdings.transaction;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryDebugLevel;
 import static org.folio.db.RowSetUtils.mapFirstItem;
-import static org.folio.repository.DbUtil.getTransactionIdTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
-import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.GET_LAST_TRANSACTION_ID_BY_CREDENTIALS;
-import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.INSERT_TRANSACTION_ID;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.getLastTransactionIdByCredentials;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.insertTransactionId;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_COLUMN;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
@@ -41,10 +38,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
   @Override
   public CompletableFuture<Void> save(UUID credentialsId, String transactionId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId, transactionId);
-    final String query = prepareQuery(INSERT_TRANSACTION_ID,
-      getTransactionIdTableName(tenantId),
-      createPlaceholders(params.size())
-    );
+    final String query = insertTransactionId(tenantId, params);
     logInsertQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -54,7 +48,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
   @Override
   public CompletableFuture<String> getLastTransactionId(UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId);
-    final String query = prepareQuery(GET_LAST_TRANSACTION_ID_BY_CREDENTIALS, getTransactionIdTableName(tenantId));
+    final String query = getLastTransactionIdByCredentials(tenantId);
     logSelectQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);

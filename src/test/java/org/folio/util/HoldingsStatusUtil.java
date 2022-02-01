@@ -7,9 +7,9 @@ import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUS_BY_ID;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatusById;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.insertLoadingStatus;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.JSONB_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
@@ -38,7 +38,7 @@ public class HoldingsStatusUtil {
   public static HoldingsLoadingStatus saveStatus(String credentialsId, HoldingsLoadingStatus status, String processId,
                                                  OffsetDateTime startedTime, Vertx vertx) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
-    String query = DbUtil.prepareQuery(INSERT_LOADING_STATUS, holdingsStatusTestTable(), createPlaceholders(4));
+    String query = DbUtil.prepareQuery(insertLoadingStatus(), holdingsStatusTestTable(), createPlaceholders(4));
     status.getData().getAttributes().setStarted(startedTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     Tuple params = Tuple.of(randomUUID(), toUUID(credentialsId), toJsonObject(status), toUUID(processId));
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
@@ -52,7 +52,7 @@ public class HoldingsStatusUtil {
 
   public static HoldingsLoadingStatus getStatus(String credentialsId, Vertx vertx) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
-    String query = DbUtil.prepareQuery(GET_HOLDINGS_STATUS_BY_ID, holdingsStatusTestTable());
+    String query = DbUtil.prepareQuery(getHoldingsStatusById(), holdingsStatusTestTable());
     Tuple params = Tuple.of(toUUID(credentialsId));
     PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, params, event -> future.complete(mapStatus(event.result())));

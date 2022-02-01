@@ -26,8 +26,8 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_CO
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertAccessTypeQuery;
 import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
@@ -72,7 +72,7 @@ public class AccessTypesTestUtil {
   public static void insertAccessTypeMapping(String recordId, RecordType recordType, String accessTypeId, Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();
 
-    String query = prepareQuery(AccessTypeMappingsTableConstants.UPSERT_QUERY, accessTypesMappingTestTable());
+    String query = prepareQuery(AccessTypeMappingsTableConstants.upsertQuery(), accessTypesMappingTestTable());
     Tuple params = Tuple.of(UUID.randomUUID(), recordId, recordType.getValue(), toUUID(accessTypeId));
 
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
@@ -90,7 +90,7 @@ public class AccessTypesTestUtil {
   public static String insertAccessType(AccessType accessType, Vertx vertx) {
     CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
-    String query = prepareQuery(UPSERT_ACCESS_TYPE_QUERY, accessTypesTestTable());
+    String query = prepareQuery(upsertAccessTypeQuery(), accessTypesTestTable());
 
     UUID id = UUID.randomUUID();
     Tuple params = DbUtils.createParams(

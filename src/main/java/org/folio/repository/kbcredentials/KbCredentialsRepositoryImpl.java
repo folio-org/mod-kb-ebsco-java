@@ -12,20 +12,17 @@ import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
-import static org.folio.repository.DbUtil.getAssignedUsersTableName;
-import static org.folio.repository.DbUtil.getKbCredentialsTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.API_KEY_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.CUSTOMER_ID_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.DELETE_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ID_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAME_COLUMN;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_ID_QUERY;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_BY_USER_ID_QUERY;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.SELECT_CREDENTIALS_QUERY;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.UPSERT_CREDENTIALS_QUERY;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.deleteCredentialsQuery;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.selectCredentialsByIdQuery;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.selectCredentialsByUserIdQuery;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.selectCredentialsQuery;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.upsertCredentialsQuery;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
@@ -71,7 +68,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   @Override
   public CompletableFuture<Collection<DbKbCredentials>> findAll(String tenant) {
-    String query = prepareQuery(SELECT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    String query = selectCredentialsQuery(tenant);
 
     logSelectQueryInfoLevel(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -82,7 +79,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   @Override
   public CompletableFuture<Optional<DbKbCredentials>> findById(UUID id, String tenant) {
-    String query = prepareQuery(SELECT_CREDENTIALS_BY_ID_QUERY, getKbCredentialsTableName(tenant));
+    String query = selectCredentialsByIdQuery(tenant);
     Tuple params = Tuple.of(id);
     logSelectQueryInfoLevel(LOG, query, params);
 
@@ -94,7 +91,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   @Override
   public CompletableFuture<DbKbCredentials> save(DbKbCredentials credentials, String tenant) {
-    String query = prepareQuery(UPSERT_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    String query = upsertCredentialsQuery(tenant);
 
     UUID id = credentials.getId();
     if (id == null) {
@@ -127,7 +124,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   @Override
   public CompletableFuture<Void> delete(UUID id, String tenant) {
-    String query = prepareQuery(DELETE_CREDENTIALS_QUERY, getKbCredentialsTableName(tenant));
+    String query = deleteCredentialsQuery(tenant);
     Tuple params = Tuple.of(id);
 
     logDeleteQueryInfoLevel(LOG, query, params);
@@ -142,8 +139,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   @Override
   public CompletableFuture<Optional<DbKbCredentials>> findByUserId(UUID userId, String tenant) {
-    String query = prepareQuery(SELECT_CREDENTIALS_BY_USER_ID_QUERY, getKbCredentialsTableName(tenant),
-      getAssignedUsersTableName(tenant));
+    String query = selectCredentialsByUserIdQuery(tenant);
     Tuple params = Tuple.of(userId);
 
     logSelectQueryInfoLevel(LOG, query, params);

@@ -1,7 +1,6 @@
 package org.folio.repository.holdings.status;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDebugLevel;
 import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
 import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
@@ -12,16 +11,14 @@ import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toJsonObject;
-import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.CREDENTIALS_COLUMN;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.DELETE_LOADING_STATUS;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUSES;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.GET_HOLDINGS_STATUS_BY_ID;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.INSERT_LOADING_STATUS;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.JSONB_COLUMN;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.UPDATE_IMPORTED_COUNT;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.UPDATE_LOADING_STATUS;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.deleteLoadingStatus;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatuses;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatusById;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.insertLoadingStatus;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.updateImportedCount;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.updateLoadingStatus;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
@@ -66,7 +63,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<List<HoldingsLoadingStatus>> findAll(String tenantId) {
-    final String query = prepareQuery(GET_HOLDINGS_STATUSES, getHoldingsStatusTableName(tenantId));
+    final String query = getHoldingsStatuses(tenantId);
     logSelectQueryDebugLevel(LOG, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
@@ -81,9 +78,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   @Override
   public CompletableFuture<Void> save(HoldingsLoadingStatus status, UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(UUID.randomUUID(), credentialsId, toJsonObject(status), vertxIdProvider.getVertxId());
-    final String query = prepareQuery(INSERT_LOADING_STATUS,
-      getHoldingsStatusTableName(tenantId),
-      createPlaceholders(params.size()));
+    final String query = insertLoadingStatus(tenantId, params);
     logInsertQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -93,7 +88,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   @Override
   public CompletableFuture<Void> update(HoldingsLoadingStatus status, UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(toJsonObject(status), vertxIdProvider.getVertxId(), credentialsId);
-    final String query = prepareQuery(UPDATE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
+    final String query = updateLoadingStatus(tenantId);
     logUpdateQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -103,7 +98,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   @Override
   public CompletableFuture<Void> delete(UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId);
-    final String query = prepareQuery(DELETE_LOADING_STATUS, getHoldingsStatusTableName(tenantId));
+    final String query = deleteLoadingStatus(tenantId);
     logDeleteQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -115,7 +110,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
                                                                         UUID credentialsId, String tenantId) {
     return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
       final Tuple params = Tuple.of(holdingsAmount, pageAmount, vertxIdProvider.getVertxId(), credentialsId);
-      final String query = prepareQuery(UPDATE_IMPORTED_COUNT, getHoldingsStatusTableName(tenantId));
+      final String query = updateImportedCount(tenantId);
       logDebugLevel(LOG, "Increment imported count query = {} with params = {}", query, params);
       Promise<RowSet<Row>> promise = Promise.promise();
       postgresClient.execute(connection, query, params, promise);
@@ -139,7 +134,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   private CompletableFuture<HoldingsLoadingStatus> get(UUID credentialsId, String tenantId,
                                                        @Nullable AsyncResult<SQLConnection> connection) {
     final Tuple params = Tuple.of(credentialsId);
-    final String query = prepareQuery(GET_HOLDINGS_STATUS_BY_ID, getHoldingsStatusTableName(tenantId));
+    final String query = getHoldingsStatusById(tenantId);
     logSelectQueryDebugLevel(LOG, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     if (connection != null) {

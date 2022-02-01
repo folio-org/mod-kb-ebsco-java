@@ -4,16 +4,10 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.DbUtil.getHoldingsTableName;
-import static org.folio.repository.DbUtil.getResourcesTableName;
-import static org.folio.repository.DbUtil.getTagsTableName;
-import static org.folio.repository.DbUtil.getTitlesTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
@@ -24,11 +18,11 @@ import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_
 import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.COUNT_COLUMN;
-import static org.folio.repository.titles.TitlesTableConstants.COUNT_TITLES_BY_RESOURCE_TAGS;
-import static org.folio.repository.titles.TitlesTableConstants.DELETE_TITLE_STATEMENT;
 import static org.folio.repository.titles.TitlesTableConstants.HOLDINGS_ID_COLUMN;
-import static org.folio.repository.titles.TitlesTableConstants.INSERT_OR_UPDATE_TITLE_STATEMENT;
-import static org.folio.repository.titles.TitlesTableConstants.SELECT_TITLES_BY_RESOURCE_TAGS;
+import static org.folio.repository.titles.TitlesTableConstants.getCountTitlesByResourceTags;
+import static org.folio.repository.titles.TitlesTableConstants.deleteTitleStatement;
+import static org.folio.repository.titles.TitlesTableConstants.insertOrUpdateTitleStatement;
+import static org.folio.repository.titles.TitlesTableConstants.selectTitlesByResourceTags;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collections;
@@ -74,7 +68,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       title.getName()
     ));
 
-    final String query = prepareQuery(INSERT_OR_UPDATE_TITLE_STATEMENT, getTitlesTableName(tenantId));
+    final String query = insertOrUpdateTitleStatement(tenantId);
 
     logInsertQueryInfoLevel(LOG, query, parameters);
 
@@ -88,7 +82,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   public CompletableFuture<Void> delete(Long titleId, UUID credentialsId, String tenantId) {
     Tuple params = createParams(String.valueOf(titleId), credentialsId);
 
-    final String query = prepareQuery(DELETE_TITLE_STATEMENT, getTitlesTableName(tenantId));
+    final String query = deleteTitleStatement(tenantId);
 
     logDeleteQueryInfoLevel(LOG, query, params);
 
@@ -109,8 +103,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     tags.forEach(parameters::addString);
     parameters.addUUID(credentialsId);
 
-    final String query = prepareQuery(COUNT_TITLES_BY_RESOURCE_TAGS,
-      getResourcesTableName(tenantId), getTagsTableName(tenantId), createPlaceholders(tags.size()));
+    final String query = getCountTitlesByResourceTags(tenantId, tags);
 
     logSelectQueryInfoLevel(LOG, query, parameters);
 
@@ -134,9 +127,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
       .addInteger(tagFilter.getOffset())
       .addInteger(tagFilter.getCount());
 
-    final String query = prepareQuery(SELECT_TITLES_BY_RESOURCE_TAGS,
-      getResourcesTableName(tenantId), getTagsTableName(tenantId), getHoldingsTableName(tenantId),
-      createPlaceholders(tags.size()));
+    final String query = selectTitlesByResourceTags(tenantId, tags);
 
     logSelectQueryInfoLevel(LOG, query, parameters);
 

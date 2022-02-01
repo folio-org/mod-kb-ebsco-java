@@ -11,10 +11,6 @@ import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
-import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
-import static org.folio.repository.DbUtil.getAccessTypesTableName;
-import static org.folio.repository.DbUtil.getAccessTypesViewName;
-import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.DbUtil.uniqueConstraintRecover;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
@@ -23,23 +19,23 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_NAMES_QUERY;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_AND_RECORD_QUERY;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.SELECT_COUNT_BY_CREDENTIALS_ID_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USERNAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPSERT_ACCESS_TYPE_QUERY;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.deleteByCredentialsAndAccessTypeIdQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsAndAccessTypeIdQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsAndNamesQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsAndRecordQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsIdWithCountQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectCountByCredentialsIdQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertAccessTypeQuery;
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
@@ -61,7 +57,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.folio.common.ListUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordType;
 import org.folio.rest.exception.InputValidationException;
@@ -85,7 +80,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<List<DbAccessType>> findByCredentialsId(UUID credentialsId, String tenantId) {
-    String query = prepareQuery(SELECT_BY_CREDENTIALS_ID_WITH_COUNT_QUERY, getAccessTypesViewName(tenantId));
+    String query = selectByCredentialsIdWithCountQuery(tenantId);
     Tuple params = createParams(credentialsId);
 
     logSelectQueryInfoLevel(LOG, query, params);
@@ -99,7 +94,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   @Override
   public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(UUID credentialsId,
                                                                                     UUID accessTypeId, String tenantId) {
-    String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesViewName(tenantId));
+    String query = selectByCredentialsAndAccessTypeIdQuery(tenantId);
     Tuple params = createParams(accessTypeId, credentialsId);
 
     logSelectQueryInfoLevel(LOG, query, params);
@@ -114,9 +109,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   public CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(UUID credentialsId,
                                                                          Collection<String> accessTypeNames,
                                                                          String tenantId) {
-    String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_NAMES_QUERY,
-      getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(accessTypeNames.size()));
-
+    String query = selectByCredentialsAndNamesQuery(accessTypeNames, tenantId);
     Tuple params = Tuple.tuple();
     params.addUUID(credentialsId);
     accessTypeNames.forEach(params::addString);
@@ -133,8 +126,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndRecord(UUID credentialsId, String recordId,
                                                                               RecordType recordType,
                                                                               String tenantId) {
-    String query = prepareQuery(SELECT_BY_CREDENTIALS_AND_RECORD_QUERY,
-      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+    String query = selectByCredentialsAndRecordQuery(tenantId);
     Tuple params = createParams(credentialsId, recordId, recordType.getValue());
 
     logSelectQueryInfoLevel(LOG, query, params);
@@ -146,7 +138,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<DbAccessType> save(DbAccessType accessType, String tenantId) {
-    String query = prepareQuery(UPSERT_ACCESS_TYPE_QUERY, getAccessTypesTableName(tenantId));
+    String query = upsertAccessTypeQuery(tenantId);
 
     UUID id = accessType.getId();
     if (id == null) {
@@ -177,7 +169,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<Integer> count(UUID credentialsId, String tenantId) {
-    String query = prepareQuery(SELECT_COUNT_BY_CREDENTIALS_ID_QUERY, getAccessTypesTableName(tenantId));
+    String query = selectCountByCredentialsIdQuery(tenantId);
     Tuple params = createParams(credentialsId);
 
     logCountQuery(LOG, query, params);
@@ -191,7 +183,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<Void> delete(UUID credentialsId, UUID accessTypeId, String tenantId) {
-    String query = prepareQuery(DELETE_BY_CREDENTIALS_AND_ACCESS_TYPE_ID_QUERY, getAccessTypesTableName(tenantId));
+    String query = deleteByCredentialsAndAccessTypeIdQuery(tenantId);
     Tuple params = createParams(accessTypeId, credentialsId);
 
     logDeleteQueryInfoLevel(LOG, query, params);
