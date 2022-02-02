@@ -185,7 +185,10 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context -> fetchAccessType(entity, context)
         .thenCompose(accessType -> processResourceUpdate(entity, parsedResourceId, context)
-          .thenCompose(resourceResult -> updateAccessType(resourceId, resourceResult, accessType, context))
+          .thenCompose(resourceResult -> {
+            context.getTitlesService().updateCache(resourceResult);
+            return updateAccessType(resourceId, resourceResult, accessType, context);
+          })
         ))
       .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .addErrorMapper(ResourceNotFoundException.class, error404ResourceNotFoundMapper())

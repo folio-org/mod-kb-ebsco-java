@@ -2,6 +2,7 @@ package org.folio.rmapi;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -22,12 +23,12 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
 
   private static final Logger LOG = LogManager.getLogger(TitlesServiceImpl.class);
 
-  private VertxCache<TitleCacheKey, Title> titleCache;
-  private Configuration configuration;
-  private String tenantId;
+  private final VertxCache<TitleCacheKey, Title> titleCache;
+  private final Configuration configuration;
+  private final String tenantId;
 
   public TitlesServiceImpl(Configuration config, Vertx vertx,
-                           String tenantId, VertxCache<TitleCacheKey, Title> titleCache ) {
+                           String tenantId, VertxCache<TitleCacheKey, Title> titleCache) {
     super(config, vertx);
 
     this.configuration = config;
@@ -35,40 +36,74 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
     this.titleCache = titleCache;
   }
 
-   public CompletableFuture<Title> retrieveTitle(long titleId, boolean useCache) {
+  @Override
+  public CompletableFuture<Title> retrieveTitle(long titleId) {
+    var titleFuture = super.retrieveTitle(titleId);
+    var cacheKey = buildTitleCacheKey(titleId);
+    titleFuture.thenAccept(title -> titleCache.putValue(cacheKey, title));
+    return titleFuture;
+  }
+
+  public CompletableFuture<Title> retrieveTitle(long titleId, boolean useCache) {
     CompletableFuture<Title> titleFuture;
-    if(useCache){
+    if (useCache) {
       titleFuture = retrieveTitleWithCache(titleId);
-    }else{
+    } else {
       titleFuture = super.retrieveTitle(titleId);
     }
     return titleFuture;
   }
 
   private CompletableFuture<Title> retrieveTitleWithCache(long titleId) {
-    TitleCacheKey cacheKey = TitleCacheKey.builder()
-      .titleId(titleId)
-      .rmapiConfiguration(configuration)
-      .tenant(tenantId)
-      .build();
-    return titleCache.getValueOrLoad(cacheKey, () -> retrieveTitle(titleId));
+    var cacheKey = buildTitleCacheKey(titleId);
+    return titleCache.getValueOrLoad(cacheKey, () -> super.retrieveTitle(titleId));
   }
 
   public CompletableFuture<Titles> retrieveTitles(List<Long> titleIds) {
     Set<CompletableFuture<Title>> futures = titleIds.stream()
-      .map(id -> retrieveTitle(id,true))
+      .map(id -> retrieveTitle(id, true))
       .collect(Collectors.toSet());
     return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToTitles);
+  }
+
+  public void updateCache(Title title) {
+    var cacheKey = buildTitleCacheKey(title.getTitleId());
+    Title cachedTitle = titleCache.getValue(cacheKey);
+    if (!Objects.isNull(cachedTitle)) {
+      mergeCustomerResources(cachedTitle, title);
+    }
+    titleCache.putValue(cacheKey, title);
+  }
+
+  private void mergeCustomerResources(Title cachedTitle, Title title) {
+    var updatedCustomerResources = title.getCustomerResourcesList();
+    var customerResources = cachedTitle.getCustomerResourcesList();
+
+    if (!updatedCustomerResources.isEmpty()) {
+      var updatedCustomerResourceId = updatedCustomerResources.get(0).getPackageId();
+      var oldCustomerResources = customerResources.stream()
+        .filter(resource -> !Objects.equals(resource.getPackageId(), updatedCustomerResourceId))
+        .collect(Collectors.toList());
+      updatedCustomerResources.addAll(oldCustomerResources);
+    }
   }
 
   private Titles mapToTitles(List<Title> titles) {
     return Titles.builder()
       .titleList(
         titles.stream()
-        .sorted(Comparator.comparing(Title::getTitleName))
-        .collect(Collectors.toList())
+          .sorted(Comparator.comparing(Title::getTitleName))
+          .collect(Collectors.toList())
       )
+      .build();
+  }
+
+  private TitleCacheKey buildTitleCacheKey(long titleId) {
+    return TitleCacheKey.builder()
+      .titleId(titleId)
+      .rmapiConfiguration(configuration)
+      .tenant(tenantId)
       .build();
   }
 }
