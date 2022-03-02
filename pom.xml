@@ -34,30 +34,29 @@
   </licenses>
 
   <properties>
-    <rmb.version>33.2.6</rmb.version>
+    <rmb.version>33.2.4</rmb.version>
     <folio-di-support.version>1.5.0</folio-di-support.version>
     <folio-service-tools.version>1.8.0</folio-service-tools.version>
     <folio-holdingsiq-client.version>2.0.0</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>1.4.0</folio-liquibase-util.version>
-    <mod-configuration-client.version>5.7.5</mod-configuration-client.version>
+    <folio-liquibase-util.version>1.2.0</folio-liquibase-util.version>
+    <mod-configuration-client.version>5.7.0</mod-configuration-client.version>
 
-    <vertx.version>4.2.5</vertx.version>
+    <vertx.version>4.2.4</vertx.version>
     <aspectj.version>1.9.6</aspectj.version>
-    <spring.version>5.3.16</spring.version>
-    <jackson.version>2.13.1</jackson.version>
+    <spring.version>5.3.14</spring.version>
+    <jackson.version>2.11.3</jackson.version>
     <commons-configuration2.version>2.7</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
-    <lombok.version>1.18.22</lombok.version>
+    <lombok.version>1.18.18</lombok.version>
     <httpcore.version>4.4.15</httpcore.version>
     <log4j.version>2.17.1</log4j.version>
-    <jetbrains-annotations.version>23.0.0</jetbrains-annotations.version>
-    <jaxrs-code-generator.version>3.0.7</jaxrs-code-generator.version>
-    <opencsv.version>5.5.2</opencsv.version>
+    <jetbrains-annotations.version>20.1.0</jetbrains-annotations.version>
+    <jaxrs-code-generator.version>3.0.2</jaxrs-code-generator.version>
 
     <junit.version>4.13.2</junit.version>
-    <rest-assured.version>4.5.1</rest-assured.version>
-    <wiremock.version>2.27.2</wiremock.version>
-    <mockito.version>4.3.1</mockito.version>
+    <rest-assured.version>4.3.3</rest-assured.version>
+    <wiremock.version>2.20.0</wiremock.version>
+    <mockito.version>4.2.0</mockito.version>
     <jsonassert.version>1.5.0</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
 
@@ -212,7 +211,7 @@
     <dependency>
       <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
-      <version>${opencsv.version}</version>
+      <version>5.3</version>
     </dependency>
     <!-- Test dependencies -->
     <dependency>
@@ -379,10 +378,6 @@
                   <name>jsonschema2pojo.config.useCommonsLang3</name>
                   <value>true</value>
                 </property>
-                <property>
-                  <name>log4j.configurationFile</name>
-                  <value>${project.baseUri}src/main/resources/log4j2.xml</value>
-                </property>
               </properties>
             </configuration>
           </execution>
@@ -519,6 +514,28 @@
                   <destinationFile>${project.build.directory}/DeploymentDescriptor.json</destinationFile>
                 </fileSet>
               </fileSets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>1.0.0</version>
+        <executions>
+          <execution>
+            <id>set-system-properties</id>
+            <goals>
+              <goal>set-system-properties</goal>
+            </goals>
+            <configuration>
+              <properties>
+                <property>
+                  <name>log4j.configurationFile</name>
+                  <value>${project.baseUri}src/main/resources/log4j2.xml</value>
+                </property>
+              </properties>
             </configuration>
           </execution>
         </executions>
