@@ -45,7 +45,7 @@
     <aspectj.version>1.9.6</aspectj.version>
     <spring.version>5.3.14</spring.version>
     <jackson.version>2.11.3</jackson.version>
-    <commons-configuration2.version>2.7</commons-configuration2.version>
+<!--    <commons-configuration2.version>2.7</commons-configuration2.version>-->
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.18</lombok.version>
     <httpcore.version>4.4.15</httpcore.version>
@@ -130,11 +130,11 @@
       <artifactId>jackson-jaxrs-json-provider</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-configuration2</artifactId>
-      <version>${commons-configuration2.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.apache.commons</groupId>-->
+<!--      <artifactId>commons-configuration2</artifactId>-->
+<!--      <version>${commons-configuration2.version}</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
