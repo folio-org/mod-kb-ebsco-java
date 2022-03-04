@@ -1,10 +1,16 @@
-## v3.10.0 xxxx-xx-xx
+## v3.10.0 2022-03-04
 * MODKBEKBJ-593 Apply searchtype=advanced to Packages search query
 * MODKBEKBJ-598 Packages, clarify error message when unselect non-custom package
 * MODKBEKBJ-599 Apply searchtype=advanced to Titles search query
 * MODKBEKBJ-600 Providers, deny updating tags with empty name
 * MODKBEKBJ-601 User-assigment, deny assign user with empty name
+* MODKBEKBJ-604 Return managed embargo in /costperuse endpoint
 * MODKBEKBJ-609 Unable to update title-package record when user removes custom embargo
+* MODKBEKBJ-611 Include alternateTitle information with GET/eholdings/titles response
+* MODKBEKBJ-612 Include alternateTitle information with GET /eholdings/packages/{packageId}/resources response
+* MODKBEKBJ-614 Update RMB to v33.2.6
+* MODKBEKBJ-617 Remake constants to static methods
+* MODKBEKBJ-618 Fix Null Custom embargo period
 
 ## v3.9.0 2021-10-07
 * MODKBEKBJ-596 Packages, error message when "isCustom" not provided
