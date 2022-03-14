@@ -3,8 +3,6 @@ package org.folio.rest.util;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.folio.rest.jaxrs.model.JsonAPI;
 
 public final class RestConstants {
@@ -23,7 +21,7 @@ public final class RestConstants {
   public static final String RESOURCE_RECTYPE = "resource";
 
   public static final Map<String, String> FILTER_SELECTED_MAPPING =
-    ImmutableMap.of(
+    Map.of(
       "true", "selected",
       "false", "notselected",
       "ebsco", "orderedthroughebsco"
