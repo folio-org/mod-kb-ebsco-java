@@ -42,6 +42,8 @@ public final class ConverterConsts {
     bidiMap.put("print", ContentType.PRINT);
     bidiMap.put("unknown", ContentType.UNKNOWN);
     bidiMap.put("onlinereference", ContentType.ONLINE_REFERENCE);
+    bidiMap.put("streamingmedia", ContentType.STREAMING_MEDIA);
+    bidiMap.put("mixedcontent", ContentType.MIXED_CONTENT);
     contentTypes = UnmodifiableBidiMap.unmodifiableBidiMap(bidiMap);
   }
 

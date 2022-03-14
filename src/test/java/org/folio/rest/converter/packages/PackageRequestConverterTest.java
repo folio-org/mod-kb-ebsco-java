@@ -97,8 +97,8 @@ public class PackageRequestConverterTest {
   public void shouldCreateRequestToChangeCustomPackageContentType() {
     PackagePut packagePut = packagesConverter.convertToRMAPICustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
       new PackagePutDataAttributes()
-        .withContentType(ContentType.AGGREGATED_FULL_TEXT)));
-    Integer aggregatedFullTextContentTypeCode = 1;
+        .withContentType(ContentType.STREAMING_MEDIA)));
+    Integer aggregatedFullTextContentTypeCode = 8;
     assertEquals(aggregatedFullTextContentTypeCode, packagePut.getContentType());
   }
 

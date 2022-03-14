@@ -3,7 +3,7 @@
     "type": "packages",
     "attributes": {
       "name": "TEST_NAME",
-      "contentType": "Aggregated Full Text",
+      "contentType": "Streaming Media",
       "accessTypeId": "%s",
       "customCoverage": {
         "beginCoverage": "2017-12-23",

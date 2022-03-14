@@ -12,7 +12,7 @@
   },
   "selectedCount": 9590,
   "isTokenNeeded": false,
-  "contentType": "EBook",
+  "contentType": "mixedcontent",
   "customCoverage": {
     "beginCoverage": "2018-08-13",
     "endCoverage": "2018-09-13"

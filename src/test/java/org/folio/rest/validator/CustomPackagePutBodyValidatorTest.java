@@ -26,7 +26,7 @@ public class CustomPackagePutBodyValidatorTest {
     validator.validate(PackagesTestData.getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(true)
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.MIXED_CONTENT)
         .withName("package name")
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("abcd-10-ab"))));
@@ -38,7 +38,7 @@ public class CustomPackagePutBodyValidatorTest {
     expectedEx.expectMessage(containsString("name"));
     validator.validate(PackagesTestData.getPackagePutRequest(
       new PackagePutDataAttributes()
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.MIXED_CONTENT)
         .withName("")));
   }
 
