@@ -24,7 +24,9 @@ public final class PackageConverterUtils {
     map.put(ContentType.PRINT, 5);
     map.put(ContentType.UNKNOWN, 6);
     map.put(ContentType.ONLINE_REFERENCE, 7);
-    
+    map.put(ContentType.STREAMING_MEDIA, 8);
+    map.put(ContentType.MIXED_CONTENT, 9);
+
     contentTypeToRMAPICode = unmodifiableMap(map);
   }
 

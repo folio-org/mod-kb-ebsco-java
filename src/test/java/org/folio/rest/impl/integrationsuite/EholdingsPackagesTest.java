@@ -646,7 +646,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     PackageByIdData packageData = mapper
       .readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class)
       .toByIdBuilder()
-      .contentType("AggregatedFullText")
+      .contentType("streamingmedia")
       .build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
@@ -734,7 +734,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .endCoverage(updatedEndCoverage)
         .build())
       .packageName(updatedPackageName)
-      .contentType("AggregatedFullText").build();
+      .contentType("streamingmedia").build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
@@ -752,7 +752,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
     assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
     assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
-    assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+    assertEquals(ContentType.STREAMING_MEDIA, aPackage.getData().getAttributes().getContentType());
   }
 
   @Test
@@ -780,7 +780,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .endCoverage(updatedEndCoverage)
         .build())
       .packageName(updatedPackageName)
-      .contentType("AggregatedFullText").build();
+      .contentType("streamingmedia").build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
@@ -797,7 +797,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
     assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
     assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
-    assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+    assertEquals(ContentType.STREAMING_MEDIA, aPackage.getData().getAttributes().getContentType());
 
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDB.size());
@@ -835,7 +835,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .endCoverage(updatedEndCoverage)
         .build())
       .packageName(updatedPackageName)
-      .contentType("AggregatedFullText").build();
+      .contentType("streamingmedia").build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
@@ -851,7 +851,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
     assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
     assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
-    assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+    assertEquals(ContentType.STREAMING_MEDIA, aPackage.getData().getAttributes().getContentType());
 
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(0, accessTypeMappingsInDB.size());
@@ -887,7 +887,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .endCoverage(updatedEndCoverage)
         .build())
       .packageName(updatedPackageName)
-      .contentType("AggregatedFullText").build();
+      .contentType("streamingmedia").build();
 
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
@@ -904,7 +904,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(updatedBeginCoverage, aPackage.getData().getAttributes().getCustomCoverage().getBeginCoverage());
     assertEquals(updatedEndCoverage, aPackage.getData().getAttributes().getCustomCoverage().getEndCoverage());
     assertEquals(updatedPackageName, aPackage.getData().getAttributes().getName());
-    assertEquals(ContentType.AGGREGATED_FULL_TEXT, aPackage.getData().getAttributes().getContentType());
+    assertEquals(ContentType.STREAMING_MEDIA, aPackage.getData().getAttributes().getContentType());
 
     List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDB.size());

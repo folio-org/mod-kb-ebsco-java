@@ -2,7 +2,7 @@
   "data": {
     "type": "packages",
     "attributes": {
-      "contentType": "Aggregated Full Text",
+      "contentType": "Streaming Media",
       "accessTypeId": "%s",
       "customCoverage": {
         "beginCoverage": "2003-01-01",

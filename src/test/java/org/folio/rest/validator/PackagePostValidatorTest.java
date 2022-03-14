@@ -70,7 +70,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest()
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
-          .withName("name").withContentType(ContentType.E_BOOK)
+          .withName("name").withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage())));
     validator.validate(postRequest);
   }
@@ -80,7 +80,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("")
           .withEndCoverage("2003-11-01"))
@@ -94,7 +94,7 @@ public class PackagePostValidatorTest {
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
           .withName("name")
-          .withContentType(ContentType.E_BOOK)
+          .withContentType(ContentType.STREAMING_MEDIA)
           .withCustomCoverage(new Coverage()
             .withBeginCoverage("-01"))));
     validator.validate(postRequest);
@@ -106,7 +106,7 @@ public class PackagePostValidatorTest {
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
           .withName("name")
-          .withContentType(ContentType.E_BOOK)
+          .withContentType(ContentType.STREAMING_MEDIA)
           .withCustomCoverage(new Coverage()
             .withBeginCoverage("2003-11-01")
             .withEndCoverage("-01"))));
@@ -118,7 +118,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("2003-12-01")
           .withEndCoverage("2003-11-01"))
@@ -131,7 +131,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         ));
     validator.validate(postRequest);
   }
@@ -141,7 +141,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("2003-11-01")
           .withEndCoverage("2003-12-01"))
@@ -154,7 +154,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("")
           .withEndCoverage(""))
@@ -168,7 +168,7 @@ public class PackagePostValidatorTest {
       .withData(new PackagePostData()
         .withAttributes(new PackagePostDataAttributes()
           .withName("name")
-          .withContentType(ContentType.E_BOOK)
+          .withContentType(ContentType.STREAMING_MEDIA)
           .withCustomCoverage(new Coverage()
             .withBeginCoverage(""))));
     validator.validate(postRequest);
@@ -179,7 +179,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("2003-11-01")
           .withEndCoverage(""))
@@ -192,7 +192,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("2003-11-01")
           .withEndCoverage(null))
@@ -205,7 +205,7 @@ public class PackagePostValidatorTest {
     PackagePostRequest postRequest = new PackagePostRequest().withData(new PackagePostData()
       .withAttributes(new PackagePostDataAttributes()
         .withName("name")
-        .withContentType(ContentType.E_BOOK)
+        .withContentType(ContentType.STREAMING_MEDIA)
         .withCustomCoverage(new Coverage()
           .withBeginCoverage("")
           .withEndCoverage(null))

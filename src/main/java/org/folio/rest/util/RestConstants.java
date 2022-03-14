@@ -30,7 +30,8 @@ public final class RestConstants {
     );
 
   public static final List<String> SUPPORTED_PACKAGE_FILTER_TYPE_VALUES =
-    List.of("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference");
+    List.of("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown",
+      "onlinereference", "streamingmedia", "mixedcontent");
 
   public static final List<String> SUPPORTED_TITLE_FILTER_TYPE_VALUES =
     List.of("audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report",
