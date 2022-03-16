@@ -1,3 +1,5 @@
+* MODKBEKBJ-624 Add new package content types
+
 ## v3.10.0 2022-03-04
 * MODKBEKBJ-593 Apply searchtype=advanced to Packages search query
 * MODKBEKBJ-598 Packages, clarify error message when unselect non-custom package
