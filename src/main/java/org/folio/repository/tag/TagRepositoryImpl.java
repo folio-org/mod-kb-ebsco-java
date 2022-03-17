@@ -12,7 +12,6 @@ import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.tag.TagTableConstants.COUNT_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
@@ -29,7 +28,9 @@ import static org.folio.repository.tag.TagTableConstants.selectTagsByResourceIds
 import static org.folio.repository.tag.TagTableConstants.updateInsertStatementForProvider;
 import static org.folio.util.FutureUtils.failedFuture;
 import static org.folio.util.FutureUtils.mapResult;
+import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import io.vertx.pgclient.PgConnection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,6 @@ import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.persist.SQLConnection;
 
 @Component
 class TagRepositoryImpl implements TagRepository {
@@ -138,14 +138,14 @@ class TagRepositoryImpl implements TagRepository {
   public CompletableFuture<Boolean> updateRecordTags(String tenantId, String recordId, RecordType recordType,
                                                      List<String> tags) {
     if (tags.isEmpty()) {
-      return unAssignTags(null, tenantId, recordId, recordType);
+      return unAssignTags(tenantId, recordId, recordType);
     }
     return updateTags(tenantId, recordId, recordType, tags);
   }
 
   @Override
   public CompletableFuture<Boolean> deleteRecordTags(String tenantId, String recordId, RecordType recordType) {
-    return unAssignTags(null, tenantId, recordId, recordType);
+    return unAssignTags(tenantId, recordId, recordType);
   }
 
   @Override
@@ -255,15 +255,18 @@ class TagRepositoryImpl implements TagRepository {
 
   private CompletableFuture<Boolean> updateTags(String tenantId, String recordId, RecordType recordType,
                                                 List<String> tags) {
-    return executeInTransaction(tenantId, vertx,
-      (postgresClient, connection) ->
-        unAssignTags(connection, tenantId, recordId, recordType)
-          .thenCompose(aBoolean -> assignTags(connection, tenantId, recordId, recordType, tags, postgresClient)))
-      .thenApply(o -> true);
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+
+    Future<Boolean> future = postgresClient.withTransaction(conn ->
+        unAssignTags(conn, tenantId, recordId, recordType)
+          .compose(aBoolean -> assignTags(conn, tenantId, recordId, recordType, tags)))
+      .map(true);
+
+    return mapVertxFuture(future);
   }
 
-  private CompletableFuture<Void> assignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,
-                                             RecordType recordType, List<String> tags, PostgresClient postgresClient) {
+  private Future<Void> assignTags(PgConnection connection, String tenantId, String recordId,
+                                  RecordType recordType, List<String> tags) {
     Tuple parameters = Tuple.tuple();
     String updatedValues = createInsertStatement(recordId, recordType, tags, parameters);
 
@@ -271,36 +274,46 @@ class TagRepositoryImpl implements TagRepository {
     logInsertQueryInfoLevel(LOG, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    postgresClient.execute(connection, query, parameters, promise);
+    connection
+      .preparedQuery(query)
+      .execute(parameters)
+      .onComplete(promise);
 
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
+    return promise.future().recover(excTranslator.translateOrPassBy()).map(nothing());
   }
 
-  private CompletableFuture<Boolean> unAssignTags(AsyncResult<SQLConnection> connection, String tenantId, String recordId,
-                                                  RecordType recordType) {
-    CompletableFuture<Boolean> future = new CompletableFuture<>();
+  private Future<Boolean> unAssignTags(PgConnection connection, String tenantId, String recordId,
+                                       RecordType recordType) {
+    Promise<Boolean> promise = Promise.promise();
 
     final String query = deleteTagRecord(tenantId);
     Tuple parameters = Tuple.of(recordId, recordType.getValue());
 
     logDeleteQueryInfoLevel(LOG, query, parameters);
 
-    if (connection != null) {
-      pgClient(tenantId).execute(connection, query, parameters, deleteHandler(future));
-    } else {
-      pgClient(tenantId).execute(query, parameters, deleteHandler(future));
-    }
-    return future;
+    connection
+      .preparedQuery(query)
+      .execute(parameters)
+      .onComplete(deleteHandler(promise));
+
+    return promise.future();
   }
 
-  private Handler<AsyncResult<RowSet<Row>>> deleteHandler(CompletableFuture<Boolean> future) {
+  private CompletableFuture<Boolean> unAssignTags(String tenantId, String recordId, RecordType recordType) {
+    PostgresClient client = PostgresClient.getInstance(vertx, tenantId);
+    Future<Boolean> future = client
+      .withConnection(conn -> unAssignTags(conn, tenantId, recordId, recordType));
+    return mapVertxFuture(future);
+  }
+
+  private Handler<AsyncResult<RowSet<Row>>> deleteHandler(Promise<Boolean> promise) {
     return result -> {
       if (result.succeeded()) {
         LOG.info("Successfully deleted entries.");
-        future.complete(Boolean.TRUE);
+        promise.complete(Boolean.TRUE);
       } else {
-        LOG.info("Failed to delete entries." + result.cause());
-        future.completeExceptionally(result.cause());
+        LOG.info("Failed to delete entries.", result.cause());
+        promise.fail(result.cause());
       }
     };
   }
