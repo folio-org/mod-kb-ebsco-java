@@ -3,8 +3,6 @@ package org.folio.rest.util;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.folio.rest.jaxrs.model.JsonAPI;
 
 public final class RestConstants {
@@ -23,14 +21,15 @@ public final class RestConstants {
   public static final String RESOURCE_RECTYPE = "resource";
 
   public static final Map<String, String> FILTER_SELECTED_MAPPING =
-    ImmutableMap.of(
+    Map.of(
       "true", "selected",
       "false", "notselected",
       "ebsco", "orderedthroughebsco"
     );
 
   public static final List<String> SUPPORTED_PACKAGE_FILTER_TYPE_VALUES =
-    List.of("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown", "onlinereference");
+    List.of("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown",
+      "onlinereference", "streamingmedia", "mixedcontent");
 
   public static final List<String> SUPPORTED_TITLE_FILTER_TYPE_VALUES =
     List.of("audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report",
