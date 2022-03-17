@@ -6,7 +6,6 @@ import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
 import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryDebugLevel;
 import static org.folio.common.LogUtils.logUpdateQueryDebugLevel;
-import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
@@ -22,13 +21,12 @@ import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import io.vertx.core.Future;
+import io.vertx.pgclient.PgConnection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import javax.annotation.Nullable;
-
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
@@ -43,7 +41,6 @@ import org.folio.common.VertxIdProvider;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.persist.SQLConnection;
 
 @Component
 public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
@@ -72,7 +69,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
 
   @Override
   public CompletableFuture<HoldingsLoadingStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
-    return get(credentialsId, tenantId, null);
+    return get(credentialsId, tenantId);
   }
 
   @Override
@@ -108,16 +105,25 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
   @Override
   public CompletableFuture<HoldingsLoadingStatus> increaseImportedCount(int holdingsAmount, int pageAmount,
                                                                         UUID credentialsId, String tenantId) {
-    return executeInTransaction(tenantId, vertx, (postgresClient, connection) -> {
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+
+    Future<HoldingsLoadingStatus> future = postgresClient.withTransaction(connection -> {
       final Tuple params = Tuple.of(holdingsAmount, pageAmount, vertxIdProvider.getVertxId(), credentialsId);
       final String query = updateImportedCount(tenantId);
       logDebugLevel(LOG, "Increment imported count query = {} with params = {}", query, params);
+
       Promise<RowSet<Row>> promise = Promise.promise();
-      postgresClient.execute(connection, query, params, promise);
-      return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy()))
-        .thenApply(this::assertUpdated)
-        .thenCompose(o -> get(credentialsId, tenantId, connection));
+      connection
+        .preparedQuery(query)
+        .execute(params)
+        .onComplete(promise);
+
+      return promise.future().recover(excTranslator.translateOrPassBy())
+        .map(this::assertUpdated)
+        .compose(o -> get(credentialsId, tenantId, connection));
     });
+
+    return mapVertxFuture(future);
   }
 
   private List<HoldingsLoadingStatus> mapStatusesCollection(RowSet<Row> resultSet) {
@@ -131,18 +137,25 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     return holdingsLoadingStatus;
   }
 
-  private CompletableFuture<HoldingsLoadingStatus> get(UUID credentialsId, String tenantId,
-                                                       @Nullable AsyncResult<SQLConnection> connection) {
+  private Future<HoldingsLoadingStatus> get(UUID credentialsId, String tenantId, PgConnection connection) {
     final Tuple params = Tuple.of(credentialsId);
     final String query = getHoldingsStatusById(tenantId);
     logSelectQueryDebugLevel(LOG, query, params);
+
     Promise<RowSet<Row>> promise = Promise.promise();
-    if (connection != null) {
-      pgClient(tenantId).select(connection, query, params, promise);
-    } else {
-      pgClient(tenantId).select(query, params, promise);
-    }
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapStatus);
+    connection
+      .preparedQuery(query)
+      .execute(params)
+      .onComplete(promise);
+
+    return promise.future().recover(excTranslator.translateOrPassBy()).map(this::mapStatus);
+  }
+
+  private CompletableFuture<HoldingsLoadingStatus> get(UUID credentialsId, String tenantId) {
+    PostgresClient client = PostgresClient.getInstance(vertx, tenantId);
+    Future<HoldingsLoadingStatus> future = client
+      .withConnection(conn -> get(credentialsId, tenantId, conn));
+    return mapVertxFuture(future);
   }
 
   private Void assertUpdated(RowSet<Row> result) {

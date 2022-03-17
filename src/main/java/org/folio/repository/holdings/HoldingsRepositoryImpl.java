@@ -7,7 +7,6 @@ import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.db.DbUtils.executeInTransaction;
 import static org.folio.repository.holdings.HoldingsTableConstants.deleteByPkHoldings;
 import static org.folio.repository.holdings.HoldingsTableConstants.deleteOldRecordsByCredentialsId;
 import static org.folio.repository.holdings.HoldingsTableConstants.selectByPackageIdAndCredentials;
@@ -22,6 +21,8 @@ import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COL
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import io.vertx.core.Future;
+import io.vertx.pgclient.PgConnection;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +32,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import com.google.common.collect.Lists;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -43,7 +43,6 @@ import org.springframework.stereotype.Component;
 
 import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
-import org.folio.rest.persist.SQLConnection;
 import org.folio.rest.util.IdParser;
 
 @Component
@@ -62,10 +61,14 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   @Override
   public CompletableFuture<Void> saveAll(Set<DbHoldingInfo> holdings, OffsetDateTime updatedAt, UUID credentialsId,
                                          String tenantId) {
-    return executeInTransaction(tenantId, vertx, (postgresClient, connection) ->
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+
+    Future<Void> future = postgresClient.withTransaction(connection ->
       executeInBatches(holdings,
-        batch -> saveHoldings(batch, updatedAt, credentialsId, tenantId, connection, postgresClient))
+        batch -> saveHoldings(batch, updatedAt, credentialsId, tenantId, connection))
     );
+
+    return mapVertxFuture(future);
   }
 
   @Override
@@ -79,7 +82,8 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   @Override
-  public CompletableFuture<List<DbHoldingInfo>> findAllById(List<String> resourceIds, UUID credentialsId, String tenantId) {
+  public CompletableFuture<List<DbHoldingInfo>> findAllById(List<String> resourceIds, UUID credentialsId,
+                                                            String tenantId) {
     if (resourceIds.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptyList());
     }
@@ -103,30 +107,45 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
 
   @Override
   public CompletableFuture<Void> deleteAll(Set<HoldingsId> holdings, UUID credentialsId, String tenantId) {
-    return executeInTransaction(tenantId, vertx, (postgresClient, connection) ->
-      executeInBatches(holdings, batch -> deleteHoldings(batch, credentialsId, tenantId, connection, postgresClient))
+    PostgresClient postgresClient = PostgresClient.getInstance(vertx, tenantId);
+
+    Future<Void> future = postgresClient.withTransaction(conn ->
+      executeInBatches(holdings,
+        batch -> deleteHoldings(batch, credentialsId, tenantId, conn))
     );
+
+    return mapVertxFuture(future);
   }
 
-  private CompletableFuture<Void> saveHoldings(List<DbHoldingInfo> holdings, OffsetDateTime updatedAt, UUID credentialsId,
-                                               String tenantId, AsyncResult<SQLConnection> connection,
-                                               PostgresClient postgresClient) {
+  private Future<Void> saveHoldings(List<DbHoldingInfo> holdings, OffsetDateTime updatedAt,
+                                    UUID credentialsId, String tenantId,
+                                    PgConnection connection) {
     final Tuple parameters = createParameters(credentialsId, holdings, updatedAt);
     final String query = insertOrUpdateHoldings(tenantId, holdings);
     logInsertQueryDebugLevel(LOG, query, parameters);
+
     Promise<RowSet<Row>> promise = Promise.promise();
-    postgresClient.execute(connection, query, parameters, promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
+    connection
+      .preparedQuery(query)
+      .execute(parameters)
+      .onComplete(promise);
+
+    return promise.future().map(nothing());
   }
 
-  private CompletableFuture<Void> deleteHoldings(List<HoldingsId> holdings, UUID credentialsId, String tenantId,
-                                                 AsyncResult<SQLConnection> connection, PostgresClient postgresClient) {
+  private Future<Void> deleteHoldings(List<HoldingsId> holdings, UUID credentialsId, String tenantId,
+                                      PgConnection connection) {
     var params = getHoldingsPkKeysParams(credentialsId, mapItems(holdings, IdParser::getResourceId));
     var query = deleteByPkHoldings(tenantId, holdings);
     logDeleteQueryDebugLevel(LOG, query, params);
+
     Promise<RowSet<Row>> promise = Promise.promise();
-    postgresClient.execute(connection, query, params, promise);
-    return mapVertxFuture(promise.future()).thenApply(nothing());
+    connection
+      .preparedQuery(query)
+      .execute(params)
+      .onComplete(promise);
+
+    return promise.future().map(nothing());
   }
 
   /**
@@ -137,12 +156,12 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
    * @param batchOperation operation to execute on each batch
    * @return future that will be completed when all batches are successfully processed
    */
-  private <T> CompletableFuture<Void> executeInBatches(Set<T> items,
-                                                       Function<List<T>, CompletableFuture<Void>> batchOperation) {
+  private <T> Future<Void> executeInBatches(Set<T> items,
+                                            Function<List<T>, Future<Void>> batchOperation) {
     List<List<T>> batches = Lists.partition(Lists.newArrayList(items), HoldingsRepositoryImpl.MAX_BATCH_SIZE);
-    CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+    Future<Void> future = Future.succeededFuture();
     for (List<T> batch : batches) {
-      future = future.thenCompose(o -> batchOperation.apply(batch));
+      future = future.compose(o -> batchOperation.apply(batch));
     }
     return future;
   }
