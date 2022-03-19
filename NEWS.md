@@ -1,4 +1,6 @@
+## v3.10.1 2022-03-19 
 * MODKBEKBJ-624 Add new package content types
+* MODKBEKBJ-628 Define `kb-ebsco.user-kb-credential.get` permission
 
 ## v3.10.0 2022-03-04
 * MODKBEKBJ-593 Apply searchtype=advanced to Packages search query
