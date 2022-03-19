@@ -675,6 +675,11 @@
       "description": "Post KB credentials"
     },
     {
+      "permissionName": "kb-ebsco.user-kb-credential.get",
+      "displayName": "get KB credentials related to user",
+      "description": "Get KB credentials related to user"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.item.get",
       "displayName": "get KB credentials collection item",
       "description": "Get KB credentials collection item"
