@@ -8,12 +8,10 @@ import static org.apache.commons.collections4.IterableUtils.matchesAll;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
 import static org.apache.commons.lang3.StringUtils.appendIfMissing;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
-import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
-import static org.folio.rest.util.RestConstants.SUPPORTED_TITLE_FILTER_TYPE_VALUES;
+import static org.folio.rest.util.RestConstants.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import javax.validation.ValidationException;
@@ -231,7 +229,7 @@ public class Filter {
     }
 
     private void validateFilterCustom() {
-      if (this.filterCustom != null && !Boolean.parseBoolean(this.filterCustom)) {
+      if (this.filterCustom != null && !FILTER_CUSTOM_MAPPING.containsKey(filterCustom.toLowerCase(Locale.ROOT))) {
         throw new ValidationException(INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE);
       }
     }
