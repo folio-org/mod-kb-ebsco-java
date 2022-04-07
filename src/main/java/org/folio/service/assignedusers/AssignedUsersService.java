@@ -12,7 +12,7 @@ public interface AssignedUsersService {
 
   CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders);
 
-  CompletableFuture<AssignedUser> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders);
+  CompletableFuture<AssignedUser> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders, String credentialsId);
 
   CompletableFuture<Void> update(String credentialsId, String userId, AssignedUserPutRequest entity,
                                  Map<String, String> okapiHeaders);

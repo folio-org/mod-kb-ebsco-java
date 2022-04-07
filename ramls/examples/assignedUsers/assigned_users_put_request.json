@@ -1,14 +1,5 @@
 {
   "data": {
-    "id": "99999999-9999-9999-9999-999999999999",
-    "type": "assignedUsers",
-    "attributes": {
-      "credentialsId": "2ffa1940-2cf6-48b1-8cc9-5e539c61d93f",
-      "firstName": "John",
-      "middleName": "William",
-      "lastName": "Doe",
-      "patronGroup": "Staff",
-      "userName": "john_doe"
-    }
+    "id": "99999999-9999-9999-9999-999999999999"
   }
 }

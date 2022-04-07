@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
-import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -136,16 +135,14 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPostWhenAssignedUserDoesNotHaveRequiredParameters() {
     String credentialsId = randomId();
-    AssignedUser expected = new AssignedUser()
-      .withType(AssignedUser.Type.ASSIGNED_USERS)
-      .withAttributes(new AssignedUserDataAttributes());
+    AssignedUser expected = new AssignedUser();
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
     Errors errors = postWithStatus(endpoint, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
 
-    assertThat(errors.getErrors(), hasSize(5));
+    assertThat(errors.getErrors(), hasSize(1));
     assertThat(errors.getErrors(), everyItem(hasProperty("message", equalTo("must not be null"))));
   }
 
@@ -162,7 +159,6 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     assertEquals(1, (int) assignedUsers.getMeta().getTotalResults());
     assertEquals(1, assignedUsers.getData().size());
     assertEquals(userId2, assignedUsers.getData().get(0).getId());
-    assertEquals(JANE_USERNAME, assignedUsers.getData().get(0).getAttributes().getUserName());
   }
 
   @Test
@@ -191,7 +187,6 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     String userId = saveAssignedUser(JANE_ID, credentialsId, vertx);
 
     AssignedUser expected = stubAssignedUser(userId, credentialsId);
-    expected.getAttributes().setUserName(JANE_USERNAME);
 
     String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
     putWithNoContent(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody);
@@ -251,13 +246,6 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   private AssignedUser stubAssignedUser(String userId, String credentialsId) {
     return new AssignedUser()
-      .withId(userId)
-      .withType(AssignedUser.Type.ASSIGNED_USERS)
-      .withAttributes(new AssignedUserDataAttributes()
-        .withCredentialsId(credentialsId)
-        .withFirstName("John")
-        .withLastName("Doe")
-        .withUserName(JOHN_USERNAME)
-        .withPatronGroup("staff"));
+      .withId(userId);
   }
 }

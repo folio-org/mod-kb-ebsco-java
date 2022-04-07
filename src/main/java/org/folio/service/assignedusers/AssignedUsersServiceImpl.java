@@ -5,6 +5,7 @@ import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.BadRequestException;
@@ -49,10 +50,17 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   }
 
   @Override
-  public CompletableFuture<AssignedUser> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders) {
+  public CompletableFuture<AssignedUser> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders, String credentialsId) {
     AssignedUser assignedUser = entity.getData();
     return usersService.save(userConverter.convert(assignedUser), new OkapiParams(okapiHeaders))
-      .thenCompose(user -> assignedUserRepository.save(toDbConverter.convert(assignedUser), tenantId(okapiHeaders)))
+      .thenCompose(user -> {
+        var dbUser = toDbConverter.convert(assignedUser)
+          .toBuilder()
+          .credentialsId(UUID.fromString(credentialsId))
+          .build();
+
+        return assignedUserRepository.save(dbUser, tenantId(okapiHeaders));
+      })
       .thenApply(source -> fromDbConverter.convert(source));
   }
 
@@ -71,8 +79,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
 
   private CompletableFuture<Void> validate(String credentialsId, String userId, AssignedUser assignedUser) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    if (!assignedUser.getId().equals(userId)
-      || !assignedUser.getAttributes().getCredentialsId().equals(credentialsId)) {
+    if (!assignedUser.getId().equals(userId)) {
       BadRequestException exception = new BadRequestException(IDS_NOT_MATCH_MESSAGE);
       future.completeExceptionally(exception);
     } else {
