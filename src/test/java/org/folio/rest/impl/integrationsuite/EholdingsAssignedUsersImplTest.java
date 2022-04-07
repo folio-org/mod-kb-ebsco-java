@@ -90,7 +90,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn201OnPostWhenAssignedUserIsValid() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    AssignedUser expected = stubAssignedUser(JOHN_ID, credentialsId);
+    AssignedUser expected = stubAssignedUser(JOHN_ID);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
@@ -110,7 +110,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     saveAssignedUser(JOHN_ID, credentialsId, vertx);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()
-      .withData(stubAssignedUser(JOHN_ID, credentialsId));
+      .withData(stubAssignedUser(JOHN_ID));
 
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
@@ -122,7 +122,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnPostWhenAssignedUserToMissingCredentials() {
     String credentialsId = randomId();
-    AssignedUser expected = stubAssignedUser(JOHN_ID, credentialsId);
+    AssignedUser expected = stubAssignedUser(JOHN_ID);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
@@ -186,7 +186,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String userId = saveAssignedUser(JANE_ID, credentialsId, vertx);
 
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
+    AssignedUser expected = stubAssignedUser(userId);
 
     String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
     putWithNoContent(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody);
@@ -201,7 +201,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String userId = randomId();
 
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
+    AssignedUser expected = stubAssignedUser(userId);
 
     String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
     JsonapiError error =
@@ -217,7 +217,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     String credentialsId = randomId();
     String userId = randomId();
 
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
+    AssignedUser expected = stubAssignedUser(userId);
 
     String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
     JsonapiError error =
@@ -233,7 +233,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     String credentialsId = randomId();
     String userId = randomId();
 
-    AssignedUser expected = stubAssignedUser(randomId(), randomId());
+    AssignedUser expected = stubAssignedUser(randomId());
 
     String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
     JsonapiError error =
@@ -244,7 +244,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     assertThat(getAssignedUsers(vertx), hasSize(0));
   }
 
-  private AssignedUser stubAssignedUser(String userId, String credentialsId) {
+  private AssignedUser stubAssignedUser(String userId) {
     return new AssignedUser()
       .withId(userId);
   }
