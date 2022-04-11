@@ -27,12 +27,6 @@ public final class RestConstants {
       "ebsco", "orderedthroughebsco"
     );
 
-  public static final Map<String, String> FILTER_CUSTOM_MAPPING =
-    Map.of(
-      "true", "custom",
-      "false", "notcustom"
-    );
-
   public static final List<String> SUPPORTED_PACKAGE_FILTER_TYPE_VALUES =
     List.of("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown",
       "onlinereference", "streamingmedia", "mixedcontent");
