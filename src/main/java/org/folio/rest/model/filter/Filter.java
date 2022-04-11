@@ -8,10 +8,12 @@ import static org.apache.commons.collections4.IterableUtils.matchesAll;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
 import static org.apache.commons.lang3.StringUtils.appendIfMissing;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.folio.rest.util.RestConstants.*;
+
+import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
+import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
+import static org.folio.rest.util.RestConstants.SUPPORTED_TITLE_FILTER_TYPE_VALUES;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import javax.validation.ValidationException;
