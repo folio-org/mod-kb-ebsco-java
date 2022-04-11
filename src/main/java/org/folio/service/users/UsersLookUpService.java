@@ -40,6 +40,8 @@ public class UsersLookUpService {
 
   private static final String USERS_ENDPOINT_TEMPLATE = "/users/%s";
 
+  private static final String GROUPS_ENDPOINT_TEMPLATE = "/groups/%s";
+
   private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
   private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
   private static final String CANNOT_GET_USER_DATA_ERROR_MESSAGE = "Cannot get user data: %s";
@@ -77,6 +79,27 @@ public class UsersLookUpService {
     }
   }
 
+  public CompletableFuture<Group> lookUpGroup(final OkapiParams okapiParams) {
+    MultiMap headers = new HeadersMultiMap();
+    headers.addAll(okapiParams.getHeaders());
+    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
+
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    String userId = headers.get("X-Okapi-Group-Id");
+    if (StringUtils.isNotBlank(userId)) {
+      String groupsPath = String.format(GROUPS_ENDPOINT_TEMPLATE, userId);
+      webClient.getAbs(headers.get(XOkapiHeaders.URL) + groupsPath)
+        .putHeaders(headers)
+        .as(BodyCodec.jsonObject())
+        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+        .send(promise);
+        return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroup));
+    } else {
+      return CompletableFuture.failedFuture(new NotAuthorizedException("X-Okapi-Group-Id" + " header is required"));
+    }
+  }
+
+
   private ErrorConverter errorConverter() {
     return ErrorConverter.createFullBody(result -> {
       HttpResponse<Buffer> response = result.response();
@@ -107,6 +130,19 @@ public class UsersLookUpService {
         builder.middleName(personalInfo.getString("middleName"));
         builder.lastName(personalInfo.getString("lastName"));
       }
+    } else {
+      throw new BadRequestException(USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE);
+    }
+    return builder.build();
+  }
+
+  private Group mapGroup(JsonObject group) {
+    Group.GroupBuilder builder = Group.builder();
+    if (group.containsKey("group")) {
+      builder.id(group.getString("id"));
+      builder.group(group.getString("group"));
+      builder.desc(group.getString("desc"));
+      builder.expirationOffsetInDays(group.getInteger("expirationOffsetInDays"));
     } else {
       throw new BadRequestException(USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE);
     }

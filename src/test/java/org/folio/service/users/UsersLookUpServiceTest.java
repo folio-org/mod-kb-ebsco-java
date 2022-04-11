@@ -45,6 +45,9 @@ public class UsersLookUpServiceTest {
   private final String GET_USER_ENDPOINT = "/users/";
   private final UsersLookUpService usersLookUpService = new UsersLookUpService(Vertx.vertx());
 
+  private static final String GROUP_INFO_STUB_FILE = "responses/userlookup/mock_group_response_200.json";
+
+
   @Rule
   public TestRule watcher = TestStartLoggingRule.instance();
 
@@ -77,6 +80,39 @@ public class UsersLookUpServiceTest {
       context.assertEquals("firstname_test", userInfo.getFirstName());
       context.assertNull(userInfo.getMiddleName());
       context.assertEquals("lastname_test", userInfo.getLastName());
+
+      async.complete();
+
+      return null;
+    }).exceptionally(throwable -> {
+      context.fail(throwable);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
+  public void shouldReturn200WhenGroupIdIsValid(TestContext context) throws IOException, URISyntaxException {
+    final String stubGroupId = "b4b5e97a-0a99-4db9-97df-4fdf406ec74d";
+    final String stubUserIdEndpoint = "/groups/" + stubGroupId;
+    Async async = context.async();
+
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+    OKAPI_HEADERS.put("X-Okapi-Group-Id", stubGroupId);
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
+
+    CompletableFuture<Group> info = usersLookUpService.lookUpGroup(new OkapiParams(OKAPI_HEADERS));
+    info.thenCompose(group -> {
+      context.assertNotNull(group);
+
+      context.assertEquals("librarian", group.getGroup());
+      context.assertEquals("basic lib group", group.getDesc());
+      context.assertEquals(365, group.getExpirationOffsetInDays());
 
       async.complete();
 
