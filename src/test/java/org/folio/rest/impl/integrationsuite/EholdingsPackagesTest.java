@@ -301,8 +301,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String falseParameterForFilterCustom = getWithStatus(PACKAGES_ENDPOINT + "?filter[custom]=false", 400, STUB_TOKEN_HEADER)
       .asString();
 
-    assertTrue(invalidParameterForFilterCustom.contains("Invalid Query Parameter for filter[custom]"));
-    assertTrue(falseParameterForFilterCustom.contains("Query Parameter false is not supported for filter[custom]"));
+    assertTrue(invalidParameterForFilterCustom.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
+    assertTrue(falseParameterForFilterCustom.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
   }
 
   @Test

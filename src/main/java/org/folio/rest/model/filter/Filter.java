@@ -158,8 +158,7 @@ public class Filter {
 
     private static final String INVALID_QUERY_PARAMETER_MESSAGE = "Search parameter cannot be empty";
     private static final String INVALID_SORT_PARAMETER_MESSAGE = "Invalid Query Parameter for sort";
-    private static final String INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[custom]";
-    private static final String INVALID_FILTER_CUSTOM_WITH_FALSE_PARAMETER_MESSAGE = "Query Parameter false is not supported for filter[custom]";
+    private static final String INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[custom]: only 'true' is supported";
     private static final String INVALID_FILTER_TYPE_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[type]";
     private static final String INVALID_FILTER_SELECTED_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[selected]";
     private static final String CONFLICTING_KEYWORD_SEARCH_PARAMETERS_MESSAGE = "Conflicting filter parameters";
@@ -231,11 +230,7 @@ public class Filter {
 
     private void validateFilterCustom() {
       if (this.filterCustom != null && !Boolean.parseBoolean(this.filterCustom)) {
-        if (this.filterCustom.equalsIgnoreCase("false")) {
-          throw new ValidationException(INVALID_FILTER_CUSTOM_WITH_FALSE_PARAMETER_MESSAGE);
-        } else {
-          throw new ValidationException(INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE);
-        }
+        throw new ValidationException(INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE);
       }
     }
 
