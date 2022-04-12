@@ -1,12 +1,16 @@
 package org.folio.service.users;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
 import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.StringUtil.cqlEncode;
+import static org.folio.util.StringUtil.urlEncode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -43,10 +47,14 @@ public class UsersLookUpServiceTest {
   private static final Map<String, String> OKAPI_HEADERS = new HashMap<>();
 
   private final String GET_USER_ENDPOINT = "/users/";
+  private final String GET_USERS_ENDPOINT = "/users";
+
   private final UsersLookUpService usersLookUpService = new UsersLookUpService(Vertx.vertx());
 
   private static final String GROUP_INFO_STUB_FILE = "responses/userlookup/mock_group_response_200.json";
+  private static final String USERDATA_COLLECTION_INFO_STUB_FILE = "responses/userlookup/mock_user_collection_response_200.json";
 
+  private final String QUERY_PARAM = "query";
 
   @Rule
   public TestRule watcher = TestStartLoggingRule.instance();
@@ -92,27 +100,64 @@ public class UsersLookUpServiceTest {
   }
 
   @Test
-  public void shouldReturn200WhenGroupIdIsValid(TestContext context) throws IOException, URISyntaxException {
-    final String stubGroupId = "b4b5e97a-0a99-4db9-97df-4fdf406ec74d";
-    final String stubUserIdEndpoint = "/groups/" + stubGroupId;
+  public void shouldReturnUsersWithStatus200ByCQLUserIdList(TestContext context) throws IOException,
+    URISyntaxException {
+    final String cedrickId = "88888888-8888-4888-8888-888888888888";
+    final String johnId = "99999999-9999-4999-9999-999999999999";
+
+    String query = "(id=" + cqlEncode(cedrickId) + " or " + "id=" + cqlEncode(johnId) + ")";
+
     Async async = context.async();
 
     OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
     OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
-    OKAPI_HEADERS.put("X-Okapi-Group-Id", stubGroupId);
 
     stubFor(
-      get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
+      get(new UrlPathPattern(new RegexPattern(GET_USERS_ENDPOINT), true))
+        .withQueryParam(QUERY_PARAM, equalTo(urlEncode(query)))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
+
+    CompletableFuture<Collection<User>> info = usersLookUpService.lookUpUsersUsingCQL(new OkapiParams(OKAPI_HEADERS),
+      query);
+    info.thenCompose(userInfo -> {
+      context.assertNotNull(userInfo);
+      context.assertEquals(2, userInfo.size());
+      userInfo.stream().forEach(System.out::println);
+      System.out.println(userInfo.contains("users"));
+      async.complete();
+
+      return null;
+    }).exceptionally(throwable -> {
+      context.fail(throwable);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
+  public void shouldReturn200WhenGroupIdIsValid(TestContext context) throws IOException, URISyntaxException {
+    final String stubGroupId = "b4b5e97a-0a99-4db9-97df-4fdf406ec74d";
+
+    String query = "(id=" + cqlEncode(stubGroupId) + ")";
+
+    Async async = context.async();
+
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/groups"), true))
+        .withQueryParam(QUERY_PARAM, equalTo(urlEncode(query)))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
 
-    CompletableFuture<Group> info = usersLookUpService.lookUpGroup(new OkapiParams(OKAPI_HEADERS));
+    CompletableFuture<Collection<Group>> info = usersLookUpService.lookUpGroupsUsingCQL(new OkapiParams(OKAPI_HEADERS)
+      , query);
     info.thenCompose(group -> {
       context.assertNotNull(group);
 
-      context.assertEquals("librarian", group.getGroup());
-      context.assertEquals("basic lib group", group.getDesc());
-      context.assertEquals(365, group.getExpirationOffsetInDays());
+      context.assertEquals(2, group.size());
 
       async.complete();
 

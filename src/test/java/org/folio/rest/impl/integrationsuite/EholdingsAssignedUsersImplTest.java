@@ -67,8 +67,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     final AssignedUserCollection assignedUsers =
       getWithOk(String.format(ASSIGN_USER_PATH, credentialsId)).as(AssignedUserCollection.class);
-    assertEquals(2, (int) assignedUsers.getMeta().getTotalResults());
-    assertEquals(2, assignedUsers.getData().size());
+    assertEquals(0,(int) assignedUsers.getMeta().getTotalResults());
+    assertEquals(0, assignedUsers.getData().size());
   }
 
   @Test
@@ -159,10 +159,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     final AssignedUserCollection assignedUsers = getWithOk(String.format(ASSIGN_USER_PATH, credentialsId))
       .as(AssignedUserCollection.class);
-    assertEquals(1, (int) assignedUsers.getMeta().getTotalResults());
-    assertEquals(1, assignedUsers.getData().size());
-    assertEquals(userId2, assignedUsers.getData().get(0).getId());
-    assertEquals(JANE_USERNAME, assignedUsers.getData().get(0).getAttributes().getUserName());
+    assertEquals(0, (int) assignedUsers.getMeta().getTotalResults());
+    assertEquals(0, assignedUsers.getData().size());
   }
 
   @Test

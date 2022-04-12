@@ -9,6 +9,4 @@ public class Group {
 
   private final String id;
   private final String group;
-  private final String desc;
-  private final Integer expirationOffsetInDays;
 }

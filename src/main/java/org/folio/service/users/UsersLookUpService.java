@@ -2,6 +2,8 @@ package org.folio.service.users;
 
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.BadRequestException;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.common.OkapiParams;
 import org.folio.okapi.common.XOkapiHeaders;
+import org.folio.util.StringUtil;
 
 /**
  * Retrieves user information from mod-users /users/{userId} endpoint.
@@ -39,9 +42,10 @@ public class UsersLookUpService {
   private static final Logger LOG = LogManager.getLogger(UsersLookUpService.class);
 
   private static final String USERS_ENDPOINT_TEMPLATE = "/users/%s";
+  private static final String USERS_ENDPOINT = "/users";
+  private static final String GROUPS_ENDPOINT = "/groups";
 
-  private static final String GROUPS_ENDPOINT_TEMPLATE = "/groups/%s";
-
+  private static final String CQL_QUERY_PARAM = "query";
   private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
   private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
   private static final String CANNOT_GET_USER_DATA_ERROR_MESSAGE = "Cannot get user data: %s";
@@ -79,24 +83,34 @@ public class UsersLookUpService {
     }
   }
 
-  public CompletableFuture<Group> lookUpGroup(final OkapiParams okapiParams) {
+  public CompletableFuture<Collection<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
     MultiMap headers = new HeadersMultiMap();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
-    String userId = headers.get("X-Okapi-Group-Id");
-    if (StringUtils.isNotBlank(userId)) {
-      String groupsPath = String.format(GROUPS_ENDPOINT_TEMPLATE, userId);
-      webClient.getAbs(headers.get(XOkapiHeaders.URL) + groupsPath)
-        .putHeaders(headers)
-        .as(BodyCodec.jsonObject())
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-        .send(promise);
-        return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroup));
-    } else {
-      return CompletableFuture.failedFuture(new NotAuthorizedException("X-Okapi-Group-Id" + " header is required"));
-    }
+    webClient.getAbs(headers.get(XOkapiHeaders.URL) + USERS_ENDPOINT)
+      .putHeaders(headers)
+      .addQueryParam(CQL_QUERY_PARAM, StringUtil.urlEncode(query))
+      .as(BodyCodec.jsonObject())
+      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+      .send(promise);
+    return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUserCollection));
+  }
+
+  public CompletableFuture<Collection<Group>> lookUpGroupsUsingCQL(final OkapiParams okapiParams, String query) {
+    MultiMap headers = new HeadersMultiMap();
+    headers.addAll(okapiParams.getHeaders());
+    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
+
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    webClient.getAbs(headers.get(XOkapiHeaders.URL) + GROUPS_ENDPOINT)
+      .putHeaders(headers)
+      .addQueryParam(CQL_QUERY_PARAM, StringUtil.urlEncode(query))
+      .as(BodyCodec.jsonObject())
+      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+      .send(promise);
+    return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroupCollection));
   }
 
 
@@ -123,7 +137,7 @@ public class UsersLookUpService {
     if (user.containsKey("username") && user.containsKey("personal")) {
       builder.id(user.getString("id"));
       builder.userName(user.getString("username"));
-
+      builder.patronGroup(user.getString("patronGroup"));
       JsonObject personalInfo = user.getJsonObject("personal");
       if (personalInfo != null) {
         builder.firstName(personalInfo.getString("firstName"));
@@ -136,13 +150,38 @@ public class UsersLookUpService {
     return builder.build();
   }
 
+  private Collection<User> mapUserCollection(JsonObject userCollection) {
+    Collection<User> collection = new ArrayList<>();
+    var users =  userCollection.getJsonArray("users");
+    users.stream().forEach(user -> {
+      collection.add(mapUser((JsonObject) user));
+    });
+    return collection;
+  }
+
+  private Collection<Group> mapGroupCollection(JsonObject groupCollection) {
+    Collection<Group> collection = new ArrayList<>();
+    var groups = groupCollection.getJsonArray("usergroups");
+    groups.stream().forEach(group -> {
+      collection.add(mapGroup((JsonObject) group));
+    });
+    return collection;
+  }
+//  private UserDataCollection mapUserDataCollection(JsonObject userDataCollection) {
+//    UserDataCollection.UserDataCollectionBuilder builder = UserDataCollection.builder();
+//    if (userDataCollection.containsKey("totalRecords"))
+//      builder.totalRecords(userDataCollection.getInteger("totalRecords"));
+//    if (userDataCollection.containsKey("users"))
+//      builder.users(userDataCollection.getJsonArray("users").getList());
+//
+//    return builder.build();
+//  }
+
   private Group mapGroup(JsonObject group) {
     Group.GroupBuilder builder = Group.builder();
     if (group.containsKey("group")) {
       builder.id(group.getString("id"));
       builder.group(group.getString("group"));
-      builder.desc(group.getString("desc"));
-      builder.expirationOffsetInDays(group.getInteger("expirationOffsetInDays"));
     } else {
       throw new BadRequestException(USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE);
     }

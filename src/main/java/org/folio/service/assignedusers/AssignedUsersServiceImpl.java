@@ -7,19 +7,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
 
+import com.google.common.collect.Iterables;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.common.OkapiParams;
-import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUser;
@@ -30,6 +28,7 @@ import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
 import org.folio.service.users.UsersService;
+import org.folio.util.StringUtil;
 
 @Component
 public class AssignedUsersServiceImpl implements AssignedUsersService {
@@ -43,6 +42,8 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Autowired
   private Converter<Collection<DbAssignedUser>, AssignedUserCollection> collectionConverter;
   @Autowired
+  private Converter<Collection<User>, AssignedUserCollection> userCollectionConverter;
+  @Autowired
   private Converter<AssignedUser, DbAssignedUser> toDbConverter;
   @Autowired
   private Converter<DbAssignedUser, AssignedUser> fromDbConverter;
@@ -55,44 +56,77 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Override
   public CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId,
                                                                        Map<String, String> okapiHeaders) {
-    var dbAssignedUsers = assignedUserRepository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders));
 
-    var ids = dbAssignedUsers
+    var ids = assignedUserRepository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
       .thenApply(dbAssignedUsers1 -> dbAssignedUsers1.stream()
         .map(DbAssignedUser::getId)
         .collect(Collectors.toList()));
 
-    var users = new ArrayList<CompletableFuture<User>>();
+    var users = new ArrayList<User>();
+    var usersIds = new ArrayList<String>();
+    var usersBatch = new ArrayList<CompletableFuture<Collection<User>>>();
 
-    ids.thenApply(idList -> idList.stream().map(id -> {
-      okapiHeaders.put(XOkapiHeaders.USER_ID, String.valueOf(id));
-      return users.add(usersLookUpService.lookUpUser(new OkapiParams(okapiHeaders)));
-    }));
-
-    var groupIds = users.stream()
-      .map(user -> user.thenApply(User::getPatronGroup)).collect(Collectors.toList());
-
-    var groups = new CompletableFuture<ArrayList<Group>>();
-
-    groupIds.forEach(groupId -> groupId.thenApply(id -> {
-      okapiHeaders.put(XOkapiHeaders.USER_ID, id);
-      return groups.thenApply(g -> {
-        try {
-          return g.add(usersLookUpService.lookUpGroup(new OkapiParams(okapiHeaders)).get());
-        } catch (InterruptedException | ExecutionException e) {
-          e.printStackTrace();
-          return null;
-        }
+    var patronGroupIds = new ArrayList<String>();
+    var groupIds = new ArrayList<String>();
+    var groupsBatch = new ArrayList<CompletableFuture<Collection<Group>>>();
+    var groups = new ArrayList<Group>();
+    var usersList = ids.thenApply(uuids -> uuids.stream()
+      .map(String::valueOf).collect(Collectors.toList()))
+      .thenApply(idList -> {
+        Iterables.partition(idList, 50).forEach(strings -> {
+          String idsCql = "id=(" + strings.stream().map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
+          usersIds.add(idsCql);
+        });
+        return usersIds;
       });
-    }));
 
-    var assignedUserCollection = dbAssignedUsers
-      .thenApply(collectionConverter::convert);
-    var c = new AtomicInteger();
-    assignedUserCollection.thenCombine(groups,
-      (assignedUserCollection1, groupsList) -> assignedUserCollection1.getData()
-        .stream().peek(assignedUser ->
-          assignedUser.getAttributes().setPatronGroup(groupsList.get(c.incrementAndGet()).getGroup())));
+    usersIds.forEach(query -> {
+      usersBatch.add(usersLookUpService.lookUpUsersUsingCQL(new OkapiParams(okapiHeaders), query));
+    });
+
+    usersBatch.forEach(collectionCompletableFuture ->
+        collectionCompletableFuture
+          .thenApply(userCollection -> {
+            userCollection.forEach(user -> patronGroupIds.add(user.getPatronGroup()));
+            return patronGroupIds;
+          })
+          .thenApply(idList -> {
+            Iterables.partition(idList, 50).forEach(strings -> {
+              String idsCql = "id=(" + strings.stream().map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
+              groupIds.add(idsCql);
+            });
+            return groupIds;
+          })
+    );
+    groupIds.forEach(query -> {
+      groupsBatch.add(usersLookUpService.lookUpGroupsUsingCQL(new OkapiParams(okapiHeaders), query));
+    });
+    groupsBatch.forEach(collectionCompletableFuture ->
+      collectionCompletableFuture
+        .thenApply(groupCollection -> {
+          groups.addAll(groupCollection);
+          return groups;
+        }));
+    usersBatch.forEach(collectionCompletableFuture ->
+        collectionCompletableFuture
+          .thenApply(userCollection -> {
+            users.addAll(userCollection);
+            return users;
+          })
+    );
+
+    var assignedUserCollection = CompletableFuture.completedFuture(users).thenApply(userCollectionConverter::convert);
+
+    assignedUserCollection.thenCombine(CompletableFuture.completedFuture(groups),
+      (assignedUserCollection1, groups1) -> {
+        groups1.forEach(group -> {
+          assignedUserCollection1.getData().forEach(assignedUser -> {
+            if (group.getId().equals(assignedUser.getAttributes().getPatronGroup()))
+              assignedUser.getAttributes().setPatronGroup(group.getGroup());
+          });
+        });
+        return null;
+      });
 
     return assignedUserCollection;
   }
