@@ -123,8 +123,6 @@ public class UsersLookUpServiceTest {
     info.thenCompose(userInfo -> {
       context.assertNotNull(userInfo);
       context.assertEquals(2, userInfo.size());
-      userInfo.stream().forEach(System.out::println);
-      System.out.println(userInfo.contains("users"));
       async.complete();
 
       return null;

@@ -153,29 +153,16 @@ public class UsersLookUpService {
   private Collection<User> mapUserCollection(JsonObject userCollection) {
     Collection<User> collection = new ArrayList<>();
     var users =  userCollection.getJsonArray("users");
-    users.stream().forEach(user -> {
-      collection.add(mapUser((JsonObject) user));
-    });
+    users.stream().forEach(user -> collection.add(mapUser((JsonObject) user)));
     return collection;
   }
 
   private Collection<Group> mapGroupCollection(JsonObject groupCollection) {
     Collection<Group> collection = new ArrayList<>();
     var groups = groupCollection.getJsonArray("usergroups");
-    groups.stream().forEach(group -> {
-      collection.add(mapGroup((JsonObject) group));
-    });
+    groups.stream().forEach(group -> collection.add(mapGroup((JsonObject) group)));
     return collection;
   }
-//  private UserDataCollection mapUserDataCollection(JsonObject userDataCollection) {
-//    UserDataCollection.UserDataCollectionBuilder builder = UserDataCollection.builder();
-//    if (userDataCollection.containsKey("totalRecords"))
-//      builder.totalRecords(userDataCollection.getInteger("totalRecords"));
-//    if (userDataCollection.containsKey("users"))
-//      builder.users(userDataCollection.getJsonArray("users").getList());
-//
-//    return builder.build();
-//  }
 
   private Group mapGroup(JsonObject group) {
     Group.GroupBuilder builder = Group.builder();

@@ -70,7 +70,8 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
     var groupIds = new ArrayList<String>();
     var groupsBatch = new ArrayList<CompletableFuture<Collection<Group>>>();
     var groups = new ArrayList<Group>();
-    var usersList = ids.thenApply(uuids -> uuids.stream()
+
+    ids.thenApply(uuids -> uuids.stream()
       .map(String::valueOf).collect(Collectors.toList()))
       .thenApply(idList -> {
         Iterables.partition(idList, 50).forEach(strings -> {
@@ -80,9 +81,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
         return usersIds;
       });
 
-    usersIds.forEach(query -> {
-      usersBatch.add(usersLookUpService.lookUpUsersUsingCQL(new OkapiParams(okapiHeaders), query));
-    });
+    usersIds.forEach(query -> usersBatch.add(usersLookUpService.lookUpUsersUsingCQL(new OkapiParams(okapiHeaders), query)));
 
     usersBatch.forEach(collectionCompletableFuture ->
         collectionCompletableFuture
@@ -98,9 +97,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
             return groupIds;
           })
     );
-    groupIds.forEach(query -> {
-      groupsBatch.add(usersLookUpService.lookUpGroupsUsingCQL(new OkapiParams(okapiHeaders), query));
-    });
+    groupIds.forEach(query -> groupsBatch.add(usersLookUpService.lookUpGroupsUsingCQL(new OkapiParams(okapiHeaders), query)));
     groupsBatch.forEach(collectionCompletableFuture ->
       collectionCompletableFuture
         .thenApply(groupCollection -> {
@@ -119,12 +116,10 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
 
     assignedUserCollection.thenCombine(CompletableFuture.completedFuture(groups),
       (assignedUserCollection1, groups1) -> {
-        groups1.forEach(group -> {
-          assignedUserCollection1.getData().forEach(assignedUser -> {
-            if (group.getId().equals(assignedUser.getAttributes().getPatronGroup()))
-              assignedUser.getAttributes().setPatronGroup(group.getGroup());
-          });
-        });
+        groups1.forEach(group -> assignedUserCollection1.getData().forEach(assignedUser -> {
+          if (group.getId().equals(assignedUser.getAttributes().getPatronGroup()))
+            assignedUser.getAttributes().setPatronGroup(group.getGroup());
+        }));
         return null;
       });
 
