@@ -295,6 +295,22 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn400OnInvalidFilterCustomParameter() {
+    String invalidParameterForFilterCustom = getWithStatus(
+      PACKAGES_ENDPOINT + "?filter[custom]=test", 400, STUB_TOKEN_HEADER).asString();
+
+    assertTrue(invalidParameterForFilterCustom.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
+  }
+
+  @Test
+  public void shouldReturn400OnNotSupportedFilterCustomParameter() {
+    String falseParameterForFilterCustom = getWithStatus(
+      PACKAGES_ENDPOINT + "?filter[custom]=false", 400, STUB_TOKEN_HEADER).asString();
+
+    assertTrue(falseParameterForFilterCustom.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
+  }
+
+  @Test
   public void shouldReturnPackagesOnGetWithPackageId() throws IOException, URISyntaxException, JSONException {
     String packagesStubResponseFile = "responses/rmapi/packages/get-packages-by-provider-id.json";
     String providerIdByCustIdStubResponseFile = "responses/rmapi/proxiescustomlabels/get-success-response.json";
