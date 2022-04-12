@@ -5,14 +5,16 @@ import static org.folio.rest.tools.utils.TenantTool.tenantId;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.ws.rs.BadRequestException;
 
-import com.google.common.collect.Iterables;
-import lombok.SneakyThrows;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.folio.common.OkapiParams;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
+import org.folio.rest.converter.assignedusers.UserCollectionDataConverter;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
@@ -28,7 +31,6 @@ import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
 import org.folio.service.users.UsersService;
-import org.folio.util.StringUtil;
 
 @Component
 public class AssignedUsersServiceImpl implements AssignedUsersService {
@@ -42,7 +44,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Autowired
   private Converter<Collection<DbAssignedUser>, AssignedUserCollection> collectionConverter;
   @Autowired
-  private Converter<Collection<User>, AssignedUserCollection> userCollectionConverter;
+  private Converter<UserCollectionDataConverter.UsersResult, AssignedUserCollection> userCollectionConverter;
   @Autowired
   private Converter<AssignedUser, DbAssignedUser> toDbConverter;
   @Autowired
@@ -52,78 +54,19 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Autowired
   private UsersLookUpService usersLookUpService;
 
-  @SneakyThrows
   @Override
   public CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId,
                                                                        Map<String, String> okapiHeaders) {
 
-    var ids = assignedUserRepository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
-      .thenApply(dbAssignedUsers1 -> dbAssignedUsers1.stream()
+    return assignedUserRepository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
+      .thenApply(dbAssignedUsers -> dbAssignedUsers.stream()
         .map(DbAssignedUser::getId)
-        .collect(Collectors.toList()));
-
-    var users = new ArrayList<User>();
-    var usersIds = new ArrayList<String>();
-    var usersBatch = new ArrayList<CompletableFuture<Collection<User>>>();
-
-    var patronGroupIds = new ArrayList<String>();
-    var groupIds = new ArrayList<String>();
-    var groupsBatch = new ArrayList<CompletableFuture<Collection<Group>>>();
-    var groups = new ArrayList<Group>();
-
-    ids.thenApply(uuids -> uuids.stream()
-      .map(String::valueOf).collect(Collectors.toList()))
-      .thenApply(idList -> {
-        Iterables.partition(idList, 50).forEach(strings -> {
-          String idsCql = "id=(" + strings.stream().map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
-          usersIds.add(idsCql);
-        });
-        return usersIds;
-      });
-
-    usersIds.forEach(query -> usersBatch.add(usersLookUpService.lookUpUsersUsingCQL(new OkapiParams(okapiHeaders), query)));
-
-    usersBatch.forEach(collectionCompletableFuture ->
-        collectionCompletableFuture
-          .thenApply(userCollection -> {
-            userCollection.forEach(user -> patronGroupIds.add(user.getPatronGroup()));
-            return patronGroupIds;
-          })
-          .thenApply(idList -> {
-            Iterables.partition(idList, 50).forEach(strings -> {
-              String idsCql = "id=(" + strings.stream().map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
-              groupIds.add(idsCql);
-            });
-            return groupIds;
-          })
-    );
-    groupIds.forEach(query -> groupsBatch.add(usersLookUpService.lookUpGroupsUsingCQL(new OkapiParams(okapiHeaders), query)));
-    groupsBatch.forEach(collectionCompletableFuture ->
-      collectionCompletableFuture
-        .thenApply(groupCollection -> {
-          groups.addAll(groupCollection);
-          return groups;
-        }));
-    usersBatch.forEach(collectionCompletableFuture ->
-        collectionCompletableFuture
-          .thenApply(userCollection -> {
-            users.addAll(userCollection);
-            return users;
-          })
-    );
-
-    var assignedUserCollection = CompletableFuture.completedFuture(users).thenApply(userCollectionConverter::convert);
-
-    assignedUserCollection.thenCombine(CompletableFuture.completedFuture(groups),
-      (assignedUserCollection1, groups1) -> {
-        groups1.forEach(group -> assignedUserCollection1.getData().forEach(assignedUser -> {
-          if (group.getId().equals(assignedUser.getAttributes().getPatronGroup()))
-            assignedUser.getAttributes().setPatronGroup(group.getGroup());
-        }));
-        return null;
-      });
-
-    return assignedUserCollection;
+        .collect(Collectors.toList()))
+      .thenCompose(idBatches -> loadInBatches(idBatches,
+        idBatch -> usersLookUpService.lookUpUsers(idBatch, new OkapiParams(okapiHeaders))))
+      .thenCompose(users -> CompletableFuture.completedFuture(users)
+        .thenCombine(fetchGroups(users, okapiHeaders), UserCollectionDataConverter.UsersResult::new)
+        .thenApply(usersResult -> userCollectionConverter.convert(usersResult)));
   }
 
   @Override
@@ -145,6 +88,33 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Override
   public CompletableFuture<Void> delete(String credentialsId, String userId, Map<String, String> okapiHeaders) {
     return assignedUserRepository.delete(toUUID(credentialsId), toUUID(userId), tenantId(okapiHeaders));
+  }
+
+  private <T> CompletableFuture<Collection<T>> loadInBatches(List<UUID> ids,
+                                                             Function<List<UUID>, CompletableFuture<Collection<T>>> loadFunction) {
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Collection<T>>[] batchFutures = Lists.partition(ids, 50).stream()
+      .map(loadFunction)
+      .toArray(CompletableFuture[]::new);
+    return CompletableFuture.allOf(batchFutures)
+      .thenCompose(v -> {
+        Collection<T> resultCollection = new ArrayList<>();
+        for (CompletableFuture<Collection<T>> future : batchFutures) {
+          resultCollection.addAll(future.join());
+        }
+        return CompletableFuture.completedFuture(resultCollection);
+      });
+  }
+
+  private CompletableFuture<Collection<Group>> fetchGroups(Collection<User> users, Map<String, String> okapiHeaders) {
+    var groupIds = users.stream()
+      .map(User::getPatronGroup)
+      .filter(Objects::nonNull)
+      .map(UUID::fromString)
+      .distinct()
+      .collect(Collectors.toList());
+    return loadInBatches(groupIds,
+      idBatch -> usersLookUpService.lookUpGroups(idBatch, new OkapiParams(okapiHeaders)));
   }
 
   private CompletableFuture<Void> validate(String credentialsId, String userId, AssignedUser assignedUser) {

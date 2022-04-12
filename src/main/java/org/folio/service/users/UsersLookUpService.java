@@ -4,8 +4,10 @@ import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
+import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
@@ -83,36 +85,43 @@ public class UsersLookUpService {
     }
   }
 
-  public CompletableFuture<Collection<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
-    MultiMap headers = new HeadersMultiMap();
-    headers.addAll(okapiParams.getHeaders());
-    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
+  public CompletableFuture<Collection<User>> lookUpUsers(List<UUID> ids, final OkapiParams okapiParams) {
+    String idsCql = "id=(" + ids.stream().map(UUID::toString)
+      .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
+    return lookUpUsersUsingCQL(okapiParams, idsCql);
+  }
 
-    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
-    webClient.getAbs(headers.get(XOkapiHeaders.URL) + USERS_ENDPOINT)
-      .putHeaders(headers)
-      .addQueryParam(CQL_QUERY_PARAM, StringUtil.urlEncode(query))
-      .as(BodyCodec.jsonObject())
-      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-      .send(promise);
+  public CompletableFuture<Collection<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
+    String idsCql = "id=(" + ids.stream().map(UUID::toString)
+      .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
+    return lookUpGroupsUsingCQL(okapiParams, idsCql);
+  }
+
+  private CompletableFuture<Collection<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
+    Promise<HttpResponse<JsonObject>> promise =
+      lookUpByCQL(okapiParams, USERS_ENDPOINT, query);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUserCollection));
   }
 
-  public CompletableFuture<Collection<Group>> lookUpGroupsUsingCQL(final OkapiParams okapiParams, String query) {
+  private CompletableFuture<Collection<Group>> lookUpGroupsUsingCQL(final OkapiParams okapiParams, String query) {
+    Promise<HttpResponse<JsonObject>> promise = lookUpByCQL(okapiParams, GROUPS_ENDPOINT, query);
+    return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroupCollection));
+  }
+
+  private Promise<HttpResponse<JsonObject>> lookUpByCQL(OkapiParams okapiParams, String usersEndpoint, String query) {
     MultiMap headers = new HeadersMultiMap();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
-    webClient.getAbs(headers.get(XOkapiHeaders.URL) + GROUPS_ENDPOINT)
+    webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersEndpoint)
       .putHeaders(headers)
       .addQueryParam(CQL_QUERY_PARAM, StringUtil.urlEncode(query))
       .as(BodyCodec.jsonObject())
       .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
       .send(promise);
-    return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroupCollection));
+    return promise;
   }
-
 
   private ErrorConverter errorConverter() {
     return ErrorConverter.createFullBody(result -> {
@@ -152,7 +161,7 @@ public class UsersLookUpService {
 
   private Collection<User> mapUserCollection(JsonObject userCollection) {
     Collection<User> collection = new ArrayList<>();
-    var users =  userCollection.getJsonArray("users");
+    var users = userCollection.getJsonArray("users");
     users.stream().forEach(user -> collection.add(mapUser((JsonObject) user)));
     return collection;
   }
