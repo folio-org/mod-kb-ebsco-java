@@ -25,6 +25,8 @@
     }
   },
   "required": [
-    "id"
+    "id",
+    "type",
+    "attributes"
   ]
 }
