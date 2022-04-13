@@ -4,16 +4,22 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 
+import static org.folio.rest.impl.WireMockTestBase.JANE_GROUP_ID;
+import static org.folio.rest.impl.WireMockTestBase.JANE_ID;
+import static org.folio.rest.impl.WireMockTestBase.JOHN_GROUP_ID;
+import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.util.StringUtil.cqlEncode;
 import static org.folio.util.StringUtil.urlEncode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
@@ -37,6 +43,7 @@ import org.folio.common.OkapiParams;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.test.junit.TestStartLoggingRule;
 import org.folio.test.util.TestUtil;
+import org.folio.util.StringUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class UsersLookUpServiceTest {
@@ -51,7 +58,7 @@ public class UsersLookUpServiceTest {
 
   private final UsersLookUpService usersLookUpService = new UsersLookUpService(Vertx.vertx());
 
-  private static final String GROUP_INFO_STUB_FILE = "responses/userlookup/mock_group_response_200.json";
+  private static final String GROUP_INFO_STUB_FILE = "responses/userlookup/mock_group_collection_response_200.json";
   private static final String USERDATA_COLLECTION_INFO_STUB_FILE = "responses/userlookup/mock_user_collection_response_200.json";
 
   private final String QUERY_PARAM = "query";
@@ -102,10 +109,12 @@ public class UsersLookUpServiceTest {
   @Test
   public void shouldReturnUsersWithStatus200ByCQLUserIdList(TestContext context) throws IOException,
     URISyntaxException {
-    final String cedrickId = "88888888-8888-4888-8888-888888888888";
-    final String johnId = "99999999-9999-4999-9999-999999999999";
+    final UUID janeId = UUID.fromString(JANE_ID);
+    final UUID johnId = UUID.fromString(JOHN_ID);
 
-    String query = "(id=" + cqlEncode(cedrickId) + " or " + "id=" + cqlEncode(johnId) + ")";
+    List<UUID> ids = List.of(janeId, johnId);
+
+    String query = cqlQueryConverter(ids);
 
     Async async = context.async();
 
@@ -118,8 +127,7 @@ public class UsersLookUpServiceTest {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
 
-    CompletableFuture<Collection<User>> info = usersLookUpService.lookUpUsersUsingCQL(new OkapiParams(OKAPI_HEADERS),
-      query);
+    CompletableFuture<Collection<User>> info = usersLookUpService.lookUpUsers(ids, new OkapiParams(OKAPI_HEADERS));
     info.thenCompose(userInfo -> {
       context.assertNotNull(userInfo);
       context.assertEquals(2, userInfo.size());
@@ -133,11 +141,18 @@ public class UsersLookUpServiceTest {
     });
   }
 
+  private String cqlQueryConverter(List<UUID> ids) {
+    return "id=(" + ids.stream().map(UUID::toString)
+      .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
+  }
+
   @Test
   public void shouldReturn200WhenGroupIdIsValid(TestContext context) throws IOException, URISyntaxException {
-    final String stubGroupId = "b4b5e97a-0a99-4db9-97df-4fdf406ec74d";
+    final UUID groupId1 = UUID.fromString(JOHN_GROUP_ID);
+    final UUID groupId2 = UUID.fromString(JANE_GROUP_ID);
 
-    String query = "(id=" + cqlEncode(stubGroupId) + ")";
+    List<UUID> ids = List.of(groupId1, groupId2);
+    String cqlQuery = cqlQueryConverter(ids);
 
     Async async = context.async();
 
@@ -146,12 +161,11 @@ public class UsersLookUpServiceTest {
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/groups"), true))
-        .withQueryParam(QUERY_PARAM, equalTo(urlEncode(query)))
+        .withQueryParam(QUERY_PARAM, equalTo(urlEncode(cqlQuery)))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
 
-    CompletableFuture<Collection<Group>> info = usersLookUpService.lookUpGroupsUsingCQL(new OkapiParams(OKAPI_HEADERS)
-      , query);
+    CompletableFuture<Collection<Group>> info = usersLookUpService.lookUpGroups(ids, new OkapiParams(OKAPI_HEADERS));
     info.thenCompose(group -> {
       context.assertNotNull(group);
 
