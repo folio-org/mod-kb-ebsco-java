@@ -55,6 +55,11 @@ public class UserConverter {
     public User convert(@NotNull AssignedUser source) {
       return User.builder()
         .id(source.getId())
+        .userName(source.getAttributes().getUserName())
+        .lastName(source.getAttributes().getLastName())
+        .middleName(source.getAttributes().getMiddleName())
+        .firstName(source.getAttributes().getFirstName())
+        .patronGroup(source.getAttributes().getPatronGroup())
         .build();
     }
   }

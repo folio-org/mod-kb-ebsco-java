@@ -11,6 +11,17 @@
       "description": "The UUID of a user",
       "$ref": "../../raml-util/schemas/uuid.schema",
       "examples": "1f8f660e-7dc9-4f6f-828f-96284c68a25"
+    },
+    "type": {
+      "type": "string",
+      "description": "Type of resource",
+      "enum": ["assignedUsers"],
+      "example": "assignedUsers"
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Assigned users collection item attributes",
+      "$ref": "assignedUserDataAttributes.json"
     }
   },
   "required": [

@@ -53,7 +53,7 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
                                                   Map<String, String> okapiHeaders,
                                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     assignedUsersBodyValidator.validate(entity.getData());
-    assignedUsersService.save(entity, okapiHeaders, credentialsId)
+    assignedUsersService.save(entity, okapiHeaders)
       .thenAccept(assignedUser -> asyncResultHandler.handle(succeededFuture(
         PostEholdingsKbCredentialsUsersByIdResponse.respond201WithApplicationVndApiJson(assignedUser))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
