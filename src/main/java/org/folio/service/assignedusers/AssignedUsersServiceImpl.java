@@ -19,7 +19,6 @@ import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
-import org.folio.rest.jaxrs.model.AssignedUserPutRequest;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersService;
 
@@ -54,14 +53,6 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
     return usersService.save(userConverter.convert(assignedUserId), new OkapiParams(okapiHeaders))
       .thenCompose(user -> assignedUserRepository.save(toDbConverter.convert(assignedUserId), tenantId(okapiHeaders)))
       .thenApply(source -> toAssignedUserIdConverter.convert(source));
-  }
-
-  @Override
-  public CompletableFuture<Void> update(String credentialsId, String userId, AssignedUserPutRequest entity,
-                                        Map<String, String> okapiHeaders) {
-    AssignedUserId assignedUserId = entity.getData();
-    return validate(userId, assignedUserId)
-      .thenCompose(o -> usersService.update(userConverter.convert(assignedUserId), new OkapiParams(okapiHeaders)));
   }
 
   @Override
