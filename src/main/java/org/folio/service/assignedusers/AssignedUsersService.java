@@ -3,7 +3,6 @@ package org.folio.service.assignedusers;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;

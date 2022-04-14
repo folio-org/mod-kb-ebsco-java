@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 import org.folio.common.OkapiParams;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
-import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;

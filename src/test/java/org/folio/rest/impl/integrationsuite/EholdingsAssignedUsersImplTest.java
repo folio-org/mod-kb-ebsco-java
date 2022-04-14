@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
-import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.rest.jaxrs.model.Errors;

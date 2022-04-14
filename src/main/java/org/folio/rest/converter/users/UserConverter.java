@@ -8,7 +8,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import org.folio.repository.users.DbUser;
-import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.service.users.User;
 

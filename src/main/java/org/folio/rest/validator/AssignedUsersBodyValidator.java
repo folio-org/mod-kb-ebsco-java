@@ -6,8 +6,6 @@ import javax.validation.ValidationException;
 import org.springframework.stereotype.Component;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AssignedUser;
-import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 
 @Component
