@@ -10,7 +10,7 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 types:
-  assignedUser: !include types/assignedUsers/assignedUser.json
+  assignedUserId: !include types/assignedUsers/assignedUserId.json
   assignedUserCollection: !include types/assignedUsers/assignedUserCollection.json
   assignedUserPostRequest: !include types/assignedUsers/assignedUserPostRequest.json
   assignedUserPutRequest: !include types/assignedUsers/assignedUserPutRequest.json
@@ -58,7 +58,7 @@ types:
         body:
           application/vnd.api+json:
             description: The server has successfully fulfilled the POST request.
-            type: assignedUser
+            type: assignedUserId
             example:
               strict: false
               value: !include examples/assignedUsers/assigned_users_post_201_response.json

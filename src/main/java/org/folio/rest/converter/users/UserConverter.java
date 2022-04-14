@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import org.folio.repository.users.DbUser;
 import org.folio.rest.jaxrs.model.AssignedUser;
+import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.service.users.User;
 
 public class UserConverter {
@@ -49,17 +50,12 @@ public class UserConverter {
   }
 
   @Component
-  public static class FromAssignedUser implements Converter<AssignedUser, User> {
+  public static class FromAssignedUser implements Converter<AssignedUserId, User> {
 
     @Override
-    public User convert(@NotNull AssignedUser source) {
+    public User convert(@NotNull AssignedUserId source) {
       return User.builder()
         .id(source.getId())
-        .userName(source.getAttributes().getUserName())
-        .lastName(source.getAttributes().getLastName())
-        .middleName(source.getAttributes().getMiddleName())
-        .firstName(source.getAttributes().getFirstName())
-        .patronGroup(source.getAttributes().getPatronGroup())
         .build();
     }
   }

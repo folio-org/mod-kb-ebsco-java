@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "PUT Request To Assigned Users Collection Schema",
+  "title": "PUT Request To Assigned Users Id Collection Schema",
   "description": "PUT Request To Assigned Users Collection Schema",
   "javaType": "org.folio.rest.jaxrs.model.AssignedUserPutRequest",
   "additionalProperties": false,
@@ -8,8 +8,8 @@
   "properties": {
     "data": {
       "type": "object",
-      "description": "Assigned user object",
-      "$ref": "assignedUser.json"
+      "description": "Assigned user id",
+      "$ref": "assignedUserId.json"
     }
   },
   "required": [

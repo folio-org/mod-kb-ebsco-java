@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
+import org.folio.rest.jaxrs.model.AssignedUserId;
 
 @Component
 public class AssignedUsersBodyValidator {
@@ -19,26 +20,10 @@ public class AssignedUsersBodyValidator {
    *
    * @throws ValidationException if validation fails
    */
-  public void validate(AssignedUser data) {
+  public void validate(AssignedUserId data) {
 
-    if (Objects.isNull(data) || Objects.isNull(data.getAttributes())) {
+    if (Objects.isNull(data) || Objects.isNull(data.getId())) {
       throw new InputValidationException(INVALID_POST_BODY, "");
-    }
-
-    AssignedUserDataAttributes attributes = data.getAttributes();
-
-    ValidatorUtil.checkIsNotBlank("userName", attributes.getUserName());
-    ValidatorUtil.checkMaxLength("userName", attributes.getUserName(), 200);
-
-    ValidatorUtil.checkIsNotBlank("lastName", attributes.getLastName());
-    ValidatorUtil.checkMaxLength("lastName", attributes.getLastName(), 200);
-
-    ValidatorUtil.checkIsNotBlank("patronGroup", attributes.getPatronGroup());
-    ValidatorUtil.checkMaxLength("patronGroup", attributes.getPatronGroup(), 200);
-
-    if (!Objects.isNull(attributes.getFirstName())) {
-      ValidatorUtil.checkIsNotBlank("firstName", attributes.getFirstName());
-      ValidatorUtil.checkMaxLength("firstName", attributes.getFirstName(), 200);
     }
   }
 }

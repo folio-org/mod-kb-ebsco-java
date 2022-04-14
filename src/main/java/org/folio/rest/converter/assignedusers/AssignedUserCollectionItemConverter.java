@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
+import org.folio.rest.jaxrs.model.AssignedUserId;
 
 public class AssignedUserCollectionItemConverter {
 
@@ -37,19 +38,24 @@ public class AssignedUserCollectionItemConverter {
   }
 
   @Component
-  public static class ToDb implements Converter<AssignedUser, DbAssignedUser> {
+  public static class toAssignedUserId implements Converter<DbAssignedUser, AssignedUserId> {
 
     @Override
-    public DbAssignedUser convert(AssignedUser source) {
-      AssignedUserDataAttributes attributes = source.getAttributes();
+    public AssignedUserId convert(DbAssignedUser source) {
+      return new AssignedUserId()
+        .withId(source.getId().toString())
+        .withCredentialsId(source.getCredentialsId().toString());
+    }
+  }
+
+  @Component
+  public static class ToDb implements Converter<AssignedUserId, DbAssignedUser> {
+
+    @Override
+    public DbAssignedUser convert(AssignedUserId source) {
       return DbAssignedUser.builder()
         .id(UUID.fromString(source.getId()))
-        .credentialsId(UUID.fromString(attributes.getCredentialsId()))
-        .username(attributes.getUserName())
-        .firstName(attributes.getFirstName())
-        .middleName(attributes.getMiddleName())
-        .lastName(attributes.getLastName())
-        .patronGroup(attributes.getPatronGroup())
+        .credentialsId(UUID.fromString(source.getCredentialsId()))
         .build();
     }
   }
