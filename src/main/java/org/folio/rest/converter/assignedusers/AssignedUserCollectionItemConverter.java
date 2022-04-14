@@ -38,7 +38,7 @@ public class AssignedUserCollectionItemConverter {
   }
 
   @Component
-  public static class toAssignedUserId implements Converter<DbAssignedUser, AssignedUserId> {
+  public static class ToAssignedUserId implements Converter<DbAssignedUser, AssignedUserId> {
 
     @Override
     public AssignedUserId convert(DbAssignedUser source) {
