@@ -1,0 +1,70 @@
+{
+  "users": [
+    {
+      "username": "john_doe",
+      "id": "47d9ca93-9c82-4d6a-8d7f-7a73963086b9",
+      "barcode": "194710970216014",
+      "active": true,
+      "type": "patron",
+      "patronGroup": "b4b5e97a-0a99-4db9-97df-4fdf406ec74d",
+      "proxyFor": [],
+      "personal": {
+        "lastName": "Doe",
+        "middleName": "Joseph",
+        "firstName": "John",
+        "email": "John.Doe_test@something.com",
+        "phone": "xxx-yyy-zzzz",
+        "dateOfBirth": "1993-08-10T00:00:00.000+0000",
+        "addresses": [
+          {
+            "countryId": "US",
+            "addressLine1": "00940 Rear",
+            "city": "XZY",
+            "region": "HF",
+            "postalCode": "55026",
+            "addressTypeId": "1c4b225f-f669-4e9b-afcd-ebc0e273a34e",
+            "primaryAddress": true
+          }
+        ],
+        "preferredContactTypeId": "005"
+      },
+      "enrollmentDate": "2016-11-13T00:00:00.000+0000",
+      "expirationDate": "2020-03-26T00:00:00.000+0000",
+      "createdDate": "2019-04-03T01:54:11.305+0000",
+      "updatedDate": "2019-04-03T01:54:11.305+0000"
+    },
+    {
+      "username": "jane_doe",
+      "id": "781fce7d-5cf5-490d-ad89-a3d192eb526c",
+      "barcode": "194710970216014",
+      "active": true,
+      "type": "patron",
+      "patronGroup": "4bb563d9-3f9d-4e1e-8d1d-04e75666d68f",
+      "proxyFor": [],
+      "personal": {
+        "lastName": "lastname_test",
+        "firstName": "firstname_test",
+        "email": "firstname_test.lastname_test@something.com",
+        "phone": "xxx-yyy-zzzz",
+        "dateOfBirth": "1984-08-10T00:00:00.000+0000",
+        "addresses": [
+          {
+            "countryId": "US",
+            "addressLine1": "00940 Rear",
+            "city": "XZY",
+            "region": "HF",
+            "postalCode": "55026",
+            "addressTypeId": "1c4b225f-f669-4e9b-afcd-ebc0e273a34e",
+            "primaryAddress": true
+          }
+        ],
+        "preferredContactTypeId": "005"
+      },
+      "enrollmentDate": "2016-11-13T00:00:00.000+0000",
+      "expirationDate": "2020-03-26T00:00:00.000+0000",
+      "createdDate": "2019-04-03T01:54:11.305+0000",
+      "updatedDate": "2019-04-03T01:54:11.305+0000"
+    }
+  ],
+  "totalRecords": 2
+}
