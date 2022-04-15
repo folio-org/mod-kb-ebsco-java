@@ -25,8 +25,8 @@ import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.UserCollectionDataConverter;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
+import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
-import org.folio.rest.jaxrs.model.AssignedUserPutRequest;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
@@ -46,13 +46,13 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Autowired
   private Converter<UserCollectionDataConverter.UsersResult, AssignedUserCollection> userCollectionConverter;
   @Autowired
-  private Converter<AssignedUser, DbAssignedUser> toDbConverter;
+  private Converter<AssignedUserId, DbAssignedUser> toDbConverter;
   @Autowired
-  private Converter<DbAssignedUser, AssignedUser> fromDbConverter;
-  @Autowired
-  private Converter<AssignedUser, User> userConverter;
+  private Converter<DbAssignedUser, AssignedUserId> toAssignedUserIdConverter;
   @Autowired
   private UsersLookUpService usersLookUpService;
+  @Autowired
+  private Converter<AssignedUserId, User> userConverter;
 
   @Override
   public CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId,
@@ -70,19 +70,11 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   }
 
   @Override
-  public CompletableFuture<AssignedUser> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders) {
-    AssignedUser assignedUser = entity.getData();
-    return usersService.save(userConverter.convert(assignedUser), new OkapiParams(okapiHeaders))
-      .thenCompose(user -> assignedUserRepository.save(toDbConverter.convert(assignedUser), tenantId(okapiHeaders)))
-      .thenApply(source -> fromDbConverter.convert(source));
-  }
-
-  @Override
-  public CompletableFuture<Void> update(String credentialsId, String userId, AssignedUserPutRequest entity,
-                                        Map<String, String> okapiHeaders) {
-    AssignedUser assignedUser = entity.getData();
-    return validate(credentialsId, userId, assignedUser)
-      .thenCompose(o -> usersService.update(userConverter.convert(assignedUser), new OkapiParams(okapiHeaders)));
+  public CompletableFuture<AssignedUserId> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders) {
+    AssignedUserId assignedUserId = entity.getData();
+    return usersService.save(userConverter.convert(assignedUserId), new OkapiParams(okapiHeaders))
+      .thenCompose(user -> assignedUserRepository.save(toDbConverter.convert(assignedUserId), tenantId(okapiHeaders)))
+      .thenApply(source -> toAssignedUserIdConverter.convert(source));
   }
 
   @Override
@@ -117,10 +109,9 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
       idBatch -> usersLookUpService.lookUpGroups(idBatch, new OkapiParams(okapiHeaders)));
   }
 
-  private CompletableFuture<Void> validate(String credentialsId, String userId, AssignedUser assignedUser) {
+  private CompletableFuture<Void> validate(String userId, AssignedUserId assignedUserId) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    if (!assignedUser.getId().equals(userId)
-      || !assignedUser.getAttributes().getCredentialsId().equals(credentialsId)) {
+    if (!assignedUserId.getId().equals(userId)) {
       BadRequestException exception = new BadRequestException(IDS_NOT_MATCH_MESSAGE);
       future.completeExceptionally(exception);
     } else {

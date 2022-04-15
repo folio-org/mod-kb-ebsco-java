@@ -49,7 +49,7 @@ import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
-import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
+import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
@@ -120,18 +120,19 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn201OnPostWhenAssignedUserIsValid() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    AssignedUser expected = stubAssignedUser(JOHN_ID, credentialsId);
+    AssignedUserId expected = stubAssignedUserId(JOHN_ID, credentialsId);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
-    AssignedUser actual = postWithCreated(endpoint, postBody).as(AssignedUser.class);
+    AssignedUserId actual = postWithCreated(endpoint, postBody).as(AssignedUserId.class);
 
     assertEquals(expected, actual);
 
     List<AssignedUser> assignedUsersInDb = getAssignedUsers(vertx);
     assertThat(assignedUsersInDb, hasSize(1));
-    assertEquals(expected, assignedUsersInDb.get(0));
+    assertEquals(expected.getId(), assignedUsersInDb.get(0).getId());
+    assertEquals(expected.getCredentialsId(), assignedUsersInDb.get(0).getAttributes().getCredentialsId());
   }
 
   @Test
@@ -140,7 +141,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     saveAssignedUser(JOHN_ID, credentialsId, vertx);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()
-      .withData(stubAssignedUser(JOHN_ID, credentialsId));
+      .withData(stubAssignedUserId(JOHN_ID, credentialsId));
 
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
@@ -152,7 +153,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnPostWhenAssignedUserToMissingCredentials() {
     String credentialsId = randomId();
-    AssignedUser expected = stubAssignedUser(JOHN_ID, credentialsId);
+    AssignedUserId expected = stubAssignedUserId(JOHN_ID, credentialsId);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
@@ -165,16 +166,14 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPostWhenAssignedUserDoesNotHaveRequiredParameters() {
     String credentialsId = randomId();
-    AssignedUser expected = new AssignedUser()
-      .withType(AssignedUser.Type.ASSIGNED_USERS)
-      .withAttributes(new AssignedUserDataAttributes());
+    AssignedUserId expected = new AssignedUserId();
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
     Errors errors = postWithStatus(endpoint, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
 
-    assertThat(errors.getErrors(), hasSize(5));
+    assertThat(errors.getErrors(), hasSize(1));
     assertThat(errors.getErrors(), everyItem(hasProperty("message", equalTo("must not be null"))));
   }
 
@@ -215,70 +214,6 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     assertErrorContainsTitle(error, "Assigned User not found by id");
   }
 
-  @Test
-  public void shouldReturn204OnPutWhenAssignedUserIsValid() {
-    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String userId = saveAssignedUser(JANE_ID, credentialsId, vertx);
-
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
-    expected.getAttributes().setUserName(JANE_USERNAME);
-
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    putWithNoContent(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody);
-
-    List<AssignedUser> assignedUsersInDb = getAssignedUsers(vertx);
-    assertThat(assignedUsersInDb, hasSize(1));
-    assertEquals(expected, assignedUsersInDb.get(0));
-  }
-
-  @Test
-  public void shouldReturn404OnPutWhenAssignedUserNotFound() {
-    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String userId = randomId();
-
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
-
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    JsonapiError error =
-      putWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody, SC_NOT_FOUND)
-        .as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "not found");
-    assertThat(getAssignedUsers(vertx), hasSize(0));
-  }
-
-  @Test
-  public void shouldReturn404OnPutWhenAssignedUserAndCredentialsNotFound() {
-    String credentialsId = randomId();
-    String userId = randomId();
-
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
-
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    JsonapiError error =
-      putWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody, SC_NOT_FOUND)
-        .as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "not found");
-    assertThat(getAssignedUsers(vertx), hasSize(0));
-  }
-
-  @Test
-  public void shouldReturn400OnPutWhenRequestAndPathIdsNotMatch() {
-    String credentialsId = randomId();
-    String userId = randomId();
-
-    AssignedUser expected = stubAssignedUser(randomId(), randomId());
-
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    JsonapiError error =
-      putWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody, SC_BAD_REQUEST)
-        .as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "Credentials ID and user ID can't be updated");
-    assertThat(getAssignedUsers(vertx), hasSize(0));
-  }
-
   private String cqlQueryConverter(List<UUID> ids) {
     return "id=(" + ids.stream().map(UUID::toString)
       .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
@@ -308,15 +243,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
           .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
   }
 
-  private AssignedUser stubAssignedUser(String userId, String credentialsId) {
-    return new AssignedUser()
+  private AssignedUserId stubAssignedUserId(String userId, String credentialsId) {
+    return new AssignedUserId()
       .withId(userId)
-      .withType(AssignedUser.Type.ASSIGNED_USERS)
-      .withAttributes(new AssignedUserDataAttributes()
-        .withCredentialsId(credentialsId)
-        .withFirstName("John")
-        .withLastName("Doe")
-        .withUserName(JOHN_USERNAME)
-        .withPatronGroup("staff"));
+      .withCredentialsId(credentialsId);
   }
 }
