@@ -11,6 +11,7 @@ import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
 import org.folio.rest.jaxrs.model.AssignedUserId;
+import org.folio.service.users.User;
 
 public class AssignedUserCollectionItemConverter {
 
@@ -29,6 +30,24 @@ public class AssignedUserCollectionItemConverter {
         .withAttributes(new AssignedUserDataAttributes()
           .withCredentialsId(source.getCredentialsId().toString())
           .withUserName(source.getUsername())
+          .withFirstName(source.getFirstName())
+          .withMiddleName(source.getMiddleName())
+          .withLastName(source.getLastName())
+          .withPatronGroup(source.getPatronGroup())
+        );
+    }
+  }
+
+  @Component
+  public static class FromUser implements Converter<User, AssignedUser> {
+
+    @Override
+    public AssignedUser convert(User source) {
+      return new AssignedUser()
+        .withId(source.getId().toString())
+        .withType(ASSIGNED_USERS)
+        .withAttributes(new AssignedUserDataAttributes()
+          .withUserName(source.getUserName())
           .withFirstName(source.getFirstName())
           .withMiddleName(source.getMiddleName())
           .withLastName(source.getLastName())

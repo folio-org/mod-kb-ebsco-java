@@ -56,10 +56,12 @@ public abstract class WireMockTestBase extends TestBase {
   protected static final String STUB_CREDENTIALS_ID = "12312312-1231-1231-a111-111111111111";
 
   public static final String JOHN_ID = "47d9ca93-9c82-4d6a-8d7f-7a73963086b9";
+  public static final String JOHN_GROUP_ID = "b4b5e97a-0a99-4db9-97df-4fdf406ec74d";
   public static final String JOHN_USERNAME = "john_doe";
   public static final Header JOHN_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JOHN_USERNAME, JOHN_ID);
 
   public static final String JANE_ID = "781fce7d-5cf5-490d-ad89-a3d192eb526c";
+  public static final String JANE_GROUP_ID = "4bb563d9-3f9d-4e1e-8d1d-04e75666d68f";
   public static final String JANE_USERNAME = "jane_doe";
   public static final Header JANE_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JANE_USERNAME, JANE_ID);
 
