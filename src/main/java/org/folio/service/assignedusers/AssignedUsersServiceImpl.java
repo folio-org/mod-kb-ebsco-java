@@ -27,7 +27,6 @@ import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
-import org.folio.rest.jaxrs.model.AssignedUserPutRequest;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
@@ -51,9 +50,8 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Autowired
   private Converter<DbAssignedUser, AssignedUserId> toAssignedUserIdConverter;
   @Autowired
-  private Converter<AssignedUser, User> userConverter;
-  @Autowired
   private UsersLookUpService usersLookUpService;
+  @Autowired
   private Converter<AssignedUserId, User> userConverter;
 
   @Override
@@ -111,7 +109,6 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
       idBatch -> usersLookUpService.lookUpGroups(idBatch, new OkapiParams(okapiHeaders)));
   }
 
-  private CompletableFuture<Void> validate(String credentialsId, String userId, AssignedUser assignedUser) {
   private CompletableFuture<Void> validate(String userId, AssignedUserId assignedUserId) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     if (!assignedUserId.getId().equals(userId)) {

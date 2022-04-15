@@ -44,7 +44,7 @@ public class AssignedUserCollectionItemConverter {
     @Override
     public AssignedUser convert(User source) {
       return new AssignedUser()
-        .withId(source.getId().toString())
+        .withId(source.getId())
         .withType(ASSIGNED_USERS)
         .withAttributes(new AssignedUserDataAttributes()
           .withUserName(source.getUserName())
