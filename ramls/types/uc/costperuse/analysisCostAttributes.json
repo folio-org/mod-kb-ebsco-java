@@ -9,17 +9,17 @@
     "cost": {
       "type": "number",
       "description": "Cost of resource",
-      "example": "800.00"
+      "example": 800.00
     },
     "usage": {
       "type": "integer",
       "description": "Count of usage",
-      "example": "800"
+      "example": 800
     },
     "costPerUse": {
       "type": "number",
       "description": "Cost-per-use of resource",
-      "example": "1.00"
+      "example": 1.00
     }
   }
 }
