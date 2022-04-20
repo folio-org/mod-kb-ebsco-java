@@ -4,7 +4,10 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="MODKBEKBJ-623@@remove-kb-users-table-from-db" author="yahor_sviarchkou">
-    <dropTable tableName="kb_users"/>
+  <changeSet id="MODKBEKBJ-623@@update-assigned-users-view-constraint" author="yahor_sviarchkou">
+    <dropView viewName="assigned_users_view"/>
+    <dropForeignKeyConstraint
+      baseTableName="assigned_users"
+      constraintName="fk_assigned_users_kb_users"/>
   </changeSet>
 </databaseChangeLog>

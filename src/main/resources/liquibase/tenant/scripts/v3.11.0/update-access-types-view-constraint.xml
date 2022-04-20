@@ -1,0 +1,16 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+  <changeSet id="MODKBEKBJ-623@@update-access-types-view-constraint" author="yahor_sviarchkou">
+    <dropView viewName="access_types_view"/>
+    <dropForeignKeyConstraint
+      baseTableName="access_types"
+      constraintName="fk_access_types_created_kb_users"/>
+    <dropForeignKeyConstraint
+      baseTableName="access_types"
+      constraintName="fk_access_types_updated_kb_users"/>
+  </changeSet>
+</databaseChangeLog>
