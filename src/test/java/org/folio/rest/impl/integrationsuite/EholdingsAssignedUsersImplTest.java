@@ -1,5 +1,7 @@
 package org.folio.rest.impl.integrationsuite;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
@@ -12,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.AssignedUsersTestUtil.getAssignedUsers;
 import static org.folio.util.AssignedUsersTestUtil.saveAssignedUser;
@@ -21,9 +24,20 @@ import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
+import static org.folio.util.StringUtil.urlEncode;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
@@ -31,19 +45,30 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
-import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
+import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.test.util.TestUtil;
+import org.folio.util.StringUtil;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
   private static final String ASSIGN_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users";
   private static final String KB_CREDENTIALS_ASSIGNED_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users/%s";
+
+  private static final Map<String, String> OKAPI_HEADERS = new HashMap<>();
+  private static final String USERDATA_COLLECTION_INFO_STUB_FILE = "responses/userlookup/mock_user_collection_response_200.json";
+  private static final String GROUP_INFO_STUB_FILE = "responses/userlookup/mock_group_collection_response_200.json";
+
+  private final String QUERY_PARAM = "query";
+  private final String GET_USERS_ENDPOINT = "/users";
+
 
   @Override
   @Before
@@ -60,14 +85,18 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn200WithCollection() {
+  public void shouldReturn200WithCollection() throws IOException, URISyntaxException {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveAssignedUser(JOHN_ID, credentialsId, vertx);
     saveAssignedUser(JANE_ID, credentialsId, vertx);
 
+    List<UUID> ids = List.of(UUID.fromString(JOHN_ID), UUID.fromString(JANE_ID));
+
+    wireMockUsers(ids);
+
     final AssignedUserCollection assignedUsers =
       getWithOk(String.format(ASSIGN_USER_PATH, credentialsId)).as(AssignedUserCollection.class);
-    assertEquals(2, (int) assignedUsers.getMeta().getTotalResults());
+    assertEquals(2,(int) assignedUsers.getMeta().getTotalResults());
     assertEquals(2, assignedUsers.getData().size());
   }
 
@@ -91,18 +120,19 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn201OnPostWhenAssignedUserIsValid() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    AssignedUser expected = stubAssignedUser(JOHN_ID, credentialsId);
+    AssignedUserId expected = stubAssignedUserId(JOHN_ID, credentialsId);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
-    AssignedUser actual = postWithCreated(endpoint, postBody).as(AssignedUser.class);
+    AssignedUserId actual = postWithCreated(endpoint, postBody).as(AssignedUserId.class);
 
     assertEquals(expected, actual);
 
     List<AssignedUser> assignedUsersInDb = getAssignedUsers(vertx);
     assertThat(assignedUsersInDb, hasSize(1));
-    assertEquals(expected, assignedUsersInDb.get(0));
+    assertEquals(expected.getId(), assignedUsersInDb.get(0).getId());
+    assertEquals(expected.getCredentialsId(), assignedUsersInDb.get(0).getAttributes().getCredentialsId());
   }
 
   @Test
@@ -111,7 +141,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     saveAssignedUser(JOHN_ID, credentialsId, vertx);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()
-      .withData(stubAssignedUser(JOHN_ID, credentialsId));
+      .withData(stubAssignedUserId(JOHN_ID, credentialsId));
 
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
@@ -123,7 +153,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnPostWhenAssignedUserToMissingCredentials() {
     String credentialsId = randomId();
-    AssignedUser expected = stubAssignedUser(JOHN_ID, credentialsId);
+    AssignedUserId expected = stubAssignedUserId(JOHN_ID, credentialsId);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
@@ -136,33 +166,32 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPostWhenAssignedUserDoesNotHaveRequiredParameters() {
     String credentialsId = randomId();
-    AssignedUser expected = new AssignedUser()
-      .withType(AssignedUser.Type.ASSIGNED_USERS)
-      .withAttributes(new AssignedUserDataAttributes());
+    AssignedUserId expected = new AssignedUserId();
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
     Errors errors = postWithStatus(endpoint, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
 
-    assertThat(errors.getErrors(), hasSize(5));
+    assertThat(errors.getErrors(), hasSize(1));
     assertThat(errors.getErrors(), everyItem(hasProperty("message", equalTo("must not be null"))));
   }
 
   @Test
-  public void shouldReturn204OnDeleteUserAssignment() {
+  public void shouldReturn204OnDeleteUserAssignment() throws IOException, URISyntaxException {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String userId1 = saveAssignedUser(JOHN_ID, credentialsId, vertx);
     String userId2 = saveAssignedUser(JANE_ID, credentialsId, vertx);
+
+    List<UUID> ids = List.of(UUID.fromString(userId2));
+    wireMockUsers(ids);
 
     deleteWithNoContent(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId1));
 
     final AssignedUserCollection assignedUsers = getWithOk(String.format(ASSIGN_USER_PATH, credentialsId))
       .as(AssignedUserCollection.class);
-    assertEquals(1, (int) assignedUsers.getMeta().getTotalResults());
-    assertEquals(1, assignedUsers.getData().size());
-    assertEquals(userId2, assignedUsers.getData().get(0).getId());
-    assertEquals(JANE_USERNAME, assignedUsers.getData().get(0).getAttributes().getUserName());
+    assertEquals(2, (int) assignedUsers.getMeta().getTotalResults());
+    assertEquals(2, assignedUsers.getData().size());
   }
 
   @Test
@@ -185,79 +214,38 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     assertErrorContainsTitle(error, "Assigned User not found by id");
   }
 
-  @Test
-  public void shouldReturn204OnPutWhenAssignedUserIsValid() {
-    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String userId = saveAssignedUser(JANE_ID, credentialsId, vertx);
-
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
-    expected.getAttributes().setUserName(JANE_USERNAME);
-
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    putWithNoContent(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody);
-
-    List<AssignedUser> assignedUsersInDb = getAssignedUsers(vertx);
-    assertThat(assignedUsersInDb, hasSize(1));
-    assertEquals(expected, assignedUsersInDb.get(0));
+  private String cqlQueryConverter(List<UUID> ids) {
+    return "id=(" + ids.stream().map(UUID::toString)
+      .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
   }
 
-  @Test
-  public void shouldReturn404OnPutWhenAssignedUserNotFound() {
-    String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String userId = randomId();
+  private void wireMockUsers(List<UUID> ids) throws IOException, URISyntaxException {
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
 
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
+    String query = cqlQueryConverter(ids);
 
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    JsonapiError error =
-      putWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody, SC_NOT_FOUND)
-        .as(JsonapiError.class);
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern(GET_USERS_ENDPOINT), true))
+        .withQueryParam(QUERY_PARAM, WireMock.equalTo(urlEncode(query)))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
 
-    assertErrorContainsTitle(error, "not found");
-    assertThat(getAssignedUsers(vertx), hasSize(0));
+    UUID janeGroupId = UUID.fromString(JANE_GROUP_ID);
+    UUID johnGroupId = UUID.fromString(JOHN_GROUP_ID);
+    List<UUID> groupIds = List.of(johnGroupId, janeGroupId);
+    String cqlQuery = cqlQueryConverter(groupIds);
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/groups"), true))
+        .withQueryParam(QUERY_PARAM, WireMock.equalTo(urlEncode(cqlQuery)))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
   }
 
-  @Test
-  public void shouldReturn404OnPutWhenAssignedUserAndCredentialsNotFound() {
-    String credentialsId = randomId();
-    String userId = randomId();
-
-    AssignedUser expected = stubAssignedUser(userId, credentialsId);
-
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    JsonapiError error =
-      putWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody, SC_NOT_FOUND)
-        .as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "not found");
-    assertThat(getAssignedUsers(vertx), hasSize(0));
-  }
-
-  @Test
-  public void shouldReturn400OnPutWhenRequestAndPathIdsNotMatch() {
-    String credentialsId = randomId();
-    String userId = randomId();
-
-    AssignedUser expected = stubAssignedUser(randomId(), randomId());
-
-    String putBody = Json.encode(new AssignedUserPostRequest().withData(expected));
-    JsonapiError error =
-      putWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, userId), putBody, SC_BAD_REQUEST)
-        .as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "Credentials ID and user ID can't be updated");
-    assertThat(getAssignedUsers(vertx), hasSize(0));
-  }
-
-  private AssignedUser stubAssignedUser(String userId, String credentialsId) {
-    return new AssignedUser()
+  private AssignedUserId stubAssignedUserId(String userId, String credentialsId) {
+    return new AssignedUserId()
       .withId(userId)
-      .withType(AssignedUser.Type.ASSIGNED_USERS)
-      .withAttributes(new AssignedUserDataAttributes()
-        .withCredentialsId(credentialsId)
-        .withFirstName("John")
-        .withLastName("Doe")
-        .withUserName(JOHN_USERNAME)
-        .withPatronGroup("staff"));
+      .withCredentialsId(credentialsId);
   }
 }

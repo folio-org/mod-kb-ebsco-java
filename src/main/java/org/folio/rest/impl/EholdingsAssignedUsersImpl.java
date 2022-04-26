@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
-import org.folio.rest.jaxrs.model.AssignedUserPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsKbCredentialsIdUsers;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.AssignedUsersBodyValidator;
@@ -53,25 +52,13 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
                                                   Map<String, String> okapiHeaders,
                                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     assignedUsersBodyValidator.validate(entity.getData());
+    entity.getData().setCredentialsId(credentialsId);
     assignedUsersService.save(entity, okapiHeaders)
-      .thenAccept(assignedUser -> asyncResultHandler.handle(succeededFuture(
-        PostEholdingsKbCredentialsUsersByIdResponse.respond201WithApplicationVndApiJson(assignedUser))))
+      .thenAccept(assignedUserId -> asyncResultHandler.handle(succeededFuture(
+        PostEholdingsKbCredentialsUsersByIdResponse.respond201WithApplicationVndApiJson(assignedUserId))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 
-  @Override
-  @Validate
-  @HandleValidationErrors
-  public void putEholdingsKbCredentialsUsersByIdAndUserId(String credentialsId, String userId, AssignedUserPutRequest entity,
-                                                          Map<String, String> okapiHeaders,
-                                                          Handler<AsyncResult<Response>> asyncResultHandler,
-                                                          Context vertxContext) {
-    assignedUsersBodyValidator.validate(entity.getData());
-    assignedUsersService.update(credentialsId, userId, entity, okapiHeaders)
-      .thenAccept(o -> asyncResultHandler.handle(succeededFuture(
-        PutEholdingsKbCredentialsUsersByIdAndUserIdResponse.respond204())))
-      .exceptionally(errorHandler.handle(asyncResultHandler));
-  }
 
   @Override
   @Validate
