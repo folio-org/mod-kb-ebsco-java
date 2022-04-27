@@ -4,9 +4,7 @@ import org.folio.common.ListUtils;
 
 import java.util.Collection;
 
-import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
-import static org.folio.repository.DbUtil.getAccessTypesTableName;
-import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.DbUtil.*;
 import static org.folio.repository.SqlQueryHelper.count;
 import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.equalCondition;
@@ -21,6 +19,7 @@ import static org.folio.repository.SqlQueryHelper.whereQuery;
 public final class AccessTypesTableConstants {
 
   public static final String ACCESS_TYPES_TABLE_NAME = "access_types";
+  public static final String ACCESS_TYPES_VIEW_NAME = "access_types_view";
 
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
@@ -41,11 +40,11 @@ public final class AccessTypesTableConstants {
   }
 
   public static String selectByCredentialsIdWithCountQuery(String tenantId) {
-    return prepareQuery(selectByCredentialsIdWithCountQuery(), getAccessTypesTableName(tenantId));
+    return prepareQuery(selectByCredentialsIdWithCountQuery(), getAccessTypesViewName(tenantId));
   }
 
   public static String selectByCredentialsAndAccessTypeIdQuery(String tenantId) {
-    return prepareQuery(selectByCredentialsAndAccessTypeIdQuery(), getAccessTypesTableName(tenantId));
+    return prepareQuery(selectByCredentialsAndAccessTypeIdQuery(), getAccessTypesViewName(tenantId));
   }
 
   public static String selectByCredentialsAndNamesQuery(Collection<String> accessTypeNames, String tenantId) {

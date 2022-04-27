@@ -9,6 +9,7 @@ import static org.folio.db.exc.DbExcUtils.isPKViolation;
 import static org.folio.db.exc.DbExcUtils.isUniqueViolation;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_VIEW_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.currencies.CurrenciesConstants.CURRENCIES_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
@@ -95,6 +96,10 @@ public class DbUtil {
 
   public static String getAccessTypesMappingTableName(String tenantId) {
     return getTableName(tenantId, ACCESS_TYPES_MAPPING_TABLE_NAME);
+  }
+
+  public static String getAccessTypesViewName(String tenantId) {
+    return getTableName(tenantId, ACCESS_TYPES_VIEW_NAME);
   }
 
   public static String getKbCredentialsTableName(String tenantId) {

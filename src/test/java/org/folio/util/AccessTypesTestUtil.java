@@ -12,13 +12,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertAccessTypeQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.*;
 import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
@@ -111,7 +105,7 @@ public class AccessTypesTestUtil {
 
   public static List<AccessType> getAccessTypes(Vertx vertx) {
     CompletableFuture<List<AccessType>> future = new CompletableFuture<>();
-    String query = prepareQuery(selectQuery(), accessTypesMappingTestTable());
+    String query = prepareQuery(selectQuery(), accessTypesTestView());
     PostgresClient.getInstance(vertx, STUB_TENANT)
       .select(query, event -> future.complete(mapItems(event.result(), AccessTypesTestUtil::mapAccessType)));
     return future.join();
@@ -180,6 +174,10 @@ public class AccessTypesTestUtil {
 
   private static String accessTypesTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_TABLE_NAME;
+  }
+
+  private static String accessTypesTestView() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ACCESS_TYPES_VIEW_NAME;
   }
 
   private static String accessTypesMappingTestTable() {

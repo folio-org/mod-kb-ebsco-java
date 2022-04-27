@@ -6,6 +6,25 @@
 
   <changeSet id="MODKBEKBJ-623@@update-access-types-view-constraint" author="yahor_sviarchkou">
     <dropView viewName="access_types_view"/>
+    <createView viewName="access_types_view">
+      SELECT
+      a.id AS id,
+      a.credentials_id AS credentials_id,
+      a.name AS name,
+      a.description AS description,
+      a.created_date AS created_date,
+      a.created_by_user_id AS created_by_user_id,
+      a.updated_date AS updated_date,
+      a.updated_by_user_id AS updated_by_user_id,
+      am.usage_number AS usage_number
+      FROM access_types a
+      LEFT JOIN (SELECT access_type_id, COUNT(access_type_id) AS usage_number
+      FROM access_types_mappings
+      GROUP BY access_type_id) as am
+      ON a.id = am.access_type_id
+      ORDER BY a.created_date ASC
+    </createView>
+
     <dropForeignKeyConstraint
       baseTableName="access_types"
       constraintName="fk_access_types_created_kb_users"/>
