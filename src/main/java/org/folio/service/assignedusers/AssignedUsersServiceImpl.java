@@ -23,14 +23,12 @@ import org.folio.common.OkapiParams;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.UserCollectionDataConverter;
-import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
-import org.folio.service.users.UsersService;
 
 @Component
 public class AssignedUsersServiceImpl implements AssignedUsersService {
@@ -39,8 +37,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
 
   @Autowired
   private AssignedUserRepository assignedUserRepository;
-  @Autowired
-  private UsersService usersService;
+
   @Autowired
   private Converter<Collection<DbAssignedUser>, AssignedUserCollection> collectionConverter;
   @Autowired
@@ -72,8 +69,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   @Override
   public CompletableFuture<AssignedUserId> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders) {
     AssignedUserId assignedUserId = entity.getData();
-    return usersService.save(userConverter.convert(assignedUserId), new OkapiParams(okapiHeaders))
-      .thenCompose(user -> assignedUserRepository.save(toDbConverter.convert(assignedUserId), tenantId(okapiHeaders)))
+    return assignedUserRepository.save(toDbConverter.convert(assignedUserId), tenantId(okapiHeaders))
       .thenApply(source -> toAssignedUserIdConverter.convert(source));
   }
 

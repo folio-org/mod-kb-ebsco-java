@@ -12,20 +12,12 @@ import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.uniqueConstraintRecover;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USERNAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USERNAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_USER_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_DATE_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
@@ -211,16 +203,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       .usageNumber(getIntValueOrDefault(row, USAGE_NUMBER_COLUMN, 0))
       .createdDate(row.getOffsetDateTime(CREATED_DATE_COLUMN))
       .createdByUserId(row.getUUID(CREATED_BY_USER_ID_COLUMN))
-      .createdByUsername(getStringValueOrNull(row, CREATED_BY_USERNAME_COLUMN))
-      .createdByLastName(getStringValueOrNull(row, CREATED_BY_LAST_NAME_COLUMN))
-      .createdByFirstName(getStringValueOrNull(row, CREATED_BY_FIRST_NAME_COLUMN))
-      .createdByMiddleName(getStringValueOrNull(row, CREATED_BY_MIDDLE_NAME_COLUMN))
       .updatedDate(row.getOffsetDateTime(UPDATED_DATE_COLUMN))
       .updatedByUserId(row.getUUID(UPDATED_BY_USER_ID_COLUMN))
-      .updatedByUsername(getStringValueOrNull(row, UPDATED_BY_USERNAME_COLUMN))
-      .updatedByLastName(getStringValueOrNull(row, UPDATED_BY_LAST_NAME_COLUMN))
-      .updatedByFirstName(getStringValueOrNull(row, UPDATED_BY_FIRST_NAME_COLUMN))
-      .updatedByMiddleName(getStringValueOrNull(row, UPDATED_BY_MIDDLE_NAME_COLUMN))
       .build();
   }
 

@@ -55,7 +55,6 @@ import static org.folio.util.ResourcesTestUtil.buildResource;
 import static org.folio.util.ResourcesTestUtil.saveResource;
 import static org.folio.util.TitlesTestUtil.buildTitle;
 import static org.folio.util.TitlesTestUtil.saveTitle;
-import static org.folio.util.UsersTestUtil.saveUser;
 
 import java.util.List;
 import java.util.Map;
@@ -593,7 +592,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
       vertx);
 
-    saveAssignedUser(saveUser("username", "John", null, "Doe", "patron", vertx), credentialsId, vertx);
+    saveAssignedUser(STUB_USER_ID, credentialsId, vertx);
     saveProvider(buildDbProvider(STUB_VENDOR_ID, credentialsId, STUB_VENDOR_NAME), vertx);
     savePackage(buildDbPackage(FULL_PACKAGE_ID, credentialsId, STUB_PACKAGE_NAME), vertx);
     saveResource(buildResource(STUB_MANAGED_RESOURCE_ID, credentialsId, STUB_TITLE_NAME), vertx);
@@ -626,7 +625,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn200AndKbCredentialsOnGetByUser() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    saveAssignedUser(saveUser(STUB_USER_ID, "username", "John", null, "Doe", "patron", vertx), credentialsId, vertx);
+    saveAssignedUser(STUB_USER_ID, credentialsId, vertx);
 
     KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
     assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
@@ -658,7 +657,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnGetByUserWhenUserIsNotTheOneWhoIsAssigned() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    saveAssignedUser(saveUser(STUB_USER_ID, "username", "John", null, "Doe", "patron", vertx), credentialsId, vertx);
+    saveAssignedUser(STUB_USER_ID, credentialsId, vertx);
 
     JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_OTHER_HEADER).as(
       JsonapiError.class);

@@ -6,7 +6,6 @@ import java.util.Collection;
 
 import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
 import static org.folio.repository.DbUtil.getAccessTypesTableName;
-import static org.folio.repository.DbUtil.getAccessTypesViewName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.count;
 import static org.folio.repository.SqlQueryHelper.deleteQuery;
@@ -22,7 +21,6 @@ import static org.folio.repository.SqlQueryHelper.whereQuery;
 public final class AccessTypesTableConstants {
 
   public static final String ACCESS_TYPES_TABLE_NAME = "access_types";
-  public static final String ACCESS_TYPES_VIEW_NAME = "access_types_view";
 
   public static final String ID_COLUMN = "id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
@@ -30,16 +28,8 @@ public final class AccessTypesTableConstants {
   public static final String DESCRIPTION_COLUMN = "description";
   public static final String CREATED_DATE_COLUMN = "created_date";
   public static final String CREATED_BY_USER_ID_COLUMN = "created_by_user_id";
-  public static final String CREATED_BY_USERNAME_COLUMN = "created_by_username";
-  public static final String CREATED_BY_LAST_NAME_COLUMN = "created_by_last_name";
-  public static final String CREATED_BY_FIRST_NAME_COLUMN = "created_by_first_name";
-  public static final String CREATED_BY_MIDDLE_NAME_COLUMN = "created_by_middle_name";
   public static final String UPDATED_DATE_COLUMN = "updated_date";
   public static final String UPDATED_BY_USER_ID_COLUMN = "updated_by_user_id";
-  public static final String UPDATED_BY_USERNAME_COLUMN = "updated_by_username";
-  public static final String UPDATED_BY_LAST_NAME_COLUMN = "updated_by_last_name";
-  public static final String UPDATED_BY_FIRST_NAME_COLUMN = "updated_by_first_name";
-  public static final String UPDATED_BY_MIDDLE_NAME_COLUMN = "updated_by_middle_name";
   public static final String USAGE_NUMBER_COLUMN = "usage_number";
 
   private static final String[] INSERT_COLUMNS = new String[]{
@@ -51,11 +41,11 @@ public final class AccessTypesTableConstants {
   }
 
   public static String selectByCredentialsIdWithCountQuery(String tenantId) {
-    return prepareQuery(selectByCredentialsIdWithCountQuery(), getAccessTypesViewName(tenantId));
+    return prepareQuery(selectByCredentialsIdWithCountQuery(), getAccessTypesTableName(tenantId));
   }
 
   public static String selectByCredentialsAndAccessTypeIdQuery(String tenantId) {
-    return prepareQuery(selectByCredentialsAndAccessTypeIdQuery(), getAccessTypesViewName(tenantId));
+    return prepareQuery(selectByCredentialsAndAccessTypeIdQuery(), getAccessTypesTableName(tenantId));
   }
 
   public static String selectByCredentialsAndNamesQuery(Collection<String> accessTypeNames, String tenantId) {

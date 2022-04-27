@@ -1,16 +1,7 @@
 package org.folio.util;
 
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_VIEW_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
-import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.PATRON_GROUP_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.USER_NAME_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.*;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
 import java.util.List;
@@ -50,7 +41,7 @@ public class AssignedUsersTestUtil {
 
   public static List<AssignedUser> getAssignedUsers(Vertx vertx) {
     CompletableFuture<List<AssignedUser>> future = new CompletableFuture<>();
-    String query = DbUtil.prepareQuery(SqlQueryHelper.selectQuery(), kbAssignedUsersTestView());
+    String query = DbUtil.prepareQuery(SqlQueryHelper.selectQuery(), kbAssignedUsersTestTable());
     PostgresClient.getInstance(vertx, STUB_TENANT).select(query, event ->
       future.complete(RowSetUtils.mapItems(event.result(), AssignedUsersTestUtil::parseAssignedUser))
     );
@@ -61,19 +52,10 @@ public class AssignedUsersTestUtil {
     return CONVERTER.convert(DbAssignedUser.builder()
       .id(row.getUUID(ID_COLUMN))
       .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
-      .username(row.getString(USER_NAME_COLUMN))
-      .patronGroup(row.getString(PATRON_GROUP_COLUMN))
-      .firstName(row.getString(FIRST_NAME_COLUMN))
-      .middleName(row.getString(MIDDLE_NAME_COLUMN))
-      .lastName(row.getString(LAST_NAME_COLUMN))
       .build());
   }
 
   private static String kbAssignedUsersTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ASSIGNED_USERS_TABLE_NAME;
-  }
-
-  private static String kbAssignedUsersTestView() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + ASSIGNED_USERS_VIEW_NAME;
   }
 }

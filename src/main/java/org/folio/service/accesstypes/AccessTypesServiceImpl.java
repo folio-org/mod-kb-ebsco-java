@@ -18,6 +18,7 @@ import java.util.function.Function;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 
+import org.folio.service.users.UsersLookUpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +40,6 @@ import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.validator.AccessTypesBodyValidator;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.users.User;
-import org.folio.service.users.UsersService;
 
 @Component
 public class AccessTypesServiceImpl implements AccessTypesService {
@@ -50,7 +50,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   private static final String NOT_FOUND_BY_RECORD_MESSAGE = "Access type not found: recordId = %s, recordType = %s";
 
   @Autowired
-  private UsersService usersService;
+  private UsersLookUpService usersLookUpService;
   @Autowired
   private AccessTypeMappingsService mappingService;
   @Autowired
@@ -133,7 +133,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     }
     return validateAccessTypeLimit(credentialsId, okapiHeaders)
       .thenApply(o -> accessTypeToDbConverter.convert(requestData))
-      .thenCombine(usersService.findByToken(new OkapiParams(okapiHeaders)), this::setCreatorMetaInfo)
+      .thenCombine(usersLookUpService.lookUpUser(new OkapiParams(okapiHeaders)), this::setCreatorMetaInfo)
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
       .thenApply(accessTypeFromDbConverter::convert);
   }
@@ -144,7 +144,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     AccessType requestData = putRequest.getData();
     bodyValidator.validate(credentialsId, accessTypeId, requestData);
     return fetchDbAccessType(credentialsId, accessTypeId, okapiHeaders)
-      .thenCombine(usersService.findByToken(new OkapiParams(okapiHeaders)), this::setUpdaterMetaInfo)
+      .thenCombine(usersLookUpService.lookUpUser(new OkapiParams(okapiHeaders)), this::setUpdaterMetaInfo)
       .thenApply(accessType -> updateFields(accessType, requestData.getAttributes()))
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
       .thenApply(accessType -> null);

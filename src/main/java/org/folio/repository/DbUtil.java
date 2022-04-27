@@ -9,9 +9,7 @@ import static org.folio.db.exc.DbExcUtils.isPKViolation;
 import static org.folio.db.exc.DbExcUtils.isUniqueViolation;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_VIEW_NAME;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_VIEW_NAME;
 import static org.folio.repository.currencies.CurrenciesConstants.CURRENCIES_TABLE_NAME;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
@@ -26,7 +24,6 @@ import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
 import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
-import static org.folio.repository.users.UsersTableConstants.USERS_TABLE_NAME;
 
 import java.util.List;
 import java.util.function.Function;
@@ -96,10 +93,6 @@ public class DbUtil {
     return getTableName(tenantId, ACCESS_TYPES_TABLE_NAME);
   }
 
-  public static String getAccessTypesViewName(String tenantId) {
-    return getTableName(tenantId, ACCESS_TYPES_VIEW_NAME);
-  }
-
   public static String getAccessTypesMappingTableName(String tenantId) {
     return getTableName(tenantId, ACCESS_TYPES_MAPPING_TABLE_NAME);
   }
@@ -112,10 +105,6 @@ public class DbUtil {
     return getTableName(tenantId, ASSIGNED_USERS_TABLE_NAME);
   }
 
-  public static String getAssignedUsersViewName(String tenantId) {
-    return getTableName(tenantId, ASSIGNED_USERS_VIEW_NAME);
-  }
-
   public static String getCurrenciesTableName(String tenantId) {
     return getTableName(tenantId, CURRENCIES_TABLE_NAME);
   }
@@ -126,10 +115,6 @@ public class DbUtil {
 
   public static String getUCCredentialsTableName(String tenantId) {
     return getTableName(tenantId, UC_CREDENTIALS_TABLE_NAME);
-  }
-
-  public static String getUsersTableName(String tenantId) {
-    return getTableName(tenantId, USERS_TABLE_NAME);
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> uniqueConstraintRecover(String columnName, Throwable t) {

@@ -10,17 +10,7 @@ import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.deleteAssignedUserQuery;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.selectAssignedUsersByCredentialsIdQuery;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.selectCountByCredentialsIdQuery;
-import static org.folio.repository.users.UsersTableConstants.FIRST_NAME_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.LAST_NAME_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.MIDDLE_NAME_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.PATRON_GROUP_COLUMN;
-import static org.folio.repository.users.UsersTableConstants.USER_NAME_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.*;
 import static org.folio.service.exc.ServiceExceptions.notFound;
 import static org.folio.util.FutureUtils.mapResult;
 
@@ -135,11 +125,6 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     return DbAssignedUser.builder()
       .id(row.getUUID(ID_COLUMN))
       .credentialsId(row.getUUID(CREDENTIALS_ID_COLUMN))
-      .username(row.getString(USER_NAME_COLUMN))
-      .firstName(row.getString(FIRST_NAME_COLUMN))
-      .middleName(row.getString(MIDDLE_NAME_COLUMN))
-      .lastName(row.getString(LAST_NAME_COLUMN))
-      .patronGroup(row.getString(PATRON_GROUP_COLUMN))
       .build();
   }
 
