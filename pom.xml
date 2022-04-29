@@ -44,7 +44,7 @@
     <vertx.version>4.2.4</vertx.version>
     <aspectj.version>1.9.8</aspectj.version>
     <spring.version>5.3.19</spring.version>
-    <jackson.version>2.13.1</jackson.version>
+    <jackson.version>2.13.2.1</jackson.version>
     <commons-configuration2.version>2.7</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.22</lombok.version>
@@ -84,6 +84,18 @@
       </properties>
     </profile>
   </profiles>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -125,12 +137,10 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
       <artifactId>jackson-jaxrs-json-provider</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
