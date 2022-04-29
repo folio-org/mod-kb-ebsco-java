@@ -122,6 +122,25 @@ public class UsersLookUpService {
     return promise;
   }
 
+  public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
+    MultiMap headers = new HeadersMultiMap();
+    headers.addAll(okapiParams.getHeaders());
+    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
+
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    if (StringUtils.isNotBlank(userId)) {
+      String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
+      webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
+        .putHeaders(headers)
+        .as(BodyCodec.jsonObject())
+        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+        .send(promise);
+      return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUser));
+    } else {
+      return CompletableFuture.failedFuture(new NotAuthorizedException(XOkapiHeaders.USER_ID + " header is required"));
+    }
+  }
+
   private ErrorConverter errorConverter() {
     return ErrorConverter.createFullBody(result -> {
       HttpResponse<Buffer> response = result.response();

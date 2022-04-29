@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
@@ -87,6 +88,9 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<AccessTypeCollection> findByCredentialsId(String credentialsId,
                                                                      Map<String, String> okapiHeaders) {
     return repository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
+//      .thenApply(dbAccessTypes -> dbAccessTypes.stream()
+//        .map(dbAccessType->enrichmentAccessType(dbAccessType, new OkapiParams(okapiHeaders)))
+//        .collect(Collectors.toList()))
       .thenApply(accessTypes -> mapItems(accessTypes, accessTypeFromDbConverter::convert))
       .thenApply(accessTypeCollectionConverter::convert);
   }
@@ -101,6 +105,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
                                                                         Map<String, String> okapiHeaders) {
     return fetchDbAccessType(credentialsId, accessTypeId, okapiHeaders)
+      .thenApply(dbAccessType -> enrichmentAccessType(dbAccessType, new OkapiParams(okapiHeaders)))
       .thenApply(accessTypeFromDbConverter::convert);
   }
 
@@ -109,6 +114,9 @@ public class AccessTypesServiceImpl implements AccessTypesService {
                                                              String credentialsId,
                                                              Map<String, String> okapiHeaders) {
     return repository.findByCredentialsAndNames(toUUID(credentialsId), accessTypeNames, tenantId(okapiHeaders))
+//      .thenApply(dbAccessTypes -> dbAccessTypes.stream()
+//        .map(dbAccessType->enrichmentAccessType(dbAccessType, new OkapiParams(okapiHeaders)))
+//        .collect(Collectors.toList()))
       .thenApply(accessTypes -> mapItems(accessTypes, accessTypeFromDbConverter::convert))
       .thenApply(accessTypeCollectionConverter::convert);
   }
@@ -120,6 +128,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     RecordType recordType = recordKey.getRecordType();
     return repository.findByCredentialsAndRecord(toUUID(credentialsId), recordId, recordType, tenantId(okapiHeaders))
       .thenApply(getAccessTypeOrFail(recordId, recordType))
+      .thenApply(dbAccessType -> enrichmentAccessType(dbAccessType, new OkapiParams(okapiHeaders)))
       .thenApply(accessTypeFromDbConverter::convert);
   }
 
@@ -188,6 +197,32 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       throw new BadRequestException(format(MAXIMUM_ACCESS_TYPES_MESSAGE, limit));
     }
     return null;
+  }
+
+  private DbAccessType enrichmentAccessType(DbAccessType dbAccessType, OkapiParams okapiParams) {
+
+    if (dbAccessType.getCreatedByUserId() != null) {
+      String creatorId = dbAccessType.getCreatedByUserId().toString();
+      CompletableFuture<User> creator = usersLookUpService.lookUpUserById(creatorId, okapiParams);
+      creator.thenApply(user -> dbAccessType.toBuilder()
+        .createdByUsername(user.getUserName())
+        .createdByFirstName(user.getFirstName())
+        .createdByLastName(user.getLastName())
+        .createdByMiddleName(user.getMiddleName())
+        .build());
+    }
+
+    if (dbAccessType.getUpdatedByUserId() != null) {
+      String updaterId = dbAccessType.getUpdatedByUserId().toString();
+      CompletableFuture<User> updater = usersLookUpService.lookUpUserById(updaterId, okapiParams);
+      updater.thenApply(user -> dbAccessType.toBuilder()
+        .createdByUsername(user.getUserName())
+        .createdByFirstName(user.getFirstName())
+        .createdByLastName(user.getLastName())
+        .createdByMiddleName(user.getMiddleName())
+        .build());
+    }
+    return dbAccessType;
   }
 
   private DbAccessType setCreatorMetaInfo(DbAccessType dbAccessType, User userInfo) {

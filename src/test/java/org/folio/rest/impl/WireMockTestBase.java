@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
@@ -32,10 +35,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -100,6 +106,13 @@ public abstract class WireMockTestBase extends TestBase {
   }
 
   protected void setUpTestUsers() throws IOException, URISyntaxException {
+    //todo
+    stubFor(
+      get(new UrlPathPattern(new EqualToPattern("/users/" + "47d9ca93-9c82-4d6a-8d7f-7a73963086b9"), false))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(200)
+          .withBody(readFile("responses/userlookup/mock_user_response_3_200.json"))
+        ));
 //    saveUser(JOHN_ID, JOHN_USERNAME, "John", null, "Doe", "patron", vertx);
 //    saveUser(JANE_ID, JANE_USERNAME, "Jane", null, "Doe", "patron", vertx);
   }
