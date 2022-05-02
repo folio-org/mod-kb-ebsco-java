@@ -1,5 +1,17 @@
 package org.folio.service.users;
 
+import static org.folio.util.FutureUtils.mapVertxFuture;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
+
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
@@ -16,23 +28,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.common.OkapiParams;
-import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
-import static org.folio.util.FutureUtils.mapVertxFuture;
+import org.folio.common.OkapiParams;
+import org.folio.okapi.common.XOkapiHeaders;
+import org.folio.util.StringUtil;
 
 /**
  * Retrieves user information from mod-users /users/{userId} endpoint.
@@ -96,6 +97,25 @@ public class UsersLookUpService {
     return lookUpGroupsUsingCQL(okapiParams, idsCql);
   }
 
+  public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
+    MultiMap headers = new HeadersMultiMap();
+    headers.addAll(okapiParams.getHeaders());
+    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
+
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    if (StringUtils.isNotBlank(userId)) {
+      String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
+      webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
+        .putHeaders(headers)
+        .as(BodyCodec.jsonObject())
+        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+        .send(promise);
+      return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUser));
+    } else {
+      return CompletableFuture.failedFuture(new NotAuthorizedException(XOkapiHeaders.USER_ID + " header is required"));
+    }
+  }
+
   private CompletableFuture<Collection<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
     Promise<HttpResponse<JsonObject>> promise =
       lookUpByCQL(okapiParams, USERS_ENDPOINT, query);
@@ -122,25 +142,6 @@ public class UsersLookUpService {
     return promise;
   }
 
-  public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
-    MultiMap headers = new HeadersMultiMap();
-    headers.addAll(okapiParams.getHeaders());
-    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
-
-    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
-    if (StringUtils.isNotBlank(userId)) {
-      String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
-      webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
-        .putHeaders(headers)
-        .as(BodyCodec.jsonObject())
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-        .send(promise);
-      return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUser));
-    } else {
-      return CompletableFuture.failedFuture(new NotAuthorizedException(XOkapiHeaders.USER_ID + " header is required"));
-    }
-  }
-
   private ErrorConverter errorConverter() {
     return ErrorConverter.createFullBody(result -> {
       HttpResponse<Buffer> response = result.response();
@@ -161,18 +162,14 @@ public class UsersLookUpService {
 
   private User mapUser(JsonObject user) {
     User.UserBuilder builder = User.builder();
-    if (user.containsKey("username") && user.containsKey("personal")) {
-      builder.id(user.getString("id"));
-      builder.userName(user.getString("username"));
-      builder.patronGroup(user.getString("patronGroup"));
-      JsonObject personalInfo = user.getJsonObject("personal");
-      if (personalInfo != null) {
-        builder.firstName(personalInfo.getString("firstName"));
-        builder.middleName(personalInfo.getString("middleName"));
-        builder.lastName(personalInfo.getString("lastName"));
-      }
-    } else {
-      throw new BadRequestException(USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE);
+    builder.id(user.getString("id"));
+    builder.userName(user.getString("username"));
+    builder.patronGroup(user.getString("patronGroup"));
+    JsonObject personalInfo = user.getJsonObject("personal");
+    if (personalInfo != null) {
+      builder.firstName(personalInfo.getString("firstName"));
+      builder.middleName(personalInfo.getString("middleName"));
+      builder.lastName(personalInfo.getString("lastName"));
     }
     return builder.build();
   }

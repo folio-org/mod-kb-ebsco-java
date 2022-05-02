@@ -1,7 +1,5 @@
 package org.folio.rest.converter.accesstypes;
 
-import static org.apache.commons.lang3.StringUtils.isAllBlank;
-
 import static org.folio.db.RowSetUtils.fromDate;
 import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
@@ -15,7 +13,6 @@ import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.Metadata;
-import org.folio.rest.jaxrs.model.UserDisplayInfo;
 
 public class AccessTypeConverter {
 
@@ -28,7 +25,7 @@ public class AccessTypeConverter {
 
     @Override
     public AccessType convert(@NotNull DbAccessType source) {
-      AccessType accessType = new AccessType()
+      return new AccessType()
         .withId(source.getId().toString())
         .withType(AccessType.Type.ACCESS_TYPES)
         .withAttributes(new AccessTypeDataAttributes()
@@ -36,25 +33,11 @@ public class AccessTypeConverter {
           .withDescription(source.getDescription())
           .withCredentialsId(source.getCredentialsId().toString()))
         .withUsageNumber(source.getUsageNumber())
-        .withCreator(new UserDisplayInfo()
-          .withFirstName(source.getCreatedByFirstName())
-          .withLastName(source.getCreatedByLastName())
-          .withMiddleName(source.getCreatedByMiddleName()))
         .withMetadata(new Metadata()
           .withCreatedByUserId(fromUUID(source.getCreatedByUserId()))
-          .withCreatedByUsername(source.getCreatedByUsername())
           .withCreatedDate(toDate(source.getCreatedDate()))
           .withUpdatedByUserId(fromUUID(source.getUpdatedByUserId()))
-          .withUpdatedByUsername(source.getUpdatedByUsername())
           .withUpdatedDate(toDate(source.getUpdatedDate())));
-      if (!isAllBlank(source.getUpdatedByFirstName(), source.getUpdatedByLastName(), source.getUpdatedByMiddleName())) {
-        accessType
-          .withUpdater(new UserDisplayInfo()
-            .withFirstName(source.getUpdatedByFirstName())
-            .withLastName(source.getUpdatedByLastName())
-            .withMiddleName(source.getUpdatedByMiddleName()));
-      }
-      return accessType;
     }
 
   }
@@ -71,31 +54,13 @@ public class AccessTypeConverter {
         .description(attributes.getDescription())
         .credentialsId(toUUID(attributes.getCredentialsId()));
 
-      UserDisplayInfo creator = source.getCreator();
-      if (creator != null) {
-        builder
-          .createdByFirstName(creator.getFirstName())
-          .createdByMiddleName(creator.getMiddleName())
-          .createdByLastName(creator.getLastName());
-      }
-
-      UserDisplayInfo updater = source.getUpdater();
-      if (updater != null) {
-        builder
-          .updatedByFirstName(updater.getFirstName())
-          .updatedByMiddleName(updater.getMiddleName())
-          .updatedByLastName(updater.getLastName());
-      }
-
       Metadata metadata = source.getMetadata();
       if (metadata != null) {
         builder
           .createdDate(fromDate(metadata.getCreatedDate()))
           .createdByUserId(toUUID(metadata.getCreatedByUserId()))
-          .createdByUsername(metadata.getCreatedByUsername())
           .updatedDate(fromDate(metadata.getUpdatedDate()))
-          .updatedByUserId(toUUID(metadata.getUpdatedByUserId()))
-          .updatedByUsername(metadata.getUpdatedByUsername());
+          .updatedByUserId(toUUID(metadata.getUpdatedByUserId()));
       }
       return builder.build();
     }
