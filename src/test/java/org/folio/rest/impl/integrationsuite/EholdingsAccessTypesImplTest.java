@@ -134,7 +134,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
           .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
 
     credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    setUpTestUsers();
   }
 
   @After
@@ -142,7 +141,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     clearDataFromTable(vertx, ACCESS_TYPES_MAPPING_TABLE_NAME);
     clearDataFromTable(vertx, ACCESS_TYPES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
-    tearDownTestUsers();
   }
 
   @Test
@@ -489,18 +487,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401OnPutByCredentialsAndAccessTypeIdWhenNoUserHeader() {
-    List<AccessType> accessTypes = testData(credentialsId);
-    String id = insertAccessType(accessTypes.get(0), vertx);
-
-    String putBody = Json.encode(new AccessTypePutRequest().withData(stubbedAccessType()));
-    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED).as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "Invalid token");
-  }
-
-  @Test
   public void shouldReturn422OnPutByCredentialsAndAccessTypeIdWhenInvalidId() {
     AccessType accessType = stubbedAccessType();
     accessType.setId("invalid-id-format");
@@ -510,18 +496,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     Errors errors = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, USER9_TOKEN).as(Errors.class);
 
     assertThat(errors.getErrors().get(0).getParameters().get(0).getKey(), equalTo("data.id"));
-  }
-
-  @Test
-  public void shouldReturn401WhenUnAuthorized() {
-    List<AccessType> accessTypes = testData(credentialsId);
-    String id = insertAccessType(accessTypes.get(0), vertx);
-
-    String putBody = Json.encode(new AccessTypePutRequest().withData(stubbedAccessType()));
-    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNAUTHORIZED, USER3_TOKEN).as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "Unauthorized");
   }
 
   private AccessType findAccessTypeWithId(AccessTypeCollection collection, String id) {

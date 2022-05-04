@@ -73,8 +73,7 @@ public class UsersLookUpServiceTest {
       .notifier(new Slf4jNotifier(true)));
 
   @Test
-  public void test(TestContext context) throws IOException, URISyntaxException {
-
+  public void shouldReturn200WhenThirdPartyUserIdIsValid(TestContext context) throws IOException, URISyntaxException {
     final String stubUserId = "88888888-8888-4888-8888-888888888888";
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
     Async async = context.async();
@@ -114,7 +113,6 @@ public class UsersLookUpServiceTest {
 
     OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
     OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
-    OKAPI_HEADERS.put(XOkapiHeaders.USER_ID, stubUserId);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))

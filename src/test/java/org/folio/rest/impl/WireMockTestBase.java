@@ -105,22 +105,6 @@ public abstract class WireMockTestBase extends TestBase {
     ucTokenCache.invalidateAll();
   }
 
-  protected void setUpTestUsers() throws IOException, URISyntaxException {
-    //todo
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users/" + "47d9ca93-9c82-4d6a-8d7f-7a73963086b9"), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(200)
-          .withBody(readFile("responses/userlookup/mock_user_response_3_200.json"))
-        ));
-//    saveUser(JOHN_ID, JOHN_USERNAME, "John", null, "Doe", "patron", vertx);
-//    saveUser(JANE_ID, JANE_USERNAME, "Jane", null, "Doe", "patron", vertx);
-  }
-
-  protected void tearDownTestUsers() {
-    //clearDataFromTable(vertx, USERS_TABLE_NAME);
-  }
-
   protected ExtractableResponse<Response> getWithOk(String endpoint, Header... headers) {
     return getWithStatus(endpoint, HttpStatus.SC_OK, headers);
   }

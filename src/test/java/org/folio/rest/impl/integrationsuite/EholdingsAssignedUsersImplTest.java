@@ -74,14 +74,12 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    setUpTestUsers();
   }
 
   @After
   public void tearDown() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
-    tearDownTestUsers();
   }
 
   @Test
