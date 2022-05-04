@@ -113,6 +113,7 @@ public class UsersLookUpServiceTest {
 
     OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
     OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+    OKAPI_HEADERS.put(XOkapiHeaders.USER_ID, stubUserId);
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
