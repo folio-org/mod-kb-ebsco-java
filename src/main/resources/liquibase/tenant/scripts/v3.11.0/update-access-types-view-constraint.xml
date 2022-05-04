@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <changeSet id="MODKBEKBJ-623@@update-access-types-view-constraint" author="yahor_sviarchkou">
+  <changeSet id="MODKBEKBJ-623@@update-access-types-view" author="yahor_sviarchkou">
     <dropView viewName="access_types_view"/>
     <createView viewName="access_types_view">
       SELECT
@@ -24,12 +24,19 @@
       ON a.id = am.access_type_id
       ORDER BY a.created_date ASC
     </createView>
+  </changeSet>
 
+  <changeSet id="MODKBEKBJ-623@@drop-access-types-constraint-created-kb-users" author="yahor_sviarchkou">
     <dropForeignKeyConstraint
       baseTableName="access_types"
       constraintName="fk_access_types_created_kb_users"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-623@@drop-access-types-constraint-updated-kb-users" author="yahor_sviarchkou">
     <dropForeignKeyConstraint
       baseTableName="access_types"
       constraintName="fk_access_types_updated_kb_users"/>
   </changeSet>
 </databaseChangeLog>
+
+
