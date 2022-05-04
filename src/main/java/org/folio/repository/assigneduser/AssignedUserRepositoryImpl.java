@@ -10,7 +10,12 @@ import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.*;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.selectAssignedUsersByCredentialsIdQuery;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.selectCountByCredentialsIdQuery;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.deleteAssignedUserQuery;
 import static org.folio.service.exc.ServiceExceptions.notFound;
 import static org.folio.util.FutureUtils.mapResult;
 
