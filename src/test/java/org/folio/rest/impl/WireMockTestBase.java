@@ -1,22 +1,8 @@
 package org.folio.rest.impl;
 
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.notNullValue;
-
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.repository.users.UsersTableConstants.USERS_TABLE_NAME;
-import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.UsersTestUtil.saveUser;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
@@ -25,11 +11,6 @@ import io.restassured.response.Response;
 import io.vertx.ext.unit.TestContext;
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.Configuration;
@@ -43,6 +24,26 @@ import org.folio.rmapi.cache.VendorCacheKey;
 import org.folio.spring.SpringContextUtil;
 import org.folio.test.util.TestBase;
 import org.folio.test.util.TokenTestUtil;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.*;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+import static org.folio.test.util.TestUtil.readFile;
+import static org.folio.util.KBTestUtil.clearDataFromTable;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Base test class for tests that use wiremock and vertx http servers,
@@ -102,15 +103,6 @@ public abstract class WireMockTestBase extends TestBase {
     resourceCache.invalidateAll();
     titleCache.invalidateAll();
     ucTokenCache.invalidateAll();
-  }
-
-  protected void setUpTestUsers() {
-    saveUser(JOHN_ID, JOHN_USERNAME, "John", null, "Doe", "patron", vertx);
-    saveUser(JANE_ID, JANE_USERNAME, "Jane", null, "Doe", "patron", vertx);
-  }
-
-  protected void tearDownTestUsers() {
-    clearDataFromTable(vertx, USERS_TABLE_NAME);
   }
 
   protected ExtractableResponse<Response> getWithOk(String endpoint, Header... headers) {

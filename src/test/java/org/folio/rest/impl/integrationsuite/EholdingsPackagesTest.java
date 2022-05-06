@@ -177,7 +177,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     super.setUp();
     setupDefaultKBConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
-    setUpTestUsers();
   }
 
   @After
@@ -188,7 +187,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     clearDataFromTable(vertx, RESOURCES_TABLE_NAME);
     clearDataFromTable(vertx, PACKAGES_TABLE_NAME);
     clearDataFromTable(vertx, KB_CREDENTIALS_TABLE_NAME);
-    tearDownTestUsers();
   }
 
   @Test
@@ -292,6 +290,22 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
     assertEquals(0, packages.size());
+  }
+
+  @Test
+  public void shouldReturn400OnInvalidFilterCustomParameter() {
+    String invalidParameterForFilterCustom = getWithStatus(
+      PACKAGES_ENDPOINT + "?filter[custom]=test", 400, STUB_TOKEN_HEADER).asString();
+
+    assertTrue(invalidParameterForFilterCustom.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
+  }
+
+  @Test
+  public void shouldReturn400OnNotSupportedFilterCustomParameter() {
+    String falseParameterForFilterCustom = getWithStatus(
+      PACKAGES_ENDPOINT + "?filter[custom]=false", 400, STUB_TOKEN_HEADER).asString();
+
+    assertTrue(falseParameterForFilterCustom.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
   }
 
   @Test

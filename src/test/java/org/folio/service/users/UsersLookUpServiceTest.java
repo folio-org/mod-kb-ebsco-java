@@ -73,6 +73,39 @@ public class UsersLookUpServiceTest {
       .notifier(new Slf4jNotifier(true)));
 
   @Test
+  public void shouldReturn200WhenThirdPartyUserIdIsValid(TestContext context) throws IOException, URISyntaxException {
+    final String stubUserId = "88888888-8888-4888-8888-888888888888";
+    final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
+    Async async = context.async();
+
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(USER_INFO_STUB_FILE))));
+
+    CompletableFuture<User> info = usersLookUpService.lookUpUserById(stubUserId, new OkapiParams(OKAPI_HEADERS));
+    info.thenCompose(userInfo -> {
+      context.assertNotNull(userInfo);
+
+      context.assertEquals("cedrick", userInfo.getUserName());
+      context.assertEquals("firstname_test", userInfo.getFirstName());
+      context.assertNull(userInfo.getMiddleName());
+      context.assertEquals("lastname_test", userInfo.getLastName());
+
+      async.complete();
+
+      return null;
+    }).exceptionally(throwable -> {
+      context.fail(throwable);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
   public void shouldReturn200WhenUserIdIsValid(TestContext context) throws IOException, URISyntaxException {
     final String stubUserId = "88888888-8888-4888-8888-888888888888";
     final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;

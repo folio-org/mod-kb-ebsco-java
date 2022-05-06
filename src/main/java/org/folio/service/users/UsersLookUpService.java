@@ -97,6 +97,25 @@ public class UsersLookUpService {
     return lookUpGroupsUsingCQL(okapiParams, idsCql);
   }
 
+  public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
+    MultiMap headers = new HeadersMultiMap();
+    headers.addAll(okapiParams.getHeaders());
+    headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
+
+    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    if (StringUtils.isNotBlank(userId)) {
+      String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
+      webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
+        .putHeaders(headers)
+        .as(BodyCodec.jsonObject())
+        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+        .send(promise);
+      return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUser));
+    } else {
+      return CompletableFuture.failedFuture(new NotAuthorizedException(XOkapiHeaders.USER_ID + " header is required"));
+    }
+  }
+
   private CompletableFuture<Collection<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
     Promise<HttpResponse<JsonObject>> promise =
       lookUpByCQL(okapiParams, USERS_ENDPOINT, query);
@@ -143,18 +162,14 @@ public class UsersLookUpService {
 
   private User mapUser(JsonObject user) {
     User.UserBuilder builder = User.builder();
-    if (user.containsKey("username") && user.containsKey("personal")) {
-      builder.id(user.getString("id"));
-      builder.userName(user.getString("username"));
-      builder.patronGroup(user.getString("patronGroup"));
-      JsonObject personalInfo = user.getJsonObject("personal");
-      if (personalInfo != null) {
-        builder.firstName(personalInfo.getString("firstName"));
-        builder.middleName(personalInfo.getString("middleName"));
-        builder.lastName(personalInfo.getString("lastName"));
-      }
-    } else {
-      throw new BadRequestException(USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE);
+    builder.id(user.getString("id"));
+    builder.userName(user.getString("username"));
+    builder.patronGroup(user.getString("patronGroup"));
+    JsonObject personalInfo = user.getJsonObject("personal");
+    if (personalInfo != null) {
+      builder.firstName(personalInfo.getString("firstName"));
+      builder.middleName(personalInfo.getString("middleName"));
+      builder.lastName(personalInfo.getString("lastName"));
     }
     return builder.build();
   }

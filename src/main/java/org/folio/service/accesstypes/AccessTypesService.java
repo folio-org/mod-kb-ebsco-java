@@ -19,6 +19,7 @@ public interface AccessTypesService {
   CompletableFuture<AccessType> findByUserAndId(String accessTypeId, Map<String, String> okapiHeaders);
 
   CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
+                                                                 boolean withMetadata,
                                                                  Map<String, String> okapiHeaders);
 
   CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames, String credentialsId,

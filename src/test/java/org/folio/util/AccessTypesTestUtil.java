@@ -3,10 +3,8 @@ package org.folio.util;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbMetadataUtil.CREATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.DbMetadataUtil.CREATED_BY_USER_NAME_COLUMN;
 import static org.folio.repository.DbMetadataUtil.CREATED_DATE_COLUMN;
 import static org.folio.repository.DbMetadataUtil.UPDATED_BY_USER_ID_COLUMN;
-import static org.folio.repository.DbMetadataUtil.UPDATED_BY_USER_NAME_COLUMN;
 import static org.folio.repository.DbMetadataUtil.UPDATED_DATE_COLUMN;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
@@ -14,20 +12,7 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_VIEW_NAME;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_FIRST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_LAST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREATED_BY_MIDDLE_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.DESCRIPTION_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_FIRST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_LAST_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.UPDATED_BY_MIDDLE_NAME_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertAccessTypeQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.*;
 import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
@@ -144,16 +129,8 @@ public class AccessTypesTestUtil {
       .usageNumber(ObjectUtils.defaultIfNull(resultRow.getInteger(USAGE_NUMBER_COLUMN), 0))
       .createdDate(resultRow.getOffsetDateTime(CREATED_DATE_COLUMN))
       .createdByUserId(resultRow.getUUID(CREATED_BY_USER_ID_COLUMN))
-      .createdByUsername(resultRow.getString(CREATED_BY_USER_NAME_COLUMN))
-      .createdByLastName(resultRow.getString(CREATED_BY_LAST_NAME_COLUMN))
-      .createdByFirstName(resultRow.getString(CREATED_BY_FIRST_NAME_COLUMN))
-      .createdByMiddleName(resultRow.getString(CREATED_BY_MIDDLE_NAME_COLUMN))
       .updatedDate(resultRow.getOffsetDateTime(UPDATED_DATE_COLUMN))
       .updatedByUserId(resultRow.getUUID(UPDATED_BY_USER_ID_COLUMN))
-      .updatedByUsername(resultRow.getString(UPDATED_BY_USER_NAME_COLUMN))
-      .updatedByLastName(resultRow.getString(UPDATED_BY_LAST_NAME_COLUMN))
-      .updatedByFirstName(resultRow.getString(UPDATED_BY_FIRST_NAME_COLUMN))
-      .updatedByMiddleName(resultRow.getString(UPDATED_BY_MIDDLE_NAME_COLUMN))
       .build());
   }
 
