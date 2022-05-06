@@ -335,49 +335,29 @@
           "permissionsRequired": ["kb-ebsco.currencies.collection.get"]
         },
         {
-          "methods": [
-            "GET"
-          ],
+          "methods": ["GET"],
           "pathPattern": "/eholdings/uc-credentials",
-          "permissionsRequired": [
-            "kb-ebsco.uc-credentials.item.get"
-          ]
+          "permissionsRequired": ["kb-ebsco.uc-credentials.item.get"]
         },
         {
-          "methods": [
-            "PUT"
-          ],
+          "methods": ["PUT"],
           "pathPattern": "/eholdings/uc-credentials",
-          "permissionsRequired": [
-            "kb-ebsco.uc-credentials.item.put"
-          ]
+          "permissionsRequired": ["kb-ebsco.uc-credentials.item.put"]
         },
         {
-          "methods": [
-            "GET"
-          ],
+          "methods": ["GET"],
           "pathPattern": "/eholdings/uc-credentials/clientId",
-          "permissionsRequired": [
-            "kb-ebsco.uc-credentials.client-id.get"
-          ]
+          "permissionsRequired": ["kb-ebsco.uc-credentials.client-id.get"]
         },
         {
-          "methods": [
-            "GET"
-          ],
+          "methods": ["GET"],
           "pathPattern": "/eholdings/uc",
-          "permissionsRequired": [
-            "kb-ebsco.uc.item.get"
-          ]
+          "permissionsRequired": ["kb-ebsco.uc.item.get"]
         },
         {
-          "methods": [
-            "GET"
-          ],
+          "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc",
-          "permissionsRequired": [
-            "kb-ebsco.kb-credentials.uc.item.get"
-          ]
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
         },
         {
           "methods": ["GET"],
