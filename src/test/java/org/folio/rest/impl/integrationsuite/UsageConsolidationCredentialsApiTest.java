@@ -131,6 +131,15 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
     assertEquals(STUB_CLIENT_SECRET, actualCredentials.getClientSecret());
   }
 
+  @Test
+  public void shouldReturn200OnGetUCCredentialsClientId() {
+    setUpUCCredentials(vertx);
+
+    String actualResponse = getWithOk(UC_CREDENTIALS_ENDPOINT + "/clientId").asString();
+
+    assertEquals(STUB_CLIENT_ID, actualResponse);
+  }
+
   private String getRequestBody(String clientId, String clientSecret) {
     var credentials = new UCCredentials()
       .withType(UCCredentials.Type.UC_CREDENTIALS)

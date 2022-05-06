@@ -11,6 +11,8 @@ public interface UCAuthService {
 
   CompletableFuture<String> authenticate(Map<String, String> okapiHeaders);
 
+  CompletableFuture<String> getClientId(Map<String, String> okapiHeaders);
+
   CompletionStage<UCCredentialsPresence> checkCredentialsPresence(Map<String, String> okapiHeaders);
 
   CompletionStage<Void> updateCredentials(UCCredentials entity, Map<String, String> okapiHeaders);

@@ -44,6 +44,12 @@ public class UCAuthServiceImpl implements UCAuthService {
   }
 
   @Override
+  public CompletableFuture<String> getClientId(Map<String, String> okapiHeaders) {
+    return getUCCredentials(tenantId(okapiHeaders))
+      .thenApply(DbUCCredentials::getClientId);
+  }
+
+  @Override
   public CompletionStage<UCCredentialsPresence> checkCredentialsPresence(Map<String, String> okapiHeaders) {
     return findUCCredentials(tenantId(okapiHeaders))
       .thenApply(dbUCCredentials -> dbUCCredentials.map(o -> mapToPresence(true)).orElse(mapToPresence(false)));
@@ -92,6 +98,17 @@ public class UCAuthServiceImpl implements UCAuthService {
         }
       })
       .thenApply(UCAuthToken::getAccessToken);
+  }
+
+  private CompletableFuture<DbUCCredentials> getUCCredentials(String tenantId) {
+    return findUCCredentials(tenantId)
+      .thenApply(dbUCCredentials -> {
+        if (dbUCCredentials.isEmpty()) {
+          throw new UcAuthenticationException(INVALID_CREDENTIALS_MESSAGE);
+        } else {
+          return dbUCCredentials.get();
+        }
+      });
   }
 
   private CompletableFuture<UCAuthToken> requestToken(DbUCCredentials credentials) {
