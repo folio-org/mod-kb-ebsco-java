@@ -21,6 +21,7 @@ traits:
 
 types:
   uCCredentials: !include types/uc/uCCredentials.json
+  uCCredentialsClientId: !include types/uc/uCCredentialsClientId.json
   uCCredentialsPresence: !include types/uc/uCCredentialsPresence.json
   uCSettings: !include types/uc/uCSettings.json
   uCSettingsKey: !include types/uc/uCSettingsKey.json
@@ -197,16 +198,15 @@ types:
             example:
               strict: false
               value: !include examples/uc/uc_settings_patch_422_response.json
-/eholdings/uc-credentials/clientId:
-  displayName: Get Usage Consolidation client id
-  get:
-    description: Get Usage Consolidation client id
-    responses:
-      200:
-        description: OK
-        body:
-          application/vnd.api+json:
-            type: string
-            example:
-              strict: false
-              value: "client-id"
+  /clientId:
+    get:
+      description: Get Usage Consolidation client id
+      responses:
+        200:
+          description: OK
+          body:
+            text/plain:
+              type: uCCredentialsClientId
+              example:
+                strict: false
+                value: !include examples/uc/uc_credentials_client_id_get_200_response.json

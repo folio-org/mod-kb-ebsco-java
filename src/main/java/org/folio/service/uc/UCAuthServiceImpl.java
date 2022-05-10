@@ -18,6 +18,8 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.UCCredentials;
 import org.folio.rest.jaxrs.model.UCCredentialsPresence;
 import org.folio.rest.jaxrs.model.UCCredentialsPresenceAttributes;
+import org.folio.rest.jaxrs.model.UCCredentialsClientId;
+
 
 @Service
 public class UCAuthServiceImpl implements UCAuthService {
@@ -44,9 +46,10 @@ public class UCAuthServiceImpl implements UCAuthService {
   }
 
   @Override
-  public CompletableFuture<String> getClientId(Map<String, String> okapiHeaders) {
+  public CompletableFuture<UCCredentialsClientId> getClientId(Map<String, String> okapiHeaders) {
     return getUCCredentials(tenantId(okapiHeaders))
-      .thenApply(DbUCCredentials::getClientId);
+      .thenApply(DbUCCredentials::getClientId)
+      .thenApply(this::mapToClientId);
   }
 
   @Override
@@ -89,14 +92,8 @@ public class UCAuthServiceImpl implements UCAuthService {
   }
 
   private CompletableFuture<String> loadToken(String tenantId) {
-    return findUCCredentials(tenantId)
-      .thenCompose(dbUCCredentials -> {
-        if (dbUCCredentials.isEmpty()) {
-          throw new UcAuthenticationException(INVALID_CREDENTIALS_MESSAGE);
-        } else {
-          return requestToken(dbUCCredentials.get());
-        }
-      })
+    return getUCCredentials(tenantId)
+      .thenCompose(this::requestToken)
       .thenApply(UCAuthToken::getAccessToken);
   }
 
@@ -123,5 +120,10 @@ public class UCAuthServiceImpl implements UCAuthService {
     return new UCCredentialsPresence()
       .withType(UCCredentialsPresence.Type.UC_CREDENTIALS_PRESENCE)
       .withAttributes(new UCCredentialsPresenceAttributes().withIsPresent(isPresent));
+  }
+
+  private UCCredentialsClientId mapToClientId(String clientId) {
+    return new UCCredentialsClientId()
+      .withClientId(clientId);
   }
 }

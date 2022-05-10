@@ -10,7 +10,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.folio.rest.jaxrs.resource.EholdingsUcCredentialsClientId;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.folio.rest.jaxrs.model.UCCredentials;
@@ -19,7 +18,7 @@ import org.folio.rest.util.ErrorHandler;
 import org.folio.service.uc.UCAuthService;
 import org.folio.spring.SpringContextUtil;
 
-public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials, EholdingsUcCredentialsClientId {
+public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials {
 
   @Autowired
   private UCAuthService authService;
@@ -52,8 +51,8 @@ public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials,
   public void getEholdingsUcCredentialsClientId(Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     authService.getClientId(okapiHeaders)
-      .thenAccept(ucCredentialsPresence -> asyncResultHandler.handle(succeededFuture(
-        GetEholdingsUcCredentialsClientIdResponse.respond200WithApplicationVndApiJson(ucCredentialsPresence))))
+      .thenAccept(ucCredentialsClientId -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsUcCredentialsClientIdResponse.respond200WithTextPlain(ucCredentialsClientId))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
 }
