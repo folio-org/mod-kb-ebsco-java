@@ -22,6 +22,7 @@ traits:
 types:
   uCCredentials: !include types/uc/uCCredentials.json
   uCCredentialsClientId: !include types/uc/uCCredentialsClientId.json
+  uCCredentialsClientSecret: !include types/uc/uCCredentialsClientSecret.json
   uCCredentialsPresence: !include types/uc/uCCredentialsPresence.json
   uCSettings: !include types/uc/uCSettings.json
   uCSettingsKey: !include types/uc/uCSettingsKey.json
@@ -210,3 +211,15 @@ types:
               example:
                 strict: false
                 value: !include examples/uc/uc_credentials_client_id_get_200_response.json
+  /clientSecret:
+    get:
+      description: Get Usage Consolidation client secret
+      responses:
+        200:
+          description: OK
+          body:
+            text/plain:
+              type: uCCredentialsClientSecret
+              example:
+                strict: false
+                value: !include examples/uc/uc_credentials_client_secret_get_200_response.json

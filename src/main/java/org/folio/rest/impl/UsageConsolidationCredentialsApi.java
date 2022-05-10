@@ -55,4 +55,12 @@ public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials 
         GetEholdingsUcCredentialsClientIdResponse.respond200WithTextPlain(ucCredentialsClientId))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
+
+  @Override
+  public void getEholdingsUcCredentialsClientSecret(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    authService.getClientSecret(okapiHeaders)
+      .thenAccept(ucCredentialsClientSecret -> asyncResultHandler.handle(succeededFuture(
+        GetEholdingsUcCredentialsClientSecretResponse.respond200WithTextPlain(ucCredentialsClientSecret))))
+      .exceptionally(errorHandler.handle(asyncResultHandler));
+  }
 }

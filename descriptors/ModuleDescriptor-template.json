@@ -351,6 +351,11 @@
         },
         {
           "methods": ["GET"],
+          "pathPattern": "/eholdings/uc-credentials/clientSecret",
+          "permissionsRequired": ["kb-ebsco.uc-credentials.client-secret.get"]
+        },
+        {
+          "methods": ["GET"],
           "pathPattern": "/eholdings/uc",
           "permissionsRequired": ["kb-ebsco.uc.item.get"]
         },
@@ -743,6 +748,11 @@
       "description": "Get usage consolidation credentials client id"
     },
     {
+      "permissionName": "kb-ebsco.uc-credentials.client-secret.get",
+      "displayName": "get usage consolidation credentials client secret",
+      "description": "Get usage consolidation credentials client secret"
+    },
+    {
       "permissionName": "kb-ebsco.uc.item.get",
       "displayName": "get usage consolidation settings",
       "description": "Get usage consolidation settings"
@@ -789,7 +799,8 @@
       "subPermissions": [
         "kb-ebsco.uc-credentials.item.get",
         "kb-ebsco.uc-credentials.item.put",
-        "kb-ebsco.uc-credentials.client-id.get"
+        "kb-ebsco.uc-credentials.client-id.get",
+        "kb-ebsco.uc-credentials.client-secret.get"
       ]
     },
     {
