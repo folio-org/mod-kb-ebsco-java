@@ -40,6 +40,7 @@ import org.folio.rest.jaxrs.model.UCCredentials;
 import org.folio.rest.jaxrs.model.UCCredentialsAttributes;
 import org.folio.rest.jaxrs.model.UCCredentialsPresence;
 import org.folio.rest.jaxrs.model.UCCredentialsClientId;
+import org.folio.rest.jaxrs.model.UCCredentialsClientSecret;
 
 @RunWith(VertxUnitRunner.class)
 public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
@@ -143,6 +144,15 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
     JSONAssert.assertEquals(getClientIdJSONBody(STUB_CLIENT_ID), actualResponse, false);
   }
 
+  @Test
+  public void shouldReturn200OnGetUCCredentialsClientSecret() throws JSONException {
+    setUpUCCredentials(vertx);
+
+    String actualResponse = getWithOk(UC_CREDENTIALS_ENDPOINT + "/clientSecret").asString();
+
+    JSONAssert.assertEquals(getClientSecretJSONBody(STUB_CLIENT_SECRET), actualResponse, false);
+  }
+
   private String getRequestBody(String clientId, String clientSecret) {
     var credentials = new UCCredentials()
       .withType(UCCredentials.Type.UC_CREDENTIALS)
@@ -157,6 +167,12 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
     var ucCredentialsClientId = new UCCredentialsClientId()
       .withClientId(clientId);
     return Json.encode(ucCredentialsClientId);
+  }
+
+  private String getClientSecretJSONBody(String clientSecret) {
+    var ucCredentialsClientSecret = new UCCredentialsClientSecret()
+      .withClientSecret(clientSecret);
+    return Json.encode(ucCredentialsClientSecret);
   }
 
   private void mockAuthToken(int status) {

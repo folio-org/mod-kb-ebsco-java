@@ -19,7 +19,7 @@ import org.folio.rest.jaxrs.model.UCCredentials;
 import org.folio.rest.jaxrs.model.UCCredentialsPresence;
 import org.folio.rest.jaxrs.model.UCCredentialsPresenceAttributes;
 import org.folio.rest.jaxrs.model.UCCredentialsClientId;
-
+import org.folio.rest.jaxrs.model.UCCredentialsClientSecret;
 
 @Service
 public class UCAuthServiceImpl implements UCAuthService {
@@ -50,6 +50,13 @@ public class UCAuthServiceImpl implements UCAuthService {
     return getUCCredentials(tenantId(okapiHeaders))
       .thenApply(DbUCCredentials::getClientId)
       .thenApply(this::mapToClientId);
+  }
+
+  @Override
+  public CompletableFuture<UCCredentialsClientSecret> getClientSecret(Map<String, String> okapiHeaders) {
+    return getUCCredentials(tenantId(okapiHeaders))
+      .thenApply(DbUCCredentials::getClientSecret)
+      .thenApply(this::mapToClientSecret);
   }
 
   @Override
@@ -125,5 +132,10 @@ public class UCAuthServiceImpl implements UCAuthService {
   private UCCredentialsClientId mapToClientId(String clientId) {
     return new UCCredentialsClientId()
       .withClientId(clientId);
+  }
+
+  private UCCredentialsClientSecret mapToClientSecret(String clientSecret) {
+    return new UCCredentialsClientSecret()
+      .withClientSecret(clientSecret);
   }
 }
