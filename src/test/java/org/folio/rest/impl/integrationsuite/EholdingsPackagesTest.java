@@ -16,13 +16,17 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -1131,6 +1135,29 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(2, (int) resourceCollection.getMeta().getTotalResults());
     assertEquals(1, resources.size());
     assertThat(resources, everyItem(hasProperty("id", equalTo(STUB_MANAGED_RESOURCE_ID))));
+  }
+
+  @Test
+  public void shouldReturnResourcesWithAccessTypesOnGetWithResources1() throws IOException, URISyntaxException {
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping("295-2545963-2099944", RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping("295-2545963-2172685", RESOURCE, accessTypes.get(1).getId(), vertx);
+
+    mockResourceById("responses/rmapi/titles/get-title-by-id-response.json");
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
+
+    ResourceCollection resourceCollection = getWithOk(PACKAGE_RESOURCES_PATH, STUB_TOKEN_HEADER).as(ResourceCollection.class);
+    List<ResourceCollectionItem> resources = resourceCollection.getData();
+
+    assertEquals(5, (int) resourceCollection.getMeta().getTotalResults());
+    assertEquals(5, resources.size());
+
+    assertEquals("295-2545963-2099944", resources.get(0).getId());
+    assertEquals(1, resources.get(0).getIncluded().size());
+    assertEquals(accessTypes.get(0).getId(), ((LinkedHashMap)resources.get(0).getIncluded().get(0)).get("id"));
+    assertEquals("295-2545963-2172685", resources.get(2).getId());
+    assertEquals(1, resources.get(2).getIncluded().size());
+    assertEquals(accessTypes.get(1).getId(), ((LinkedHashMap)resources.get(2).getIncluded().get(0)).get("id"));
   }
 
   @Test

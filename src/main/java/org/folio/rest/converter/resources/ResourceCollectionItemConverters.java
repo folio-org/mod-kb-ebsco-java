@@ -7,6 +7,8 @@ import static org.folio.rest.converter.resources.ResourceConverterUtils.createEm
 
 import java.util.List;
 
+import org.folio.repository.accesstypes.DbAccessType;
+import org.folio.rest.jaxrs.model.AccessType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
@@ -48,11 +50,16 @@ public class ResourceCollectionItemConverters {
     private Converter<Title, ResourceCollectionItem> titleConverter;
     @Autowired
     private Converter<List<DbTag>, Tags> tagsConverter;
+    @Autowired
+    private Converter<DbAccessType, AccessType> accessTypeConverter;
 
     @Override
     public ResourceCollectionItem convert(@NonNull TitleResult titleResult) {
       ResourceCollectionItem result = requireNonNull(titleConverter.convert(titleResult.getTitle()));
       result.getAttributes().setTags(tagsConverter.convert(emptyIfNull(titleResult.getResourceTagList())));
+      if (titleResult.getResourceAccessType() != null) {
+        result.getIncluded().add(accessTypeConverter.convert(titleResult.getResourceAccessType()));
+      }
       return result;
     }
   }
