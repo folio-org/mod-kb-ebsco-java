@@ -30,5 +30,5 @@ public interface AccessTypesRepository {
 
   CompletableFuture<Void> delete(UUID credentialsId, UUID accessTypeId, String tenantId);
 
-  CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, ArrayList<String> recordIds, RecordType recordType, String tenant);
+  CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds, RecordType recordType, String tenant);
 }
