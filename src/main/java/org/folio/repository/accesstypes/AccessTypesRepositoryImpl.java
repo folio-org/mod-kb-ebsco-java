@@ -41,7 +41,6 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectC
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertAccessTypeQuery;
 import static org.folio.util.FutureUtils.mapResult;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -206,7 +205,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, ArrayList<String> recordIds, RecordType recordType, String tenant) {
+  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds, RecordType recordType, String tenant) {
     if (isEmpty(recordIds)) {
       return completedFuture(Collections.emptyMap());
     }
