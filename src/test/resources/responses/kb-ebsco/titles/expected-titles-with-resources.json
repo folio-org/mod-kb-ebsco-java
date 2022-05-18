@@ -85,14 +85,14 @@
           "id": "58251-22551-1175655",
           "type": "resources",
           "attributes": {
-            "isTitleCustom": false,
-            "titleId": 1175655,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isTitleCustom": false,
+            "titleId": 1175655,
             "contributors": [
               {
                 "type": "Author",
@@ -167,20 +167,21 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         },
         {
           "id": "977-6822-1175655",
           "type": "resources",
           "attributes": {
-            "isTitleCustom": false,
-            "titleId": 1175655,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isTitleCustom": false,
+            "titleId": 1175655,
             "contributors": [
               {
                 "type": "Author",
@@ -260,20 +261,21 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         },
         {
           "id": "19-3964-1175655",
           "type": "resources",
           "attributes": {
-            "isTitleCustom": false,
-            "titleId": 1175655,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isTitleCustom": false,
+            "titleId": 1175655,
             "contributors": [
               {
                 "type": "Author",
@@ -353,20 +355,21 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         },
         {
           "id": "58388-1861142-1175655",
           "type": "resources",
           "attributes": {
-            "isTitleCustom": false,
-            "titleId": 1175655,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isTitleCustom": false,
+            "titleId": 1175655,
             "contributors": [
               {
                 "type": "Author",
@@ -446,20 +449,21 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         },
         {
           "id": "22-1887786-1175655",
           "type": "resources",
           "attributes": {
-            "isTitleCustom": false,
-            "titleId": 1175655,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isTitleCustom": false,
+            "titleId": 1175655,
             "contributors": [
               {
                 "type": "Author",
@@ -539,20 +543,21 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         },
         {
           "id": "22-1884903-1175655",
           "type": "resources",
           "attributes": {
-            "isTitleCustom": false,
-            "titleId": 1175655,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isTitleCustom": false,
+            "titleId": 1175655,
             "contributors": [
               {
                 "type": "Author",
@@ -632,7 +637,8 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         }
       ]
     }

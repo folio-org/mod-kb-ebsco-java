@@ -74,16 +74,16 @@
       "id": "19-987-762169",
       "type": "resources",
       "attributes": {
-        "isPeerReviewed": false,
-        "isTitleCustom": false,
-        "publisherName": "Chelsea House Publishers",
-        "titleId": 762169,
         "alternateTitles": [
           {
             "alternateTitle": "Boston Coll Law Rev",
             "titleType": "Abbreviated"
           }
         ],
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
         "contributors": [
           {
             "type": "author",
@@ -165,22 +165,23 @@
             "included": false
           }
         }
-      }
+      },
+      "included": []
     },
     {
       "id": "19-7745-762169",
       "type": "resources",
       "attributes": {
-        "isPeerReviewed": false,
-        "isTitleCustom": false,
-        "publisherName": "Chelsea House Publishers",
-        "titleId": 762169,
         "alternateTitles": [
           {
             "alternateTitle": "Boston Coll Law Rev",
             "titleType": "Abbreviated"
           }
         ],
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
         "contributors": [
           {
             "type": "author",
@@ -262,22 +263,23 @@
             "included": false
           }
         }
-      }
+      },
+      "included": []
     },
     {
       "id": "19-3964-762169",
       "type": "resources",
       "attributes": {
-        "isPeerReviewed": false,
-        "isTitleCustom": false,
-        "publisherName": "Chelsea House Publishers",
-        "titleId": 762169,
         "alternateTitles": [
           {
             "alternateTitle": "Boston Coll Law Rev",
             "titleType": "Abbreviated"
           }
         ],
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
         "contributors": [
           {
             "type": "author",
@@ -359,22 +361,23 @@
             "included": false
           }
         }
-      }
+      },
+      "included": []
     },
     {
       "id": "19-0-762169",
       "type": "resources",
       "attributes": {
-        "isPeerReviewed": false,
-        "isTitleCustom": false,
-        "publisherName": "Chelsea House Publishers",
-        "titleId": 762169,
         "alternateTitles": [
           {
             "alternateTitle": "Boston Coll Law Rev",
             "titleType": "Abbreviated"
           }
         ],
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
         "contributors": [
           {
             "type": "author",
@@ -451,7 +454,8 @@
             "included": false
           }
         }
-      }
+      },
+      "included": []
     }
   ],
   "jsonapi": {
