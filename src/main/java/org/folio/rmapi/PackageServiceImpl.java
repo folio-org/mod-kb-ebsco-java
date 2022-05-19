@@ -79,8 +79,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
     CompletableFuture<Titles> titlesFuture;
     if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
-      titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(),
-        searchProperties.getTitlesSearchType(), Sort.NAME, 1, 25);
+      titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(), searchProperties.getTitlesSearchType(), Sort.NAME, 1, 25);
     } else {
       titlesFuture = completedFuture(null);
     }

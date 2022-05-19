@@ -2,9 +2,11 @@ package org.folio.repository.accesstypes;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.folio.repository.RecordType;
 
@@ -26,4 +28,6 @@ public interface AccessTypesRepository {
   CompletableFuture<Integer> count(UUID credentialsId, String tenantId);
 
   CompletableFuture<Void> delete(UUID credentialsId, UUID accessTypeId, String tenantId);
+
+  CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds, RecordType recordType, String tenant);
 }

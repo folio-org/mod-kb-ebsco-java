@@ -3,6 +3,8 @@ package org.folio.repository.accesstypes;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.folio.common.LogUtils.logCountQuery;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
@@ -32,6 +34,7 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_N
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.deleteByCredentialsAndAccessTypeIdQuery;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsAndAccessTypeIdQuery;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsAndNamesQuery;
+import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsAndRecordIdsQuery;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsAndRecordQuery;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectByCredentialsIdWithCountQuery;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectCountByCredentialsIdQuery;
@@ -39,11 +42,15 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertA
 import static org.folio.util.FutureUtils.mapResult;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -52,8 +59,11 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.db.RowSetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -192,6 +202,46 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     pgClient(tenantId).select(query, params, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), rs -> null);
+  }
+
+  @Override
+  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds, RecordType recordType, String tenant) {
+    if (isEmpty(recordIds)) {
+      return completedFuture(Collections.emptyMap());
+    }
+    Future<RowSet<Row>> resultSetFuture = findByRecordIdsOfType(credentialsId, recordIds, recordType, tenant);
+
+    return mapResult(resultSetFuture, this::mapAccessTypesPerRecord);
+  }
+
+  private Future<RowSet<Row>> findByRecordIdsOfType(String credentialsId, List<String> recordIds, RecordType recordType, String tenantId) {
+    Tuple parameters = createParametersWithRecordType(credentialsId, recordIds, recordType);
+
+    String query = selectByCredentialsAndRecordIdsQuery(recordIds, tenantId);
+    logSelectQueryInfoLevel(LOG, query, parameters);
+
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).select(query, parameters, promise);
+
+    return promise.future().recover(excTranslator.translateOrPassBy());
+  }
+
+  private Tuple createParametersWithRecordType(String credentialsId, List<String> queryParameters, RecordType recordType) {
+    Tuple parameters = Tuple.tuple();
+    parameters.addString(credentialsId);
+    parameters.addString(recordType.getValue());
+    queryParameters.forEach(parameters::addString);
+    return parameters;
+  }
+
+  private Map<String, DbAccessType> mapAccessTypesPerRecord(RowSet<Row> resultSet) {
+    return RowSetUtils.streamOf(resultSet)
+      .map(row -> {
+        String recordId = row.getString(AccessTypeMappingsTableConstants.RECORD_ID_COLUMN);
+        DbAccessType accessType = mapAccessType(row);
+        return ImmutablePair.of(recordId, accessType);
+      })
+      .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
   }
 
   private List<DbAccessType> mapAccessTypes(RowSet<Row> resultSet) {

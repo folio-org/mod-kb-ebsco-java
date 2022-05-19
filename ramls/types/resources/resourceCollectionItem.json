@@ -26,6 +26,14 @@
       "type": "object",
       "description": "Displays if any relationship is included",
       "$ref": "resourceRelationships.json"
+    },
+    "included": {
+      "type": "array",
+      "description": "List of included objects",
+      "items": {
+        "type": "object",
+        "javaType" : "java.lang.Object"
+      }
     }
   }
 }

@@ -8,11 +8,13 @@ import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 import javax.ws.rs.BadRequestException;
@@ -169,6 +171,11 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       });
 
     return resultFuture;
+  }
+
+  @Override
+  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, ArrayList<String> recordIds, RecordType recordType, String tenant) {
+   return repository.findPerRecord(credentialsId, recordIds, recordType, tenant);
   }
 
   private CompletableFuture<DbAccessType> fetchDbAccessType(String credentialsId, String accessTypeId,
