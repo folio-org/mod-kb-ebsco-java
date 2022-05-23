@@ -135,7 +135,7 @@ public class UsersLookUpService {
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
     webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersEndpoint)
       .putHeaders(headers)
-      .addQueryParam(CQL_QUERY_PARAM, StringUtil.urlEncode(query))
+      .addQueryParam(CQL_QUERY_PARAM, query)
       .as(BodyCodec.jsonObject())
       .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
       .send(promise);
