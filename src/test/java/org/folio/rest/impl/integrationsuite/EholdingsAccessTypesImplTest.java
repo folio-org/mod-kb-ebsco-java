@@ -9,7 +9,6 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -44,7 +43,6 @@ import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-import static org.folio.util.StringUtil.urlEncode;
 import static org.folio.util.TokenTestUtils.generateToken;
 
 import java.io.IOException;
@@ -53,7 +51,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
@@ -255,7 +252,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void shouldReturn404OnGetByIdAndCredentialsIfCredentialsIsMissing() {
     String id = UUID.randomUUID().toString();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT,
-      UUID.randomUUID().toString(), id);
+      UUID.randomUUID(), id);
     JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, String.format("Access type not found: id = %s", id));
@@ -294,7 +291,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn204OnDeleteIfNotFound() {
-    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID().toString());
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID());
     int statusCode = deleteWithNoContent(resourcePath).response().statusCode();
 
     assertEquals(SC_NO_CONTENT, statusCode);
@@ -492,7 +489,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     accessType.setId("invalid-id-format");
 
     String putBody = Json.encode(new AccessTypePutRequest().withData(accessType));
-    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID().toString());
+    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID());
     Errors errors = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, USER9_TOKEN).as(Errors.class);
 
     assertThat(errors.getErrors().get(0).getParameters().get(0).getKey(), equalTo("data.id"));

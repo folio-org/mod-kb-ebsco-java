@@ -50,7 +50,7 @@ public class UsersLookUpService {
   private static final String CQL_QUERY_PARAM = "query";
   private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
   private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
-  private static final String CANNOT_GET_USER_DATA_ERROR_MESSAGE = "Cannot get user data: %s";
+  private static final String CANNOT_GET_USER_DATA_ERROR_MESSAGE = "Cannot get user data: {}. Server response: {}";
   private static final String USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE = "User info is not complete";
 
   private final WebClient webClient;
@@ -153,8 +153,8 @@ public class UsersLookUpService {
         throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
       } else {
         String message = result.message();
-        String msg = String.format(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message);
-        LOG.error(msg);
+        String serverResponse = response.bodyAsString();
+        LOG.error(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message, serverResponse);
         throw new IllegalStateException(message);
       }
     });
