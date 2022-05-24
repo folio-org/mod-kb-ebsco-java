@@ -1,5 +1,7 @@
 package org.folio.service.users;
 
+import static java.util.Collections.emptyList;
+
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class UsersLookUpService {
   private static final String CQL_QUERY_PARAM = "query";
   private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
   private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
-  private static final String CANNOT_GET_USER_DATA_ERROR_MESSAGE = "Cannot get user data: %s";
+  private static final String CANNOT_GET_USER_DATA_ERROR_MESSAGE = "Cannot get user data: {}. Server response: {}";
   private static final String USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE = "User info is not complete";
 
   private final WebClient webClient;
@@ -86,12 +88,18 @@ public class UsersLookUpService {
   }
 
   public CompletableFuture<Collection<User>> lookUpUsers(List<UUID> ids, final OkapiParams okapiParams) {
+    if (ids.isEmpty()) {
+      return CompletableFuture.completedFuture(emptyList());
+    }
     String idsCql = "id=(" + ids.stream().map(UUID::toString)
       .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
     return lookUpUsersUsingCQL(okapiParams, idsCql);
   }
 
   public CompletableFuture<Collection<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
+    if (ids.isEmpty()) {
+      return CompletableFuture.completedFuture(emptyList());
+    }
     String idsCql = "id=(" + ids.stream().map(UUID::toString)
       .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
     return lookUpGroupsUsingCQL(okapiParams, idsCql);
@@ -135,7 +143,7 @@ public class UsersLookUpService {
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
     webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersEndpoint)
       .putHeaders(headers)
-      .addQueryParam(CQL_QUERY_PARAM, StringUtil.urlEncode(query))
+      .addQueryParam(CQL_QUERY_PARAM, query)
       .as(BodyCodec.jsonObject())
       .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
       .send(promise);
@@ -153,8 +161,8 @@ public class UsersLookUpService {
         throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
       } else {
         String message = result.message();
-        String msg = String.format(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message);
-        LOG.error(msg);
+        String serverResponse = response.bodyAsString();
+        LOG.error(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message, serverResponse);
         throw new IllegalStateException(message);
       }
     });

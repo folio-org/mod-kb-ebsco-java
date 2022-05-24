@@ -24,7 +24,6 @@ import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-import static org.folio.util.StringUtil.urlEncode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -225,7 +224,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(GET_USERS_ENDPOINT), true))
-        .withQueryParam(QUERY_PARAM, WireMock.equalTo(urlEncode(query)))
+        .withQueryParam(QUERY_PARAM, WireMock.equalTo(query))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
 
@@ -236,7 +235,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/groups"), true))
-        .withQueryParam(QUERY_PARAM, WireMock.equalTo(urlEncode(cqlQuery)))
+        .withQueryParam(QUERY_PARAM, WireMock.equalTo(cqlQuery))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
   }
