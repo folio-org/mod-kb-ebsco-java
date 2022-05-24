@@ -9,7 +9,6 @@ import static org.folio.rest.impl.WireMockTestBase.JANE_ID;
 import static org.folio.rest.impl.WireMockTestBase.JOHN_GROUP_ID;
 import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.util.StringUtil.urlEncode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -156,7 +155,7 @@ public class UsersLookUpServiceTest {
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern(GET_USERS_ENDPOINT), true))
-        .withQueryParam(QUERY_PARAM, equalTo(urlEncode(query)))
+        .withQueryParam(QUERY_PARAM, equalTo(query))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
 
@@ -194,7 +193,7 @@ public class UsersLookUpServiceTest {
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/groups"), true))
-        .withQueryParam(QUERY_PARAM, equalTo(urlEncode(cqlQuery)))
+        .withQueryParam(QUERY_PARAM, equalTo(cqlQuery))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
 
