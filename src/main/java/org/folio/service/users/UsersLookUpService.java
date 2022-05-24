@@ -1,5 +1,7 @@
 package org.folio.service.users;
 
+import static java.util.Collections.emptyList;
+
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.ArrayList;
@@ -86,12 +88,18 @@ public class UsersLookUpService {
   }
 
   public CompletableFuture<Collection<User>> lookUpUsers(List<UUID> ids, final OkapiParams okapiParams) {
+    if (ids.isEmpty()) {
+      return CompletableFuture.completedFuture(emptyList());
+    }
     String idsCql = "id=(" + ids.stream().map(UUID::toString)
       .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
     return lookUpUsersUsingCQL(okapiParams, idsCql);
   }
 
   public CompletableFuture<Collection<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
+    if (ids.isEmpty()) {
+      return CompletableFuture.completedFuture(emptyList());
+    }
     String idsCql = "id=(" + ids.stream().map(UUID::toString)
       .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
     return lookUpGroupsUsingCQL(okapiParams, idsCql);
