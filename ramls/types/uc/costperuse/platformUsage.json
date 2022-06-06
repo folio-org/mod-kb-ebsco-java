@@ -12,7 +12,7 @@
       "items": {
         "type": "integer"
       },
-      "example": [100, 0, 100, 0, 0, 0, 0, null, 100, 100, 0, 100]
+      "example": [100, 0, 100, 0, 0, 0, 0, 0, 100, 100, 0, 100]
     },
     "total": {
       "type": "integer",

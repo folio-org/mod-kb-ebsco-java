@@ -22,7 +22,7 @@
     "percent": {
       "type": "number",
       "description": "Percent of usage",
-      "example": "20.5"
+      "example": 20.5
     }
   }
 }

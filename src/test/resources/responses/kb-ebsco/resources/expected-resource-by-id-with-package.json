@@ -3,16 +3,16 @@
     "id": "19-3964-762169",
     "type": "resources",
     "attributes": {
-      "isPeerReviewed": false,
-      "isTitleCustom": false,
-      "publisherName": "Praeger",
-      "titleId": 762169,
       "alternateTitles": [
         {
           "alternateTitle": "Detroit Coll Law Rev",
           "titleType": "Abbreviated"
         }
       ],
+      "isPeerReviewed": false,
+      "isTitleCustom": false,
+      "publisherName": "Praeger",
+      "titleId": 762169,
       "contributors": [
         {
           "type": "author",
@@ -100,7 +100,8 @@
           "id": "19-3964"
         }
       }
-    }
+    },
+    "included": []
   },
   "included": [
     {

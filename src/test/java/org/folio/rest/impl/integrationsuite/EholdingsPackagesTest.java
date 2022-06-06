@@ -1132,6 +1132,29 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnResourcesWithAccessTypesOnGetWithResources1() throws IOException, URISyntaxException {
+    List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping("295-2545963-2099944", RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping("295-2545963-2172685", RESOURCE, accessTypes.get(1).getId(), vertx);
+
+    mockResourceById("responses/rmapi/titles/get-title-by-id-response.json");
+    mockResourceById(RESOURCES_BY_PACKAGE_ID_STUB_FILE);
+
+    ResourceCollection resourceCollection = getWithOk(PACKAGE_RESOURCES_PATH, STUB_TOKEN_HEADER).as(ResourceCollection.class);
+    List<ResourceCollectionItem> resources = resourceCollection.getData();
+
+    assertEquals(5, (int) resourceCollection.getMeta().getTotalResults());
+    assertEquals(5, resources.size());
+
+    assertEquals("295-2545963-2099944", resources.get(0).getId());
+    assertEquals(1, resources.get(0).getIncluded().size());
+    assertEquals(accessTypes.get(0).getId(), ((LinkedHashMap)resources.get(0).getIncluded().get(0)).get("id"));
+    assertEquals("295-2545963-2172685", resources.get(2).getId());
+    assertEquals(1, resources.get(2).getIncluded().size());
+    assertEquals(accessTypes.get(1).getId(), ((LinkedHashMap)resources.get(2).getIncluded().get(0)).get("id"));
+  }
+
+  @Test
   public void shouldReturnFilteredResourcesWithNonEmptyCustomerResourceList() throws IOException, URISyntaxException {
     mockResourceById(RESOURCES_BY_PACKAGE_ID_EMPTY_CUSTOMER_RESOURCE_LIST_STUB_FILE);
     final ResourceCollection resourceCollection = getWithOk(PACKAGE_RESOURCES_PATH, STUB_TOKEN_HEADER)

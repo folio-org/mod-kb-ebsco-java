@@ -23,10 +23,12 @@ import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
 
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -37,6 +39,8 @@ import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.UCCredentials;
 import org.folio.rest.jaxrs.model.UCCredentialsAttributes;
 import org.folio.rest.jaxrs.model.UCCredentialsPresence;
+import org.folio.rest.jaxrs.model.UCCredentialsClientId;
+import org.folio.rest.jaxrs.model.UCCredentialsClientSecret;
 
 @RunWith(VertxUnitRunner.class)
 public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
@@ -131,6 +135,24 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
     assertEquals(STUB_CLIENT_SECRET, actualCredentials.getClientSecret());
   }
 
+  @Test
+  public void shouldReturn200OnGetUCCredentialsClientId() throws JSONException {
+    setUpUCCredentials(vertx);
+
+    String actualResponse = getWithOk(UC_CREDENTIALS_ENDPOINT + "/clientId").asString();
+
+    JSONAssert.assertEquals(getClientIdJSONBody(STUB_CLIENT_ID), actualResponse, false);
+  }
+
+  @Test
+  public void shouldReturn200OnGetUCCredentialsClientSecret() throws JSONException {
+    setUpUCCredentials(vertx);
+
+    String actualResponse = getWithOk(UC_CREDENTIALS_ENDPOINT + "/clientSecret").asString();
+
+    JSONAssert.assertEquals(getClientSecretJSONBody(STUB_CLIENT_SECRET), actualResponse, false);
+  }
+
   private String getRequestBody(String clientId, String clientSecret) {
     var credentials = new UCCredentials()
       .withType(UCCredentials.Type.UC_CREDENTIALS)
@@ -139,6 +161,18 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
         .withClientSecret(clientSecret)
       );
     return Json.encode(credentials);
+  }
+
+  private String getClientIdJSONBody(String clientId) {
+    var ucCredentialsClientId = new UCCredentialsClientId()
+      .withClientId(clientId);
+    return Json.encode(ucCredentialsClientId);
+  }
+
+  private String getClientSecretJSONBody(String clientSecret) {
+    var ucCredentialsClientSecret = new UCCredentialsClientSecret()
+      .withClientSecret(clientSecret);
+    return Json.encode(ucCredentialsClientSecret);
   }
 
   private void mockAuthToken(int status) {

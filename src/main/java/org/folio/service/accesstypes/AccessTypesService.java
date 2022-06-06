@@ -1,10 +1,14 @@
 package org.folio.service.accesstypes;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.folio.repository.RecordKey;
+import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
@@ -34,4 +38,6 @@ public interface AccessTypesService {
                                  Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> delete(String credentialsId, String accessTypeId, Map<String, String> okapiHeaders);
+
+  CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, ArrayList<String> recordIds, RecordType resource, String tenant);
 }

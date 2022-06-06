@@ -29,6 +29,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
+import org.assertj.core.util.Lists;
+import org.folio.repository.accesstypes.DbAccessType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
@@ -312,19 +314,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     if (filter.isTagsFilter()) {
       template.requestAction(context -> filteredEntitiesLoader.fetchResourcesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
-      template.requestAction(context -> filteredEntitiesLoader
-        .fetchResourcesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
-      );
+      template.requestAction(context -> filteredEntitiesLoader.fetchResourcesByAccessTypeFilter(filter.createAccessTypeFilter(), context));
     } else {
       template.requestAction(context -> {
         PackageId pkgId = filter.getPackageId();
         long providerIdPart = pkgId.getProviderIdPart();
         long packageIdPart = pkgId.getPackageIdPart();
         return context.getTitlesService()
-          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), searchProperties.getTitlesSearchType(),
-            filter.getSort(), page, count)
+          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(), searchProperties.getTitlesSearchType(), filter.getSort(), page, count)
           .thenApply(titles -> titleCollectionConverter.convert(titles))
-          .thenCompose(loadResourceTags(context));
+          .thenCompose(loadResourceTags(context))
+          .thenCompose(loadResourceAccessTypes(context));
       });
     }
 
@@ -440,6 +440,28 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     tagMap.forEach((id, tags) -> {
       TitleResult titleResult = resourceIdToTitle.get(id);
       titleResult.setResourceTagList(tags);
+    });
+  }
+
+  private Function<TitleCollectionResult, CompletionStage<TitleCollectionResult>> loadResourceAccessTypes(RMAPITemplateContext context) {
+    return titleCollection -> {
+      Map<String, TitleResult> resourceIdToAccessType = mapResourceIdToTitleResult(titleCollection);
+      String credentialsId = context.getCredentialsId();
+      String tenant = context.getOkapiData().getTenant();
+      return accessTypesService.findPerRecord(credentialsId, Lists.newArrayList(resourceIdToAccessType.keySet()), RecordType.RESOURCE, tenant)
+        .thenApply(accessTypeMap -> {
+          populateResourceAccessTypes(resourceIdToAccessType, accessTypeMap);
+          return titleCollection;
+        });
+    };
+  }
+
+  private void populateResourceAccessTypes(Map<String, TitleResult> resourceIdToTitle, Map<String, DbAccessType> accessTypeMap) {
+    accessTypeMap.forEach((id, accessType) -> {
+      if (resourceIdToTitle.containsKey(id)) {
+        TitleResult titleResult = resourceIdToTitle.get(id);
+        titleResult.setResourceAccessType(accessType);
+      }
     });
   }
 

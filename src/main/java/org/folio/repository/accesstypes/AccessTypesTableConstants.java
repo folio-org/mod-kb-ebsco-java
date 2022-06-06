@@ -3,6 +3,7 @@ package org.folio.repository.accesstypes;
 import org.folio.common.ListUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 import static org.folio.repository.DbUtil.*;
 import static org.folio.repository.SqlQueryHelper.count;
@@ -10,11 +11,16 @@ import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.equalCondition;
 import static org.folio.repository.SqlQueryHelper.inCondition;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
+import static org.folio.repository.SqlQueryHelper.leftJoinQuery;
 import static org.folio.repository.SqlQueryHelper.limitQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereConditionsQuery;
 import static org.folio.repository.SqlQueryHelper.whereQuery;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPE_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
 
 public final class AccessTypesTableConstants {
 
@@ -61,6 +67,11 @@ public final class AccessTypesTableConstants {
       getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
   }
 
+  public static String selectByCredentialsAndRecordIdsQuery(List<String> recordIds, String tenantId) {
+    return prepareQuery(selectByCredentialsAndRecordIdsQuery(),
+      getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(recordIds.size()));
+  }
+
   public static String deleteByCredentialsAndAccessTypeIdQuery(String tenantId) {
     return prepareQuery(deleteByCredentialsAndAccessTypeIdQuery(), getAccessTypesTableName(tenantId));
   }
@@ -100,6 +111,18 @@ public final class AccessTypesTableConstants {
       equalCondition(CREDENTIALS_ID_COLUMN),
       inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.selectAccessTypeIdsByRecordQuery())
     ) + " " + limitQuery(1) + ";";
+  }
+
+  private static String selectByCredentialsAndRecordIdsQuery() {
+    String accessTypesColumns = "t1.*";
+    String accessTypesMappingsColumns = "t2." + RECORD_ID_COLUMN;
+    return selectQuery(accessTypesColumns, accessTypesMappingsColumns) + " " +
+      leftJoinQuery(ACCESS_TYPES_MAPPING_TABLE_NAME, ID_COLUMN, ACCESS_TYPE_ID_COLUMN) + " " +
+      whereConditionsQuery(
+        equalCondition(CREDENTIALS_ID_COLUMN),
+        equalCondition(RECORD_TYPE_COLUMN),
+        inCondition(RECORD_ID_COLUMN)
+      );
   }
 
   private static String deleteByCredentialsAndAccessTypeIdQuery() {

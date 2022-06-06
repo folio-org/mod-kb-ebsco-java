@@ -40,7 +40,8 @@
         }
       ],
       "tags": {
-        "tagList": []
+        "tagList": [
+        ]
       }
     },
     "relationships": {
@@ -62,16 +63,16 @@
       "id": "19-3964-762169",
       "type": "resources",
       "attributes": {
-        "isPeerReviewed": false,
-        "isTitleCustom": false,
-        "publisherName": "Chelsea House Publishers",
-        "titleId": 762169,
         "alternateTitles": [
           {
             "alternateTitle": "Boston Coll Law Rev",
             "titleType": "Abbreviated"
           }
         ],
+        "isPeerReviewed": false,
+        "isTitleCustom": false,
+        "publisherName": "Chelsea House Publishers",
+        "titleId": 762169,
         "contributors": [
           {
             "type": "author",
@@ -124,7 +125,8 @@
             "endCoverage": "1996-12-31"
           }
         ],
-        "customCoverages": [],
+        "customCoverages": [
+        ],
         "proxy": {
           "id": "EZProxy",
           "inherited": true
@@ -155,7 +157,9 @@
             "included": false
           }
         }
-      }
+      },
+      "included": [
+      ]
     }
   ],
   "jsonapi": {

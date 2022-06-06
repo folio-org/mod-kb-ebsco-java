@@ -32,8 +32,8 @@ public final class SqlQueryHelper {
     return "DELETE " + FROM_KEYWORD;
   }
 
-  public static String leftJoinQuery(String query, String columnT1, String columnT2) {
-    return "LEFT JOIN " + query + " t2 ON t1." + columnT1 + " = t2." + columnT2;
+  public static String leftJoinQuery(String targetTable, String columnT1, String columnT2) {
+    return "LEFT JOIN " + targetTable + " t2 ON t1." + columnT1 + " = t2." + columnT2;
   }
 
   public static String count() {

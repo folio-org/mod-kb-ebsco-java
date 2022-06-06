@@ -52,16 +52,16 @@
           "id": "19-3964-1108525",
           "type": "resources",
           "attributes": {
-            "isPeerReviewed": false,
-            "isTitleCustom": false,
-            "publisherName": "Praeger",
-            "titleId": 1108525,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isPeerReviewed": false,
+            "isTitleCustom": false,
+            "publisherName": "Praeger",
+            "titleId": 1108525,
             "contributors": [
               {
                 "type": "author",
@@ -135,7 +135,8 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         }
       ]
     },
@@ -196,16 +197,16 @@
           "id": "19-3964-762169",
           "type": "resources",
           "attributes": {
-            "isPeerReviewed": false,
-            "isTitleCustom": false,
-            "publisherName": "Chelsea House Publishers",
-            "titleId": 762169,
             "alternateTitles": [
               {
                 "alternateTitle": "Boston Coll Law Rev",
                 "titleType": "Abbreviated"
               }
             ],
+            "isPeerReviewed": false,
+            "isTitleCustom": false,
+            "publisherName": "Chelsea House Publishers",
+            "titleId": 762169,
             "contributors": [
               {
                 "type": "author",
@@ -284,7 +285,8 @@
                 "included": false
               }
             }
-          }
+          },
+          "included": []
         }
       ]
     }

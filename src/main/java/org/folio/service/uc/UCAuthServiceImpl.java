@@ -18,6 +18,8 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.UCCredentials;
 import org.folio.rest.jaxrs.model.UCCredentialsPresence;
 import org.folio.rest.jaxrs.model.UCCredentialsPresenceAttributes;
+import org.folio.rest.jaxrs.model.UCCredentialsClientId;
+import org.folio.rest.jaxrs.model.UCCredentialsClientSecret;
 
 @Service
 public class UCAuthServiceImpl implements UCAuthService {
@@ -41,6 +43,20 @@ public class UCAuthServiceImpl implements UCAuthService {
   @Override
   public CompletableFuture<String> authenticate(Map<String, String> okapiHeaders) {
     return ucTokenCache.getValueOrLoad(TOKEN_CACHE_KEY, () -> loadToken(tenantId(okapiHeaders)));
+  }
+
+  @Override
+  public CompletableFuture<UCCredentialsClientId> getClientId(Map<String, String> okapiHeaders) {
+    return getUCCredentials(tenantId(okapiHeaders))
+      .thenApply(DbUCCredentials::getClientId)
+      .thenApply(this::mapToClientId);
+  }
+
+  @Override
+  public CompletableFuture<UCCredentialsClientSecret> getClientSecret(Map<String, String> okapiHeaders) {
+    return getUCCredentials(tenantId(okapiHeaders))
+      .thenApply(DbUCCredentials::getClientSecret)
+      .thenApply(this::mapToClientSecret);
   }
 
   @Override
@@ -83,15 +99,20 @@ public class UCAuthServiceImpl implements UCAuthService {
   }
 
   private CompletableFuture<String> loadToken(String tenantId) {
+    return getUCCredentials(tenantId)
+      .thenCompose(this::requestToken)
+      .thenApply(UCAuthToken::getAccessToken);
+  }
+
+  private CompletableFuture<DbUCCredentials> getUCCredentials(String tenantId) {
     return findUCCredentials(tenantId)
-      .thenCompose(dbUCCredentials -> {
+      .thenApply(dbUCCredentials -> {
         if (dbUCCredentials.isEmpty()) {
           throw new UcAuthenticationException(INVALID_CREDENTIALS_MESSAGE);
         } else {
-          return requestToken(dbUCCredentials.get());
+          return dbUCCredentials.get();
         }
-      })
-      .thenApply(UCAuthToken::getAccessToken);
+      });
   }
 
   private CompletableFuture<UCAuthToken> requestToken(DbUCCredentials credentials) {
@@ -106,5 +127,15 @@ public class UCAuthServiceImpl implements UCAuthService {
     return new UCCredentialsPresence()
       .withType(UCCredentialsPresence.Type.UC_CREDENTIALS_PRESENCE)
       .withAttributes(new UCCredentialsPresenceAttributes().withIsPresent(isPresent));
+  }
+
+  private UCCredentialsClientId mapToClientId(String clientId) {
+    return new UCCredentialsClientId()
+      .withClientId(clientId);
+  }
+
+  private UCCredentialsClientSecret mapToClientSecret(String clientSecret) {
+    return new UCCredentialsClientSecret()
+      .withClientSecret(clientSecret);
   }
 }
