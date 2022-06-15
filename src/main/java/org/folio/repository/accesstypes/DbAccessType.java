@@ -17,14 +17,6 @@ public class DbAccessType {
   private final Integer usageNumber;
   private final OffsetDateTime createdDate;
   private final UUID createdByUserId;
-  private final String createdByUsername;
-  private final String createdByLastName;
-  private final String createdByFirstName;
-  private final String createdByMiddleName;
   private final OffsetDateTime updatedDate;
   private final UUID updatedByUserId;
-  private final String updatedByUsername;
-  private final String updatedByLastName;
-  private final String updatedByFirstName;
-  private final String updatedByMiddleName;
 }

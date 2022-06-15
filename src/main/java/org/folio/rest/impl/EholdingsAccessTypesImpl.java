@@ -89,7 +89,7 @@ public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, Eholdings
                                                                       Map<String, String> okapiHeaders,
                                                                       Handler<AsyncResult<Response>> asyncResultHandler,
                                                                       Context vertxContext) {
-    accessTypesService.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, okapiHeaders)
+    accessTypesService.findByCredentialsAndAccessTypeId(credentialsId, accessTypeId, true, okapiHeaders)
       .thenAccept(accessType -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsAccessTypesByIdAndAccessTypeIdResponse.respond200WithApplicationVndApiJson(accessType))))
       .exceptionally(handleException(asyncResultHandler));

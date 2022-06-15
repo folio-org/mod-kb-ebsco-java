@@ -10,10 +10,9 @@ documentation:
     content: Implements the eholdings interface using EBSCO KB as backend.
 
 types:
-  assignedUser: !include types/assignedUsers/assignedUser.json
+  assignedUserId: !include types/assignedUsers/assignedUserId.json
   assignedUserCollection: !include types/assignedUsers/assignedUserCollection.json
   assignedUserPostRequest: !include types/assignedUsers/assignedUserPostRequest.json
-  assignedUserPutRequest: !include types/assignedUsers/assignedUserPutRequest.json
   jsonapiError: !include types/jsonapiError.json
 
 /eholdings/kb-credentials/{id}/users:
@@ -58,7 +57,7 @@ types:
         body:
           application/vnd.api+json:
             description: The server has successfully fulfilled the POST request.
-            type: assignedUser
+            type: assignedUserId
             example:
               strict: false
               value: !include examples/assignedUsers/assigned_users_post_201_response.json
@@ -91,41 +90,6 @@ types:
     uriParameters:
       userId:
         pattern : "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
-    put:
-      body:
-        application/vnd.api+json:
-          description: Update User Assignment to KB Credentials
-          type: assignedUserPutRequest
-          example:
-            strict: false
-            value: !include examples/assignedUsers/assigned_users_put_request.json
-      responses:
-        204:
-          description: No Content
-        400:
-          description: Bad Request
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/assignedUsers/assigned_users_put_400_response.json
-        404:
-          description: Not Found
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/assignedUsers/assigned_users_put_404_response.json
-        422:
-          description: Unprocessable Entity
-          body:
-            application/vnd.api+json:
-              type: jsonapiError
-              example:
-                strict: false
-                value: !include examples/assignedUsers/assigned_users_put_422_response.json
     delete:
       description: Remove association between user and KB Credentials
       responses:

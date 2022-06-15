@@ -2,7 +2,6 @@ package org.folio.repository.assigneduser;
 
 import static org.folio.repository.DbUtil.getAssignedUsersTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
-import static org.folio.repository.DbUtil.getAssignedUsersViewName;
 import static org.folio.repository.SqlQueryHelper.count;
 import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
@@ -12,7 +11,6 @@ import static org.folio.repository.SqlQueryHelper.whereQuery;
 public final class AssignedUsersConstants {
 
   public static final String ASSIGNED_USERS_TABLE_NAME = "assigned_users";
-  public static final String ASSIGNED_USERS_VIEW_NAME = "assigned_users_view";
   public static final String ID_COLUMN = "user_id";
   public static final String CREDENTIALS_ID_COLUMN = "credentials_id";
 
@@ -28,7 +26,7 @@ public final class AssignedUsersConstants {
   }
 
   public static String selectAssignedUsersByCredentialsIdQuery(String tenantId) {
-    return prepareQuery(selectAssignedUsersByCredentialsIdQuery(), getAssignedUsersViewName(tenantId));
+    return prepareQuery(selectAssignedUsersByCredentialsIdQuery(), getAssignedUsersTableName(tenantId));
   }
 
   public static String selectCountByCredentialsIdQuery(String tenantId) {

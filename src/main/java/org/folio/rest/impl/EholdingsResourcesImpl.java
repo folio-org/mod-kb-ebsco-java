@@ -256,7 +256,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     if (accessTypeId == null) {
       return CompletableFuture.completedFuture(null);
     } else {
-      return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId,
+      return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId, false,
         context.getOkapiData().getHeaders());
     }
   }

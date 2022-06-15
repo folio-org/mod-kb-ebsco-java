@@ -109,10 +109,6 @@
       "attributes": {
         "name": "Subscribed",
         "description": "Access Type description 1"
-      },
-      "creator": {
-        "lastName": "Doe",
-        "firstName": "John"
       }
     }
   ],

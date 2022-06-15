@@ -5,10 +5,7 @@ import org.folio.common.ListUtils;
 import java.util.Collection;
 import java.util.List;
 
-import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
-import static org.folio.repository.DbUtil.getAccessTypesTableName;
-import static org.folio.repository.DbUtil.getAccessTypesViewName;
-import static org.folio.repository.DbUtil.prepareQuery;
+import static org.folio.repository.DbUtil.*;
 import static org.folio.repository.SqlQueryHelper.count;
 import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.equalCondition;
@@ -36,16 +33,8 @@ public final class AccessTypesTableConstants {
   public static final String DESCRIPTION_COLUMN = "description";
   public static final String CREATED_DATE_COLUMN = "created_date";
   public static final String CREATED_BY_USER_ID_COLUMN = "created_by_user_id";
-  public static final String CREATED_BY_USERNAME_COLUMN = "created_by_username";
-  public static final String CREATED_BY_LAST_NAME_COLUMN = "created_by_last_name";
-  public static final String CREATED_BY_FIRST_NAME_COLUMN = "created_by_first_name";
-  public static final String CREATED_BY_MIDDLE_NAME_COLUMN = "created_by_middle_name";
   public static final String UPDATED_DATE_COLUMN = "updated_date";
   public static final String UPDATED_BY_USER_ID_COLUMN = "updated_by_user_id";
-  public static final String UPDATED_BY_USERNAME_COLUMN = "updated_by_username";
-  public static final String UPDATED_BY_LAST_NAME_COLUMN = "updated_by_last_name";
-  public static final String UPDATED_BY_FIRST_NAME_COLUMN = "updated_by_first_name";
-  public static final String UPDATED_BY_MIDDLE_NAME_COLUMN = "updated_by_middle_name";
   public static final String USAGE_NUMBER_COLUMN = "usage_number";
 
   private static final String[] INSERT_COLUMNS = new String[]{
