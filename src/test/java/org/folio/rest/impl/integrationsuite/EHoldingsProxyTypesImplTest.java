@@ -39,12 +39,6 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   private static final String EHOLDINGS_PROXY_TYPES_URL = "eholdings/proxy-types";
   private static final String EHOLDINGS_PROXY_TYPES_BY_CREDENTIALS_ID_URL = "/eholdings/kb-credentials/%s/proxy-types";
 
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   @After
   public void tearDown() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);

@@ -6,7 +6,7 @@ public enum LoadStatus {
 
   COMPLETED("Completed"), IN_PROGRESS("In progress"), FAILED("Failed"), NONE("None");
 
-  private String value;
+  private final String value;
 
   LoadStatus(String value) {
     this.value = value;

@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.AssignedUsersTestUtil.getAssignedUsers;
 import static org.folio.util.AssignedUsersTestUtil.saveAssignedUser;
@@ -27,9 +26,7 @@ import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,7 +41,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
@@ -61,19 +57,11 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   private static final String ASSIGN_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users";
   private static final String KB_CREDENTIALS_ASSIGNED_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users/%s";
 
-  private static final Map<String, String> OKAPI_HEADERS = new HashMap<>();
   private static final String USERDATA_COLLECTION_INFO_STUB_FILE = "responses/userlookup/mock_user_collection_response_200.json";
   private static final String GROUP_INFO_STUB_FILE = "responses/userlookup/mock_group_collection_response_200.json";
 
-  private final String QUERY_PARAM = "query";
-  private final String GET_USERS_ENDPOINT = "/users";
-
-
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-  }
+  private static final String QUERY_PARAM = "query";
+  private static final String GET_USERS_ENDPOINT = "/users";
 
   @After
   public void tearDown() {
@@ -217,9 +205,6 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   }
 
   private void wireMockUsers(List<UUID> ids) throws IOException, URISyntaxException {
-    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
-    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
-
     String query = cqlQueryConverter(ids);
 
     stubFor(

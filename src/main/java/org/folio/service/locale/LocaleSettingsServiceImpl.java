@@ -1,5 +1,7 @@
 package org.folio.service.locale;
 
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
@@ -12,12 +14,12 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.tools.utils.VertxUtils;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.DateTimeZone;
 
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.client.ConfigurationsClient;
-import org.folio.rest.tools.client.Response;
 import org.folio.rest.tools.utils.TenantTool;
 
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
@@ -49,7 +51,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     final String tenantId = TenantTool.calculateTenantId(okapiData.getTenant());
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
     try {
-      var configurationsClient = new ConfigurationsClient(okapiData.getOkapiUrl(), tenantId, okapiData.getApiToken());
+      var configurationsClient = prepareConfigurationsClient(okapiData, tenantId);
       LOG.info("Send GET request to mod-configuration {}", QUERY);
       Promise<HttpResponse<Buffer>> promise = Promise.promise();
       configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null, promise);
@@ -73,8 +75,19 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     return future;
   }
 
+  @NotNull
+  private ConfigurationsClient prepareConfigurationsClient(OkapiData okapiData, String tenantId) {
+    var options = new WebClientOptions();
+    options.setLogActivity(true);
+    options.setKeepAlive(true);
+    options.setConnectTimeout(2000);
+    options.setIdleTimeout(5000);
+    var webClient = WebClient.create(VertxUtils.getVertxFromContextOrNew(), options);
+    return new ConfigurationsClient(okapiData.getOkapiUrl(), tenantId, okapiData.getApiToken(), webClient);
+  }
+
   private boolean isSuccessfulResponse(HttpResponse<Buffer> response) {
-    if (!Response.isSuccess(response.statusCode())) {
+    if (!isSuccess(response.statusCode())) {
       String errorMessage = String.format(
         "Request to mod-configuration failed: error code - %s response body - %s", response.statusCode(),
         response.bodyAsString());
@@ -82,6 +95,10 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
       throw new IllegalStateException(errorMessage);
     }
     return true;
+  }
+
+  private static boolean isSuccess(int statusCode){
+    return statusCode >= 200 && statusCode < 300;
   }
 
   private Optional<LocaleSettings> mapToLocaleSettings(JsonObject config) {

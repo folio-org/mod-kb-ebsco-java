@@ -5,8 +5,6 @@ package org.folio.rest.converter.assignedusers;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.Value;

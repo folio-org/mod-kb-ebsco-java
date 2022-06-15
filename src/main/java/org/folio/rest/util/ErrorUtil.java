@@ -3,6 +3,8 @@ package org.folio.rest.util;
 
 import static org.folio.common.ListUtils.mapItems;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.util.Collections;
 import java.util.List;
 

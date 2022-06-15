@@ -34,20 +34,21 @@
   </licenses>
 
   <properties>
-    <rmb.version>33.2.5</rmb.version>
-    <folio-di-support.version>1.5.0</folio-di-support.version>
-    <folio-service-tools.version>1.8.0</folio-service-tools.version>
-    <folio-holdingsiq-client.version>2.0.0</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>1.4.0</folio-liquibase-util.version>
-    <mod-configuration-client.version>5.7.5</mod-configuration-client.version>
+    <rmb.version>34.0.0</rmb.version>
+    <folio-di-support.version>1.6.0</folio-di-support.version>
+    <folio-service-tools.version>1.9.0-SNAPSHOT</folio-service-tools.version>
+    <folio-holdingsiq-client.version>2.1.0-SNAPSHOT</folio-holdingsiq-client.version>
+    <folio-liquibase-util.version>1.5.0</folio-liquibase-util.version>
+    <mod-configuration-client.version>5.7.8</mod-configuration-client.version>
 
-    <vertx.version>4.2.4</vertx.version>
-    <aspectj.version>1.9.8</aspectj.version>
-    <spring.version>5.3.20</spring.version>
-    <jackson.version>2.13.2.1</jackson.version>
+    <vertx.version>4.3.1</vertx.version>
+    <aspectj.version>1.9.9.1</aspectj.version>
+    <spring.version>5.3.21</spring.version>
+    <jackson.version>2.13.3</jackson.version>
+    <postgresql.version>42.4.0</postgresql.version>
     <commons-configuration2.version>2.7</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
-    <lombok.version>1.18.22</lombok.version>
+    <lombok.version>1.18.24</lombok.version>
     <httpcore.version>4.4.15</httpcore.version>
     <log4j.version>2.17.2</log4j.version>
     <jetbrains-annotations.version>23.0.0</jetbrains-annotations.version>
@@ -55,16 +56,32 @@
     <opencsv.version>5.6</opencsv.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
 
-    <junit.version>4.13.2</junit.version>
-    <rest-assured.version>4.5.1</rest-assured.version>
-    <wiremock.version>2.20.0</wiremock.version>
-    <mockito.version>4.3.1</mockito.version>
-    <jsonassert.version>1.5.0</jsonassert.version>
-    <easy-random-core.version>5.0.0</easy-random-core.version>
-
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Test dependencies versions   -->
+    <junit.version>4.13.2</junit.version>
+    <rest-assured.version>5.1.1</rest-assured.version>
+    <wiremock.version>2.27.2</wiremock.version>
+    <mockito.version>4.6.1</mockito.version>
+    <jsonassert.version>1.5.0</jsonassert.version>
+    <easy-random-core.version>5.0.0</easy-random-core.version>
+
+    <!-- Plugins versions   -->
+    <versions-maven-plugin.version>2.11.0</versions-maven-plugin.version>
+    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+    <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
+    <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
+    <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+    <aspectj-maven-plugin.version>1.12.6</aspectj-maven-plugin.version>
+    <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
+    <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
+    <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+    <maven-release-plugin.version>3.0.0-M5</maven-release-plugin.version>
+    <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+    <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+    <maven-surefire-report-plugin.version>3.0.0-M7</maven-surefire-report-plugin.version>
   </properties>
 
   <profiles>
@@ -132,7 +149,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.3.3</version>
+      <version>${postgresql.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -300,7 +317,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.7</version>
+        <version>${versions-maven-plugin.version}</version>
         <configuration>
           <generateBackupPoms>false</generateBackupPoms>
         </configuration>
@@ -309,7 +326,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>${maven-compiler-plugin.version}</version>
         <configuration>
           <release>11</release>
           <encoding>${project.build.sourceEncoding}</encoding>
@@ -335,10 +352,11 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>${build-helper-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>add_generated_sources_folder</id>
@@ -376,7 +394,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
-        <version>1.0.0</version>
+        <version>${properties-maven-plugin.version}</version>
         <executions>
           <execution>
             <goals>
@@ -409,7 +427,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>${exec-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>git submodule update</id>
@@ -433,7 +451,7 @@
       <plugin>
         <groupId>com.nickwongdev</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
-        <version>1.12.6</version>
+        <version>${aspectj-maven-plugin.version}</version>
         <configuration>
           <verbose>true</verbose>
           <complianceLevel>11</complianceLevel>
@@ -476,7 +494,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>${maven-resources-plugin.version}</version>
         <executions>
           <execution>
             <id>copy-resources</id>
@@ -517,7 +535,7 @@
       <plugin>
         <groupId>com.coderplus.maven.plugins</groupId>
         <artifactId>copy-rename-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>${copy-rename-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>rename-descriptor-outputs</id>
@@ -544,7 +562,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
+        <version>${maven-shade-plugin.version}</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -581,7 +599,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>3.0.0-M1</version>
+        <version>${maven-release-plugin.version}</version>
         <configuration>
           <preparationGoals>clean verify</preparationGoals>
           <tagNameFormat>v@{project.version}</tagNameFormat>
@@ -593,7 +611,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M5</version>
+        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
           <systemPropertyVariables>
@@ -617,7 +635,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.3</version>
+        <version>${jacoco-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>jacoco-initialize</id>
@@ -642,12 +660,13 @@
       </plugin>
     </plugins>
   </build>
+
   <reporting>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>${maven-surefire-report-plugin.version}</version>
       </plugin>
     </plugins>
   </reporting>
