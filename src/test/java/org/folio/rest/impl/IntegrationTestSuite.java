@@ -1,6 +1,5 @@
 package org.folio.rest.impl;
 
-import io.vertx.ext.unit.TestContext;
 import java.util.Collections;
 
 import org.junit.AfterClass;
@@ -56,8 +55,8 @@ import org.folio.test.util.TestSetUpHelper;
 public class IntegrationTestSuite {
 
   @BeforeClass
-  public static void setUpClass(TestContext context) {
-    WireMockTestBase.setUpClass(context);
+  public static void setUpClass() {
+    TestSetUpHelper.startVertxAndPostgres(Collections.singletonMap("spring.configuration", "org.folio.spring.config.TestConfig"));
   }
 
   @AfterClass

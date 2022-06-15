@@ -77,7 +77,6 @@ import static org.folio.util.PackagesTestUtil.setUpPackages;
 import static org.folio.util.ResourcesTestUtil.buildResource;
 import static org.folio.util.TagsTestUtil.saveTag;
 
-import io.vertx.ext.unit.TestContext;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -101,7 +100,6 @@ import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -172,12 +170,6 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   private final ObjectMapper mapper = new ObjectMapper();
   private KbCredentials configuration;
-
-  @BeforeClass
-  public static void setUpClass(TestContext context) {
-    System.setProperty("holdings.load.implementation.qualifier", "TransactionLoadServiceFacade");
-    WireMockTestBase.setUpClass(context);
-  }
 
   @Override
   @Before
