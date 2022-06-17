@@ -29,11 +29,6 @@ public class AssignedUserCollectionItemConverter {
         .withType(ASSIGNED_USERS)
         .withAttributes(new AssignedUserDataAttributes()
           .withCredentialsId(source.getCredentialsId().toString())
-          .withUserName(source.getUsername())
-          .withFirstName(source.getFirstName())
-          .withMiddleName(source.getMiddleName())
-          .withLastName(source.getLastName())
-          .withPatronGroup(source.getPatronGroup())
         );
     }
   }
