@@ -11,7 +11,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -162,15 +161,13 @@ public class UCApigeeEbscoClientImpl implements UCApigeeEbscoClient {
     return httpContext -> {
       if (ClientPhase.SEND_REQUEST == httpContext.phase()) {
         HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
-        HttpMethod method = request.method();
         String uri = request.uri();
         Object body = httpContext.body();
-        LOG.info("Request sends to APIGEE {} {} with body {}", method, uri, body);
+        LOG.info("Request sends to APIGEE: {} with body {}", uri, body);
       } else if (ClientPhase.RECEIVE_RESPONSE == httpContext.phase()) {
         HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
-        HttpMethod method = request.method();
         String uri = request.uri();
-        LOG.info("Response received from APIGEE {} {}", method, uri);
+        LOG.info("Response received from APIGEE: {}", uri);
       }
       httpContext.next();
     };

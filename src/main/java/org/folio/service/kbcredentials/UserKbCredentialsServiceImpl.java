@@ -4,7 +4,7 @@ import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
-import static org.folio.rest.tools.utils.TenantTool.tenantId;
+import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
 import java.util.Collection;

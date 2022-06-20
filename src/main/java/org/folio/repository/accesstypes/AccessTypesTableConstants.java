@@ -84,7 +84,7 @@ public final class AccessTypesTableConstants {
     return insertQuery(INSERT_COLUMNS) + " " + updateOnConflictedIdQuery(ID_COLUMN, INSERT_COLUMNS) + ";";
   }
 
-  protected static String selectIdsByCredentialsIdQuery() {
+  public static String selectIdsByCredentialsIdQuery() {
     return selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
   }
 

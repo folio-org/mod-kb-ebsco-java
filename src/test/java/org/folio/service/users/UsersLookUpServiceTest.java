@@ -52,8 +52,7 @@ public class UsersLookUpServiceTest {
 
   private static final Map<String, String> OKAPI_HEADERS = new HashMap<>();
 
-  private final String GET_USER_ENDPOINT = "/users/";
-  private final String GET_USERS_ENDPOINT = "/users";
+  private static final String GET_USER_ENDPOINT = "/users/";
 
   private final UsersLookUpService usersLookUpService = new UsersLookUpService(Vertx.vertx());
 
@@ -154,7 +153,7 @@ public class UsersLookUpServiceTest {
     OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
 
     stubFor(
-      get(new UrlPathPattern(new RegexPattern(GET_USERS_ENDPOINT), true))
+      get(new UrlPathPattern(new RegexPattern("/users"), true))
         .withQueryParam(QUERY_PARAM, equalTo(query))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));

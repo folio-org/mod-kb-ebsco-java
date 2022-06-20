@@ -4,7 +4,7 @@ import static java.lang.String.format;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.tools.utils.TenantTool.tenantId;
+import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;

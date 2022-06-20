@@ -5,8 +5,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AssignedUser;
-import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 
 public class AssignedUsersBodyValidatorTest {
