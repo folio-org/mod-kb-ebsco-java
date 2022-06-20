@@ -1,6 +1,6 @@
 package org.folio.service.uc;
 
-import static org.folio.rest.tools.utils.TenantTool.tenantId;
+import static org.folio.rest.util.TenantUtil.tenantId;
 
 import java.util.Map;
 import java.util.Optional;

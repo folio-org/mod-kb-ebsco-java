@@ -65,7 +65,7 @@ public final class AccessTypeMappingsTableConstants {
       getAccessTypesTableName(tenantId));
   }
 
-  protected static String selectAccessTypeIdsByRecordQuery() {
+  public static String selectAccessTypeIdsByRecordQuery() {
     return selectQuery(ACCESS_TYPE_ID_COLUMN) + " " +
       whereQuery(RECORD_ID_COLUMN, RECORD_TYPE_COLUMN);
   }

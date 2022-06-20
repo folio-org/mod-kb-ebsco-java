@@ -6,7 +6,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
 import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.tools.utils.TenantTool.tenantId;
+import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
 import java.time.OffsetDateTime;

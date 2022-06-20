@@ -47,7 +47,7 @@ public class TitleServiceImplTest {
       .notifier(new Slf4jNotifier(true)));
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     configuration = Configuration.builder()
       .url("http://127.0.0.1:" + userMockServer.port())
       .customerId(STUB_CUSTOMER_ID)

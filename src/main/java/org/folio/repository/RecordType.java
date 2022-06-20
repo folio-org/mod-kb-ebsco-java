@@ -4,7 +4,7 @@ public enum RecordType {
 
   PROVIDER("provider"), PACKAGE("package"), TITLE("title"), RESOURCE("resource");
 
-  private String value;
+  private final String value;
 
   RecordType(String value) {
     this.value = value;

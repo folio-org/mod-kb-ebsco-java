@@ -54,12 +54,6 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   private static final String KB_EBSCO_GET_ROOT_PROXY_RESPONSE =
     "responses/kb-ebsco/root-proxy/get-root-proxy-response.json";
 
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-  }
-
   @After
   public void tearDown() {
     clearDataFromTable(vertx, ASSIGNED_USERS_TABLE_NAME);
