@@ -5,6 +5,7 @@ import static org.folio.rest.util.TenantUtil.tenantId;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,7 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.ws.rs.BadRequestException;
 
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +32,6 @@ import org.folio.service.users.UsersLookUpService;
 
 @Component
 public class AssignedUsersServiceImpl implements AssignedUsersService {
-
-  private static final String IDS_NOT_MATCH_MESSAGE = "Credentials ID and user ID can't be updated";
 
   @Autowired
   private AssignedUserRepository assignedUserRepository;
@@ -61,9 +59,14 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
         .collect(Collectors.toList()))
       .thenCompose(idBatches -> loadInBatches(idBatches,
         idBatch -> usersLookUpService.lookUpUsers(idBatch, new OkapiParams(okapiHeaders))))
-      .thenCompose(users -> CompletableFuture.completedFuture(users)
+      .thenCompose(users -> CompletableFuture.completedFuture(sortByLastName(users))
         .thenCombine(fetchGroups(users, okapiHeaders), UserCollectionDataConverter.UsersResult::new)
         .thenApply(usersResult -> userCollectionConverter.convert(usersResult)));
+  }
+
+  private List<User> sortByLastName(List<User> users) {
+    users.sort(Comparator.comparing(User::getLastName));
+    return users;
   }
 
   @Override
@@ -78,15 +81,15 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
     return assignedUserRepository.delete(toUUID(credentialsId), toUUID(userId), tenantId(okapiHeaders));
   }
 
-  private <T> CompletableFuture<Collection<T>> loadInBatches(List<UUID> ids,
-                                                             Function<List<UUID>, CompletableFuture<Collection<T>>> loadFunction) {
+  private <T> CompletableFuture<List<T>> loadInBatches(List<UUID> ids,
+                                                             Function<List<UUID>, CompletableFuture<List<T>>> loadFunction) {
     @SuppressWarnings("unchecked")
     CompletableFuture<Collection<T>>[] batchFutures = Lists.partition(ids, 50).stream()
       .map(loadFunction)
       .toArray(CompletableFuture[]::new);
     return CompletableFuture.allOf(batchFutures)
       .thenCompose(v -> {
-        Collection<T> resultCollection = new ArrayList<>();
+        List<T> resultCollection = new ArrayList<>();
         for (CompletableFuture<Collection<T>> future : batchFutures) {
           resultCollection.addAll(future.join());
         }
@@ -94,7 +97,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
       });
   }
 
-  private CompletableFuture<Collection<Group>> fetchGroups(Collection<User> users, Map<String, String> okapiHeaders) {
+  private CompletableFuture<List<Group>> fetchGroups(Collection<User> users, Map<String, String> okapiHeaders) {
     var groupIds = users.stream()
       .map(User::getPatronGroup)
       .filter(Objects::nonNull)
@@ -105,14 +108,4 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
       idBatch -> usersLookUpService.lookUpGroups(idBatch, new OkapiParams(okapiHeaders)));
   }
 
-  private CompletableFuture<Void> validate(String userId, AssignedUserId assignedUserId) {
-    CompletableFuture<Void> future = new CompletableFuture<>();
-    if (!assignedUserId.getId().equals(userId)) {
-      BadRequestException exception = new BadRequestException(IDS_NOT_MATCH_MESSAGE);
-      future.completeExceptionally(exception);
-    } else {
-      future.complete(null);
-    }
-    return future;
-  }
 }

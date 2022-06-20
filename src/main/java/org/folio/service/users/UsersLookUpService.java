@@ -5,7 +5,6 @@ import static java.util.Collections.emptyList;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -87,7 +86,7 @@ public class UsersLookUpService {
     }
   }
 
-  public CompletableFuture<Collection<User>> lookUpUsers(List<UUID> ids, final OkapiParams okapiParams) {
+  public CompletableFuture<List<User>> lookUpUsers(List<UUID> ids, final OkapiParams okapiParams) {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
@@ -96,7 +95,7 @@ public class UsersLookUpService {
     return lookUpUsersUsingCQL(okapiParams, idsCql);
   }
 
-  public CompletableFuture<Collection<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
+  public CompletableFuture<List<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
@@ -124,13 +123,13 @@ public class UsersLookUpService {
     }
   }
 
-  private CompletableFuture<Collection<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
+  private CompletableFuture<List<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
     Promise<HttpResponse<JsonObject>> promise =
       lookUpByCQL(okapiParams, USERS_ENDPOINT, query);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUserCollection));
   }
 
-  private CompletableFuture<Collection<Group>> lookUpGroupsUsingCQL(final OkapiParams okapiParams, String query) {
+  private CompletableFuture<List<Group>> lookUpGroupsUsingCQL(final OkapiParams okapiParams, String query) {
     Promise<HttpResponse<JsonObject>> promise = lookUpByCQL(okapiParams, GROUPS_ENDPOINT, query);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroupCollection));
   }
@@ -182,15 +181,15 @@ public class UsersLookUpService {
     return builder.build();
   }
 
-  private Collection<User> mapUserCollection(JsonObject userCollection) {
-    Collection<User> collection = new ArrayList<>();
+  private List<User> mapUserCollection(JsonObject userCollection) {
+    List<User> collection = new ArrayList<>();
     var users = userCollection.getJsonArray("users");
     users.stream().forEach(user -> collection.add(mapUser((JsonObject) user)));
     return collection;
   }
 
-  private Collection<Group> mapGroupCollection(JsonObject groupCollection) {
-    Collection<Group> collection = new ArrayList<>();
+  private List<Group> mapGroupCollection(JsonObject groupCollection) {
+    List<Group> collection = new ArrayList<>();
     var groups = groupCollection.getJsonArray("usergroups");
     groups.stream().forEach(group -> collection.add(mapGroup((JsonObject) group)));
     return collection;

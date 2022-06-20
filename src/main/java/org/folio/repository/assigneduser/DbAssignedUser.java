@@ -10,9 +10,4 @@ import lombok.Getter;
 public class DbAssignedUser {
   private final UUID id;
   private final UUID credentialsId;
-  private final String username;
-  private final String firstName;
-  private final String middleName;
-  private final String lastName;
-  private final String patronGroup;
 }

@@ -158,7 +158,7 @@ public class UsersLookUpServiceTest {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
 
-    CompletableFuture<Collection<User>> info = usersLookUpService.lookUpUsers(ids, new OkapiParams(OKAPI_HEADERS));
+    CompletableFuture<List<User>> info = usersLookUpService.lookUpUsers(ids, new OkapiParams(OKAPI_HEADERS));
     info.thenCompose(userInfo -> {
       context.assertNotNull(userInfo);
       context.assertEquals(2, userInfo.size());
@@ -196,7 +196,7 @@ public class UsersLookUpServiceTest {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
 
-    CompletableFuture<Collection<Group>> info = usersLookUpService.lookUpGroups(ids, new OkapiParams(OKAPI_HEADERS));
+    CompletableFuture<List<Group>> info = usersLookUpService.lookUpGroups(ids, new OkapiParams(OKAPI_HEADERS));
     info.thenCompose(group -> {
       context.assertNotNull(group);
 
