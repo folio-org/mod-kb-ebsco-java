@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +50,7 @@ public class UsersLookUpService {
   private static final String GROUPS_ENDPOINT = "/groups";
 
   private static final String CQL_QUERY_PARAM = "query";
+  private static final String LIMIT_PARAM = "limit";
   private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
   private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
   private static final String CANNOT_GET_USER_DATA_ERROR_MESSAGE = "Cannot get user data: {}. Server response: {}";
@@ -90,18 +92,14 @@ public class UsersLookUpService {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    String idsCql = "id=(" + ids.stream().map(UUID::toString)
-      .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
-    return lookUpUsersUsingCQL(okapiParams, idsCql);
+    return lookUpUsersUsingCQL(getIdsCql(ids), ids.size(), okapiParams);
   }
 
   public CompletableFuture<List<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    String idsCql = "id=(" + ids.stream().map(UUID::toString)
-      .map(StringUtil::cqlEncode).collect(Collectors.joining(" OR ")) + ")";
-    return lookUpGroupsUsingCQL(okapiParams, idsCql);
+    return lookUpGroupsUsingCQL(getIdsCql(ids), ids.size(), okapiParams);
   }
 
   public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
@@ -123,26 +121,26 @@ public class UsersLookUpService {
     }
   }
 
-  private CompletableFuture<List<User>> lookUpUsersUsingCQL(final OkapiParams okapiParams, String query) {
-    Promise<HttpResponse<JsonObject>> promise =
-      lookUpByCQL(okapiParams, USERS_ENDPOINT, query);
+  private CompletableFuture<List<User>> lookUpUsersUsingCQL(String query, int limit, OkapiParams okapiParams) {
+    Promise<HttpResponse<JsonObject>> promise = lookUpByCQL(USERS_ENDPOINT, query, limit, okapiParams);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUserCollection));
   }
 
-  private CompletableFuture<List<Group>> lookUpGroupsUsingCQL(final OkapiParams okapiParams, String query) {
-    Promise<HttpResponse<JsonObject>> promise = lookUpByCQL(okapiParams, GROUPS_ENDPOINT, query);
+  private CompletableFuture<List<Group>> lookUpGroupsUsingCQL(String query, int limit, OkapiParams okapiParams) {
+    Promise<HttpResponse<JsonObject>> promise = lookUpByCQL(GROUPS_ENDPOINT, query, limit, okapiParams);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroupCollection));
   }
 
-  private Promise<HttpResponse<JsonObject>> lookUpByCQL(OkapiParams okapiParams, String usersEndpoint, String query) {
+  private Promise<HttpResponse<JsonObject>> lookUpByCQL(String path, String query, int limit, OkapiParams okapiParams) {
     MultiMap headers = new HeadersMultiMap();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
-    webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersEndpoint)
+    webClient.getAbs(headers.get(XOkapiHeaders.URL) + path)
       .putHeaders(headers)
       .addQueryParam(CQL_QUERY_PARAM, query)
+      .addQueryParam(LIMIT_PARAM, String.valueOf(limit))
       .as(BodyCodec.jsonObject())
       .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
       .send(promise);
@@ -167,6 +165,13 @@ public class UsersLookUpService {
     });
   }
 
+  private List<User> mapUserCollection(JsonObject userCollection) {
+    List<User> collection = new ArrayList<>();
+    var users = userCollection.getJsonArray("users");
+    users.stream().forEach(user -> collection.add(mapUser((JsonObject) user)));
+    return collection;
+  }
+
   private User mapUser(JsonObject user) {
     User.UserBuilder builder = User.builder();
     builder.id(user.getString("id"));
@@ -181,13 +186,6 @@ public class UsersLookUpService {
     return builder.build();
   }
 
-  private List<User> mapUserCollection(JsonObject userCollection) {
-    List<User> collection = new ArrayList<>();
-    var users = userCollection.getJsonArray("users");
-    users.stream().forEach(user -> collection.add(mapUser((JsonObject) user)));
-    return collection;
-  }
-
   private List<Group> mapGroupCollection(JsonObject groupCollection) {
     List<Group> collection = new ArrayList<>();
     var groups = groupCollection.getJsonArray("usergroups");
@@ -196,13 +194,22 @@ public class UsersLookUpService {
   }
 
   private Group mapGroup(JsonObject group) {
-    Group.GroupBuilder builder = Group.builder();
     if (group.containsKey("group")) {
-      builder.id(group.getString("id"));
-      builder.group(group.getString("group"));
+      return Group.builder()
+        .id(group.getString("id"))
+        .group(group.getString("group"))
+        .build();
     } else {
       throw new BadRequestException(USER_INFO_IS_NOT_COMPLETE_ERROR_MESSAGE);
     }
-    return builder.build();
+  }
+
+  @NotNull
+  private String getIdsCql(List<UUID> ids) {
+    var idsQueryValue = ids.stream()
+      .map(UUID::toString)
+      .map(StringUtil::cqlEncode)
+      .collect(Collectors.joining(" OR "));
+    return "id=(" + idsQueryValue + ")";
   }
 }
