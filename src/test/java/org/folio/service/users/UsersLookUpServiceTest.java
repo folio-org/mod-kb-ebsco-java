@@ -267,6 +267,34 @@ public class UsersLookUpServiceTest {
     });
   }
 
+  @Test
+  public void shouldReturn404WhenUserNotFoundById(TestContext context) {
+    final String stubUserId = "xyz";
+    final String stubUserIdEndpoint = GET_USER_ENDPOINT + stubUserId;
+    Async async = context.async();
+
+    OKAPI_HEADERS.put(XOkapiHeaders.TENANT, STUB_TENANT);
+    OKAPI_HEADERS.put(XOkapiHeaders.URL, getWiremockUrl());
+    OKAPI_HEADERS.put(XOkapiHeaders.USER_ID, stubUserId);
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern(stubUserIdEndpoint), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(404)
+          .withStatusMessage("User Not Found")));
+
+    CompletableFuture<User> info = usersLookUpService.lookUpUserById(stubUserId, new OkapiParams(OKAPI_HEADERS));
+    info.thenCompose(result -> {
+      context.fail("Must fail with NotFoundException");
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      context.assertTrue(exception.getCause() instanceof NotFoundException);
+      async.complete();
+      return null;
+    });
+  }
+
   private String getWiremockUrl() {
     return HOST + ":" + userMockServer.port();
   }
