@@ -136,6 +136,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
+
+    wireMockUserById(JOHN_ID);
+
     JsonapiError error = postWithStatus(endpoint, postBody, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "The user is already assigned");
@@ -149,6 +152,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
+
+    wireMockUserById(expected.getId());
+
     JsonapiError error = postWithStatus(endpoint, postBody, SC_NOT_FOUND).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "not found");
@@ -169,11 +175,17 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   }
 
   @Test
+  @SneakyThrows
   public void shouldReturn422OnPostWhenUserDoesNotExist() {
     String credentialsId = randomId();
     AssignedUserId expected = new AssignedUserId()
       .withId(UUID.randomUUID().toString())
       .withCredentialsId(credentialsId);
+
+    stubFor(
+      get(GET_USERS_ENDPOINT + "/" + expected.getId())
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(SC_NOT_FOUND)));
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
