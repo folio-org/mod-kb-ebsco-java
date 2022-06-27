@@ -114,7 +114,26 @@ public class AssignedUsersServiceImplTest {
     var assignedUser = usersService.save(assignUserData, HEADERS);
 
     assertThatThrownBy(assignedUser::get)
-      .hasCauseInstanceOf(InputValidationException.class);
+      .hasCauseInstanceOf(InputValidationException.class)
+      .hasMessageEndingWith("Unable to assign user");
+  }
+
+  @Test
+  @SneakyThrows
+  public void shouldNotAssignUserIfLookupFails() {
+    var assignUserData = new AssignedUserId()
+      .withId(UUID.randomUUID().toString())
+      .withCredentialsId(UUID.randomUUID().toString());
+    var lookupExceptionMessage = "Some exception";
+
+    when(usersLookUpService.lookUpUserById(any(), any()))
+      .thenReturn(CompletableFuture.failedFuture(new Exception(lookupExceptionMessage)));
+
+    var assignedUser = usersService.save(assignUserData, HEADERS);
+
+    assertThatThrownBy(assignedUser::get)
+      .hasCauseInstanceOf(IllegalStateException.class)
+      .hasMessageEndingWith("Unable to lookup user: " + lookupExceptionMessage);
   }
 
   @SneakyThrows
