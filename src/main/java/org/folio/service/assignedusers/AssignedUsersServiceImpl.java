@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.ws.rs.NotFoundException;
 
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +24,9 @@ import org.folio.common.OkapiParams;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.UserCollectionDataConverter;
+import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserId;
-import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
@@ -70,10 +71,18 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
   }
 
   @Override
-  public CompletableFuture<AssignedUserId> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders) {
-    AssignedUserId assignedUserId = entity.getData();
-    return assignedUserRepository.save(toDbConverter.convert(assignedUserId), tenantId(okapiHeaders))
-      .thenApply(source -> toAssignedUserIdConverter.convert(source));
+  public CompletableFuture<AssignedUserId> save(AssignedUserId assignedUserId, Map<String, String> okapiHeaders) {
+    return usersLookUpService.lookUpUserById(assignedUserId.getId(), new OkapiParams(okapiHeaders))
+      .exceptionally(throwable ->
+        {
+          if (throwable instanceof NotFoundException) {
+            throw new InputValidationException("Unable to assign user", "User doesn't exist");
+          }
+          throw new IllegalStateException("Unable to lookup user: " + throwable.getMessage());
+        }
+      ).thenCompose(u ->
+        assignedUserRepository.save(toDbConverter.convert(assignedUserId), tenantId(okapiHeaders))
+          .thenApply(source -> toAssignedUserIdConverter.convert(source)));
   }
 
   @Override

@@ -2,6 +2,7 @@ package org.folio.service.assignedusers;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -11,22 +12,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import javax.ws.rs.NotFoundException;
+
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.folio.common.OkapiParams;
-import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.repository.assigneduser.AssignedUserRepository;
-import org.folio.repository.assigneduser.DbAssignedUser;
-import org.folio.rest.converter.assignedusers.UserCollectionDataConverter;
-import org.folio.service.users.Group;
-import org.folio.service.users.User;
-import org.folio.service.users.UsersLookUpService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.folio.common.OkapiParams;
+import org.folio.okapi.common.XOkapiHeaders;
+import org.folio.repository.assigneduser.AssignedUserRepository;
+import org.folio.repository.assigneduser.DbAssignedUser;
+import org.folio.rest.converter.assignedusers.UserCollectionDataConverter;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.AssignedUserId;
+import org.folio.service.users.Group;
+import org.folio.service.users.User;
+import org.folio.service.users.UsersLookUpService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AssignedUsersServiceImplTest {
@@ -93,6 +99,41 @@ public class AssignedUsersServiceImplTest {
       .hasSize(2)
       .extracting(User::getLastName)
       .containsExactly("a", "b");
+  }
+
+  @Test
+  @SneakyThrows
+  public void shouldNotAssignNonExistentUser() {
+    var assignUserData = new AssignedUserId()
+      .withId(UUID.randomUUID().toString())
+      .withCredentialsId(UUID.randomUUID().toString());
+
+    when(usersLookUpService.lookUpUserById(any(), any()))
+      .thenReturn(CompletableFuture.failedFuture(new NotFoundException("User Not Found")));
+
+    var assignedUser = usersService.save(assignUserData, HEADERS);
+
+    assertThatThrownBy(assignedUser::get)
+      .hasCauseInstanceOf(InputValidationException.class)
+      .hasMessageEndingWith("Unable to assign user");
+  }
+
+  @Test
+  @SneakyThrows
+  public void shouldNotAssignUserIfLookupFails() {
+    var assignUserData = new AssignedUserId()
+      .withId(UUID.randomUUID().toString())
+      .withCredentialsId(UUID.randomUUID().toString());
+    var lookupExceptionMessage = "Some exception";
+
+    when(usersLookUpService.lookUpUserById(any(), any()))
+      .thenReturn(CompletableFuture.failedFuture(new Exception(lookupExceptionMessage)));
+
+    var assignedUser = usersService.save(assignUserData, HEADERS);
+
+    assertThatThrownBy(assignedUser::get)
+      .hasCauseInstanceOf(IllegalStateException.class)
+      .hasMessageEndingWith("Unable to lookup user: " + lookupExceptionMessage);
   }
 
   @SneakyThrows

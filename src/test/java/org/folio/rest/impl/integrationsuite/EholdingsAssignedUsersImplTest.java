@@ -27,6 +27,7 @@ import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,8 +37,8 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import lombok.SneakyThrows;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,6 +59,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   private static final String KB_CREDENTIALS_ASSIGNED_USER_PATH = KB_CREDENTIALS_ENDPOINT + "/%s/users/%s";
 
   private static final String USERDATA_COLLECTION_INFO_STUB_FILE = "responses/userlookup/mock_user_collection_response_200.json";
+  private static final String USERDATA_STUB_FILE = "responses/userlookup/mock_user_response_200.json";
   private static final String GROUP_INFO_STUB_FILE = "responses/userlookup/mock_group_collection_response_200.json";
 
   private static final String QUERY_PARAM = "query";
@@ -102,6 +104,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   }
 
   @Test
+  @SneakyThrows
   public void shouldReturn201OnPostWhenAssignedUserIsValid() {
     String credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
@@ -110,6 +113,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
+
+    wireMockUserById(expected.getId());
+
     AssignedUserId actual = postWithCreated(endpoint, postBody).as(AssignedUserId.class);
 
     assertEquals(expected, actual);
@@ -130,6 +136,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
+
+    wireMockUserById(JOHN_ID);
+
     JsonapiError error = postWithStatus(endpoint, postBody, SC_BAD_REQUEST).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "The user is already assigned");
@@ -143,6 +152,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
+
+    wireMockUserById(expected.getId());
+
     JsonapiError error = postWithStatus(endpoint, postBody, SC_NOT_FOUND).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "not found");
@@ -160,6 +172,29 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     assertThat(errors.getErrors(), hasSize(1));
     assertThat(errors.getErrors(), everyItem(hasProperty("message", equalTo("must not be null"))));
+  }
+
+  @Test
+  @SneakyThrows
+  public void shouldReturn422OnPostWhenUserDoesNotExist() {
+    String credentialsId = randomId();
+    AssignedUserId expected = new AssignedUserId()
+      .withId(UUID.randomUUID().toString())
+      .withCredentialsId(credentialsId);
+
+    stubFor(
+      get(GET_USERS_ENDPOINT + "/" + expected.getId())
+        .willReturn(new ResponseDefinitionBuilder()
+          .withStatus(SC_NOT_FOUND)));
+
+    AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
+    String postBody = Json.encode(assignedUserPostRequest);
+    String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
+    Errors errors = postWithStatus(endpoint, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+
+    assertThat(errors.getErrors(), hasSize(1));
+    assertThat(errors.getErrors(), everyItem(hasProperty("additionalProperties",
+      equalTo(Map.of("title", "Unable to assign user", "detail", "User doesn't exist")))));
   }
 
   @Test
@@ -223,6 +258,14 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
         .withQueryParam(QUERY_PARAM, WireMock.equalTo(cqlQuery))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(TestUtil.readFile(GROUP_INFO_STUB_FILE))));
+  }
+
+  @SneakyThrows
+  private void wireMockUserById(String id) {
+    stubFor(
+      get(GET_USERS_ENDPOINT + "/" + id)
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(TestUtil.readFile(USERDATA_STUB_FILE))));
   }
 
   private AssignedUserId stubAssignedUserId(String userId, String credentialsId) {
