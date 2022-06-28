@@ -5,13 +5,12 @@ import java.util.concurrent.CompletableFuture;
 
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.AssignedUserId;
-import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
 
 public interface AssignedUsersService {
 
   CompletableFuture<AssignedUserCollection> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders);
 
-  CompletableFuture<AssignedUserId> save(AssignedUserPostRequest entity, Map<String, String> okapiHeaders);
+  CompletableFuture<AssignedUserId> save(AssignedUserId assignedUserId, Map<String, String> okapiHeaders);
 
   CompletableFuture<Void> delete(String credentialsId, String userId, Map<String, String> okapiHeaders);
 
