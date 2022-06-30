@@ -38,7 +38,7 @@ public class AbstractLoadServiceFacadeTest {
   private final Vertx vertx = Vertx.vertx();
 
   private final AbstractLoadServiceFacade loadServiceFacadeSpy =
-    Mockito.spy(new AbstractLoadServiceFacade(1L, 5, 1,
+    Mockito.spy(new AbstractLoadServiceFacade(1L, 3, 1,
       1, 1,vertx) {
       @Override
       protected CompletableFuture<String> populateHoldings(LoadService loadingService) {
@@ -84,6 +84,27 @@ public class AbstractLoadServiceFacadeTest {
       .getLastLoadingStatus(any());
     verify(loadServiceFacadeSpy, times(1))
       .getLoadingStatus(any(), any());
+  }
+
+  @Test
+  @SneakyThrows
+  public void shouldFailOnRetriesForLastStatusExceeded() {
+    doReturn(getHoldingsStatusFuture(null), getHoldingsStatusFuture(null), getHoldingsStatusFuture(null))
+      .when(loadServiceFacadeSpy)
+      .getLastLoadingStatus(any());
+
+    var holdingsStatusFuture = ReflectionTestUtils.<CompletableFuture<HoldingsStatus>>invokeMethod(
+      loadServiceFacadeSpy, "populateHoldingsIfNecessary", loadService);
+
+    assertNotNull(holdingsStatusFuture);
+    holdingsStatusFuture.handle((holdingsStatus, throwable) -> {
+      assertEquals(IllegalStateException.class, throwable.getCause().getClass());
+
+      return null;
+    }).get();
+
+    verify(loadServiceFacadeSpy, times(3))
+      .getLastLoadingStatus(any());
   }
 
   private HoldingsStatus getHoldingsStatus(LoadStatus loadStatus) {
