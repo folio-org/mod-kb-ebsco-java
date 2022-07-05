@@ -50,8 +50,10 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users",
           "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.get"],
-          "modulePermissions": ["users.collection.get",
-          "usergroups.collection.get"]
+          "modulePermissions": [
+            "users.collection.get",
+            "usergroups.collection.get"
+          ]
         },
         {
           "methods": ["POST"],
