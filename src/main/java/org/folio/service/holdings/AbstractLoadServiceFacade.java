@@ -54,7 +54,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   private int snapshotRefreshPeriod;
   private Vertx vertx;
 
-  public AbstractLoadServiceFacade(@Value("${holdings.status.check.delay}") long statusRetryDelay,
+  protected AbstractLoadServiceFacade(@Value("${holdings.status.check.delay}") long statusRetryDelay,
                                    @Value("${holdings.status.retry.count}") int statusRetryCount,
                                    @Value("${holdings.page.retry.delay}") int loadPageRetryDelay,
                                    @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
@@ -96,14 +96,14 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   }
 
   private CompletableFuture<HoldingsStatus> populateHoldingsIfNecessary(LoadService loadingService) {
-    return getLastLoadingStatus(loadingService).thenCompose(loadStatus -> {
+    return waitForStatus(statusRetryCount, loadingService).thenCompose(loadStatus -> {
       if (IN_PROGRESS.equals(loadStatus.getStatus())) {
         return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
       } else if (snapshotCreatedRecently(loadStatus)) {
-        logger.info("Snapshot created recently: {}", loadStatus.toString());
+        logger.info("Snapshot created recently: {}", loadStatus);
         final Integer totalCount = loadStatus.getTotalCount();
         if (INTEGER_ZERO.equals(totalCount)){
-          throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus.toString());
+          throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus);
         } else {
         return CompletableFuture.completedFuture(loadStatus);
         }
@@ -113,6 +113,30 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
           .thenCompose(transactionId -> waitForCompleteStatus(statusRetryCount, transactionId, loadingService));
       }
     });
+  }
+
+  private CompletableFuture<HoldingsStatus> waitForStatus(int retryCount, LoadService loadingService) {
+    var future = new CompletableFuture<HoldingsStatus>();
+    waitForStatus(retryCount, future, loadingService);
+    return future;
+  }
+
+  private void waitForStatus(int retries, CompletableFuture<HoldingsStatus> future, LoadService loadingService) {
+    vertx.setTimer(statusRetryDelay, timerId -> getLastLoadingStatus(loadingService)
+      .thenAccept(loadStatus -> {
+        if (loadStatus == null) {
+          logger.info("Received null status of stage snapshot. Retrying...");
+          if (retries <= 1) {
+            throw new IllegalStateException("Retries exceeded but status is still null");
+          }
+          waitForStatus(retries - 1, future, loadingService);
+        } else {
+          future.complete(loadStatus);
+        }
+      }).exceptionally(throwable -> {
+        future.completeExceptionally(throwable);
+        return null;
+      }));
   }
 
   private CompletableFuture<HoldingsStatus> waitForCompleteStatus(int retryCount, String transactionId, LoadService loadingService) {
