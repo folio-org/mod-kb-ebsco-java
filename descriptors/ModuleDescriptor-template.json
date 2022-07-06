@@ -49,17 +49,17 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.get"]
+          "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.get"],
+          "modulePermissions": [
+            "users.collection.get",
+            "usergroups.collection.get"
+          ]
         },
         {
           "methods": ["POST"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.post"]
-        },
-        {
-          "methods": ["PUT"],
-          "pathPattern": "/eholdings/kb-credentials/{credentialsId}/users/{userId}",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.users.item.put"]
+          "permissionsRequired": ["kb-ebsco.kb-credentials.users.collection.post"],
+          "modulePermissions": ["users.item.get"]
         },
         {
           "methods": ["DELETE"],
