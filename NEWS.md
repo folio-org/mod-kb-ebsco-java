@@ -1,4 +1,17 @@
+## v3.11.0 2022-07-08
+* MODKBEKBJ-621 User-assignment: Rework GET request for '/kb-credentials/{kb-credentials-id}/users'
+* MODKBEKBJ-622 User-assignment: Remove parameters from POST request of '/kb-credentials/{kb-credentials-id}/users'
+* MODKBEKBJ-623 User-assignment: Remove user-related data from module
 * MODKBEKBJ-624 Add new package content types
+* MODKBEKBJ-628 Define 'kb-ebsco.user-kb-credential.get' permission
+* MODKBEKBJ-637 Implement GET /eholdings/uc-credentials/clientId endpoint
+* MODKBEKBJ-638 Implement GET /eholdings/uc-credentials/clientSecret endpoint
+* MODKBEKBJ-639 Add the ability to include accessType for package resources
+* MODKBEKBJ-659 Upgrade RMB to v34.0.0 and Vert.x to v4.3.1
+* MODKBEKBJ-662 User-assignment: sort assigned users by last name
+* MODKBEKBJ-665 User-assignment: fix not all assigned users retrieved at response
+* MODKBEKBJ-667 User-assignment: check if user exist before assign
+* MODKBEKBJ-668 Fix loading holdings failed with NullPointer
 
 ## v3.10.0 2022-03-04
 * MODKBEKBJ-593 Apply searchtype=advanced to Packages search query
