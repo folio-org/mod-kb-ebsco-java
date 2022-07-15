@@ -23,15 +23,96 @@
     </createProcedure>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-556@@save-status-not-started-for-dummy-credentials" author="psmagin">
-    <preConditions onFail="MARK_RAN">
+  <changeSet id="MODKBEKBJ-680@@create-pgcrypto-extension" author="psmahin">
+    <sql>
+      CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA public;
+    </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-680@@add-unique-constraint-for-credentialsid-in-retry-status" author="psmahin">
+    <preConditions onFail="MARK_RAN"
+                   onFailMessage="[WARN] Unique constraint already exist: unq_retry_status_credentialsid">
       <sqlCheck expectedResult="0">
-        SELECT count(*) FROM ${database.defaultSchemaName}.holdings_status WHERE credentials_id = (SELECT ${database.defaultSchemaName}.get_single_credentials_id());
+        SELECT COUNT(1) from pg_constraint
+        WHERE conname = 'unq_retry_status_credentialsid'
+        AND contype = 'u'
+        AND conrelid = '${database.defaultSchemaName}.retry_status'::regclass;
+      </sqlCheck>
+    </preConditions>
+    <addUniqueConstraint
+      constraintName="unq_retry_status_credentialsid"
+      tableName="retry_status"
+      columnNames="credentials_id"
+      schemaName="${database.defaultSchemaName}"
+      deferrable="false"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-680@@drop-holdings-status-lock-key" author="psmahin">
+    <preConditions onFail="MARK_RAN" onFailMessage="[WARN] Unique constraint doesn't exist: holdings_status_lock_key">
+      <sqlCheck expectedResult="1">
+        SELECT COUNT(1) from pg_constraint
+        WHERE conname = 'holdings_status_lock_key'
+        AND contype = 'u'
+        AND conrelid = '${database.defaultSchemaName}.holdings_status'::regclass;
+      </sqlCheck>
+    </preConditions>
+    <dropUniqueConstraint
+      tableName="holdings_status"
+      constraintName="holdings_status_lock_key"
+      schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-680@@drop-unq-holdings-status-credentialsid-lock" author="psmahin">
+    <preConditions onFail="MARK_RAN"
+                   onFailMessage="[WARN] Unique constraint doesn't exist: unq_holdings_status_credentialsid_lock">
+      <sqlCheck expectedResult="1">
+        SELECT COUNT(1) from pg_constraint
+        WHERE conname = 'unq_holdings_status_credentialsid_lock'
+        AND contype = 'u'
+        AND conrelid = '${database.defaultSchemaName}.holdings_status'::regclass;
+      </sqlCheck>
+    </preConditions>
+    <dropUniqueConstraint tableName="holdings_status"
+                          constraintName="unq_holdings_status_credentialsid_lock"
+                          schemaName="${database.defaultSchemaName}"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-680@@drop-holdings-status-lock-check" author="psmahin">
+    <preConditions onFail="MARK_RAN" onFailMessage="[WARN] Check constraint doesn't exist: holdings_status_lock_check">
+      <sqlCheck expectedResult="1">
+        SELECT COUNT(1) from pg_constraint
+        WHERE conname = 'holdings_status_lock_check'
+        AND contype = 'c'
+        AND conrelid = '${database.defaultSchemaName}.holdings_status'::regclass;
       </sqlCheck>
     </preConditions>
     <sql>
+      ALTER TABLE ${database.defaultSchemaName}.holdings_status DROP CONSTRAINT holdings_status_lock_check;
+    </sql>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-680@@add-unique-constraint-for-credentialsid-in-holdings-status" author="psmahin">
+    <preConditions onFail="MARK_RAN"
+                   onFailMessage="[WARN] Unique constraint already exist: unq_holdings_status_credentialsid">
+      <sqlCheck expectedResult="0">
+        SELECT COUNT(1) from pg_constraint
+        WHERE conname = 'unq_holdings_status_credentialsid'
+        AND contype = 'u'
+        AND conrelid = '${database.defaultSchemaName}.holdings_status'::regclass;
+      </sqlCheck>
+    </preConditions>
+    <addUniqueConstraint
+      constraintName="unq_holdings_status_credentialsid"
+      tableName="holdings_status"
+      columnNames="credentials_id"
+      schemaName="${database.defaultSchemaName}"
+      deferrable="false"/>
+  </changeSet>
+
+  <changeSet id="MODKBEKBJ-556@@save-status-not-started-for-dummy-credentials" author="psmagin" runOnChange="true">
+    <sql>
       INSERT INTO ${database.defaultSchemaName}.holdings_status(id, jsonb, lock, process_id, credentials_id)
-	    VALUES ('9e12026a-6e7c-46e0-bc60-4ef6fc9b19e2',
+	    SELECT public.gen_random_uuid(),
 	    		'{
 	    			"data": {
 	    				"type": "status",
@@ -47,21 +128,19 @@
 	    			}
 	    		}'
 	    		, 'true',
-	    		'ab6e433b-dcaa-404a-a89c-d4c1cfaef658',
-	    		(SELECT ${database.defaultSchemaName}.get_single_credentials_id())
-      );
+          public.gen_random_uuid(),
+	    		id
+      FROM ${database.defaultSchemaName}.kb_credentials
+      ON CONFLICT DO NOTHING;
     </sql>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-556@@save-retry-status-for-dummy-credentials" author="psmagin">
-    <preConditions onFail="MARK_RAN">
-      <sqlCheck expectedResult="0">
-        SELECT count(*) FROM ${database.defaultSchemaName}.retry_status WHERE credentials_id = (SELECT ${database.defaultSchemaName}.get_single_credentials_id());
-      </sqlCheck>
-    </preConditions>
+  <changeSet id="MODKBEKBJ-556@@save-retry-status-for-dummy-credentials" author="psmagin" runOnChange="true">
     <sql>
       INSERT INTO ${database.defaultSchemaName}.retry_status(id, attempts_left, credentials_id)
-      VALUES ('9e12026a-6e7c-46e0-bc60-4ef6fc9b19e2', 5, (SELECT ${database.defaultSchemaName}.get_single_credentials_id()));
+      SELECT public.gen_random_uuid(), 5, id
+      FROM ${database.defaultSchemaName}.kb_credentials
+      ON CONFLICT DO NOTHING;
     </sql>
   </changeSet>
 
