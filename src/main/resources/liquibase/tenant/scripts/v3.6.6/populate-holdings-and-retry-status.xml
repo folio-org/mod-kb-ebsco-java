@@ -112,7 +112,7 @@
   <changeSet id="MODKBEKBJ-556@@save-status-not-started-for-dummy-credentials" author="psmagin" runOnChange="true">
     <sql>
       INSERT INTO ${database.defaultSchemaName}.holdings_status(id, jsonb, lock, process_id, credentials_id)
-	    SELECT public.gen_random_uuid(),
+	    SELECT id,
 	    		'{
 	    			"data": {
 	    				"type": "status",
@@ -128,7 +128,7 @@
 	    			}
 	    		}'
 	    		, 'true',
-          public.gen_random_uuid(),
+          id,
 	    		id
       FROM ${database.defaultSchemaName}.kb_credentials
       ON CONFLICT DO NOTHING;
@@ -138,7 +138,7 @@
   <changeSet id="MODKBEKBJ-556@@save-retry-status-for-dummy-credentials" author="psmagin" runOnChange="true">
     <sql>
       INSERT INTO ${database.defaultSchemaName}.retry_status(id, attempts_left, credentials_id)
-      SELECT public.gen_random_uuid(), 5, id
+      SELECT id, 5, id
       FROM ${database.defaultSchemaName}.kb_credentials
       ON CONFLICT DO NOTHING;
     </sql>
