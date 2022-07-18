@@ -23,12 +23,6 @@
     </createProcedure>
   </changeSet>
 
-  <changeSet id="MODKBEKBJ-680@@create-pgcrypto-extension" author="psmahin">
-    <sql>
-      CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA public;
-    </sql>
-  </changeSet>
-
   <changeSet id="MODKBEKBJ-680@@add-unique-constraint-for-credentialsid-in-retry-status" author="psmahin">
     <preConditions onFail="MARK_RAN"
                    onFailMessage="[WARN] Unique constraint already exist: unq_retry_status_credentialsid">
