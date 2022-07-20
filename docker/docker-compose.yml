@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:12-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/data/postgres
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      PGDATA: "/data/postgres"
+    networks:
+      - mod-kb-ebsco-java-local
+
+  pgadmin:
+    image: dpage/pgadmin4:6.7
+    ports:
+      - ${PGADMIN_PORT}:80
+    volumes:
+      - "pgadmin-data:/var/lib/pgadmin"
+    environment:
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    networks:
+      - mod-kb-ebsco-java-local
+
+  mod-kb-ebsco-java:
+    image: dev.folio/mod-kb-ebsco-java
+    build:
+      context: ..\
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+      - "5005:5005"
+    environment:
+      ENV: ${ENV}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JAVA_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:${DEBUG_PORT}"
+    depends_on:
+      - "postgres"
+    networks:
+      - mod-kb-ebsco-java-local
+
+networks:
+  mod-kb-ebsco-java-local:
+    driver: "bridge"
+
+volumes:
+  pgadmin-data:
+    driver: "local"
+  postgres-data:
+    driver: "local"
