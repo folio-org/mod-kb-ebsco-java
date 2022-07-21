@@ -63,10 +63,14 @@ final class CostPerUseConverterUtils {
       && ucTitleCostPerUse.getAnalysis().getCurrent() != null
       && ucTitleCostPerUse.getAnalysis().getCurrent().getCost() != null) {
       analysisAttributes.setCost(ucTitleCostPerUse.getAnalysis().getCurrent().getCost());
-      analysisAttributes.setUsage(publisher.getTotal());
-      analysisAttributes.setCostPerUse(analysisAttributes.getCost() / analysisAttributes.getUsage());
+      analysisAttributes.setUsage(publisher == null ? null : publisher.getTotal());
+      analysisAttributes.setCostPerUse(getCostPerUse(analysisAttributes));
     }
     return analysisAttributes;
+  }
+
+  static Double getCostPerUse(CostAnalysisAttributes analysisAttributes){
+    return analysisAttributes.getUsage() == null ? null : analysisAttributes.getCost() / analysisAttributes.getUsage();
   }
 
   static void setNonPublisherUsage(List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {

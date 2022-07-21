@@ -130,6 +130,24 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnResourceCostPerUseWithEmptyNonPublisher() {
+    int titleId = 356;
+    int packageId = 473;
+    String year = "2019";
+    String platform = "all";
+    String stubApigeeResponseFile = "responses/uc/titles/get-title-cost-per-use-response-with-empty-non-publisher.json";
+    mockSuccessfulTitleCostPerUse(titleId, packageId, stubApigeeResponseFile);
+
+    String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/resources/expected-resource-cost-per-use-with-empty-non-publisher.json";
+    ResourceCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), ResourceCostPerUse.class);
+
+    ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, platform), JOHN_TOKEN_HEADER)
+      .as(ResourceCostPerUse.class);
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
   public void shouldReturn422OnGetResourceCPUWhenYearIsNull() {
     int titleId = 356;
     int packageId = 473;
