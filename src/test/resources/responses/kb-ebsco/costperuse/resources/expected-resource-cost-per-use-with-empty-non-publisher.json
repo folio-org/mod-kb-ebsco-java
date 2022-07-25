@@ -1,0 +1,106 @@
+{
+  "resourceId": "1-473-356",
+  "type": "resourceCostPerUse",
+  "attributes": {
+    "usage": {
+      "platforms": [
+        {
+          "name": "Wiley Online Library",
+          "isPublisherPlatform": true,
+          "counts": [
+            0,
+            1,
+            3,
+            1,
+            3,
+            1,
+            16,
+            1,
+            null,
+            null,
+            null,
+            null
+          ],
+          "total": 26
+        },
+        {
+          "name": "EBSCOhost",
+          "isPublisherPlatform": false,
+          "counts": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "total": 0
+        }
+      ],
+      "totals": {
+        "publisher": {
+          "counts": [
+            0,
+            1,
+            3,
+            1,
+            3,
+            1,
+            16,
+            1,
+            null,
+            null,
+            null,
+            null
+          ],
+          "total": 26
+        },
+        "nonPublisher": null,
+        "all": {
+          "counts": [
+            0,
+            1,
+            3,
+            1,
+            3,
+            1,
+            16,
+            1,
+            null,
+            null,
+            null,
+            null
+          ],
+          "total": 26
+        }
+      }
+    },
+    "analysis": {
+      "publisherPlatforms": {
+        "cost": 100.0,
+        "usage": 26,
+        "costPerUse": 3.8461538461538463
+      },
+      "nonPublisherPlatforms": {
+        "cost": 100.0,
+        "usage": null,
+        "costPerUse": null
+      },
+      "allPlatforms": {
+        "cost": 100.0,
+        "usage": 26,
+        "costPerUse": 3.8461538461538463
+      }
+    },
+    "parameters": {
+      "startMonth": "apr",
+      "currency": "USD"
+    }
+  }
+}
