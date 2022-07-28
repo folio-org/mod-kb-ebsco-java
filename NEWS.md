@@ -1,3 +1,6 @@
+## v3.11.0 2022-07-28
+* MODKBEKBJ-681 Usage Consolidation: Fix NPE when no counts exist
+
 ## v3.11.0 2022-07-08
 * MODKBEKBJ-621 User-assignment: Rework GET request for '/kb-credentials/{kb-credentials-id}/users'
 * MODKBEKBJ-622 User-assignment: Remove parameters from POST request of '/kb-credentials/{kb-credentials-id}/users'
