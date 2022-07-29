@@ -1,3 +1,7 @@
+## v3.12.0 IN-PROGRESS
+
+* MODKBEKBJ-682 Supports users interface versions 15.0 16.0
+
 ## v3.11.0 2022-07-08
 * MODKBEKBJ-621 User-assignment: Rework GET request for '/kb-credentials/{kb-credentials-id}/users'
 * MODKBEKBJ-622 User-assignment: Remove parameters from POST request of '/kb-credentials/{kb-credentials-id}/users'
