@@ -30,7 +30,7 @@ public final class UcSettingsConverter {
   }
 
   @Primary
-  @Component("secureducSettingsConverter")
+  @Component("securedUcSettingsConverter")
   public static class FromDbSecuredConverter extends FromDbNonSecuredConverter {
 
     @Override
@@ -43,7 +43,7 @@ public final class UcSettingsConverter {
     }
   }
 
-  @Component("nonSecureducSettingsConverter")
+  @Component("nonSecuredUcSettingsConverter")
   public static class FromDbNonSecuredConverter implements Converter<DbUcSettings, UCSettings> {
 
     @Override
