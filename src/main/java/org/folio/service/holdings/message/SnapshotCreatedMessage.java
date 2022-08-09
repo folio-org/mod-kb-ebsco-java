@@ -8,9 +8,7 @@ import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.folio.holdingsiq.model.Configuration;
-
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
@@ -25,7 +23,7 @@ public class SnapshotCreatedMessage {
   private String credentialsId;
   private String tenantId;
 
-  public SnapshotCreatedMessage() {}
+  public SnapshotCreatedMessage() { }
 
   public SnapshotCreatedMessage(JsonObject jsonObject) {
     SnapshotCreatedMessage message = jsonObject.mapTo(SnapshotCreatedMessage.class);

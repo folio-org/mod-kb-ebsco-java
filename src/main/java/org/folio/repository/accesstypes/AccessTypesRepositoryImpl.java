@@ -2,7 +2,6 @@ package org.folio.repository.accesstypes;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.folio.common.LogUtils.logCountQuery;
@@ -33,6 +32,12 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.selectC
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertAccessTypeQuery;
 import static org.folio.util.FutureUtils.mapResult;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -43,28 +48,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.db.RowSetUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordType;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.service.exc.ServiceExceptions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessTypesRepositoryImpl implements AccessTypesRepository {
@@ -95,7 +92,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   @Override
   public CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(UUID credentialsId,
-                                                                                    UUID accessTypeId, String tenantId) {
+                                                                                    UUID accessTypeId,
+                                                                                    String tenantId) {
     String query = selectByCredentialsAndAccessTypeIdQuery(tenantId);
     Tuple params = createParams(accessTypeId, credentialsId);
 
@@ -197,7 +195,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   }
 
   @Override
-  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds, RecordType recordType, String tenant) {
+  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds,
+                                                                  RecordType recordType, String tenant) {
     if (isEmpty(recordIds)) {
       return completedFuture(Collections.emptyMap());
     }
@@ -206,7 +205,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     return mapResult(resultSetFuture, this::mapAccessTypesPerRecord);
   }
 
-  private Future<RowSet<Row>> findByRecordIdsOfType(String credentialsId, List<String> recordIds, RecordType recordType, String tenantId) {
+  private Future<RowSet<Row>> findByRecordIdsOfType(String credentialsId, List<String> recordIds, RecordType recordType,
+                                                    String tenantId) {
     Tuple parameters = createParametersWithRecordType(credentialsId, recordIds, recordType);
 
     String query = selectByCredentialsAndRecordIdsQuery(recordIds, tenantId);
@@ -218,7 +218,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     return promise.future().recover(excTranslator.translateOrPassBy());
   }
 
-  private Tuple createParametersWithRecordType(String credentialsId, List<String> queryParameters, RecordType recordType) {
+  private Tuple createParametersWithRecordType(String credentialsId, List<String> queryParameters,
+                                               RecordType recordType) {
     Tuple parameters = Tuple.tuple();
     parameters.addString(credentialsId);
     parameters.addString(recordType.getValue());
@@ -258,15 +259,10 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       .build();
   }
 
-
   private int getIntValueOrDefault(Row row, String columnName, int defaultValue) {
-    return row.getColumnIndex(columnName) != -1 ?
-      ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
-      : defaultValue;
-  }
-
-  private String getStringValueOrNull(Row row, String columnName) {
-    return row.getColumnIndex(columnName) != -1 ? row.getString(columnName) : null;
+    return row.getColumnIndex(columnName) != -1
+           ? ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
+           : defaultValue;
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

@@ -1,18 +1,17 @@
 package org.folio.rest.validator;
 
-import org.junit.Test;
-
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.PackageTagsDataAttributes;
 import org.folio.rest.jaxrs.model.PackageTagsPutData;
 import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
+import org.junit.Test;
 
 public class PackageTagsPutBodyValidatorTest {
-  private PackageTagsPutBodyValidator validator = new PackageTagsPutBodyValidator();
+  private final PackageTagsPutBodyValidator validator = new PackageTagsPutBodyValidator();
 
   @Test(expected = InputValidationException.class)
-  public void shouldThrowExceptionWhenNameIsEmpty(){
+  public void shouldThrowExceptionWhenNameIsEmpty() {
     PackageTagsPutRequest request = new PackageTagsPutRequest()
       .withData(new PackageTagsPutData()
         .withAttributes(new PackageTagsDataAttributes()
@@ -23,7 +22,7 @@ public class PackageTagsPutBodyValidatorTest {
   }
 
   @Test(expected = InputValidationException.class)
-  public void shouldThrowExceptionWhenContentTypeIsNull(){
+  public void shouldThrowExceptionWhenContentTypeIsNull() {
     PackageTagsPutRequest request = new PackageTagsPutRequest()
       .withData(new PackageTagsPutData()
         .withAttributes(new PackageTagsDataAttributes()

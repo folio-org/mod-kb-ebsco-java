@@ -14,15 +14,13 @@ import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTabl
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.UPDATED_AT_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
+import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Tuple;
-
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
 
@@ -55,7 +53,8 @@ public class HoldingsStatusAuditTestUtil {
 
   private static HoldingsLoadingStatus mapHoldingsLoadingStatus(Row row) {
     try {
-      return org.folio.dbschema.ObjectMapperTool.getMapper().readValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
+      return org.folio.dbschema.ObjectMapperTool.getMapper()
+        .readValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
     } catch (IOException e) {
       e.printStackTrace();
       throw new IllegalArgumentException("Can't parse holdings status", e);

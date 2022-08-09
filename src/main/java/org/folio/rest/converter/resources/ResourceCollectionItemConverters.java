@@ -2,26 +2,23 @@ package org.folio.rest.converter.resources;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
-
 import static org.folio.rest.converter.resources.ResourceConverterUtils.createEmptyRelationship;
 
 import java.util.List;
-
+import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.Title;
 import org.folio.repository.accesstypes.DbAccessType;
+import org.folio.repository.tag.DbTag;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.ResourceCollectionItem;
+import org.folio.rest.jaxrs.model.Tags;
+import org.folio.rmapi.result.TitleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.Title;
-import org.folio.repository.tag.DbTag;
-import org.folio.rest.jaxrs.model.ResourceCollectionItem;
-import org.folio.rest.jaxrs.model.Tags;
-import org.folio.rmapi.result.TitleResult;
-
-public class ResourceCollectionItemConverters {
+public final class ResourceCollectionItemConverters {
 
   private ResourceCollectionItemConverters() { }
 

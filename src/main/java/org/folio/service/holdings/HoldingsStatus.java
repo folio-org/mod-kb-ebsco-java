@@ -2,7 +2,6 @@ package org.folio.service.holdings;
 
 import lombok.Builder;
 import lombok.Value;
-
 import org.folio.repository.holdings.LoadStatus;
 
 @Value

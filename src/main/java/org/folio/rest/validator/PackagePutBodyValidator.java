@@ -1,10 +1,9 @@
 package org.folio.rest.validator;
 
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackagePutBodyValidator {
@@ -14,9 +13,7 @@ public class PackagePutBodyValidator {
   private static final int MAX_TOKEN_LENGTH = 500;
 
   public void validate(PackagePutRequest request) {
-    if (request == null ||
-      request.getData() == null ||
-      request.getData().getAttributes() == null) {
+    if (request == null || request.getData() == null || request.getData().getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
     PackagePutDataAttributes attributes = request.getData().getAttributes();

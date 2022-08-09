@@ -1,12 +1,6 @@
 package org.folio.rest.converter.titles;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.TitlePost;
@@ -17,6 +11,10 @@ import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rmapi.result.ResourceResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TitlePostRequestConverter implements Converter<TitlePostRequest, TitlePost> {
@@ -38,14 +36,14 @@ public class TitlePostRequestConverter implements Converter<TitlePostRequest, Ti
       .edition(attributes.getEdition())
       .isPeerReviewed(java.util.Objects.isNull(isPeerReviewed) ? Boolean.FALSE : isPeerReviewed)
       .publisherName(attributes.getPublisherName())
-      .pubType(ConverterConsts.publicationTypes.inverseBidiMap().get(attributes.getPublicationType()))
+      .pubType(ConverterConsts.PUBLICATION_TYPES.inverseBidiMap().get(attributes.getPublicationType()))
       .userDefinedFields(UserDefinedFields.builder()
         .userDefinedField1(attributes.getUserDefinedField1())
         .userDefinedField2(attributes.getUserDefinedField2())
         .userDefinedField3(attributes.getUserDefinedField3())
         .userDefinedField4(attributes.getUserDefinedField4())
         .userDefinedField5(attributes.getUserDefinedField5())
-          .build()
+        .build()
       );
 
     List<org.folio.rest.jaxrs.model.Identifier> identifiersList = attributes.getIdentifiers();

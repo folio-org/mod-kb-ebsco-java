@@ -1,15 +1,14 @@
 package org.folio.repository.holdings;
 
-import org.jetbrains.annotations.NotNull;
-
 import org.folio.service.holdings.HoldingsStatus;
 import org.folio.service.holdings.message.ConfigurationMessage;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
+import org.jetbrains.annotations.NotNull;
 
-public class HoldingsServiceMessagesFactory {
+public final class HoldingsServiceMessagesFactory {
 
   private HoldingsServiceMessagesFactory() {
   }
@@ -48,7 +47,8 @@ public class HoldingsServiceMessagesFactory {
   }
 
   @NotNull
-  public static LoadHoldingsMessage getLoadHoldingsMessage(SnapshotCreatedMessage message, String previousTransactionId) {
+  public static LoadHoldingsMessage getLoadHoldingsMessage(SnapshotCreatedMessage message,
+                                                           String previousTransactionId) {
     return new LoadHoldingsMessage(
       message.getConfiguration(),
       message.getCredentialsId(),

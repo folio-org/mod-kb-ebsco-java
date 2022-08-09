@@ -2,7 +2,6 @@ package org.folio.repository.kbcredentials;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
@@ -25,29 +24,26 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.sel
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.upsertCredentialsQuery;
 import static org.folio.util.FutureUtils.mapResult;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-
-import javax.ws.rs.BadRequestException;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import javax.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.DbMetadataUtil;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
@@ -59,7 +55,8 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   private static final String CREDENTIALS_CUSTOMERID_URL_UNIQUENESS_MESSAGE = "Duplicate credentials";
   private static final String CREDENTIALS_CUSTOMERID_URL_UNIQUENESS_DETAILS =
     "Credentials with customer id '%s' and url '%s' already exist";
-  private static final String CREDENTIALS_DELETE_ALLOWED_DETAILS = "Credentials have related records and can't be deleted";
+  private static final String CREDENTIALS_DELETE_ALLOWED_DETAILS =
+    "Credentials have related records and can't be deleted";
 
   @Autowired
   private Vertx vertx;
@@ -155,8 +152,8 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private Optional<DbKbCredentials> mapSingleCredentials(RowSet<Row> resultSet) {
     return isEmpty(resultSet)
-      ? Optional.empty()
-      : Optional.of(mapFirstItem(resultSet, this::mapCredentials));
+           ? Optional.empty()
+           : Optional.of(mapFirstItem(resultSet, this::mapCredentials));
   }
 
   private DbKbCredentials mapCredentials(Row row) {

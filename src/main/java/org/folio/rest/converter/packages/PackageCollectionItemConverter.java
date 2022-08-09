@@ -1,18 +1,17 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.common.ConverterConsts.contentTypes;
+import static org.folio.rest.converter.common.ConverterConsts.CONTENT_TYPES;
 import static org.folio.rest.converter.packages.PackageConverterUtils.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackageCollectionItemConverter implements Converter<PackageData, PackageCollectionItem> {
@@ -26,7 +25,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
       .withId(providerId + "-" + packageId)
       .withType(PACKAGES_TYPE)
       .withAttributes(new PackageDataAttributes()
-        .withContentType(contentTypes.get(packageData.getContentType().toLowerCase()))
+        .withContentType(CONTENT_TYPES.get(packageData.getContentType().toLowerCase()))
         .withCustomCoverage(
           new Coverage()
             .withBeginCoverage(packageData.getCustomCoverage().getBeginCoverage())
@@ -45,7 +44,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
           new VisibilityData().withIsHidden(packageData.getVisibilityData().getIsHidden())
             .withReason(
               packageData.getVisibilityData().getReason().equals("Hidden by EP") ? "Set by system"
-                : "")))
+                                                                                 : "")))
       .withRelationships(createEmptyPackageRelationship());
   }
 }

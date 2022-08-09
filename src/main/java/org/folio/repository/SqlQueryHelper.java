@@ -2,14 +2,13 @@ package org.folio.repository;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
 import org.folio.common.ListUtils;
 
 public final class SqlQueryHelper {
 
   private static final String FROM_KEYWORD = "FROM %s";
 
-  private SqlQueryHelper() {}
+  private SqlQueryHelper() { }
 
   public static String selectQuery(String... columns) {
     if (columns.length == 0) {

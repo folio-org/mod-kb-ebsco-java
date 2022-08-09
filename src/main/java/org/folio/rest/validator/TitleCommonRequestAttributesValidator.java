@@ -2,14 +2,11 @@ package org.folio.rest.validator;
 
 import java.util.List;
 import java.util.Objects;
-
 import javax.validation.ValidationException;
-
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
 import org.folio.rest.model.TitleCommonRequestAttributes;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TitleCommonRequestAttributesValidator {
@@ -17,7 +14,7 @@ public class TitleCommonRequestAttributesValidator {
   private static final String TITLE_NAME = "Title Name";
 
   /**
-   * Provides validation for the common data attributes
+   * Provides validation for the common data attributes.
    *
    * @throws ValidationException if validation fails
    */
@@ -37,7 +34,7 @@ public class TitleCommonRequestAttributesValidator {
   private void checkIdentifiersList(
     List<Identifier> identifiers) {
     identifiers.forEach(titleIdentifier -> {
-      if(Objects.isNull(titleIdentifier.getId()) || titleIdentifier.getId().length() > 20 ){
+      if (Objects.isNull(titleIdentifier.getId()) || titleIdentifier.getId().length() > 20) {
         throw new InputValidationException("Invalid Identifier id", "");
       }
     });

@@ -26,26 +26,26 @@ public final class AssignedUsersConstants {
   }
 
   public static String selectAssignedUsersByCredentialsIdQuery(String tenantId) {
-    return prepareQuery(selectAssignedUsersByCredentialsIdQuery(), getAssignedUsersTableName(tenantId));
+    return prepareQuery(selectAssignedUsersByCredentialsIdQueryPart(), getAssignedUsersTableName(tenantId));
   }
 
   public static String selectCountByCredentialsIdQuery(String tenantId) {
-    return prepareQuery(selectCountByCredentialsIdQuery(), getAssignedUsersTableName(tenantId));
+    return prepareQuery(selectCountByCredentialsIdQueryPart(), getAssignedUsersTableName(tenantId));
   }
 
   public static String deleteAssignedUserQuery(String tenantId) {
-    return prepareQuery(deleteAssignedUserQuery(), getAssignedUsersTableName(tenantId));
+    return prepareQuery(deleteAssignedUserQueryPart(), getAssignedUsersTableName(tenantId));
   }
 
-  private static String selectAssignedUsersByCredentialsIdQuery() {
+  private static String selectAssignedUsersByCredentialsIdQueryPart() {
     return selectQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
   }
 
-  private static String selectCountByCredentialsIdQuery() {
+  private static String selectCountByCredentialsIdQueryPart() {
     return selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
   }
 
-  private static String deleteAssignedUserQuery() {
+  private static String deleteAssignedUserQueryPart() {
     return deleteQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN, ID_COLUMN) + ";";
   }
 }

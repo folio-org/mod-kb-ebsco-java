@@ -2,10 +2,8 @@ package org.folio.repository.resources;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Value;
-
 import org.folio.holdingsiq.model.ResourceId;
 
 @Value

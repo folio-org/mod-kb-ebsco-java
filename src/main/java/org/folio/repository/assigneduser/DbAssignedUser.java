@@ -1,7 +1,6 @@
 package org.folio.repository.assigneduser;
 
 import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Getter;
 

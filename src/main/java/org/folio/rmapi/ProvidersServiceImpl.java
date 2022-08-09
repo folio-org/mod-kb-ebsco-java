@@ -2,16 +2,14 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import io.vertx.core.Vertx;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.Packages;
@@ -30,13 +28,13 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
   private static final String INCLUDE_PACKAGES_VALUE = "packages";
   private static final Logger LOG = LogManager.getLogger(ProvidersServiceImpl.class);
 
-
   private PackagesHoldingsIQService packagesService;
-  private VertxCache<VendorCacheKey, VendorById> vendorCache;
-  private Configuration configuration;
-  private String tenantId;
+  private final VertxCache<VendorCacheKey, VendorById> vendorCache;
+  private final Configuration configuration;
+  private final String tenantId;
 
-  public ProvidersServiceImpl(Configuration config, Vertx vertx, String tenantId, HoldingsIQService holdingsService, VertxCache<VendorCacheKey, VendorById> vendorCache ) {
+  public ProvidersServiceImpl(Configuration config, Vertx vertx, String tenantId, HoldingsIQService holdingsService,
+                              VertxCache<VendorCacheKey, VendorById> vendorCache) {
     super(config, vertx, holdingsService);
     this.configuration = config;
     this.tenantId = tenantId;
@@ -75,7 +73,7 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
       .map(id -> retrieveProvider(id, "", true))
       .collect(Collectors.toSet());
     return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
-    .thenApply(this::mapToProviders);
+      .thenApply(this::mapToProviders);
   }
 
   private Vendors mapToProviders(List<VendorResult> results) {

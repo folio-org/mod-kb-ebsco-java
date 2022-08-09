@@ -3,7 +3,11 @@ package org.folio.rest.converter.kbcredentials;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.Collection;
-
+import org.folio.repository.kbcredentials.DbKbCredentials;
+import org.folio.rest.jaxrs.model.KbCredentials;
+import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.rest.jaxrs.model.MetaTotalResults;
+import org.folio.rest.util.RestConstants;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,20 +15,14 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import org.folio.repository.kbcredentials.DbKbCredentials;
-import org.folio.rest.jaxrs.model.KbCredentials;
-import org.folio.rest.jaxrs.model.KbCredentialsCollection;
-import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.util.RestConstants;
-
-public class KbCredentialsCollectionConverter {
+public final class KbCredentialsCollectionConverter {
 
   private KbCredentialsCollectionConverter() { }
 
   @Primary
   @Component("securedCredentialsCollection")
   public static class SecuredKbCredentialsCollectionConverter implements
-    Converter<Collection<DbKbCredentials>, KbCredentialsCollection>{
+    Converter<Collection<DbKbCredentials>, KbCredentialsCollection> {
 
     @Autowired
     @Qualifier("secured")
@@ -42,7 +40,7 @@ public class KbCredentialsCollectionConverter {
 
   @Component("nonSecuredCredentialsCollection")
   public static class NonSecuredKbCredentialsCollectionConverter implements
-      Converter<Collection<DbKbCredentials>, KbCredentialsCollection> {
+    Converter<Collection<DbKbCredentials>, KbCredentialsCollection> {
 
     @Autowired
     @Qualifier("nonSecured")

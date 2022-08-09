@@ -1,20 +1,17 @@
 package org.folio.rest.converter.labels;
 
+import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import static org.folio.test.util.TestUtil.readJsonFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-
-import org.junit.Test;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
+import org.junit.Test;
+import org.springframework.core.convert.converter.Converter;
 
 public class CustomLabelsCollectionConverterTest {
 

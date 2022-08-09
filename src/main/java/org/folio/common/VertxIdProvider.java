@@ -1,9 +1,8 @@
 package org.folio.common;
 
-import java.util.UUID;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

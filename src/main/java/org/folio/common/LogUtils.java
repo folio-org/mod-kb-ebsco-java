@@ -13,7 +13,6 @@ public class LogUtils {
   private static final String SELECT_LOG_MESSAGE = "Do select query = {} with params = {}";
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {} with params = {}";
 
-
   public static void logCountQuery(Logger logger, String query) {
     logCountQuery(logger, query, Tuple.tuple());
   }
@@ -66,12 +65,12 @@ public class LogUtils {
     logSelectQueryInfoLevel(logger, query, Tuple.tuple());
   }
 
-  public static void logSelectQueryDebugLevel(Logger logger, String query) {
-    logSelectQueryDebugLevel(logger, query, Tuple.tuple());
-  }
-
   public static void logSelectQueryInfoLevel(Logger logger, String query, Tuple params) {
     logInfoLevel(logger, SELECT_LOG_MESSAGE, query, params);
+  }
+
+  public static void logSelectQueryDebugLevel(Logger logger, String query) {
+    logSelectQueryDebugLevel(logger, query, Tuple.tuple());
   }
 
   public static void logSelectQueryDebugLevel(Logger logger, String query, Tuple params) {
@@ -90,16 +89,16 @@ public class LogUtils {
     StringBuilder sb = new StringBuilder();
     sb.append("[");
     for (int index = 0; index < params.size(); index++) {
-      Object paramsValue = params.getValue(index);
       sb.append("{");
       sb.append(index + 1);
       sb.append(" = ");
+      var paramsValue = params.getValue(index);
       if (paramsValue == null) {
         sb.append("NULL");
       } else {
         sb.append(paramsValue.getClass().getSimpleName());
         sb.append(": ");
-        sb.append(paramsValue.toString());
+        sb.append(paramsValue);
       }
       sb.append("}");
       if (index < params.size() - 1) {

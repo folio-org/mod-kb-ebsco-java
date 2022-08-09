@@ -1,17 +1,15 @@
 package org.folio.service.holdings;
 
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
+import java.util.concurrent.CompletableFuture;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component("DefaultLoadServiceFacade")
 public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
@@ -31,13 +29,16 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
   }
 
   @Override
-  protected CompletableFuture<String> populateHoldings(LoadService loadingService) {
-    return loadingService.populateHoldings().thenApply(o -> null);
+  protected CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService) {
+    return
+      loadWithPagination(message.getTotalPages(), page -> loadingService.loadHoldings(getMaxPageSize(), page)
+        .thenAccept(holdings -> holdingsService.saveHolding(
+          new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null, message.getCredentialsId()))));
   }
 
   @Override
-  protected CompletableFuture<HoldingsStatus> getLoadingStatus(LoadService loadingService, String transactionId) {
-    return getLastLoadingStatus(loadingService);
+  protected CompletableFuture<String> populateHoldings(LoadService loadingService) {
+    return loadingService.populateHoldings().thenApply(o -> null);
   }
 
   @Override
@@ -47,10 +48,8 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
   }
 
   @Override
-  protected CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService) {
-    return
-      loadWithPagination(message.getTotalPages(), page -> loadingService.loadHoldings(getMaxPageSize(), page)
-        .thenAccept(holdings -> holdingsService.saveHolding(new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null, message.getCredentialsId()))));
+  protected CompletableFuture<HoldingsStatus> getLoadingStatus(LoadService loadingService, String transactionId) {
+    return getLastLoadingStatus(loadingService);
   }
 
   @Override
@@ -59,7 +58,9 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
   }
 
   private HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
-    if (status == null) return null;
+    if (status == null) {
+      return null;
+    }
 
     return HoldingsStatus.builder()
       .created(status.getCreated())

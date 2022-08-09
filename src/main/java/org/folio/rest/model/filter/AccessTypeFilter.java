@@ -2,9 +2,7 @@ package org.folio.rest.model.filter;
 
 import java.util.List;
 import java.util.UUID;
-
 import lombok.Data;
-
 import org.folio.repository.RecordType;
 
 @Data

@@ -7,22 +7,28 @@ import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
-import static org.folio.repository.holdings.HoldingsTableConstants.deleteByPkHoldings;
-import static org.folio.repository.holdings.HoldingsTableConstants.deleteOldRecordsByCredentialsId;
-import static org.folio.repository.holdings.HoldingsTableConstants.selectByPackageIdAndCredentials;
-import static org.folio.repository.holdings.HoldingsTableConstants.selectByPkHoldings;
-import static org.folio.repository.holdings.HoldingsTableConstants.insertOrUpdateHoldings;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAME_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.deleteByPkHoldings;
+import static org.folio.repository.holdings.HoldingsTableConstants.deleteOldRecordsByCredentialsId;
+import static org.folio.repository.holdings.HoldingsTableConstants.insertOrUpdateHoldings;
+import static org.folio.repository.holdings.HoldingsTableConstants.selectByPackageIdAndCredentials;
+import static org.folio.repository.holdings.HoldingsTableConstants.selectByPkHoldings;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.pgclient.PgConnection;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -30,20 +36,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-
-import com.google.common.collect.Lists;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
+import org.springframework.stereotype.Component;
 
 @Component
 public class HoldingsRepositoryImpl implements HoldingsRepository {
@@ -149,7 +147,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   }
 
   /**
-   * Splits items into batches and sequentially executes batchOperation on each batch
+   * Splits items into batches and sequentially executes batchOperation on each batch.
    *
    * @param <T>            Type of process items
    * @param items          items to process in batches

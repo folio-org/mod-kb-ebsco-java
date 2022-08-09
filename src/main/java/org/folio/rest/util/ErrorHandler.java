@@ -1,39 +1,32 @@
 package org.folio.rest.util;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-
 import static org.folio.rest.util.ExceptionMappers.error400InputValidationMapper;
 import static org.folio.rest.util.ExceptionMappers.error403UnAuthorizedMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.ExceptionMappers.error500ThrowableMapper;
 import static org.folio.rest.util.ExceptionMappers.errorServiceResponseMapper;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-
 import javax.ws.rs.core.Response;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.exception.UnAuthorizedException;
 import org.folio.rest.exception.InputValidationException;
 
 /**
  * Utility class for mapping exceptions to response that is passed to io.vertx.core.Handler
- *
  * ErrorHandler instance can be configured with error mappers for each Exception type by using add* methods,
- *
  * When {@link org.folio.rest.util.ErrorHandler#handle(io.vertx.core.Handler, java.lang.Throwable)} method is called,
- * first mapper that matches exception type is used to construct javax.ws.rs.core.Response and pass it to io.vertx.core.Handler
- *
- * Error mappers are checked in the order they were registered
+ * first mapper that matches exception type is used to construct javax.ws.rs.core.Response
+ * and pass it to io.vertx.core.Handler. Error mappers are checked in the order they were registered
  */
 public class ErrorHandler {
 
@@ -41,10 +34,11 @@ public class ErrorHandler {
 
   private static final Function<Throwable, Response> DEFAULT_MAPPER = error500ThrowableMapper();
 
-  private Map<Class<? extends Throwable>, Function<? extends Throwable, Response>> errorMappers = new LinkedHashMap<>();
+  private final Map<Class<? extends Throwable>, Function<? extends Throwable, Response>> errorMappers =
+    new LinkedHashMap<>();
 
   /**
-   * Register error mapper for exceptionClass
+   * Register error mapper for exceptionClass.
    *
    * @param exceptionClass class of exception that this mapper will handle
    * @param errorMapper    function that converts exception to javax.ws.rs.core.Response
@@ -56,7 +50,7 @@ public class ErrorHandler {
   }
 
   /**
-   * Register error mapper for InputValidationException
+   * Register error mapper for InputValidationException.
    *
    * @return this
    */
@@ -71,7 +65,7 @@ public class ErrorHandler {
   }
 
   /**
-   * Register error mapping for RMAPIServiceException and RMAPIUnAuthorizedException
+   * Register error mapping for RMAPIServiceException and RMAPIUnAuthorizedException.
    *
    * @return this
    */
@@ -82,7 +76,7 @@ public class ErrorHandler {
   }
 
   /**
-   * Use registered error mappers to create response from exception and pass it to asyncResultHandler
+   * Use registered error mappers to create response from exception and pass it to asyncResultHandler.
    */
   public void handle(Handler<AsyncResult<Response>> asyncResultHandler, Throwable e) {
     Optional<Function<? extends Throwable, Response>> optionalErrorMapper = errorMappers.entrySet()

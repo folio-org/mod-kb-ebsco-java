@@ -2,7 +2,6 @@ package org.folio.repository;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 

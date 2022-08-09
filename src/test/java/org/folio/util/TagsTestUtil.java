@@ -11,30 +11,29 @@ import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.folio.db.RowSetUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.DbTag;
 import org.folio.rest.persist.PostgresClient;
 
-public class TagsTestUtil {
+public final class TagsTestUtil {
 
   private TagsTestUtil() {
   }
 
   public static void saveTag(Vertx vertx, String recordId, RecordType recordType, String value) {
     CompletableFuture<Void> future = new CompletableFuture<>();
-    String query = prepareQuery(insertQuery(ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN), tagTestTable());
+    String query =
+      prepareQuery(insertQuery(ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN), tagTestTable());
     Tuple params = Tuple.of(UUID.randomUUID(), recordId, recordType.getValue(), value);
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
@@ -45,8 +44,7 @@ public class TagsTestUtil {
 
     String query = prepareQuery(
       insertQuery(tags.size(), ID_COLUMN, RECORD_ID_COLUMN, RECORD_TYPE_COLUMN, TAG_COLUMN) + " RETURNING " + ID_COLUMN,
-      tagTestTable()
-    );
+      tagTestTable());
     Tuple params = createParams(tags);
 
     PostgresClient.getInstance(vertx, STUB_TENANT).select(query, params, ar -> {
@@ -65,9 +63,7 @@ public class TagsTestUtil {
 
     RowIterator<Row> iterator = keys.iterator();
     for (DbTag tag : tags) {
-      result.add(tag.toBuilder()
-        .id(iterator.next().getUUID(ID_COLUMN))
-        .build());
+      result.add(tag.toBuilder().id(iterator.next().getUUID(ID_COLUMN)).build());
     }
 
     return result;
@@ -76,9 +72,8 @@ public class TagsTestUtil {
   public static List<String> getTags(Vertx vertx) {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(TAG_COLUMN), tagTestTable());
-    PostgresClient.getInstance(vertx).select(query,
-      event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN)))
-    );
+    PostgresClient.getInstance(vertx)
+      .select(query, event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN))));
     return future.join();
   }
 
@@ -86,8 +81,9 @@ public class TagsTestUtil {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(TAG_COLUMN) + " " + whereQuery(RECORD_TYPE_COLUMN), tagTestTable());
     Tuple params = Tuple.of(recordType.getValue());
-    PostgresClient.getInstance(vertx).select(query, params,
-      event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN))));
+    PostgresClient.getInstance(vertx)
+      .select(query, params,
+        event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN))));
     return future.join();
   }
 

@@ -6,15 +6,13 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import org.apache.commons.collections4.IterableUtils;
-
-import org.folio.client.uc.configuration.CommonUCConfiguration;
-import org.folio.client.uc.model.UCCostAnalysis;
-import org.folio.client.uc.model.UCCostAnalysisDetails;
-import org.folio.client.uc.model.UCPlatformUsage;
-import org.folio.client.uc.model.UCTitleCostPerUse;
-import org.folio.client.uc.model.UCUsage;
+import org.folio.client.uc.configuration.CommonUcConfiguration;
+import org.folio.client.uc.model.UcCostAnalysis;
+import org.folio.client.uc.model.UcCostAnalysisDetails;
+import org.folio.client.uc.model.UcPlatformUsage;
+import org.folio.client.uc.model.UcTitleCostPerUse;
+import org.folio.client.uc.model.UcUsage;
 import org.folio.rest.jaxrs.model.CostAnalysisAttributes;
 import org.folio.rest.jaxrs.model.CostPerUseParameters;
 import org.folio.rest.jaxrs.model.Month;
@@ -27,8 +25,8 @@ final class CostPerUseConverterUtils {
   private CostPerUseConverterUtils() {
   }
 
-  static List<SpecificPlatformUsage> getAllPlatformUsages(UCUsage uCUsage) {
-    return uCUsage.getPlatforms().entrySet()
+  static List<SpecificPlatformUsage> getAllPlatformUsages(UcUsage ucUsage) {
+    return ucUsage.getPlatforms().entrySet()
       .stream()
       .map(CostPerUseConverterUtils::toSpecificPlatformUsage)
       .collect(Collectors.toList());
@@ -46,8 +44,8 @@ final class CostPerUseConverterUtils {
       .collect(Collectors.toList());
   }
 
-  static SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UCPlatformUsage> entry) {
-    UCPlatformUsage ucPlatformUsage = entry.getValue();
+  static SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UcPlatformUsage> entry) {
+    UcPlatformUsage ucPlatformUsage = entry.getValue();
     List<Integer> ucPlatformUsageCounts = ucPlatformUsage.getCounts();
     Boolean isPublisherPlatform = ucPlatformUsage.getPublisherPlatform();
     return new SpecificPlatformUsage()
@@ -57,7 +55,8 @@ final class CostPerUseConverterUtils {
       .withTotal(sum(ucPlatformUsageCounts));
   }
 
-  static CostAnalysisAttributes getCostAnalysisAttributes(UCTitleCostPerUse ucTitleCostPerUse, PlatformUsage publisher) {
+  static CostAnalysisAttributes getCostAnalysisAttributes(UcTitleCostPerUse ucTitleCostPerUse,
+                                                          PlatformUsage publisher) {
     var analysisAttributes = new CostAnalysisAttributes();
     if (ucTitleCostPerUse.getAnalysis() != null
       && ucTitleCostPerUse.getAnalysis().getCurrent() != null
@@ -69,7 +68,7 @@ final class CostPerUseConverterUtils {
     return analysisAttributes;
   }
 
-  static Double getCostPerUse(CostAnalysisAttributes analysisAttributes){
+  static Double getCostPerUse(CostAnalysisAttributes analysisAttributes) {
     return analysisAttributes.getUsage() == null ? null : analysisAttributes.getCost() / analysisAttributes.getUsage();
   }
 
@@ -118,17 +117,17 @@ final class CostPerUseConverterUtils {
     return integers.stream().filter(Objects::nonNull).mapToInt(Integer::intValue).sum();
   }
 
-  static CostPerUseParameters convertParameters(CommonUCConfiguration configuration) {
+  static CostPerUseParameters convertParameters(CommonUcConfiguration configuration) {
     return new CostPerUseParameters()
       .withStartMonth(Month.fromValue(configuration.getFiscalMonth()))
       .withCurrency(configuration.getAnalysisCurrency());
   }
 
-  public static double getPackageTitlesTotalCost(Map<String, UCCostAnalysis> titlePackageCost) {
+  public static double getPackageTitlesTotalCost(Map<String, UcCostAnalysis> titlePackageCost) {
     return titlePackageCost.values().stream()
-      .map(UCCostAnalysis::getCurrent)
+      .map(UcCostAnalysis::getCurrent)
       .filter(Objects::nonNull)
-      .map(UCCostAnalysisDetails::getCost)
+      .map(UcCostAnalysisDetails::getCost)
       .filter(Objects::nonNull)
       .mapToDouble(Double::doubleValue)
       .sum();

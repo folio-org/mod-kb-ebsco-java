@@ -2,16 +2,10 @@ package org.folio.service.customlabels;
 
 import static org.folio.common.ListUtils.mapItems;
 
+import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
-import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
@@ -21,6 +15,10 @@ import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.validator.CustomLabelsPutBodyValidator;
 import org.folio.service.kbcredentials.KbCredentialsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CustomLabelsServiceImpl implements CustomLabelsService {
@@ -47,7 +45,7 @@ public class CustomLabelsServiceImpl implements CustomLabelsService {
   @Override
   public CompletableFuture<CustomLabelsCollection> fetch(String credentialsId,
                                                          Map<String, String> okapiHeaders) {
-    return createHoldingsIQService(credentialsId, okapiHeaders)
+    return createHoldingsIqService(credentialsId, okapiHeaders)
       .thenCompose(HoldingsIQServiceImpl::retrieveRootProxyCustomLabels)
       .thenApply(fromRmApiConverter::convert)
       .thenApply(customLabelsCollection -> setCredentialsId(customLabelsCollection, credentialsId));
@@ -58,24 +56,24 @@ public class CustomLabelsServiceImpl implements CustomLabelsService {
                                                           Map<String, String> okapiHeaders) {
     validator.validate(putRequest);
     List<CustomLabel> requestData = putRequest.getData();
-    return createHoldingsIQService(credentialsId, okapiHeaders)
+    return createHoldingsIqService(credentialsId, okapiHeaders)
       .thenCompose(holdingsIQService -> updateLabels(requestData, holdingsIQService))
       .thenApply(o -> fromListConverter.convert(requestData))
       .thenApply(customLabelsCollection -> setCredentialsId(customLabelsCollection, credentialsId));
   }
 
   private CompletableFuture<RootProxyCustomLabels> updateLabels(List<CustomLabel> requestData,
-                                                                HoldingsIQServiceImpl holdingsIQService) {
-    return holdingsIQService.retrieveRootProxyCustomLabels()
+                                                                HoldingsIQServiceImpl holdingsIqService) {
+    return holdingsIqService.retrieveRootProxyCustomLabels()
       .thenApply(target -> {
         target.getLabelList().clear();
         target.getLabelList().addAll(mapItems(requestData, labelConverter::convert));
         return target;
       })
-      .thenCompose(holdingsIQService::updateRootProxyCustomLabels);
+      .thenCompose(holdingsIqService::updateRootProxyCustomLabels);
   }
 
-  private CompletableFuture<HoldingsIQServiceImpl> createHoldingsIQService(String credentialsId,
+  private CompletableFuture<HoldingsIQServiceImpl> createHoldingsIqService(String credentialsId,
                                                                            Map<String, String> okapiHeaders) {
     return credentialsService.findById(credentialsId, okapiHeaders)
       .thenApply(configurationConverter::convert)

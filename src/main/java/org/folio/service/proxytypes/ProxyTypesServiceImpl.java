@@ -1,21 +1,19 @@
 package org.folio.service.proxytypes;
 
+import io.vertx.core.Vertx;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-
-import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.Proxies;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.ProxyTypes;
 import org.folio.service.kbcredentials.KbCredentialsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProxyTypesServiceImpl implements ProxyTypesService {
@@ -46,8 +44,8 @@ public class ProxyTypesServiceImpl implements ProxyTypesService {
   }
 
   private CompletableFuture<ProxyTypes> retrieveProxies(KbCredentials kbCredentials) {
-    final HoldingsIQServiceImpl holdingsIQService = createHoldingsIQService(kbCredentials);
-    return holdingsIQService.retrieveProxies()
+    final HoldingsIQServiceImpl holdingsIqService = createHoldingsIqService(kbCredentials);
+    return holdingsIqService.retrieveProxies()
       .thenApply(proxyTypesConverter::convert)
       .thenApply(proxyTypes -> setCredentialsId(proxyTypes, kbCredentials.getId()));
   }
@@ -57,7 +55,7 @@ public class ProxyTypesServiceImpl implements ProxyTypesService {
     return proxyTypes;
   }
 
-  private HoldingsIQServiceImpl createHoldingsIQService(KbCredentials credentials) {
+  private HoldingsIQServiceImpl createHoldingsIqService(KbCredentials credentials) {
     final Configuration rmApiConfig = configurationConverter.convert(credentials);
     return new HoldingsIQServiceImpl(Objects.requireNonNull(rmApiConfig), vertx);
   }

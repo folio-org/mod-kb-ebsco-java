@@ -6,12 +6,6 @@ import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -26,6 +20,10 @@ import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.VendorResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProviderConverter implements Converter<VendorResult, Provider> {
@@ -58,7 +56,7 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
         )
         .withRelationships(createEmptyProviderRelationships()))
       .withJsonapi(RestConstants.JSONAPI);
-    if(packages != null){
+    if (packages != null) {
       provider
         .withIncluded(packagesConverter.convert(packages).getData())
         .getData()
@@ -73,7 +71,7 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
   private List<RelationshipData> convertPackagesRelationship(org.folio.holdingsiq.model.Packages packages) {
     return mapItems(packages.getPackagesList(),
       packageData -> new RelationshipData()
-          .withId(packageData.getVendorId() + "-" + packageData.getPackageId())
-          .withType(PACKAGES_TYPE));
+        .withId(packageData.getVendorId() + "-" + packageData.getPackageId())
+        .withType(PACKAGES_TYPE));
   }
 }

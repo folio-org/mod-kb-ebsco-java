@@ -2,7 +2,6 @@ package org.folio.rest.converter.resources;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
-
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.resources.ResourceConverterUtils.createEmptyRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
@@ -11,12 +10,6 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.VendorById;
@@ -32,6 +25,10 @@ import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceResultConverter implements Converter<ResourceResult, List<Resource>> {

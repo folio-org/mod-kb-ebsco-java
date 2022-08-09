@@ -3,7 +3,6 @@ package org.folio.config.cache;
 import io.vertx.core.shareddata.Shareable;
 import lombok.Builder;
 import lombok.Value;
-
 import org.folio.holdingsiq.model.Configuration;
 
 @Value

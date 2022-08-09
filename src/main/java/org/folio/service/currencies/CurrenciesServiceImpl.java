@@ -5,14 +5,12 @@ import static org.folio.rest.util.TenantUtil.tenantId;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Service;
-
 import org.folio.cache.VertxCache;
 import org.folio.repository.currencies.CurrenciesRepository;
 import org.folio.repository.currencies.DbCurrency;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CurrenciesServiceImpl implements CurrenciesService {

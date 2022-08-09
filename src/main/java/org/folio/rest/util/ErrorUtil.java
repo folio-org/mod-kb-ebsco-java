@@ -1,23 +1,20 @@
 package org.folio.rest.util;
 
-
 import static org.folio.common.ListUtils.mapItems;
-
-import java.util.Collections;
-import java.util.List;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.util.Collections;
+import java.util.List;
 import org.folio.holdingsiq.model.Errors;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
 
 /**
- * Util class for creating errors
+ * Util class for creating errors.
  */
-public class ErrorUtil {
+public final class ErrorUtil {
   private ErrorUtil() {
   }
 
@@ -42,7 +39,7 @@ public class ErrorUtil {
     return errorResponse;
   }
 
-  public static JsonapiError createErrorFromRMAPIResponse(ServiceResponseException rmApiException) {
+  public static JsonapiError createErrorFromRmApiResponse(ServiceResponseException rmApiException) {
     try {
 
       ObjectMapper objectMapper = new ObjectMapper();
@@ -54,7 +51,8 @@ public class ErrorUtil {
 
       if (errorsObject.getErrorList() == null) {
         errorsObject = errorsObject.toBuilder()
-          .errorList(Collections.singletonList(objectMapper.readValue(rmApiException.getResponseBody(), org.folio.holdingsiq.model.Error.class)))
+          .errorList(Collections.singletonList(
+            objectMapper.readValue(rmApiException.getResponseBody(), org.folio.holdingsiq.model.Error.class)))
           .build();
       }
 
@@ -64,8 +62,7 @@ public class ErrorUtil {
       configurationError.setErrors(jsonApiErrors);
       configurationError.setJsonapi(RestConstants.JSONAPI);
       return configurationError;
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       //If RM API didn't return valid json then just include response body as error message
       return createError(rmApiException.getMessage());
     }
@@ -74,7 +71,7 @@ public class ErrorUtil {
   public static List<JsonapiErrorResponse> createJsonapiErrorResponse(Throwable throwable) {
     try {
       return getJsonapiErrorResponses(throwable);
-    } catch(Exception e){
+    } catch (Exception e) {
       //If RM API didn't return valid json then just include response body as error message
       return Collections.singletonList(createErrorResponse(throwable.getMessage(), null));
     }
@@ -87,7 +84,8 @@ public class ErrorUtil {
 
     if (errors.getErrorList() == null) {
       errors = errors.toBuilder()
-        .errorList(Collections.singletonList(objectMapper.readValue(throwable.getMessage(), org.folio.holdingsiq.model.Error.class)))
+        .errorList(Collections.singletonList(
+          objectMapper.readValue(throwable.getMessage(), org.folio.holdingsiq.model.Error.class)))
         .build();
     }
 

@@ -5,16 +5,14 @@ import static org.folio.rest.validator.ValidatorUtil.checkIsNotNull;
 import static org.folio.rest.validator.ValidatorUtil.checkMaxLength;
 
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor

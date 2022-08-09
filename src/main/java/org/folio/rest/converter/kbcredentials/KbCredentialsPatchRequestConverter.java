@@ -1,14 +1,13 @@
 package org.folio.rest.converter.kbcredentials;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestData;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestDataAttributes;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class KbCredentialsPatchRequestConverter implements Converter<KbCredentialsPatchRequest, KbCredentials> {

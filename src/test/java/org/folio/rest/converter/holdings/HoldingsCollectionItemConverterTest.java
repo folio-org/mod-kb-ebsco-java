@@ -1,23 +1,20 @@
 package org.folio.rest.converter.holdings;
 
+import static org.folio.util.HoldingsTestUtil.getStubHolding;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import static org.folio.util.HoldingsTestUtil.getStubHolding;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
-
+import org.folio.repository.holdings.DbHoldingInfo;
+import org.folio.rest.jaxrs.model.PublicationType;
+import org.folio.rest.jaxrs.model.ResourceCollectionItem;
+import org.folio.spring.config.TestConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import org.folio.repository.holdings.DbHoldingInfo;
-import org.folio.rest.jaxrs.model.PublicationType;
-import org.folio.rest.jaxrs.model.ResourceCollectionItem;
-import org.folio.spring.config.TestConfig;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)

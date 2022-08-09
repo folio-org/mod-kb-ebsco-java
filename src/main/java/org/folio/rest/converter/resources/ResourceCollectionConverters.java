@@ -3,12 +3,6 @@ package org.folio.rest.converter.resources;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -17,9 +11,12 @@ import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
-
-public class ResourceCollectionConverters {
+public final class ResourceCollectionConverters {
 
   private ResourceCollectionConverters() {
   }

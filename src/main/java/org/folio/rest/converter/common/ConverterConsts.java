@@ -3,13 +3,12 @@ package org.folio.rest.converter.common;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 import org.apache.commons.collections4.bidimap.UnmodifiableBidiMap;
-
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.PublicationType;
 
 public final class ConverterConsts {
 
-  public static final BidiMap<String, PublicationType> publicationTypes;
+  public static final BidiMap<String, PublicationType> PUBLICATION_TYPES;
 
   static {
     BidiMap<String, PublicationType> bidiMap = new TreeBidiMap<>();
@@ -27,11 +26,10 @@ public final class ConverterConsts {
     bidiMap.put("thesisdissertation", PublicationType.THESIS_DISSERTATION);
     bidiMap.put("website", PublicationType.WEBSITE);
     bidiMap.put("unspecified", PublicationType.UNSPECIFIED);
-    publicationTypes = UnmodifiableBidiMap.unmodifiableBidiMap(bidiMap);
+    PUBLICATION_TYPES = UnmodifiableBidiMap.unmodifiableBidiMap(bidiMap);
   }
 
-
-  public static final BidiMap<String, ContentType> contentTypes;
+  public static final BidiMap<String, ContentType> CONTENT_TYPES;
 
   static {
     BidiMap<String, ContentType> bidiMap = new TreeBidiMap<>();
@@ -44,7 +42,7 @@ public final class ConverterConsts {
     bidiMap.put("onlinereference", ContentType.ONLINE_REFERENCE);
     bidiMap.put("streamingmedia", ContentType.STREAMING_MEDIA);
     bidiMap.put("mixedcontent", ContentType.MIXED_CONTENT);
-    contentTypes = UnmodifiableBidiMap.unmodifiableBidiMap(bidiMap);
+    CONTENT_TYPES = UnmodifiableBidiMap.unmodifiableBidiMap(bidiMap);
   }
 
   private ConverterConsts() {

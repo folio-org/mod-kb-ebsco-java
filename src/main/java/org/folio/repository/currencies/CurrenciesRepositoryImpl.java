@@ -6,20 +6,18 @@ import static org.folio.repository.currencies.CurrenciesConstants.DESCRIPTION_CO
 import static org.folio.repository.currencies.CurrenciesConstants.selectCurrencies;
 import static org.folio.util.FutureUtils.mapResult;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Repository;
-
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.DbUtil;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class CurrenciesRepositoryImpl implements CurrenciesRepository {

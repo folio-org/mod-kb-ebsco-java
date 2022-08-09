@@ -10,12 +10,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.Currency;
 import org.folio.rest.jaxrs.model.CurrencyCollection;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsCurrenciesImplTest extends WireMockTestBase {

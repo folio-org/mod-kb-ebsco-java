@@ -1,7 +1,6 @@
 package org.folio.repository.accesstypes;
 
 import static java.util.Arrays.asList;
-
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
@@ -16,14 +15,19 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.selectCountByRecordIdPrefixQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.deleteByRecordQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.selectByAccessTypeIdsAndRecordQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.selectByRecordQuery;
+import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.selectCountByRecordIdPrefixQuery;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.upsertQuery;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -32,22 +36,15 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepository {
@@ -114,7 +111,8 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
 
-    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(updateResult -> mapping);
+    return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(
+      updateResult -> mapping);
   }
 
   @Override

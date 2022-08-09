@@ -8,21 +8,17 @@ import static org.apache.commons.collections4.IterableUtils.matchesAll;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
 import static org.apache.commons.lang3.StringUtils.appendIfMissing;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-
 import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
 import static org.folio.rest.util.RestConstants.SUPPORTED_TITLE_FILTER_TYPE_VALUES;
 
 import java.util.List;
 import java.util.Objects;
-
 import javax.validation.ValidationException;
-
 import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Sort;
@@ -160,9 +156,11 @@ public class Filter {
 
     private static final String INVALID_QUERY_PARAMETER_MESSAGE = "Search parameter cannot be empty";
     private static final String INVALID_SORT_PARAMETER_MESSAGE = "Invalid Query Parameter for sort";
-    private static final String INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[custom]: only 'true' is supported";
+    private static final String INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE =
+      "Invalid Query Parameter for filter[custom]: only 'true' is supported";
     private static final String INVALID_FILTER_TYPE_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[type]";
-    private static final String INVALID_FILTER_SELECTED_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[selected]";
+    private static final String INVALID_FILTER_SELECTED_PARAMETER_MESSAGE =
+      "Invalid Query Parameter for filter[selected]";
     private static final String CONFLICTING_KEYWORD_SEARCH_PARAMETERS_MESSAGE = "Conflicting filter parameters";
     private static final String MISSING_KEYWORD_SEARCH_PARAMETERS_MESSAGE =
       "All of filter[name], filter[isxn], filter[subject] and filter[publisher] cannot be missing.";
@@ -195,7 +193,8 @@ public class Filter {
     }
 
     private void validateKeywordSearch(boolean allowNullFilters) {
-      List<String> searchParameters = asList(this.filterName, this.filterIsxn, this.filterSubject, this.filterPublisher);
+      List<String> searchParameters =
+        asList(this.filterName, this.filterIsxn, this.filterSubject, this.filterPublisher);
 
       long nonNullFilters = countMatches(searchParameters, Objects::nonNull);
 
@@ -217,15 +216,15 @@ public class Filter {
     }
 
     private void validatePackageFilterType() {
-      if (this.filterType != null &&
-        !SUPPORTED_PACKAGE_FILTER_TYPE_VALUES.contains(this.filterType)) {
+      if (this.filterType != null
+        && !SUPPORTED_PACKAGE_FILTER_TYPE_VALUES.contains(this.filterType)) {
         throw new ValidationException(INVALID_FILTER_TYPE_PARAMETER_MESSAGE);
       }
     }
 
     private void validateTitleFilterType() {
-      if (this.filterType != null &&
-        !SUPPORTED_TITLE_FILTER_TYPE_VALUES.contains(this.filterType)) {
+      if (this.filterType != null
+        && !SUPPORTED_TITLE_FILTER_TYPE_VALUES.contains(this.filterType)) {
         throw new ValidationException(INVALID_FILTER_TYPE_PARAMETER_MESSAGE);
       }
     }

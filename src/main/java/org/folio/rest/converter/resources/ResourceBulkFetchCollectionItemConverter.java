@@ -3,11 +3,6 @@ package org.folio.rest.converter.resources;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Title;
@@ -15,6 +10,9 @@ import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchDataAttributes;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceBulkFetchCollectionItemConverter implements Converter<Title, ResourceBulkFetchCollectionItem> {
@@ -34,7 +32,7 @@ public class ResourceBulkFetchCollectionItemConverter implements Converter<Title
         .withProviderName(resource.getVendorName())
         .withPackageId(resource.getVendorId() + "-" + resource.getPackageId())
         .withTitleId(title.getTitleId())
-        .withPublicationType(ConverterConsts.publicationTypes.get(title.getPubType().toLowerCase()))
+        .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(title.getPubType().toLowerCase()))
         .withManagedCoverages(coverageDatesConverter.convert(resource.getManagedCoverageList()))
         .withCustomCoverages(coverageDatesConverter.convert(
           resource.getCustomCoverageList().stream()

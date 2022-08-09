@@ -10,21 +10,14 @@ import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.DbUtil.foreignKeyConstraintRecover;
 import static org.folio.repository.DbUtil.pkConstraintRecover;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.deleteAssignedUserQuery;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.selectAssignedUsersByCredentialsIdQuery;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.selectCountByCredentialsIdQuery;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.deleteAssignedUserQuery;
 import static org.folio.service.exc.ServiceExceptions.notFound;
 import static org.folio.util.FutureUtils.mapResult;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
-import javax.ws.rs.BadRequestException;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -32,15 +25,19 @@ import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import javax.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.service.users.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {

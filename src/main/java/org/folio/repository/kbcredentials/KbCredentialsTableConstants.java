@@ -27,11 +27,10 @@ public final class KbCredentialsTableConstants {
   public static final String API_KEY_COLUMN = "api_key";
   public static final String CUSTOMER_ID_COLUMN = "customer_id";
 
-  private static final String[] ALL_COLUMNS = new String[]{
+  private static final String[] ALL_COLUMNS = new String[] {
     ID_COLUMN, URL_COLUMN, NAME_COLUMN, API_KEY_COLUMN, CUSTOMER_ID_COLUMN, CREATED_DATE_COLUMN,
     CREATED_BY_USER_ID_COLUMN, CREATED_BY_USER_NAME_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN,
-    UPDATED_BY_USER_NAME_COLUMN
-  };
+    UPDATED_BY_USER_NAME_COLUMN};
 
   private KbCredentialsTableConstants() {
   }
@@ -45,16 +44,16 @@ public final class KbCredentialsTableConstants {
   }
 
   public static String selectCredentialsByIdQuery(String tenantId) {
-    return prepareQuery(selectCredentialsByIdQuery(), getKbCredentialsTableName(tenantId));
+    return prepareQuery(selectCredentialsByIdQueryPart(), getKbCredentialsTableName(tenantId));
   }
 
   public static String selectCredentialsByUserIdQuery(String tenantId) {
-    return prepareQuery(selectCredentialsByUserIdQuery(), getKbCredentialsTableName(tenantId),
+    return prepareQuery(selectCredentialsByUserIdQueryPart(), getKbCredentialsTableName(tenantId),
       getAssignedUsersTableName(tenantId));
   }
 
   public static String deleteCredentialsQuery(String tenantId) {
-    return prepareQuery(deleteCredentialsQuery(), getKbCredentialsTableName(tenantId));
+    return prepareQuery(deleteCredentialsQueryPart(), getKbCredentialsTableName(tenantId));
   }
 
   public static String upsertCredentialsQuery(String tenantId) {
@@ -65,16 +64,17 @@ public final class KbCredentialsTableConstants {
     return insertQuery(ALL_COLUMNS) + " " + updateOnConflictedIdQuery(ID_COLUMN, ALL_COLUMNS) + ";";
   }
 
-  private static String selectCredentialsByIdQuery() {
+  private static String selectCredentialsByIdQueryPart() {
     return selectQuery() + " " + whereQuery(ID_COLUMN) + " " + limitQuery(1) + ";";
   }
 
-  private static String selectCredentialsByUserIdQuery() {
-    return selectQuery() + " WHERE " + ID_COLUMN + " = (" +
-      selectQuery(AssignedUsersConstants.CREDENTIALS_ID_COLUMN) + " " + whereQuery(AssignedUsersConstants.ID_COLUMN) + ");";
+  private static String selectCredentialsByUserIdQueryPart() {
+    return selectQuery() + " WHERE " + ID_COLUMN + " = ("
+      + selectQuery(AssignedUsersConstants.CREDENTIALS_ID_COLUMN) + " "
+      + whereQuery(AssignedUsersConstants.ID_COLUMN) + ");";
   }
 
-  private static String deleteCredentialsQuery() {
+  private static String deleteCredentialsQueryPart() {
     return deleteQuery() + " " + whereQuery(ID_COLUMN) + ";";
   }
 

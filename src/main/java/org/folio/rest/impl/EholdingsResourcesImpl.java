@@ -3,7 +3,6 @@ package org.folio.rest.impl;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
-
 import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
@@ -17,6 +16,11 @@ import static org.folio.rest.util.RestConstants.JSONAPI;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 import static org.folio.rest.util.RestConstants.TAGS_TYPE;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,19 +28,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
-
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -74,9 +68,9 @@ import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsResources;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.IdParser;
-import org.folio.rest.util.template.RMAPITemplate;
-import org.folio.rest.util.template.RMAPITemplateContext;
-import org.folio.rest.util.template.RMAPITemplateFactory;
+import org.folio.rest.util.template.RmApiTemplate;
+import org.folio.rest.util.template.RmApiTemplateContext;
+import org.folio.rest.util.template.RmApiTemplateFactory;
 import org.folio.rest.validator.ResourcePostValidator;
 import org.folio.rest.validator.ResourcePutBodyValidator;
 import org.folio.rest.validator.ResourceTagsPutBodyValidator;
@@ -87,6 +81,8 @@ import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class EholdingsResourcesImpl implements EholdingsResources {
 
@@ -103,7 +99,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Autowired
   private ResourcePutBodyValidator resourcePutBodyValidator;
   @Autowired
-  private RMAPITemplateFactory templateFactory;
+  private RmApiTemplateFactory templateFactory;
   @Autowired
   private TagRepository tagRepository;
   @Autowired
@@ -163,7 +159,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Override
   @HandleValidationErrors
   public void getEholdingsResourcesByResourceId(String resourceId, String include, Map<String, String> okapiHeaders,
-                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                Handler<AsyncResult<Response>> asyncResultHandler,
+                                                Context vertxContext) {
     ResourceId parsedResourceId = parseResourceId(resourceId);
     List<String> includedObjects = parseByComma(include);
 
@@ -180,7 +177,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @HandleValidationErrors
   public void putEholdingsResourcesByResourceId(String resourceId, String contentType, ResourcePutRequest entity,
                                                 Map<String, String> okapiHeaders,
-                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                Handler<AsyncResult<Response>> asyncResultHandler,
+                                                Context vertxContext) {
     ResourceId parsedResourceId = parseResourceId(resourceId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context -> fetchAccessType(entity, context)
@@ -199,7 +197,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Override
   @HandleValidationErrors
   public void deleteEholdingsResourcesByResourceId(String resourceId, Map<String, String> okapiHeaders,
-                                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                   Handler<AsyncResult<Response>> asyncResultHandler,
+                                                   Context vertxContext) {
     ResourceId parsedResourceId = parseResourceId(resourceId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
@@ -217,7 +216,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   @Override
-  public void putEholdingsResourcesTagsByResourceId(String resourceId, String contentType, ResourceTagsPutRequest entity,
+  public void putEholdingsResourcesTagsByResourceId(String resourceId, String contentType,
+                                                    ResourceTagsPutRequest entity,
                                                     Map<String, String> okapiHeaders,
                                                     Handler<AsyncResult<Response>> asyncResultHandler,
                                                     Context vertxContext) {
@@ -245,13 +245,13 @@ public class EholdingsResourcesImpl implements EholdingsResources {
                                               Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
-    final RMAPITemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+    final RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template.requestAction(context -> context.getResourcesService().retrieveResourcesBulk(entity.getResources()))
       .executeWithResult(ResourceBulkFetchCollection.class);
   }
 
   private CompletableFuture<AccessType> fetchAccessType(ResourcePutRequest entity,
-                                                        RMAPITemplateContext context) {
+                                                        RmApiTemplateContext context) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {
       return CompletableFuture.completedFuture(null);
@@ -263,7 +263,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private CompletableFuture<ResourceResult> updateAccessType(String recordId, Title titleResult,
                                                              AccessType accessType,
-                                                             RMAPITemplateContext context) {
+                                                             RmApiTemplateContext context) {
     return updateRecordMapping(accessType, recordId, context)
       .thenApply(a -> {
         ResourceResult resourceResult = new ResourceResult(titleResult, null, null, false);
@@ -273,18 +273,18 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
-                                                      RMAPITemplateContext context) {
+                                                      RmApiTemplateContext context) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.RESOURCE, context.getCredentialsId(),
       context.getOkapiData().getHeaders());
   }
 
-  private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RMAPITemplateContext context) {
+  private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RmApiTemplateContext context) {
     CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
     RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resource)).recordType(RecordType.RESOURCE).build();
     return CompletableFuture.allOf(
         relatedEntitiesLoader.loadAccessType(result, recordKey, context),
         relatedEntitiesLoader.loadTags(result, recordKey, context))
-      .thenApply(aVoid -> result);
+      .thenApply(v -> result);
   }
 
   private ResourceTags convertToResourceTags(ResourceTagsDataAttributes attributes) {
@@ -295,25 +295,26 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .withJsonapi(JSONAPI);
   }
 
-  private CompletableFuture<Void> deleteAssignedResources(String resourceId, RMAPITemplateContext context) {
+  private CompletableFuture<Void> deleteAssignedResources(String resourceId, RmApiTemplateContext context) {
     CompletableFuture<Void> deleteAccessMapping = updateRecordMapping(null, resourceId, context);
     CompletableFuture<Void> deleteTags = deleteTags(resourceId, context);
 
     return CompletableFuture.allOf(deleteAccessMapping, deleteTags);
   }
 
-  private CompletableFuture<Void> deleteTags(String resourceId, RMAPITemplateContext context) {
+  private CompletableFuture<Void> deleteTags(String resourceId, RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = RowSetUtils.toUUID(context.getCredentialsId());
 
     return resourceRepository.delete(resourceId, credentialsId, tenant)
       .thenCompose(o -> tagRepository.deleteRecordTags(tenant, resourceId, RecordType.RESOURCE))
-      .thenCompose(aBoolean -> CompletableFuture.completedFuture(null));
+      .thenCompose(v -> CompletableFuture.completedFuture(null));
   }
 
-  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(Long titleId, PackageId packageId,
-                                                                                  TitlesHoldingsIQService titlesService,
-                                                                                  PackagesHoldingsIQService packagesService) {
+  private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(
+    Long titleId, PackageId packageId,
+    TitlesHoldingsIQService titlesService,
+    PackagesHoldingsIQService packagesService) {
     CompletableFuture<Title> titleFuture = titlesService.retrieveTitle(titleId);
     CompletableFuture<PackageByIdData> packageFuture = packagesService.retrievePackage(packageId);
     return CompletableFuture.allOf(titleFuture, packageFuture)
@@ -347,16 +348,16 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<Title> processResourceUpdate(ResourcePutRequest entity, ResourceId parsedResourceId,
-                                                         RMAPITemplateContext context) {
+                                                         RmApiTemplateContext context) {
     return context.getResourcesService().retrieveResource(parsedResourceId)
       .thenCompose(title -> {
         ResourcePut resourcePutBody;
         boolean isTitleCustom = title.getIsTitleCustom();
         resourcePutBodyValidator.validate(entity, isTitleCustom);
         if (isTitleCustom) {
-          resourcePutBody = converter.convertToRMAPICustomResourcePutRequest(entity, title);
+          resourcePutBody = converter.convertToRmApiCustomResourcePutRequest(entity, title);
         } else {
-          resourcePutBody = converter.convertToRMAPIResourcePutRequest(entity, title);
+          resourcePutBody = converter.convertToRmApiResourcePutRequest(entity, title);
         }
         return context.getResourcesService().updateResource(parsedResourceId, resourcePutBody);
       })

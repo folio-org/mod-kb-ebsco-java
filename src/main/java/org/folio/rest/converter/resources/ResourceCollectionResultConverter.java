@@ -5,12 +5,6 @@ import static org.folio.common.ListUtils.mapItems;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
@@ -22,6 +16,10 @@ import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceCollectionResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceCollectionResultConverter implements Converter<ResourceCollectionResult, ResourceCollection> {
@@ -46,10 +44,12 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
     final List<DbResource> resources = resourceCollectionResult.getTitlesList();
     final List<DbHoldingInfo> holdings = resourceCollectionResult.getHoldings();
     final List<ResourceCollectionItem> resourceCollectionItems = mapItems(titles.getTitleList(),
-      title -> mapResourceCollectionItem(resources, resourceCollectionItemConverter.convert(title), createResourceId(title)));
+      title -> mapResourceCollectionItem(resources, resourceCollectionItemConverter.convert(title),
+        createResourceId(title)));
 
     final List<ResourceCollectionItem> holdingCollectionItems = mapItems(holdings,
-      dbHolding -> mapResourceCollectionItem(resources, holdingCollectionItemConverter.convert(dbHolding), createResourceId(dbHolding)));
+      dbHolding -> mapResourceCollectionItem(resources, holdingCollectionItemConverter.convert(dbHolding),
+        createResourceId(dbHolding)));
 
     resourceCollectionItems.addAll(holdingCollectionItems);
     resourceCollectionItems.sort(Comparator.comparing(o -> o.getAttributes().getName()));

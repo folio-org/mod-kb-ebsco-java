@@ -2,14 +2,12 @@ package org.folio.rest.converter.common.attr;
 
 import java.util.Map;
 import java.util.Objects;
-
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.folio.holdingsiq.model.EmbargoPeriod;
+import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-
-import org.folio.holdingsiq.model.EmbargoPeriod;
-import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 
 @Component
 public class EmbargoPeriodConverter implements Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> {
@@ -26,7 +24,7 @@ public class EmbargoPeriodConverter implements Converter<EmbargoPeriod, org.foli
 
   @Override
   public org.folio.rest.jaxrs.model.EmbargoPeriod convert(@Nullable EmbargoPeriod customEmbargoPeriod) {
-    if(Objects.isNull(customEmbargoPeriod)){
+    if (Objects.isNull(customEmbargoPeriod)) {
       return null;
     }
     org.folio.rest.jaxrs.model.EmbargoPeriod customEmbargo = new org.folio.rest.jaxrs.model.EmbargoPeriod();

@@ -3,23 +3,22 @@ package org.folio.rest.validator;
 import static org.hamcrest.Matchers.containsString;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.jaxrs.model.VisibilityData;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class PackagePutBodyValidatorTest {
 
-  private PackagePutBodyValidator validator = new PackagePutBodyValidator();
-
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
+
+  private final PackagePutBodyValidator validator = new PackagePutBodyValidator();
 
   @Test
   public void shouldValidateWhenPackageIsSelected() {
@@ -39,9 +38,9 @@ public class PackagePutBodyValidatorTest {
     expectedEx.expectMessage(containsString("isHidden"));
     validator.validate(PackagesTestData.getPackagePutRequest(
       new PackagePutDataAttributes()
-      .withIsSelected(false)
-      .withVisibilityData(new VisibilityData()
-        .withIsHidden(true))));
+        .withIsSelected(false)
+        .withVisibilityData(new VisibilityData()
+          .withIsHidden(true))));
   }
 
   @Test
@@ -82,7 +81,7 @@ public class PackagePutBodyValidatorTest {
     validator.validate(PackagesTestData.getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(true)
-        .withPackageToken(new Token().withValue(StringUtils.repeat("tokenvalue",200)))));
+        .withPackageToken(new Token().withValue(StringUtils.repeat("tokenvalue", 200)))));
   }
 
   @Test

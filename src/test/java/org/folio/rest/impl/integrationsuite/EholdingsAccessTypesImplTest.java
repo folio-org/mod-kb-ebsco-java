@@ -10,18 +10,6 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
@@ -38,17 +26,23 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessType;
 import static org.folio.util.AccessTypesTestUtil.insertAccessTypeMapping;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.TokenTestUtils.generateToken;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.UUID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
@@ -58,11 +52,10 @@ import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.UUID;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.RecordType;
 import org.folio.rest.impl.WireMockTestBase;
@@ -74,6 +67,10 @@ import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.model.Errors;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.test.util.TestUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsAccessTypesImplTest extends WireMockTestBase {
@@ -89,8 +86,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   private static final Header USER9_ID = new Header(XOkapiHeaders.USER_ID, USER_9);
   private static final Header USER2_TOKEN = new Header(XOkapiHeaders.TOKEN, generateToken("username", USER_2));
   private static final Header USER2_ID = new Header(XOkapiHeaders.USER_ID, USER_2);
-  private static final Header USER3_TOKEN = new Header(XOkapiHeaders.TOKEN, generateToken("username", USER_3));
-  private static final String USERDATA_COLLECTION_INFO_STUB_FILE = "responses/userlookup/mock_user_collection_response_200.json";
+  private static final String USERDATA_COLLECTION_INFO_STUB_FILE =
+    "responses/userlookup/mock_user_collection_response_200.json";
 
   private String credentialsId;
 
@@ -143,8 +140,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnAccessTypeCollectionOnGet() {
     List<AccessType> testAccessTypes = testData(credentialsId);
-    String id0 = insertAccessType(testAccessTypes.get(0), vertx);
-    String id1 = insertAccessType(testAccessTypes.get(1), vertx);
+    final String id0 = insertAccessType(testAccessTypes.get(0), vertx);
+    final String id1 = insertAccessType(testAccessTypes.get(1), vertx);
 
     AccessTypeCollection actual = getWithStatus(ACCESS_TYPES_PATH, SC_OK, STUB_TOKEN_HEADER)
       .as(AccessTypeCollection.class);
@@ -164,8 +161,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnAccessTypeCollectionOnGetByCredentialsId() {
     List<AccessType> testAccessTypes = testData(credentialsId);
-    String id0 = insertAccessType(testAccessTypes.get(0), vertx);
-    String id1 = insertAccessType(testAccessTypes.get(1), vertx);
+    final String id0 = insertAccessType(testAccessTypes.get(0), vertx);
+    final String id1 = insertAccessType(testAccessTypes.get(1), vertx);
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     AccessTypeCollection actual = getWithOk(resourcePath).as(AccessTypeCollection.class);
@@ -185,9 +182,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnAccessTypeCollectionWithUsageNumberOnGetByCredentialsId() {
     List<AccessType> testAccessTypes = testData(credentialsId);
-    String id0 = insertAccessType(testAccessTypes.get(0), vertx);
-    String id1 = insertAccessType(testAccessTypes.get(1), vertx);
-    String id2 = insertAccessType(testAccessTypes.get(2), vertx);
+    final String id0 = insertAccessType(testAccessTypes.get(0), vertx);
+    final String id1 = insertAccessType(testAccessTypes.get(1), vertx);
+    final String id2 = insertAccessType(testAccessTypes.get(2), vertx);
 
     insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id0, vertx);
     insertAccessTypeMapping("11111111-1112", RecordType.PACKAGE, id0, vertx);
@@ -317,10 +314,10 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     AccessType actual = postWithStatus(resourcePath, postBody, SC_CREATED, USER8_TOKEN, USER8_ID).as(AccessType.class);
 
-    assertNotNull((actual.getId()));
-    assertNotNull((actual.getAttributes()));
-    assertNotNull((actual.getCreator()));
-    assertNotNull((actual.getMetadata()));
+    assertNotNull(actual.getId());
+    assertNotNull(actual.getAttributes());
+    assertNotNull(actual.getCreator());
+    assertNotNull(actual.getMetadata());
     assertEquals("firstname_test", actual.getCreator().getFirstName());
     assertEquals("lastname_test", actual.getCreator().getLastName());
     assertEquals("accessTypes", actual.getType().value());
@@ -387,7 +384,8 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError error = postWithStatus(resourcePath, postBody, SC_NOT_FOUND, USER2_TOKEN, USER2_ID).as(JsonapiError.class);
+    JsonapiError error =
+      postWithStatus(resourcePath, postBody, SC_NOT_FOUND, USER2_TOKEN, USER2_ID).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "User not found");
   }
@@ -403,7 +401,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenPostHasInvalidUUID() {
+  public void shouldReturn422WhenPostHasInvalidUuid() {
     AccessType accessType = stubbedAccessType();
     accessType.setId("-2-");
     String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));

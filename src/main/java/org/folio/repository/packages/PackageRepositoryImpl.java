@@ -2,7 +2,6 @@ package org.folio.repository.packages;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
@@ -11,8 +10,8 @@ import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.pgClient;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID_COLUMN;
-import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
+import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.deleteStatement;
 import static org.folio.repository.packages.PackageTableConstants.insertOrUpdateStatement;
 import static org.folio.repository.packages.PackageTableConstants.selectPackagesWithTags;
@@ -21,27 +20,25 @@ import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.util.FutureUtils.mapResult;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.IdParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackageRepositoryImpl implements PackageRepository {

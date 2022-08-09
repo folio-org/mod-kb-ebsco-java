@@ -1,10 +1,8 @@
 package org.folio.rmapi.result;
 
 import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
-
 import org.folio.holdingsiq.model.Title;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.repository.tag.DbTag;

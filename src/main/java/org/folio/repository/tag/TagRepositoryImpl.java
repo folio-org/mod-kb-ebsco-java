@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
@@ -13,12 +12,12 @@ import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
 import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.tag.TagTableConstants.COUNT_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
-import static org.folio.repository.tag.TagTableConstants.getCountRecordsByTagValueAndTypeAndRecordIdPrefix;
+import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.deleteTagRecord;
+import static org.folio.repository.tag.TagTableConstants.getCountRecordsByTagValueAndTypeAndRecordIdPrefix;
 import static org.folio.repository.tag.TagTableConstants.selectAllDistinctTags;
 import static org.folio.repository.tag.TagTableConstants.selectAllTags;
 import static org.folio.repository.tag.TagTableConstants.selectDistinctTagsByRecordTypes;
@@ -30,7 +29,15 @@ import static org.folio.util.FutureUtils.failedFuture;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.pgclient.PgConnection;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,26 +46,16 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 class TagRepositoryImpl implements TagRepository {
@@ -259,7 +256,7 @@ class TagRepositoryImpl implements TagRepository {
 
     Future<Boolean> future = postgresClient.withTransaction(conn ->
         unAssignTags(conn, tenantId, recordId, recordType)
-          .compose(aBoolean -> assignTags(conn, tenantId, recordId, recordType, tags)))
+          .compose(v -> assignTags(conn, tenantId, recordId, recordType, tags)))
       .map(true);
 
     return mapVertxFuture(future);

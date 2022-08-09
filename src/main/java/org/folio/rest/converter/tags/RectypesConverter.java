@@ -3,7 +3,6 @@ package org.folio.rest.converter.tags;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
@@ -18,8 +17,8 @@ public class RectypesConverter implements Converter<List<String>, Set<org.folio.
   @Override
   public Set<org.folio.repository.RecordType> convert(@NonNull List<String> source) {
     return source.stream()
-              .map(recType -> recordTypeConverter.convert(recType))
-              .collect(Collectors.toSet());
+      .map(recType -> recordTypeConverter.convert(recType))
+      .collect(Collectors.toSet());
   }
 
 }

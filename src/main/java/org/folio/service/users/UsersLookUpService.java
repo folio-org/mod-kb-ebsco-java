@@ -1,17 +1,7 @@
 package org.folio.service.users;
 
 import static java.util.Collections.emptyList;
-
 import static org.folio.util.FutureUtils.mapVertxFuture;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
 
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.vertx.core.MultiMap;
@@ -25,17 +15,24 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ErrorConverter;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.common.OkapiParams;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.util.StringUtil;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Retrieves user information from mod-users /users/{userId} endpoint.
@@ -63,7 +60,7 @@ public class UsersLookUpService {
   }
 
   /**
-   * Returns the user information for the userid specified in X-Okapi-Token
+   * Returns the user information for the userid specified in X-Okapi-Token.
    *
    * @param okapiParams The okapi params for the current API call.
    * @return User information.
@@ -92,14 +89,14 @@ public class UsersLookUpService {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    return lookUpUsersUsingCQL(getIdsCql(ids), ids.size(), okapiParams);
+    return lookUpUsersUsingCql(getIdsCql(ids), ids.size(), okapiParams);
   }
 
   public CompletableFuture<List<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    return lookUpGroupsUsingCQL(getIdsCql(ids), ids.size(), okapiParams);
+    return lookUpGroupsUsingCql(getIdsCql(ids), ids.size(), okapiParams);
   }
 
   public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
@@ -121,17 +118,17 @@ public class UsersLookUpService {
     }
   }
 
-  private CompletableFuture<List<User>> lookUpUsersUsingCQL(String query, int limit, OkapiParams okapiParams) {
-    Promise<HttpResponse<JsonObject>> promise = lookUpByCQL(USERS_ENDPOINT, query, limit, okapiParams);
+  private CompletableFuture<List<User>> lookUpUsersUsingCql(String query, int limit, OkapiParams okapiParams) {
+    Promise<HttpResponse<JsonObject>> promise = lookUpByCql(USERS_ENDPOINT, query, limit, okapiParams);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUserCollection));
   }
 
-  private CompletableFuture<List<Group>> lookUpGroupsUsingCQL(String query, int limit, OkapiParams okapiParams) {
-    Promise<HttpResponse<JsonObject>> promise = lookUpByCQL(GROUPS_ENDPOINT, query, limit, okapiParams);
+  private CompletableFuture<List<Group>> lookUpGroupsUsingCql(String query, int limit, OkapiParams okapiParams) {
+    Promise<HttpResponse<JsonObject>> promise = lookUpByCql(GROUPS_ENDPOINT, query, limit, okapiParams);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroupCollection));
   }
 
-  private Promise<HttpResponse<JsonObject>> lookUpByCQL(String path, String query, int limit, OkapiParams okapiParams) {
+  private Promise<HttpResponse<JsonObject>> lookUpByCql(String path, String query, int limit, OkapiParams okapiParams) {
     MultiMap headers = new HeadersMultiMap();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);

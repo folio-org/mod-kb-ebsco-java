@@ -2,6 +2,7 @@ package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
+import io.vertx.core.Vertx;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,13 +11,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
 import javax.validation.ValidationException;
-
-import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.PackageByIdData;
@@ -39,11 +36,11 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
 
-  private ProvidersServiceImpl providerService;
-  private PackagesHoldingsIQService packagesService;
-  private VertxCache<ResourceCacheKey, Title> resourceCache;
-  private Configuration configuration;
-  private String tenantId;
+  private final ProvidersServiceImpl providerService;
+  private final PackagesHoldingsIQService packagesService;
+  private final VertxCache<ResourceCacheKey, Title> resourceCache;
+  private final Configuration configuration;
+  private final String tenantId;
 
   public ResourcesServiceImpl(Configuration config, Vertx vertx, String tenantId,
                               ProvidersServiceImpl providerService, PackagesHoldingsIQService packagesService,
@@ -60,15 +57,15 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
     return retrieveResource(resourceId, includes, false);
   }
 
-  public CompletableFuture<ResourceResult> retrieveResource(ResourceId resourceId, List<String> includes, boolean useCache) {
+  public CompletableFuture<ResourceResult> retrieveResource(ResourceId resourceId, List<String> includes,
+                                                            boolean useCache) {
     CompletableFuture<Title> titleFuture;
     CompletableFuture<PackageByIdData> packageFuture;
     CompletableFuture<VendorResult> vendorFuture;
 
-    if(useCache){
+    if (useCache) {
       titleFuture = retrieveResourceWithCache(resourceId, tenantId, configuration);
-    }
-    else {
+    } else {
       titleFuture = super.retrieveResource(resourceId);
     }
     if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
@@ -88,16 +85,8 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
 
     return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
       .thenCompose(o ->
-        completedFuture(new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join(), includeTitle)));
-  }
-
-  private CompletableFuture<Title> retrieveResourceWithCache(ResourceId resourceId, String tenantId, Configuration configuration) {
-    ResourceCacheKey cacheKey = ResourceCacheKey.builder()
-      .resourceId(resourceId)
-      .tenant(tenantId)
-      .rmapiConfiguration(configuration)
-      .build();
-    return resourceCache.getValueOrLoad(cacheKey, () -> retrieveResource(resourceId));
+        completedFuture(
+          new ResourceResult(titleFuture.join(), vendorFuture.join().getVendor(), packageFuture.join(), includeTitle)));
   }
 
   public CompletableFuture<Titles> retrieveResources(List<ResourceId> resourceIds) {
@@ -121,14 +110,25 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .map(resourceId ->
         retrieveResource(resourceId, Collections.emptyList(), true)
           .whenComplete((result, throwable) -> {
-            if(throwable != null) {
-              failed.add(resourceId.getProviderIdPart() + "-" + resourceId.getPackageIdPart() + "-" + resourceId.getTitleIdPart());
+            if (throwable != null) {
+              failed.add(resourceId.getProviderIdPart() + "-" + resourceId.getPackageIdPart() + "-"
+                + resourceId.getTitleIdPart());
             }
           }))
       .collect(Collectors.toSet());
 
     return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
       .thenApply(resourceFutures -> mapToResources(resourceFutures, failed));
+  }
+
+  private CompletableFuture<Title> retrieveResourceWithCache(ResourceId resourceId, String tenantId,
+                                                             Configuration configuration) {
+    ResourceCacheKey cacheKey = ResourceCacheKey.builder()
+      .resourceId(resourceId)
+      .tenant(tenantId)
+      .rmapiConfiguration(configuration)
+      .build();
+    return resourceCache.getValueOrLoad(cacheKey, () -> retrieveResource(resourceId));
   }
 
   private ResourceBulkResult mapToResources(List<ResourceResult> resourceFutures, List<String> failed) {
@@ -149,7 +149,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
   private ResourceId parseToResourceId(String resourceId, List<String> failed) {
     try {
       return IdParser.parseResourceId(resourceId);
-    } catch (ValidationException exception){
+    } catch (ValidationException exception) {
       failed.add(resourceId);
     }
     return null;

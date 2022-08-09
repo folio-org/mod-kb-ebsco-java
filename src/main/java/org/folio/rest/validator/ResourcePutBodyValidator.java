@@ -5,16 +5,14 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -76,16 +74,14 @@ public class ResourcePutBodyValidator {
     EmbargoUnit embargoUnit =
       attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
     List<Coverage> customCoverages = attributes.getCustomCoverages();
-    if (!isTitleCustom &&
-      (isNotEmpty(cvgStmt) || nonNull(embargoUnit) ||
-        (nonNull(isHidden) && isHidden) ||
-        (nonNull(customCoverages) && !customCoverages.isEmpty()) ||
-        isNotEmpty(attributes.getUserDefinedField1()) ||
-        isNotEmpty(attributes.getUserDefinedField2()) ||
-        isNotEmpty(attributes.getUserDefinedField3()) ||
-        isNotEmpty(attributes.getUserDefinedField4()) ||
-        isNotEmpty(attributes.getUserDefinedField5())
-      )) {
+    if (!isTitleCustom && (isNotEmpty(cvgStmt) || nonNull(embargoUnit)
+      || nonNull(isHidden) && isHidden
+      || nonNull(customCoverages) && !customCoverages.isEmpty()
+      || isNotEmpty(attributes.getUserDefinedField1())
+      || isNotEmpty(attributes.getUserDefinedField2())
+      || isNotEmpty(attributes.getUserDefinedField3())
+      || isNotEmpty(attributes.getUserDefinedField4())
+      || isNotEmpty(attributes.getUserDefinedField5()))) {
       throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
     }
   }

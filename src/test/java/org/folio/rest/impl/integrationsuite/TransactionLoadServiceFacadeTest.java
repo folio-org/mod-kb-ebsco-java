@@ -3,8 +3,6 @@ package org.folio.rest.impl.integrationsuite;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_TRANSACTIONS_HOLDINGS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_TRANSACTIONS_URL;
@@ -19,16 +17,11 @@ import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
 import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Collections;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.KbTestUtil.interceptAndStop;
+import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -40,12 +33,11 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Collections;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsDownloadTransaction;
 import org.folio.holdingsiq.model.HoldingsLoadTransactionStatus;
@@ -55,6 +47,11 @@ import org.folio.rest.impl.WireMockTestBase;
 import org.folio.service.holdings.TransactionLoadServiceFacade;
 import org.folio.service.holdings.message.ConfigurationMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RunWith(VertxUnitRunner.class)
 public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
@@ -77,7 +74,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
-    setupDefaultLoadKBConfiguration();
+    setupDefaultLoadKbConfiguration();
   }
 
   @After
@@ -91,14 +88,15 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   @Test
   public void shouldCreateSnapshotOnInitialStatusNone(TestContext context) throws IOException, URISyntaxException {
 
-    Async async = context.async();
     mockEmptyTransactionList();
 
-    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)),false),
-      new ResponseDefinitionBuilder().withBody(readFile("responses/rmapi/holdings/status/get-transaction-status-completed.json"))
+    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), false),
+      new ResponseDefinitionBuilder().withBody(
+        readFile("responses/rmapi/holdings/status/get-transaction-status-completed.json"))
     );
     mockPostHoldings();
 
+    Async async = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
@@ -110,16 +108,19 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldCreateSnapshotUsingExistingTransactionIfItIsInProgress(TestContext context) throws IOException, URISyntaxException {
+  public void shouldCreateSnapshotUsingExistingTransactionIfItIsInProgress(TestContext context)
+    throws IOException, URISyntaxException {
 
-    Async async = context.async();
-    mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL), readFile("responses/rmapi/holdings/status/get-transaction-list-in-progress.json"));
+    mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL),
+      readFile("responses/rmapi/holdings/status/get-transaction-list-in-progress.json"));
 
-    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)),false),
-      new ResponseDefinitionBuilder().withBody(readFile("responses/rmapi/holdings/status/get-transaction-status-completed.json"))
+    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), false),
+      new ResponseDefinitionBuilder().withBody(
+        readFile("responses/rmapi/holdings/status/get-transaction-status-completed.json"))
     );
     mockPostHoldings();
 
+    Async async = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
@@ -131,18 +132,22 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldNotCreateSnapshotIfItWasRecentlyCreated(TestContext context) throws IOException, URISyntaxException {
-    Async async = context.async();
+  public void shouldNotCreateSnapshotIfItWasRecentlyCreated(TestContext context)
+    throws IOException, URISyntaxException {
 
     String now = HOLDINGS_STATUS_TIME_FORMATTER.format(LocalDateTime.now(ZoneOffset.UTC));
-    HoldingsTransactionIdsList idList = readJsonFile("responses/rmapi/holdings/status/get-transaction-list.json", HoldingsTransactionIdsList.class);
+    HoldingsTransactionIdsList idList =
+      readJsonFile("responses/rmapi/holdings/status/get-transaction-list.json", HoldingsTransactionIdsList.class);
     HoldingsDownloadTransaction firstTransaction = idList.getHoldingsDownloadTransactionIds().get(0);
     idList.getHoldingsDownloadTransactionIds().set(0, firstTransaction.toBuilder().creationDate(now).build());
-    HoldingsLoadTransactionStatus status = readJsonFile("responses/rmapi/holdings/status/get-transaction-status-completed.json", HoldingsLoadTransactionStatus.class)
-      .toBuilder().creationDate(now).build();
+    HoldingsLoadTransactionStatus status =
+      readJsonFile("responses/rmapi/holdings/status/get-transaction-status-completed.json",
+        HoldingsLoadTransactionStatus.class)
+        .toBuilder().creationDate(now).build();
     mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL), Json.encode(idList));
     mockGetWithBody(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), Json.encode(status));
     mockPostHoldings();
+    Async async = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
       message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
@@ -151,7 +156,8 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
 
     async.await(TIMEOUT);
 
-    WireMock.verify(0, postRequestedFor(new UrlPathPattern(new EqualToPattern(RMAPI_POST_TRANSACTIONS_HOLDINGS_URL), false)));
+    WireMock.verify(0,
+      postRequestedFor(new UrlPathPattern(new EqualToPattern(RMAPI_POST_TRANSACTIONS_HOLDINGS_URL), false)));
   }
 
   private void mockPostHoldings() {
@@ -162,7 +168,8 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   }
 
   private void mockEmptyTransactionList() {
-    HoldingsTransactionIdsList emptyTransactionList = HoldingsTransactionIdsList.builder().holdingsDownloadTransactionIds(Collections.emptyList()).build();
+    HoldingsTransactionIdsList emptyTransactionList =
+      HoldingsTransactionIdsList.builder().holdingsDownloadTransactionIds(Collections.emptyList()).build();
     mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL), Json.encode(emptyTransactionList));
   }
 
@@ -174,8 +181,9 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
     return TransactionId.builder().transactionId(transactionId).build();
   }
 
-  private void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  private void setupDefaultLoadKbConfiguration() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
+      vertx);
     saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }

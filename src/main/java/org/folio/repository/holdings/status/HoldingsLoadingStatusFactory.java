@@ -5,7 +5,6 @@ import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_
 
 import java.time.OffsetDateTime;
 import java.util.List;
-
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
 import org.folio.rest.jaxrs.model.LoadStatusAttributes;
@@ -14,9 +13,9 @@ import org.folio.rest.jaxrs.model.LoadStatusInformation;
 import org.folio.rest.jaxrs.model.LoadStatusNameDetailEnum;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 
-public class HoldingsLoadingStatusFactory {
+public final class HoldingsLoadingStatusFactory {
 
-  private HoldingsLoadingStatusFactory() {}
+  private HoldingsLoadingStatusFactory() { }
 
   public static HoldingsLoadingStatus getStatusNotStarted() {
     return new HoldingsLoadingStatus()
@@ -44,7 +43,8 @@ public class HoldingsLoadingStatusFactory {
       .withJsonapi(JSONAPI);
   }
 
-  public static HoldingsLoadingStatus getStatusLoadingHoldings(int totalCount, int importedCount, int totalPages, int importedPages) {
+  public static HoldingsLoadingStatus getStatusLoadingHoldings(int totalCount, int importedCount, int totalPages,
+                                                               int importedPages) {
     return new HoldingsLoadingStatus()
       .withData(new LoadStatusData()
         .withType(LoadStatusData.Type.STATUS)

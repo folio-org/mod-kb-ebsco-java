@@ -6,10 +6,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourcePut;
@@ -22,9 +18,11 @@ import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.Proxy;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ResourceRequestConverterTest {
-  private static final String OLD_PROXY_ID = "<n>";
+
   public static final String OLD_COVERAGE_STATEMENT = "statement";
   public static final String OLD_URL = "http://example.com";
   public static final boolean OLD_VISIBILITY_DATA = true;
@@ -32,12 +30,16 @@ public class ResourceRequestConverterTest {
   public static final String OLD_END_COVERAGE = "2003-10-10";
   public static final String OLD_EMBARGO_UNIT = "Day";
   public static final int OLD_EMBARGO_VALUE = 5;
+
+  private static final String OLD_PROXY_ID = "<n>";
+
   private final ResourceRequestConverter resourcesConverter = new ResourceRequestConverter();
+
   private Title resourceData;
 
   @Before
   public void setUp() {
-     resourceData = Title.builder()
+    resourceData = Title.builder()
       .contributorsList(Collections.emptyList())
       .customerResourcesList(Collections.singletonList(CustomerResources.builder()
         .coverageStatement(OLD_COVERAGE_STATEMENT)
@@ -62,50 +64,55 @@ public class ResourceRequestConverterTest {
 
   @Test
   public void shouldCreateRequestToSelectManagedResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)), resourceData);
     assertTrue(resourcePut.getIsSelected());
   }
 
   @Test
   public void shouldCreateRequestToSelectCustomResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)), resourceData);
     assertTrue(resourcePut.getIsSelected());
   }
 
   @Test
   public void shouldCreateRequestToUpdateProxyForManagedResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withProxy(new Proxy()
-          .withId("test-proxy-id"))), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withProxy(new Proxy()
+            .withId("test-proxy-id"))), resourceData);
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }
 
   @Test
   public void shouldCreateRequestToUpdateProxyForCustomResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withProxy(new Proxy()
-          .withId("test-proxy-id"))), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withProxy(new Proxy()
+            .withId("test-proxy-id"))), resourceData);
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }
 
   @Test
   public void shouldCreateRequestToUpdateUserDefineFieldsForCustomResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withUserDefinedField1("test 1")
-        .withUserDefinedField2("test 2")
-        .withUserDefinedField3("test 3")
-        .withUserDefinedField4("test 4")
-        .withUserDefinedField5("test 5")), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withUserDefinedField1("test 1")
+          .withUserDefinedField2("test 2")
+          .withUserDefinedField3("test 3")
+          .withUserDefinedField4("test 4")
+          .withUserDefinedField5("test 5")), resourceData);
     assertEquals("test 1", resourcePut.getUserDefinedFields().getUserDefinedField1());
     assertEquals("test 2", resourcePut.getUserDefinedFields().getUserDefinedField2());
     assertEquals("test 3", resourcePut.getUserDefinedFields().getUserDefinedField3());
@@ -115,64 +122,70 @@ public class ResourceRequestConverterTest {
 
   @Test
   public void shouldCreateRequestToUpdateIsHiddenForCustomResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(true))), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withVisibilityData(new VisibilityData()
+            .withIsHidden(true))), resourceData);
     assertTrue(resourcePut.getIsHidden());
   }
 
   @Test
   public void shouldCreateRequestToUpdateCoverageStatementForManagedResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withCoverageStatement("test coverage stmt")), resourceData);
-      assertEquals("test coverage stmt", resourcePut.getCoverageStatement());
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withCoverageStatement("test coverage stmt")), resourceData);
+    assertEquals("test coverage stmt", resourcePut.getCoverageStatement());
   }
 
   @Test
   public void shouldCreateRequestToUpdateCoverageStatementForCustomResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withCoverageStatement("test coverage stmt")), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withCoverageStatement("test coverage stmt")), resourceData);
     assertEquals("test coverage stmt", resourcePut.getCoverageStatement());
   }
 
   @Test
   public void shouldCreateRequestToUpdateIsHiddenForManagedResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withVisibilityData(new VisibilityData()
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withVisibilityData(new VisibilityData()
             .withIsHidden(false))), resourceData);
-      assertFalse(resourcePut.getIsHidden());
+    assertFalse(resourcePut.getIsHidden());
   }
 
   @Test
   public void shouldCreateRequestToUpdateCustomEmbargoPeriodForManagedResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withCustomEmbargoPeriod(new EmbargoPeriod()
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withCustomEmbargoPeriod(new EmbargoPeriod()
             .withEmbargoUnit(EmbargoUnit.DAYS)
             .withEmbargoValue(10))), resourceData);
-      assertEquals("Days", resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
-      assertEquals(10, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
+    assertEquals("Days", resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
+    assertEquals(10, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
   }
 
   @Test
   public void shouldCreateRequestToUpdateUserDefinedFieldsForManagedResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPIResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withUserDefinedField1("test 1")
-        .withUserDefinedField2("test 2")
-        .withUserDefinedField3("test 3")
-        .withUserDefinedField4("test 4")
-        .withUserDefinedField5("test 5")), resourceData);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withUserDefinedField1("test 1")
+          .withUserDefinedField2("test 2")
+          .withUserDefinedField3("test 3")
+          .withUserDefinedField4("test 4")
+          .withUserDefinedField5("test 5")), resourceData);
     assertEquals("test 1", resourcePut.getUserDefinedFields().getUserDefinedField1());
     assertEquals("test 2", resourcePut.getUserDefinedFields().getUserDefinedField2());
     assertEquals("test 3", resourcePut.getUserDefinedFields().getUserDefinedField3());
@@ -182,26 +195,29 @@ public class ResourceRequestConverterTest {
 
   @Test
   public void shouldCreateRequestToUpdateCustomEmbargoPeriodForCustomResource() {
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withCustomEmbargoPeriod(new EmbargoPeriod()
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withCustomEmbargoPeriod(new EmbargoPeriod()
             .withEmbargoUnit(EmbargoUnit.YEARS)
             .withEmbargoValue(10))), resourceData);
-      assertEquals("Years", resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
-      assertEquals(10, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
+    assertEquals("Years", resourcePut.getCustomEmbargoPeriod().getEmbargoUnit());
+    assertEquals(10, resourcePut.getCustomEmbargoPeriod().getEmbargoValue());
   }
 
   @Test
   public void shouldCreateRequestToUpdateUrlForCustomResource() {
-    CustomerResources.CustomerResourcesBuilder customerResourcesBuilder = resourceData.getCustomerResourcesList().get(0).toBuilder();
+    CustomerResources.CustomerResourcesBuilder customerResourcesBuilder =
+      resourceData.getCustomerResourcesList().get(0).toBuilder();
     CustomerResources resources = customerResourcesBuilder.isPackageCustom(true).build();
     Title title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
 
-    ResourcePut resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
-      new ResourcePutDataAttributes()
-        .withIsSelected(true)
-        .withUrl("test url")), title);
+    ResourcePut resourcePut =
+      resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
+        new ResourcePutDataAttributes()
+          .withIsSelected(true)
+          .withUrl("test url")), title);
     assertEquals("test url", resourcePut.getUrl());
   }
 
@@ -211,7 +227,7 @@ public class ResourceRequestConverterTest {
     var resources = customerResourcesBuilder.isPackageCustom(true).build();
     var title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
 
-    var resourcePut = resourcesConverter.convertToRMAPICustomResourcePutRequest(
+    var resourcePut = resourcesConverter.convertToRmApiCustomResourcePutRequest(
       ResourcesTestData.getResourcePutRequest(new ResourcePutDataAttributes()),
       title
     );

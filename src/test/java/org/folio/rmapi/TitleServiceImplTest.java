@@ -2,7 +2,6 @@ package org.folio.rmapi;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.junit.Assert.assertEquals;
@@ -10,19 +9,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
-
 import io.vertx.core.Vertx;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import org.folio.cache.VertxCache;
+import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Title;
 import org.folio.rmapi.cache.TitleCacheKey;
@@ -30,21 +28,20 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.folio.cache.VertxCache;
-import org.folio.holdingsiq.model.Configuration;
-
 public class TitleServiceImplTest {
+
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
+
   private static final int STUB_TITLE_ID = 123456;
   private static final String TITLE_STUB_FILE = "responses/rmapi/titles/get-title-by-id-response.json";
-
-  private Configuration configuration;
 
   @Rule
   public WireMockRule userMockServer = new WireMockRule(
     WireMockConfiguration.wireMockConfig()
       .dynamicPort()
       .notifier(new Slf4jNotifier(true)));
+
+  private Configuration configuration;
 
   @Before
   public void setUp() {

@@ -2,7 +2,6 @@ package org.folio.repository.titles;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
 import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
@@ -19,35 +18,33 @@ import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.COUNT_COLUMN;
 import static org.folio.repository.titles.TitlesTableConstants.HOLDINGS_ID_COLUMN;
-import static org.folio.repository.titles.TitlesTableConstants.getCountTitlesByResourceTags;
 import static org.folio.repository.titles.TitlesTableConstants.deleteTitleStatement;
+import static org.folio.repository.titles.TitlesTableConstants.getCountTitlesByResourceTags;
 import static org.folio.repository.titles.TitlesTableConstants.insertOrUpdateTitleStatement;
 import static org.folio.repository.titles.TitlesTableConstants.selectTitlesByResourceTags;
 import static org.folio.util.FutureUtils.mapResult;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.Title;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TitlesRepositoryImpl implements TitlesRepository {

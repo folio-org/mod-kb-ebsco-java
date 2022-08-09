@@ -1,26 +1,20 @@
 package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
-
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.FutureUtils.failedFuture;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.repository.holdings.status.HoldingsStatusRepository;
 import org.folio.rest.annotations.Validate;
@@ -30,13 +24,15 @@ import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.resource.EholdingsLoadingKbCredentials;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.rest.util.template.RMAPITemplateContext;
-import org.folio.rest.util.template.RMAPITemplateFactory;
+import org.folio.rest.util.template.RmApiTemplateContext;
+import org.folio.rest.util.template.RmApiTemplateFactory;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.holdings.HoldingsStatusAuditService;
 import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
 
@@ -45,7 +41,7 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
   private static final String LOADING_IN_PROGRESS_MESSAGE = "Holdings loading is already in progress";
 
   @Autowired
-  private RMAPITemplateFactory templateFactory;
+  private RmApiTemplateFactory templateFactory;
   @Autowired
   private HoldingsService holdingsService;
   @Autowired
@@ -66,7 +62,8 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
   @Validate
   @HandleValidationErrors
   public void postEholdingsLoadingKbCredentials(String contentType, Map<String, String> okapiHeaders,
-                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                Handler<AsyncResult<Response>> asyncResultHandler,
+                                                Context vertxContext) {
     LOG.info("Received signal to start scheduled loading of holdings");
     validateAllCredentialsStatus(okapiHeaders)
       .thenCompose(o -> credentialsService.findAll(okapiHeaders))
@@ -93,29 +90,31 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsLoadingKbCredentialsStatusById(String id, String contentType, Map<String, String> okapiHeaders,
+  public void getEholdingsLoadingKbCredentialsStatusById(String id, String contentType,
+                                                         Map<String, String> okapiHeaders,
                                                          Handler<AsyncResult<Response>> asyncResultHandler,
                                                          Context vertxContext) {
     LOG.info("Getting holdings loading status");
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .withErrorHandler(loadHoldingsErrorHandler)
       .requestAction(context ->
-        holdingsStatusRepository.findByCredentialsId(toUUID(context.getCredentialsId()), context.getOkapiData().getTenant()))
+        holdingsStatusRepository.findByCredentialsId(toUUID(context.getCredentialsId()),
+          context.getOkapiData().getTenant()))
       .executeWithResult(HoldingsLoadingStatus.class);
   }
 
-  private CompletableFuture<Void> validateAndStartLoading(RMAPITemplateContext context) {
+  private CompletableFuture<Void> validateAndStartLoading(RmApiTemplateContext context) {
     return holdingsService.canStartLoading(context.getCredentialsId(), context.getOkapiData().getTenant())
       .thenCompose(canStartLoading -> canStartLoading
-        ? startLoading(context)
-        : failedFuture(new ProcessInProgressException(LOADING_IN_PROGRESS_MESSAGE)));
+                                      ? startLoading(context)
+                                      : failedFuture(new ProcessInProgressException(LOADING_IN_PROGRESS_MESSAGE)));
   }
 
   private CompletableFuture<Void> validateAllCredentialsStatus(Map<String, String> okapiHeaders) {
     return holdingsService.canStartLoading(tenantId(okapiHeaders))
       .thenCompose(allCanStartLoading -> allCanStartLoading
-        ? CompletableFuture.completedFuture(null)
-        : failedFuture(new ProcessInProgressException(LOADING_IN_PROGRESS_MESSAGE)));
+                                         ? CompletableFuture.completedFuture(null)
+                                         : failedFuture(new ProcessInProgressException(LOADING_IN_PROGRESS_MESSAGE)));
   }
 
   private CompletableFuture<Void> iterateOverCredentials(List<KbCredentials> credentialsList,
@@ -131,12 +130,13 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
     return startLoading(buildLoadingContext(credentials, okapiHeaders));
   }
 
-  private CompletableFuture<Void> startLoading(RMAPITemplateContext context) {
-    return holdingsStatusAuditService.clearExpiredRecords(context.getCredentialsId(), context.getOkapiData().getTenant())
+  private CompletableFuture<Void> startLoading(RmApiTemplateContext context) {
+    return holdingsStatusAuditService.clearExpiredRecords(context.getCredentialsId(),
+        context.getOkapiData().getTenant())
       .thenCompose(o -> holdingsService.loadSingleHoldings(context));
   }
 
-  private RMAPITemplateContext buildLoadingContext(KbCredentials credentials, Map<String, String> okapiHeaders) {
+  private RmApiTemplateContext buildLoadingContext(KbCredentials credentials, Map<String, String> okapiHeaders) {
     return templateFactory.lookupContextBuilder()
       .okapiData(new OkapiData(okapiHeaders))
       .kbCredentials(credentials)

@@ -13,8 +13,8 @@ import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.CREDENTIALS_COLUMN;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.JSONB_COLUMN;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.deleteLoadingStatus;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatuses;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatusById;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatuses;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.insertLoadingStatus;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.updateImportedCount;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.updateLoadingStatus;
@@ -22,25 +22,23 @@ import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import io.vertx.core.Future;
-import io.vertx.pgclient.PgConnection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
+import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Component;
-
 import org.folio.common.VertxIdProvider;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.stereotype.Component;
 
 @Component
 public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {

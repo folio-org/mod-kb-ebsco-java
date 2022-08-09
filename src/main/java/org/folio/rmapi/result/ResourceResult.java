@@ -2,7 +2,6 @@ package org.folio.rmapi.result;
 
 import lombok.Getter;
 import lombok.Setter;
-
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;

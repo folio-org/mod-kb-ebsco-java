@@ -2,7 +2,6 @@ package org.folio.rest.util;
 
 import java.util.List;
 import java.util.Map;
-
 import org.folio.rest.jaxrs.model.JsonAPI;
 
 public final class RestConstants {
@@ -32,7 +31,8 @@ public final class RestConstants {
       "onlinereference", "streamingmedia", "mixedcontent");
 
   public static final List<String> SUPPORTED_TITLE_FILTER_TYPE_VALUES =
-    List.of("audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings", "report",
+    List.of("audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings",
+      "report",
       "streamingaudio", "streamingvideo", "thesisdissertation", "website", "unspecified");
 
   private RestConstants() {

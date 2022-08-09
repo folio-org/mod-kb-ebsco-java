@@ -2,7 +2,6 @@ package org.folio.rest.converter.costperuse;
 
 import static org.apache.commons.lang3.math.NumberUtils.DOUBLE_ZERO;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
-
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getNonPublisherUsages;
@@ -11,17 +10,15 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPu
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
 
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.jaxrs.model.CostAnalysis;
 import org.folio.rest.jaxrs.model.CostAnalysisAttributes;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
 import org.folio.rest.jaxrs.model.PackageCostPerUseDataAttributes;
 import org.folio.rest.jaxrs.model.SpecificPlatformUsage;
 import org.folio.rmapi.result.PackageCostPerUseResult;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackageCostPerUseConverter implements Converter<PackageCostPerUseResult, PackageCostPerUse> {
@@ -45,11 +42,13 @@ public class PackageCostPerUseConverter implements Converter<PackageCostPerUseRe
         costAnalysis.setPublisherPlatforms(getCostAnalysisAttributes(getPublisherUsages(allPlatformUsages), cost));
         break;
       case NON_PUBLISHER:
-        costAnalysis.setNonPublisherPlatforms(getCostAnalysisAttributes(getNonPublisherUsages(allPlatformUsages), cost));
+        costAnalysis.setNonPublisherPlatforms(
+          getCostAnalysisAttributes(getNonPublisherUsages(allPlatformUsages), cost));
         break;
       default:
         costAnalysis.setPublisherPlatforms(getCostAnalysisAttributes(getPublisherUsages(allPlatformUsages), cost));
-        costAnalysis.setNonPublisherPlatforms(getCostAnalysisAttributes(getNonPublisherUsages(allPlatformUsages), cost));
+        costAnalysis.setNonPublisherPlatforms(
+          getCostAnalysisAttributes(getNonPublisherUsages(allPlatformUsages), cost));
         costAnalysis.setAllPlatforms(getCostAnalysisAttributes(allPlatformUsages, cost));
     }
     return new PackageCostPerUse()

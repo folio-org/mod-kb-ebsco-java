@@ -2,30 +2,22 @@ package org.folio.rest.impl.integrationsuite;
 
 import static java.util.Arrays.asList;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.TagsTestUtil.saveTags;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.collections4.CollectionUtils;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.DbTag;
 import org.folio.rest.impl.WireMockTestBase;
@@ -35,27 +27,36 @@ import org.folio.rest.jaxrs.model.TagCollection;
 import org.folio.rest.jaxrs.model.TagCollectionItem;
 import org.folio.rest.jaxrs.model.TagUniqueCollection;
 import org.folio.rest.util.RestConstants;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTagsImplTest extends WireMockTestBase {
 
   private static final String PROVIDER_ID = "1111";
   private static final String PACKAGE_ID = PROVIDER_ID + "-" + "3964";
+  private static final DbTag PACKAGE_TAG = tag(PACKAGE_ID, RecordType.PACKAGE, "package-tag");
   private static final String TITLE_ID = "12345";
   private static final String RESOURCE_ID = PACKAGE_ID + "-" + TITLE_ID;
-
-  private static final DbTag PROVIDER_TAG = tag(PROVIDER_ID, RecordType.PROVIDER, "provider-tag");
-  private static final DbTag PACKAGE_TAG = tag(PACKAGE_ID, RecordType.PACKAGE, "package-tag");
-  private static final DbTag TITLE_TAG = tag(TITLE_ID, RecordType.TITLE, "title-tag");
   private static final DbTag RESOURCE_TAG = tag(RESOURCE_ID, RecordType.RESOURCE, "resource-tag");
-
+  private static final DbTag PROVIDER_TAG = tag(PROVIDER_ID, RecordType.PROVIDER, "provider-tag");
+  private static final DbTag TITLE_TAG = tag(TITLE_ID, RecordType.TITLE, "title-tag");
   private static final List<DbTag> ALL_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG);
   private static final List<DbTag> UNIQUE_TAGS = asList(PROVIDER_TAG, PACKAGE_TAG, PACKAGE_TAG, TITLE_TAG, RESOURCE_TAG,
     RESOURCE_TAG);
 
   @Autowired
   private Converter<DbTag, TagCollectionItem> tagConverter;
-  
+
+  private static DbTag tag(String recordId, RecordType recordType, String value) {
+    return DbTag.builder()
+      .recordId(recordId)
+      .recordType(recordType)
+      .value(value).build();
+  }
 
   @After
   public void tearDown() {
@@ -95,7 +96,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     List<DbTag> tags = saveTags(ALL_TAGS, vertx);
 
     TagCollection col = getWithOk("eholdings/tags?filter[rectype]=provider&filter[rectype]=title").as(
-        TagCollection.class);
+      TagCollection.class);
 
     TagCollection expected = buildTagCollection(filter(tags, similarTo(PROVIDER_TAG).or(similarTo(TITLE_TAG))));
     assertEquals(expected, col);
@@ -143,7 +144,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     List<String> tags = mapItems(saveTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource").as(
-        TagUniqueCollection.class);
+      TagUniqueCollection.class);
 
     assertEquals(1, col.getData().size());
     assertEquals(Integer.valueOf(1), col.getMeta().getTotalResults());
@@ -155,7 +156,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     List<String> tags = mapItems(saveTags(UNIQUE_TAGS, vertx), DbTag::getValue);
 
     TagUniqueCollection col = getWithOk("eholdings/tags/summary?filter[rectype]=resource&filter[rectype]=provider").as(
-        TagUniqueCollection.class);
+      TagUniqueCollection.class);
 
     assertEquals(2, col.getData().size());
     assertEquals(Integer.valueOf(2), col.getMeta().getTotalResults());
@@ -170,16 +171,9 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
     assertErrorContainsTitle(error, "Invalid 'filter[rectype]' parameter value");
   }
 
-  private boolean checkContainingOfUniqueTags(List<String> source, TagUniqueCollection collection){
+  private boolean checkContainingOfUniqueTags(List<String> source, TagUniqueCollection collection) {
     return source.containsAll(mapItems(collection.getData(),
       tagUniqueCollectionItem -> tagUniqueCollectionItem.getAttributes().getValue()));
-  }
-
-  private static DbTag tag(String recordId, RecordType recordType, String value) {
-    return DbTag.builder()
-              .recordId(recordId)
-              .recordType(recordType)
-              .value(value).build();
   }
 
   private List<TagCollectionItem> toTagCollectionItems(List<DbTag> tags) {
@@ -210,8 +204,8 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   }
 
   private Predicate<DbTag> similarTo(DbTag expected) {
-    return tag -> expected.getValue().equals(tag.getValue()) &&
-      expected.getRecordId().equals(tag.getRecordId()) &&
-      expected.getRecordType().equals(tag.getRecordType());
+    return tag -> expected.getValue().equals(tag.getValue())
+      && expected.getRecordId().equals(tag.getRecordId())
+      && expected.getRecordType().equals(tag.getRecordType());
   }
 }

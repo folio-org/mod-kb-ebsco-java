@@ -3,7 +3,6 @@ package org.folio.repository.resources;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
 import org.folio.rest.model.filter.TagFilter;
 
 public interface ResourceRepository {

@@ -1,15 +1,14 @@
 package org.folio.service.accesstypes;
 
 import static java.lang.String.format;
-
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.db.exc.DbExcUtils;
@@ -47,6 +39,11 @@ import org.folio.rest.validator.AccessTypesBodyValidator;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessTypesServiceImpl implements AccessTypesService {
@@ -188,7 +185,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     CompletableFuture<Void> resultFuture = new CompletableFuture<>();
 
     repository.delete(toUUID(credentialsId), toUUID(accessTypeId), tenantId(okapiHeaders))
-      .whenComplete((aVoid, throwable) -> {
+      .whenComplete((v, throwable) -> {
         if (throwable != null) {
           Throwable cause = throwable.getCause();
           if (DbExcUtils.isFKViolation(throwable)) {
@@ -197,7 +194,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
             resultFuture.completeExceptionally(cause);
           }
         } else {
-          resultFuture.complete(aVoid);
+          resultFuture.complete(v);
         }
       });
 
@@ -205,8 +202,9 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   @Override
-  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, ArrayList<String> recordIds, RecordType recordType, String tenant) {
-   return repository.findPerRecord(credentialsId, recordIds, recordType, tenant);
+  public CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, ArrayList<String> recordIds,
+                                                                  RecordType recordType, String tenant) {
+    return repository.findPerRecord(credentialsId, recordIds, recordType, tenant);
   }
 
   private CompletableFuture<List<AccessType>> populateUserMetadata(Map<String, String> okapiHeaders,

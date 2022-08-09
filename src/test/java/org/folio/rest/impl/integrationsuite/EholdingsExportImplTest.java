@@ -13,23 +13,18 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
-
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
+import static org.folio.repository.uc.UcSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
-import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
-import static org.folio.util.UCSettingsTestUtil.stubSettings;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.UcCredentialsTestUtil.setUpUcCredentials;
+import static org.folio.util.UcSettingsTestUtil.saveUcSettings;
+import static org.folio.util.UcSettingsTestUtil.stubSettings;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -37,7 +32,18 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.http.Header;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import org.apache.http.protocol.HTTP;
+import org.folio.client.uc.UcApigeeEbscoClient;
+import org.folio.client.uc.UcAuthEbscoClient;
+import org.folio.client.uc.model.UcAuthToken;
+import org.folio.repository.holdings.DbHoldingInfo;
+import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.service.locale.LocaleSettingsService;
+import org.folio.util.HoldingsTestUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -46,33 +52,22 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import org.folio.client.uc.UCApigeeEbscoClient;
-import org.folio.client.uc.UCAuthEbscoClient;
-import org.folio.client.uc.model.UCAuthToken;
-import org.folio.repository.holdings.DbHoldingInfo;
-import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.service.locale.LocaleSettingsService;
-import org.folio.util.HoldingsTestUtil;
-
 @RunWith(VertxUnitRunner.class)
 public class EholdingsExportImplTest extends WireMockTestBase {
 
   public static final String UC_COSTPERUSE_PACKAGE_REQ = "/uc/costperuse/package/%s";
   public static final String UC_COSTPERUSE_TITLES_REQ = "/uc/costperuse/titles";
-  private final String EXPORT_PACKAGE_TITLES = "/eholdings/packages/%d-%d/resources/costperuse/export%s";
-  private final int STUB_PROVIDER_ID = 123;
-  private final int STUB_PACKAGE_ID = 456;
-  private final String STUB_QUERY_PARAMS = "?platform=publisher&fiscalYear=2019";
-
   protected static final Header CONTENT_TYPE_CSV_HEADER = new Header(HTTP.CONTENT_TYPE, "text/csv");
-
+  private static final String EXPORT_PACKAGE_TITLES = "/eholdings/packages/%d-%d/resources/costperuse/export%s";
+  private static final int STUB_PROVIDER_ID = 123;
+  private static final int STUB_PACKAGE_ID = 456;
+  private static final String STUB_QUERY_PARAMS = "?platform=publisher&fiscalYear=2019";
   private String credentialsId;
 
   @Autowired
-  private UCAuthEbscoClient authEbscoClient;
+  private UcAuthEbscoClient authEbscoClient;
   @Autowired
-  private UCApigeeEbscoClient apigeeEbscoClient;
+  private UcApigeeEbscoClient apigeeEbscoClient;
   @Autowired
   private LocaleSettingsService configurationService;
 
@@ -94,13 +89,13 @@ public class EholdingsExportImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnExportResponse() throws IOException, URISyntaxException {
-    setUpUCCredentials(vertx);
-    saveUCSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
     mockAuthToken();
 
     saveHoldingFromFile("responses/kb-ebsco/export/holding-for-export-1.json",
-                                       "responses/kb-ebsco/export/holding-for-export-2.json",
-                                       "responses/kb-ebsco/export/holding-for-export-3.json");
+      "responses/kb-ebsco/export/holding-for-export-2.json",
+      "responses/kb-ebsco/export/holding-for-export-3.json");
     String configFileName = "responses/configuration/locale-settings-empty.json";
     mockSuccessfulConfigurationResponse(configFileName);
 
@@ -123,11 +118,10 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     assertThat(actual, Matchers.equalTo(readFile("responses/kb-ebsco/export/expected-export-three-items-usd.txt")));
   }
 
-
   @Test
   public void shouldReturnExportWithZeroValuesResponseWhenNoCostPerUseInfo() throws IOException, URISyntaxException {
-    setUpUCCredentials(vertx);
-    saveUCSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
     mockAuthToken();
 
     saveHoldingFromFile("responses/kb-ebsco/export/holding-for-export-1.json",
@@ -152,13 +146,14 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
     assertThat(actual, notNullValue());
 
-    assertThat(actual, Matchers.equalTo(readFile("responses/kb-ebsco/export/expected-export-three-items-zero-values.txt")));
+    assertThat(actual,
+      Matchers.equalTo(readFile("responses/kb-ebsco/export/expected-export-three-items-zero-values.txt")));
   }
 
   @Test
   public void shouldReturnEmptyResponseWhenNoHoldings() throws IOException, URISyntaxException {
-    setUpUCCredentials(vertx);
-    saveUCSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
     mockAuthToken();
 
     String configFileName = "responses/configuration/locale-settings-empty.json";
@@ -173,7 +168,8 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, STUB_QUERY_PARAMS);
     String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
 
-    String ucPackagePublisher = "/uc/costperuse/package/456?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&aggregatedFullText=true";
+    String ucPackagePublisher =
+      "/uc/costperuse/package/456?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&aggregatedFullText=true";
     verify(1, getRequestedFor(urlEqualTo(ucPackagePublisher)));
 
     String ucTitles = "/uc/costperuse/titles?";
@@ -183,16 +179,17 @@ public class EholdingsExportImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResponseWithPublisherEqualsToAllWhenNotSpecifiedInUrl() throws IOException, URISyntaxException {
-    String queryParams = "?fiscalYear=2019";
+  public void shouldReturnResponseWithPublisherEqualsToAllWhenNotSpecifiedInUrl()
+    throws IOException, URISyntaxException {
+    final String queryParams = "?fiscalYear=2019";
 
-    setUpUCCredentials(vertx);
-    saveUCSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
     mockAuthToken();
 
     saveHoldingFromFile("responses/kb-ebsco/export/holding-for-export-1.json",
-                                       "responses/kb-ebsco/export/holding-for-export-2.json",
-                                       "responses/kb-ebsco/export/holding-for-export-3.json");
+      "responses/kb-ebsco/export/holding-for-export-2.json",
+      "responses/kb-ebsco/export/holding-for-export-3.json");
 
     String configFileName = "responses/configuration/locale-settings-empty.json";
     mockSuccessfulConfigurationResponse(configFileName);
@@ -211,20 +208,23 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
     assertThat(actual, notNullValue());
 
-    String ucPackagePublisher = "/uc/costperuse/package/456?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&aggregatedFullText=true";
+    String ucPackagePublisher =
+      "/uc/costperuse/package/456?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&aggregatedFullText=true";
     verify(1, getRequestedFor(urlEqualTo(ucPackagePublisher)));
 
-    String ucTitlesPublisher = "/uc/costperuse/titles?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&publisherPlatform=false&previousYear=false";
+    String ucTitlesPublisher = "/uc/costperuse/titles?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD"
+      + "&publisherPlatform=false&previousYear=false";
     verify(1, postRequestedFor(urlEqualTo(ucTitlesPublisher)));
 
-    String ucTitlesNonPublisher = "/uc/costperuse/titles?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&publisherPlatform=true&previousYear=false";
+    String ucTitlesNonPublisher = "/uc/costperuse/titles?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD"
+      + "&publisherPlatform=true&previousYear=false";
     verify(1, postRequestedFor(urlEqualTo(ucTitlesNonPublisher)));
   }
 
   @Test
   public void shouldReturn401ErrorWhenCanNotRetrieveAuthToken() throws IOException, URISyntaxException {
-    setUpUCCredentials(vertx);
-    saveUCSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
 
     String errorMessage = "Unable to proceed request";
     stubFor(post(urlPathMatching("/oauth-proxy/token"))
@@ -241,8 +241,8 @@ public class EholdingsExportImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnExportFileWithDefaultLocaleSettings() throws IOException, URISyntaxException {
 
-    setUpUCCredentials(vertx);
-    saveUCSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
     mockAuthToken();
 
     saveHoldingFromFile("responses/kb-ebsco/export/holding-for-export-1.json",
@@ -266,17 +266,18 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
     assertThat(actual, notNullValue());
 
-    assertThat(actual, Matchers.equalTo(readFile("responses/kb-ebsco/export/expected-export-three-items-zero-values.txt")));
+    assertThat(actual,
+      Matchers.equalTo(readFile("responses/kb-ebsco/export/expected-export-three-items-zero-values.txt")));
   }
 
   private void mockAuthToken() {
-    UCAuthToken stubToken = new UCAuthToken("access_token", "Bearer", 3600L, "openid");
+    UcAuthToken stubToken = new UcAuthToken("access_token", "Bearer", 3600L, "openid");
     stubFor(post(urlPathMatching("/oauth-proxy/token"))
       .willReturn(aResponse().withStatus(SC_OK).withBody(Json.encode(stubToken)))
     );
   }
 
-  private void saveHoldingFromFile(String ... holdingsArray) throws IOException, URISyntaxException {
+  private void saveHoldingFromFile(String... holdingsArray) throws IOException, URISyntaxException {
     for (int i = 0; i <= holdingsArray.length - 1; i++) {
       HoldingsTestUtil.saveHolding(credentialsId,
         Json.decodeValue(readFile(holdingsArray[i]), DbHoldingInfo.class),

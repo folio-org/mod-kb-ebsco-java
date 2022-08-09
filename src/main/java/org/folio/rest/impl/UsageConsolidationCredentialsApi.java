@@ -2,26 +2,23 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 
-import java.util.Map;
-
-import javax.ws.rs.core.Response;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import java.util.Map;
+import javax.ws.rs.core.Response;
 import org.folio.rest.jaxrs.model.UCCredentials;
 import org.folio.rest.jaxrs.resource.EholdingsUcCredentials;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.service.uc.UCAuthService;
+import org.folio.service.uc.UcAuthService;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials {
 
   @Autowired
-  private UCAuthService authService;
+  private UcAuthService authService;
   @Autowired
   private ErrorHandler errorHandler;
 
@@ -30,7 +27,8 @@ public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials 
   }
 
   @Override
-  public void getEholdingsUcCredentials(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+  public void getEholdingsUcCredentials(Map<String, String> okapiHeaders,
+                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                         Context vertxContext) {
     authService.checkCredentialsPresence(okapiHeaders)
       .thenAccept(ucCredentialsPresence -> asyncResultHandler.handle(succeededFuture(
@@ -49,7 +47,8 @@ public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials 
 
   @Override
   public void getEholdingsUcCredentialsClientId(Map<String, String> okapiHeaders,
-                                                Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                Handler<AsyncResult<Response>> asyncResultHandler,
+                                                Context vertxContext) {
     authService.getClientId(okapiHeaders)
       .thenAccept(ucCredentialsClientId -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsUcCredentialsClientIdResponse.respond200WithTextPlain(ucCredentialsClientId))))
@@ -57,7 +56,9 @@ public class UsageConsolidationCredentialsApi implements EholdingsUcCredentials 
   }
 
   @Override
-  public void getEholdingsUcCredentialsClientSecret(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+  public void getEholdingsUcCredentialsClientSecret(Map<String, String> okapiHeaders,
+                                                    Handler<AsyncResult<Response>> asyncResultHandler,
+                                                    Context vertxContext) {
     authService.getClientSecret(okapiHeaders)
       .thenAccept(ucCredentialsClientSecret -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsUcCredentialsClientSecretResponse.respond200WithTextPlain(ucCredentialsClientSecret))))

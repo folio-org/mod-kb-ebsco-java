@@ -1,14 +1,13 @@
 package org.folio.rest.converter.accesstypes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
-
-import org.junit.Test;
-
-import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.util.AccessTypesTestUtil;
+import org.junit.Test;
 
 public class AccessTypeCollectionConverterTest {
 

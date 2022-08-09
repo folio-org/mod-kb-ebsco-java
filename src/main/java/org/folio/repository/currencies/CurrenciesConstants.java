@@ -5,7 +5,7 @@ import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.orderByQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 
-public class CurrenciesConstants {
+public final class CurrenciesConstants {
 
   public static final String CURRENCIES_TABLE_NAME = "currencies";
   public static final String CODE_COLUMN = "code";

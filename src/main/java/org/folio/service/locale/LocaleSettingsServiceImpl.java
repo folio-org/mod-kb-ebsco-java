@@ -1,5 +1,9 @@
 package org.folio.service.locale;
 
+import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import java.util.Currency;
@@ -7,20 +11,14 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-
-import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.tools.utils.VertxUtils;
-import org.jetbrains.annotations.NotNull;
-import org.joda.time.DateTimeZone;
-
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.utils.TenantTool;
+import org.folio.rest.tools.utils.VertxUtils;
+import org.jetbrains.annotations.NotNull;
+import org.joda.time.DateTimeZone;
 
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
@@ -97,7 +95,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     return true;
   }
 
-  private static boolean isSuccess(int statusCode){
+  private static boolean isSuccess(int statusCode) {
     return statusCode >= 200 && statusCode < 300;
   }
 

@@ -4,7 +4,6 @@ import static java.util.Collections.unmodifiableMap;
 
 import java.util.EnumMap;
 import java.util.Map;
-
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.HasManyRelationship;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
@@ -13,7 +12,7 @@ import org.folio.rest.jaxrs.model.PackageRelationship;
 
 public final class PackageConverterUtils {
 
-  public static final Map<ContentType, Integer> contentTypeToRMAPICode;
+  public static final Map<ContentType, Integer> CONTENT_TYPE_TO_RMAPI_CODE;
 
   static {
     Map<ContentType, Integer> map = new EnumMap<>(ContentType.class);
@@ -27,7 +26,7 @@ public final class PackageConverterUtils {
     map.put(ContentType.STREAMING_MEDIA, 8);
     map.put(ContentType.MIXED_CONTENT, 9);
 
-    contentTypeToRMAPICode = unmodifiableMap(map);
+    CONTENT_TYPE_TO_RMAPI_CODE = unmodifiableMap(map);
   }
 
   private PackageConverterUtils() {

@@ -5,21 +5,19 @@ import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.deleteBeforeTimestampForCredentials;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.persist.PostgresClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import org.folio.rest.persist.PostgresClient;
 
 @Component
 public class HoldingsStatusAuditRepositoryImpl implements HoldingsStatusAuditRepository {
