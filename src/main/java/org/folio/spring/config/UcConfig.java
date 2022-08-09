@@ -56,7 +56,7 @@ public class UcConfig {
 
   @Bean
   public Converter<UcSettingsResult, UCSettings> nonSecuredUcSettingsResultConverter(
-    @Qualifier("nonSecuredUCSettingsConverter")
+    @Qualifier("nonSecuredUcSettingsConverter")
     Converter<DbUcSettings, UCSettings> nonSecuredUcSettingsConverter,
     Map<Integer, UCSettingsDataAttributes.MetricType> metricTypeMapper) {
     return new UcSettingsConverter.UcSettingsResultConverter(nonSecuredUcSettingsConverter, metricTypeMapper);

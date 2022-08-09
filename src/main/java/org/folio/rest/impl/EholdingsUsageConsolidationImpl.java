@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class EholdingsUsageConsolidationImpl implements EholdingsKbCredentialsIdUc, EholdingsUc {
 
   @Autowired
-  @Qualifier("securedUCSettingsService")
+  @Qualifier("securedUcSettingsService")
   private UcSettingsService settingsService;
   @Autowired
   private ErrorHandler errorHandler;

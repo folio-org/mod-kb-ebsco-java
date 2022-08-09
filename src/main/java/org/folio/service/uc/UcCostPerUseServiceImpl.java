@@ -75,7 +75,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   @Autowired
   private UcAuthService authService;
   @Autowired
-  @Qualifier("nonSecuredUCSettingsService")
+  @Qualifier("nonSecuredUcSettingsService")
   private UcSettingsService settingsService;
   @Autowired
   private HoldingsService holdingsService;
