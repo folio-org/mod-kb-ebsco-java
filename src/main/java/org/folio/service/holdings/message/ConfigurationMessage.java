@@ -8,7 +8,6 @@ import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.folio.holdingsiq.model.Configuration;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -21,7 +20,7 @@ public class ConfigurationMessage {
   private String credentialsId;
   private String tenantId;
 
-  public ConfigurationMessage() {}
+  public ConfigurationMessage() { }
 
   public ConfigurationMessage(JsonObject jsonObject) {
     ConfigurationMessage message = jsonObject.mapTo(ConfigurationMessage.class);
@@ -30,7 +29,7 @@ public class ConfigurationMessage {
     this.tenantId = message.getTenantId();
   }
 
-  public JsonObject toJson(){
+  public JsonObject toJson() {
     return mapFrom(this);
   }
 }

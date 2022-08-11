@@ -1,20 +1,19 @@
 package org.folio.rest.validator;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.AccessType;
-import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
-
 public class AccessTypesBodyValidatorTest {
-
-  private final AccessTypesBodyValidator validator = new AccessTypesBodyValidator(75, 150);
 
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
+
+  private final AccessTypesBodyValidator validator = new AccessTypesBodyValidator(75, 150);
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenNoPutBody() {
@@ -24,7 +23,7 @@ public class AccessTypesBodyValidatorTest {
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenEmptyPostDataAttributes() {
     final AccessType request = stubAccessType();
-    request.setAttributes((new AccessTypeDataAttributes()));
+    request.setAttributes(new AccessTypeDataAttributes());
     validator.validate(null, request);
   }
 
@@ -62,7 +61,6 @@ public class AccessTypesBodyValidatorTest {
     validator.validate(null, request);
   }
 
-
   @Test
   public void shouldNotThrowExceptionWhenValidParameters() {
     final AccessType request = stubAccessType();
@@ -70,10 +68,8 @@ public class AccessTypesBodyValidatorTest {
   }
 
   private AccessType stubAccessType() {
-    return new AccessType()
-      .withAttributes(
-        new AccessTypeDataAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(75))
-          .withDescription(RandomStringUtils.randomAlphanumeric(150)));
+    return new AccessType().withAttributes(
+      new AccessTypeDataAttributes().withName(RandomStringUtils.randomAlphanumeric(75))
+        .withDescription(RandomStringUtils.randomAlphanumeric(150)));
   }
 }

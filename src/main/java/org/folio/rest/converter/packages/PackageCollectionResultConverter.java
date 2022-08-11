@@ -4,12 +4,6 @@ import static org.folio.common.ListUtils.mapItems;
 
 import java.util.Collections;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
@@ -20,6 +14,10 @@ import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageCollectionResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackageCollectionResultConverter implements Converter<PackageCollectionResult, PackageCollection> {
@@ -55,6 +53,9 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
   }
 
   private PackageId createPackageId(PackageData packageData) {
-    return PackageId.builder().providerIdPart(packageData.getVendorId()).packageIdPart(packageData.getPackageId()).build();
+    return PackageId.builder()
+      .providerIdPart(packageData.getVendorId())
+      .packageIdPart(packageData.getPackageId())
+      .build();
   }
 }

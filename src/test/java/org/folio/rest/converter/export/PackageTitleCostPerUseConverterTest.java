@@ -7,17 +7,15 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
-
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.folio.rest.converter.costperuse.export.PackageTitleCostPerUseConverter;
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.PublicationType;
 import org.folio.rest.jaxrs.model.ResourceCostAnalysisAttributes;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.service.uc.export.TitleExportModel;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PackageTitleCostPerUseConverterTest {
 
@@ -30,7 +28,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldRoundPercentToLessThanOne(){
+  public void shouldRoundPercentToLessThanOne() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -42,12 +40,13 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(0.9)
       );
     setNumberFormat(Locale.US);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("< 1 %", itemConverted.getPercent());
   }
 
   @Test
-  public void shouldRoundPercentToLower(){
+  public void shouldRoundPercentToLower() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -59,12 +58,13 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.US);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("3 %", itemConverted.getPercent());
   }
 
   @Test
-  public void shouldRoundPercentToHigher(){
+  public void shouldRoundPercentToHigher() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -76,12 +76,13 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.5)
       );
     setNumberFormat(Locale.US);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("4 %", itemConverted.getPercent());
   }
 
   @Test
-  public void shouldRoundDownCosts(){
+  public void shouldRoundDownCosts() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -93,13 +94,14 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.US);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("10.42", itemConverted.getCost());
     assertEquals("0.33", itemConverted.getCostPerUse());
   }
 
   @Test
-  public void shouldRoundUpCosts(){
+  public void shouldRoundUpCosts() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -111,13 +113,14 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.US);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("10.57", itemConverted.getCost());
     assertEquals("1.43", itemConverted.getCostPerUse());
   }
 
   @Test
-  public void shouldFormatCostsToUSFormat(){
+  public void shouldFormatCostsToUsFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -129,13 +132,14 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.US);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("10,000.00", itemConverted.getCost());
     assertEquals("3,333.33", itemConverted.getCostPerUse());
   }
 
   @Test
-  public void shouldFormatCostsToGBFormat(){
+  public void shouldFormatCostsToGbFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -147,13 +151,14 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.GERMANY);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("10.000,00", itemConverted.getCost());
     assertEquals("3.333,33", itemConverted.getCostPerUse());
   }
 
   @Test
-  public void shouldFormatCostsToFRFormat() {
+  public void shouldFormatCostsToFrFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -165,13 +170,14 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.FRANCE);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("10 000,00", itemConverted.getCost());
     assertEquals("3 333,33", itemConverted.getCostPerUse());
   }
 
   @Test
-  public void shouldFormatCostsToUKFormat() {
+  public void shouldFormatCostsToUkFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -183,7 +189,8 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.UK);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("10,000.00", itemConverted.getCost());
     assertEquals("3,333.34", itemConverted.getCostPerUse());
   }
@@ -201,7 +208,8 @@ public class PackageTitleCostPerUseConverterTest {
           .withPercent(3.3)
       );
     setNumberFormat(Locale.KOREA);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("10,000", itemConverted.getCost());
     assertEquals("3,333", itemConverted.getCostPerUse());
   }
@@ -220,7 +228,8 @@ public class PackageTitleCostPerUseConverterTest {
       );
     Locale jordanLocale = new Locale("ar", "JO");
     setNumberFormat(jordanLocale);
-    TitleExportModel itemConverted = converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
+    TitleExportModel itemConverted =
+      converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
     assertEquals("١٠٬٠٠٠٫٠٠٠", itemConverted.getCost());
     assertEquals("٣٬٣٣٣٫٣٣٧", itemConverted.getCostPerUse());
   }

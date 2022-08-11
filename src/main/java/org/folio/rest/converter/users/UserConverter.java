@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-public class UserConverter {
+public final class UserConverter {
 
   private UserConverter() {
 

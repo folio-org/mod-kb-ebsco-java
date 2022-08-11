@@ -3,11 +3,6 @@ package org.folio.rest.converter.resources;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
@@ -24,6 +19,9 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.jaxrs.model.VisibilityData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CommonResourceConverter {
@@ -45,7 +43,6 @@ public class CommonResourceConverter {
   @Autowired
   private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
 
-
   public ResourceDataAttributes createResourceDataAttributes(Title title, CustomerResources resource) {
     return new ResourceDataAttributes()
       .withAlternateTitles(alternateTitleConverter.convert(title.getAlternateTitleList()))
@@ -58,7 +55,7 @@ public class CommonResourceConverter {
       .withContributors(contributorsConverter.convert(title.getContributorsList()))
       .withIdentifiers(identifiersConverter.convert(title.getIdentifiersList()))
       .withName(title.getTitleName())
-      .withPublicationType(ConverterConsts.publicationTypes.get(title.getPubType().toLowerCase()))
+      .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(title.getPubType().toLowerCase()))
       .withSubjects(subjectsConverter.convert(title.getSubjectsList()))
       .withCoverageStatement(resource.getCoverageStatement())
       .withCustomEmbargoPeriod(embargoPeriodConverter.convert(resource.getCustomEmbargoPeriod()))
@@ -76,8 +73,8 @@ public class CommonResourceConverter {
       .withManagedCoverages(coverageDatesConverter.convert(resource.getManagedCoverageList()))
       .withCustomCoverages(coverageDatesConverter.convert(
         resource.getCustomCoverageList().stream()
-        .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
-        .collect(Collectors.toList())))
+          .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
+          .collect(Collectors.toList())))
       .withProxy(proxyConverter.convert(resource.getProxy()))
       .withUserDefinedField1(resource.getUserDefinedFields().getUserDefinedField1())
       .withUserDefinedField2(resource.getUserDefinedFields().getUserDefinedField2())

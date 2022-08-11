@@ -3,11 +3,6 @@ package org.folio.rest.converter.proxy;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Proxies;
 import org.folio.holdingsiq.model.ProxyWithUrl;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -15,6 +10,9 @@ import org.folio.rest.jaxrs.model.ProxyTypes;
 import org.folio.rest.jaxrs.model.ProxyTypesData;
 import org.folio.rest.jaxrs.model.ProxyTypesDataAttributes;
 import org.folio.rest.util.RestConstants;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ProxiesConverter implements Converter<Proxies, ProxyTypes> {

@@ -2,15 +2,13 @@ package org.folio.service.holdings.message;
 
 import static io.vertx.core.json.JsonObject.mapFrom;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.folio.holdingsiq.model.Holding;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -24,7 +22,7 @@ public class HoldingsMessage {
   private String transactionId;
   private String credentialsId;
 
-  public HoldingsMessage() {}
+  public HoldingsMessage() { }
 
   public HoldingsMessage(JsonObject jsonObject) {
     HoldingsMessage message = jsonObject.mapTo(HoldingsMessage.class);
@@ -34,7 +32,7 @@ public class HoldingsMessage {
     this.credentialsId = message.getCredentialsId();
   }
 
-  public JsonObject toJson(){
+  public JsonObject toJson() {
     return mapFrom(this);
   }
 }

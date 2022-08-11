@@ -1,13 +1,11 @@
 package org.folio.util;
 
+import io.vertx.core.json.JsonObject;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-
-import io.vertx.core.json.JsonObject;
 
 public final class TokenTestUtils {
 
@@ -23,12 +21,12 @@ public final class TokenTestUtils {
 
     try {
       String message = new String(encodedHeader) + "." + new String(encodedData);
-      Mac sha256HMAC = Mac.getInstance("HmacSHA256");
+      Mac sha = Mac.getInstance("HmacSHA256");
 
       SecretKeySpec secretKey = new SecretKeySpec("no-secret".getBytes(), "HmacSHA256");
-      sha256HMAC.init(secretKey);
+      sha.init(secretKey);
 
-      byte[] signature = Base64.getUrlEncoder().encode(sha256HMAC.doFinal(message.getBytes()));
+      byte[] signature = Base64.getUrlEncoder().encode(sha.doFinal(message.getBytes()));
       return new String(encodedHeader) + "." + new String(encodedData) + "." + new String(signature);
     } catch (NoSuchAlgorithmException | InvalidKeyException e) {
       throw new UnsupportedOperationException(e);

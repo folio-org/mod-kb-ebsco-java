@@ -2,14 +2,13 @@ package org.folio.rest.converter.holdings;
 
 import static org.folio.rest.converter.resources.ResourceConverterUtils.createEmptyRelationship;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class HoldingCollectionItemConverter implements Converter<DbHoldingInfo, ResourceCollectionItem> {
@@ -25,7 +24,7 @@ public class HoldingCollectionItemConverter implements Converter<DbHoldingInfo, 
         .withTitleId(holding.getTitleId())
         .withName(holding.getPublicationTitle())
         .withPublisherName(holding.getPublisherName())
-        .withPublicationType(ConverterConsts.publicationTypes.get(holding.getResourceType().toLowerCase()))
+        .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(holding.getResourceType().toLowerCase()))
       );
   }
 }

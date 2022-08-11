@@ -1,20 +1,18 @@
 package org.folio.rest.impl;
 
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.folio.liquibase.LiquibaseUtil;
 import org.folio.rest.jaxrs.model.TenantAttributes;
 import org.folio.rest.persist.PostgresClient;
@@ -56,7 +54,7 @@ public class TenantApiImpl extends TenantAPI {
         return Future.succeededFuture();
       }
 
-      String sqlScript = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+      String sqlScript = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
       if (StringUtils.isBlank(sqlScript)) {
         return Future.succeededFuture();
       }

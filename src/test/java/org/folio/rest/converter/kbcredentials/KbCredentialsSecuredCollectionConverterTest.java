@@ -1,28 +1,25 @@
 package org.folio.rest.converter.kbcredentials;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
 import static org.folio.util.KbCredentialsTestUtil.getCredentialsCollection;
 import static org.folio.util.KbCredentialsTestUtil.getCredentialsCollectionNoUrl;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Collection;
-
+import org.folio.repository.kbcredentials.DbKbCredentials;
+import org.folio.rest.jaxrs.model.KbCredentials;
+import org.folio.rest.jaxrs.model.KbCredentialsCollection;
+import org.folio.spring.config.TestConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import org.folio.repository.kbcredentials.DbKbCredentials;
-import org.folio.rest.jaxrs.model.KbCredentials;
-import org.folio.rest.jaxrs.model.KbCredentialsCollection;
-import org.folio.spring.config.TestConfig;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TestConfig.class)

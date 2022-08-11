@@ -14,21 +14,19 @@ import static org.folio.repository.holdings.status.retry.RetryStatusTableConstan
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.updateRetryStatus;
 import static org.folio.util.FutureUtils.mapResult;
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.stereotype.Component;
 
 @Component
 public class RetryStatusRepositoryImpl implements RetryStatusRepository {

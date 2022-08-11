@@ -1,10 +1,8 @@
 package org.folio.repository.kbcredentials;
 
 import java.util.UUID;
-
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
-
 import org.folio.repository.DbMetadata;
 
 @Getter

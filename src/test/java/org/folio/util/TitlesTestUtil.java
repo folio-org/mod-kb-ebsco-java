@@ -2,7 +2,6 @@ package org.folio.util;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.insertQuery;
@@ -15,34 +14,31 @@ import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID_2;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.folio.db.RowSetUtils;
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.titles.DbTitle;
 import org.folio.rest.persist.PostgresClient;
 
-public class TitlesTestUtil {
+public final class TitlesTestUtil {
 
-  private TitlesTestUtil() {}
+  private TitlesTestUtil() { }
 
   public static List<DbTitle> getTitles(Vertx vertx) {
     CompletableFuture<List<DbTitle>> future = new CompletableFuture<>();
     String query = prepareQuery(SqlQueryHelper.selectQuery(), titlesTestTable());
-    PostgresClient.getInstance(vertx, STUB_TENANT).select(query,
-      event -> future.complete(RowSetUtils.mapItems(event.result(), TitlesTestUtil::mapDbTitle))
-    );
+    PostgresClient.getInstance(vertx, STUB_TENANT)
+      .select(query, event -> future.complete(RowSetUtils.mapItems(event.result(), TitlesTestUtil::mapDbTitle)));
     return future.join();
   }
 
@@ -62,11 +58,7 @@ public class TitlesTestUtil {
   }
 
   private static DbTitle buildResource(Long id, UUID credentialsId, String name) {
-    return DbTitle.builder()
-      .id(id)
-      .credentialsId(credentialsId)
-      .name(name)
-      .build();
+    return DbTitle.builder().id(id).credentialsId(credentialsId).name(name).build();
   }
 
   private static DbTitle mapDbTitle(Row row) {
@@ -79,18 +71,13 @@ public class TitlesTestUtil {
 
   public static void mockGetTitles() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID),
-        true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile))));
+    stubFor(get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID),
+      true)).willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
     String stubResponseFile2 = "responses/rmapi/titles/get-title-by-id-2-response.json";
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID_2),
-        true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile2))));
+    stubFor(get(
+      new UrlPathPattern(new RegexPattern("/rm/rmaccounts/TEST_CUSTOMER_ID/titles/" + STUB_MANAGED_TITLE_ID_2),
+        true)).willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile2))));
   }
 
   private static String titlesTestTable() {

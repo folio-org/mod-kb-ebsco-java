@@ -3,14 +3,12 @@ package org.folio.rest.converter.titles;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Titles;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TitleCollectionResultConverter implements Converter<Titles, TitleCollectionResult> {

@@ -3,17 +3,15 @@ package org.folio.rest.converter.assignedusers;
 import static org.folio.rest.jaxrs.model.AssignedUser.Type.ASSIGNED_USERS;
 
 import java.util.UUID;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserDataAttributes;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.service.users.User;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-public class AssignedUserCollectionItemConverter {
+public final class AssignedUserCollectionItemConverter {
 
   private AssignedUserCollectionItemConverter() {
 

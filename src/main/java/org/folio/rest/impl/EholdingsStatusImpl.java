@@ -1,29 +1,24 @@
 package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
-
 import static org.folio.rest.jaxrs.resource.EholdingsStatus.GetEholdingsStatusResponse.respond200WithApplicationVndApiJson;
 import static org.folio.rest.util.ExceptionMappers.error400BadRequestMapper;
 import static org.folio.rest.util.ExceptionMappers.error401NotAuthorizedMapper;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.folio.holdingsiq.model.ConfigurationError;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
@@ -33,6 +28,7 @@ import org.folio.rest.jaxrs.resource.EholdingsStatus;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class EholdingsStatusImpl implements EholdingsStatus {
 
@@ -50,7 +46,7 @@ public class EholdingsStatusImpl implements EholdingsStatus {
   @Override
   @HandleValidationErrors
   public void getEholdingsStatus(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-      Context vertxContext) {
+                                 Context vertxContext) {
     headerValidator.validate(okapiHeaders);
     MutableObject<OkapiData> okapiData = new MutableObject<>();
     CompletableFuture.completedFuture(null)
@@ -66,9 +62,9 @@ public class EholdingsStatusImpl implements EholdingsStatus {
   }
 
   private Consumer<List<ConfigurationError>> verificationErrorsToResponse(
-      Handler<AsyncResult<Response>> asyncResultHandler) {
+    Handler<AsyncResult<Response>> asyncResultHandler) {
     return errors -> asyncResultHandler.handle(succeededFuture(respond200WithApplicationVndApiJson(converter.convert(
-        errors.isEmpty()))));
+      errors.isEmpty()))));
   }
 
   private Function<Throwable, Void> handleStatusException(Handler<AsyncResult<Response>> asyncResultHandler) {

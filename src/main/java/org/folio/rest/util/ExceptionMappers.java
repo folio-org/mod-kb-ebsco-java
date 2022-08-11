@@ -9,19 +9,16 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
-
 import static org.folio.rest.util.ErrorUtil.createError;
-import static org.folio.rest.util.ErrorUtil.createErrorFromRMAPIResponse;
+import static org.folio.rest.util.ErrorUtil.createErrorFromRmApiResponse;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 
 import java.util.function.Function;
-
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
-
-import org.folio.client.uc.UCFailedRequestException;
+import org.folio.client.uc.UcFailedRequestException;
 import org.folio.db.exc.AuthorizationException;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DatabaseException;
@@ -44,7 +41,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 400}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -62,7 +59,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 400}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -80,7 +77,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 400}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -98,7 +95,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 400}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -111,16 +108,16 @@ public final class ExceptionMappers {
   }
 
   /**
-   * {@link UCFailedRequestException} to {@link Response} error mapper
+   * {@link org.folio.client.uc.UcFailedRequestException} to {@link Response} error mapper
    * <pre>
    * Response.status = {@code 400}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
-  public static Function<UCFailedRequestException, Response> error400UCRequestMapper() {
+  public static Function<UcFailedRequestException, Response> error400UcRequestMapper() {
     return exception ->
       Response.status(SC_BAD_REQUEST)
         .header(CONTENT_TYPE, JSON_API_TYPE)
@@ -134,7 +131,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 400}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -152,7 +149,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 400}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -170,7 +167,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 401}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -188,7 +185,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 401}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -206,7 +203,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 401}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -224,7 +221,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 403}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -232,7 +229,7 @@ public final class ExceptionMappers {
     return exception -> Response
       .status(SC_FORBIDDEN)
       .header(CONTENT_TYPE, JSON_API_TYPE)
-      .entity(createErrorFromRMAPIResponse(exception))
+      .entity(createErrorFromRmApiResponse(exception))
       .build();
   }
 
@@ -242,7 +239,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 404}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -260,7 +257,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 409}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -278,7 +275,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 422}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -296,7 +293,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 422}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -314,7 +311,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 422}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -332,7 +329,7 @@ public final class ExceptionMappers {
    * Response.status = {@code ServiceResponseException.code}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */
@@ -340,7 +337,7 @@ public final class ExceptionMappers {
     return exception ->
       Response.status(exception.getCode())
         .header(CONTENT_TYPE, JSON_API_TYPE)
-        .entity(createErrorFromRMAPIResponse(exception))
+        .entity(createErrorFromRmApiResponse(exception))
         .build();
   }
 
@@ -350,7 +347,7 @@ public final class ExceptionMappers {
    * Response.status = {@code 500}
    * Response.entity =  {@link org.folio.rest.jaxrs.model.JsonapiError}
    * Response.header.Content-Type = {@code application/vnd.api+json}
-   * </pre>
+   * </pre>.
    *
    * @return mapper
    */

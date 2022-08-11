@@ -1,29 +1,26 @@
 package org.folio.util;
 
+import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
+import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
+import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 
-import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
-import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
-import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
-
 import java.util.UUID;
-
-import org.junit.Assert;
-
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.util.IdParser;
+import org.junit.Assert;
 
 public final class AssertTestUtil {
 
   private AssertTestUtil() {
   }
 
-  public static void assertEqualsUUID(String string, UUID uuid) {
+  public static void assertEqualsUuid(String string, UUID uuid) {
     assertEquals(string, uuid.toString());
   }
 

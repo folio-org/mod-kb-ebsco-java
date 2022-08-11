@@ -2,11 +2,6 @@ package org.folio.rest.converter.tags;
 
 import java.util.EnumMap;
 import java.util.Map;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.RowSetUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.DbTag;
@@ -16,6 +11,9 @@ import org.folio.rest.jaxrs.model.TagCollectionItem;
 import org.folio.rest.jaxrs.model.TagDataAttributes;
 import org.folio.rest.jaxrs.model.TagRelationship;
 import org.folio.rest.util.RestConstants;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TagConverter implements Converter<DbTag, TagCollectionItem> {
@@ -44,10 +42,10 @@ public class TagConverter implements Converter<DbTag, TagCollectionItem> {
 
   private TagRelationship createRelationships(DbTag source) {
     return new TagRelationship().withRecord(
-            new HasOneRelationship().withData(
-                new RelationshipData()
-                  .withId(source.getRecordId())
-                  .withType(RECORD_TYPES.get(source.getRecordType()))));
+      new HasOneRelationship().withData(
+        new RelationshipData()
+          .withId(source.getRecordId())
+          .withType(RECORD_TYPES.get(source.getRecordType()))));
   }
 
 }

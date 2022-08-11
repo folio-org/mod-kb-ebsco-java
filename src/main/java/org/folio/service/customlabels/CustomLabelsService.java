@@ -2,7 +2,6 @@ package org.folio.service.customlabels;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
 

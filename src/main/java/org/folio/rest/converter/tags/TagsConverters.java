@@ -4,12 +4,6 @@ import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
 import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.repository.tag.DbTag;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.TagCollection;
@@ -19,8 +13,12 @@ import org.folio.rest.jaxrs.model.TagUniqueCollection;
 import org.folio.rest.jaxrs.model.TagUniqueCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
-public class TagsConverters  {
+public final class TagsConverters {
 
   private TagsConverters() {
   }
@@ -44,9 +42,9 @@ public class TagsConverters  {
     @Override
     public TagCollection convert(@NonNull List<DbTag> source) {
       return new TagCollection()
-                  .withData(mapItems(source, tagConverter::convert))
-                  .withJsonapi(RestConstants.JSONAPI)
-                  .withMeta(new MetaTotalResults().withTotalResults(source.size()));
+        .withData(mapItems(source, tagConverter::convert))
+        .withJsonapi(RestConstants.JSONAPI)
+        .withMeta(new MetaTotalResults().withTotalResults(source.size()));
     }
 
   }
@@ -67,7 +65,7 @@ public class TagsConverters  {
   public static class ToUniqueTagCollection implements Converter<List<String>, TagUniqueCollection> {
 
     @Autowired
-    private Converter<String,TagUniqueCollectionItem> tagConverter;
+    private Converter<String, TagUniqueCollectionItem> tagConverter;
 
     @Override
     public TagUniqueCollection convert(@NonNull List<String> source) {

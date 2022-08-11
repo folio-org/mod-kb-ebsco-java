@@ -6,14 +6,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-
 import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-
 import org.folio.rest.exception.InputValidationException;
 
-public class ValidatorUtil {
+public final class ValidatorUtil {
 
   private static final String INVALID_FIELD_FORMAT = "Invalid %s";
   private static final String MUST_BE_FALSE_FORMAT = "%s must be false";

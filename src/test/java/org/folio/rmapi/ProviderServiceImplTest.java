@@ -2,26 +2,21 @@ package org.folio.rmapi;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
-
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGet;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPattern;
-
 import io.vertx.core.Vertx;
-
-import org.junit.Rule;
-import org.junit.Test;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class ProviderServiceImplTest {
   protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
@@ -36,7 +31,8 @@ public class ProviderServiceImplTest {
 
   @Test
   public void shouldReturnCachedProviderOnSecondRequest() throws IOException, URISyntaxException {
-    RegexPattern getVendorPattern = new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID);
+    RegexPattern getVendorPattern =
+      new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID);
 
     Configuration configuration = Configuration.builder()
       .url("http://127.0.0.1:" + userMockServer.port())

@@ -8,9 +8,7 @@ import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.folio.holdingsiq.model.Configuration;
-
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Getter
@@ -26,7 +24,7 @@ public class LoadFailedMessage {
   private Integer totalCount;
   private Integer totalPages;
 
-  public LoadFailedMessage() {}
+  public LoadFailedMessage() { }
 
   public LoadFailedMessage(JsonObject jsonObject) {
     LoadFailedMessage message = jsonObject.mapTo(LoadFailedMessage.class);
@@ -39,7 +37,7 @@ public class LoadFailedMessage {
     this.configuration = message.getConfiguration();
   }
 
-  public JsonObject toJson(){
+  public JsonObject toJson() {
     return mapFrom(this);
   }
 }

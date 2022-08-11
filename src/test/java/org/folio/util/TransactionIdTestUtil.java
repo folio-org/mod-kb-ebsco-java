@@ -7,11 +7,9 @@ import static org.folio.repository.holdings.transaction.TransactionIdTableConsta
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Tuple;
-
+import java.util.concurrent.CompletableFuture;
 import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 

@@ -4,11 +4,8 @@ import static org.folio.common.ListUtils.mapItems;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.validation.ValidationException;
-
 import org.apache.commons.lang3.StringUtils;
-
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
@@ -62,12 +59,12 @@ public final class IdParser {
     return mapItems(resourceIds, IdParser::resourceIdToString);
   }
 
-  public static String getResourceId(CustomerResources resource) {
-    return concat(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
-  }
-
   public static List<String> dbResourcesToIdStrings(List<DbResource> resources) {
     return mapItems(resources, dbResource -> resourceIdToString(dbResource.getId()));
+  }
+
+  public static String getResourceId(CustomerResources resource) {
+    return concat(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
   }
 
   public static String getResourceId(HoldingsId holding) {
@@ -86,20 +83,20 @@ public final class IdParser {
     return mapItems(packageIds, DbPackage::getId);
   }
 
-  public static List<ResourceId> getTitleIds(List<DbResource> resources) {
-    return mapItems(resources, DbResource::getId);
-  }
-
-  public static List<ResourceId> getResourceIds(List<DbHoldingInfo> holdings) {
-    return mapItems(holdings, IdParser::getResourceId);
-  }
-
   public static List<PackageId> getPackageIds(Packages packages) {
     return mapItems(packages.getPackagesList(), packageData ->
       PackageId.builder()
         .packageIdPart(packageData.getPackageId())
         .providerIdPart(packageData.getVendorId())
         .build());
+  }
+
+  public static List<ResourceId> getTitleIds(List<DbResource> resources) {
+    return mapItems(resources, DbResource::getId);
+  }
+
+  public static List<ResourceId> getResourceIds(List<DbHoldingInfo> holdings) {
+    return mapItems(holdings, IdParser::getResourceId);
   }
 
   private static String concat(long... parts) {

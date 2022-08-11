@@ -2,10 +2,7 @@ package org.folio.rest.validator;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
@@ -15,6 +12,7 @@ import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePostIncluded;
 import org.folio.rest.jaxrs.model.TitlePostIncludedPackageId;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
+import org.junit.Test;
 
 public class TitlePostBodyValidatorTest {
 
@@ -49,7 +47,7 @@ public class TitlePostBodyValidatorTest {
       + ". Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis s"
       + "ed, nonummy id, metus. Nullam accumsan lorem in dui. Cras ultricies mi";
   private static final String TITLE_TEST_NAME = "Title Test Name";
-  private TitlesPostBodyValidator validator = new TitlesPostBodyValidator(
+  private final TitlesPostBodyValidator validator = new TitlesPostBodyValidator(
     new TitleCommonRequestAttributesValidator(),
     new CustomLabelsProperties(50, 100)
   );
@@ -102,6 +100,7 @@ public class TitlePostBodyValidatorTest {
 
     validator.validate(titlePostRequest);
   }
+
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionIfTitleNameIsNull() {
     TitlePostRequest titlePostRequest = new TitlePostRequest();
@@ -112,6 +111,7 @@ public class TitlePostBodyValidatorTest {
 
     validator.validate(titlePostRequest);
   }
+
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionIfTitleNameIsEmpty() {
     TitlePostRequest titlePostRequest = new TitlePostRequest();
@@ -171,7 +171,7 @@ public class TitlePostBodyValidatorTest {
   }
 
   @Test
-  public void shouldNotThrowExceptionIfTitleDescriptionIsEmpty(){
+  public void shouldNotThrowExceptionIfTitleDescriptionIsEmpty() {
     TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
       .withName(TITLE_TEST_NAME)
       .withPublicationType(PublicationType.BOOK)
@@ -181,7 +181,7 @@ public class TitlePostBodyValidatorTest {
   }
 
   @Test
-  public void shouldNotThrowExceptionIfTitleDescriptionIsNull(){
+  public void shouldNotThrowExceptionIfTitleDescriptionIsNull() {
     TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
       .withName(TITLE_TEST_NAME)
       .withPublicationType(PublicationType.BOOK)
@@ -189,8 +189,9 @@ public class TitlePostBodyValidatorTest {
 
     validator.validate(titlePostRequest);
   }
+
   @Test
-  public void shouldNotThrowExceptionIfTitleEditionIsEmpty(){
+  public void shouldNotThrowExceptionIfTitleEditionIsEmpty() {
     TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
       .withName(TITLE_TEST_NAME)
       .withPublicationType(PublicationType.BOOK)
@@ -200,7 +201,7 @@ public class TitlePostBodyValidatorTest {
   }
 
   @Test
-  public void shouldNotThrowExceptionIfTitleEditionIsNull(){
+  public void shouldNotThrowExceptionIfTitleEditionIsNull() {
     TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
       .withName(TITLE_TEST_NAME)
       .withPublicationType(PublicationType.BOOK)
@@ -210,7 +211,7 @@ public class TitlePostBodyValidatorTest {
   }
 
   @Test
-  public void shouldNotThrowExceptionIfTitlePublisherNameIsNull(){
+  public void shouldNotThrowExceptionIfTitlePublisherNameIsNull() {
     TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
       .withName(TITLE_TEST_NAME)
       .withPublicationType(PublicationType.BOOK)
@@ -220,7 +221,7 @@ public class TitlePostBodyValidatorTest {
   }
 
   @Test
-  public void shouldNotThrowExceptionIfTitlePublisherNameIsEmpty(){
+  public void shouldNotThrowExceptionIfTitlePublisherNameIsEmpty() {
     TitlePostRequest titlePostRequest = createRequest(new TitlePostDataAttributes()
       .withName(TITLE_TEST_NAME)
       .withPublicationType(PublicationType.BOOK)

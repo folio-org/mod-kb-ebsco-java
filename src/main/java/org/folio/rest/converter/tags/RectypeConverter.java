@@ -2,13 +2,10 @@ package org.folio.rest.converter.tags;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
-import org.folio.rest.util.RestConstants;
-
 
 @Component
 public class RectypeConverter implements Converter<String, org.folio.repository.RecordType> {

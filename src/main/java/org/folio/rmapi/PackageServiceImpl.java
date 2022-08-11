@@ -1,9 +1,9 @@
 package org.folio.rmapi;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-
 import static org.folio.util.FutureUtils.allOfSucceeded;
 
+import io.vertx.core.Vertx;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,13 +15,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.validation.ValidationException;
-
-import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -46,15 +42,16 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
   private static final Logger LOG = LogManager.getLogger(PackageServiceImpl.class);
 
-  private ProvidersServiceImpl providerService;
-  private TitlesHoldingsIQService titlesService;
-  private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
-  private SearchProperties searchProperties;
-  private Configuration configuration;
-  private String tenantId;
+  private final ProvidersServiceImpl providerService;
+  private final TitlesHoldingsIQService titlesService;
+  private final VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private final SearchProperties searchProperties;
+  private final Configuration configuration;
+  private final String tenantId;
 
   public PackageServiceImpl(Configuration config, Vertx vertx, String tenantId, ProvidersServiceImpl providerService,
-                            TitlesHoldingsIQService titlesService, VertxCache<PackageCacheKey, PackageByIdData> packageCache,
+                            TitlesHoldingsIQService titlesService,
+                            VertxCache<PackageCacheKey, PackageByIdData> packageCache,
                             SearchProperties searchProperties) {
     super(config, vertx);
     this.providerService = providerService;
@@ -69,17 +66,19 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     return retrievePackage(packageId, includedObjects, false);
   }
 
-  public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects, boolean useCache) {
+  public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects,
+                                                          boolean useCache) {
     CompletableFuture<PackageByIdData> packageFuture;
-    if(useCache){
+    if (useCache) {
       packageFuture = retrievePackageWithCache(packageId);
-    }else{
+    } else {
       packageFuture = retrievePackage(packageId);
     }
 
     CompletableFuture<Titles> titlesFuture;
     if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
-      titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(), FilterQuery.builder().build(), searchProperties.getTitlesSearchType(), Sort.NAME, 1, 25);
+      titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
+        FilterQuery.builder().build(), searchProperties.getTitlesSearchType(), Sort.NAME, 1, 25);
     } else {
       titlesFuture = completedFuture(null);
     }
@@ -166,9 +165,11 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
   private interface Result<R, F> {
 
     boolean successful();
+
     boolean failed();
 
     R getResult();
+
     F getFailure();
 
     default Result<R, F> accept(Consumer<? super R> consumer) {
@@ -188,7 +189,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private static class Success<R, F> implements Result<R, F> {
 
-    private R result;
+    private final R result;
 
     Success(R result) {
       this.result = result;
@@ -217,7 +218,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private static class Failure<R, F> implements Result<R, F> {
 
-    private F failure;
+    private final F failure;
 
     Failure(F failure) {
       this.failure = failure;

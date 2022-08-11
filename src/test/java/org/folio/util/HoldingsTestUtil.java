@@ -4,7 +4,6 @@ import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.DbUtil.prepareQuery;
-import static org.folio.repository.holdings.HoldingsTableConstants.insertOrUpdateHoldings;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
@@ -12,19 +11,18 @@ import static org.folio.repository.holdings.HoldingsTableConstants.PUBLISHER_NAM
 import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
+import static org.folio.repository.holdings.HoldingsTableConstants.insertOrUpdateHoldings;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readJsonFile;
 
+import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Tuple;
-
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.persist.PostgresClient;

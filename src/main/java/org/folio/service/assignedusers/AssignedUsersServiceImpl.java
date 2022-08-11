@@ -3,6 +3,7 @@ package org.folio.service.assignedusers;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.TenantUtil.tenantId;
 
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -14,12 +15,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
-
-import com.google.common.collect.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.common.OkapiParams;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
@@ -30,6 +25,9 @@ import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AssignedUsersServiceImpl implements AssignedUsersService {
@@ -65,16 +63,10 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
         .thenApply(usersResult -> userCollectionConverter.convert(usersResult)));
   }
 
-  private List<User> sortByLastName(List<User> users) {
-    users.sort(Comparator.comparing(User::getLastName));
-    return users;
-  }
-
   @Override
   public CompletableFuture<AssignedUserId> save(AssignedUserId assignedUserId, Map<String, String> okapiHeaders) {
     return usersLookUpService.lookUpUserById(assignedUserId.getId(), new OkapiParams(okapiHeaders))
-      .exceptionally(throwable ->
-        {
+      .exceptionally(throwable -> {
           if (throwable instanceof NotFoundException) {
             throw new InputValidationException("Unable to assign user", "User doesn't exist");
           }
@@ -90,8 +82,13 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
     return assignedUserRepository.delete(toUUID(credentialsId), toUUID(userId), tenantId(okapiHeaders));
   }
 
+  private List<User> sortByLastName(List<User> users) {
+    users.sort(Comparator.comparing(User::getLastName));
+    return users;
+  }
+
   private <T> CompletableFuture<List<T>> loadInBatches(List<UUID> ids,
-                                                             Function<List<UUID>, CompletableFuture<List<T>>> loadFunction) {
+                                                       Function<List<UUID>, CompletableFuture<List<T>>> loadFunction) {
     @SuppressWarnings("unchecked")
     CompletableFuture<Collection<T>>[] batchFutures = Lists.partition(ids, 50).stream()
       .map(loadFunction)

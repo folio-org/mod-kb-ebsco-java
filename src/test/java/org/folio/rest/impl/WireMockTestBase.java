@@ -1,11 +1,24 @@
 package org.folio.rest.impl;
 
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.hamcrest.Matchers.notNullValue;
+
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.TestContext;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
 import org.folio.cache.VertxCache;
@@ -26,37 +39,25 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.*;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.hamcrest.Matchers.notNullValue;
-
 /**
  * Base test class for tests that use wiremock and vertx http servers,
- * test that inherits this class must use VertxUnitRunner as test runner
+ * test that inherits this class must use VertxUnitRunner as test runner.
  */
 public abstract class WireMockTestBase extends TestBase {
-
-  protected static final Header CONTENT_TYPE_HEADER = new Header(HTTP.CONTENT_TYPE, JSON_API_TYPE);
-  protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
-  protected static final String STUB_API_KEY = "TEST_API_KEY";
-  protected static final String STUB_CREDENTIALS_ID = "12312312-1231-1231-a111-111111111111";
 
   public static final String JOHN_ID = "47d9ca93-9c82-4d6a-8d7f-7a73963086b9";
   public static final String JOHN_GROUP_ID = "b4b5e97a-0a99-4db9-97df-4fdf406ec74d";
   public static final String JOHN_USERNAME = "john_doe";
   public static final Header JOHN_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JOHN_USERNAME, JOHN_ID);
-
   public static final String JANE_ID = "781fce7d-5cf5-490d-ad89-a3d192eb526c";
   public static final String JANE_GROUP_ID = "4bb563d9-3f9d-4e1e-8d1d-04e75666d68f";
   public static final String JANE_USERNAME = "jane_doe";
   public static final Header JANE_TOKEN_HEADER = TokenTestUtil.createTokenHeader(JANE_USERNAME, JANE_ID);
+
+  protected static final Header CONTENT_TYPE_HEADER = new Header(HTTP.CONTENT_TYPE, JSON_API_TYPE);
+  protected static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
+  protected static final String STUB_API_KEY = "TEST_API_KEY";
+  protected static final String STUB_CREDENTIALS_ID = "12312312-1231-1231-a111-111111111111";
 
   @Autowired
   @Qualifier("rmApiConfigurationCache")

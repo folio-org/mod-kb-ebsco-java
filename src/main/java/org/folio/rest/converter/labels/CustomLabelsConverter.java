@@ -1,13 +1,11 @@
 package org.folio.rest.converter.labels;
 
+import org.folio.rest.jaxrs.model.CustomLabel;
+import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import org.folio.rest.jaxrs.model.CustomLabel;
-import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
-
-
-public class CustomLabelsConverter {
+public final class CustomLabelsConverter {
 
   private CustomLabelsConverter() {
 

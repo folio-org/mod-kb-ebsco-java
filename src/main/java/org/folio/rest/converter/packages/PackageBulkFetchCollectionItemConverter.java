@@ -1,15 +1,14 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.rest.converter.common.ConverterConsts.contentTypes;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
+import static org.folio.rest.converter.common.ConverterConsts.CONTENT_TYPES;
 
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageBulkFetchCollectionItem;
 import org.folio.rest.jaxrs.model.PackageBulkFetchDataAttributes;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackageBulkFetchCollectionItemConverter implements Converter<PackageData, PackageBulkFetchCollectionItem> {
@@ -24,7 +23,7 @@ public class PackageBulkFetchCollectionItemConverter implements Converter<Packag
       .withId(providerId + "-" + packageId)
       .withType(PackageBulkFetchCollectionItem.Type.PACKAGES)
       .withAttributes(new PackageBulkFetchDataAttributes()
-        .withContentType(contentTypes.get(packageData.getContentType().toLowerCase()))
+        .withContentType(CONTENT_TYPES.get(packageData.getContentType().toLowerCase()))
         .withCustomCoverage(
           new Coverage()
             .withBeginCoverage(packageData.getCustomCoverage().getBeginCoverage())

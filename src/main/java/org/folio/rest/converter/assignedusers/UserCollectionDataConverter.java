@@ -1,26 +1,23 @@
 package org.folio.rest.converter.assignedusers;
 
-
-
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
-
 import lombok.Value;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
-public class UserCollectionDataConverter implements Converter<UserCollectionDataConverter.UsersResult, AssignedUserCollection> {
+public class UserCollectionDataConverter
+  implements Converter<UserCollectionDataConverter.UsersResult, AssignedUserCollection> {
 
   @Autowired
   private Converter<User, AssignedUser> itemConverter;

@@ -1,18 +1,18 @@
 package org.folio.util;
 
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.repository.assigneduser.AssignedUsersConstants.*;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
+import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import org.springframework.core.convert.converter.Converter;
-
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.folio.db.DbUtils;
 import org.folio.db.RowSetUtils;
 import org.folio.repository.DbUtil;
@@ -21,6 +21,7 @@ import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.AssignedUserCollectionItemConverter;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.core.convert.converter.Converter;
 
 public class AssignedUsersTestUtil {
 

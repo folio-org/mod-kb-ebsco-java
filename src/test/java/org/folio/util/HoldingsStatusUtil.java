@@ -1,28 +1,25 @@
 package org.folio.util;
 
 import static java.util.UUID.randomUUID;
-
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.toJsonObject;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatusById;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.HOLDINGS_STATUS_TABLE;
-import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.insertLoadingStatus;
 import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.JSONB_COLUMN;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.getHoldingsStatusById;
+import static org.folio.repository.holdings.status.HoldingsStatusTableConstants.insertLoadingStatus;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.CompletableFuture;
 import org.folio.repository.DbUtil;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
@@ -60,7 +57,8 @@ public class HoldingsStatusUtil {
   }
 
   private static HoldingsLoadingStatus mapStatus(RowSet<Row> rowSet) {
-    return mapFirstItem(rowSet, row -> Json.decodeValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class));
+    return mapFirstItem(rowSet,
+      row -> Json.decodeValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class));
   }
 
   private static String holdingsStatusTestTable() {

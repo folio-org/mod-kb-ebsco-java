@@ -1,7 +1,6 @@
 package org.folio.service.loader;
 
 import static java.util.Collections.emptyList;
-
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.IdParser.dbResourcesToIdStrings;
 import static org.folio.rest.util.IdParser.getPackageIds;
@@ -16,11 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
@@ -43,7 +38,7 @@ import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.IdParser;
-import org.folio.rest.util.template.RMAPITemplateContext;
+import org.folio.rest.util.template.RmApiTemplateContext;
 import org.folio.rmapi.PackageServiceImpl;
 import org.folio.rmapi.ProvidersServiceImpl;
 import org.folio.rmapi.TitlesServiceImpl;
@@ -52,6 +47,8 @@ import org.folio.rmapi.result.ResourceCollectionResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.holdings.HoldingsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
@@ -75,7 +72,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<Packages> fetchPackagesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
-                                                                     RMAPITemplateContext context) {
+                                                                     RmApiTemplateContext context) {
     AtomicInteger totalCount = new AtomicInteger();
     PackageServiceImpl packagesService = context.getPackagesService();
     return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
@@ -86,7 +83,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<ResourceCollectionResult> fetchResourcesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
-                                                                                      RMAPITemplateContext context) {
+                                                                                      RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     AtomicInteger totalCount = new AtomicInteger();
     return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
@@ -101,7 +98,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<Titles> fetchTitlesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
-                                                                 RMAPITemplateContext context) {
+                                                                 RmApiTemplateContext context) {
     AtomicInteger totalCount = new AtomicInteger();
     TitlesServiceImpl titlesService = context.getTitlesService();
     return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
@@ -120,7 +117,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   }
 
   @Override
-  public CompletableFuture<Vendors> fetchProvidersByTagFilter(TagFilter tagFilter, RMAPITemplateContext context) {
+  public CompletableFuture<Vendors> fetchProvidersByTagFilter(TagFilter tagFilter, RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     ProvidersServiceImpl providersService = context.getProvidersService();
@@ -134,7 +131,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<PackageCollectionResult> fetchPackagesByTagFilter(TagFilter tagFilter,
-                                                                             RMAPITemplateContext context) {
+                                                                             RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     PackageServiceImpl packagesService = context.getPackagesService();
@@ -149,7 +146,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<ResourceCollectionResult> fetchResourcesByTagFilter(TagFilter tagFilter,
-                                                                               RMAPITemplateContext context) {
+                                                                               RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
 
@@ -168,7 +165,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   }
 
   @Override
-  public CompletableFuture<Titles> fetchTitlesByTagFilter(TagFilter tagFilter, RMAPITemplateContext context) {
+  public CompletableFuture<Titles> fetchTitlesByTagFilter(TagFilter tagFilter, RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
 
@@ -203,7 +200,8 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   private ResourceCollectionResult toResourceCollectionResult(Titles titles, List<DbResource> resourcesResult,
                                                               List<DbHoldingInfo> dbHoldings, Integer resourceCount) {
-    return new ResourceCollectionResult(titles.toBuilder().totalResults(resourceCount).build(), resourcesResult, dbHoldings);
+    return new ResourceCollectionResult(titles.toBuilder().totalResults(resourceCount).build(), resourcesResult,
+      dbHoldings);
   }
 
   private PackageCollectionResult toPackageCollectionResult(Packages packages, List<DbPackage> dbPackages,
@@ -213,11 +211,12 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   private List<ResourceId> getMissingResourceIds(List<DbHoldingInfo> holdings, List<ResourceId> resourceIds) {
     List<ResourceId> holdingsIds = getResourceIds(holdings);
-    return org.apache.commons.collections4.ListUtils.select(resourceIds, resourceId -> !holdingsIds.contains(resourceId));
+    return org.apache.commons.collections4.ListUtils.select(resourceIds,
+      resourceId -> !holdingsIds.contains(resourceId));
   }
 
   private CompletableFuture<Collection<AccessTypeMapping>> fetchAccessTypeMappings(AccessTypeFilter accessTypeFilter,
-                                                                                   RMAPITemplateContext context,
+                                                                                   RmApiTemplateContext context,
                                                                                    AtomicInteger totalCount) {
     Map<String, String> okapiHeaders = context.getOkapiData().getHeaders();
     String credentialsId = context.getCredentialsId();
@@ -225,7 +224,8 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     String recordIdPrefix = createRecordIdPrefix(accessTypeFilter);
     return accessTypesService.findByNames(accessTypeFilter.getAccessTypeNames(), credentialsId, okapiHeaders)
       .thenApply(this::extractAccessTypeIds)
-      .thenCombine(accessTypeMappingsService.countByRecordPrefix(recordIdPrefix, recordType, credentialsId, okapiHeaders),
+      .thenCombine(
+        accessTypeMappingsService.countByRecordPrefix(recordIdPrefix, recordType, credentialsId, okapiHeaders),
         (accessTypeIds, mappingCount) -> {
           accessTypeFilter.setAccessTypeIds(accessTypeIds);
           accessTypeFilter.setRecordIdPrefix(recordIdPrefix);

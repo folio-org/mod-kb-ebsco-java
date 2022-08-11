@@ -1,13 +1,12 @@
 package org.folio.rest.converter.providers;
 
+import org.folio.holdingsiq.model.VendorById;
+import org.folio.rest.jaxrs.model.Provider;
+import org.folio.rmapi.result.VendorResult;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-
-import org.folio.holdingsiq.model.VendorById;
-import org.folio.rest.jaxrs.model.Provider;
-import org.folio.rmapi.result.VendorResult;
 
 @Component
 public class ProviderByIdConverter implements Converter<VendorById, Provider> {

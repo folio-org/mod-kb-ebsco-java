@@ -3,12 +3,12 @@ package org.folio.service.kbcredentials;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
-
 import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
 
+import io.vertx.core.Context;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Map;
@@ -16,11 +16,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
-import io.vertx.core.Context;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
-
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
@@ -40,6 +35,8 @@ import org.folio.rest.validator.kbcredentials.KbCredentialsPutBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.util.UserInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.ConversionService;
 
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
@@ -59,7 +56,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private ConfigurationService configurationService;
   @Autowired
   private Context context;
-
 
   public KbCredentialsServiceImpl(UserKbCredentialsService userKbCredentialsService,
                                   ConversionService conversionService) {
@@ -95,8 +91,9 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     postBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
     return prepareAndSave(completedFuture(convertToDb(kbCredentials)), this::prepareSaveEntity, okapiHeaders)
-      .thenCompose(credentials -> holdingsService.setUpCredentials(fromUUID(credentials.getId()), tenantId(okapiHeaders))
-        .thenApply(unused -> convertToCredentials(credentials))
+      .thenCompose(
+        credentials -> holdingsService.setUpCredentials(fromUUID(credentials.getId()), tenantId(okapiHeaders))
+          .thenApply(unused -> convertToCredentials(credentials))
       );
   }
 
@@ -136,7 +133,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .build();
   }
 
-  private DbKbCredentials prepareUpdateEntity(DbKbCredentials existingCredentials, KbCredentialsDataAttributes attributes,
+  private DbKbCredentials prepareUpdateEntity(DbKbCredentials existingCredentials,
+                                              KbCredentialsDataAttributes attributes,
                                               UserInfo userInfo) {
     return setUpdateMeta(existingCredentials.toBuilder()
       .name(attributes.getName())
@@ -146,17 +144,19 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .build();
   }
 
-  private DbKbCredentials.DbKbCredentialsBuilder<?, ?> setUpdateMeta(DbKbCredentials.DbKbCredentialsBuilder<?, ?> builder,
-                                                                     UserInfo userInfo) {
+  private DbKbCredentials.DbKbCredentialsBuilder<?, ?> setUpdateMeta(
+    DbKbCredentials.DbKbCredentialsBuilder<?, ?> builder,
+    UserInfo userInfo) {
     return builder
       .updatedDate(OffsetDateTime.now())
       .updatedByUserId(toUUID(userInfo.getUserId()))
       .updatedByUserName(userInfo.getUserName());
   }
 
-  private CompletableFuture<DbKbCredentials> prepareAndSave(CompletableFuture<DbKbCredentials> credentialsFuture,
-                                                            BiFunction<DbKbCredentials, UserInfo, DbKbCredentials> prepareEntityFn,
-                                                            Map<String, String> okapiHeaders) {
+  private CompletableFuture<DbKbCredentials> prepareAndSave(
+    CompletableFuture<DbKbCredentials> credentialsFuture,
+    BiFunction<DbKbCredentials, UserInfo, DbKbCredentials> prepareEntityFn,
+    Map<String, String> okapiHeaders) {
     return credentialsFuture
       .thenCombine(fetchUserInfo(okapiHeaders), prepareEntityFn)
       .thenCompose(dbKbCredentials -> verifyAndSave(dbKbCredentials, okapiHeaders));
@@ -196,7 +196,6 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private Function<Optional<DbKbCredentials>, DbKbCredentials> getCredentialsOrFail(String id) {
     return credentials -> credentials.orElseThrow(() -> ServiceExceptions.notFound(KbCredentials.class, id));
   }
-
 
   private KbCredentialsCollection convertToCollection(Collection<DbKbCredentials> dbKbCredentials) {
     return requireNonNull(conversionService.convert(dbKbCredentials, KbCredentialsCollection.class));

@@ -1,16 +1,8 @@
 package org.folio.rest.impl;
 
 import java.util.Collections;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
 import org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest;
 import org.folio.rest.impl.integrationsuite.DefaultLoadServiceFacadeTest;
-import org.folio.rest.impl.integrationsuite.EHoldingsProxyTypesImplTest;
-import org.folio.rest.impl.integrationsuite.EHoldingsRootProxyImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsAccessTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsAssignedUsersImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsCostperuseImplTest;
@@ -19,7 +11,9 @@ import org.folio.rest.impl.integrationsuite.EholdingsCustomLabelsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsKbCredentialsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsPackagesTest;
 import org.folio.rest.impl.integrationsuite.EholdingsProvidersImplTest;
+import org.folio.rest.impl.integrationsuite.EholdingsProxyTypesImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsResourcesImplTest;
+import org.folio.rest.impl.integrationsuite.EholdingsRootProxyImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsStatusTest;
 import org.folio.rest.impl.integrationsuite.EholdingsTagsImplTest;
 import org.folio.rest.impl.integrationsuite.EholdingsTitlesTest;
@@ -28,13 +22,17 @@ import org.folio.rest.impl.integrationsuite.LoadHoldingsStatusImplTest;
 import org.folio.rest.impl.integrationsuite.TransactionLoadServiceFacadeTest;
 import org.folio.rest.impl.integrationsuite.UsageConsolidationCredentialsApiTest;
 import org.folio.test.util.TestSetUpHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 @Suite.SuiteClasses({
   EholdingsPackagesTest.class,
   EholdingsProvidersImplTest.class,
-  EHoldingsProxyTypesImplTest.class,
+  EholdingsProxyTypesImplTest.class,
   EholdingsResourcesImplTest.class,
-  EHoldingsRootProxyImplTest.class,
+  EholdingsRootProxyImplTest.class,
   EholdingsCustomLabelsImplTest.class,
   EholdingsStatusTest.class,
   EholdingsTitlesTest.class,
@@ -56,7 +54,8 @@ public class IntegrationTestSuite {
 
   @BeforeClass
   public static void setUpClass() {
-    TestSetUpHelper.startVertxAndPostgres(Collections.singletonMap("spring.configuration", "org.folio.spring.config.TestConfig"));
+    TestSetUpHelper.startVertxAndPostgres(
+      Collections.singletonMap("spring.configuration", "org.folio.spring.config.TestConfig"));
   }
 
   @AfterClass

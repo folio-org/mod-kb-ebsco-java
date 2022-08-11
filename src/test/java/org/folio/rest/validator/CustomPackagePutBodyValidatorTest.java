@@ -2,22 +2,21 @@ package org.folio.rest.validator;
 
 import static org.hamcrest.Matchers.containsString;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class CustomPackagePutBodyValidatorTest {
 
-  private CustomPackagePutBodyValidator validator = new CustomPackagePutBodyValidator();
-
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
+
+  private final CustomPackagePutBodyValidator validator = new CustomPackagePutBodyValidator();
 
   @Test
   public void shouldThrowExceptionOnInvalidCoverageDate() {

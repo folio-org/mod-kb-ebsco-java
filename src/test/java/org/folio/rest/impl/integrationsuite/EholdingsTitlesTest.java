@@ -16,20 +16,6 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.everyItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
@@ -62,20 +48,27 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertEqualsLong;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
-import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.KbTestUtil.getDefaultKbConfiguration;
+import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
 import static org.folio.util.ResourcesTestUtil.buildResource;
 import static org.folio.util.ResourcesTestUtil.saveResource;
 import static org.folio.util.TagsTestUtil.saveTag;
 import static org.folio.util.TitlesTestUtil.mockGetTitles;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -87,13 +80,11 @@ import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.json.JSONException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.folio.repository.RecordType;
 import org.folio.repository.titles.DbTitle;
 import org.folio.rest.impl.WireMockTestBase;
@@ -109,6 +100,12 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.util.TagsTestUtil;
 import org.folio.util.TitlesTestUtil;
+import org.json.JSONException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
@@ -117,10 +114,11 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   private KbCredentials configuration;
 
-  @Override @Before
+  @Override
+  @Before
   public void setUp() throws Exception {
     super.setUp();
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
+    setupDefaultKbConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
   }
 
@@ -160,7 +158,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name&include=resources";
     String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
-    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles-with-resources.json"), actualResponse, true);
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles-with-resources.json"), actualResponse,
+      true);
   }
 
   @Test
@@ -181,7 +180,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID_2, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
-    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
+    String resourcePath =
+      EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
     String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, true);
   }
@@ -206,9 +206,12 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID_2, RecordType.RESOURCE, STUB_TAG_VALUE_2);
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID_3, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
-    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE+ "&filter[tags]=" + STUB_TAG_VALUE_2+"&include=resources";
+    String resourcePath =
+      EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2
+        + "&include=resources";
     String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
-    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles-with-resources.json"), actualResponse, true);
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles-with-resources.json"),
+      actualResponse, true);
   }
 
   @Test
@@ -262,7 +265,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     mockGetTitles();
 
-    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&include=resources";
+    String resourcePath =
+      EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&include=resources";
     TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
     List<TitleCollectionItem> titles = titleCollection.getData();
 
@@ -318,7 +322,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn500WhenRMApiReturns500Error() {
+  public void shouldReturn500WhenRmApiReturns500Error() {
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
@@ -355,7 +359,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404WhenRMAPINotFoundOnTitleGet() throws IOException, URISyntaxException {
+  public void shouldReturn404WhenRmApiNotFoundOnTitleGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/titles/get-title-by-id-not-found-response.json";
 
     stubFor(
@@ -379,7 +383,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn500WhenRMApiReturns500ErrorOnTitleGet() {
+  public void shouldReturn500WhenRmApiReturns500ErrorOnTitleGet() {
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
@@ -393,7 +397,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWithSortedResourcesWhenIncludeResources() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnTitleWithSortedResourcesWhenIncludeResources()
+    throws IOException, URISyntaxException, JSONException {
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response-with-resources.json";
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
@@ -407,7 +412,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWithResourcesWhenIncludeResourcesWithTags() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnTitleWithResourcesWhenIncludeResourcesWithTags()
+    throws IOException, URISyntaxException, JSONException {
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID, RecordType.RESOURCE, STUB_TAG_VALUE);
 
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
@@ -423,7 +429,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnTitleWithoutResourcesWhenInvalidInclude() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnTitleWithoutResourcesWhenInvalidInclude()
+    throws IOException, URISyntaxException, JSONException {
     String rmapiResponseFile = "responses/rmapi/titles/get-title-by-id-response.json";
     String rmapiUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*";
 
@@ -448,9 +455,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldUpdateTagsWhenValidPostRequest() throws IOException, URISyntaxException {
     List<String> tagList = Arrays.asList(STUB_TAG_VALUE, STUB_TAG_VALUE_2);
     Title actual = postTitle(tagList).as(Title.class);
-    List<String> tagsFromDB = TagsTestUtil.getTags(vertx);
+    List<String> tagsFromDb = TagsTestUtil.getTags(vertx);
     assertThat(actual.getData().getAttributes().getTags().getTagList(), containsInAnyOrder(tagList.toArray()));
-    assertThat(tagsFromDB, containsInAnyOrder(tagList.toArray()));
+    assertThat(tagsFromDb, containsInAnyOrder(tagList.toArray()));
   }
 
   @Test
@@ -467,7 +474,13 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String errorResponse = "responses/rmapi/packages/post-package-400-error-response.json";
     String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}",
+      "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : "
+        + "\"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : "
+        + "\"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" "
+        + ": true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" "
+        + ": 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n  "
+        + "  \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    "
+        + "\"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}",
       true, true);
 
     stubFor(
@@ -486,7 +499,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUpdatedValuesForCustomTitleOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnUpdatedValuesForCustomTitleOnSuccessfulPut()
+    throws IOException, URISyntaxException, JSONException {
     String expectedTitleFile = "responses/kb-ebsco/titles/expected-updated-title.json";
     String actualResponse = putTitle(null);
 
@@ -612,7 +626,14 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
 
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : \"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n} \"userDefinedField2\": \"test 2\",\n\"userDefinedField3\": \"\",\n\"userDefinedField4\" : null,\n\"userDefinedField5\": \"test 5\"",
+      "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" :"
+        + " \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : "
+        + "\"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : "
+        + "true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n "
+        + "   \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    "
+        + "\"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" :"
+        + " \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n} \"userDefinedField2\": \"test 2\","
+        + "\n\"userDefinedField3\": \"\",\n\"userDefinedField4\" : null,\n\"userDefinedField5\": \"test 5\"",
       true, true);
 
     stubFor(

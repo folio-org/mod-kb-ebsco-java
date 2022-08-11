@@ -12,15 +12,6 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.PROVIDER;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
@@ -63,18 +54,21 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
-import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.KbTestUtil.getDefaultKbConfiguration;
+import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
 import static org.folio.util.PackagesTestUtil.setUpPackage;
 import static org.folio.util.ProvidersTestUtil.buildDbProvider;
 import static org.folio.util.TagsTestUtil.saveTag;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -85,14 +79,11 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.commons.lang.RandomStringUtils;
-import org.json.JSONException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
@@ -112,6 +103,12 @@ import org.folio.rest.jaxrs.model.Token;
 import org.folio.util.PackagesTestUtil;
 import org.folio.util.ProvidersTestUtil;
 import org.folio.util.TagsTestUtil;
+import org.json.JSONException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsProvidersImplTest extends WireMockTestBase {
@@ -132,10 +129,11 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   private KbCredentials configuration;
 
-  @Override @Before
+  @Override
+  @Before
   public void setUp() throws Exception {
     super.setUp();
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
+    setupDefaultKbConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
   }
 
@@ -192,7 +190,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     setUpTaggedProviders();
 
     ProviderCollection providerCollection =
-      getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER)
+      getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2,
+        STUB_TOKEN_HEADER)
         .as(ProviderCollection.class);
 
     List<Providers> providers = providerCollection.getData();
@@ -245,7 +244,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnPackagesOnSearchByProviderIdAndAccessTypeWithPagination() throws IOException, URISyntaxException {
+  public void shouldReturnPackagesOnSearchByProviderIdAndAccessTypeWithPagination()
+    throws IOException, URISyntaxException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
     insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(1).getId(), vertx);
@@ -340,7 +340,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn500IfRMApiReturnsError() {
+  public void shouldReturn500IfRmApiReturnsError() {
     stubFor(
       get(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder()
@@ -392,7 +392,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withStatus(SC_NOT_FOUND)));
 
-    JsonapiError error = getWithStatus(PROVIDER_PATH + "/191919", SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error =
+      getWithStatus(PROVIDER_PATH + "/191919", SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Provider not found");
   }
@@ -455,7 +456,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400WhenRMAPIErrorOnPut() throws IOException, URISyntaxException {
+  public void shouldReturn400WhenRmApiErrorOnPut() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/put-vendor-token-not-allowed-response.json";
 
     stubFor(
@@ -534,7 +535,8 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400IfFilterTypeInvalid() {
-    checkResponseNotEmptyWhenStatusIs400(PROVIDER_PACKAGES + "?q=Search&filter[selected]=true&filter[type]=unsupported");
+    checkResponseNotEmptyWhenStatusIs400(
+      PROVIDER_PACKAGES + "?q=Search&filter[selected]=true&filter[type]=unsupported");
   }
 
   @Test

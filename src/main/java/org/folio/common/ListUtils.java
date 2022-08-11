@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +32,7 @@ public class ListUtils {
 
   public static List<String> parseByComma(String string) {
     return StringUtils.isBlank(string)
-      ? Collections.emptyList()
-      : Arrays.asList(SPLIT_BY_COMMA_PATTERN.split(string));
+           ? Collections.emptyList()
+           : Arrays.asList(SPLIT_BY_COMMA_PATTERN.split(string));
   }
 }

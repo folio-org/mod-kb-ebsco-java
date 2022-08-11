@@ -9,10 +9,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.folio.rest.jaxrs.model.EmbargoPeriod;
+import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -20,9 +21,6 @@ import org.junit.experimental.theories.FromDataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-
-import org.folio.rest.jaxrs.model.EmbargoPeriod;
-import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 
 @RunWith(Theories.class)
 public class EmbargoPeriodConverterTest {
@@ -89,7 +87,7 @@ public class EmbargoPeriodConverterTest {
 
   @Theory
   public void testEmbargoPeriodWithValidUnitConverted(
-      @FromDataPoints("valid-periods") org.folio.holdingsiq.model.EmbargoPeriod period) {
+    @FromDataPoints("valid-periods") org.folio.holdingsiq.model.EmbargoPeriod period) {
     EmbargoPeriod result = converter.convert(period);
 
     assertNotNull(result);
@@ -99,7 +97,7 @@ public class EmbargoPeriodConverterTest {
 
   @Theory
   public void testCharacterCaseOfUnitIgnored(
-      @FromDataPoints("mixed-case-units") org.folio.holdingsiq.model.EmbargoPeriod period) {
+    @FromDataPoints("mixed-case-units") org.folio.holdingsiq.model.EmbargoPeriod period) {
     EmbargoPeriod result = converter.convert(period);
 
     assertNotNull(result);
@@ -109,7 +107,7 @@ public class EmbargoPeriodConverterTest {
 
   @Theory
   public void testInvalidEmbargoUnitConvertedToNull(
-      @FromDataPoints("invalid-units") org.folio.holdingsiq.model.EmbargoPeriod period) {
+    @FromDataPoints("invalid-units") org.folio.holdingsiq.model.EmbargoPeriod period) {
     EmbargoPeriod result = converter.convert(period);
 
     assertNotNull(result);

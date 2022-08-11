@@ -3,19 +3,16 @@ package org.folio.rest.converter.labels;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-
-public class CustomLabelsCollectionConverter {
+public final class CustomLabelsCollectionConverter {
 
   private CustomLabelsCollectionConverter() {
 

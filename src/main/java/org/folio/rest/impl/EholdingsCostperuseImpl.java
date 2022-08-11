@@ -2,16 +2,12 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 
-import java.util.Map;
-
-import javax.ws.rs.core.Response;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import java.util.Map;
+import javax.ws.rs.core.Response;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.Order;
@@ -20,15 +16,17 @@ import org.folio.rest.jaxrs.resource.EholdingsPackagesPackageIdResourcesCostperu
 import org.folio.rest.jaxrs.resource.EholdingsResourcesResourceIdCostperuse;
 import org.folio.rest.jaxrs.resource.EholdingsTitlesTitleIdCostperuse;
 import org.folio.rest.util.ErrorHandler;
-import org.folio.service.uc.UCCostPerUseService;
+import org.folio.service.uc.UcCostPerUseService;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class EholdingsCostperuseImpl
-  implements EholdingsResourcesResourceIdCostperuse, EholdingsTitlesTitleIdCostperuse, EholdingsPackagesPackageIdCostperuse,
+  implements EholdingsResourcesResourceIdCostperuse, EholdingsTitlesTitleIdCostperuse,
+  EholdingsPackagesPackageIdCostperuse,
   EholdingsPackagesPackageIdResourcesCostperuse {
 
   @Autowired
-  private UCCostPerUseService costPerUseService;
+  private UcCostPerUseService costPerUseService;
   @Autowired
   private ErrorHandler costPerUseErrorHandler;
 
@@ -89,7 +87,8 @@ public class EholdingsCostperuseImpl
                                                                  Map<String, String> okapiHeaders,
                                                                  Handler<AsyncResult<Response>> asyncResultHandler,
                                                                  Context vertxContext) {
-    costPerUseService.getPackageResourcesCostPerUse(packageId, platform, fiscalYear, sort, order, page, count, okapiHeaders)
+    costPerUseService.getPackageResourcesCostPerUse(packageId, platform, fiscalYear, sort, order, page, count,
+        okapiHeaders)
       .thenAccept(costPerUseCollection ->
         asyncResultHandler.handle(succeededFuture(
           GetEholdingsPackagesResourcesCostperuseByPackageIdResponse

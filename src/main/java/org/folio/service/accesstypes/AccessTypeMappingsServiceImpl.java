@@ -8,14 +8,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-import org.springframework.stereotype.Component;
-
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.accesstypes.AccessTypeMappingsRepository;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.model.filter.AccessTypeFilter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService {
@@ -54,8 +52,10 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
 
   @Override
   public CompletableFuture<Map<UUID, Integer>> countByRecordPrefix(String recordPrefix, RecordType recordType,
-                                                                   String credentialsId, Map<String, String> okapiHeaders) {
-    return mappingRepository.countByRecordIdPrefix(recordPrefix, recordType, toUUID(credentialsId), tenantId(okapiHeaders));
+                                                                   String credentialsId,
+                                                                   Map<String, String> okapiHeaders) {
+    return mappingRepository.countByRecordIdPrefix(recordPrefix, recordType, toUUID(credentialsId),
+      tenantId(okapiHeaders));
   }
 
   private AccessTypeMapping createAccessTypeMapping(String recordId, RecordType recordType, UUID accessTypeId) {

@@ -1,13 +1,11 @@
 package org.folio.rmapi.result;
 
 import java.util.Map;
-
 import lombok.Builder;
 import lombok.Value;
-
-import org.folio.client.uc.configuration.CommonUCConfiguration;
-import org.folio.client.uc.model.UCCostAnalysis;
-import org.folio.client.uc.model.UCPackageCostPerUse;
+import org.folio.client.uc.configuration.CommonUcConfiguration;
+import org.folio.client.uc.model.UcCostAnalysis;
+import org.folio.client.uc.model.UcPackageCostPerUse;
 import org.folio.rest.jaxrs.model.PlatformType;
 
 @Value
@@ -15,8 +13,8 @@ import org.folio.rest.jaxrs.model.PlatformType;
 public class PackageCostPerUseResult {
 
   String packageId;
-  UCPackageCostPerUse ucPackageCostPerUse;
-  Map<String, UCCostAnalysis> titlePackageCostMap;
-  CommonUCConfiguration configuration;
+  UcPackageCostPerUse ucPackageCostPerUse;
+  Map<String, UcCostAnalysis> titlePackageCostMap;
+  CommonUcConfiguration configuration;
   PlatformType platformType;
 }

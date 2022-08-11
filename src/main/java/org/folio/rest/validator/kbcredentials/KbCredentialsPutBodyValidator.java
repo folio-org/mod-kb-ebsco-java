@@ -1,9 +1,8 @@
 package org.folio.rest.validator.kbcredentials;
 
+import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
 
 @Component
 public class KbCredentialsPutBodyValidator extends KbCredentialsBodyAttributesValidator {

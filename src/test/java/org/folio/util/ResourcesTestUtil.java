@@ -12,14 +12,12 @@ import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TA
 import static org.folio.rest.util.IdParser.resourceIdToString;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.folio.repository.resources.DbResource;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
@@ -40,7 +38,8 @@ public class ResourcesTestUtil {
   public static void saveResource(DbResource dbResource, Vertx vertx) {
     CompletableFuture<Void> future = new CompletableFuture<>();
     String query = prepareQuery(insertQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN), resourceTestTable());
-    Tuple params = Tuple.of(resourceIdToString(dbResource.getId()), dbResource.getCredentialsId(), dbResource.getName());
+    Tuple params =
+      Tuple.of(resourceIdToString(dbResource.getId()), dbResource.getCredentialsId(), dbResource.getName());
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     future.join();
   }
@@ -50,11 +49,7 @@ public class ResourcesTestUtil {
   }
 
   private static DbResource buildResource(String id, UUID credentialsId, String name) {
-    return DbResource.builder()
-      .id(IdParser.parseResourceId(id))
-      .credentialsId(credentialsId)
-      .name(name)
-      .build();
+    return DbResource.builder().id(IdParser.parseResourceId(id)).credentialsId(credentialsId).name(name).build();
   }
 
   private static DbResource mapDbResource(Row row) {

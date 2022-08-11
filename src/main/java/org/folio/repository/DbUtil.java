@@ -3,7 +3,6 @@ package org.folio.repository;
 import static io.vertx.core.Future.failedFuture;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
-
 import static org.folio.db.exc.DbExcUtils.isFKViolation;
 import static org.folio.db.exc.DbExcUtils.isPKViolation;
 import static org.folio.db.exc.DbExcUtils.isUniqueViolation;
@@ -23,21 +22,19 @@ import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TA
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.titles.TitlesTableConstants.TITLES_TABLE_NAME;
-import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
-import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
-
-import java.util.List;
-import java.util.function.Function;
+import static org.folio.repository.uc.UcCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.uc.UcSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-
+import java.util.List;
+import java.util.function.Function;
 import org.folio.db.exc.ConstraintViolationException;
 import org.folio.rest.persist.PostgresClient;
 
-public class DbUtil {
+public final class DbUtil {
 
   private DbUtil() {
   }
@@ -114,11 +111,11 @@ public class DbUtil {
     return getTableName(tenantId, CURRENCIES_TABLE_NAME);
   }
 
-  public static String getUCSettingsTableName(String tenantId) {
+  public static String getUcSettingsTableName(String tenantId) {
     return getTableName(tenantId, UC_SETTINGS_TABLE_NAME);
   }
 
-  public static String getUCCredentialsTableName(String tenantId) {
+  public static String getUcCredentialsTableName(String tenantId) {
     return getTableName(tenantId, UC_CREDENTIALS_TABLE_NAME);
   }
 
@@ -126,11 +123,13 @@ public class DbUtil {
     return uniqueConstraintRecover(singletonList(columnName), t);
   }
 
-  public static Function<Throwable, Future<RowSet<Row>>> uniqueConstraintRecover(List<String> columnNames, Throwable t) {
+  public static Function<Throwable, Future<RowSet<Row>>> uniqueConstraintRecover(List<String> columnNames,
+                                                                                 Throwable t) {
     return throwable -> isUniqueViolation(throwable)
-      && isEqualCollection(((ConstraintViolationException) throwable).getConstraint().getColumns(), columnNames)
-      ? failedFuture(t)
-      : failedFuture(throwable);
+                          && isEqualCollection(((ConstraintViolationException) throwable).getConstraint().getColumns(),
+      columnNames)
+                        ? failedFuture(t)
+                        : failedFuture(throwable);
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> pkConstraintRecover(String columnName, Throwable t) {
@@ -139,15 +138,16 @@ public class DbUtil {
 
   public static Function<Throwable, Future<RowSet<Row>>> pkConstraintRecover(List<String> columnNames, Throwable t) {
     return throwable -> isPKViolation(throwable)
-      && isEqualCollection(((ConstraintViolationException) throwable).getConstraint().getColumns(), columnNames)
-      ? failedFuture(t)
-      : failedFuture(throwable);
+                          && isEqualCollection(((ConstraintViolationException) throwable).getConstraint().getColumns(),
+      columnNames)
+                        ? failedFuture(t)
+                        : failedFuture(throwable);
   }
 
   public static Function<Throwable, Future<RowSet<Row>>> foreignKeyConstraintRecover(Throwable t) {
     return throwable -> isFKViolation(throwable)
-      ? failedFuture(t)
-      : failedFuture(throwable);
+                        ? failedFuture(t)
+                        : failedFuture(throwable);
   }
 
   public static String prepareQuery(String queryTemplate, Object... params) {

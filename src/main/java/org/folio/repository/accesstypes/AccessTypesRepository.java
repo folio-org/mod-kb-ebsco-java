@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
 import org.folio.repository.RecordType;
 
 public interface AccessTypesRepository {
@@ -17,7 +16,8 @@ public interface AccessTypesRepository {
   CompletableFuture<Optional<DbAccessType>> findByCredentialsAndAccessTypeId(UUID credentialsId, UUID accessTypeId,
                                                                              String tenantId);
 
-  CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(UUID credentialsId, Collection<String> accessTypeNames,
+  CompletableFuture<List<DbAccessType>> findByCredentialsAndNames(UUID credentialsId,
+                                                                  Collection<String> accessTypeNames,
                                                                   String tenantId);
 
   CompletableFuture<Optional<DbAccessType>> findByCredentialsAndRecord(UUID credentialsId, String recordId,
@@ -29,5 +29,6 @@ public interface AccessTypesRepository {
 
   CompletableFuture<Void> delete(UUID credentialsId, UUID accessTypeId, String tenantId);
 
-  CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds, RecordType recordType, String tenant);
+  CompletionStage<Map<String, DbAccessType>> findPerRecord(String credentialsId, List<String> recordIds,
+                                                           RecordType recordType, String tenant);
 }

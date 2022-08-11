@@ -1,29 +1,23 @@
 package org.folio.rest.impl;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.IdParser.parsePackageId;
 import static org.folio.rest.util.IdParser.parseResourceId;
 import static org.folio.rest.util.IdParser.parseTitleId;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
 import javax.ws.rs.core.Response;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import org.apache.commons.lang3.BooleanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.common.ListUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageId;
@@ -49,8 +43,8 @@ import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.filter.Filter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
-import org.folio.rest.util.template.RMAPITemplateContext;
-import org.folio.rest.util.template.RMAPITemplateFactory;
+import org.folio.rest.util.template.RmApiTemplateContext;
+import org.folio.rest.util.template.RmApiTemplateFactory;
 import org.folio.rest.validator.TitleCommonRequestAttributesValidator;
 import org.folio.rest.validator.TitlesPostBodyValidator;
 import org.folio.rmapi.result.TitleCollectionResult;
@@ -58,6 +52,8 @@ import org.folio.rmapi.result.TitleResult;
 import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
 
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
@@ -73,7 +69,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @Autowired
   private TitleCommonRequestAttributesValidator titleCommonRequestAttributesValidator;
   @Autowired
-  private RMAPITemplateFactory templateFactory;
+  private RmApiTemplateFactory templateFactory;
   @Autowired
   private TagRepository tagRepository;
   @Autowired
@@ -173,7 +169,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             }
             CustomerResources resource = title.getCustomerResourcesList().get(0);
             ResourcePut resourcePutRequest =
-              titlePutRequestConverter.convertToRMAPICustomResourcePutRequest(entity, resource);
+              titlePutRequestConverter.convertToRmApiCustomResourcePutRequest(entity, resource);
             String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
             return context.getResourcesService().updateResource(parseResourceId(resourceId), resourcePutRequest);
           })
@@ -184,7 +180,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .executeWithResult(Title.class);
   }
 
-  private CompletableFuture<Titles> fetchTitlesByFilter(Filter filter, RMAPITemplateContext context) {
+  private CompletableFuture<Titles> fetchTitlesByFilter(Filter filter, RmApiTemplateContext context) {
     if (filter.isTagsFilter()) {
       return filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context);
     } else if (filter.isAccessTypeFilter()) {
@@ -213,7 +209,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   }
 
   private CompletableFuture<TitleResult> loadTags(TitleResult result,
-                                                  RMAPITemplateContext context) {
+                                                  RmApiTemplateContext context) {
     RecordKey recordKey = RecordKey.builder()
       .recordType(RecordType.TITLE)
       .recordId(String.valueOf(result.getTitle().getTitleId()))
@@ -230,14 +226,14 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
           return result;
         })
         .thenCompose(titleResult -> relatedEntitiesLoader.loadTags(titleResult, recordKey, context)
-          .thenApply(aVoid -> titleResult)
+          .thenApply(v -> titleResult)
         );
     } else {
-      return relatedEntitiesLoader.loadTags(result, recordKey, context).thenApply(aVoid -> result);
+      return relatedEntitiesLoader.loadTags(result, recordKey, context).thenApply(v -> result);
     }
   }
 
-  private CompletableFuture<TitleResult> updateTags(TitleResult result, RMAPITemplateContext context, Tags tags) {
+  private CompletableFuture<TitleResult> updateTags(TitleResult result, RmApiTemplateContext context, Tags tags) {
     if (Objects.isNull(tags)) {
       return completedFuture(result);
     } else {

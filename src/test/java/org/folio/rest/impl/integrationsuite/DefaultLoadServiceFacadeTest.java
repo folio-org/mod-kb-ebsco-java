@@ -3,8 +3,6 @@ package org.folio.rest.impl.integrationsuite;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
@@ -18,15 +16,11 @@ import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
 import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.KbTestUtil.interceptAndStop;
+import static org.junit.Assert.assertTrue;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -38,18 +32,21 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.service.holdings.DefaultLoadServiceFacade;
 import org.folio.service.holdings.message.ConfigurationMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
@@ -69,7 +66,7 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
-    setupDefaultLoadKBConfiguration();
+    setupDefaultLoadKbConfiguration();
   }
 
   @After
@@ -101,12 +98,14 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldNotCreateSnapshotIfItWasRecentlyCreated(TestContext context) throws IOException, URISyntaxException {
+  public void shouldNotCreateSnapshotIfItWasRecentlyCreated(TestContext context)
+    throws IOException, URISyntaxException {
     Async async = context.async();
 
     String now = HOLDINGS_STATUS_TIME_FORMATTER.format(LocalDateTime.now(ZoneOffset.UTC));
-    HoldingsLoadStatus status = readJsonFile("responses/rmapi/holdings/status/get-status-completed.json", HoldingsLoadStatus.class)
-      .toBuilder().created(now).build();
+    HoldingsLoadStatus status =
+      readJsonFile("responses/rmapi/holdings/status/get-status-completed.json", HoldingsLoadStatus.class)
+        .toBuilder().created(now).build();
     mockGetWithBody(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), Json.encode(status));
     mockPostHoldings();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
@@ -120,8 +119,9 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
     WireMock.verify(0, postRequestedFor(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false)));
   }
 
-  private void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  private void setupDefaultLoadKbConfiguration() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
+      vertx);
     saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }

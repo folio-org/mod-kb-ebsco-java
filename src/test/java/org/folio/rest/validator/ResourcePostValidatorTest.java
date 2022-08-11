@@ -2,9 +2,6 @@ package org.folio.rest.validator;
 
 import java.util.Collections;
 import java.util.List;
-
-import org.junit.Test;
-
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
@@ -12,6 +9,7 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ResourcePostData;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
+import org.junit.Test;
 
 public class ResourcePostValidatorTest {
 
@@ -47,7 +45,6 @@ public class ResourcePostValidatorTest {
   public void shouldThrowExceptionWhenUrlIsInvalid() {
     validator.validate(createRequest(PACKAGE_ID, TITLE_ID, "hdttp://example.com"));
   }
-
 
   @Test
   public void shouldValidateTitleAndPackage() {

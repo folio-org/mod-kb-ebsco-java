@@ -1,12 +1,11 @@
 package org.folio.rest.validator.kbcredentials;
 
 import joptsimple.internal.Strings;
+import org.folio.rest.exception.InputValidationException;
+import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 
 public class KbCredentialsBodyAttributesValidatorTest {
 
@@ -15,7 +14,8 @@ public class KbCredentialsBodyAttributesValidatorTest {
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
 
-  private KbCredentialsBodyAttributesValidator validator = new KbCredentialsBodyAttributesValidator(NAME_LENGTH_MAX);
+  private final KbCredentialsBodyAttributesValidator validator =
+    new KbCredentialsBodyAttributesValidator(NAME_LENGTH_MAX);
 
   @Test
   public void shouldThrowExceptionWhenNullName() {

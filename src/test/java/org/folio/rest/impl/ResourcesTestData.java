@@ -10,7 +10,6 @@ import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID;
 import static org.folio.rest.impl.TitlesTestData.STUB_MANAGED_TITLE_ID_2;
 
 import java.util.Collections;
-
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
@@ -23,7 +22,6 @@ import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rmapi.result.ResourceResult;
 
-
 public class ResourcesTestData {
   public static final String OLD_PROXY_ID = "<n>";
   public static final String OLD_COVERAGE_STATEMENT = "statement";
@@ -34,10 +32,14 @@ public class ResourcesTestData {
   public static final String OLD_EMBARGO_UNIT = "Day";
   public static final int OLD_EMBARGO_VALUE = 5;
 
-  public static final String STUB_MANAGED_RESOURCE_ID = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "-" + STUB_MANAGED_TITLE_ID;
-  public static final String STUB_MANAGED_RESOURCE_ID_2 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "-" + STUB_MANAGED_TITLE_ID_2;
-  public static final String STUB_MANAGED_RESOURCE_ID_3 = STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID_2 + "-" + STUB_MANAGED_TITLE_ID_2;
-  public static final String STUB_CUSTOM_RESOURCE_ID = STUB_CUSTOM_VENDOR_ID + "-" + STUB_CUSTOM_PACKAGE_ID + "-" + STUB_CUSTOM_TITLE_ID;
+  public static final String STUB_MANAGED_RESOURCE_ID =
+    STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "-" + STUB_MANAGED_TITLE_ID;
+  public static final String STUB_MANAGED_RESOURCE_ID_2 =
+    STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID + "-" + STUB_MANAGED_TITLE_ID_2;
+  public static final String STUB_MANAGED_RESOURCE_ID_3 =
+    STUB_VENDOR_ID + "-" + STUB_PACKAGE_ID_2 + "-" + STUB_MANAGED_TITLE_ID_2;
+  public static final String STUB_CUSTOM_RESOURCE_ID =
+    STUB_CUSTOM_VENDOR_ID + "-" + STUB_CUSTOM_PACKAGE_ID + "-" + STUB_CUSTOM_TITLE_ID;
 
   public static ResourcePutRequest getResourcePutRequest(ResourcePutDataAttributes attributes) {
     return new ResourcePutRequest()

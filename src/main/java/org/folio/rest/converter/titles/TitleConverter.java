@@ -5,7 +5,6 @@ import static java.util.Comparator.comparingInt;
 import static java.util.Comparator.nullsLast;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
-
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
@@ -13,13 +12,7 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Identifier;
@@ -43,6 +36,10 @@ import org.folio.rest.util.IdParser;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TitleConverter implements Converter<TitleResult, Title> {
@@ -75,7 +72,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
           .withName(rmapiTitle.getTitleName())
           .withPublisherName(rmapiTitle.getPublisherName())
           .withIsTitleCustom(rmapiTitle.getIsTitleCustom())
-          .withPublicationType(ConverterConsts.publicationTypes.get(rmapiTitle.getPubType().toLowerCase()))
+          .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(rmapiTitle.getPubType().toLowerCase()))
           .withSubjects(subjectsConverter.convert(rmapiTitle.getSubjectsList()))
           .withIdentifiers(identifiersConverter.convert(rmapiTitle.getIdentifiersList()))
           .withContributors(contributorsConverter.convert(rmapiTitle.getContributorsList()))
@@ -108,9 +105,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
           .withResources(new Resources()
             .withData(convertResourcesRelationship(customerResourcesList))
             .withMeta(new MetaDataIncluded().withIncluded(true))
-          )
-        );
-
+          ));
 
       includeTagsIfNeeded(title, titleResult);
     }

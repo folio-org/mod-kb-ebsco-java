@@ -7,12 +7,6 @@ import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Titles;
@@ -32,6 +26,10 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackageConverter implements Converter<PackageResult, Package> {
@@ -50,7 +48,6 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     PackageByIdData packageByIdData = result.getPackageData();
     Titles titles = result.getTitles();
     VendorById vendor = result.getVendor();
-    AccessType accessType = result.getAccessType();
 
     Package packageData = new Package()
       .withData(packageCollectionItemConverter.convert(packageByIdData))
@@ -87,6 +84,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
             .withType(PROVIDERS_TYPE)));
     }
 
+    AccessType accessType = result.getAccessType();
     if (accessType != null) {
       packageData.getIncluded().add(accessType);
       packageData.getData()

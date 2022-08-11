@@ -2,7 +2,6 @@ package org.folio.repository.accesstypes;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Getter;
 

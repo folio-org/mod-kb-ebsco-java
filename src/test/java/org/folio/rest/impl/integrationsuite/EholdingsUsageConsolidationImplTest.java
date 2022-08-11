@@ -11,40 +11,31 @@ import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.junit.Assert.assertEquals;
-
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
-import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
+import static org.folio.repository.uc.UcCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.uc.UcSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
-import static org.folio.util.UCSettingsTestUtil.METRIC_TYPE_PARAM_TRUE;
-import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_ENDPOINT;
-import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_KEY_ENDPOINT;
-import static org.folio.util.UCSettingsTestUtil.UC_SETTINGS_USER_ENDPOINT;
-import static org.folio.util.UCSettingsTestUtil.getUCSettings;
-import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
-import static org.folio.util.UCSettingsTestUtil.stubSettings;
-
-import java.util.UUID;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.UcCredentialsTestUtil.setUpUcCredentials;
+import static org.folio.util.UcSettingsTestUtil.METRIC_TYPE_PARAM_TRUE;
+import static org.folio.util.UcSettingsTestUtil.UC_SETTINGS_ENDPOINT;
+import static org.folio.util.UcSettingsTestUtil.UC_SETTINGS_KEY_ENDPOINT;
+import static org.folio.util.UcSettingsTestUtil.UC_SETTINGS_USER_ENDPOINT;
+import static org.folio.util.UcSettingsTestUtil.getUcSettings;
+import static org.folio.util.UcSettingsTestUtil.saveUcSettings;
+import static org.folio.util.UcSettingsTestUtil.stubSettings;
+import static org.junit.Assert.assertEquals;
 
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import org.folio.client.uc.UCApigeeEbscoClient;
-import org.folio.client.uc.UCAuthEbscoClient;
-import org.folio.client.uc.model.UCAuthToken;
+import java.util.UUID;
+import org.folio.client.uc.UcApigeeEbscoClient;
+import org.folio.client.uc.UcAuthEbscoClient;
+import org.folio.client.uc.model.UcAuthToken;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.jaxrs.model.Month;
@@ -57,6 +48,12 @@ import org.folio.rest.jaxrs.model.UCSettingsPatchRequestData;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequestDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
@@ -64,9 +61,9 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   private String credentialsId;
 
   @Autowired
-  private UCAuthEbscoClient authEbscoClient;
+  private UcAuthEbscoClient authEbscoClient;
   @Autowired
-  private UCApigeeEbscoClient apigeeEbscoClient;
+  private UcApigeeEbscoClient apigeeEbscoClient;
 
   @Override
   @Before
@@ -85,9 +82,9 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUCSettingsOnGetByUserHeaders() {
+  public void shouldReturnUcSettingsOnGetByUserHeaders() {
     UCSettings stubSettings = stubSettings(credentialsId);
-    String settingsId = saveUCSettings(stubSettings, vertx);
+    String settingsId = saveUcSettings(stubSettings, vertx);
 
     UCSettings actual = getWithOk(UC_SETTINGS_USER_ENDPOINT, JOHN_TOKEN_HEADER).as(UCSettings.class);
 
@@ -97,9 +94,9 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUCSettingsKeyOnGet() {
+  public void shouldReturnUcSettingsKeyOnGet() {
     UCSettings stubSettings = stubSettings(credentialsId);
-    String settingsId = saveUCSettings(stubSettings, vertx);
+    String settingsId = saveUcSettings(stubSettings, vertx);
 
     String resourcePath = String.format(UC_SETTINGS_KEY_ENDPOINT, credentialsId);
     UCSettingsKey actual = getWithOk(resourcePath, JOHN_TOKEN_HEADER).as(UCSettingsKey.class);
@@ -109,10 +106,10 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUCSettingsOnGetByUserHeadersWithMetricType() {
-    UCSettings stubSettings = stubSettings(credentialsId);
-    String settingsId = saveUCSettings(stubSettings, vertx);
-    setUpUCCredentials(vertx);
+  public void shouldReturnUcSettingsOnGetByUserHeadersWithMetricType() {
+    final UCSettings stubSettings = stubSettings(credentialsId);
+    final String settingsId = saveUcSettings(stubSettings, vertx);
+    setUpUcCredentials(vertx);
     mockMetricTypeWithExpectedTypeId();
     mockAuthToken();
 
@@ -126,9 +123,9 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUCSettingsOnGet() {
+  public void shouldReturnUcSettingsOnGet() {
     UCSettings stubSettings = stubSettings(credentialsId);
-    String settingsId = saveUCSettings(stubSettings, vertx);
+    String settingsId = saveUcSettings(stubSettings, vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     UCSettings actual = getWithOk(resourcePath).as(UCSettings.class);
@@ -149,12 +146,12 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldUpdateUCSettingsOnPatch() {
-    setUpUCCredentials(vertx);
+  public void shouldUpdateUcSettingsOnPatch() {
+    setUpUcCredentials(vertx);
     mockAuthToken();
     mockSuccessfulVerification();
     UCSettings stubSettings = stubSettings(credentialsId);
-    saveUCSettings(stubSettings, vertx);
+    saveUcSettings(stubSettings, vertx);
 
     String newCurrencyValue = "UAH";
     UCSettingsPatchRequest patchData = new UCSettingsPatchRequest()
@@ -166,7 +163,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     patchWithNoContent(resourcePath, Json.encode(patchData), JOHN_TOKEN_HEADER);
 
-    UCSettings actual = getUCSettings(vertx).get(0);
+    UCSettings actual = getUcSettings(vertx).get(0);
     assertEquals(newCurrencyValue, actual.getAttributes().getCurrency());
   }
 
@@ -174,9 +171,9 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn422OnPatchWithInvalidCurrency() {
     mockAuthToken();
     mockSuccessfulVerification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
     UCSettings stubSettings = stubSettings(credentialsId);
-    saveUCSettings(stubSettings, vertx);
+    saveUcSettings(stubSettings, vertx);
 
     String newCurrencyValue = "VVV";
     UCSettingsPatchRequest patchData = new UCSettingsPatchRequest()
@@ -186,8 +183,9 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
           .withCurrency(newCurrencyValue)));
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
-    JsonapiError error = patchWithStatus(resourcePath, Json.encode(patchData), SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER)
-      .as(JsonapiError.class);
+    JsonapiError error =
+      patchWithStatus(resourcePath, Json.encode(patchData), SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER)
+        .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
     assertErrorContainsDetail(error, "Value 'VVV' is invalid for 'currency'");
@@ -206,7 +204,8 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
     String patchBody = Json.encode(patchData);
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error =
+      patchWithStatus(resourcePath, patchBody, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Usage Consolidation is not enabled for KB credentials");
   }
@@ -215,8 +214,8 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn422OnPatchWithInvalidCustomerKey() {
     mockAuthToken();
     mockFailed400Verification();
-    setUpUCCredentials(vertx);
-    saveUCSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
 
     UCSettingsPatchRequest patchData = new UCSettingsPatchRequest()
       .withData(new UCSettingsPatchRequestData()
@@ -235,7 +234,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn201OnPostSettingsWithDefaultValues() {
     mockAuthToken();
     mockSuccessfulVerification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
@@ -250,7 +249,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn201OnPostSettingsWhenDataIsValid() {
     mockAuthToken();
     mockSuccessfulVerification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequestNoDefault());
@@ -266,7 +265,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn422OnPostSettingsWhenCurrencyIsInvalid() {
     mockAuthToken();
     mockSuccessfulVerification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     var postRequest = getPostRequestNoDefault();
@@ -283,7 +282,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn422WhenKbCredentialsNotExist() {
     mockAuthToken();
     mockSuccessfulVerification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
 
     String credentialsId = UUID.randomUUID().toString();
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
@@ -300,7 +299,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn422WhenSaveTwoEntitiesWithSameCredentialsId() {
     mockAuthToken();
     mockSuccessfulVerification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
@@ -315,7 +314,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422WhenUCCredentialNotExist() {
+  public void shouldReturn422WhenUcCredentialNotExist() {
     clearDataFromTable(vertx, UC_CREDENTIALS_TABLE_NAME);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
@@ -331,7 +330,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn401WhenNoHeaderProvided() {
     mockAuthToken();
     mockSuccessfulVerification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
@@ -344,7 +343,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   public void shouldReturn401WhenAuthTokenExpired() {
     mockAuthToken();
     mockFailed401Verification();
-    setUpUCCredentials(vertx);
+    setUpUcCredentials(vertx);
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
@@ -366,7 +365,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
   }
 
   private void mockAuthToken() {
-    UCAuthToken stubToken = new UCAuthToken("access_token", "Bearer", 3600L, "openid");
+    UcAuthToken stubToken = new UcAuthToken("access_token", "Bearer", 3600L, "openid");
     stubFor(post(urlPathMatching("/oauth-proxy/token"))
       .willReturn(aResponse().withStatus(SC_OK).withBody(Json.encode(stubToken)))
     );

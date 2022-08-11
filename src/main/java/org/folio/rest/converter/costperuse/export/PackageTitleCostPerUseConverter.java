@@ -5,17 +5,16 @@ import static org.apache.commons.lang.math.NumberUtils.INTEGER_ZERO;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 import java.text.NumberFormat;
-
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.service.uc.export.TitleExportModel;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PackageTitleCostPerUseConverter {
 
-  public TitleExportModel convert(ResourceCostPerUseCollectionItem resourceCostPerUseCollectionItem, String platform, String year, String currency, NumberFormat currencyFormatter) {
+  public TitleExportModel convert(ResourceCostPerUseCollectionItem resourceCostPerUseCollectionItem, String platform,
+                                  String year, String currency, NumberFormat currencyFormatter) {
     return TitleExportModel.builder()
       .title(resourceCostPerUseCollectionItem.getAttributes().getName())
       .type(resourceCostPerUseCollectionItem.getAttributes().getPublicationType().value())
@@ -33,7 +32,7 @@ public class PackageTitleCostPerUseConverter {
     String result;
     if (DOUBLE_ZERO.equals(percent) || percent == null) {
       result = INTEGER_ZERO.toString();
-    } else if (percent < 1){
+    } else if (percent < 1) {
       result = "< 1";
     } else {
       result = String.valueOf(Math.round(percent));

@@ -8,11 +8,6 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNo
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
 
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.jaxrs.model.CostAnalysis;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseDataAttributes;
@@ -21,6 +16,9 @@ import org.folio.rest.jaxrs.model.Usage;
 import org.folio.rest.jaxrs.model.UsageTotals;
 import org.folio.rest.util.IdParser;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceCostPerUseConverter implements Converter<ResourceCostPerUseResult, ResourceCostPerUse> {
@@ -48,7 +46,8 @@ public class ResourceCostPerUseConverter implements Converter<ResourceCostPerUse
       case NON_PUBLISHER:
         setNonPublisherUsage(specificPlatformUsages, usage);
 
-        analysis.setNonPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
+        analysis.setNonPublisherPlatforms(
+          getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
         break;
       default:
         setPublisherUsage(specificPlatformUsages, usage);
@@ -57,7 +56,8 @@ public class ResourceCostPerUseConverter implements Converter<ResourceCostPerUse
         usage.getTotals().setAll(getTotalUsage(specificPlatformUsages));
 
         analysis.setPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getPublisher()));
-        analysis.setNonPublisherPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
+        analysis.setNonPublisherPlatforms(
+          getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getNonPublisher()));
         analysis.setAllPlatforms(getCostAnalysisAttributes(ucTitleCostPerUse, usage.getTotals().getAll()));
         break;
     }

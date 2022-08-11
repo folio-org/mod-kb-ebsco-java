@@ -1,11 +1,9 @@
 package org.folio.repository.accesstypes;
 
-import org.folio.common.ListUtils;
-
-import java.util.Collection;
-import java.util.List;
-
-import static org.folio.repository.DbUtil.*;
+import static org.folio.repository.DbUtil.getAccessTypesMappingTableName;
+import static org.folio.repository.DbUtil.getAccessTypesTableName;
+import static org.folio.repository.DbUtil.getAccessTypesViewName;
+import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.count;
 import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.equalCondition;
@@ -22,6 +20,10 @@ import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.RECORD_TYPE_COLUMN;
 
+import java.util.Collection;
+import java.util.List;
+import org.folio.common.ListUtils;
+
 public final class AccessTypesTableConstants {
 
   public static final String ACCESS_TYPES_TABLE_NAME = "access_types";
@@ -37,43 +39,42 @@ public final class AccessTypesTableConstants {
   public static final String UPDATED_BY_USER_ID_COLUMN = "updated_by_user_id";
   public static final String USAGE_NUMBER_COLUMN = "usage_number";
 
-  private static final String[] INSERT_COLUMNS = new String[]{
-    ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, DESCRIPTION_COLUMN, CREATED_DATE_COLUMN,
-    CREATED_BY_USER_ID_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN
-  };
+  private static final String[] INSERT_COLUMNS =
+    new String[] {ID_COLUMN, CREDENTIALS_ID_COLUMN, NAME_COLUMN, DESCRIPTION_COLUMN, CREATED_DATE_COLUMN,
+                  CREATED_BY_USER_ID_COLUMN, UPDATED_DATE_COLUMN, UPDATED_BY_USER_ID_COLUMN};
 
   private AccessTypesTableConstants() {
   }
 
   public static String selectByCredentialsIdWithCountQuery(String tenantId) {
-    return prepareQuery(selectByCredentialsIdWithCountQuery(), getAccessTypesViewName(tenantId));
+    return prepareQuery(selectByCredentialsIdWithCountQueryPart(), getAccessTypesViewName(tenantId));
   }
 
   public static String selectByCredentialsAndAccessTypeIdQuery(String tenantId) {
-    return prepareQuery(selectByCredentialsAndAccessTypeIdQuery(), getAccessTypesViewName(tenantId));
+    return prepareQuery(selectByCredentialsAndAccessTypeIdQueryPart(), getAccessTypesViewName(tenantId));
   }
 
   public static String selectByCredentialsAndNamesQuery(Collection<String> accessTypeNames, String tenantId) {
-    return prepareQuery(selectByCredentialsAndNamesQuery(),
-      getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(accessTypeNames.size()));
+    return prepareQuery(selectByCredentialsAndNamesQueryPart(), getAccessTypesTableName(tenantId),
+      ListUtils.createPlaceholders(accessTypeNames.size()));
   }
 
   public static String selectCountByCredentialsIdQuery(String tenantId) {
-    return prepareQuery(selectCountByCredentialsIdQuery(), getAccessTypesTableName(tenantId));
+    return prepareQuery(selectCountByCredentialsIdQueryPart(), getAccessTypesTableName(tenantId));
   }
 
   public static String selectByCredentialsAndRecordQuery(String tenantId) {
-    return prepareQuery(selectByCredentialsAndRecordQuery(),
-      getAccessTypesTableName(tenantId), getAccessTypesMappingTableName(tenantId));
+    return prepareQuery(selectByCredentialsAndRecordQueryPart(), getAccessTypesTableName(tenantId),
+      getAccessTypesMappingTableName(tenantId));
   }
 
   public static String selectByCredentialsAndRecordIdsQuery(List<String> recordIds, String tenantId) {
-    return prepareQuery(selectByCredentialsAndRecordIdsQuery(),
-      getAccessTypesTableName(tenantId), ListUtils.createPlaceholders(recordIds.size()));
+    return prepareQuery(selectByCredentialsAndRecordIdsQueryPart(), getAccessTypesTableName(tenantId),
+      ListUtils.createPlaceholders(recordIds.size()));
   }
 
   public static String deleteByCredentialsAndAccessTypeIdQuery(String tenantId) {
-    return prepareQuery(deleteByCredentialsAndAccessTypeIdQuery(), getAccessTypesTableName(tenantId));
+    return prepareQuery(deleteByCredentialsAndAccessTypeIdQueryPart(), getAccessTypesTableName(tenantId));
   }
 
   public static String upsertAccessTypeQuery(String tenantId) {
@@ -88,44 +89,39 @@ public final class AccessTypesTableConstants {
     return selectQuery(ID_COLUMN) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
   }
 
-  private static String selectByCredentialsIdWithCountQuery() {
+  private static String selectByCredentialsIdWithCountQueryPart() {
     return selectQuery() + " " + whereQuery(CREDENTIALS_ID_COLUMN) + ";";
   }
 
-  private static String selectByCredentialsAndAccessTypeIdQuery() {
-    return selectQuery() + " " +
-      whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
+  private static String selectByCredentialsAndAccessTypeIdQueryPart() {
+    return selectQuery() + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + " " + limitQuery(1) + ";";
   }
 
-  private static String selectByCredentialsAndNamesQuery() {
-    return selectQuery() + " " + whereConditionsQuery(
-      equalCondition(CREDENTIALS_ID_COLUMN), inCondition(NAME_COLUMN)) + ";";
+  private static String selectByCredentialsAndNamesQueryPart() {
+    return selectQuery() + " " + whereConditionsQuery(equalCondition(CREDENTIALS_ID_COLUMN), inCondition(NAME_COLUMN))
+      + ";";
   }
 
-  private static String selectCountByCredentialsIdQuery() {
+  private static String selectCountByCredentialsIdQueryPart() {
     return selectQuery(count()) + " " + whereQuery(CREDENTIALS_ID_COLUMN);
   }
 
-  private static String selectByCredentialsAndRecordQuery() {
-    return selectQuery() + " " + whereConditionsQuery(
-      equalCondition(CREDENTIALS_ID_COLUMN),
-      inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.selectAccessTypeIdsByRecordQuery())
-    ) + " " + limitQuery(1) + ";";
+  private static String selectByCredentialsAndRecordQueryPart() {
+    return selectQuery() + " " + whereConditionsQuery(equalCondition(CREDENTIALS_ID_COLUMN),
+      inCondition(ID_COLUMN, AccessTypeMappingsTableConstants.selectAccessTypeIdsByRecordQuery())) + " "
+      + limitQuery(1) + ";";
   }
 
-  private static String selectByCredentialsAndRecordIdsQuery() {
+  private static String selectByCredentialsAndRecordIdsQueryPart() {
     String accessTypesColumns = "t1.*";
     String accessTypesMappingsColumns = "t2." + RECORD_ID_COLUMN;
-    return selectQuery(accessTypesColumns, accessTypesMappingsColumns) + " " +
-      leftJoinQuery(ACCESS_TYPES_MAPPING_TABLE_NAME, ID_COLUMN, ACCESS_TYPE_ID_COLUMN) + " " +
-      whereConditionsQuery(
-        equalCondition(CREDENTIALS_ID_COLUMN),
-        equalCondition(RECORD_TYPE_COLUMN),
-        inCondition(RECORD_ID_COLUMN)
-      );
+    return selectQuery(accessTypesColumns, accessTypesMappingsColumns) + " "
+      + leftJoinQuery(ACCESS_TYPES_MAPPING_TABLE_NAME, ID_COLUMN, ACCESS_TYPE_ID_COLUMN) + " "
+      + whereConditionsQuery(equalCondition(CREDENTIALS_ID_COLUMN), equalCondition(RECORD_TYPE_COLUMN),
+      inCondition(RECORD_ID_COLUMN));
   }
 
-  private static String deleteByCredentialsAndAccessTypeIdQuery() {
+  private static String deleteByCredentialsAndAccessTypeIdQueryPart() {
     return deleteQuery() + " " + whereQuery(ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
   }
 }

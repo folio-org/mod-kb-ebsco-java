@@ -24,24 +24,22 @@ import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGetWithBody;
 import static org.folio.test.util.TestUtil.readJsonFile;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.repository.packages.DbPackage;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
 
-public class PackagesTestUtil {
+public final class PackagesTestUtil {
 
   private static final String STUB_PACKAGE_JSON_PATH = "responses/rmapi/packages/get-package-by-id-response.json";
 
@@ -88,7 +86,8 @@ public class PackagesTestUtil {
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
   }
 
-  public static void setUpPackage(Vertx vertx, String credentialsId, String packageId, String vendorId, String packageName)
+  public static void setUpPackage(Vertx vertx, String credentialsId, String packageId, String vendorId,
+                                  String packageName)
     throws IOException, URISyntaxException {
     savePackage(buildDbPackage(vendorId + "-" + packageId, credentialsId, packageName), vertx);
     mockPackageWithName(packageId, vendorId, packageName);

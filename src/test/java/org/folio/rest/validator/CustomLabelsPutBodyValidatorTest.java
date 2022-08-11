@@ -2,24 +2,23 @@ package org.folio.rest.validator;
 
 import java.util.Arrays;
 import java.util.Collections;
-
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class CustomLabelsPutBodyValidatorTest {
 
-  private final CustomLabelsPutBodyValidator validator = new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50, 100));
-
   @Rule
   public ExpectedException expectedEx = ExpectedException.none();
+
+  private final CustomLabelsPutBodyValidator validator =
+    new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50, 100));
 
   @Test
   public void shouldThrowExceptionWhenInvalidId() {

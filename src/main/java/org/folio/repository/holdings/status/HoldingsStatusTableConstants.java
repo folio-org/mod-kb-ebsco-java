@@ -1,11 +1,11 @@
 package org.folio.repository.holdings.status;
 
-import io.vertx.sqlclient.Tuple;
-
 import static org.folio.common.ListUtils.createPlaceholders;
 import static org.folio.repository.DbUtil.getHoldingsStatusTableName;
 import static org.folio.repository.DbUtil.prepareQuery;
 import static org.folio.repository.SqlQueryHelper.joinWithComma;
+
+import io.vertx.sqlclient.Tuple;
 
 public final class HoldingsStatusTableConstants {
 
@@ -15,7 +15,8 @@ public final class HoldingsStatusTableConstants {
   public static final String JSONB_COLUMN = "jsonb";
   public static final String PROCESS_ID_COLUMN = "process_id";
 
-  private static final String HOLDINGS_STATUS_FIELD_LIST_FULL = joinWithComma(ID_COLUMN, CREDENTIALS_COLUMN, JSONB_COLUMN, PROCESS_ID_COLUMN);
+  private static final String HOLDINGS_STATUS_FIELD_LIST_FULL =
+    joinWithComma(ID_COLUMN, CREDENTIALS_COLUMN, JSONB_COLUMN, PROCESS_ID_COLUMN);
 
   private HoldingsStatusTableConstants() {
   }
@@ -29,19 +30,19 @@ public final class HoldingsStatusTableConstants {
   }
 
   public static String deleteLoadingStatus(String tenantId) {
-    return prepareQuery(deleteLoadingStatus(), getHoldingsStatusTableName(tenantId));
+    return prepareQuery(deleteLoadingStatusQuery(), getHoldingsStatusTableName(tenantId));
   }
 
   public static String updateImportedCount(String tenantId) {
-    return prepareQuery(updateImportedCount(), getHoldingsStatusTableName(tenantId));
+    return prepareQuery(updateImportedCountQuery(), getHoldingsStatusTableName(tenantId));
   }
 
   public static String updateLoadingStatus(String tenantId) {
-    return prepareQuery(updateLoadingStatus(), getHoldingsStatusTableName(tenantId));
+    return prepareQuery(updateLoadingStatusQuery(), getHoldingsStatusTableName(tenantId));
   }
 
   public static String getHoldingsStatuses(String tenantId) {
-    return prepareQuery(getHoldingsStatuses(), getHoldingsStatusTableName(tenantId));
+    return prepareQuery(getHoldingsStatusesQuery(), getHoldingsStatusTableName(tenantId));
   }
 
   public static String insertLoadingStatus(String tenantId, Tuple params) {
@@ -54,25 +55,27 @@ public final class HoldingsStatusTableConstants {
     return "INSERT INTO %s (" + HOLDINGS_STATUS_FIELD_LIST_FULL + ") VALUES (%s) ON CONFLICT DO NOTHING;";
   }
 
-  private static String deleteLoadingStatus() {
+  private static String deleteLoadingStatusQuery() {
     return "DELETE FROM %s WHERE " + CREDENTIALS_COLUMN + "=?;";
   }
 
-  private static String updateImportedCount() {
-    return "UPDATE %s SET jsonb = jsonb_set(jsonb_set(jsonb, " +
-      "'{data,attributes,importedCount}', ((jsonb->'data'->'attributes'->>'importedCount')::int + ?)::text::jsonb, false), " +
-      "'{data,attributes,importedPages}', ((jsonb->'data'->'attributes'->>'importedPages')::int + ?)::text::jsonb, false) " +
-      "WHERE " +
-      "jsonb->'data'->'attributes'->>'importedCount' IS NOT NULL AND " +
-      "jsonb->'data'->'attributes'->>'importedPages' IS NOT NULL AND " +
-      "process_id=? AND " + CREDENTIALS_COLUMN + "=?;";
+  private static String updateImportedCountQuery() {
+    return "UPDATE %s SET jsonb = jsonb_set(jsonb_set(jsonb, "
+      + "'{data,attributes,importedCount}', "
+      + "((jsonb->'data'->'attributes'->>'importedCount')::int + ?)::text::jsonb, false), "
+      + "'{data,attributes,importedPages}', "
+      + "((jsonb->'data'->'attributes'->>'importedPages')::int + ?)::text::jsonb, false) "
+      + "WHERE "
+      + "jsonb->'data'->'attributes'->>'importedCount' IS NOT NULL AND "
+      + "jsonb->'data'->'attributes'->>'importedPages' IS NOT NULL AND "
+      + "process_id=? AND " + CREDENTIALS_COLUMN + "=?;";
   }
 
-  private static String updateLoadingStatus() {
+  private static String updateLoadingStatusQuery() {
     return "UPDATE %s SET " + JSONB_COLUMN + " = ? WHERE process_id=? AND " + CREDENTIALS_COLUMN + "=?;";
   }
 
-  private static String getHoldingsStatuses() {
+  private static String getHoldingsStatusesQuery() {
     return "SELECT " + HOLDINGS_STATUS_FIELD_LIST_FULL + " from %s;";
   }
 

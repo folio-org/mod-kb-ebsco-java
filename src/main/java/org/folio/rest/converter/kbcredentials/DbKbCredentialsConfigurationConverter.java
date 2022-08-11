@@ -1,11 +1,10 @@
 package org.folio.rest.converter.kbcredentials;
 
+import org.folio.holdingsiq.model.Configuration;
+import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-
-import org.folio.holdingsiq.model.Configuration;
-import org.folio.repository.kbcredentials.DbKbCredentials;
 
 @Component
 public class DbKbCredentialsConfigurationConverter implements Converter<DbKbCredentials, Configuration> {

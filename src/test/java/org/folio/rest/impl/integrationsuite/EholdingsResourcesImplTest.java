@@ -12,15 +12,6 @@ import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
@@ -49,17 +40,19 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertEqualsResourceId;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.getDefaultKbConfiguration;
-import static org.folio.util.KBTestUtil.setupDefaultKBConfiguration;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.KbTestUtil.getDefaultKbConfiguration;
+import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
 import static org.folio.util.TagsTestUtil.saveTag;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -69,13 +62,11 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.json.JSONException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.resources.DbResource;
@@ -92,6 +83,12 @@ import org.folio.rest.jaxrs.model.ResourceTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.util.ResourcesTestUtil;
 import org.folio.util.TagsTestUtil;
+import org.json.JSONException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsResourcesImplTest extends WireMockTestBase {
@@ -108,10 +105,11 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   private KbCredentials configuration;
 
-  @Override @Before
+  @Override
+  @Before
   public void setUp() throws Exception {
     super.setUp();
-    setupDefaultKBConfiguration(getWiremockUrl(), vertx);
+    setupDefaultKbConfiguration(getWiremockUrl(), vertx);
     configuration = getDefaultKbConfiguration(vertx);
   }
 
@@ -149,7 +147,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourceWithTitleWhenTitleFlagSetToTrue() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnResourceWithTitleWhenTitleFlagSetToTrue()
+    throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-by-id-with-title.json";
 
@@ -162,7 +161,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourceWithProviderWhenProviderFlagSetToTrue() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnResourceWithProviderWhenProviderFlagSetToTrue()
+    throws IOException, URISyntaxException, JSONException {
     String stubResourceResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
     String stubVendorResponseFile = "responses/rmapi/vendors/get-vendor-by-id-for-resource.json";
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-by-id-with-provider.json";
@@ -177,7 +177,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnResourceWithPackageWhenPackageFlagSetToTrue() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnResourceWithPackageWhenPackageFlagSetToTrue()
+    throws IOException, URISyntaxException, JSONException {
     String stubResourceResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
     String stubPackageResponseFile = "responses/rmapi/packages/get-package-by-id-for-resource.json";
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-by-id-with-package.json";
@@ -194,10 +195,10 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourceWithAllIncludedObjectsWhenIncludeContainsAllObjects()
     throws IOException, URISyntaxException, JSONException {
-    String stubResourceResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
-    String stubVendorResponseFile = "responses/rmapi/vendors/get-vendor-by-id-for-resource.json";
-    String stubPackageResponseFile = "responses/rmapi/packages/get-package-by-id-for-resource.json";
-    String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-by-id-with-all-objects.json";
+    final String stubResourceResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
+    final String stubVendorResponseFile = "responses/rmapi/vendors/get-vendor-by-id-for-resource.json";
+    final String stubPackageResponseFile = "responses/rmapi/packages/get-package-by-id-for-resource.json";
+    final String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-by-id-with-all-objects.json";
 
     mockResource(stubResourceResponseFile);
     mockVendor(stubVendorResponseFile);
@@ -211,7 +212,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404WhenRMAPINotFoundOnResourceGet() throws IOException, URISyntaxException {
+  public void shouldReturn404WhenRmApiNotFoundOnResourceGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
 
     stubFor(
@@ -235,7 +236,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn500WhenRMApiReturns500ErrorOnResourceGet() {
+  public void shouldReturn500WhenRmApiReturns500ErrorOnResourceGet() {
     mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
 
     JsonapiError error =
@@ -245,12 +246,14 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnUpdatedValuesManagedResourceOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnUpdatedValuesManagedResourceOnSuccessfulPut()
+    throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource.json";
 
-    String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT, STUB_MANAGED_RESOURCE_ID,
-      readFile("requests/kb-ebsco/resource/put-managed-resource.json"));
+    String actualResponse =
+      mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT, STUB_MANAGED_RESOURCE_ID,
+        readFile("requests/kb-ebsco/resource/put-managed-resource.json"));
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, false);
 
@@ -267,20 +270,20 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-by-id-with-access-type.json";
 
     String requestBody = format(readFile("requests/kb-ebsco/resource/put-resource-with-access-type.json"),
-        accessTypeId);
+      accessTypeId);
     String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT,
-        STUB_MANAGED_RESOURCE_ID, requestBody);
+      STUB_MANAGED_RESOURCE_ID, requestBody);
 
     String expectedJson = format(readFile(expectedResourceFile), accessTypeId, accessTypeId);
     JSONAssert.assertEquals(expectedJson, actualResponse, false);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)).withRequestBody(
-        equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
+      equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
 
-    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-    assertEquals(1, accessTypeMappingsInDB.size());
-    assertEquals(accessTypeId, accessTypeMappingsInDB.get(0).getAccessTypeId().toString());
-    assertEquals(RESOURCE, accessTypeMappingsInDB.get(0).getRecordType());
+    List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
+    assertEquals(1, accessTypeMappingsInDb.size());
+    assertEquals(accessTypeId, accessTypeMappingsInDb.get(0).getAccessTypeId().toString());
+    assertEquals(RESOURCE, accessTypeMappingsInDb.get(0).getRecordType());
   }
 
   @Test
@@ -293,15 +296,15 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource.json";
 
     String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT,
-        STUB_MANAGED_RESOURCE_ID, readFile("requests/kb-ebsco/resource/put-managed-resource.json"));
+      STUB_MANAGED_RESOURCE_ID, readFile("requests/kb-ebsco/resource/put-managed-resource.json"));
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, false);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)).withRequestBody(
-        equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
+      equalToJson(readFile("requests/rmapi/resources/put-managed-resource-is-selected-multiple-attributes.json"))));
 
-    List<AccessTypeMapping> accessTypeMappingsInDB = getAccessTypeMappings(vertx);
-    assertEquals(0, accessTypeMappingsInDB.size());
+    List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
+    assertEquals(0, accessTypeMappingsInDb.size());
   }
 
   @Test
@@ -326,37 +329,43 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     verify(0, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)));
 
     assertEquals(1, error.getErrors().size());
-    assertEquals("must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
+    assertEquals(
+      "must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
       error.getErrors().get(0).getMessage());
   }
 
   @Test
-  public void shouldDeselectManagedResourceOnPutWithSelectedFalse() throws IOException, URISyntaxException, JSONException {
+  public void shouldDeselectManagedResourceOnPutWithSelectedFalse()
+    throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response-is-selected-false.json";
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-managed-resource.json";
 
     ResourcePutRequest request =
       readJsonFile("requests/kb-ebsco/resource/put-managed-resource-is-not-selected.json", ResourcePutRequest.class);
     request.getData().getAttributes().setIsSelected(false);
-    String actualResponse = mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT, STUB_MANAGED_RESOURCE_ID,
-      Json.encode(request));
+    String actualResponse =
+      mockUpdateResourceScenario(stubResponseFile, MANAGED_RESOURCE_ENDPOINT, STUB_MANAGED_RESOURCE_ID,
+        Json.encode(request));
 
     Resource expectedResource = readJsonFile(expectedResourceFile, Resource.class);
     expectedResource.getData().getAttributes().setIsSelected(false);
     JSONAssert.assertEquals(Json.encode(expectedResource), actualResponse, false);
 
     verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true))
-      .withRequestBody(new EqualToJsonPattern(readFile("requests/rmapi/resources/put-managed-resource-is-not-selected.json"),
-        true, true)));
+      .withRequestBody(
+        new EqualToJsonPattern(readFile("requests/rmapi/resources/put-managed-resource-is-not-selected.json"),
+          true, true)));
   }
 
   @Test
-  public void shouldReturnUpdatedValuesCustomResourceOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
+  public void shouldReturnUpdatedValuesCustomResourceOnSuccessfulPut()
+    throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-custom-resource.json";
 
-    String actualResponse = mockUpdateResourceScenario(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
-      readFile("requests/kb-ebsco/resource/put-custom-resource.json"));
+    String actualResponse =
+      mockUpdateResourceScenario(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
+        readFile("requests/kb-ebsco/resource/put-custom-resource.json"));
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, false);
 
@@ -412,23 +421,22 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldPostResourceToRMAPI() throws IOException, URISyntaxException, JSONException {
-    String stubTitleResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
-    String stubPackageResponseFile = "responses/rmapi/packages/get-custom-package-by-id-response.json";
-    String stubPackageResourcesFile = "responses/rmapi/resources/get-resources-by-package-id-response.json";
-    String postStubRequest = "requests/kb-ebsco/resource/post-resources-request.json";
+  public void shouldPostResourceToRmApi() throws IOException, URISyntaxException, JSONException {
+    final String stubTitleResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
+    final String stubPackageResponseFile = "responses/rmapi/packages/get-custom-package-by-id-response.json";
+    final String stubPackageResourcesFile = "responses/rmapi/resources/get-resources-by-package-id-response.json";
+    final String postStubRequest = "requests/kb-ebsco/resource/post-resources-request.json";
+    final String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-after-post.json";
 
-    String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-after-post.json";
-
-    EqualToJsonPattern putRequestBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/resources/select-resource-request.json"),
-        true, true);
 
     mockPackageResources(stubPackageResourcesFile);
     mockPackage(stubPackageResponseFile);
     mockTitle(stubTitleResponseFile);
     mockResource(stubTitleResponseFile);
 
+    EqualToJsonPattern putRequestBodyPattern =
+      new EqualToJsonPattern(readFile("requests/rmapi/resources/select-resource-request.json"),
+        true, true);
     mockPut(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), putRequestBodyPattern, SC_NO_CONTENT);
 
     String actualResponse = postWithOk("eholdings/resources", readFile(postStubRequest), STUB_TOKEN_HEADER).asString();
@@ -446,18 +454,19 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), SC_NOT_FOUND);
     mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT), SC_NOT_FOUND);
 
-    JsonapiError error = postWithStatus("eholdings/resources", readFile(postStubRequest), SC_NOT_FOUND, STUB_TOKEN_HEADER)
-      .as(JsonapiError.class);
+    JsonapiError error =
+      postWithStatus("eholdings/resources", readFile(postStubRequest), SC_NOT_FOUND, STUB_TOKEN_HEADER)
+        .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "not found");
   }
 
   @Test
   public void shouldReturn422IfPackageIsNotCustom() throws IOException, URISyntaxException {
-    String stubTitleResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
-    String stubPackageResponseFile = "responses/rmapi/packages/get-package-by-id-for-resource.json";
-    String stubPackageResourcesFile = "responses/rmapi/resources/get-resources-by-package-id-response.json";
-    String postStubRequest = "requests/kb-ebsco/resource/post-resources-request.json";
+    final String stubTitleResponseFile = "responses/rmapi/resources/get-resource-by-id-success-response.json";
+    final String stubPackageResponseFile = "responses/rmapi/packages/get-package-by-id-for-resource.json";
+    final String stubPackageResourcesFile = "responses/rmapi/resources/get-resources-by-package-id-response.json";
+    final String postStubRequest = "requests/kb-ebsco/resource/post-resources-request.json";
 
     mockPackageResources(stubPackageResourcesFile);
     mockPackage(stubPackageResponseFile);
@@ -551,20 +560,21 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnResourcesAndFailedIds() throws IOException, URISyntaxException, JSONException {
-    String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk-with-invalid-ids.json");
-    String expectedResourceFile = "responses/kb-ebsco/resources/expected-resources-bulk-response-with-failed-ids.json";
+    final String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk-with-invalid-ids.json");
+    final String expectedResourceFile = "responses/kb-ebsco/resources/expected-resources-bulk"
+      + "-response-with-failed-ids.json";
+    final String resourceResponse1 = "responses/rmapi/resources/get-resource-by-id-success-response.json";
+    final String resourceResponse2 = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+    final String notFoundResponse = "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
 
-    String resourceResponse1 = "responses/rmapi/resources/get-resource-by-id-success-response.json";
     mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), resourceResponse1);
-
-    String resourceResponse2 = "responses/rmapi/resources/get-custom-resource-updated-response.json";
     mockGet(new EqualToPattern(CUSTOM_RESOURCE_ENDPOINT), resourceResponse2);
 
-    String notFoundResponse = "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
 
     stubFor(
       get(new UrlPathPattern(
-        new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/186/packages/3150130/titles/19087948"), false))
+        new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/186/packages/3150130/titles/19087948"),
+        false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(notFoundResponse))
           .withStatus(404)));
@@ -575,7 +585,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnErrorWhenRMApiFails() throws IOException, URISyntaxException {
+  public void shouldReturnErrorWhenRmApiFails() throws IOException, URISyntaxException {
     mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
 
     String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk.json");
@@ -607,7 +617,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID), responseFile);
   }
 
-  private String mockUpdateResourceScenario(String updatedResourceResponseFile, String resourceEndpoint, String resourceId,
+  private String mockUpdateResourceScenario(String updatedResourceResponseFile, String resourceEndpoint,
+                                            String resourceId,
                                             String requestBody) throws IOException, URISyntaxException {
     stubFor(
       get(new UrlPathPattern(new RegexPattern(resourceEndpoint), false))

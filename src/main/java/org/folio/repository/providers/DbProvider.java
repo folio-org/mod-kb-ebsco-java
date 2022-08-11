@@ -1,7 +1,6 @@
 package org.folio.repository.providers;
 
 import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Value;
 

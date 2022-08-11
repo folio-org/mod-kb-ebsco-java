@@ -5,15 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doAnswer;
-
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_DELTAS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_DELTA_BY_ID_URL;
@@ -36,26 +27,20 @@ import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
 import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KBTestUtil.interceptAndContinue;
-import static org.folio.util.KBTestUtil.interceptAndStop;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.KbTestUtil.interceptAndContinue;
+import static org.folio.util.KbTestUtil.interceptAndStop;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doAnswer;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
@@ -71,18 +56,19 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.HoldingsDownloadTransaction;
 import org.folio.holdingsiq.model.HoldingsTransactionIdsList;
@@ -97,6 +83,17 @@ import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.util.HoldingsTestUtil;
 import org.folio.util.TransactionIdTestUtil;
+import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RunWith(VertxUnitRunner.class)
 public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
@@ -144,7 +141,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
       CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
       return future.thenAccept(handler);
     }).when(repositorySpy).update(
-      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), any(UUID.class), anyString());
+      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), any(UUID.class),
+      anyString());
   }
 
   @Before
@@ -156,7 +154,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
       .customerId(STUB_CUSTOMER_ID)
       .url(getWiremockUrl())
       .build();
-    setupDefaultLoadKBConfiguration();
+    setupDefaultLoadKbConfiguration();
   }
 
   @After
@@ -177,7 +175,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldSaveHoldingsWhenPreviousTransactionExpired(TestContext context) throws IOException, URISyntaxException {
+  public void shouldSaveHoldingsWhenPreviousTransactionExpired(TestContext context)
+    throws IOException, URISyntaxException {
 
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTIALS_ID, PREVIOUS_TRANSACTION_ID, vertx);
     runPostHoldingsWithMocks(context);
@@ -202,7 +201,8 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
       .build();
     mockTransactionList(Collections.singletonList(previousTransaction));
     mockPostHoldings();
-    mockGet(new EqualToPattern(getStatusEndpoint(PREVIOUS_TRANSACTION_ID)), RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED);
+    mockGet(new EqualToPattern(getStatusEndpoint(PREVIOUS_TRANSACTION_ID)),
+      RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED);
     mockGet(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED);
     mockPostDeltaReport();
     mockGet(new EqualToPattern(getDeltaReportStatusEndpoint()),
@@ -371,8 +371,9 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     assertTrue(async.isSucceeded());
   }
 
-  public void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void setupDefaultLoadKbConfiguration() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
+      vertx);
     saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }

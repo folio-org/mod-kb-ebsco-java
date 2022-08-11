@@ -2,17 +2,12 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 
-import java.util.Map;
-
-import javax.ws.rs.core.Response;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
+import java.util.Map;
+import javax.ws.rs.core.Response;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
@@ -23,6 +18,8 @@ import org.folio.rest.jaxrs.resource.EholdingsUserKbCredential;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, EholdingsUserKbCredential {
 
@@ -43,7 +40,8 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsKbCredentials(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+  public void getEholdingsKbCredentials(Map<String, String> okapiHeaders,
+                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                         Context vertxContext) {
     securedCredentialsService.findAll(okapiHeaders)
       .thenAccept(kbCredentialsCollection -> asyncResultHandler.handle(succeededFuture(
@@ -114,7 +112,8 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
 
   @Override
   public void getEholdingsKbCredentialsKeyById(String id, Map<String, String> okapiHeaders,
-                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                               Handler<AsyncResult<Response>> asyncResultHandler,
+                                               Context vertxContext) {
     nonSecuredCredentialsService.findKeyById(id, okapiHeaders)
       .thenAccept(kbCredentialsKey -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsKeyByIdResponse.respond200WithApplicationVndApiJson(kbCredentialsKey))))

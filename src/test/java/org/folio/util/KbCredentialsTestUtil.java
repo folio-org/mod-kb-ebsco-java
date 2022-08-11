@@ -21,6 +21,10 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.ups
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TokenTestUtil.createTokenHeader;
 
+import io.restassured.http.Header;
+import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import java.sql.ResultSet;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -29,18 +33,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-import io.restassured.http.Header;
-import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Tuple;
-import org.springframework.core.convert.converter.Converter;
-
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.converter.kbcredentials.KbCredentialsConverter;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.core.convert.converter.Converter;
 
 public class KbCredentialsTestUtil {
 
@@ -101,17 +99,17 @@ public class KbCredentialsTestUtil {
     return getKbCredentials(vertx, CONVERTER);
   }
 
-  public static List<KbCredentials> getKbCredentialsNonSecured(Vertx vertx) {
-    return getKbCredentials(vertx, CONVERTER_NON_SECURED);
-  }
-
   private static List<KbCredentials> getKbCredentials(Vertx vertx,
                                                       Converter<DbKbCredentials, KbCredentials> converter) {
     CompletableFuture<List<KbCredentials>> future = new CompletableFuture<>();
     String query = prepareQuery(selectCredentialsQuery(), kbCredentialsTestTable());
-    PostgresClient.getInstance(vertx, STUB_TENANT)
-      .select(query, event -> future.complete(mapItems(event.result(), row -> converter.convert(mapKbCredentials(row)))));
+    PostgresClient.getInstance(vertx, STUB_TENANT).select(query,
+      event -> future.complete(mapItems(event.result(), row -> converter.convert(mapKbCredentials(row)))));
     return future.join();
+  }
+
+  public static List<KbCredentials> getKbCredentialsNonSecured(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER_NON_SECURED);
   }
 
   private static DbKbCredentials mapKbCredentials(Row row) {

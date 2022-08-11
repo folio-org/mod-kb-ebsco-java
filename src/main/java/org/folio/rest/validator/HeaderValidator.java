@@ -3,15 +3,12 @@ package org.folio.rest.validator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-
 import javax.validation.ValidationException;
-
+import org.folio.okapi.common.XOkapiHeaders;
 import org.springframework.stereotype.Component;
 
-import org.folio.okapi.common.XOkapiHeaders;
-
 /**
- * Verifies that headers are valid
+ * Verifies that headers are valid.
  */
 @Component
 public class HeaderValidator {
@@ -21,6 +18,8 @@ public class HeaderValidator {
   );
 
   /**
+   * Validate headers.
+   *
    * @param okapiHeaders request headers
    * @throws ValidationException if validation failed
    */

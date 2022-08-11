@@ -4,25 +4,23 @@ import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
 import static org.folio.common.LogUtils.logSelectQueryDebugLevel;
 import static org.folio.db.RowSetUtils.mapFirstItem;
+import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_COLUMN;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.getLastTransactionIdByCredentials;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.insertTransactionId;
-import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_COLUMN;
 import static org.folio.util.FutureUtils.mapResult;
 import static org.folio.util.FutureUtils.mapVertxFuture;
-
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.stereotype.Component;
-
 import org.folio.rest.persist.PostgresClient;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TransactionIdRepositoryImpl implements TransactionIdRepository {

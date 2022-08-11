@@ -9,7 +9,7 @@ import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.springframework.stereotype.Component;
 
 /**
- * Verifies that post data for packages are valid
+ * Verifies that post data for packages are valid.
  */
 @Component
 public class PackagesPostBodyValidator {
@@ -18,13 +18,14 @@ public class PackagesPostBodyValidator {
   private static final String INVALID_POST_BODY = "Invalid request body";
 
   /**
-   * Provides validation for the post data attributes
+   * Provides validation for the post data attributes.
    *
    * @throws ValidationException if validation fails
    */
   public void validate(PackagePostRequest entity) {
 
-    if (Objects.isNull(entity) || Objects.isNull(entity.getData()) || Objects.isNull(entity.getData().getAttributes())) {
+    if (Objects.isNull(entity) || Objects.isNull(entity.getData())
+      || Objects.isNull(entity.getData().getAttributes())) {
       throw new InputValidationException(INVALID_POST_BODY, "");
     }
 

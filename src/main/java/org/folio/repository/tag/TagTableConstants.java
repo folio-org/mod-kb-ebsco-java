@@ -19,79 +19,78 @@ public final class TagTableConstants {
   }
 
   public static String selectAllTags(String tenantId) {
-    return prepareQuery(selectAllTags(), getTagsTableName(tenantId));
+    return prepareQuery(selectAllTagsQuery(), getTagsTableName(tenantId));
   }
 
   public static String selectTagsByRecordIdAndRecordType(String tenantId) {
-    return prepareQuery(selectTagsByRecordIdAndRecordType(), getTagsTableName(tenantId));
+    return prepareQuery(selectTagsByRecordIdAndRecordTypeQuery(), getTagsTableName(tenantId));
   }
 
   public static String selectTagsByRecordTypes(String tenantId, String placeholders) {
-    return prepareQuery(selectTagsByRecordTypes(), getTagsTableName(tenantId), placeholders);
+    return prepareQuery(selectTagsByRecordTypesQuery(), getTagsTableName(tenantId), placeholders);
   }
 
   public static String getCountRecordsByTagValueAndTypeAndRecordIdPrefix(String tenantId, String values) {
-    return prepareQuery(getCountRecordsByTagValueAndTypeAndRecordIdPrefix(), getTagsTableName(tenantId), values);
+    return prepareQuery(getCountRecordsByTagValueAndTypeAndRecordIdPrefixQuery(), getTagsTableName(tenantId), values);
   }
 
   public static String updateInsertStatementForProvider(String tenantId, String updatedValues) {
-    return prepareQuery(updateInsertStatementForProvider(), getTagsTableName(tenantId), updatedValues);
+    return prepareQuery(updateInsertStatementForProviderQuery(), getTagsTableName(tenantId), updatedValues);
   }
 
   public static String deleteTagRecord(String tenantId) {
-    return prepareQuery(deleteTagRecord(), getTagsTableName(tenantId));
+    return prepareQuery(deleteTagRecordQuery(), getTagsTableName(tenantId));
   }
 
   public static String selectTagsByResourceIds(String tenantId, String placeholders) {
-    return prepareQuery(selectTagsByResourceIds(), getTagsTableName(tenantId), placeholders);
+    return prepareQuery(selectTagsByResourceIdsQuery(), getTagsTableName(tenantId), placeholders);
   }
 
   public static String selectAllDistinctTags(String tenantId) {
-    return prepareQuery(selectAllDistinctTags(), getTagsTableName(tenantId));
+    return prepareQuery(selectAllDistinctTagsQuery(), getTagsTableName(tenantId));
   }
 
   public static String selectDistinctTagsByRecordTypes(String tenantId, String placeholders) {
-    return prepareQuery(selectDistinctTagsByRecordTypes(), getTagsTableName(tenantId), placeholders);
+    return prepareQuery(selectDistinctTagsByRecordTypesQuery(), getTagsTableName(tenantId), placeholders);
   }
 
-  private static String selectAllTags() {
+  private static String selectAllTagsQuery() {
     return "SELECT " + TAG_FIELD_LIST + " FROM %s ORDER BY " + TAG_COLUMN;
   }
 
-  private static String selectTagsByRecordIdAndRecordType() {
+  private static String selectTagsByRecordIdAndRecordTypeQuery() {
     return "SELECT " + TAG_FIELD_LIST + " FROM %s "
       + "WHERE " + RECORD_ID_COLUMN + "=? AND " + RECORD_TYPE_COLUMN + "=? ORDER BY " + TAG_COLUMN;
   }
 
-  private static String selectTagsByRecordTypes() {
+  private static String selectTagsByRecordTypesQuery() {
     return "SELECT " + TAG_FIELD_LIST + " FROM %s "
       + "WHERE " + RECORD_TYPE_COLUMN + " IN (%s) ORDER BY " + TAG_COLUMN;
   }
 
-  private static String getCountRecordsByTagValueAndTypeAndRecordIdPrefix() {
+  private static String getCountRecordsByTagValueAndTypeAndRecordIdPrefixQuery() {
     return "SELECT COUNT(DISTINCT " + RECORD_ID_COLUMN + ") AS " + COUNT_COLUMN + " FROM %s "
       + "WHERE " + TAG_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "=? AND " + RECORD_ID_COLUMN + " LIKE ?";
   }
 
-  private static String updateInsertStatementForProvider() {
-    return "INSERT INTO %s (" + TAG_FIELD_LIST + ") VALUES " +
-      "%s;";
+  private static String updateInsertStatementForProviderQuery() {
+    return "INSERT INTO %s (" + TAG_FIELD_LIST + ") VALUES " + "%s;";
   }
 
-  private static String deleteTagRecord() {
+  private static String deleteTagRecordQuery() {
     return "DELETE FROM %s WHERE " + RECORD_ID_COLUMN + "=? AND " + RECORD_TYPE_COLUMN + "=?";
   }
 
-  private static String selectTagsByResourceIds() {
+  private static String selectTagsByResourceIdsQuery() {
     return "SELECT " + TAG_FIELD_LIST + " FROM %s WHERE "
       + RECORD_ID_COLUMN + " IN (%s) AND " + RECORD_TYPE_COLUMN + "=?";
   }
 
-  private static String selectAllDistinctTags() {
-    return "SELECT DISTINCT tag FROM %s";
+  private static String selectAllDistinctTagsQuery() {
+    return "SELECT DISTINCT " + TAG_COLUMN + " FROM %s";
   }
 
-  private static String selectDistinctTagsByRecordTypes() {
+  private static String selectDistinctTagsByRecordTypesQuery() {
     return "SELECT DISTINCT tag FROM %s WHERE " + RECORD_TYPE_COLUMN + " IN (%s) ORDER BY " + TAG_COLUMN;
   }
 

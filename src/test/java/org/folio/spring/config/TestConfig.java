@@ -13,13 +13,13 @@ import org.springframework.core.io.ClassPathResource;
 public class TestConfig {
 
   @Bean
-  public Vertx vertx(){
+  public Vertx vertx() {
     //Initialize empty vertx object to be used by ApplicationConfig
     return Vertx.vertx();
   }
 
   @Bean
-  public Context context(){
+  public Context context() {
     //Initialize empty context
     return Vertx.vertx().getOrCreateContext();
   }

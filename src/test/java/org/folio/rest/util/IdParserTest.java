@@ -3,10 +3,8 @@ package org.folio.rest.util;
 import static org.junit.Assert.assertEquals;
 
 import javax.validation.ValidationException;
-
-import org.junit.Test;
-
 import org.folio.holdingsiq.model.ResourceId;
+import org.junit.Test;
 
 public class IdParserTest {
 

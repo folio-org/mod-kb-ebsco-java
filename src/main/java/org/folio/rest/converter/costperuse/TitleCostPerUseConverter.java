@@ -2,7 +2,6 @@ package org.folio.rest.converter.costperuse;
 
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
-
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
@@ -10,14 +9,10 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNo
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.math.NumberUtils;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.stereotype.Component;
-
+import org.folio.client.uc.model.UcCostAnalysis;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.Coverage;
@@ -30,6 +25,10 @@ import org.folio.rest.jaxrs.model.TitleCostPerUseDataAttributes;
 import org.folio.rest.jaxrs.model.Usage;
 import org.folio.rest.jaxrs.model.UsageTotals;
 import org.folio.rmapi.result.TitleCostPerUseResult;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult, TitleCostPerUse> {
@@ -99,9 +98,9 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
       .collect(Collectors.toList());
   }
 
-  private HoldingsCostAnalysisAttributes toHoldingsCostAnalysis(Integer totalUsage,
-                                                                java.util.Map<String, org.folio.client.uc.model.UCCostAnalysis> titlePackageCostMap,
-                                                                org.folio.holdingsiq.model.CustomerResources customerResource) {
+  private HoldingsCostAnalysisAttributes toHoldingsCostAnalysis(
+    Integer totalUsage, Map<String, UcCostAnalysis> titlePackageCostMap,
+    org.folio.holdingsiq.model.CustomerResources customerResource) {
     var titleId = customerResource.getTitleId();
     var packageId = customerResource.getPackageId();
     var vendorId = customerResource.getVendorId();

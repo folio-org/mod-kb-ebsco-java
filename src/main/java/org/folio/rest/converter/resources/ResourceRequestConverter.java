@@ -3,9 +3,6 @@ package org.folio.rest.converter.resources;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.holdingsiq.model.ResourcePut;
@@ -14,17 +11,19 @@ import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceRequestConverter {
-  public org.folio.holdingsiq.model.ResourcePut convertToRMAPIResourcePutRequest(ResourcePutRequest entity, Title oldTitle) {
+  public org.folio.holdingsiq.model.ResourcePut convertToRmApiResourcePutRequest(ResourcePutRequest entity,
+                                                                                 Title oldTitle) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
     ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldTitle);
     return builder.build();
   }
 
-  public ResourcePut convertToRMAPICustomResourcePutRequest(ResourcePutRequest entity, Title oldTitle) {
+  public ResourcePut convertToRmApiCustomResourcePutRequest(ResourcePutRequest entity, Title oldTitle) {
     ResourcePutDataAttributes attributes = entity.getData().getAttributes();
     //Map common attributes for custom/managed resources to RM API fields
     ResourcePut.ResourcePutBuilder builder = convertCommonAttributesToResourcePutRequest(attributes, oldTitle);
@@ -39,7 +38,8 @@ public class ResourceRequestConverter {
     return builder.build();
   }
 
-  private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(ResourcePutDataAttributes attributes, Title oldTitle) {
+  private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(
+    ResourcePutDataAttributes attributes, Title oldTitle) {
     var builder = ResourcePut.builder();
     var oldResource = oldTitle.getCustomerResourcesList().get(0);
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
@@ -55,8 +55,8 @@ public class ResourceRequestConverter {
     builder.proxy(rmApiProxy);
 
     var oldHidden = oldResource.getVisibilityData() != null ? oldResource.getVisibilityData().getIsHidden() : null;
-    var isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null ?
-      attributes.getVisibilityData().getIsHidden() : oldHidden;
+    var isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null
+                   ? attributes.getVisibilityData().getIsHidden() : oldHidden;
 
     builder.isHidden(isHidden);
     if (Boolean.TRUE == oldResource.getIsPackageCustom()) {
@@ -76,24 +76,30 @@ public class ResourceRequestConverter {
       builder.customEmbargoPeriod(customEmbargo);
     }
 
-    var coverageDates = attributes.getCustomCoverages() != null ?
-      convertToRMAPICustomCoverageList(attributes.getCustomCoverages()) : oldResource.getCustomCoverageList();
+    var coverageDates = attributes.getCustomCoverages() != null
+                        ? convertToRmApiCustomCoverageList(attributes.getCustomCoverages())
+                        : oldResource.getCustomCoverageList();
     builder.customCoverageList(coverageDates);
 
     // For now, we do not have any attributes specific to managed resources to be mapped to RM API fields
-    // but below, we set the same values as we conduct a GET for pubType and isPeerReviewed because otherwise RM API gives
-    // a bad request error if those values are set to null. All of the other fields are retained as is by RM API because they
-    // cannot be updated.
+    // but below, we set the same values as we conduct a GET for pubType and isPeerReviewed because otherwise
+    // RM API gives a bad request error if those values are set to null. All the other fields are retained as
+    // is by RM API because they cannot be updated.
     builder.pubType(oldTitle.getPubType());
     builder.isPeerReviewed(oldTitle.getIsPeerReviewed());
 
     builder.userDefinedFields(UserDefinedFields.builder()
-      .userDefinedField1(valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedFields().getUserDefinedField1()))
-      .userDefinedField2(valueOrDefault(attributes.getUserDefinedField2(), oldResource.getUserDefinedFields().getUserDefinedField2()))
-      .userDefinedField3(valueOrDefault(attributes.getUserDefinedField3(), oldResource.getUserDefinedFields().getUserDefinedField3()))
-      .userDefinedField4(valueOrDefault(attributes.getUserDefinedField4(), oldResource.getUserDefinedFields().getUserDefinedField4()))
-      .userDefinedField5(valueOrDefault(attributes.getUserDefinedField5(), oldResource.getUserDefinedFields().getUserDefinedField5()))
-    .build());
+      .userDefinedField1(
+        valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedFields().getUserDefinedField1()))
+      .userDefinedField2(
+        valueOrDefault(attributes.getUserDefinedField2(), oldResource.getUserDefinedFields().getUserDefinedField2()))
+      .userDefinedField3(
+        valueOrDefault(attributes.getUserDefinedField3(), oldResource.getUserDefinedFields().getUserDefinedField3()))
+      .userDefinedField4(
+        valueOrDefault(attributes.getUserDefinedField4(), oldResource.getUserDefinedFields().getUserDefinedField4()))
+      .userDefinedField5(
+        valueOrDefault(attributes.getUserDefinedField5(), oldResource.getUserDefinedFields().getUserDefinedField5()))
+      .build());
 
     return builder;
   }
@@ -102,7 +108,7 @@ public class ResourceRequestConverter {
     return value != null ? value : defaultValue;
   }
 
-  private List<CoverageDates> convertToRMAPICustomCoverageList(List<Coverage> customCoverages) {
+  private List<CoverageDates> convertToRmApiCustomCoverageList(List<Coverage> customCoverages) {
     return mapItems(customCoverages,
       coverage -> CoverageDates.builder()
         .beginCoverage(coverage.getBeginCoverage())

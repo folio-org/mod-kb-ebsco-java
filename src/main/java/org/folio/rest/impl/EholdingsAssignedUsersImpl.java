@@ -2,16 +2,12 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 
-import java.util.Map;
-
-import javax.ws.rs.core.Response;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import java.util.Map;
+import javax.ws.rs.core.Response;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.AssignedUserPostRequest;
@@ -20,6 +16,7 @@ import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.AssignedUsersBodyValidator;
 import org.folio.service.assignedusers.AssignedUsersService;
 import org.folio.spring.SpringContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers {
 
@@ -38,7 +35,8 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
   @Validate
   @HandleValidationErrors
   public void getEholdingsKbCredentialsUsersById(String credentialsId, Map<String, String> okapiHeaders,
-                                                 Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                 Handler<AsyncResult<Response>> asyncResultHandler,
+                                                 Context vertxContext) {
     assignedUsersService.findByCredentialsId(credentialsId, okapiHeaders)
       .thenAccept(assignedUserCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsUsersByIdResponse.respond200WithApplicationVndApiJson(assignedUserCollection))))
@@ -48,9 +46,11 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
   @Override
   @Validate
   @HandleValidationErrors
-  public void postEholdingsKbCredentialsUsersById(String credentialsId, String contentType, AssignedUserPostRequest entity,
+  public void postEholdingsKbCredentialsUsersById(String credentialsId, String contentType,
+                                                  AssignedUserPostRequest entity,
                                                   Map<String, String> okapiHeaders,
-                                                  Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+                                                  Handler<AsyncResult<Response>> asyncResultHandler,
+                                                  Context vertxContext) {
     var requestData = entity.getData();
     assignedUsersBodyValidator.validate(requestData);
     requestData.setCredentialsId(credentialsId);
@@ -60,7 +60,6 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
         PostEholdingsKbCredentialsUsersByIdResponse.respond201WithApplicationVndApiJson(assignedUserId))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
-
 
   @Override
   @Validate

@@ -8,6 +8,19 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
+import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.uc.UcCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
+import static org.folio.repository.uc.UcSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
+import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
+import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
+import static org.folio.util.HoldingsTestUtil.saveHolding;
+import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
+import static org.folio.util.KbTestUtil.clearDataFromTable;
+import static org.folio.util.UcCredentialsTestUtil.setUpUcCredentials;
+import static org.folio.util.UcSettingsTestUtil.saveUcSettings;
+import static org.folio.util.UcSettingsTestUtil.stubSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
@@ -18,26 +31,22 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
-import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
-import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
-import static org.folio.repository.uc.UCCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
-import static org.folio.repository.uc.UCSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
-import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
-import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.HoldingsTestUtil.saveHolding;
-import static org.folio.util.KBTestUtil.clearDataFromTable;
-import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
-import static org.folio.util.UCCredentialsTestUtil.setUpUCCredentials;
-import static org.folio.util.UCSettingsTestUtil.saveUCSettings;
-import static org.folio.util.UCSettingsTestUtil.stubSettings;
-
+import io.vertx.core.json.Json;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
-
-import io.vertx.core.json.Json;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.folio.client.uc.UcApigeeEbscoClient;
+import org.folio.client.uc.UcAuthEbscoClient;
+import org.folio.client.uc.model.UcAuthToken;
+import org.folio.repository.holdings.DbHoldingInfo;
+import org.folio.rest.impl.WireMockTestBase;
+import org.folio.rest.jaxrs.model.JsonapiError;
+import org.folio.rest.jaxrs.model.PackageCostPerUse;
+import org.folio.rest.jaxrs.model.ResourceCostPerUse;
+import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
+import org.folio.rest.jaxrs.model.TitleCostPerUse;
+import org.folio.test.util.TestUtil;
 import org.jeasy.random.EasyRandom;
 import org.junit.After;
 import org.junit.Assert;
@@ -47,27 +56,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import org.folio.client.uc.UCApigeeEbscoClient;
-import org.folio.client.uc.UCAuthEbscoClient;
-import org.folio.client.uc.model.UCAuthToken;
-import org.folio.repository.holdings.DbHoldingInfo;
-import org.folio.rest.impl.WireMockTestBase;
-import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.rest.jaxrs.model.PackageCostPerUse;
-import org.folio.rest.jaxrs.model.ResourceCostPerUse;
-import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
-import org.folio.rest.jaxrs.model.TitleCostPerUse;
-import org.folio.test.util.TestUtil;
-
 @RunWith(VertxUnitRunner.class)
 public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   private final EasyRandom random = new EasyRandom();
 
   @Autowired
-  private UCAuthEbscoClient authEbscoClient;
+  private UcAuthEbscoClient authEbscoClient;
   @Autowired
-  private UCApigeeEbscoClient apigeeEbscoClient;
+  private UcApigeeEbscoClient apigeeEbscoClient;
 
   private String credentialsId;
 
@@ -78,8 +75,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
     credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     String credentialsId = this.credentialsId;
-    saveUCSettings(stubSettings(credentialsId), vertx);
-    setUpUCCredentials(vertx);
+    saveUcSettings(stubSettings(credentialsId), vertx);
+    setUpUcCredentials(vertx);
 
     ReflectionTestUtils.setField(authEbscoClient, "baseUrl", getWiremockUrl());
     ReflectionTestUtils.setField(apigeeEbscoClient, "baseUrl", getWiremockUrl());
@@ -138,7 +135,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String stubApigeeResponseFile = "responses/uc/titles/get-title-cost-per-use-response-with-empty-non-publisher.json";
     mockSuccessfulTitleCostPerUse(titleId, packageId, stubApigeeResponseFile);
 
-    String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/resources/expected-resource-cost-per-use-with-empty-non-publisher.json";
+    String kbEbscoResponseFile =
+      "responses/kb-ebsco/costperuse/resources/expected-resource-cost-per-use-with-empty-non-publisher.json";
     ResourceCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), ResourceCostPerUse.class);
 
     ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, platform), JOHN_TOKEN_HEADER)
@@ -148,7 +146,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetResourceCPUWhenYearIsNull() {
+  public void shouldReturn422OnGetResourceCpuWhenYearIsNull() {
     int titleId = 356;
     int packageId = 473;
     JsonapiError error = getWithStatus(resourceEndpoint(titleId, packageId, null, null), SC_UNPROCESSABLE_ENTITY)
@@ -158,7 +156,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetResourceCPUWhenPlatformIsInvalid() {
+  public void shouldReturn422OnGetResourceCpuWhenPlatformIsInvalid() {
     int titleId = 356;
     int packageId = 473;
     String year = "2019";
@@ -170,7 +168,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnGetResourceCPUWhenApigeeFails() {
+  public void shouldReturn400OnGetResourceCpuWhenApigeeFails() {
     int titleId = 356;
     int packageId = 473;
     String year = "2019";
@@ -179,8 +177,9 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
     );
 
-    JsonapiError error = getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
-      .as(JsonapiError.class);
+    JsonapiError error =
+      getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+        .as(JsonapiError.class);
 
     assertErrorContainsDetail(error, "Random error message");
   }
@@ -189,9 +188,9 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   public void shouldReturnTitleCostPerUse() {
     int titleId = 1111111111;
     int packageId = 222222;
-    String year = "2019";
-    String platform = "all";
-    String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json";
+    final String year = "2019";
+    final String platform = "all";
+    final String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json";
 
     mockRmApiGetTitle(titleId, stubRmapiResponseFile);
     String stubApigeeGetTitleResponseFile = "responses/uc/titles/get-title-cost-per-use-response.json";
@@ -213,9 +212,9 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   public void shouldReturnTitleCostPerUseWithManagedEmbargoPeriod() {
     int titleId = 1111111111;
     int packageId = 222222;
-    String year = "2019";
-    String platform = "nonPublisher";
-    String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-managed-embargo.json";
+    final String year = "2019";
+    final String platform = "nonPublisher";
+    final String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-managed-embargo.json";
 
     mockRmApiGetTitle(titleId, stubRmapiResponseFile);
     String stubApigeeGetTitleResponseFile = "responses/uc/titles/get-empty-title-cost-per-use-response.json";
@@ -237,9 +236,9 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   public void shouldReturnEmptyTitleCostPerUseWhenNoCostPerUseDataAvailable() {
     int titleId = 1111111111;
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json";
+    final String year = "2019";
+    final String platform = "publisher";
+    final String stubRmapiResponseFile = "responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json";
 
     mockRmApiGetTitle(titleId, stubRmapiResponseFile);
     String stubApigeeGetTitleResponseFile = "responses/uc/titles/get-empty-title-cost-per-use-response.json";
@@ -276,7 +275,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetTitleCPUWhenYearIsNull() {
+  public void shouldReturn422OnGetTitleCpuWhenYearIsNull() {
     int titleId = 356;
     JsonapiError error = getWithStatus(titleEndpoint(titleId, null, null), SC_UNPROCESSABLE_ENTITY)
       .as(JsonapiError.class);
@@ -285,7 +284,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetTitleCPUWhenPlatformIsInvalid() {
+  public void shouldReturn422OnGetTitleCpuWhenPlatformIsInvalid() {
     int titleId = 356;
     String year = "2019";
     String platform = "invalid";
@@ -296,7 +295,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnGetTitleCPUWhenApigeeFails() {
+  public void shouldReturn400OnGetTitleCpuWhenApigeeFails() {
     int titleId = 356;
     int packageId = 473;
     String year = "2019";
@@ -305,8 +304,9 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
     );
 
-    JsonapiError error = getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
-      .as(JsonapiError.class);
+    JsonapiError error =
+      getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+        .as(JsonapiError.class);
 
     assertErrorContainsDetail(error, "Random error message");
   }
@@ -332,15 +332,16 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnPackageCostPerUseWhenPackageCostIsEmpty() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "all";
+    final String year = "2019";
+    final String platform = "all";
 
     var holding1 = new DbHoldingInfo(1, packageId, 1, "Ionicis tormentos accelerare!", "Sunt hydraes", "Book");
     var holding2 = new DbHoldingInfo(2, packageId, 1, "Vortex, plasmator, et lixa.", "Est germanus byssus", "Book");
     saveHolding(credentialsId, holding1, OffsetDateTime.now(), vertx);
     saveHolding(credentialsId, holding2, OffsetDateTime.now(), vertx);
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-title-packages-cost-per-use-for-package-response.json";
@@ -357,7 +358,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetPackageCPUWhenYearIsNull() {
+  public void shouldReturn422OnGetPackageCpuWhenYearIsNull() {
     int packageId = 222222;
     JsonapiError error = getWithStatus(packageEndpoint(packageId, null, null), SC_UNPROCESSABLE_ENTITY)
       .as(JsonapiError.class);
@@ -366,7 +367,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetPackageCPUWhenPlatformIsInvalid() {
+  public void shouldReturn422OnGetPackageCpuWhenPlatformIsInvalid() {
     int packageId = 222222;
     String year = "2019";
     String platform = "invalid";
@@ -377,7 +378,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnGetPackageCPUWhenApigeeFails() {
+  public void shouldReturn400OnGetPackageCpuWhenApigeeFails() {
     int packageId = 222222;
     String year = "2019";
 
@@ -394,14 +395,15 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollection() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "all";
+    final String year = "2019";
+    final String platform = "all";
 
     for (int i = 1; i <= 20; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-multiply-title-packages-cost-per-use-for-package-response.json";
@@ -422,16 +424,17 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithPagination() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    var page = "2";
-    var size = "15";
+    final String year = "2019";
+    final String platform = "publisher";
+    final var page = "2";
+    final var size = "15";
 
     for (int i = 1; i <= 20; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-multiply-title-packages-cost-per-use-for-package-response.json";
@@ -451,24 +454,26 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByUsageAsc() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    String sort = "usage";
-    String order = "asc";
+    final String year = "2019";
+    final String platform = "publisher";
+    final String sort = "usage";
+    final String order = "asc";
 
     for (int i = 1; i <= 3; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection
-      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
-      .as(ResourceCostPerUseCollection.class);
+      actual =
+      getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
+        .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
     assertThat(actual.getMeta().getTotalResults(), equalTo(3));
@@ -481,24 +486,26 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByUsageDesc() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    String sort = "usage";
-    String order = "desc";
+    final String year = "2019";
+    final String platform = "publisher";
+    final String sort = "usage";
+    final String order = "desc";
 
     for (int i = 1; i <= 3; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection
-      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
-      .as(ResourceCostPerUseCollection.class);
+      actual =
+      getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
+        .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
     assertThat(actual.getMeta().getTotalResults(), equalTo(3));
@@ -511,15 +518,16 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByCost() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    String sort = "cost";
+    final String year = "2019";
+    final String platform = "publisher";
+    final String sort = "cost";
 
     for (int i = 1; i <= 3; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
@@ -540,15 +548,16 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByCostPerUse() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    String sort = "costperuse";
+    final String year = "2019";
+    final String platform = "publisher";
+    final String sort = "costperuse";
 
     for (int i = 1; i <= 3; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
@@ -569,15 +578,16 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollectionWithSortByPercent() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    String sort = "percent";
+    final String year = "2019";
+    final String platform = "publisher";
+    final String sort = "percent";
 
     for (int i = 1; i <= 3; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
@@ -598,15 +608,16 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesCostPerUseCollectionSortedByNameWhenSortingByEqualsValues() {
     int packageId = 222222;
-    String year = "2019";
-    String platform = "publisher";
-    String sort = "type";
+    final String year = "2019";
+    final String platform = "publisher";
+    final String sort = "type";
 
     for (int i = 1; i <= 3; i++) {
       saveHolding(credentialsId, generateHolding(packageId, i, String.valueOf(i)), OffsetDateTime.now(), vertx);
     }
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
     String stubApigeeGetTitlePackageResponseFile =
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
@@ -625,16 +636,17 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetPackageResourcesCPUWhenYearIsNull() {
+  public void shouldReturn422OnGetPackageResourcesCpuWhenYearIsNull() {
     int packageId = 222222;
-    JsonapiError error = getWithStatus(packageResourcesEndpoint(packageId, null, null, null, null), SC_UNPROCESSABLE_ENTITY)
-      .as(JsonapiError.class);
+    JsonapiError error =
+      getWithStatus(packageResourcesEndpoint(packageId, null, null, null, null), SC_UNPROCESSABLE_ENTITY)
+        .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid fiscalYear");
   }
 
   @Test
-  public void shouldReturn422OnGetPackageResourcesCPUWhenPlatformIsInvalid() {
+  public void shouldReturn422OnGetPackageResourcesCpuWhenPlatformIsInvalid() {
     int packageId = 222222;
     String year = "2019";
     String platform = "invalid";
@@ -646,26 +658,28 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn422OnGetPackageResourcesCPUWhenSortIsInvalid() {
+  public void shouldReturn422OnGetPackageResourcesCpuWhenSortIsInvalid() {
     int packageId = 222222;
     String year = "2019";
     String platform = "all";
     String sort = "invalid";
     JsonapiError error =
-      getWithStatus(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), SC_UNPROCESSABLE_ENTITY)
+      getWithStatus(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null),
+        SC_UNPROCESSABLE_ENTITY)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid sort");
   }
 
   @Test
-  public void shouldReturn400OnGetPackageResourcesCPUWhenApigeeFails() {
-    int packageId = 222222;
-    String year = "2019";
+  public void shouldReturn400OnGetPackageResourcesCpuWhenApigeeFails() {
+    final int packageId = 222222;
+    final String year = "2019";
 
     saveHolding(credentialsId, generateHolding(packageId, 1), OffsetDateTime.now(), vertx);
 
-    String stubApigeeGetPackageResponseFile = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
+    String stubApigeeGetPackageResponseFile =
+      "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     mockSuccessfulPackageCostPerUse(packageId, stubApigeeGetPackageResponseFile);
 
     stubFor(post(urlPathMatching("/uc/costperuse/titles"))
@@ -704,7 +718,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   private void mockAuthToken() {
-    UCAuthToken stubToken = new UCAuthToken("access_token", "Bearer", 3600L, "openid");
+    UcAuthToken stubToken = new UcAuthToken("access_token", "Bearer", 3600L, "openid");
     stubFor(post(urlPathMatching("/oauth-proxy/token"))
       .willReturn(aResponse().withStatus(SC_OK).withBody(Json.encode(stubToken)))
     );
@@ -723,24 +737,24 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String baseUrl = String.format("eholdings/resources/1-%s-%s/costperuse", packageId, titleId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
     return paramsSb.length() > 0
-      ? baseUrl + "?" + paramsSb.toString()
-      : baseUrl;
+           ? baseUrl + "?" + paramsSb
+           : baseUrl;
   }
 
   private String titleEndpoint(int titleId, String year, String platform) {
     String baseUrl = String.format("eholdings/titles/%s/costperuse", titleId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
     return paramsSb.length() > 0
-      ? baseUrl + "?" + paramsSb.toString()
-      : baseUrl;
+           ? baseUrl + "?" + paramsSb
+           : baseUrl;
   }
 
   private String packageEndpoint(int packageId, String year, String platform) {
     String baseUrl = String.format("eholdings/packages/1-%s/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
     return paramsSb.length() > 0
-      ? baseUrl + "?" + paramsSb.toString()
-      : baseUrl;
+           ? baseUrl + "?" + paramsSb
+           : baseUrl;
   }
 
   private String packageResourcesEndpoint(int packageId, String year, String platform, String page, String size) {
@@ -752,8 +766,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String baseUrl = String.format("eholdings/packages/1-%s/resources/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform, page, size, sort, order);
     return paramsSb.length() > 0
-      ? baseUrl + "?" + paramsSb.toString()
-      : baseUrl;
+           ? baseUrl + "?" + paramsSb
+           : baseUrl;
   }
 
   private StringBuilder getEndpointParams(String year, String platform) {
