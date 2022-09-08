@@ -279,8 +279,10 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RmApiTemplateContext context) {
-    CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
-    RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resource)).recordType(RecordType.RESOURCE).build();
+    List<CustomerResources> resources = result.getTitle().getCustomerResourcesList();
+    if (resources.isEmpty()) return CompletableFuture.completedFuture(result);
+
+    RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resources.get(0))).recordType(RecordType.RESOURCE).build();
     return CompletableFuture.allOf(
         relatedEntitiesLoader.loadAccessType(result, recordKey, context),
         relatedEntitiesLoader.loadTags(result, recordKey, context))
