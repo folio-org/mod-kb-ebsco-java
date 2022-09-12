@@ -6,6 +6,7 @@ import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
+import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.parsePackageId;
@@ -170,6 +171,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .thenCompose(result -> loadRelatedEntities(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, error404ResourceNotFoundMapper())
+      .addErrorMapper(NotFoundException.class, error404NotFoundMapper())
       .executeWithResult(Resource.class);
   }
 
@@ -280,9 +282,6 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RmApiTemplateContext context) {
     List<CustomerResources> resources = result.getTitle().getCustomerResourcesList();
-    if (resources.isEmpty()) {
-      return CompletableFuture.completedFuture(result);
-    }
 
     RecordKey recordKey = RecordKey.builder()
         .recordId(getResourceId(resources.get(0)))
@@ -353,7 +352,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .updateRecordTags(tenant, resourceIdToString(resource.getId()), RecordType.RESOURCE, resource.getTags()))
         .thenApply(updated -> null);
     }
-  }
+    }
 
   private CompletableFuture<Title> processResourceUpdate(ResourcePutRequest entity, ResourceId parsedResourceId,
                                                          RmApiTemplateContext context) {

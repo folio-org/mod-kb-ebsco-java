@@ -12,10 +12,12 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.validation.ValidationException;
+import javax.ws.rs.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
+import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
@@ -64,9 +66,11 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
     CompletableFuture<VendorResult> vendorFuture;
 
     if (useCache) {
-      titleFuture = retrieveResourceWithCache(resourceId, tenantId, configuration);
+      titleFuture = retrieveResourceWithCache(resourceId, tenantId, configuration)
+        .thenApply(this::validateCustomerResourcesList);
     } else {
-      titleFuture = super.retrieveResource(resourceId);
+      titleFuture = super.retrieveResource(resourceId)
+        .thenApply(this::validateCustomerResourcesList);
     }
     if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
       vendorFuture = providerService.retrieveProvider(resourceId.getProviderIdPart(), "");
@@ -153,5 +157,13 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       failed.add(resourceId);
     }
     return null;
+  }
+
+  private Title validateCustomerResourcesList(Title title) {
+    List<CustomerResources> customerResourcesList = title.getCustomerResourcesList();
+    if (customerResourcesList == null || customerResourcesList.isEmpty()) {
+      throw new NotFoundException("Title is no longer in this package");
+    }
+    return title;
   }
 }
