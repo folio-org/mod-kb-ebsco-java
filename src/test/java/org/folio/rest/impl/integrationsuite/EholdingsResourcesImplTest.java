@@ -228,6 +228,18 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn404WhenCustomerListIsEmpty() throws IOException, URISyntaxException {
+    String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-response-empty-customer-list.json";
+
+    mockResource(stubResponseFile);
+
+    JsonapiError error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND, STUB_TOKEN_HEADER)
+      .as(JsonapiError.class);
+
+    assertErrorContainsTitle(error, "Title is no longer in this package");
+  }
+
+  @Test
   public void shouldReturn400WhenValidationErrorOnResourceGet() {
     JsonapiError error = getWithStatus("eholdings/resources/583-abc-762169", SC_BAD_REQUEST, STUB_TOKEN_HEADER)
       .as(JsonapiError.class);

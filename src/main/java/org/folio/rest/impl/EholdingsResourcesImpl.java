@@ -6,6 +6,7 @@ import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
 import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
+import static org.folio.rest.util.ExceptionMappers.error404NotFoundMapper;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.parsePackageId;
@@ -170,6 +171,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .thenCompose(result -> loadRelatedEntities(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, error404ResourceNotFoundMapper())
+      .addErrorMapper(NotFoundException.class, error404NotFoundMapper())
       .executeWithResult(Resource.class);
   }
 
