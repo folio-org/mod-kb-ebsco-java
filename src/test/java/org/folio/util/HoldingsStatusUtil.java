@@ -36,7 +36,6 @@ public class HoldingsStatusUtil {
                                                  OffsetDateTime startedTime, Vertx vertx) {
     CompletableFuture<HoldingsLoadingStatus> future = new CompletableFuture<>();
     String query = DbUtil.prepareQuery(insertLoadingStatus(), holdingsStatusTestTable(), createPlaceholders(4));
-    status.getData().getAttributes().setStarted(startedTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     Tuple params = Tuple.of(randomUUID(), toUUID(credentialsId), toJsonObject(status), toUUID(processId));
     PostgresClient.getInstance(vertx, STUB_TENANT).execute(query, params, event -> future.complete(null));
     return future.join();
