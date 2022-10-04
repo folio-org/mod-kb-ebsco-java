@@ -81,7 +81,7 @@
     <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
     <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
     <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
-    <aspectj-maven-plugin.version>1.14.0</aspectj-maven-plugin.version>
+    <aspectj-maven-plugin.version>1.12.6</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
   </properties>
