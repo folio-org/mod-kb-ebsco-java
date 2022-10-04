@@ -173,8 +173,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldNotStartLoadingWhenStatusInProgress() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-      vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveStatus(STUB_CREDENTIALS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
@@ -184,14 +183,14 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   @Test
   public void shouldStartLoadingWhenStatusInProgressAndStartedMoreThen5DaysBefore(TestContext context)
     throws IOException, URISyntaxException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-      vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+
     OffsetDateTime dateTime = OffsetDateTime.now().minus(6, ChronoUnit.DAYS);
     HoldingsLoadingStatus statusLoadingHoldings = getStatusLoadingHoldings(1000, 500, 10, 5);
+    statusLoadingHoldings.getData().getAttributes().setStarted(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
     statusLoadingHoldings.getData().getAttributes().setUpdated(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-    saveStatus(STUB_CREDENTIALS_ID,
-      statusLoadingHoldings,
-      PROCESS_ID, dateTime, vertx);
+    saveStatus(STUB_CREDENTIALS_ID, statusLoadingHoldings, PROCESS_ID, dateTime, vertx);
+
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
     runPostHoldingsWithMocks(context);
 
@@ -390,8 +389,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   private void setupDefaultLoadKbConfiguration() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-      vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }
