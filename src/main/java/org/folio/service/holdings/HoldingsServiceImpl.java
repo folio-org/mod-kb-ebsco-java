@@ -333,7 +333,11 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private boolean isHangedLoading(HoldingsLoadingStatus status) {
-    OffsetDateTime startDate = getZonedDateTime(status.getData().getAttributes().getStarted());
+    String started = status.getData().getAttributes().getStarted();
+    if (StringUtils.isEmpty(started)) {
+      return true;
+    }
+    OffsetDateTime startDate = getZonedDateTime(started);
     return isInProgress(status)
       && OffsetDateTime.now().minus(5, ChronoUnit.DAYS).isAfter(startDate);
   }
