@@ -367,7 +367,7 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc/key",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get", "kb-ebsco.kb-credentials.uc.item.patch"]
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
         },
         {
           "methods": ["POST"],
