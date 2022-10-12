@@ -1,22 +1,18 @@
 package org.folio.rest.util;
 
-import lombok.experimental.UtilityClass;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import lombok.experimental.UtilityClass;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class to work with DateTime.
  */
 @UtilityClass
 public class DateTimeUtil {
-
-  private static final Logger logger = LogManager.getLogger(DateTimeUtil.class);
-  private static final String PARSE_EXCEPTION_MESSAGE = "Error parsing string: {}. Trying to parse the old format";
 
   public static final DateTimeFormatter POSTGRES_TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
   public static final DateTimeFormatter POSTGRES_OLD_TIMESTAMP_FORMATTER = new DateTimeFormatterBuilder()
@@ -27,20 +23,24 @@ public class DateTimeUtil {
       .appendOffset("+HH", "Z")
       .toFormatter();
 
+  private static final Logger logger = LogManager.getLogger(DateTimeUtil.class);
+  private static final String PARSE_EXCEPTION_MESSAGE = "Error parsing string: {}. Trying to parse the old format";
+
   /**
    * Retrieves current date time by default time-zone.
    *
-   * @return String
+   * @return {@link String} of current date time
    */
   public static String getTimeNow() {
     return POSTGRES_TIMESTAMP_FORMATTER.format(OffsetDateTime.now());
   }
 
   /**
-   * Retrieves zoned date time. Supporting old format
+   * Parse string to zoned date time.
+   * Supporting old format.
    *
-   * @param stringToParse date time string
-   * @return OffsetDateTime parsed from string
+   * @param stringToParse - date time string
+   * @return {@link OffsetDateTime} parsed from string
    */
   public static OffsetDateTime getZonedDateTime(String stringToParse) {
     try {
