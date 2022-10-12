@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 public class DateTimeUtil {
 
   public static final DateTimeFormatter POSTGRES_TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-  public static final DateTimeFormatter POSTGRES_OLD_TIMESTAMP_FORMATTER = new DateTimeFormatterBuilder()
+  public static final DateTimeFormatter POSTGRES_TIMESTAMP_OLD_FORMATTER = new DateTimeFormatterBuilder()
       .parseCaseInsensitive()
       .append(DateTimeFormatter.ISO_LOCAL_DATE)
       .appendLiteral(' ')
@@ -47,7 +47,7 @@ public class DateTimeUtil {
       return OffsetDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_FORMATTER);
     } catch (DateTimeParseException parseException) {
       logger.warn(PARSE_EXCEPTION_MESSAGE, stringToParse);
-      return OffsetDateTime.parse(stringToParse, POSTGRES_OLD_TIMESTAMP_FORMATTER);
+      return OffsetDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_OLD_FORMATTER);
     }
   }
 }

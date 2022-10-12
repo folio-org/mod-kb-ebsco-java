@@ -74,6 +74,10 @@ public class KbCredentialsTestUtil {
     return saveKbCredentials(UUID.randomUUID().toString(), url, name, apiKey, customerId, vertx);
   }
 
+  public static String saveKbCredentials(String id, String url, Vertx vertx) {
+    return saveKbCredentials(id, url, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  }
+
   public static String saveKbCredentials(String id, String url, String name, String apiKey, String customerId,
                                          Vertx vertx) {
     CompletableFuture<ResultSet> future = new CompletableFuture<>();

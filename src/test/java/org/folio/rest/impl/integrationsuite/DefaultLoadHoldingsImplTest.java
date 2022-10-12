@@ -13,6 +13,7 @@ import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.rest.util.DateTimeUtil.POSTGRES_TIMESTAMP_FORMATTER;
+import static org.folio.rest.util.DateTimeUtil.POSTGRES_TIMESTAMP_OLD_FORMATTER;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
@@ -28,7 +29,6 @@ import static org.folio.util.HoldingsStatusAuditTestUtil.saveStatusAudit;
 import static org.folio.util.HoldingsStatusUtil.PROCESS_ID;
 import static org.folio.util.HoldingsStatusUtil.saveStatus;
 import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
-import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
@@ -62,7 +62,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -173,8 +172,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldNotStartLoadingWhenStatusInProgress() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-      vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveStatus(STUB_CREDENTIALS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
@@ -182,15 +180,31 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldStartLoadingWithOldDateFormat(TestContext context) throws IOException, URISyntaxException {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
+
+    OffsetDateTime dateTime = OffsetDateTime.now().minus(6, ChronoUnit.DAYS);
+    HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
+    status.getData().getAttributes().setStarted(dateTime.format(POSTGRES_TIMESTAMP_OLD_FORMATTER));
+    status.getData().getAttributes().setUpdated(dateTime.format(POSTGRES_TIMESTAMP_OLD_FORMATTER));
+    saveStatus(STUB_CREDENTIALS_ID, status, PROCESS_ID, vertx);
+
+    insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
+    runPostHoldingsWithMocks(context);
+
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    assertThat(holdingsList.size(), Matchers.notNullValue());
+  }
+
+  @Test
   public void shouldStartLoadingWhenStatusInProgressAndStartedMoreThen5DaysBefore(TestContext context)
     throws IOException, URISyntaxException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-      vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     OffsetDateTime dateTime = OffsetDateTime.now().minus(6, ChronoUnit.DAYS);
     HoldingsLoadingStatus statusLoadingHoldings = getStatusLoadingHoldings(1000, 500, 10, 5);
-    statusLoadingHoldings.getData().getAttributes().setStarted(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-    statusLoadingHoldings.getData().getAttributes().setUpdated(dateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+    statusLoadingHoldings.getData().getAttributes().setStarted(dateTime.format(POSTGRES_TIMESTAMP_FORMATTER));
+    statusLoadingHoldings.getData().getAttributes().setUpdated(dateTime.format(POSTGRES_TIMESTAMP_FORMATTER));
     saveStatus(STUB_CREDENTIALS_ID, statusLoadingHoldings, PROCESS_ID, dateTime, vertx);
 
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
@@ -244,9 +258,11 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   public void shouldStartLoadingWhenStatusInProgressAndProcessTimedOut() {
     setupDefaultLoadKbConfiguration();
     HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
-    status.getData().getAttributes()
-      .setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(OffsetDateTime.now().minus(10, ChronoUnit.DAYS)));
+
+    OffsetDateTime dateTime = OffsetDateTime.now().minus(10, ChronoUnit.DAYS);
+    status.getData().getAttributes().setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(dateTime));
     saveStatus(STUB_CREDENTIALS_ID, status, PROCESS_ID, vertx);
+
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
@@ -391,8 +407,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   private void setupDefaultLoadKbConfiguration() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID,
-      vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }
