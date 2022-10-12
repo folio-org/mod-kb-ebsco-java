@@ -1,9 +1,8 @@
 package org.folio.repository.holdings.status;
 
+import static org.folio.rest.util.DateTimeUtil.getTimeNow;
 import static org.folio.rest.util.RestConstants.JSONAPI;
-import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.jaxrs.model.JsonapiErrorResponse;
@@ -84,9 +83,5 @@ public final class HoldingsLoadingStatusFactory {
           .withUpdated(getTimeNow())
           .withErrors(errors)))
       .withJsonapi(JSONAPI);
-  }
-
-  private static String getTimeNow() {
-    return POSTGRES_TIMESTAMP_FORMATTER.format(OffsetDateTime.now());
   }
 }

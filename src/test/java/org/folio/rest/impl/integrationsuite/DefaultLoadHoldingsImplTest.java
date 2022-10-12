@@ -12,13 +12,13 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_
 import static org.folio.rest.impl.RmApiConstants.RMAPI_HOLDINGS_STATUS_URL;
 import static org.folio.rest.impl.RmApiConstants.RMAPI_POST_HOLDINGS_URL;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
+import static org.folio.rest.util.DateTimeUtil.POSTGRES_TIMESTAMP_FORMATTER;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SAVE_HOLDINGS_ACTION;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_FAILED_ACTION;
-import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockResponseList;

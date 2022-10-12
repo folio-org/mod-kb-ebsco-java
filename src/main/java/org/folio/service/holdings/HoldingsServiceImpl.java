@@ -13,6 +13,7 @@ import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusLoadingHoldings;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusNotStarted;
 import static org.folio.repository.holdings.status.HoldingsLoadingStatusFactory.getStatusPopulatingStagingArea;
+import static org.folio.rest.util.DateTimeUtil.getZonedDateTime;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.util.FutureUtils.failedFuture;
 import static org.folio.util.FutureUtils.mapVertxFuture;
@@ -24,7 +25,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.Lock;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,8 +71,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class HoldingsServiceImpl implements HoldingsService {
-
-  public static final DateTimeFormatter POSTGRES_TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
   private static final Logger logger = LogManager.getLogger(HoldingsServiceImpl.class);
   private static final String START_LOADING_LOCK = "getStatus";
@@ -488,9 +486,5 @@ public class HoldingsServiceImpl implements HoldingsService {
     OffsetDateTime updated = getZonedDateTime(updatedString);
     return isInProgress(status)
       && OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
-  }
-
-  private OffsetDateTime getZonedDateTime(String stringToParse) {
-    return OffsetDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_FORMATTER);
   }
 }
