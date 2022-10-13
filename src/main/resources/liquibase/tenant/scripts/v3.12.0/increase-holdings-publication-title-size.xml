@@ -1,0 +1,10 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+  <changeSet id="MODKBEKBJ-697@@increase-size-of-publication-title-field" author="Shans-Kaluhin">
+    <modifyDataType tableName="holdings" columnName="publication_title" newDataType="varchar(400)"/>
+  </changeSet>
+
+</databaseChangeLog>
