@@ -83,6 +83,7 @@ import org.folio.service.holdings.LoadServiceFacade;
 import org.folio.service.holdings.message.HoldingsMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.util.HoldingsStatusAuditTestUtil;
+import org.folio.util.HoldingsStatusUtil;
 import org.folio.util.HoldingsTestUtil;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -103,6 +104,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   public static final String HOLDINGS_LOAD_BY_ID_URL = HOLDINGS_LOAD_URL + "/" + STUB_CREDENTIALS_ID;
   public static final String RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED =
     "responses/rmapi/holdings/status/get-status-completed.json";
+  public static final String RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED_ONE_PAGE =
+    "responses/rmapi/holdings/status/get-status-completed-one-page.json";
   public static final String RMAPI_RESPONSE_HOLDINGS = "responses/rmapi/holdings/holdings/get-holdings.json";
   private static final int TIMEOUT = 180000;
   private static final int EXPECTED_LOADED_PAGES = 2;
@@ -404,6 +407,44 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
+  }
+
+  @Test
+  public void shouldRetryCreationOfSnapshotAndUpdateHoldingsStatusWhenItFails(TestContext context)
+                                                          throws IOException, URISyntaxException {
+    setupDefaultLoadKbConfiguration();
+    Async async = context.async();
+    handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
+    ResponseDefinitionBuilder failedResponse = new ResponseDefinitionBuilder().withStatus(500);
+    ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
+      .withBody(readFile(RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED_ONE_PAGE));
+    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), false),
+      failedResponse,
+      successfulResponse,
+      successfulResponse);
+    mockPostHoldings();
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
+
+    async.await(TIMEOUT);
+
+    assertTrue(async.isSucceeded());
+    List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
+      .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
+    assertThat(attributes, containsInAnyOrder(
+      statusEquals(LoadStatusNameEnum.NOT_STARTED),
+      statusEquals(LoadStatusNameEnum.NOT_STARTED),
+      statusEquals(LoadStatusNameEnum.FAILED),
+      statusEquals(LoadStatusNameEnum.FAILED),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.POPULATING_STAGING_AREA, null),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 0),
+      statusEquals(LoadStatusNameEnum.IN_PROGRESS, LoadStatusNameDetailEnum.LOADING_HOLDINGS, 1),
+      statusEquals(LoadStatusNameEnum.COMPLETED)
+    ));
+
+    HoldingsLoadingStatus holdingsLoadingStatus = HoldingsStatusUtil.getStatus(STUB_CREDENTIALS_ID, vertx);
+    assertThat(holdingsLoadingStatus.getData().getAttributes(), statusEquals(LoadStatusNameEnum.COMPLETED));
   }
 
   private void setupDefaultLoadKbConfiguration() {
