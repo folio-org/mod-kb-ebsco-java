@@ -1,4 +1,4 @@
-## v3.12.0 IN-PROGRESS
+## v3.12.0 2022-10-28
 * MODKBEKBJ-673 User with permission "Settings (eHoldings): Can assign/unassign a user from a KB" can't assign users to KB credentials
 * MODKBEKBJ-675 Add checkstyle plugin
 * MODKBEKBJ-680 Fix holdings_status migration
@@ -6,6 +6,11 @@
 * MODKBEKBJ-682 Supports users interface versions 15.0 16.0
 * MODKBEKBJ-688 Fix IndexOutOfBoundException if resource customerResourcesList is empty
 * MODKBEKBJ-692 RMB v35 upgrade
+
+## v3.11.1 2022-10-28
+* MODKBEKBJ-695 Load Holdings: Add support for old statuses date format
+* MODKBEKBJ-696 Load Holdings: Fix NullPointerException while reading started date
+* MODKBEKBJ-697 Load Holdings: Increase size of publication_title field
 
 ## v3.11.0 2022-07-08
 * MODKBEKBJ-621 User-assignment: Rework GET request for '/kb-credentials/{kb-credentials-id}/users'
