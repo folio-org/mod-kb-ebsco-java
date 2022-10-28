@@ -19,11 +19,11 @@ import static org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest.H
 import static org.folio.rest.impl.integrationsuite.DefaultLoadHoldingsImplTest.handleStatusChange;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.COMPLETED;
 import static org.folio.rest.jaxrs.model.LoadStatusNameEnum.FAILED;
+import static org.folio.rest.util.DateTimeUtil.POSTGRES_TIMESTAMP_FORMATTER;
 import static org.folio.service.holdings.HoldingConstants.CREATE_SNAPSHOT_ACTION;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.LOAD_FACADE_ADDRESS;
 import static org.folio.service.holdings.HoldingConstants.SNAPSHOT_CREATED_ACTION;
-import static org.folio.service.holdings.HoldingsServiceImpl.POSTGRES_TIMESTAMP_FORMATTER;
 import static org.folio.test.util.TestUtil.mockGet;
 import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
@@ -32,7 +32,6 @@ import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
 import static org.folio.util.KBTestUtil.clearDataFromTable;
 import static org.folio.util.KBTestUtil.interceptAndContinue;
 import static org.folio.util.KBTestUtil.interceptAndStop;
-import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 
@@ -201,7 +200,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   }
 
   public void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }

@@ -61,8 +61,9 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnRootProxyWhenUserAssignedToKbCredentials() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnRootProxyWhenUserAssignedToKbCredentials()
+    throws IOException, URISyntaxException, JSONException {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), RMAPI_ROOT_PROXY_CUSTOM_LABELS_RESPONSE);
@@ -74,8 +75,9 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnRootProxyWhenOneCredentialsExistsAndUserNotAssigned() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnRootProxyWhenOneCredentialsExistsAndUserNotAssigned()
+    throws IOException, URISyntaxException, JSONException {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), RMAPI_ROOT_PROXY_CUSTOM_LABELS_RESPONSE);
 
@@ -87,7 +89,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404WhenUserNotAssignedToKbCredentials() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
     saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "1", STUB_API_KEY, "OTHER_CUSTOMER_ID", vertx);
 
@@ -104,8 +106,8 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenRMAPIRequestCompletesWith401ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn401WhenRmApiRequestCompletesWith401ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_UNAUTHORIZED);
@@ -114,8 +116,8 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn403WhenRMAPIRequestCompletesWith403ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn403WhenRmApiRequestCompletesWith403ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_FORBIDDEN);
@@ -124,8 +126,9 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnRootProxyWhenUserAssignedToCredentials() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnRootProxyWhenUserAssignedToCredentials()
+    throws IOException, URISyntaxException, JSONException {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), RMAPI_ROOT_PROXY_CUSTOM_LABELS_RESPONSE);
@@ -138,8 +141,8 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenRMAPIReturns401ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn401WhenRmApiReturns401ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_UNAUTHORIZED);
@@ -149,8 +152,8 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn403WhenRMAPIReturns403ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn403WhenRmApiReturns403ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_FORBIDDEN);
@@ -168,7 +171,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnUpdatedProxyOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     String stubResponseFile = "responses/rmapi/proxiescustomlabels/get-updated-response.json";
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), stubResponseFile);
@@ -191,7 +194,7 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
     String stubGetResponseFile = "responses/rmapi/proxiescustomlabels/get-updated-response.json";
     String stubPutResponseFile = "responses/rmapi/proxiescustomlabels/put-400-error-response.json";
 
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     mockGet(new EqualToPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), stubGetResponseFile);
     stubFor(
@@ -214,8 +217,8 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenRMAPIReturns401() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn401WhenRmApiReturns401() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_UNAUTHORIZED);
     final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);
@@ -224,8 +227,8 @@ public class EHoldingsRootProxyImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn403WhenRMAPIReturns403() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn403WhenRmApiReturns403() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_FORBIDDEN);
     final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);

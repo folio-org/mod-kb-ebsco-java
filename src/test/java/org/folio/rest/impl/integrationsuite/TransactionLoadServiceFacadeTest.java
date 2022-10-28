@@ -175,7 +175,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   }
 
   private void setupDefaultLoadKBConfiguration() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveStatusNotStarted(STUB_CREDENTIALS_ID, vertx);
     insertRetryStatus(STUB_CREDENTIALS_ID, vertx);
   }

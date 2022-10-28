@@ -24,7 +24,6 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.json.JSONException;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -46,8 +45,9 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProxyTypesWhenUserAssignedToKbCredentials() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnProxyTypesWhenUserAssignedToKbCredentials()
+    throws IOException, URISyntaxException, JSONException {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
@@ -59,8 +59,9 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnProxyTypesWhenOneCredentialsExistsAndUserNotAssigned() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnProxyTypesWhenOneCredentialsExistsAndUserNotAssigned()
+    throws IOException, URISyntaxException, JSONException {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
@@ -71,8 +72,9 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnEmptyProxyTypesFromEmptyRMApiResponse() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturnEmptyProxyTypesFromEmptyRmApiResponse()
+    throws IOException, URISyntaxException, JSONException {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-empty-response.json");
 
@@ -84,7 +86,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404WhenUserNotAssignedToKbCredentials() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
     KbCredentialsTestUtil
       .saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "1", STUB_API_KEY, "OTHER_CUSTOMER_ID", vertx);
@@ -102,8 +104,8 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenRMAPIRequestCompletesWith401ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn401WhenRmApiRequestCompletesWith401ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_UNAUTHORIZED);
@@ -113,8 +115,8 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn403WhenRMAPIRequestCompletesWith403ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn403WhenRmApiRequestCompletesWith403ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_FORBIDDEN);
@@ -125,7 +127,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnProxyTypesCollection() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
@@ -138,7 +140,7 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnEmptyCollection() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
 
@@ -150,8 +152,8 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401WhenRMAPIReturns401ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn401WhenRmApiReturns401ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_UNAUTHORIZED);
@@ -161,8 +163,8 @@ public class EHoldingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn403WhenRMAPIReturns403ErrorStatus() {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+  public void shouldReturn403WhenRmApiReturns403ErrorStatus() {
+    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);
 
     mockGet(new RegexPattern(RMAPI_PROXIES_URL), SC_FORBIDDEN);
