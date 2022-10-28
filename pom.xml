@@ -38,7 +38,7 @@
     <folio-di-support.version>1.7.0</folio-di-support.version>
     <folio-service-tools.version>1.10.0</folio-service-tools.version>
     <folio-holdingsiq-client.version>2.2.0</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>1.5.3</folio-liquibase-util.version>
+    <folio-liquibase-util.version>1.6.0-SNAPSHOT</folio-liquibase-util.version>
     <mod-configuration-client.version>5.9.0</mod-configuration-client.version>
 
     <vertx.version>4.3.3</vertx.version>
