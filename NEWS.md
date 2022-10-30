@@ -7,10 +7,13 @@
 * MODKBEKBJ-688 Fix IndexOutOfBoundException if resource customerResourcesList is empty
 * MODKBEKBJ-692 RMB v35 upgrade
 
-## v3.11.1 2022-10-28
+## v3.11.2 2022-10-28
 * MODKBEKBJ-695 Load Holdings: Add support for old statuses date format
 * MODKBEKBJ-696 Load Holdings: Fix NullPointerException while reading started date
 * MODKBEKBJ-697 Load Holdings: Increase size of publication_title field
+
+## v3.11.1 2022-07-28
+* MODKBEKBJ-681 Usage Consolidation: Fix NPE when no counts exist
 
 ## v3.11.0 2022-07-08
 * MODKBEKBJ-621 User-assignment: Rework GET request for '/kb-credentials/{kb-credentials-id}/users'
