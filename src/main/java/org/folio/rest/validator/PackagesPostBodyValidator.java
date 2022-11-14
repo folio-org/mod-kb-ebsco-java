@@ -2,7 +2,7 @@ package org.folio.rest.validator;
 
 import java.util.Objects;
 import javax.validation.ValidationException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePostRequest;

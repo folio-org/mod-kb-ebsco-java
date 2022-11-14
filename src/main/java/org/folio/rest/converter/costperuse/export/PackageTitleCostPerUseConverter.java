@@ -1,8 +1,8 @@
 package org.folio.rest.converter.costperuse.export;
 
-import static org.apache.commons.lang.math.NumberUtils.DOUBLE_ZERO;
-import static org.apache.commons.lang.math.NumberUtils.INTEGER_ZERO;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+import static org.apache.commons.lang3.math.NumberUtils.DOUBLE_ZERO;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 import java.text.NumberFormat;
 import org.folio.rest.jaxrs.model.PlatformType;

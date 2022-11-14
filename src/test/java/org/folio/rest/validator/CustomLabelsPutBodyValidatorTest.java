@@ -2,7 +2,7 @@ package org.folio.rest.validator;
 
 import java.util.Arrays;
 import java.util.Collections;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;

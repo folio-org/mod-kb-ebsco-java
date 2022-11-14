@@ -1,6 +1,5 @@
 package org.folio.rest.validator.kbcredentials;
 
-import joptsimple.internal.Strings;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.junit.Rule;
@@ -47,7 +46,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid name");
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
-      .withName(Strings.repeat('0', NAME_LENGTH_MAX + 1))
+      .withName("0".repeat(NAME_LENGTH_MAX + 1))
       .withApiKey("key")
       .withCustomerId("custId")
       .withUrl("http://example.com");

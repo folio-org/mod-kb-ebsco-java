@@ -83,7 +83,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;

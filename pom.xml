@@ -46,13 +46,13 @@
     <spring.version>5.3.23</spring.version>
     <jackson.version>2.13.4</jackson.version>
     <postgresql.version>42.5.0</postgresql.version>
+    <commons-codec.version>1.15</commons-codec.version>
     <commons-configuration2.version>2.8.0</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.24</lombok.version>
     <httpcore.version>4.4.15</httpcore.version>
     <log4j.version>2.19.0</log4j.version>
     <jetbrains-annotations.version>23.0.0</jetbrains-annotations.version>
-    <jaxrs-code-generator.version>3.0.7</jaxrs-code-generator.version>
     <opencsv.version>5.7.0</opencsv.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <validation-api.version>2.0.1.Final</validation-api.version>
@@ -66,6 +66,7 @@
     <rest-assured.version>5.2.0</rest-assured.version>
     <wiremock.version>2.34.0</wiremock.version>
     <mockito.version>4.8.0</mockito.version>
+    <assertj.version>3.23.1</assertj.version>
     <jsonassert.version>1.5.1</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
 
@@ -128,11 +129,6 @@
       <version>${validation-api.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.raml.jaxrs</groupId>
-      <artifactId>jaxrs-code-generator</artifactId>
-      <version>${jaxrs-code-generator.version}</version>
-    </dependency>
-    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
       <version>${vertx.version}</version>
@@ -165,6 +161,11 @@
     <dependency>
       <groupId>com.fasterxml.jackson.jaxrs</groupId>
       <artifactId>jackson-jaxrs-json-provider</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${commons-codec.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -290,6 +291,12 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

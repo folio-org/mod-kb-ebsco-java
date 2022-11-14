@@ -18,7 +18,6 @@ import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.tools.utils.VertxUtils;
 import org.jetbrains.annotations.NotNull;
-import org.joda.time.DateTimeZone;
 
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
@@ -119,7 +118,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
   private LocaleSettings getDefaultLocaleSettings() {
     return LocaleSettings.builder()
       .locale(Locale.US.toLanguageTag())
-      .timezone(DateTimeZone.UTC.getID())
+      .timezone("UTC")
       .currency(Currency.getInstance(Locale.US).getCurrencyCode())
       .build();
   }
