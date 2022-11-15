@@ -453,7 +453,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       Map<String, TitleResult> resourceIdToAccessType = mapResourceIdToTitleResult(titleCollection);
       String credentialsId = context.getCredentialsId();
       String tenant = context.getOkapiData().getTenant();
-      return accessTypesService.findPerRecord(credentialsId, new ArrayList<String>(resourceIdToAccessType.keySet()),
+      return accessTypesService.findPerRecord(credentialsId, new ArrayList<>(resourceIdToAccessType.keySet()),
           RecordType.RESOURCE, tenant)
         .thenApply(accessTypeMap -> {
           populateResourceAccessTypes(resourceIdToAccessType, accessTypeMap);
