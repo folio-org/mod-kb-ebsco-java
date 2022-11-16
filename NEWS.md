@@ -1,3 +1,6 @@
+## v3.12.1 2022-11-16
+* MODKBEKBJ-703 Vert.x 4.3.4, RMB 35.0.3, Jackson 2.14.0
+
 ## v3.12.0 2022-10-28
 * MODKBEKBJ-673 User with permission "Settings (eHoldings): Can assign/unassign a user from a KB" can't assign users to KB credentials
 * MODKBEKBJ-675 Add checkstyle plugin
