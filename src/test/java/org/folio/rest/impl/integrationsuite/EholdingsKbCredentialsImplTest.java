@@ -60,7 +60,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import joptsimple.internal.Strings;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.okapi.common.XOkapiHeaders;
@@ -88,6 +87,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
+  private static final String STARS_256 = "*".repeat(256);
   private static final String OTHER_CUST_ID = "OTHER_CUST_ID";
   @Autowired
   @Qualifier("nonSecuredCredentialsService")
@@ -168,7 +168,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPostWhenCredentialsNameIsLongerThen255() {
     KbCredentials creds = stubbedCredentials();
-    creds.getAttributes().setName(Strings.repeat('*', 256));
+    creds.getAttributes().setName(STARS_256);
 
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
     String postBody = Json.encode(kbCredentialsPostRequest);
@@ -319,7 +319,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPatchWhenCredentialsNameIsLongerThen255() {
     KbCredentialsPatchRequest kbCredentialsPatchRequest = stubPatchRequest();
-    kbCredentialsPatchRequest.getData().getAttributes().setName(Strings.repeat('*', 256));
+    kbCredentialsPatchRequest.getData().getAttributes().setName(STARS_256);
 
     String patchBody = Json.encode(kbCredentialsPatchRequest);
 
@@ -481,7 +481,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn422OnPutWhenCredentialsNameIsLongerThen255() {
     KbCredentials creds = stubbedCredentials();
-    creds.getAttributes().setName(Strings.repeat('*', 256));
+    creds.getAttributes().setName(STARS_256);
 
     KbCredentialsPutRequest kbCredentialsPutRequest = new KbCredentialsPutRequest().withData(creds);
     String putBody = Json.encode(kbCredentialsPutRequest);

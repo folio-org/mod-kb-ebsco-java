@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import org.apache.commons.lang.math.IntRange;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.exception.InputValidationException;
@@ -144,8 +143,7 @@ public final class ValidatorUtil {
   }
 
   public static void checkInRange(int minInclusive, int maxInclusive, Integer value, String paramName) {
-    IntRange myRange = new IntRange(minInclusive, maxInclusive);
-    if (!myRange.containsInteger(value)) {
+    if (value == null || value < minInclusive || value > maxInclusive) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_IN_RANGE, paramName, minInclusive, maxInclusive));

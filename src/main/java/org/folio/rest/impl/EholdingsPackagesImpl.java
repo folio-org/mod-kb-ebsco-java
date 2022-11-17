@@ -26,7 +26,6 @@ import java.util.function.Function;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.BooleanUtils;
-import org.assertj.core.util.Lists;
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
@@ -454,7 +453,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       Map<String, TitleResult> resourceIdToAccessType = mapResourceIdToTitleResult(titleCollection);
       String credentialsId = context.getCredentialsId();
       String tenant = context.getOkapiData().getTenant();
-      return accessTypesService.findPerRecord(credentialsId, Lists.newArrayList(resourceIdToAccessType.keySet()),
+      return accessTypesService.findPerRecord(credentialsId, new ArrayList<>(resourceIdToAccessType.keySet()),
           RecordType.RESOURCE, tenant)
         .thenApply(accessTypeMap -> {
           populateResourceAccessTypes(resourceIdToAccessType, accessTypeMap);

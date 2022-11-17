@@ -1,6 +1,6 @@
 package org.folio.rest.validator;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ProviderPutData;
 import org.folio.rest.jaxrs.model.ProviderPutDataAttributes;

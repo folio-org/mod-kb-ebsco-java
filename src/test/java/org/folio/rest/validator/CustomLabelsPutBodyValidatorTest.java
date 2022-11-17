@@ -2,7 +2,7 @@ package org.folio.rest.validator;
 
 import java.util.Arrays;
 import java.util.Collections;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
@@ -20,24 +20,28 @@ public class CustomLabelsPutBodyValidatorTest {
   private final CustomLabelsPutBodyValidator validator =
     new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50, 100));
 
-  @Test
-  public void shouldThrowExceptionWhenInvalidId() {
+  private void assertInvalidCustomLabelId(Integer id) {
     expectedEx.expect(InputValidationException.class);
     expectedEx.expectMessage("Invalid Custom Label id");
     CustomLabelsPutRequest putRequest = new CustomLabelsPutRequest()
       .withData(Collections.singletonList(new CustomLabel()
-        .withAttributes(new CustomLabelDataAttributes().withId(6))));
+        .withAttributes(new CustomLabelDataAttributes().withId(id))));
     validator.validate(putRequest);
   }
 
   @Test
+  public void shouldThrowExceptionWhenIdTooSmall() {
+    assertInvalidCustomLabelId(0);
+  }
+
+  @Test
+  public void shouldThrowExceptionWhenIdTooBig() {
+    assertInvalidCustomLabelId(6);
+  }
+
+  @Test
   public void shouldThrowExceptionWhenIdIsNull() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid Custom Label id");
-    CustomLabelsPutRequest putRequest = new CustomLabelsPutRequest()
-      .withData(Collections.singletonList(
-        new CustomLabel().withAttributes(new CustomLabelDataAttributes().withId(null))));
-    validator.validate(putRequest);
+    assertInvalidCustomLabelId(null);
   }
 
   @Test
@@ -113,7 +117,7 @@ public class CustomLabelsPutBodyValidatorTest {
             .withDisplayOnPublicationFinder(false)),
         new CustomLabel().withAttributes(
           new CustomLabelDataAttributes()
-            .withId(2)
+            .withId(5)
             .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
             .withDisplayOnFullTextFinder(false)
             .withDisplayOnPublicationFinder(false))));
