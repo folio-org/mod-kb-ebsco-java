@@ -296,7 +296,7 @@
           "methods": ["GET"],
           "pathPattern": "/eholdings/access-types",
           "permissionsRequired": ["kb-ebsco.access-types.collection.get"],
-          "modulePermissions": ["users.item.get"]
+          "modulePermissions": ["users.collection.get"]
         },
         {
           "methods": ["GET"],
