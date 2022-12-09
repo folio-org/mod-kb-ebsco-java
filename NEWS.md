@@ -1,3 +1,6 @@
+## v3.12.2 2022-12-09
+* MODKBEKBJ-708 - Missing permission to see and use "Access status type" feature in "eHoldings" app
+
 ## v3.12.1 2022-11-16
 * MODKBEKBJ-702 Vert.x 4.3.4, RMB 35.0.3, Jackson 2.14.0
 
