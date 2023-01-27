@@ -6,6 +6,7 @@ import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSn
 import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSnapshotFailedMessage;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
+import static org.folio.repository.holdings.LoadStatus.NONE;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 
 import io.vertx.core.Vertx;
@@ -137,7 +138,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
           } else {
             future.complete(loadStatus);
           }
-        } else if (IN_PROGRESS.equals(status)) {
+        } else if (IN_PROGRESS.equals(status) || NONE.equals(status)) {
           if (retries <= 1) {
             throw new IllegalStateException("Failed to get status with status response: " + loadStatus.getStatus());
           }

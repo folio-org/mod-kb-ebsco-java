@@ -180,12 +180,15 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
 
+    ResponseDefinitionBuilder errorResponse = new ResponseDefinitionBuilder()
+      .withStatus(500);
     ResponseDefinitionBuilder emptyResponse = new ResponseDefinitionBuilder()
       .withBody("");
     ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
       .withBody(readFile(RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED));
 
     mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), false),
+      errorResponse,
       emptyResponse,
       successfulResponse);
 

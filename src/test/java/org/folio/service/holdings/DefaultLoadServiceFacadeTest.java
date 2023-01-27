@@ -1,6 +1,7 @@
 package org.folio.service.holdings;
 
-import static org.junit.Assert.assertNull;
+import static org.folio.repository.holdings.LoadStatus.NONE;
+import static org.junit.Assert.assertEquals;
 
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +33,6 @@ public class DefaultLoadServiceFacadeTest {
       .thenReturn(CompletableFuture.completedFuture(null));
 
     var result = defaultLoadServiceFacade.getLastLoadingStatus(loadService);
-    assertNull(result.get());
+    assertEquals(NONE, result.get().getStatus());
   }
-
 }
