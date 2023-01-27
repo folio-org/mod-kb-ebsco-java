@@ -174,7 +174,8 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldSaveMultiHoldingsWhenSnapshotNotCreated(TestContext context) throws IOException, URISyntaxException {
+  public void shouldSaveMultiHoldingsWhenSnapshotNotCreated(TestContext context)
+    throws IOException, URISyntaxException {
     setupDefaultLoadKbConfiguration();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
