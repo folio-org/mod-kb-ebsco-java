@@ -59,13 +59,19 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   private HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
     if (status == null) {
-      return null;
+      return createNoneStatus();
     }
 
     return HoldingsStatus.builder()
       .created(status.getCreated())
       .status(LoadStatus.fromValue(status.getStatus()))
       .totalCount(status.getTotalCount())
+      .build();
+  }
+
+  private HoldingsStatus createNoneStatus() {
+    return HoldingsStatus.builder()
+      .status(LoadStatus.NONE)
       .build();
   }
 }
