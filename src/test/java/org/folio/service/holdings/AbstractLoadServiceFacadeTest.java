@@ -2,6 +2,7 @@ package org.folio.service.holdings;
 
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
+import static org.folio.repository.holdings.LoadStatus.NONE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,30 +67,37 @@ public class AbstractLoadServiceFacadeTest {
   @Test
   @SneakyThrows
   public void shouldRetryOnEmptyStatusFromHoldingsIq() {
-    doReturn(getHoldingsStatusFuture(null), getHoldingsStatusFuture(null),
-      getHoldingsStatusFuture(getHoldingsStatus(IN_PROGRESS)))
+    when(loadServiceFacadeSpy.getLastLoadingStatus(any()))
+      .thenReturn(getHoldingsStatusFuture(getHoldingsStatus(NONE)));
+    doReturn(
+      getHoldingsStatusFuture(getHoldingsStatus(NONE)),
+      getHoldingsStatusFuture(getHoldingsStatus(IN_PROGRESS)),
+      getHoldingsStatusFuture(getHoldingsStatus(COMPLETED)))
       .when(loadServiceFacadeSpy)
-      .getLastLoadingStatus(any());
-    when(loadServiceFacadeSpy.getLoadingStatus(any(), any()))
-      .thenReturn(getHoldingsStatusFuture(getHoldingsStatus(COMPLETED)));
+      .getLoadingStatus(any(), any());
 
     var holdingsStatusFuture = ReflectionTestUtils.<CompletableFuture<HoldingsStatus>>invokeMethod(
       loadServiceFacadeSpy, "populateHoldingsIfNecessary", loadService);
 
     assertNotNull(holdingsStatusFuture);
     assertEquals(COMPLETED, holdingsStatusFuture.get().getStatus());
-    verify(loadServiceFacadeSpy, times(3))
-      .getLastLoadingStatus(any());
     verify(loadServiceFacadeSpy, times(1))
+      .getLastLoadingStatus(any());
+    verify(loadServiceFacadeSpy, times(3))
       .getLoadingStatus(any(), any());
   }
 
   @Test
   @SneakyThrows
   public void shouldFailOnRetriesForLastStatusExceeded() {
-    doReturn(getHoldingsStatusFuture(null), getHoldingsStatusFuture(null), getHoldingsStatusFuture(null))
+    when(loadServiceFacadeSpy.getLastLoadingStatus(any()))
+      .thenReturn(getHoldingsStatusFuture(getHoldingsStatus(NONE)));
+    doReturn(
+      getHoldingsStatusFuture(getHoldingsStatus(NONE)),
+      getHoldingsStatusFuture(getHoldingsStatus(NONE)),
+      getHoldingsStatusFuture(getHoldingsStatus(NONE)))
       .when(loadServiceFacadeSpy)
-      .getLastLoadingStatus(any());
+      .getLoadingStatus(any(), any());
 
     var holdingsStatusFuture = ReflectionTestUtils.<CompletableFuture<HoldingsStatus>>invokeMethod(
       loadServiceFacadeSpy, "populateHoldingsIfNecessary", loadService);
@@ -101,8 +109,10 @@ public class AbstractLoadServiceFacadeTest {
       return null;
     }).get();
 
-    verify(loadServiceFacadeSpy, times(3))
+    verify(loadServiceFacadeSpy, times(1))
       .getLastLoadingStatus(any());
+    verify(loadServiceFacadeSpy, times(3))
+      .getLoadingStatus(any(), any());
   }
 
   private HoldingsStatus getHoldingsStatus(LoadStatus loadStatus) {
@@ -114,5 +124,4 @@ public class AbstractLoadServiceFacadeTest {
   private CompletableFuture<HoldingsStatus> getHoldingsStatusFuture(HoldingsStatus holdingsStatus) {
     return CompletableFuture.completedFuture(holdingsStatus);
   }
-
 }

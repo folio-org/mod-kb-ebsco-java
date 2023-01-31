@@ -6,6 +6,7 @@ import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSn
 import static org.folio.repository.holdings.HoldingsServiceMessagesFactory.getSnapshotFailedMessage;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
+import static org.folio.repository.holdings.LoadStatus.NONE;
 import static org.folio.service.holdings.HoldingConstants.HOLDINGS_SERVICE_ADDRESS;
 
 import io.vertx.core.Vertx;
@@ -98,14 +99,14 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   protected abstract CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService);
 
   private CompletableFuture<HoldingsStatus> populateHoldingsIfNecessary(LoadService loadingService) {
-    return waitForStatus(statusRetryCount, loadingService).thenCompose(loadStatus -> {
+    return getLastLoadingStatus(loadingService).thenCompose(loadStatus -> {
       if (IN_PROGRESS.equals(loadStatus.getStatus())) {
         return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
       } else if (snapshotCreatedRecently(loadStatus)) {
         logger.info("Snapshot created recently: {}", loadStatus);
         final Integer totalCount = loadStatus.getTotalCount();
         if (INTEGER_ZERO.equals(totalCount)) {
-          throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus);
+          throw new IllegalStateException("Snapshot created with invalid totalCount: " + loadStatus);
         } else {
           return CompletableFuture.completedFuture(loadStatus);
         }
@@ -115,30 +116,6 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
           .thenCompose(transactionId -> waitForCompleteStatus(statusRetryCount, transactionId, loadingService));
       }
     });
-  }
-
-  private CompletableFuture<HoldingsStatus> waitForStatus(int retryCount, LoadService loadingService) {
-    var future = new CompletableFuture<HoldingsStatus>();
-    waitForStatus(retryCount, future, loadingService);
-    return future;
-  }
-
-  private void waitForStatus(int retries, CompletableFuture<HoldingsStatus> future, LoadService loadingService) {
-    vertx.setTimer(statusRetryDelay, timerId -> getLastLoadingStatus(loadingService)
-      .thenAccept(loadStatus -> {
-        if (loadStatus == null) {
-          logger.info("Received null status of stage snapshot. Retrying...");
-          if (retries <= 1) {
-            throw new IllegalStateException("Retries exceeded but status is still null");
-          }
-          waitForStatus(retries - 1, future, loadingService);
-        } else {
-          future.complete(loadStatus);
-        }
-      }).exceptionally(throwable -> {
-        future.completeExceptionally(throwable);
-        return null;
-      }));
   }
 
   private CompletableFuture<HoldingsStatus> waitForCompleteStatus(int retryCount, String transactionId,
@@ -153,22 +130,22 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     vertx.setTimer(statusRetryDelay, timerId -> getLoadingStatus(loadingService, transactionId)
       .thenAccept(loadStatus -> {
         final LoadStatus status = loadStatus.getStatus();
-        logger.info("Getting status of stage snapshot: {}.", status);
+        logger.info("Getting status of stage snapshot: {}", status);
         if (COMPLETED.equals(status)) {
           final Integer totalCount = loadStatus.getTotalCount();
           if (INTEGER_ZERO.equals(totalCount)) {
-            throw new IllegalStateException("Snapshot created with invalid totalCount:" + loadStatus);
+            throw new IllegalStateException("Snapshot created with invalid totalCount: " + loadStatus);
           } else {
             future.complete(loadStatus);
           }
-        } else if (IN_PROGRESS.equals(status)) {
+        } else if (IN_PROGRESS.equals(status) || NONE.equals(status)) {
           if (retries <= 1) {
-            throw new IllegalStateException("Failed to get status with status response:" + loadStatus.getStatus());
+            throw new IllegalStateException("Failed to get status with status response: " + loadStatus.getStatus());
           }
           waitForCompleteStatus(retries - 1, transactionId, future, loadingService);
         } else {
           future.completeExceptionally(
-            new IllegalStateException("Failed to get status with status response:" + loadStatus));
+            new IllegalStateException("Failed to get status with status response: " + loadStatus));
         }
       }).exceptionally(throwable -> {
         future.completeExceptionally(throwable);

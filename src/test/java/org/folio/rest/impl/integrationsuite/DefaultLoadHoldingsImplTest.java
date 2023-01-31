@@ -174,6 +174,36 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldSaveMultiHoldingsWhenSnapshotNotCreated(TestContext context)
+    throws IOException, URISyntaxException {
+    setupDefaultLoadKbConfiguration();
+    Async async = context.async();
+    handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
+
+    ResponseDefinitionBuilder errorResponse = new ResponseDefinitionBuilder()
+      .withStatus(500);
+    ResponseDefinitionBuilder emptyResponse = new ResponseDefinitionBuilder()
+      .withBody("");
+    ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
+      .withBody(readFile(RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED));
+
+    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), false),
+      errorResponse,
+      emptyResponse,
+      successfulResponse);
+
+    mockPostHoldings();
+    mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
+
+    postWithStatus(HOLDINGS_LOAD_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+
+    async.await(TIMEOUT);
+
+    final List<DbHoldingInfo> holdingsList = HoldingsTestUtil.getHoldings(vertx);
+    assertThat(holdingsList.size(), Matchers.notNullValue());
+  }
+
+  @Test
   public void shouldNotStartLoadingWhenStatusInProgress() {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveStatus(STUB_CREDENTIALS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
