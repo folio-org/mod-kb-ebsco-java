@@ -1,6 +1,7 @@
 package org.folio.common;
 
 import io.vertx.sqlclient.Tuple;
+import java.util.Collection;
 import lombok.experimental.UtilityClass;
 import org.apache.logging.log4j.Logger;
 
@@ -12,6 +13,8 @@ public class LogUtils {
   private static final String INSERT_LOG_MESSAGE = "Do insert query = {} with params = {}";
   private static final String SELECT_LOG_MESSAGE = "Do select query = {} with params = {}";
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {} with params = {}";
+  private static final String SIZE_OF_LIST = "size of list ";
+
 
   public static void logCountQuery(Logger logger, String query) {
     logCountQuery(logger, query, Tuple.tuple());
@@ -107,5 +110,20 @@ public class LogUtils {
     }
     sb.append("]");
     return sb.toString();
+  }
+
+  /**
+   * Returns "0" if given collection is empty or null.
+   *
+   * @param input Collection of object
+   * @return string of list size when items more than 3 - otherwise all items.
+   */
+  public static String collectionToLogMsg(Collection<?> input) {
+    if (input == null || input.isEmpty()) {
+      return SIZE_OF_LIST + 0;
+    }
+    return input.size() < 3
+      ? input.toString()
+      : SIZE_OF_LIST + input.size();
   }
 }

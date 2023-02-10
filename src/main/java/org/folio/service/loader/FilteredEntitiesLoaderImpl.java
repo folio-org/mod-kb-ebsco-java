@@ -2,6 +2,7 @@ package org.folio.service.loader;
 
 import static java.util.Collections.emptyList;
 import static org.folio.db.RowSetUtils.toUUID;
+import static org.folio.rest.tools.utils.TenantTool.tenantId;
 import static org.folio.rest.util.IdParser.dbResourcesToIdStrings;
 import static org.folio.rest.util.IdParser.getPackageIds;
 import static org.folio.rest.util.IdParser.getResourceIds;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.PackageId;
@@ -50,6 +52,7 @@ import org.folio.service.holdings.HoldingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
@@ -121,6 +124,8 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     ProvidersServiceImpl providersService = context.getProvidersService();
+    log.debug("fetchProvidersByTagFilter:: by [recordIdPrefix: {}, tenant: {}]",
+      tagFilter.getRecordIdPrefix(), tenant);
 
     return tagRepository.countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(providerCount -> providerRepository.findIdsByTagFilter(tagFilter, credentialsId, tenant)
@@ -135,6 +140,8 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     PackageServiceImpl packagesService = context.getPackagesService();
+    log.debug("fetchPackagesByTagFilter:: by [recordIdPrefix: {}, tenant: {}]",
+      tagFilter.getRecordIdPrefix(), tenant);
 
     return tagRepository.countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(packageCount -> packageRepository.findByTagFilter(tagFilter, credentialsId, tenant)
@@ -149,6 +156,8 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
                                                                                RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
+    log.debug("fetchResourcesByTagFilter:: by [recordIdPrefix: {}. tenant: {}]",
+      tagFilter.getRecordIdPrefix(), tenant);
 
     return tagRepository.countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(resourcesCount -> resourceRepository.findByTagFilter(tagFilter, credentialsId, tenant)
@@ -168,6 +177,8 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   public CompletableFuture<Titles> fetchTitlesByTagFilter(TagFilter tagFilter, RmApiTemplateContext context) {
     String tenant = context.getOkapiData().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
+    log.debug("fetchTitlesByTagFilter:: by [recordIdPrefix: {}. tenant: {}]",
+      tagFilter.getRecordIdPrefix(), tenant);
 
     return titlesRepository.countTitlesByResourceTags(tagFilter.getTags(), credentialsId, tenant)
       .thenCompose(titlesCount -> resourceRepository.findByTagFilter(tagFilter, credentialsId, tenant)
@@ -222,6 +233,10 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     String credentialsId = context.getCredentialsId();
     RecordType recordType = accessTypeFilter.getRecordType();
     String recordIdPrefix = createRecordIdPrefix(accessTypeFilter);
+
+    log.info("Attempts to find & collect accessTypes [recordType: {}, recordIdPrefix: {}, tenant: {}]",
+      recordType, recordIdPrefix, tenantId(okapiHeaders));
+
     return accessTypesService.findByNames(accessTypeFilter.getAccessTypeNames(), credentialsId, okapiHeaders)
       .thenApply(this::extractAccessTypeIds)
       .thenCombine(

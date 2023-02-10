@@ -15,8 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.ws.rs.core.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.service.exception.ServiceResponseException;
 import org.folio.holdingsiq.service.exception.UnAuthorizedException;
 import org.folio.rest.exception.InputValidationException;
@@ -28,9 +27,9 @@ import org.folio.rest.exception.InputValidationException;
  * first mapper that matches exception type is used to construct javax.ws.rs.core.Response
  * and pass it to io.vertx.core.Handler. Error mappers are checked in the order they were registered
  */
+@Log4j2
 public class ErrorHandler {
 
-  private static final Logger LOGGER = LogManager.getLogger(ErrorHandler.class);
 
   private static final Function<Throwable, Response> DEFAULT_MAPPER = error500ThrowableMapper();
 
@@ -92,7 +91,7 @@ public class ErrorHandler {
       Function<Throwable, Response> errorMapper = (Function<Throwable, Response>) optionalErrorMapper.get();
       asyncResultHandler.handle(Future.succeededFuture(errorMapper.apply(e.getCause())));
     } else {
-      LOGGER.error(INTERNAL_SERVER_ERROR.getReasonPhrase(), e.getCause());
+      log.warn(INTERNAL_SERVER_ERROR.getReasonPhrase(), e.getCause());
       asyncResultHandler.handle(Future.succeededFuture(DEFAULT_MAPPER.apply(e.getCause())));
     }
   }

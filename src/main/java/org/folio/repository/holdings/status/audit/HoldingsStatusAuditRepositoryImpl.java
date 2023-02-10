@@ -13,17 +13,14 @@ import io.vertx.sqlclient.Tuple;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class HoldingsStatusAuditRepositoryImpl implements HoldingsStatusAuditRepository {
-
-  private static final Logger LOG = LogManager.getLogger(HoldingsStatusAuditRepositoryImpl.class);
-
   private final Vertx vertx;
 
   @Autowired
@@ -35,7 +32,7 @@ public class HoldingsStatusAuditRepositoryImpl implements HoldingsStatusAuditRep
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
     String query = deleteBeforeTimestampForCredentials(tenantId);
     Tuple params = Tuple.of(timestamp, credentialsId);
-    logDeleteQueryDebugLevel(LOG, query, params);
+    logDeleteQueryDebugLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     PostgresClient.getInstance(vertx, tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());

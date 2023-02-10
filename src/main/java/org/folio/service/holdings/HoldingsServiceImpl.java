@@ -38,9 +38,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.holdingsiq.model.Holding;
 import org.folio.holdingsiq.model.HoldingChangeType;
 import org.folio.holdingsiq.model.HoldingInReport;
@@ -69,10 +68,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class HoldingsServiceImpl implements HoldingsService {
 
-  private static final Logger logger = LogManager.getLogger(HoldingsServiceImpl.class);
   private static final String START_LOADING_LOCK = "getStatus";
   private static final List<HoldingChangeType> ADDED_OR_UPDATED_CHANGE_TYPES = Arrays.asList(
     HOLDING_ADDED,
@@ -134,6 +133,8 @@ public class HoldingsServiceImpl implements HoldingsService {
   public CompletableFuture<Void> loadSingleHoldings(RmApiTemplateContext context) {
     final String tenantId = context.getOkapiData().getTenant();
     final String credentialsId = context.getCredentialsId();
+    log.debug("loadSingleHoldings:: by [tenant: {}]", tenantId);
+
     Future<Void> executeFuture = executeWithLock(START_LOADING_LOCK, () ->
       tryChangingStatusToInProgress(getStatusPopulatingStagingArea(), toUUID(credentialsId), tenantId)
         .thenCompose(o -> resetRetries(snapshotRetryCount - 1, toUUID(credentialsId), tenantId))
@@ -181,13 +182,17 @@ public class HoldingsServiceImpl implements HoldingsService {
   public void saveHolding(HoldingsMessage holdings) {
     final String tenantId = holdings.getTenantId();
     final UUID credentialsId = toUUID(holdings.getCredentialsId());
+    log.debug("saveHolding:: by [tenant: {}]", tenantId);
+
     saveHoldings(holdings.getHoldingList(), OffsetDateTime.now(), credentialsId, tenantId)
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(),
         1, credentialsId, tenantId)
       )
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
+
         if (hasLoadedLastPage(status)) {
+          log.debug("saveHolding:: Attempts to delete holdings by timestamp & update holding status");
           return holdingsRepository
             .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()), credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository
@@ -198,7 +203,7 @@ public class HoldingsServiceImpl implements HoldingsService {
         return CompletableFuture.completedFuture(null);
       })
       .exceptionally(e -> {
-        logger.error(FAILED_SAVE_HOLDINGS_MESSAGE, e);
+        log.warn(FAILED_SAVE_HOLDINGS_MESSAGE, e);
         return null;
       });
   }
@@ -207,13 +212,17 @@ public class HoldingsServiceImpl implements HoldingsService {
   public void processChanges(DeltaReportMessage holdings) {
     final String tenantId = holdings.getTenantId();
     final UUID credentialsId = toUUID(holdings.getCredentialsId());
+    log.debug("processChanges:: by [tenant: {}]", tenantId);
+
     processHoldingsChanges(holdings.getHoldingList(), OffsetDateTime.now(), credentialsId, tenantId)
       .thenCompose(o -> holdingsStatusRepository.increaseImportedCount(holdings.getHoldingList().size(),
         1, credentialsId, tenantId)
       )
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
+
         if (hasLoadedLastPage(status)) {
+          log.debug("processChanges:: Attempts to update holding status & save transactionId");
           return holdingsStatusRepository
             .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
             .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
@@ -221,7 +230,7 @@ public class HoldingsServiceImpl implements HoldingsService {
         return CompletableFuture.completedFuture(null);
       })
       .exceptionally(e -> {
-        logger.error(FAILED_PROCESS_CHANGES_MESSAGE, e);
+        log.warn(FAILED_PROCESS_CHANGES_MESSAGE, e);
         return null;
       });
   }
@@ -230,19 +239,24 @@ public class HoldingsServiceImpl implements HoldingsService {
   public void snapshotCreated(SnapshotCreatedMessage message) {
     final String tenantId = message.getTenantId();
     final UUID credentialsId = toUUID(message.getCredentialsId());
+    log.debug("snapshotCreated:: by [tenant: {}]", message.getTenantId());
+
     transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
       .thenApply(previousTransactionId -> {
+
         if (!isTransactionIsAlreadyLoaded(message, previousTransactionId)) {
+          log.info("snapshotCreated:: Transaction is not loaded. Attempts to update holding status");
+
           holdingsStatusRepository.update(getStatusLoadingHoldings(
               message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
             .thenCompose(o -> resetRetries(loadHoldingsRetryCount - 1, credentialsId, tenantId))
             .thenAccept(o -> loadServiceFacade.loadHoldings(getLoadHoldingsMessage(message, previousTransactionId)))
             .exceptionally(e -> {
-              logger.error(FAILED_CREATE_SNAPSHOT_MESSAGE, e);
+              log.warn(FAILED_CREATE_SNAPSHOT_MESSAGE, e);
               return null;
             });
         } else {
-          logger.info(SKIPPING_LOADING_SNAPSHOT_MESSAGE, message.getTransactionId());
+          log.info(SKIPPING_LOADING_SNAPSHOT_MESSAGE, message.getTransactionId());
           holdingsStatusRepository.update(getStatusCompleted(0), credentialsId, tenantId);
         }
         return null;
@@ -253,6 +267,8 @@ public class HoldingsServiceImpl implements HoldingsService {
   public void snapshotFailed(SnapshotFailedMessage message) {
     final String tenantId = message.getTenantId();
     final String credentialsId = message.getCredentialsId();
+    log.debug("snapshotFailed:: by [tenant: {}]", tenantId);
+
     setStatusToFailed(toUUID(credentialsId), tenantId, message.getErrorMessage())
       .thenAccept(o ->
         retryAfterDelay(credentialsId, tenantId, snapshotRetryDelay, o2 ->
@@ -261,7 +277,7 @@ public class HoldingsServiceImpl implements HoldingsService {
               .thenAccept(o3 -> loadServiceFacade
                 .createSnapshot(new ConfigurationMessage(message.getConfiguration(), credentialsId, tenantId)))
               .exceptionally(e -> {
-                logger.error(FAILED_RETRY_CREATING_SNAPSHOT_MESSAGE, e);
+                log.warn(FAILED_RETRY_CREATING_SNAPSHOT_MESSAGE, e);
                 return null;
               }))));
   }
@@ -270,11 +286,13 @@ public class HoldingsServiceImpl implements HoldingsService {
   public void deltaReportCreated(DeltaReportCreatedMessage message, Handler<AsyncResult<Void>> handler) {
     final UUID credentialsId = toUUID(message.getCredentialsId());
     final String tenantId = message.getTenantId();
+    log.debug("deltaReportCreated:: by [tenant: {}]", tenantId);
+
     holdingsStatusRepository.update(getStatusLoadingHoldings(
         message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
       .thenAccept(o -> handler.handle(Future.succeededFuture(null)))
       .exceptionally(e -> {
-        logger.error(FAILED_CREATE_SNAPSHOT_MESSAGE, e);
+        log.warn(FAILED_CREATE_SNAPSHOT_MESSAGE, e);
         handler.handle(Future.failedFuture(e));
         return null;
       });
@@ -284,6 +302,8 @@ public class HoldingsServiceImpl implements HoldingsService {
   public void loadingFailed(LoadFailedMessage message) {
     final UUID credentialsId = toUUID(message.getCredentialsId());
     final String tenantId = message.getTenantId();
+    log.debug("loadingFailed:: by [tenant: {}]", tenantId);
+
     setStatusToFailed(credentialsId, tenantId, message.getErrorMessage())
       .thenAccept(o ->
         retryAfterDelay(message.getCredentialsId(), tenantId, loadHoldingsRetryDelay, o2 ->
@@ -297,7 +317,7 @@ public class HoldingsServiceImpl implements HoldingsService {
                   .thenAccept(previousTransactionId -> loadServiceFacade
                     .loadHoldings(getLoadHoldingsMessage(message, previousTransactionId))))
               .exceptionally(e -> {
-                logger.error(FAILED_RETRY_LOADING_HOLDINGS_MESSAGE, e);
+                log.warn(FAILED_RETRY_LOADING_HOLDINGS_MESSAGE, e);
                 return null;
               });
           })));
@@ -372,7 +392,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     return holdingsStatusRepository.findByCredentialsId(credentialsId, tenantId)
       .thenCompose(status -> {
         LoadStatusAttributes attributes = status.getData().getAttributes();
-        logger.info(CURRENT_STATUS_MESSAGE, credentialsId, attributes.getStatus().getName());
+        log.info(CURRENT_STATUS_MESSAGE, credentialsId, attributes.getStatus().getName());
         if (!isInProgress(status) || processTimedOut(status)) {
           return holdingsStatusRepository.delete(credentialsId, tenantId)
             .thenCompose(o -> holdingsStatusRepository.save(newStatus, credentialsId, tenantId));
@@ -393,7 +413,7 @@ public class HoldingsServiceImpl implements HoldingsService {
         }
       })
       .exceptionally(e -> {
-        logger.error(FAILED_DURING_RETRY_MESSAGE, e);
+        log.warn(FAILED_DURING_RETRY_MESSAGE, e);
         return null;
       });
   }
@@ -402,7 +422,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     return holdingsStatusRepository.update(getLoadStatusFailed(createError(message, null).getErrors()),
         credentialsId, tenantId)
       .exceptionally(e -> {
-        logger.error(FAILED_UPDATE_STATUS_TO_FAILED_MESSAGE, e);
+        log.warn(FAILED_UPDATE_STATUS_TO_FAILED_MESSAGE, e);
         return null;
       });
   }
@@ -410,7 +430,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   private CompletableFuture<Void> setStatusToNotStarted(UUID credentialsId, String tenantId) {
     return holdingsStatusRepository.save(getStatusNotStarted(), credentialsId, tenantId)
       .exceptionally(e -> {
-        logger.error(FAILED_SAVE_STATUS_MESSAGE, e);
+        log.warn(FAILED_SAVE_STATUS_MESSAGE, e);
         return null;
       });
   }
@@ -448,7 +468,7 @@ public class HoldingsServiceImpl implements HoldingsService {
         .resourceType(holding.getResourceType())
         .build())
       .collect(Collectors.toSet());
-    logger.info(SAVING_HOLDINGS_MESSAGE);
+    log.info(SAVING_HOLDINGS_MESSAGE);
     return holdingsRepository.saveAll(dbHoldings, updatedAt, credentialsId, tenantId);
   }
 

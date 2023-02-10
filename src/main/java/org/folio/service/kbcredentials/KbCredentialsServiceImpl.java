@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.service.ConfigurationService;
@@ -38,6 +39,7 @@ import org.folio.util.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 
+@Log4j2
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private final UserKbCredentialsService userKbCredentialsService;
@@ -88,17 +90,22 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Override
   public CompletableFuture<KbCredentials> save(KbCredentialsPostRequest entity, Map<String, String> okapiHeaders) {
+    String tenantId = tenantId(okapiHeaders);
+    log.debug("save:: by [id: {}, tenant: {}]", entity.getData().getId(), tenantId);
+
     postBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
     return prepareAndSave(completedFuture(convertToDb(kbCredentials)), this::prepareSaveEntity, okapiHeaders)
       .thenCompose(
-        credentials -> holdingsService.setUpCredentials(fromUUID(credentials.getId()), tenantId(okapiHeaders))
+        credentials -> holdingsService.setUpCredentials(fromUUID(credentials.getId()), tenantId)
           .thenApply(unused -> convertToCredentials(credentials))
       );
   }
 
   @Override
   public CompletableFuture<Void> update(String id, KbCredentialsPutRequest entity, Map<String, String> okapiHeaders) {
+    log.debug("update:: by [id: {}, tenant: {}]", id, tenantId(okapiHeaders));
+
     putBodyValidator.validate(entity);
     KbCredentials kbCredentials = entity.getData();
     KbCredentialsDataAttributes attributes = kbCredentials.getAttributes();
@@ -110,6 +117,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Override
   public CompletableFuture<Void> updatePartially(String id, KbCredentialsPatchRequest entity,
                                                  Map<String, String> okapiHeaders) {
+    log.debug("updatePartially:: by [id: {}, tenant: {}]", id, tenantId(okapiHeaders));
+
     KbCredentials patchRequestData = convertPatchToCredentials(entity);
     patchBodyValidator.validate(patchRequestData);
     KbCredentialsDataAttributes attributes = patchRequestData.getAttributes();
@@ -120,7 +129,10 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   @Override
   public CompletableFuture<Void> delete(String id, Map<String, String> okapiHeaders) {
-    return repository.delete(toUUID(id), tenantId(okapiHeaders));
+    String tenantId = tenantId(okapiHeaders);
+    log.info("delete:: Attempts to delete by [id: {}, tenant: {}]", id, tenantId);
+
+    return repository.delete(toUUID(id), tenantId);
   }
 
   private DbKbCredentials preparePartialUpdateEntity(DbKbCredentials existingCredentials,
@@ -172,8 +184,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private CompletableFuture<DbKbCredentials> verifyAndSave(DbKbCredentials dbKbCredentials,
                                                            Map<String, String> okapiHeaders) {
+
+    String tenantId = tenantId(okapiHeaders);
+    log.info("verifyAndSave:: Attempting to save by [id: {}, tenant: {}]", fromUUID(dbKbCredentials.getId()),
+      tenantId);
+
     return verifyCredentials(dbKbCredentials, okapiHeaders)
-      .thenCompose(v -> repository.save(dbKbCredentials, tenantId(okapiHeaders)));
+      .thenCompose(v -> repository.save(dbKbCredentials, tenantId));
   }
 
   private CompletableFuture<Void> verifyCredentials(DbKbCredentials dbKbCredentials, Map<String, String> okapiHeaders) {

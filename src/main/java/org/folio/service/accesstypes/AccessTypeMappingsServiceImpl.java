@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.extern.log4j.Log4j2;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypeMapping;
 import org.folio.repository.accesstypes.AccessTypeMappingsRepository;
@@ -15,6 +16,7 @@ import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.model.filter.AccessTypeFilter;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService {
 
@@ -33,11 +35,15 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
   @Override
   public CompletableFuture<Void> update(AccessType accessType, String recordId, RecordType recordType,
                                         String credentialsId, Map<String, String> okapiHeaders) {
+    String tenantId = tenantId(okapiHeaders);
+    log.debug("update:: by [recordId: {}, recordType: {}, tenant: {}]", recordId, recordType, tenantId);
+
     if (accessType == null) {
-      return mappingRepository.deleteByRecord(recordId, recordType, toUUID(credentialsId), tenantId(okapiHeaders));
+      log.info("update:: accessType == null, attempting to delete by record [recordId: {}]", recordId);
+      return mappingRepository.deleteByRecord(recordId, recordType, toUUID(credentialsId), tenantId);
     }
 
-    return mappingRepository.findByRecord(recordId, recordType, toUUID(credentialsId), tenantId(okapiHeaders))
+    return mappingRepository.findByRecord(recordId, recordType, toUUID(credentialsId), tenantId)
       .thenCompose(dbMapping -> {
         UUID accessTypeId = UUID.fromString(accessType.getId());
         AccessTypeMapping mapping;
@@ -46,7 +52,9 @@ public class AccessTypeMappingsServiceImpl implements AccessTypeMappingsService 
         } else {
           mapping = createAccessTypeMapping(recordId, recordType, accessTypeId);
         }
-        return mappingRepository.save(mapping, tenantId(okapiHeaders)).thenApply(nothing());
+
+        log.info("update:: Attempts to save by [mapping: {}, tenant: {}]", mapping, tenantId);
+        return mappingRepository.save(mapping, tenantId).thenApply(nothing());
       });
   }
 

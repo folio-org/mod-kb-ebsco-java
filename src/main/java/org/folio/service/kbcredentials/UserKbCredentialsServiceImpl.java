@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
@@ -23,6 +24,7 @@ import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.util.UserInfo;
 import org.springframework.core.convert.converter.Converter;
 
+@Log4j2
 @RequiredArgsConstructor
 public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
 
@@ -48,12 +50,16 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
   }
 
   private CompletableFuture<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
-    return credentialsRepository.findByUserId(UUID.fromString(userInfo.getUserId()), tenant)
+    UUID userId = UUID.fromString(userInfo.getUserId());
+    log.debug("findUserCredentials:: Attempts to find KbCredentials by [userId: {}, tenant: {}]", userId, tenant);
+
+    return credentialsRepository.findByUserId(userId, tenant)
       .thenCompose(ifEmpty(() -> findSingleKbCredentials(tenant)))
       .thenApply(getCredentialsOrFailWithUserId(userInfo.getUserId()));
   }
 
   private CompletableFuture<Optional<DbKbCredentials>> findSingleKbCredentials(String tenant) {
+    log.debug("findSingleKbCredentials:: Attempts to find all credentials by [tenant: {}]", tenant);
     CompletableFuture<Collection<DbKbCredentials>> allCreds = credentialsRepository.findAll(tenant);
 
     return allCreds.thenCompose(credentials -> {
@@ -65,8 +71,8 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
 
       return assignedUserRepository.count(single.getId(), tenant)
         .thenApply(count -> INTEGER_ZERO.equals(count)
-                            ? Optional.of(single)
-                            : Optional.empty());
+          ? Optional.of(single)
+          : Optional.empty());
     });
   }
 
