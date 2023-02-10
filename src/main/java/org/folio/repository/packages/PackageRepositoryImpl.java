@@ -29,9 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.PackageId;
@@ -40,11 +39,9 @@ import org.folio.rest.util.IdParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class PackageRepositoryImpl implements PackageRepository {
-
-  private static final Logger LOG = LogManager.getLogger(PackageRepositoryImpl.class);
-
   @Autowired
   private Vertx vertx;
   @Autowired
@@ -61,7 +58,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = insertOrUpdateStatement(tenantId);
 
-    logInsertQueryInfoLevel(LOG, query, parameters);
+    logInsertQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -74,7 +71,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = deleteStatement(tenantId);
 
-    logDeleteQueryInfoLevel(LOG, query, parameters);
+    logDeleteQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -99,7 +96,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = selectPackagesWithTagsByIds(tenantId, packageIds);
 
-    logSelectQueryInfoLevel(LOG, query, parameters);
+    logSelectQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);
@@ -125,7 +122,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = selectPackagesWithTags(tenantId, tags);
 
-    logSelectQueryInfoLevel(LOG, query, parameters);
+    logSelectQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);

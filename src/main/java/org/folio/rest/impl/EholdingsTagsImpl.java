@@ -115,7 +115,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
 
   private Void failedGetTags(Throwable th, Handler<AsyncResult<Response>> handler,
                              Function<ValidationException, Response> exceptionHandler) {
-    log.error("Tag retrieval failed: " + th.getMessage(), th);
+    log.warn("Tag retrieval failed: " + th.getMessage(), th);
 
     ErrorHandler errHandler = new ErrorHandler()
       .add(ValidationException.class, exceptionHandler)

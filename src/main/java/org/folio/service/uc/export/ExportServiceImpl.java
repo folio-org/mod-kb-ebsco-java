@@ -11,8 +11,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.converter.costperuse.export.PackageTitlesCostPerUseCollectionToExportConverter;
 import org.folio.service.locale.LocaleSettingsService;
@@ -20,10 +19,9 @@ import org.folio.service.uc.UcCostPerUseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 public class ExportServiceImpl implements ExportService {
-  private static final Logger LOG = LogManager.getLogger(ExportServiceImpl.class);
-
   @Autowired
   private UcCostPerUseService costPerUseService;
   @Autowired
@@ -33,7 +31,7 @@ public class ExportServiceImpl implements ExportService {
 
   public CompletableFuture<String> exportCsv(String packageId, String platform, String year,
                                              Map<String, String> okapiHeaders) {
-    LOG.info("Perform export for package - {}", packageId);
+    log.info("Perform export for package - {}", packageId);
     return costPerUseService.getPackageResourcesCostPerUse(packageId, platform, year, okapiHeaders)
       .thenCombine(localeSettingsService.retrieveSettings(new OkapiData(okapiHeaders)),
         (collection, localeSettings) -> converter.convert(collection, platform, year, localeSettings))
@@ -42,7 +40,7 @@ public class ExportServiceImpl implements ExportService {
 
   private CompletableFuture<String> mapToCsv(List<TitleExportModel> entities) {
     CompletableFuture<String> result = new CompletableFuture<>();
-    LOG.info("Mapping {} entities to SCV", entities.size());
+    log.info("Mapping {} entities to SCV", entities.size());
     StringWriter writer = new StringWriter();
 
     // mapping of columns by position
@@ -60,7 +58,7 @@ public class ExportServiceImpl implements ExportService {
     try {
       csvToBean.write(entities);
     } catch (CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
-      LOG.error("Error occurred during mapping", e);
+      log.warn("Error occurred during mapping", e);
       result.completeExceptionally(new ExportException(e.getMessage()));
     }
     result.complete(writer.toString());

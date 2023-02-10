@@ -48,11 +48,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordType;
@@ -63,10 +62,9 @@ import org.folio.service.exc.ServiceExceptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class AccessTypesRepositoryImpl implements AccessTypesRepository {
-
-  private static final Logger LOG = LogManager.getLogger(AccessTypesRepositoryImpl.class);
 
   private static final String NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String NAME_UNIQUENESS_DETAILS = "Access type with name '%s' already exist";
@@ -82,7 +80,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = selectByCredentialsIdWithCountQuery(tenantId);
     Tuple params = createParams(credentialsId);
 
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -97,7 +95,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = selectByCredentialsAndAccessTypeIdQuery(tenantId);
     Tuple params = createParams(accessTypeId, credentialsId);
 
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -114,7 +112,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     params.addUUID(credentialsId);
     accessTypeNames.forEach(params::addString);
 
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -129,7 +127,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = selectByCredentialsAndRecordQuery(tenantId);
     Tuple params = createParams(credentialsId, recordId, recordType.getValue());
 
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
@@ -155,7 +153,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       accessType.getUpdatedByUserId()
     );
 
-    logInsertQueryInfoLevel(LOG, query, params);
+    logInsertQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -172,7 +170,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = selectCountByCredentialsIdQuery(tenantId);
     Tuple params = createParams(credentialsId);
 
-    logCountQuery(LOG, query, params);
+    logCountQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -186,7 +184,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = deleteByCredentialsAndAccessTypeIdQuery(tenantId);
     Tuple params = createParams(accessTypeId, credentialsId);
 
-    logDeleteQueryInfoLevel(LOG, query, params);
+    logDeleteQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -210,7 +208,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     Tuple parameters = createParametersWithRecordType(credentialsId, recordIds, recordType);
 
     String query = selectByCredentialsAndRecordIdsQuery(recordIds, tenantId);
-    logSelectQueryInfoLevel(LOG, query, parameters);
+    logSelectQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -261,8 +259,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private int getIntValueOrDefault(Row row, String columnName, int defaultValue) {
     return row.getColumnIndex(columnName) != -1
-           ? ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
-           : defaultValue;
+      ? ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
+      : defaultValue;
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

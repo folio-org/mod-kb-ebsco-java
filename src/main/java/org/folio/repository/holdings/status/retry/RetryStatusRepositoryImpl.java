@@ -21,18 +21,15 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class RetryStatusRepositoryImpl implements RetryStatusRepository {
-
-  private static final Logger LOG = LogManager.getLogger(RetryStatusRepositoryImpl.class);
-
   private final Vertx vertx;
   private final DBExceptionTranslator excTranslator;
 
@@ -45,7 +42,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<RetryStatus> findByCredentialsId(UUID credentialsId, String tenantId) {
     final String query = getRetryStatusByCredentials(tenantId);
     final Tuple parameters = Tuple.of(credentialsId);
-    logSelectQueryDebugLevel(LOG, query, parameters);
+    logSelectQueryDebugLevel(log, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapStatus);
@@ -55,7 +52,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<Void> save(RetryStatus status, UUID credentialsId, String tenantId) {
     final String query = insertRetryStatus(tenantId);
     final Tuple parameters = createInsertParameters(credentialsId, status);
-    logInsertQueryDebugLevel(LOG, query, parameters);
+    logInsertQueryDebugLevel(log, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
@@ -65,7 +62,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<Void> update(RetryStatus retryStatus, UUID credentialsId, String tenantId) {
     final String query = updateRetryStatus(tenantId);
     final Tuple parameters = createUpdateParameters(credentialsId, retryStatus);
-    logUpdateQueryDebugLevel(LOG, query, parameters);
+    logUpdateQueryDebugLevel(log, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
@@ -75,7 +72,7 @@ public class RetryStatusRepositoryImpl implements RetryStatusRepository {
   public CompletableFuture<Void> delete(UUID credentialsId, String tenantId) {
     final String query = deleteRetryStatus(tenantId);
     final Tuple parameters = Tuple.of(credentialsId);
-    logDeleteQueryInfoLevel(LOG, query, parameters);
+    logDeleteQueryInfoLevel(log, query, parameters);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());

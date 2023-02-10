@@ -1,11 +1,14 @@
 package org.folio.service.customlabels;
 
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.collectionToLogMsg;
+import static org.folio.rest.util.TenantUtil.tenantId;
 
 import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.RootProxyCustomLabels;
 import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class CustomLabelsServiceImpl implements CustomLabelsService {
 
@@ -45,6 +49,8 @@ public class CustomLabelsServiceImpl implements CustomLabelsService {
   @Override
   public CompletableFuture<CustomLabelsCollection> fetch(String credentialsId,
                                                          Map<String, String> okapiHeaders) {
+    log.debug("fetch:: by [tenant: {}]", tenantId(okapiHeaders));
+
     return createHoldingsIqService(credentialsId, okapiHeaders)
       .thenCompose(HoldingsIQServiceImpl::retrieveRootProxyCustomLabels)
       .thenApply(fromRmApiConverter::convert)
@@ -54,6 +60,9 @@ public class CustomLabelsServiceImpl implements CustomLabelsService {
   @Override
   public CompletableFuture<CustomLabelsCollection> update(String credentialsId, CustomLabelsPutRequest putRequest,
                                                           Map<String, String> okapiHeaders) {
+    log.debug("update:: by [tenant: {}, customLabels: {}]", tenantId(okapiHeaders),
+      collectionToLogMsg(putRequest.getData()));
+
     validator.validate(putRequest);
     List<CustomLabel> requestData = putRequest.getData();
     return createHoldingsIqService(credentialsId, okapiHeaders)

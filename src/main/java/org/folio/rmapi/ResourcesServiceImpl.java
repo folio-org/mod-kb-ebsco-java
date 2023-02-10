@@ -13,8 +13,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.CustomerResources;
@@ -32,9 +31,8 @@ import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.VendorResult;
 import org.folio.util.FutureUtils;
 
+@Log4j2
 public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
-
-  private static final Logger LOG = LogManager.getLogger(ResourcesServiceImpl.class);
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_PACKAGE_VALUE = "package";
 
@@ -102,7 +100,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .map(id -> retrieveResource(id, includes, true))
       .collect(Collectors.toSet());
 
-    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return FutureUtils.allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToResources);
   }
 
@@ -121,7 +119,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
           }))
       .collect(Collectors.toSet());
 
-    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return FutureUtils.allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
       .thenApply(resourceFutures -> mapToResources(resourceFutures, failed));
   }
 

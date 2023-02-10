@@ -30,8 +30,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import javax.ws.rs.BadRequestException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
@@ -39,10 +38,9 @@ import org.folio.service.users.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class AssignedUserRepositoryImpl implements AssignedUserRepository {
-
-  private static final Logger LOG = LogManager.getLogger(AssignedUserRepositoryImpl.class);
 
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
 
@@ -56,7 +54,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     String query = selectAssignedUsersByCredentialsIdQuery(tenant);
     Tuple params = createParams(credentialsId);
 
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, params, promise);
 
@@ -68,7 +66,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     String query = selectCountByCredentialsIdQuery(tenant);
     Tuple params = Tuple.of(credentialsId);
 
-    logCountQuery(LOG, query, params);
+    logCountQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, params, promise);
@@ -86,7 +84,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
       entity.getCredentialsId()
     ));
 
-    logInsertQueryInfoLevel(LOG, query, params);
+    logInsertQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -103,7 +101,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     String query = deleteAssignedUserQuery(tenant);
     Tuple params = createParams(credentialsId, userId);
 
-    logDeleteQueryInfoLevel(LOG, query, params);
+    logDeleteQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 

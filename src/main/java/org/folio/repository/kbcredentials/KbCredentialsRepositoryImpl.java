@@ -36,8 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.ws.rs.BadRequestException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.DbMetadataUtil;
 import org.folio.rest.exception.InputValidationException;
@@ -45,11 +44,9 @@ import org.folio.rest.persist.PostgresClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
-
-  private static final Logger LOG = LogManager.getLogger(KbCredentialsRepositoryImpl.class);
-
   private static final String CREDENTIALS_NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String CREDENTIALS_NAME_UNIQUENESS_DETAILS = "Credentials with name '%s' already exist";
   private static final String CREDENTIALS_CUSTOMERID_URL_UNIQUENESS_MESSAGE = "Duplicate credentials";
@@ -67,7 +64,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<Collection<DbKbCredentials>> findAll(String tenant) {
     String query = selectCredentialsQuery(tenant);
 
-    logSelectQueryInfoLevel(LOG, query);
+    logSelectQueryInfoLevel(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, promise);
 
@@ -78,7 +75,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   public CompletableFuture<Optional<DbKbCredentials>> findById(UUID id, String tenant) {
     String query = selectCredentialsByIdQuery(tenant);
     Tuple params = Tuple.of(id);
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, params, promise);
@@ -108,7 +105,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       credentials.getUpdatedByUserName()
     ));
 
-    logInsertQueryInfoLevel(LOG, query, params);
+    logInsertQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -124,7 +121,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     String query = deleteCredentialsQuery(tenant);
     Tuple params = Tuple.of(id);
 
-    logDeleteQueryInfoLevel(LOG, query, params);
+    logDeleteQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).execute(query, params, promise);
 
@@ -139,7 +136,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     String query = selectCredentialsByUserIdQuery(tenant);
     Tuple params = Tuple.of(userId);
 
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant).select(query, params, promise);
 
@@ -152,8 +149,8 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private Optional<DbKbCredentials> mapSingleCredentials(RowSet<Row> resultSet) {
     return isEmpty(resultSet)
-           ? Optional.empty()
-           : Optional.of(mapFirstItem(resultSet, this::mapCredentials));
+      ? Optional.empty()
+      : Optional.of(mapFirstItem(resultSet, this::mapCredentials));
   }
 
   private DbKbCredentials mapCredentials(Row row) {

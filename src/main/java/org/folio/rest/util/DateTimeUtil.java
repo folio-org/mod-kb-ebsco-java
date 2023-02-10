@@ -5,25 +5,24 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import lombok.experimental.UtilityClass;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Utility class to work with DateTime.
  */
+@Log4j2
 @UtilityClass
 public class DateTimeUtil {
 
   public static final DateTimeFormatter POSTGRES_TIMESTAMP_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
   public static final DateTimeFormatter POSTGRES_TIMESTAMP_OLD_FORMATTER = new DateTimeFormatterBuilder()
-      .parseCaseInsensitive()
-      .append(DateTimeFormatter.ISO_LOCAL_DATE)
-      .appendLiteral(' ')
-      .append(DateTimeFormatter.ISO_LOCAL_TIME)
-      .appendOffset("+HH", "Z")
-      .toFormatter();
+    .parseCaseInsensitive()
+    .append(DateTimeFormatter.ISO_LOCAL_DATE)
+    .appendLiteral(' ')
+    .append(DateTimeFormatter.ISO_LOCAL_TIME)
+    .appendOffset("+HH", "Z")
+    .toFormatter();
 
-  private static final Logger logger = LogManager.getLogger(DateTimeUtil.class);
   private static final String PARSE_EXCEPTION_MESSAGE = "Error parsing string: {}. Trying to parse the old format";
 
   /**
@@ -46,7 +45,7 @@ public class DateTimeUtil {
     try {
       return OffsetDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_FORMATTER);
     } catch (DateTimeParseException parseException) {
-      logger.warn(PARSE_EXCEPTION_MESSAGE, stringToParse);
+      log.warn(PARSE_EXCEPTION_MESSAGE, stringToParse);
       return OffsetDateTime.parse(stringToParse, POSTGRES_TIMESTAMP_OLD_FORMATTER);
     }
   }

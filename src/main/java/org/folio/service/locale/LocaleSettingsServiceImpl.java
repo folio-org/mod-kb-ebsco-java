@@ -11,17 +11,16 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.tools.utils.VertxUtils;
 import org.jetbrains.annotations.NotNull;
 
+@Log4j2
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
-  private static final Logger LOG = LogManager.getLogger(LocaleSettingsServiceImpl.class);
   private static final String QUERY = "module=ORG and configName=localeSettings";
 
   public CompletableFuture<LocaleSettings> retrieveSettings(OkapiData okapiData) {
@@ -36,7 +35,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
   private BiConsumer<Optional<LocaleSettings>, Throwable> recovery(CompletableFuture<LocaleSettings> future) {
     return (localeSettings, throwable) -> {
       if (throwable != null || localeSettings.isEmpty()) {
-        LOG.info("Default Locale settings will be used to proceed");
+        log.info("Default Locale settings will be used to proceed");
         future.complete(getDefaultLocaleSettings());
       } else {
         future.complete(localeSettings.get());
@@ -49,7 +48,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
     try {
       var configurationsClient = prepareConfigurationsClient(okapiData, tenantId);
-      LOG.info("Send GET request to mod-configuration {}", QUERY);
+      log.info("Send GET request to mod-configuration {}", QUERY);
       Promise<HttpResponse<Buffer>> promise = Promise.promise();
       configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null, promise);
 
@@ -66,7 +65,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
         .onFailure(future::completeExceptionally);
 
     } catch (Exception e) {
-      LOG.error("Request to mod-configuration failed:", e);
+      log.warn("Request to mod-configuration failed:", e);
       future.completeExceptionally(e);
     }
     return future;
@@ -88,7 +87,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
       String errorMessage = String.format(
         "Request to mod-configuration failed: error code - %s response body - %s", response.statusCode(),
         response.bodyAsString());
-      LOG.error(errorMessage);
+      log.warn(errorMessage);
       throw new IllegalStateException(errorMessage);
     }
     return true;

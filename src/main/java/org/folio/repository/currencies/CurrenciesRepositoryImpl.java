@@ -12,18 +12,15 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.DbUtil;
 import org.springframework.stereotype.Repository;
 
+@Log4j2
 @Repository
 public class CurrenciesRepositoryImpl implements CurrenciesRepository {
-
-  private static final Logger LOG = LogManager.getLogger(CurrenciesRepositoryImpl.class);
-
   private final Vertx vertx;
   private final DBExceptionTranslator excTranslator;
 
@@ -36,7 +33,7 @@ public class CurrenciesRepositoryImpl implements CurrenciesRepository {
   public CompletableFuture<List<DbCurrency>> findAll(String tenant) {
     String query = selectCurrencies(tenant);
 
-    logSelectQueryInfoLevel(LOG, query);
+    logSelectQueryInfoLevel(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     DbUtil.pgClient(tenant, vertx).execute(query, promise);
 

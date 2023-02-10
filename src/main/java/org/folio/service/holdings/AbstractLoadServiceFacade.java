@@ -22,9 +22,8 @@ import java.util.function.BiPredicate;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
 import org.folio.repository.holdings.LoadStatus;
@@ -35,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   public static final DateTimeFormatter HOLDINGS_STATUS_TIME_FORMATTER = new DateTimeFormatterBuilder()
@@ -43,7 +43,6 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     .appendLiteral(' ')
     .append(DateTimeFormatter.ISO_LOCAL_TIME)
     .toFormatter();
-  private static final Logger logger = LogManager.getLogger(AbstractLoadServiceFacade.class);
   protected final HoldingsService holdingsService;
   protected final int loadPageRetries;
   protected final int loadPageDelay;
@@ -69,13 +68,15 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
 
   @Override
   public void createSnapshot(ConfigurationMessage message) {
+    log.debug("createSnapshot:: by [tenant: {}]", message.getTenantId());
+
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
     populateHoldingsIfNecessary(loadingService)
       .thenAccept(status -> holdingsService.snapshotCreated(
         getSnapshotCreatedMessage(message, status, getRequestCount(status.getTotalCount(), getMaxPageSize()))))
       .whenComplete((o, throwable) -> {
         if (throwable != null) {
-          logger.error("Failed to create snapshot", throwable);
+          log.warn("Failed to create snapshot, msg: {}", throwable.getMessage());
           holdingsService.snapshotFailed(getSnapshotFailedMessage(message, throwable));
         }
       });
@@ -83,11 +84,13 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
 
   @Override
   public void loadHoldings(LoadHoldingsMessage message) {
+    log.debug("loadHoldings:: by [tenant: {}]", message.getTenantId());
+
     LoadServiceImpl loadingService = new LoadServiceImpl(message.getConfiguration(), vertx);
     loadHoldings(message, loadingService)
       .whenComplete((result, throwable) -> {
         if (throwable != null) {
-          logger.error("Failed to load holdings", throwable);
+          log.warn("Failed to load holdings, msg: {}", throwable.getMessage());
           holdingsService.loadingFailed(getLoadFailedMessage(message, throwable));
         }
       });
@@ -103,7 +106,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
       if (IN_PROGRESS.equals(loadStatus.getStatus())) {
         return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
       } else if (snapshotCreatedRecently(loadStatus)) {
-        logger.info("Snapshot created recently: {}", loadStatus);
+        log.info("Snapshot created recently: {}", loadStatus);
         final Integer totalCount = loadStatus.getTotalCount();
         if (INTEGER_ZERO.equals(totalCount)) {
           throw new IllegalStateException("Snapshot created with invalid totalCount: " + loadStatus);
@@ -111,7 +114,7 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
           return CompletableFuture.completedFuture(loadStatus);
         }
       } else {
-        logger.info("Start populating holdings to stage environment.");
+        log.info("Start populating holdings to stage environment.");
         return populateHoldings(loadingService)
           .thenCompose(transactionId -> waitForCompleteStatus(statusRetryCount, transactionId, loadingService));
       }
@@ -127,10 +130,11 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
 
   private void waitForCompleteStatus(int retries, String transactionId, CompletableFuture<HoldingsStatus> future,
                                      LoadService loadingService) {
+
     vertx.setTimer(statusRetryDelay, timerId -> getLoadingStatus(loadingService, transactionId)
       .thenAccept(loadStatus -> {
+        log.debug("waitForCompleteStatus: stage snapshot [status: {}]", loadStatus.getStatus());
         final LoadStatus status = loadStatus.getStatus();
-        logger.info("Getting status of stage snapshot: {}", status);
         if (COMPLETED.equals(status)) {
           final Integer totalCount = loadStatus.getTotalCount();
           if (INTEGER_ZERO.equals(totalCount)) {

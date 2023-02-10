@@ -22,10 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.client.uc.configuration.GetPackageUcConfiguration;
 import org.folio.client.uc.configuration.GetTitlePackageUcConfiguration;
 import org.folio.client.uc.configuration.GetTitleUcConfiguration;
@@ -38,10 +37,10 @@ import org.folio.client.uc.model.UcTitlePackageId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
 
-  private static final Logger LOG = LogManager.getLogger(UcApigeeEbscoClientImpl.class);
 
   private static final String FISCAL_YEAR_PARAM = "fiscalYear";
   private static final String FISCAL_MONTH_PARAM = "fiscalMonth";
@@ -162,11 +161,11 @@ public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
         HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
         String uri = request.uri();
         Object body = httpContext.body();
-        LOG.info("Request sends to APIGEE: {} with body {}", uri, body);
+        log.info("Request sends to APIGEE: {} with body {}", uri, body);
       } else if (ClientPhase.RECEIVE_RESPONSE == httpContext.phase()) {
         HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
         String uri = request.uri();
-        LOG.info("Response received from APIGEE: {}", uri);
+        log.info("Response received from APIGEE: {}", uri);
       }
       httpContext.next();
     };

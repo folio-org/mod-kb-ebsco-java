@@ -7,8 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.Title;
@@ -17,10 +16,8 @@ import org.folio.holdingsiq.service.impl.TitlesHoldingsIQServiceImpl;
 import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.util.FutureUtils;
 
+@Log4j2
 public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
-
-  private static final Logger LOG = LogManager.getLogger(TitlesServiceImpl.class);
-
   private final VertxCache<TitleCacheKey, Title> titleCache;
   private final Configuration configuration;
   private final String tenantId;
@@ -61,7 +58,7 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
     Set<CompletableFuture<Title>> futures = titleIds.stream()
       .map(id -> retrieveTitle(id, true))
       .collect(Collectors.toSet());
-    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return FutureUtils.allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToTitles);
   }
 

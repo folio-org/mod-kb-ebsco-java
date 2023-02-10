@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.Packages;
@@ -23,10 +22,10 @@ import org.folio.rmapi.cache.VendorCacheKey;
 import org.folio.rmapi.result.VendorResult;
 import org.folio.util.FutureUtils;
 
+@Log4j2
 public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
 
   private static final String INCLUDE_PACKAGES_VALUE = "packages";
-  private static final Logger LOG = LogManager.getLogger(ProvidersServiceImpl.class);
 
   private PackagesHoldingsIQService packagesService;
   private final VertxCache<VendorCacheKey, VendorById> vendorCache;
@@ -72,7 +71,7 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
     Set<CompletableFuture<VendorResult>> futures = providerIds.stream()
       .map(id -> retrieveProvider(id, "", true))
       .collect(Collectors.toSet());
-    return FutureUtils.allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return FutureUtils.allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToProviders);
   }
 
