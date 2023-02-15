@@ -1,4 +1,4 @@
-## v3.12.3 2023-02-15
+## v3.13.0 2023-02-15
 ### Bug Fixes
 * Missing module permission for access status types ([MODKBEKBJ-708](https://issues.folio.org/browse/MODKBEKBJ-708))
 * Load holdings: process failing after exceeding status request retries ([MODKBEKBJ-713](https://issues.folio.org/browse/MODKBEKBJ-713))
