@@ -1,3 +1,36 @@
+## v3.13.0 2023-02-15
+### Bug Fixes
+* Missing module permission for access status types ([MODKBEKBJ-708](https://issues.folio.org/browse/MODKBEKBJ-708))
+* Load holdings: process failing after exceeding status request retries ([MODKBEKBJ-713](https://issues.folio.org/browse/MODKBEKBJ-713))
+
+### Tech Dept
+* Align logging configuration with common Folio solution ([MODKBEKBJ-699](https://issues.folio.org/browse/MODKBEKBJ-699))
+
+### Dependencies
+* Bump `folio-service-tools` from `1.10.0` to `1.10.1`
+* Bump `folio-holdingsiq-client` from `2.2.0` to `2.3.0`
+* Bump `folio-liquibase-util` from `1.5.0` to `1.6.0`
+* Bump `mod-configuration-client` from `5.9.0` to `5.9.1`
+* Bump `raml-module-builder` from `35.0.0` to `35.0.6`
+* Bump `vertx` from `4.3.3` to `4.3.8`
+* Bump `spring` from `5.3.23` to `5.3.25`
+* Bump `jackson` from `2.13.4` to `2.14.2`
+* Bump `postgresql` from `42.5.0` to `42.5.3`
+* Bump `lombok` from `1.18.24` to `1.18.26`
+* Bump `httpcore` from `4.4.15` to `4.4.16`
+* Bump `jetbrains-annotations` from `23.0.0` to `24.0.0`
+* Bump `opencsv` from `5.7.0` to `5.7.1`
+* Bump `rest-assured` from `5.2.0` to `5.3.0`
+* Bump `wiremock` from `2.34.0` to `2.35.0`
+* Bump `mockito` from `4.8.0` to `5.1.1`
+* Added `assertj` `3.24.2`
+
+## v3.12.2 2022-12-09
+* MODKBEKBJ-708 - Missing permission to see and use "Access status type" feature in "eHoldings" app
+
+## v3.12.1 2022-11-16
+* MODKBEKBJ-702 Vert.x 4.3.4, RMB 35.0.3, Jackson 2.14.0
+
 ## v3.12.0 2022-10-28
 * MODKBEKBJ-673 User with permission "Settings (eHoldings): Can assign/unassign a user from a KB" can't assign users to KB credentials
 * MODKBEKBJ-675 Add checkstyle plugin
