@@ -111,7 +111,7 @@ public class LogUtils {
     sb.append("]");
     return sb.toString();
   }
-
+// MODKBEKBJ-626: dummy commit for CLA
   /**
    * Returns "0" if given collection is empty or null.
    *
