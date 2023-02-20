@@ -23,10 +23,9 @@ import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.common.OkapiParams;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.util.StringUtil;
@@ -37,11 +36,9 @@ import org.springframework.stereotype.Component;
 /**
  * Retrieves user information from mod-users /users/{userId} endpoint.
  */
+@Log4j2
 @Component
 public class UsersLookUpService {
-
-  private static final Logger LOG = LogManager.getLogger(UsersLookUpService.class);
-
   private static final String USERS_ENDPOINT_TEMPLATE = "/users/%s";
   private static final String USERS_ENDPOINT = "/users";
   private static final String GROUPS_ENDPOINT = "/groups";
@@ -148,15 +145,15 @@ public class UsersLookUpService {
     return ErrorConverter.createFullBody(result -> {
       HttpResponse<Buffer> response = result.response();
       if (response.statusCode() == 401 || response.statusCode() == 403) {
-        LOG.error(AUTHORIZATION_FAIL_ERROR_MESSAGE);
+        log.warn(AUTHORIZATION_FAIL_ERROR_MESSAGE);
         throw new NotAuthorizedException(AUTHORIZATION_FAIL_ERROR_MESSAGE);
       } else if (response.statusCode() == 404) {
-        LOG.error(USER_NOT_FOUND_ERROR_MESSAGE);
+        log.warn(USER_NOT_FOUND_ERROR_MESSAGE);
         throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
       } else {
         String message = result.message();
         String serverResponse = response.bodyAsString();
-        LOG.error(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message, serverResponse);
+        log.warn(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message, serverResponse);
         throw new IllegalStateException(message);
       }
     });

@@ -16,8 +16,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.validation.ValidationException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -36,12 +35,11 @@ import org.folio.rmapi.result.PackageBulkResult;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.VendorResult;
 
+@Log4j2
 public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private static final String INCLUDE_PROVIDER_VALUE = "provider";
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
-  private static final Logger LOG = LogManager.getLogger(PackageServiceImpl.class);
-
   private final ProvidersServiceImpl providerService;
   private final TitlesHoldingsIQService titlesService;
   private final VertxCache<PackageCacheKey, PackageByIdData> packageCache;
@@ -99,7 +97,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     Set<CompletableFuture<PackageResult>> futures = packageIds.stream()
       .map(id -> retrievePackage(id, Collections.emptyList(), true))
       .collect(Collectors.toSet());
-    return allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToPackages);
   }
 
@@ -116,7 +114,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
       }
     });
 
-    return allOfSucceeded(futures, throwable -> LOG.warn(throwable.getMessage(), throwable))
+    return allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
       .thenApply(this::mapToPackageBulk);
   }
 
@@ -133,7 +131,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     return retrievePackage(id, Collections.emptyList(), true)
       .thenApply(successfulResult())
       .exceptionally(throwable -> {
-        LOG.warn(throwable.getMessage(), throwable);
+        log.warn(throwable.getMessage(), throwable);
 
         return new Failure<>(IdParser.packageIdToString(id));
       });

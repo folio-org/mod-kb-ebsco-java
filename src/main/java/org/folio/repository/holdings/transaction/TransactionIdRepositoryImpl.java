@@ -17,16 +17,13 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class TransactionIdRepositoryImpl implements TransactionIdRepository {
-
-  private static final Logger LOG = LogManager.getLogger(TransactionIdRepositoryImpl.class);
-
   private final Vertx vertx;
 
   public TransactionIdRepositoryImpl(Vertx vertx) {
@@ -37,7 +34,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
   public CompletableFuture<Void> save(UUID credentialsId, String transactionId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId, transactionId);
     final String query = insertTransactionId(tenantId, params);
-    logInsertQueryDebugLevel(LOG, query, params);
+    logInsertQueryDebugLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
@@ -47,7 +44,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
   public CompletableFuture<String> getLastTransactionId(UUID credentialsId, String tenantId) {
     final Tuple params = Tuple.of(credentialsId);
     final String query = getLastTransactionIdByCredentials(tenantId);
-    logSelectQueryDebugLevel(LOG, query, params);
+    logSelectQueryDebugLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapId);

@@ -2,6 +2,7 @@ package org.folio.service.accesstypes;
 
 import static java.lang.String.format;
 import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.LogUtils.collectionToLogMsg;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
@@ -21,6 +22,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import lombok.extern.log4j.Log4j2;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.db.exc.DbExcUtils;
@@ -45,6 +47,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class AccessTypesServiceImpl implements AccessTypesService {
 
@@ -83,6 +86,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Override
   public CompletableFuture<AccessTypeCollection> findByUser(Map<String, String> okapiHeaders) {
+    log.debug("findByUser:: by [tenant: {}]", tenantId(okapiHeaders));
+
     return kbCredentialsService.findByUser(okapiHeaders)
       .thenCompose(kbCredentials -> findByCredentialsId(kbCredentials.getId(), okapiHeaders));
   }
@@ -90,7 +95,10 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessTypeCollection> findByCredentialsId(String credentialsId,
                                                                      Map<String, String> okapiHeaders) {
-    return repository.findByCredentialsId(toUUID(credentialsId), tenantId(okapiHeaders))
+    String tenantId = tenantId(okapiHeaders);
+    log.debug("findByCredentialsId:: by [tenantId: {}]", tenantId);
+
+    return repository.findByCredentialsId(toUUID(credentialsId), tenantId)
       .thenApply(accessTypes -> mapItems(accessTypes, accessTypeFromDbConverter::convert))
       .thenCompose(accessTypes -> populateUserMetadata(okapiHeaders, accessTypes))
       .thenApply(accessTypeCollectionConverter::convert);
@@ -98,6 +106,8 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Override
   public CompletableFuture<AccessType> findByUserAndId(String accessTypeId, Map<String, String> okapiHeaders) {
+    log.debug("findByUserAndId:: by [accessTypeId: {}, tenant: {}]", accessTypeId, tenantId(okapiHeaders));
+
     return kbCredentialsService.findByUser(okapiHeaders)
       .thenCompose(credentials -> findByCredentialsAndAccessTypeId(credentials.getId(), accessTypeId, true,
         okapiHeaders));
@@ -107,10 +117,14 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<AccessType> findByCredentialsAndAccessTypeId(String credentialsId, String accessTypeId,
                                                                         boolean withMetadata,
                                                                         Map<String, String> okapiHeaders) {
+    log.debug("findByCredentialsAndAccessTypeId:: by [accessTypeId: {}, withMetaData: {}, tenant: {}]",
+      accessTypeId, withMetadata, tenantId(okapiHeaders));
+
     return fetchDbAccessType(credentialsId, accessTypeId, okapiHeaders)
       .thenApply(accessTypeFromDbConverter::convert)
       .thenCompose(accessType -> {
         if (withMetadata) {
+          log.info("findByCredentialsAndAccessTypeId:: Attempting to populate UserMetaData");
           return populateUserMetadata(okapiHeaders, List.of(accessType))
             .thenApply(accessTypes -> accessTypes.get(0));
         } else {
@@ -123,7 +137,10 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   public CompletableFuture<AccessTypeCollection> findByNames(Collection<String> accessTypeNames,
                                                              String credentialsId,
                                                              Map<String, String> okapiHeaders) {
-    return repository.findByCredentialsAndNames(toUUID(credentialsId), accessTypeNames, tenantId(okapiHeaders))
+    String tenantId = tenantId(okapiHeaders);
+    log.debug("findByNames:: by [accessTypeNames: {}, tenant: {}]", collectionToLogMsg(accessTypeNames), tenantId);
+
+    return repository.findByCredentialsAndNames(toUUID(credentialsId), accessTypeNames, tenantId)
       .thenApply(accessTypes -> mapItems(accessTypes, accessTypeFromDbConverter::convert))
       .thenApply(accessTypeCollectionConverter::convert);
   }
@@ -131,9 +148,12 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessType> findByRecord(RecordKey recordKey, String credentialsId,
                                                     Map<String, String> okapiHeaders) {
+    String tenantId = tenantId(okapiHeaders);
+    log.debug("findByRecord:: by [recordKey: {}, tenant: {}]", recordKey, tenantId);
+
     String recordId = recordKey.getRecordId();
     RecordType recordType = recordKey.getRecordType();
-    return repository.findByCredentialsAndRecord(toUUID(credentialsId), recordId, recordType, tenantId(okapiHeaders))
+    return repository.findByCredentialsAndRecord(toUUID(credentialsId), recordId, recordType, tenantId)
       .thenApply(getAccessTypeOrFail(recordId, recordType))
       .thenApply(accessTypeFromDbConverter::convert);
   }
@@ -141,11 +161,17 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<AccessType> save(String credentialsId, AccessTypePostRequest postRequest,
                                             Map<String, String> okapiHeaders) {
+    String tenantId = tenantId(okapiHeaders);
     AccessType requestData = postRequest.getData();
+    AccessTypeDataAttributes attributes = requestData.getAttributes();
+    log.debug("save:: by accessType [attribute: {}, tenant: {}]", attributes, tenantId);
+
     bodyValidator.validate(credentialsId, requestData);
-    if (requestData.getAttributes().getCredentialsId() == null) {
-      requestData.getAttributes().setCredentialsId(credentialsId);
+    if (attributes.getCredentialsId() == null) {
+      attributes.setCredentialsId(credentialsId);
     }
+
+    log.info("save:: Attempts to validate & save accessType by [tenant: {}]", tenantId);
     return validateAccessTypeLimit(credentialsId, okapiHeaders)
       .thenApply(o -> accessTypeToDbConverter.convert(requestData))
       .thenApply(dbAccessType -> prePopulateCreatorMetadata(dbAccessType, okapiHeaders))
@@ -171,20 +197,28 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   @Override
   public CompletableFuture<Void> update(String credentialsId, String accessTypeId, AccessTypePutRequest putRequest,
                                         Map<String, String> okapiHeaders) {
+    String tenantId = tenantId(okapiHeaders);
+    log.debug("update:: by accessType [accessTypeId: {}, tenant: {}]", accessTypeId, tenantId);
+
     AccessType requestData = putRequest.getData();
     bodyValidator.validate(credentialsId, accessTypeId, requestData);
+
+    log.info("update: Attempts to update fields & save accessType by [tenant: {}]", tenantId);
     return fetchDbAccessType(credentialsId, accessTypeId, okapiHeaders)
       .thenApply(accessType -> updateFields(accessType, requestData.getAttributes()))
       .thenApply(dbAccessType -> prePopulateUpdaterMetadata(dbAccessType, okapiHeaders))
-      .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
+      .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId))
       .thenApply(accessType -> null);
   }
 
   @Override
   public CompletableFuture<Void> delete(String credentialsId, String accessTypeId, Map<String, String> okapiHeaders) {
+    String tenantId = tenantId(okapiHeaders);
+    log.debug("delete:: by [accessTypeId: {}, tenant: {}]", accessTypeId, tenantId);
+
     CompletableFuture<Void> resultFuture = new CompletableFuture<>();
 
-    repository.delete(toUUID(credentialsId), toUUID(accessTypeId), tenantId(okapiHeaders))
+    repository.delete(toUUID(credentialsId), toUUID(accessTypeId), tenantId)
       .whenComplete((v, throwable) -> {
         if (throwable != null) {
           Throwable cause = throwable.getCause();
@@ -273,7 +307,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return accessType;
   }
 
-  private AccessType setUpdaterMetaInfo(AccessType accessType, User user) {
+  private void setUpdaterMetaInfo(AccessType accessType, User user) {
     if (user != null) {
       accessType.getMetadata().setUpdatedByUsername(user.getUserName());
       accessType.setUpdater(new UserDisplayInfo()
@@ -281,7 +315,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
         .withLastName(user.getLastName())
         .withMiddleName(user.getMiddleName()));
     }
-    return accessType;
   }
 
   private DbAccessType updateFields(DbAccessType accessType, AccessTypeDataAttributes attributes) {

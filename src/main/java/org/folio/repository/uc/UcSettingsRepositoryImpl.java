@@ -24,17 +24,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class UcSettingsRepositoryImpl implements UcSettingsRepository {
-
-  private static final Logger LOG = LogManager.getLogger(UcSettingsRepositoryImpl.class);
-
   private final Vertx vertx;
   private final DBExceptionTranslator excTranslator;
 
@@ -48,7 +45,7 @@ public class UcSettingsRepositoryImpl implements UcSettingsRepository {
     String query = selectUcSettingsByCredentialsId(tenant);
     Tuple params = createParams(credentialsId);
 
-    logSelectQueryInfoLevel(LOG, query, params);
+    logSelectQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
@@ -75,7 +72,7 @@ public class UcSettingsRepositoryImpl implements UcSettingsRepository {
       ucSettings.getUpdatedByUserName()
     );
 
-    logInsertQueryInfoLevel(LOG, query, params);
+    logInsertQueryInfoLevel(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 

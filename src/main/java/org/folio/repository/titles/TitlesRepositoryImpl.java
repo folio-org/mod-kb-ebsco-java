@@ -34,9 +34,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.Title;
@@ -46,11 +45,9 @@ import org.folio.rest.persist.PostgresClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class TitlesRepositoryImpl implements TitlesRepository {
-
-  private static final Logger LOG = LogManager.getLogger(TitlesRepositoryImpl.class);
-
   @Autowired
   private Vertx vertx;
   @Autowired
@@ -67,7 +64,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     final String query = insertOrUpdateTitleStatement(tenantId);
 
-    logInsertQueryInfoLevel(LOG, query, parameters);
+    logInsertQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -81,7 +78,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     final String query = deleteTitleStatement(tenantId);
 
-    logDeleteQueryInfoLevel(LOG, query, params);
+    logDeleteQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -102,7 +99,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     final String query = getCountTitlesByResourceTags(tenantId, tags);
 
-    logSelectQueryInfoLevel(LOG, query, parameters);
+    logSelectQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -126,7 +123,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
 
     final String query = selectTitlesByResourceTags(tenantId, tags);
 
-    logSelectQueryInfoLevel(LOG, query, parameters);
+    logSelectQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);

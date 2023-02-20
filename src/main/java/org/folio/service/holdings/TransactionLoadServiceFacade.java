@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.holdingsiq.model.DeltaReportStatus;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component("TransactionLoadServiceFacade")
 public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
 
@@ -64,9 +66,12 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService) {
+    log.debug("loadHoldings:: by [tenant: {}]", message.getTenantId());
+
     return transactionExists(message.getPreviousTransactionId(), loadingService)
       .thenCompose(previousTransactionExists -> {
         if (!previousTransactionExists) {
+          log.debug("Previous transaction does not exist, attempts to load current transaction & save");
           return loadWithPagination(message.getTotalPages(),
             page -> loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
               .thenAccept(holdings -> holdingsService.saveHolding(getHoldingsMessage(message, holdings))));

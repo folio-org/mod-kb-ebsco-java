@@ -14,17 +14,15 @@ import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.client.uc.model.UcAuthToken;
 import org.folio.service.uc.UcAuthenticationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class UcAuthEbscoClientImpl implements UcAuthEbscoClient {
-
-  private static final Logger LOG = LogManager.getLogger(UcAuthEbscoClientImpl.class);
 
   private static final int TIMEOUT = 20000;
   private static final String REQUEST_URI = "/oauth-proxy/token";
@@ -42,7 +40,7 @@ public class UcAuthEbscoClientImpl implements UcAuthEbscoClient {
   @Override
   public CompletableFuture<UcAuthToken> requestToken(String clientId, String clientSecret) {
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
-    LOG.info("Request UC Token");
+    log.info("Request UC Token");
     webClient
       .postAbs(baseUrl + REQUEST_URI)
       .timeout(TIMEOUT)
@@ -64,7 +62,7 @@ public class UcAuthEbscoClientImpl implements UcAuthEbscoClient {
 
   private Function<Throwable, Future<HttpResponse<JsonObject>>> mapException() {
     return throwable -> {
-      LOG.error("Request UC Token failed", throwable);
+      log.warn("Request UC Token failed", throwable);
       return Future.failedFuture(new UcAuthenticationException(throwable.getMessage()));
     };
   }

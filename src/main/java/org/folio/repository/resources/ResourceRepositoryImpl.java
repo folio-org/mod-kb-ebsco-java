@@ -28,20 +28,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.model.filter.TagFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class ResourceRepositoryImpl implements ResourceRepository {
-
-  private static final Logger LOG = LogManager.getLogger(ResourceRepositoryImpl.class);
-
   @Autowired
   private Vertx vertx;
   @Autowired
@@ -58,7 +55,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     final String query = insertOrUpdateResourceStatement(tenantId);
 
-    logInsertQueryInfoLevel(LOG, query, parameters);
+    logInsertQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -72,7 +69,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     final String query = deleteResourceStatement(tenantId);
 
-    logDeleteQueryInfoLevel(LOG, query, params);
+    logDeleteQueryInfoLevel(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, params, promise);
@@ -98,7 +95,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     final String query = selectResourcesWithTags(tenantId, tags);
 
-    logSelectQueryInfoLevel(LOG, query, parameters);
+    logSelectQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);

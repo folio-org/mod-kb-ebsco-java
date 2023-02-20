@@ -23,20 +23,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class ProviderRepositoryImpl implements ProviderRepository {
-
-  private static final Logger LOG = LogManager.getLogger(ProviderRepositoryImpl.class);
-
   @Autowired
   private Vertx vertx;
   @Autowired
@@ -53,7 +50,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
     final String query = insertOrUpdateProviderStatement(tenantId);
 
-    logInsertQueryInfoLevel(LOG, query, parameters);
+    logInsertQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -67,7 +64,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
     final String query = deleteProviderStatement(tenantId);
 
-    logDeleteQueryInfoLevel(LOG, query, parameters);
+    logDeleteQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -91,7 +88,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
     final String query = selectTaggedProviders(tenantId, tags);
 
-    logSelectQueryInfoLevel(LOG, query, parameters);
+    logSelectQueryInfoLevel(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);

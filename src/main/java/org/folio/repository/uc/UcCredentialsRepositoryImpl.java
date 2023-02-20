@@ -21,16 +21,13 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
-
-  private static final Logger LOG = LogManager.getLogger(UcCredentialsRepositoryImpl.class);
-
   private final Vertx vertx;
   private final DBExceptionTranslator excTranslator;
 
@@ -43,7 +40,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
   public CompletableFuture<Optional<DbUcCredentials>> find(String tenant) {
     String query = selectUcCredentials(tenant);
 
-    logSelectQueryInfoLevel(LOG, query);
+    logSelectQueryInfoLevel(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, promise);
 
@@ -55,7 +52,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
     String query = saveUcCredentials(tenant);
 
     var params = Tuple.of(credentials.getClientId(), credentials.getClientSecret());
-    logInsertQueryInfoLevel(LOG, query);
+    logInsertQueryInfoLevel(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
@@ -66,7 +63,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
   public CompletableFuture<Void> delete(String tenant) {
     String query = deleteUcCredentials(tenant);
 
-    logDeleteQueryInfoLevel(LOG, query);
+    logDeleteQueryInfoLevel(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, promise);
 
