@@ -35,7 +35,7 @@
 
 
   <properties>
-    <java.version>11</java.version>
+    <java.version>17</java.version>
 
     <rmb.version>35.0.6</rmb.version>
     <folio-di-support.version>1.7.0</folio-di-support.version>
@@ -85,7 +85,7 @@
     <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
     <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
     <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
-    <aspectj-maven-plugin.version>1.12.6</aspectj-maven-plugin.version>
+    <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
   </properties>
@@ -468,7 +468,7 @@
       </plugin>
 
       <plugin>
-        <groupId>com.nickwongdev</groupId>
+        <groupId>dev.aspectj</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
         <version>${aspectj-maven-plugin.version}</version>
         <configuration>
@@ -641,6 +641,7 @@
                   <artifact>*:*</artifact>
                   <excludes>
                     <exclude>**/Log4j2Plugins.dat</exclude>
+                    <exclude>module-info.class</exclude>
                   </excludes>
                 </filter>
               </filters>
