@@ -44,6 +44,11 @@ public class PackageTitleCostPerUseConverter {
     if (cost == null) {
       cost = DOUBLE_ZERO;
     }
-    return currencyFormatter.format(cost).replace("\u00a0", " ").trim();
+    return currencyFormatter
+      .format(cost)
+      .replace(" ", " ")
+      .replace("\u00a0", " ")
+      .trim();
+
   }
 }

@@ -35,27 +35,27 @@
 
 
   <properties>
-    <java.version>11</java.version>
+    <java.version>17</java.version>
 
     <rmb.version>35.0.6</rmb.version>
-    <folio-di-support.version>1.7.0</folio-di-support.version>
+    <folio-di-support.version>1.8.0-SNAPSHOT</folio-di-support.version>
     <folio-service-tools.version>1.10.1</folio-service-tools.version>
-    <folio-holdingsiq-client.version>2.3.0</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>1.6.0</folio-liquibase-util.version>
+    <folio-holdingsiq-client.version>2.4.0-SNAPSHOT</folio-holdingsiq-client.version>
+    <folio-liquibase-util.version>1.7.0-SNAPSHOT</folio-liquibase-util.version>
     <mod-configuration-client.version>5.9.1</mod-configuration-client.version>
 
-    <vertx.version>4.3.8</vertx.version>
+    <vertx.version>4.4.0</vertx.version>
     <aspectj.version>1.9.9.1</aspectj.version>
-    <spring.version>5.3.25</spring.version>
+    <spring.version>6.0.6</spring.version>
     <jackson.version>2.14.2</jackson.version>
-    <postgresql.version>42.5.3</postgresql.version>
+    <postgresql.version>42.6.0</postgresql.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-configuration2.version>2.8.0</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.26</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
-    <log4j.version>2.19.0</log4j.version>
-    <jetbrains-annotations.version>24.0.0</jetbrains-annotations.version>
+    <log4j.version>2.20.0</log4j.version>
+    <jetbrains-annotations.version>24.0.1</jetbrains-annotations.version>
     <opencsv.version>5.7.1</opencsv.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <validation-api.version>2.0.1.Final</validation-api.version>
@@ -85,7 +85,7 @@
     <build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
     <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
     <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
-    <aspectj-maven-plugin.version>1.12.6</aspectj-maven-plugin.version>
+    <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
   </properties>
@@ -468,7 +468,7 @@
       </plugin>
 
       <plugin>
-        <groupId>com.nickwongdev</groupId>
+        <groupId>dev.aspectj</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
         <version>${aspectj-maven-plugin.version}</version>
         <configuration>
@@ -641,6 +641,7 @@
                   <artifact>*:*</artifact>
                   <excludes>
                     <exclude>**/Log4j2Plugins.dat</exclude>
+                    <exclude>module-info.class</exclude>
                   </excludes>
                 </filter>
               </filters>

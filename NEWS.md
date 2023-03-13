@@ -1,3 +1,17 @@
+## v3.14.0 2023-03-22
+### Plugins
+* Bump `aspectj-maven-plugin` from `com.nickwongdev` to `dev.aspectj`
+
+### Dependencies
+* Bump `folio-holdingsiq-client` from `2.3.0` to `2.4.0-SNAPSHOT`
+* Bump `folio-liquibase-util` from `1.6.0` to `1.7.0-SNAPSHOT`
+* Bump `folio-di-support` from `1.7.0` to `1.8.0-SNAPSHOT`
+* Bump `vertx` from `4.3.8` to `4.4.0`
+* Bump `spring` from `5.3.25` to `6.0.6`
+* Bump `postgresql` from `42.5.3` to `42.6.0`
+* Bump `jetbrains-annotations` from `24.0.0` to `24.0.1`
+
+
 ## v3.13.0 2023-02-15
 ### Bug Fixes
 * Missing module permission for access status types ([MODKBEKBJ-708](https://issues.folio.org/browse/MODKBEKBJ-708))
