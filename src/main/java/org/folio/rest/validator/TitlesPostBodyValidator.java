@@ -2,9 +2,9 @@ package org.folio.rest.validator;
 
 import static org.folio.rest.validator.ValidatorUtil.checkMaxLength;
 
+import jakarta.validation.ValidationException;
 import java.util.List;
 import java.util.Objects;
-import javax.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;

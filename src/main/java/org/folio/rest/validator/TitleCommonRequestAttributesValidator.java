@@ -1,8 +1,8 @@
 package org.folio.rest.validator;
 
+import jakarta.validation.ValidationException;
 import java.util.List;
 import java.util.Objects;
-import javax.validation.ValidationException;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Identifier;
 import org.folio.rest.model.TitleCommonRequestAttributes;

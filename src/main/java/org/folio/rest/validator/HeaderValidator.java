@@ -1,9 +1,9 @@
 package org.folio.rest.validator;
 
+import jakarta.validation.ValidationException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import javax.validation.ValidationException;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.springframework.stereotype.Component;
 
