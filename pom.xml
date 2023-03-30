@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-kb-ebsco-java</artifactId>
-  <version>3.14.0-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>EBSCO KB Broker</name>
@@ -39,16 +39,16 @@
 
     <rmb.version>35.0.6</rmb.version>
     <folio-di-support.version>2.0.0-SNAPSHOT</folio-di-support.version>
-    <folio-service-tools.version>1.10.1</folio-service-tools.version>
+    <folio-service-tools.version>3.1.0-SNAPSHOT</folio-service-tools.version>
     <folio-holdingsiq-client.version>3.0.0-SNAPSHOT</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>2.0.0-SNAPSHOT</folio-liquibase-util.version>
+    <folio-liquibase-util.version>1.7.0-SNAPSHOT</folio-liquibase-util.version>
     <mod-configuration-client.version>5.9.1</mod-configuration-client.version>
 
     <vertx.version>4.4.0</vertx.version>
     <aspectj.version>1.9.9.1</aspectj.version>
     <spring.version>6.0.6</spring.version>
     <jackson.version>2.14.2</jackson.version>
-    <postgresql.version>42.6.0</postgresql.version>
+    <postgresql.version>42.5.3</postgresql.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-configuration2.version>2.8.0</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -72,6 +72,7 @@
     <assertj.version>3.24.2</assertj.version>
     <jsonassert.version>1.5.1</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
+    <jetty.version>9.4.49.v20220914</jetty.version>
 
     <!-- Plugins versions   -->
     <versions-maven-plugin.version>2.12.0</versions-maven-plugin.version>
