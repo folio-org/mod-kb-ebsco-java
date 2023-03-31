@@ -13,7 +13,6 @@
 * Bump `folio-holdingsiq-client` from `2.3.0` to `3.0.0-SNAPSHOT`
 * Bump `folio-service-tools` from `1.10.1` to `3.1.0-SNAPSHOT`
 * Bump `folio-di-support` from `1.7.0` to `2.0.0-SNAPSHOT`
-* Bump `vertx` from `4.3.8` to `4.4.0`
 * Bump `spring` from `5.3.25` to `6.0.6`
 * Bump `jetbrains-annotations` from `24.0.0` to `24.0.1`
 * Bump `log4j` from `2.19.0` to `2.20.0`
