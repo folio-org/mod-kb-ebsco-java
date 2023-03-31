@@ -16,6 +16,7 @@
 * Bump `vertx` from `4.3.8` to `4.4.0`
 * Bump `spring` from `5.3.25` to `6.0.6`
 * Bump `jetbrains-annotations` from `24.0.0` to `24.0.1`
+* Bump `log4j` from `2.19.0` to `2.20.0`
 * Remove `aspectj-maven-plugin` with groupId `com.nickwongdev` & version `1.12.6`
 * Add `aspectj-maven-plugin` with groupId `dev.aspectj` & version `1.13.1`
 

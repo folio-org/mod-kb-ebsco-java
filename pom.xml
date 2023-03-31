@@ -72,7 +72,6 @@
     <assertj.version>3.24.2</assertj.version>
     <jsonassert.version>1.5.1</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
-    <jetty.version>9.4.49.v20220914</jetty.version>
 
     <!-- Plugins versions   -->
     <versions-maven-plugin.version>2.12.0</versions-maven-plugin.version>

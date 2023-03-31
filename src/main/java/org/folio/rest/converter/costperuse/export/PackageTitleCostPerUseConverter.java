@@ -46,7 +46,6 @@ public class PackageTitleCostPerUseConverter {
     }
     return currencyFormatter
       .format(cost)
-      .replace(" ", " ")
       .replace("\u00a0", " ")
       .trim();
 
