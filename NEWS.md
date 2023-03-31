@@ -1,3 +1,24 @@
+## v4.0.0 in progress
+### Breaking changes
+* Update the module for Java 17 & the latest dependencies ([MODKBEKBJ-732](https://issues.folio.org/browse/MODKBEKBJ-732))
+
+### Tech Dept
+* Logging improvement ([MODKBEKBJ-626](https://issues.folio.org/browse/MODKBEKBJ-626))
+
+### Bug fixes
+* Load holdings process failing after exceeding status request retries ([MODKBEKBJ-713](https://issues.folio.org/browse/MODKBEKBJ-713))
+
+### Dependencies
+* Bump `java` from `11` to `17`
+* Bump `folio-holdingsiq-client` from `2.3.0` to `3.0.0-SNAPSHOT`
+* Bump `folio-service-tools` from `1.10.1` to `3.1.0-SNAPSHOT`
+* Bump `folio-di-support` from `1.7.0` to `2.0.0-SNAPSHOT`
+* Bump `spring` from `5.3.25` to `6.0.6`
+* Bump `jetbrains-annotations` from `24.0.0` to `24.0.1`
+* Bump `log4j` from `2.19.0` to `2.20.0`
+* Remove `aspectj-maven-plugin` with groupId `com.nickwongdev` & version `1.12.6`
+* Add `aspectj-maven-plugin` with groupId `dev.aspectj` & version `1.13.1`
+
 ## v3.13.0 2023-02-15
 ### Bug Fixes
 * Missing module permission for access status types ([MODKBEKBJ-708](https://issues.folio.org/browse/MODKBEKBJ-708))
