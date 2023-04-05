@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.BooleanUtils;
 import org.folio.common.ListUtils;
@@ -90,7 +89,8 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @HandleValidationErrors
   public void getEholdingsTitles(List<String> filterTags, List<String> filterAccessType, String filterSelected,
                                  String filterType, String filterName, String filterIsxn, String filterSubject,
-                                 String filterPublisher, String include, String sort, int page, int count,
+                                 String filterPublisher,
+                                 List<Integer> filterPackageIds, String include, String sort, int page, int count,
                                  Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                  Context vertxContext) {
     Filter filter = Filter.builder()
@@ -103,6 +103,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .filterIsxn(filterIsxn)
       .filterSubject(filterSubject)
       .filterPublisher(filterPublisher)
+      .filterPackageIds(filterPackageIds)
       .sort(sort)
       .page(page)
       .count(count)
@@ -196,6 +197,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   private TitleCollectionResult toTitleCollectionResult(Titles titles, boolean includeResource) {
     return TitleCollectionResult.builder()
       .titleResults(ListUtils.mapItems(titles.getTitleList(), title -> toTitleResult(title, includeResource)))
+      .facets(titles.getFacets())
       .totalResults(titles.getTotalResults())
       .build();
   }
@@ -219,7 +221,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         .getCustomerResourcesList()
         .stream()
         .map(IdParser::getResourceId)
-        .collect(Collectors.toList());
+        .toList();
       return tagRepository.findByRecordByIds(context.getOkapiData().getTenant(), resourceIds, RecordType.RESOURCE)
         .thenApply(tags -> {
           result.setResourceTagList(tags);

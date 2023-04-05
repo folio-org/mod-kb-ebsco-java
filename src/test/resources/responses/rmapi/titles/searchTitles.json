@@ -298,5 +298,19 @@
       ]
     }
   ],
+  "facets": {
+    "packages": [
+      {
+        "id": 123123,
+        "name": "Test package",
+        "count": 2
+      },
+      {
+        "id": 123124,
+        "name": "Test package1",
+        "count": 3
+      }
+    ]
+  },
   "totalResults": 8766
 }

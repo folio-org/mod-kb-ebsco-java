@@ -37,6 +37,7 @@ public class Filter {
   String filterType;
   String filterCustom;
   String filterSelected;
+  List<Integer> filterPackageIds;
 
   String packageId;
   String providerId;
@@ -116,6 +117,7 @@ public class Filter {
       .subject(filterSubject)
       .publisher(filterPublisher)
       .selected(getFilterSelected())
+      .packageIds(filterPackageIds)
       .build();
   }
 

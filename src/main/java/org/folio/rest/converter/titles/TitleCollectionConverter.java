@@ -1,9 +1,11 @@
 package org.folio.rest.converter.titles;
 
+import static java.util.Objects.isNull;
 import static org.folio.common.ListUtils.mapItems;
 
-import java.util.List;
+import org.folio.holdingsiq.model.Facets;
 import org.folio.holdingsiq.model.Titles;
+import org.folio.rest.jaxrs.model.FacetsDto;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.jaxrs.model.TitleCollection;
@@ -27,14 +29,19 @@ public final class TitleCollectionConverter {
     @Autowired
     private Converter<org.folio.holdingsiq.model.Title, TitleCollectionItem> titleConverter;
 
+    @Autowired
+    private Converter<Facets, FacetsDto> facetsConverter;
+
     @Override
     public TitleCollection convert(@NonNull Titles titles) {
-      List<TitleCollectionItem> titleList = mapItems(titles.getTitleList(), titleConverter::convert);
+      var titleList = mapItems(titles.getTitleList(), titleConverter::convert);
+      var facetsDto = isNull(titles.getFacets()) ? null : facetsConverter.convert(titles.getFacets());
 
       return new TitleCollection()
         .withJsonapi(RestConstants.JSONAPI)
         .withMeta(new MetaTotalResults().withTotalResults(titles.getTotalResults()))
-        .withData(titleList);
+        .withData(titleList)
+        .withFacets(facetsDto);
     }
   }
 
@@ -43,21 +50,26 @@ public final class TitleCollectionConverter {
 
     private final Converter<TitleResult, Title> titleConverter;
     private final Converter<Title, TitleCollectionItem> titlesConverter;
+    private final Converter<Facets, FacetsDto> facetsConverter;
 
     public FromTitleCollectionResult(
       Converter<TitleResult, Title> titleConverter,
-      Converter<Title, TitleCollectionItem> titlesConverter) {
+      Converter<Title, TitleCollectionItem> titlesConverter,
+      Converter<Facets, FacetsDto> facetsConverter) {
       this.titleConverter = titleConverter;
       this.titlesConverter = titlesConverter;
+      this.facetsConverter = facetsConverter;
     }
 
     @Override
     public TitleCollection convert(TitleCollectionResult source) {
-      List<Title> titleList = mapItems(source.getTitleResults(), titleConverter::convert);
+      var titleList = mapItems(source.getTitleResults(), titleConverter::convert);
+      var facetsDto = isNull(source.getFacets()) ? null : facetsConverter.convert(source.getFacets());
       return new TitleCollection()
         .withJsonapi(RestConstants.JSONAPI)
         .withMeta(new MetaTotalResults().withTotalResults(source.getTotalResults()))
-        .withData(mapItems(titleList, titlesConverter::convert));
+        .withData(mapItems(titleList, titlesConverter::convert))
+        .withFacets(facetsDto);
     }
   }
 }

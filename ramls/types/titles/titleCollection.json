@@ -14,6 +14,11 @@
         "$ref": "titleCollectionItem.json"
       }
     },
+    "facets": {
+      "type": "object",
+      "description": "Facets for a title collection",
+      "$ref": "../facets.json"
+    },
     "meta": {
       "type": "object",
       "description": "metadata containing total results in providers collection",
