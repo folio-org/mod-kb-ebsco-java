@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Package object schema for a collection",
-  "description": "Package object schema for a collection",
+  "title": "Package facet schema",
+  "description": "Package facet schema for a title collection",
   "javaType": "org.folio.rest.jaxrs.model.PackageFacetDto",
   "type": "object",
   "additionalProperties": false,
