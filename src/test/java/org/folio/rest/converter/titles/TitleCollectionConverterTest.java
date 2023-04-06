@@ -39,10 +39,14 @@ public class TitleCollectionConverterTest {
     TitleCollection titlesCollection = converter.convert(titles);
 
     assertEquals(titles.getTotalResults(), titlesCollection.getMeta().getTotalResults());
-    assertEquals(String.valueOf(titles.getTitleList().get(0).getTitleId()), titlesCollection.getData().get(0).getId());
-    assertEquals(titles.getTitleList().get(0).getTitleName(), titlesCollection.getData().get(0).getAttributes().getName());
-    assertEquals(titles.getFacets().getPackages().get(0).getPackageId(), titlesCollection.getFacets().getPackages().get(0).getId());
-    assertEquals(titles.getFacets().getPackages().get(0).getPackageName(), titlesCollection.getFacets().getPackages().get(0).getName());
+    assertEquals(String.valueOf(titles.getTitleList().get(0).getTitleId()),
+      titlesCollection.getData().get(0).getId());
+    assertEquals(titles.getTitleList().get(0).getTitleName(),
+      titlesCollection.getData().get(0).getAttributes().getName());
+    assertEquals(titles.getFacets().getPackages().get(0).getPackageId(),
+      titlesCollection.getFacets().getPackages().get(0).getId());
+    assertEquals(titles.getFacets().getPackages().get(0).getPackageName(),
+      titlesCollection.getFacets().getPackages().get(0).getName());
   }
 
   @Test
