@@ -47,6 +47,7 @@ public class PackageTitleCostPerUseConverter {
     return currencyFormatter
       .format(cost)
       .replace("\u00a0", " ")
+      .replace("\u202f", " ") // For French localization. See JDK-8225245
       .trim();
 
   }
