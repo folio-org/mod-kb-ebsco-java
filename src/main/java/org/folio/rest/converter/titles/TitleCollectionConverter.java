@@ -26,11 +26,16 @@ public final class TitleCollectionConverter {
   @Component
   public static class FromTitles implements Converter<Titles, TitleCollection> {
 
-    @Autowired
-    private Converter<org.folio.holdingsiq.model.Title, TitleCollectionItem> titleConverter;
+    private final Converter<org.folio.holdingsiq.model.Title, TitleCollectionItem> titleConverter;
+
+    private final Converter<Facets, FacetsDto> facetsConverter;
 
     @Autowired
-    private Converter<Facets, FacetsDto> facetsConverter;
+    public FromTitles(Converter<org.folio.holdingsiq.model.Title, TitleCollectionItem> titleConverter,
+                      Converter<Facets, FacetsDto> facetsConverter) {
+      this.titleConverter = titleConverter;
+      this.facetsConverter = facetsConverter;
+    }
 
     @Override
     public TitleCollection convert(@NonNull Titles titles) {
