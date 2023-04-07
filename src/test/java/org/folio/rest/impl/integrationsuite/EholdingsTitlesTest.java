@@ -313,6 +313,21 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturnTitlesOnSearchByPackageIds() throws IOException, URISyntaxException, JSONException {
+    String stubResponseFile = "responses/rmapi/titles/searchTitles.json";
+
+    stubFor(
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/titles.*"), true))
+        .willReturn(new ResponseDefinitionBuilder()
+          .withBody(readFile(stubResponseFile))));
+
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[packageIds]=1&filter[packageIds]=2&filter[packageIds]=3&"
+      + "filter[name]=Mind";
+    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, true);
+  }
+
+  @Test
   public void shouldReturn400IfCountOutOfRange() {
     JsonapiError error =
       getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST,
