@@ -328,6 +328,15 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldReturn400ValidationErrorForPackageIds() {
+
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[packageIds]=1&filter[packageIds]=abc&"
+      + "filter[name]=Mind";
+    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    assertErrorContainsTitle(error, "Invalid Query Parameter for filter[packageIds]");
+  }
+
+  @Test
   public void shouldReturn400IfCountOutOfRange() {
     JsonapiError error =
       getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST,

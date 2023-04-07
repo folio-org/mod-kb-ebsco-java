@@ -90,7 +90,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   public void getEholdingsTitles(List<String> filterTags, List<String> filterAccessType, String filterSelected,
                                  String filterType, String filterName, String filterIsxn, String filterSubject,
                                  String filterPublisher,
-                                 List<Integer> filterPackageIds, String include, String sort, int page, int count,
+                                 List<String> filterPackageIds, String include, String sort, int page, int count,
                                  Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                  Context vertxContext) {
     Filter filter = Filter.builder()
