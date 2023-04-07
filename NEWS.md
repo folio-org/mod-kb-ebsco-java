@@ -1,6 +1,7 @@
 ## v4.0.0 in progress
 ### Breaking changes
 * Update the module for Java 17 & the latest dependencies ([MODKBEKBJ-732](https://issues.folio.org/browse/MODKBEKBJ-732))
+* GET /eholdings/titles | Add Packages Facet to response and packageIds filter to request ([MODKBEKBJ-717](https://issues.folio.org/browse/MODKBEKBJ-717))
 
 ### Tech Dept
 * Logging improvement ([MODKBEKBJ-626](https://issues.folio.org/browse/MODKBEKBJ-626))
