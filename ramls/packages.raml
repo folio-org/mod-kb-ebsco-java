@@ -16,7 +16,7 @@ traits:
   filterable: !include traits/filterable.raml
   taggable: !include traits/taggable.raml
   accessible: !include traits/accessible.raml
-  titleFilterable: !include traits/titlesFilterable.raml
+  packageResourcesFilterable: !include traits/packageResourcesFilterable.raml
 
 types:
   packageCollection: !include types/packages/packageCollection.json
@@ -220,7 +220,7 @@ types:
     /resources:
       get:
         description: Include all resources belonging to a specific package
-        is: [taggable, accessible, titleFilterable,
+        is: [taggable, accessible, packageResourcesFilterable,
         sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
         pageable: {maxCountValue: 100, defaultCountValue: 25}]
         responses:

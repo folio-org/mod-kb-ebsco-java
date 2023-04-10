@@ -65,7 +65,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
-    <junit.version>4.13.2</junit.version>
+    <junit-vintage.version>5.9.2</junit-vintage.version>
     <rest-assured.version>5.3.0</rest-assured.version>
     <wiremock.version>2.35.0</wiremock.version>
     <mockito.version>5.1.1</mockito.version>
@@ -269,10 +269,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit-vintage.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>

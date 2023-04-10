@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package facet schema",
+  "description": "Package facet schema for a title collection",
+  "javaType": "org.folio.rest.jaxrs.model.PackageFacetDto",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier of package",
+      "example": 1152699
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of package",
+      "example": "folio eBooks"
+    },
+    "count": {
+      "type": "integer",
+      "description": "Total count of search results contained in the package",
+      "example": 1
+    }
+  }
+}

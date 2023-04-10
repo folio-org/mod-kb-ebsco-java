@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Metadata total results Schema",
+  "description": "Metadata providing total number of results in a collection",
+  "javaType": "org.folio.rest.jaxrs.model.FacetsDto",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "packages": {
+      "type": "array",
+      "description": "Package facets",
+      "items": {
+        "type": "object",
+        "$ref": "packages/packageFacet.json"
+      }
+    }
+  }
+}

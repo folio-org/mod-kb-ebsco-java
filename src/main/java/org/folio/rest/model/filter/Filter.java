@@ -8,6 +8,7 @@ import static org.apache.commons.collections4.IterableUtils.matchesAll;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
 import static org.apache.commons.lang3.StringUtils.appendIfMissing;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
 import static org.folio.rest.util.RestConstants.SUPPORTED_TITLE_FILTER_TYPE_VALUES;
@@ -37,6 +38,7 @@ public class Filter {
   String filterType;
   String filterCustom;
   String filterSelected;
+  List<String> filterPackageIds;
 
   String packageId;
   String providerId;
@@ -116,6 +118,7 @@ public class Filter {
       .subject(filterSubject)
       .publisher(filterPublisher)
       .selected(getFilterSelected())
+      .packageIds(getFilterPackageIds())
       .build();
   }
 
@@ -129,6 +132,12 @@ public class Filter {
 
   public String getFilterSelected() {
     return filterSelected == null ? null : FILTER_SELECTED_MAPPING.get(filterSelected);
+  }
+
+  public List<Integer> getFilterPackageIds() {
+    return filterPackageIds == null ? null : filterPackageIds.stream()
+      .map(Integer::parseInt)
+      .toList();
   }
 
   public Boolean getFilterCustom() {
@@ -161,6 +170,8 @@ public class Filter {
     private static final String INVALID_FILTER_TYPE_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[type]";
     private static final String INVALID_FILTER_SELECTED_PARAMETER_MESSAGE =
       "Invalid Query Parameter for filter[selected]";
+    private static final String INVALID_FILTER_PACKAGE_IDS_PARAMETER_MESSAGE =
+      "Invalid Query Parameter for filter[packageIds]";
     private static final String CONFLICTING_KEYWORD_SEARCH_PARAMETERS_MESSAGE = "Conflicting filter parameters";
     private static final String MISSING_KEYWORD_SEARCH_PARAMETERS_MESSAGE =
       "All of filter[name], filter[isxn], filter[subject] and filter[publisher] cannot be missing.";
@@ -187,6 +198,7 @@ public class Filter {
         } else if (this.recordType == RecordType.TITLE) {
           validateTitleFilterType();
           validateFilterSelected();
+          validateFilterPackageIds();
           validateKeywordSearch(false);
         }
       }
@@ -212,6 +224,16 @@ public class Filter {
     private void validateFilterSelected() {
       if (this.filterSelected != null && !FILTER_SELECTED_MAPPING.containsKey(this.filterSelected)) {
         throw new ValidationException(INVALID_FILTER_SELECTED_PARAMETER_MESSAGE);
+      }
+    }
+
+    private void validateFilterPackageIds() {
+      if (this.filterPackageIds != null && !this.filterPackageIds.isEmpty()) {
+        this.filterPackageIds.forEach(filterPackageId -> {
+          if (!isNumeric(filterPackageId)) {
+            throw new ValidationException(INVALID_FILTER_PACKAGE_IDS_PARAMETER_MESSAGE);
+          }
+        });
       }
     }
 
