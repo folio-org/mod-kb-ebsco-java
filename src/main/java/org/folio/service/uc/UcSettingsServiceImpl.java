@@ -182,8 +182,8 @@ public class UcSettingsServiceImpl implements UcSettingsService {
     var attributes = request.getData().getAttributes();
     var platformType = ObjectUtils.defaultIfNull(attributes.getPlatformType(), PlatformType.ALL);
     var startMonth = ObjectUtils.defaultIfNull(attributes.getStartMonth(), Month.JAN);
-    log.info("updateRequest:: Setting [credentialsId: {}, platformType: {}, startMonth: {} ] getAttributes fields to save",
-      credentialsId, platformType, startMonth);
+    log.info("updateRequest:: Setting [credentialsId: {}, platformType: {}, startMonth: {} ] getAttributes "
+      + "fields to save", credentialsId, platformType, startMonth);
 
     attributes.setCredentialsId(credentialsId);
     attributes.setPlatformType(platformType);

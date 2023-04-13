@@ -17,7 +17,6 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -168,8 +167,8 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   public CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(
     String packageId, String platform, String fiscalYear, String sort,
     Order order, int page, int size, Map<String, String> okapiHeaders) {
-    log.info("getPackageResourcesCostPerUse:: Getting Package Resources Cost Per Use by packageId: {}, " +
-        "platform: {}, fiscalYear: {}", packageId, platform, fiscalYear);
+    log.info("getPackageResourcesCostPerUse:: Getting Package Resources Cost Per Use by packageId: {}, "
+      + "platform: {}, fiscalYear: {}", packageId, platform, fiscalYear);
     return fetchHoldings(packageId, platform, fiscalYear, sort, okapiHeaders)
       .thenApply(resourceCostPerUseCollectionConverter::convert)
       .thenApply(collection -> createResultPage(collection, page, size, sort, order));
@@ -178,8 +177,8 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   @Override
   public CompletableFuture<ResourceCostPerUseCollection> getPackageResourcesCostPerUse(
     String packageId, String platform, String fiscalYear, Map<String, String> okapiHeaders) {
-    log.info("getPackageResourcesCostPerUse:: Getting Package Resources Cost Per Use by packageId: {}, " +
-      "platform: {}, fiscalYear: {}", packageId, platform, fiscalYear);
+    log.info("getPackageResourcesCostPerUse:: Getting Package Resources Cost Per Use by packageId: {}, "
+      + "platform: {}, fiscalYear: {}", packageId, platform, fiscalYear);
     return fetchHoldings(packageId, platform, fiscalYear, CostPerUseSort.NAME.name(), okapiHeaders)
       .thenApply(resourceCostPerUseCollectionConverter::convert)
       .thenApply(collection -> {
@@ -213,8 +212,8 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     RmApiTemplateContext context,
     CommonUcConfiguration ucConfiguration) {
     var packageIdPart = valueOf(parsePackageId(packageId).getPackageIdPart());
-    log.info("composePackageCostPerUseResult:: Composing Result for Package Cost Per use with packageIdPart: {}, " +
-      "platformType: {}", packageIdPart, platformType);
+    log.info("composePackageCostPerUseResult:: Composing Result for Package Cost Per use with packageIdPart: {}, "
+      + "platformType: {}", packageIdPart, platformType);
     return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
       .thenCompose(ucPackageCostPerUse -> {
         var resultBuilder = PackageCostPerUseResult.builder()
@@ -302,8 +301,8 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   private CompletableFuture<TitleCostPerUse> getTitleCostPerUseData(String titleId, String platform, String fiscalYear,
                                                                     List<CustomerResources> customerResources,
                                                                     RmApiTemplateContext context) {
-    log.info("getTitleCostPerUseData:: Getting Title cost per use data for platform: {}, titleId: {}," +
-      " fiscalYear: {}, packageId: {}", platform, titleId, fiscalYear, customerResources.get(0).getPackageId());
+    log.info("getTitleCostPerUseData:: Getting Title cost per use data for platform: {}, titleId: {},"
+      + " fiscalYear: {}, packageId: {}", platform, titleId, fiscalYear, customerResources.get(0).getPackageId());
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
     return fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
       .thenCompose(ucConfiguration -> {
@@ -414,12 +413,12 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     MutableObject<PlatformType> platformTypeHolder) {
     return (authToken, ucSettings) -> {
       if (platform == null) {
-        log.info("toCommonUcConfiguration:: Setting platformTypeHolder: {} value and building CommonUcConfiguration object",
-          ucSettings.getAttributes().getPlatformType());
+        log.info("toCommonUcConfiguration:: Setting platformTypeHolder: {} value and building "
+          + "CommonUcConfiguration object", ucSettings.getAttributes().getPlatformType());
         platformTypeHolder.setValue(ucSettings.getAttributes().getPlatformType());
       } else {
-        log.info("toCommonUcConfiguration:: Setting platformTypeHolder: {} value and building CommonUcConfiguration object",
-          PlatformType.fromValue(platform));
+        log.info("toCommonUcConfiguration:: Setting platformTypeHolder: {} value and building "
+          + "CommonUcConfiguration object", PlatformType.fromValue(platform));
         platformTypeHolder.setValue(PlatformType.fromValue(platform));
       }
       return createCommonConfiguration(ucSettings, fiscalYear, authToken);
