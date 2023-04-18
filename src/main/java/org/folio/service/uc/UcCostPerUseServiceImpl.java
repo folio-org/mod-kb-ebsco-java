@@ -346,7 +346,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   private CompletableFuture<Map<String, UcCostAnalysis>> fetchTitlePackageCost(List<UcTitlePackageId> titlePackageIds,
                                                                                PlatformType platformType,
                                                                                CommonUcConfiguration ucConfiguration) {
-    log.debug("fetchTitlePackageCost:: Fetching Title Package Cost for platformType: {} with ids: {}",
+    log.info("fetchTitlePackageCost:: Fetching Title Package Cost for platformType: {} with ids: {}",
       platformType, titlePackageIds.stream().map(UcTitlePackageId::toString).collect(Collectors.joining(",")));
     switch (platformType) {
       case PUBLISHER:
