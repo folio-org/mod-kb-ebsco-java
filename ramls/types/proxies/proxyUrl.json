@@ -12,7 +12,7 @@
     "proxiedUrl": {
       "type": "string",
       "description": "Proxied Url",
-      "example": "http://example.com"
+      "example": "https://example.com"
     }
   }
 }
