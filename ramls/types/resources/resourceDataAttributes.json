@@ -183,7 +183,7 @@
     "proxy": {
       "type": "object",
       "description": "Proxy.  Note that this attribute can be updated both for CUSTOM AND MANAGED RESOURCES.",
-      "$ref": "../proxy.json"
+      "$ref": "../proxies/proxyUrl.json"
     },
     "tags": {
       "type": "object",

@@ -15,7 +15,7 @@ import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
-import org.folio.rest.jaxrs.model.Proxy;
+import org.folio.rest.jaxrs.model.ProxyUrl;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.junit.Before;
@@ -50,7 +50,7 @@ public class ResourceRequestConverterTest {
           .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
         .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
           .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(org.folio.holdingsiq.model.Proxy.builder()
+        .proxy(org.folio.holdingsiq.model.ProxyUrl.builder().proxiedUrl(OLD_URL)
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
         .userDefinedFields(UserDefinedFields.builder().build())
@@ -86,7 +86,7 @@ public class ResourceRequestConverterTest {
       resourcesConverter.convertToRmApiResourcePutRequest(ResourcesTestData.getResourcePutRequest(
         new ResourcePutDataAttributes()
           .withIsSelected(true)
-          .withProxy(new Proxy()
+          .withProxy(new ProxyUrl()
             .withId("test-proxy-id"))), resourceData);
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }
@@ -97,7 +97,7 @@ public class ResourceRequestConverterTest {
       resourcesConverter.convertToRmApiCustomResourcePutRequest(ResourcesTestData.getResourcePutRequest(
         new ResourcePutDataAttributes()
           .withIsSelected(true)
-          .withProxy(new Proxy()
+          .withProxy(new ProxyUrl()
             .withId("test-proxy-id"))), resourceData);
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }
