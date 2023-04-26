@@ -85,6 +85,7 @@ public class ErrorHandler {
       .map(Map.Entry::getValue);
 
     if (optionalErrorMapper.isPresent()) {
+      log.warn("ErrorHandler:: An exception occurred: {}", e.getMessage());
       //    Type of "e" parameter is guaranteed to match type of found mapper, because of isInstance check,
       //    so type-safety here
       @SuppressWarnings("unchecked")
@@ -98,6 +99,7 @@ public class ErrorHandler {
 
   public Function<Throwable, Void> handle(Handler<AsyncResult<Response>> asyncResultHandler) {
     return throwable -> {
+      log.warn("ErrorHandler:: An exception occurred: {}", throwable.getMessage());
       handle(asyncResultHandler, throwable);
       return null;
     };
