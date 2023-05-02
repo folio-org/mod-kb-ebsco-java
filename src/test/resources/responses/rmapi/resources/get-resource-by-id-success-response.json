@@ -56,7 +56,8 @@
       "packageType": "Variable",
       "proxy": {
         "id": "<n>",
-        "inherited": true
+        "inherited": true,
+        "proxiedUrl": "https://example.com"
       },
       "isPackageCustom": false,
       "vendorId": 19,

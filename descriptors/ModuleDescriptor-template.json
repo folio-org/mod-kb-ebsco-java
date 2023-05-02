@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "eholdings",
-      "version": "3.2",
+      "version": "3.3",
       "handlers": [
         {
           "methods": ["GET"],

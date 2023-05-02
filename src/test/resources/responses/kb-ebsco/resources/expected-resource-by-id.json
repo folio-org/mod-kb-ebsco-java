@@ -73,7 +73,8 @@
       "customCoverages": [],
       "proxy": {
         "id": "<n>",
-        "inherited": true
+        "inherited": true,
+        "proxiedUrl": "https://example.com"
       },
       "tags": {
         "tagList": []

@@ -19,7 +19,8 @@
   },
   "proxy": {
     "id": "Proxy-ID-123",
-    "inherited": true
+    "inherited": true,
+    "proxiedUrl": "https://example.com"
   },
   "allowEbscoToAddTitles": false,
   "packageToken": null,
