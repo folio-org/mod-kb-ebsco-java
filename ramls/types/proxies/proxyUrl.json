@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Proxy Url Schema",
+  "description": "Proxy Url Schema",
+  "javaType": "org.folio.rest.jaxrs.model.ProxyUrl",
+  "type": "object",
+  "additionalProperties": false,
+  "extends": {
+    "$ref": "../proxy.json"
+  },
+  "properties": {
+    "proxiedUrl": {
+      "type": "string",
+      "description": "Proxied Url",
+      "example": "https://example.com"
+    }
+  }
+}

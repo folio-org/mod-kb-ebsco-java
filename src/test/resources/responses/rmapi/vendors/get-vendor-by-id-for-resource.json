@@ -6,7 +6,8 @@
   "vendorName": "ABC-CLIO",
   "proxy": {
     "id": "Proxy-ID-123",
-    "inherited": true
+    "inherited": true,
+    "proxiedUrl": "https://example.com"
   },
   "vendorToken": null
 }

@@ -13,7 +13,7 @@ import java.util.Collections;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
-import org.folio.holdingsiq.model.Proxy;
+import org.folio.holdingsiq.model.ProxyUrl;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.holdingsiq.model.VisibilityInfo;
@@ -60,7 +60,7 @@ public class ResourcesTestData {
           .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
         .customEmbargoPeriod(EmbargoPeriod.builder()
           .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(Proxy.builder()
+        .proxy(ProxyUrl.builder().proxiedUrl(OLD_URL)
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
         .userDefinedFields(UserDefinedFields.builder().build())
