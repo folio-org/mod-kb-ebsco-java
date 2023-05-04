@@ -11,6 +11,7 @@
 
 ### Tech Dept
 * Logging improvement ([MODKBEKBJ-626](https://issues.folio.org/browse/MODKBEKBJ-626))
+* Increase memory allocation in default LaunchDescriptor ([MODKBEKBJ-326](https://issues.folio.org/browse/MODKBEKBJ-326))
 
 ### Bug fixes
 * Load holdings process failing after exceeding status request retries ([MODKBEKBJ-713](https://issues.folio.org/browse/MODKBEKBJ-713))
