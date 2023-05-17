@@ -387,6 +387,23 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   @Test
+  public void shouldAcceptValuesCustomResourceWithUnrecognizedFieldInProxy()
+    throws IOException, URISyntaxException, JSONException {
+    String stubResponseFile = "responses/rmapi/resources/get-custom-resource-updated-response.json";
+    String expectedResourceFile = "responses/kb-ebsco/resources/expected-custom-resource.json";
+
+    String actualResponse =
+      mockUpdateResourceScenario(stubResponseFile, CUSTOM_RESOURCE_ENDPOINT, STUB_CUSTOM_RESOURCE_ID,
+        readFile("requests/kb-ebsco/resource/put-custom-resource-with-proxied-url.json"));
+
+    JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, false);
+
+    verify(1, putRequestedFor(new UrlPathPattern(new RegexPattern(CUSTOM_RESOURCE_ENDPOINT), true))
+      .withRequestBody(
+        equalToJson(readFile("requests/rmapi/resources/put-custom-resource-is-selected-multiple-attributes.json"))));
+  }
+
+  @Test
   public void shouldUpdateTagsOnSuccessfulTagsPut() throws IOException, URISyntaxException {
     List<String> tags = Collections.singletonList(STUB_TAG_VALUE);
     sendPutTags(tags);
@@ -447,7 +464,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockResource(stubTitleResponseFile);
 
     EqualToJsonPattern putRequestBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/resources/select-resource-request.json"),
+      new EqualToJsonPattern(readFile("requests/rmapi/resources/"),
         true, true);
     mockPut(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), putRequestBodyPattern, SC_NO_CONTENT);
 
