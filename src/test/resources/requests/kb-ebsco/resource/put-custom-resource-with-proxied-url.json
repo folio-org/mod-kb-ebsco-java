@@ -1,0 +1,65 @@
+{
+  "data": {
+    "id": "123356-3157070-19412030",
+    "type": "resources",
+    "attributes": {
+      "isTitleCustom": true,
+      "titleId": 19412030,
+      "name" : "Test Title",
+      "coverageStatement": "My test statement",
+      "customEmbargoPeriod": {
+        "embargoValue": 30,
+        "embargoUnit": "Weeks"
+      },
+      "isSelected": true,
+      "managedEmbargoPeriod": {
+        "embargoUnit": null,
+        "embargoValue": 0
+      },
+      "packageId": "123356-3157070",
+      "packageName": "Andrii custom package ",
+      "url": "https://hello",
+      "providerId": 123356,
+      "providerName": "API DEV GOVERNMENT CUSTOMER",
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      },
+      "managedCoverages": [],
+      "customCoverages": [
+        {
+          "beginCoverage": "2018-01-10",
+          "endCoverage": "2018-01-11"
+        }
+      ],
+      "proxy": {
+        "id": "Proxy-ID-234",
+        "inherited": false,
+        "proxiedUrl": "https://example-url.com/"
+      },
+      "publisherName": "Test publisher",
+      "edition": "Test edition",
+      "publicationType": "Thesis & Dissertation",
+      "subjects": [],
+      "contributors": [
+        {
+          "type":"author",
+          "contributor":"smith, john"
+        },
+        {
+          "type":"illustrator",
+          "contributor":"smith, ralph"
+        }
+      ],
+      "identifiers": [
+        {
+          "id": "1111-2222-3333",
+          "type":"ISSN",
+          "subtype":"Online"
+        }
+      ],
+      "isPeerReviewed": true,
+      "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
+    }
+  }
+}
