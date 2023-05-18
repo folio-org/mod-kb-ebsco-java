@@ -464,7 +464,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockResource(stubTitleResponseFile);
 
     EqualToJsonPattern putRequestBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/resources/"),
+      new EqualToJsonPattern(readFile("requests/rmapi/resources/select-resource-request.json"),
         true, true);
     mockPut(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), putRequestBodyPattern, SC_NO_CONTENT);
 
