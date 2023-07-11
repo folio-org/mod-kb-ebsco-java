@@ -149,7 +149,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
   private CompletableFuture<DeltaReportStatus> waitForReportToComplete(LoadService loadingService,
                                                                        String deltaReportId) {
     return doUntilResultMatches(reportStatusRetryCount, reportStatusRetryDelay,
-      (retries) -> loadingService.getDeltaReportStatus(deltaReportId),
+      retries -> loadingService.getDeltaReportStatus(deltaReportId),
       (loadStatus, ex) -> ReportStatus.COMPLETED == ReportStatus.fromValue(loadStatus.getStatus())
     );
   }

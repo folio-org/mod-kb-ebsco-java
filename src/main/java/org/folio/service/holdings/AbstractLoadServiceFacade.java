@@ -253,8 +253,8 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
     List<Integer> pagesToLoad = IntStream.range(1, totalPages + 1).boxed().toList();
     for (Integer page : pagesToLoad) {
-      future = future.thenCompose(o -> retryOnFailure(loadPageRetries, loadPageDelay,
-        (retries) -> calculatePage(pageLoader, page, retries)));
+      future = future.thenCompose(
+        o -> retryOnFailure(loadPageRetries, loadPageDelay, retries -> calculatePage(pageLoader, page, retries)));
     }
     return future;
   }
