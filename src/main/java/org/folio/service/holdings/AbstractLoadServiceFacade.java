@@ -53,9 +53,9 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   protected AbstractLoadServiceFacade(@Value("${holdings.status.check.delay}") long statusRetryDelay,
                                       @Value("${holdings.status.retry.count}") int statusRetryCount,
                                       @Value("${holdings.page.retry.delay}") int loadPageRetryDelay,
-                                      @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
                                       @Value("${holdings.page.retry.count}") int loadPageRetryCount,
                                       @Value("${holdings.page.size.min}") int loadPageSizeMin,
+                                      @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
                                       Vertx vertx) {
     this.loadPageSizeMin = loadPageSizeMin;
     this.loadPageDelay = loadPageRetryDelay;

@@ -36,8 +36,7 @@ public class AbstractLoadServiceFacadeTest {
   private final Vertx vertx = Vertx.vertx();
 
   private final AbstractLoadServiceFacade loadServiceFacadeSpy =
-    Mockito.spy(new AbstractLoadServiceFacade(1L, 3, 1,
-      1, 1, vertx) {
+    Mockito.spy(new AbstractLoadServiceFacade(1L, 3, 1, 1, 1, 1, vertx) {
       @Override
       protected CompletableFuture<String> populateHoldings(LoadService loadingService) {
         return CompletableFuture.completedFuture(TEST);
