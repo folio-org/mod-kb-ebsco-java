@@ -40,7 +40,7 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected CompletableFuture<String> populateHoldings(LoadService loadingService) {
-    return loadingService.populateHoldings().thenApply(o -> null);
+    return loadingService.populateHoldingsForce().thenApply(o -> null);
   }
 
   @Override
