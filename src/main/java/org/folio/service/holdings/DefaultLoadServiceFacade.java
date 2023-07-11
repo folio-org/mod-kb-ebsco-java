@@ -38,10 +38,9 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
           new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null, message.getCredentialsId()))));
   }
 
-  //TODO: force
   @Override
   protected CompletableFuture<String> populateHoldings(LoadService loadingService) {
-    return loadingService.populateHoldings().thenApply(o -> null);
+    return loadingService.populateHoldingsForce().thenApply(o -> null);
   }
 
   @Override
