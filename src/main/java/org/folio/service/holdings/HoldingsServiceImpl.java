@@ -310,7 +310,7 @@ public class HoldingsServiceImpl implements HoldingsService {
           executeWithLock(START_LOADING_LOCK, () -> {
             final Integer totalCount = message.getTotalCount();
             final Integer totalPages = message.getTotalPages();
-            return tryChangingStatusToInProgress(getStatusLoadingHoldings(totalCount, 0, totalPages, 0), credentialsId,
+            return tryChangingStatusToInProgress(getStatusLoadingHoldings(totalCount, totalPages), credentialsId,
               tenantId)
               .thenCompose(o3 ->
                 transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
