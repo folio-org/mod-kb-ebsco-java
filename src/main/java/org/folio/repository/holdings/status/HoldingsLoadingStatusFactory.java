@@ -42,22 +42,6 @@ public final class HoldingsLoadingStatusFactory {
       .withJsonapi(JSONAPI);
   }
 
-  public static HoldingsLoadingStatus getStatusLoadingHoldings(int totalCount, int totalPages) {
-    return new HoldingsLoadingStatus()
-      .withData(new LoadStatusData()
-        .withType(LoadStatusData.Type.STATUS)
-        .withAttributes(new LoadStatusAttributes()
-          .withStarted(getTimeNow())
-          .withStatus(new LoadStatusInformation()
-            .withName(LoadStatusNameEnum.IN_PROGRESS)
-            .withDetail(LoadStatusNameDetailEnum.LOADING_HOLDINGS))
-          .withUpdated(getTimeNow())
-          .withTotalCount(totalCount)
-          .withTotalPages(totalPages))
-      )
-      .withJsonapi(JSONAPI);
-  }
-
   public static HoldingsLoadingStatus getStatusLoadingHoldings(int totalCount, int importedCount, int totalPages,
                                                                int importedPages) {
     return new HoldingsLoadingStatus()
