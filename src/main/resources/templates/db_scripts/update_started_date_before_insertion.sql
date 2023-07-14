@@ -1,3 +1,5 @@
+-- Custom script to add an additional column startedDate for holdings_status table.
+
 CREATE OR REPLACE FUNCTION update_started_date_before_insertion()
   RETURNS TRIGGER
 AS $$
@@ -16,7 +18,7 @@ AS $$
 $$
 language 'plpgsql';
 
-DROP TRIGGER IF EXISTS  update_started_date_before_insertion_trigger ON holdings_status CASCADE;
+DROP TRIGGER IF EXISTS update_started_date_before_insertion_trigger ON holdings_status CASCADE;
 
-CREATE TRIGGER  update_started_date_before_insertion_trigger BEFORE UPDATE ON holdings_status
+CREATE TRIGGER update_started_date_before_insertion_trigger BEFORE UPDATE ON holdings_status
 FOR EACH ROW EXECUTE PROCEDURE update_started_date_before_insertion();
