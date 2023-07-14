@@ -1,7 +1,3 @@
--- Custom script to add an additional column startedDate for holdings_status table.
--- Changes in this file will not result in an update of the function.
--- To change the function, update this script
-
 CREATE OR REPLACE FUNCTION update_started_date_before_insertion()
   RETURNS TRIGGER
 AS $$
