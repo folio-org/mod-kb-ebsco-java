@@ -40,7 +40,7 @@
     <rmb.version>35.0.6</rmb.version>
     <folio-di-support.version>1.7.0</folio-di-support.version>
     <folio-service-tools.version>1.10.1</folio-service-tools.version>
-    <folio-holdingsiq-client.version>2.3.0</folio-holdingsiq-client.version>
+    <folio-holdingsiq-client.version>2.3.1</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.6.0</folio-liquibase-util.version>
     <mod-configuration-client.version>5.9.1</mod-configuration-client.version>
 
