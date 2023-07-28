@@ -50,7 +50,7 @@ public class ResourceRequestConverterTest {
           .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
         .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
           .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(org.folio.holdingsiq.model.Proxy.builder()
+        .proxy(org.folio.holdingsiq.model.ProxyUrl.builder().proxiedUrl(OLD_URL)
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
         .userDefinedFields(UserDefinedFields.builder().build())
@@ -232,6 +232,7 @@ public class ResourceRequestConverterTest {
       title
     );
     assertEquals(OLD_PROXY_ID, resourcePut.getProxy().getId());
+    assertFalse(resourcePut.getProxy().getInherited());
     assertEquals(OLD_COVERAGE_STATEMENT, resourcePut.getCoverageStatement());
     assertEquals(OLD_URL, resourcePut.getUrl());
     assertEquals(OLD_VISIBILITY_DATA, resourcePut.getIsHidden());

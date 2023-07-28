@@ -8,7 +8,7 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.holdingsiq.model.Identifier;
-import org.folio.holdingsiq.model.Proxy;
+import org.folio.holdingsiq.model.ProxyUrl;
 import org.folio.holdingsiq.model.Subject;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VisibilityInfo;
@@ -39,7 +39,7 @@ public class CommonResourceConverter {
   @Autowired
   private Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
   @Autowired
-  private Converter<Proxy, org.folio.rest.jaxrs.model.Proxy> proxyConverter;
+  private Converter<ProxyUrl, org.folio.rest.jaxrs.model.ProxyUrl> proxyConverter;
   @Autowired
   private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
 

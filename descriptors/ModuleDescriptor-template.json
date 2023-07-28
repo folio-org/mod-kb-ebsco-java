@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "eholdings",
-      "version": "3.2",
+      "version": "3.3",
       "handlers": [
         {
           "methods": ["GET"],
@@ -919,13 +919,13 @@
     "dockerPull": false,
     "dockerArgs": {
       "HostConfig": {
-        "Memory": 357913941,
+        "Memory": 536870912,
         "PortBindings": { "8081/tcp": [ { "HostPort": "%p" } ] }
       }
     },
     "env": [
       { "name": "JAVA_OPTIONS",
-        "value": "-XX:MaxRAMPercentage=66.0"
+        "value": "-XX:MaxRAMPercentage=85.0"
       },
       { "name": "DB_HOST", "value": "postgres" },
       { "name": "DB_PORT", "value": "5432" },

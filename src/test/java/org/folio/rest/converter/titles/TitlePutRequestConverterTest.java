@@ -1,5 +1,6 @@
 package org.folio.rest.converter.titles;
 
+import static org.folio.rest.impl.ResourcesTestData.OLD_PROXY_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -25,6 +26,9 @@ public class TitlePutRequestConverterTest {
     ResourcePut resourcePut = converter.convertToRmApiCustomResourcePutRequest(request,
       ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().get(0));
     assertEquals("bookseries", resourcePut.getPubType());
+    //from ProxyUrl to Proxy
+    assertEquals(OLD_PROXY_ID, resourcePut.getProxy().getId());
+    assertFalse(resourcePut.getProxy().getInherited());
   }
 
   @Test

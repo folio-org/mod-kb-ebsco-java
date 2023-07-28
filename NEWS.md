@@ -3,13 +3,15 @@
 * Update the module for Java 17 & the latest dependencies ([MODKBEKBJ-732](https://issues.folio.org/browse/MODKBEKBJ-732))
 
 ### APIs versions
-* Provides `eholdings v3.2`
+* Provides `eholdings v3.3`
 
 ### Features
 * GET /eholdings/titles | Add Packages Facet to response and packageIds filter to request ([MODKBEKBJ-717](https://issues.folio.org/browse/MODKBEKBJ-717))
+* GET /eholdings/resource | Changed Proxy to ProxiedUrl class in CustomResourceList from Title class ([MODKBEKBJ-740](https://github.com/folio-org/mod-kb-ebsco-java/pull/458))
 
 ### Tech Dept
 * Logging improvement ([MODKBEKBJ-626](https://issues.folio.org/browse/MODKBEKBJ-626))
+* Increase memory allocation in default LaunchDescriptor ([MODKBEKBJ-326](https://issues.folio.org/browse/MODKBEKBJ-326))
 
 ### Bug fixes
 * Load holdings process failing after exceeding status request retries ([MODKBEKBJ-713](https://issues.folio.org/browse/MODKBEKBJ-713))
