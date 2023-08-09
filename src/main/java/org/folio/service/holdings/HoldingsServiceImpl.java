@@ -454,13 +454,9 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private boolean isHoldingsValid(Holding holding) {
-    var holdingId = getHoldingsId(holding);
-    if (isEmpty(holding.getPackageId())) {
-      logger.info("packageId is empty for holding {}, skipping.", holdingId);
-      return false;
-    }
-    if (isEmpty(holding.getTitleId())) {
-      logger.info("titleId is empty for holding {}, skipping.", holdingId);
+    if (isEmpty(holding.getPackageId()) || isEmpty(holding.getTitleId())) {
+      var holdingId = getHoldingsId(holding);
+      logger.info("holdingsId parameter missing (vendorId-packageId-titleId): {}, skipping.", holdingId);
       return false;
     }
 
