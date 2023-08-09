@@ -1,7 +1,7 @@
 package org.folio.service.holdings;
 
 import static java.lang.Integer.parseInt;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_ADDED;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_DELETED;
@@ -39,7 +39,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.holdingsiq.model.Holding;
@@ -328,7 +327,7 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   private boolean isHangedLoading(HoldingsLoadingStatus status) {
     String started = status.getData().getAttributes().getStarted();
-    if (StringUtils.isEmpty(started)) {
+    if (isEmpty(started)) {
       return true;
     }
     OffsetDateTime startDate = getZonedDateTime(started);
@@ -440,7 +439,7 @@ public class HoldingsServiceImpl implements HoldingsService {
                                                String tenantId) {
     Set<DbHoldingInfo> dbHoldings = holdings.stream()
       .filter(distinctByKey(this::getHoldingsId))
-      .filter(holding -> isNotEmpty(holding.getPackageId()))
+      .filter(this::isHoldingsValid)
       .map(holding -> DbHoldingInfo.builder()
         .titleId(parseInt(holding.getTitleId()))
         .packageId(parseInt(holding.getPackageId()))
@@ -452,6 +451,20 @@ public class HoldingsServiceImpl implements HoldingsService {
       .collect(Collectors.toSet());
     logger.info(SAVING_HOLDINGS_MESSAGE);
     return holdingsRepository.saveAll(dbHoldings, updatedAt, credentialsId, tenantId);
+  }
+
+  private boolean isHoldingsValid(Holding holding) {
+    var holdingId = getHoldingsId(holding);
+    if (isEmpty(holding.getPackageId())) {
+      logger.info("packageId is empty for holding {}, skipping.", holdingId);
+      return false;
+    }
+    if (isEmpty(holding.getTitleId())) {
+      logger.info("titleId is empty for holding {}, skipping.", holdingId);
+      return false;
+    }
+
+    return true;
   }
 
   private Stream<HoldingInReport> getDbHoldingsByType(List<HoldingInReport> holdings,
@@ -482,7 +495,7 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   private boolean processTimedOut(HoldingsLoadingStatus status) {
     String updatedString = status.getData().getAttributes().getUpdated();
-    if (StringUtils.isEmpty(updatedString)) {
+    if (isEmpty(updatedString)) {
       return true;
     }
     OffsetDateTime updated = getZonedDateTime(updatedString);
