@@ -1,6 +1,7 @@
 package org.folio.service.holdings;
 
 import static java.lang.Integer.parseInt;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_ADDED;
 import static org.folio.holdingsiq.model.HoldingChangeType.HOLDING_DELETED;
@@ -439,6 +440,7 @@ public class HoldingsServiceImpl implements HoldingsService {
                                                String tenantId) {
     Set<DbHoldingInfo> dbHoldings = holdings.stream()
       .filter(distinctByKey(this::getHoldingsId))
+      .filter(holding -> isNotEmpty(holding.getPackageId()))
       .map(holding -> DbHoldingInfo.builder()
         .titleId(parseInt(holding.getTitleId()))
         .packageId(parseInt(holding.getPackageId()))
