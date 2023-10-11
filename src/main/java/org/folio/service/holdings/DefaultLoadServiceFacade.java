@@ -23,8 +23,10 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
                                   @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
                                   @Value("${holdings.page.retry.count}") int loadPageRetryCount,
                                   @Value("${holdings.page.size:2500}") int loadPageSize,
+                                  @Value("${holdings.page.size.min}") int loadPageSizeMin,
                                   Vertx vertx) {
-    super(statusRetryDelay, statusRetryCount, loadPageRetryDelay, snapshotRefreshPeriod, loadPageRetryCount, vertx);
+    super(statusRetryDelay, statusRetryCount, loadPageRetryDelay, loadPageRetryCount, loadPageSizeMin,
+      snapshotRefreshPeriod, vertx);
     this.loadPageSize = loadPageSize;
   }
 
@@ -38,7 +40,7 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected CompletableFuture<String> populateHoldings(LoadService loadingService) {
-    return loadingService.populateHoldings().thenApply(o -> null);
+    return loadingService.populateHoldingsForce().thenApply(o -> null);
   }
 
   @Override

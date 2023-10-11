@@ -310,8 +310,8 @@ public class HoldingsServiceImpl implements HoldingsService {
           executeWithLock(START_LOADING_LOCK, () -> {
             final Integer totalCount = message.getTotalCount();
             final Integer totalPages = message.getTotalPages();
-            return tryChangingStatusToInProgress(getStatusLoadingHoldings(totalCount, 0, totalPages, 0), credentialsId,
-              tenantId)
+            return tryChangingStatusToInProgress(getStatusLoadingHoldings(totalCount, 0, totalPages, 0),
+              credentialsId, tenantId)
               .thenCompose(o3 ->
                 transactionIdRepository.getLastTransactionId(credentialsId, tenantId)
                   .thenAccept(previousTransactionId -> loadServiceFacade
@@ -419,7 +419,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private CompletableFuture<Void> setStatusToFailed(UUID credentialsId, String tenantId, String message) {
-    return holdingsStatusRepository.update(getLoadStatusFailed(createError(message, null).getErrors()),
+    return holdingsStatusRepository.update(getLoadStatusFailed(createError(message).getErrors()),
         credentialsId, tenantId)
       .exceptionally(e -> {
         log.warn(FAILED_UPDATE_STATUS_TO_FAILED_MESSAGE, e);

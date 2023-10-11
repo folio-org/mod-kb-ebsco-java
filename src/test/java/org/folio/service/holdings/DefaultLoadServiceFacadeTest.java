@@ -22,9 +22,7 @@ public class DefaultLoadServiceFacadeTest {
   private final Vertx vertx = Vertx.vertx();
 
   private final DefaultLoadServiceFacade defaultLoadServiceFacade =
-    new DefaultLoadServiceFacade(1L, 1, 1,
-      1, 1, 1,
-      vertx);
+    new DefaultLoadServiceFacade(1L, 1, 1, 1, 1, 1, 1, vertx);
 
   @Test
   @SneakyThrows

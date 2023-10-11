@@ -49,17 +49,17 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
   private final long reportStatusRetryDelay;
   private final int reportStatusRetryCount;
 
-  public TransactionLoadServiceFacade(
-    @Value("${holdings.status.check.delay}") long statusRetryDelay,
-    @Value("${holdings.status.retry.count}") int statusRetryCount,
-    @Value("${holdings.report.status.check.delay}") long reportStatusRetryDelay,
-    @Value("${holdings.report.status.retry.count}") int reportStatusRetryCount,
-    @Value("${holdings.page.retry.delay}") int loadPageRetryDelay,
-    @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
-    @Value("${holdings.page.retry.count}") int loadPageRetryCount,
-
-    Vertx vertx) {
-    super(statusRetryDelay, statusRetryCount, loadPageRetryDelay, snapshotRefreshPeriod, loadPageRetryCount, vertx);
+  public TransactionLoadServiceFacade(@Value("${holdings.status.check.delay}") long statusRetryDelay,
+                                      @Value("${holdings.status.retry.count}") int statusRetryCount,
+                                      @Value("${holdings.report.status.check.delay}") long reportStatusRetryDelay,
+                                      @Value("${holdings.report.status.retry.count}") int reportStatusRetryCount,
+                                      @Value("${holdings.page.retry.delay}") int loadPageRetryDelay,
+                                      @Value("${holdings.snapshot.refresh.period}") int snapshotRefreshPeriod,
+                                      @Value("${holdings.page.retry.count}") int loadPageRetryCount,
+                                      @Value("${holdings.page.size.min}") int loadPageSizeMin,
+                                      Vertx vertx) {
+    super(statusRetryDelay, statusRetryCount, loadPageRetryDelay, loadPageRetryCount, loadPageSizeMin,
+      snapshotRefreshPeriod, vertx);
     this.reportStatusRetryDelay = reportStatusRetryDelay;
     this.reportStatusRetryCount = reportStatusRetryCount;
   }
@@ -149,7 +149,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
   private CompletableFuture<DeltaReportStatus> waitForReportToComplete(LoadService loadingService,
                                                                        String deltaReportId) {
     return doUntilResultMatches(reportStatusRetryCount, reportStatusRetryDelay,
-      () -> loadingService.getDeltaReportStatus(deltaReportId),
+      retries -> loadingService.getDeltaReportStatus(deltaReportId),
       (loadStatus, ex) -> ReportStatus.COMPLETED == ReportStatus.fromValue(loadStatus.getStatus())
     );
   }
