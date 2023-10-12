@@ -1,4 +1,26 @@
-## v4.0.0 in progress
+## v4.1.0 In progress
+### Breaking changes
+* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+
+### New APIs versions
+* Provides `API_NAME vX.Y`
+* Requires `API_NAME vX.Y`
+
+### Features
+* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+
+### Bug fixes
+* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+
+### Tech Dept
+* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+
+### Dependencies
+* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
+* Add `LIB_NAME` `2.7.4`
+* Remove `LIB_NAME`
+
+## v4.0.0 2023-10-11
 ### Breaking changes
 * Update the module for Java 17 & the latest dependencies ([MODKBEKBJ-732](https://issues.folio.org/browse/MODKBEKBJ-732))
 
@@ -12,17 +34,26 @@
 ### Tech Dept
 * Logging improvement ([MODKBEKBJ-626](https://issues.folio.org/browse/MODKBEKBJ-626))
 * Increase memory allocation in default LaunchDescriptor ([MODKBEKBJ-326](https://issues.folio.org/browse/MODKBEKBJ-326))
+* Add logs for Usage Consolidation flow ([MODKBEKBJ-726](https://issues.folio.org/browse/MODKBEKBJ-726))
+* Reduce the size of the page by half after failed retry for holdings loading ([MODKBEKBJ-747](https://issues.folio.org/browse/MODKBEKBJ-747))
 
 ### Bug fixes
 * Load holdings process failing after exceeding status request retries ([MODKBEKBJ-713](https://issues.folio.org/browse/MODKBEKBJ-713))
 
 ### Dependencies
 * Bump `java` from `11` to `17`
-* Bump `folio-holdingsiq-client` from `2.3.0` to `3.0.0-SNAPSHOT`
-* Bump `folio-service-tools` from `1.10.1` to `3.1.0-SNAPSHOT`
-* Bump `folio-di-support` from `1.7.0` to `2.0.0-SNAPSHOT`
-* Bump `spring` from `5.3.25` to `6.0.6`
+* Bump `folio-holdingsiq-client` from `2.3.0` to `3.0.0`
+* Bump `folio-service-tools` from `1.10.1` to `3.1.0`
+* Bump `folio-di-support` from `1.7.0` to `2.0.0`
+* Bump `mod-configuration-client` from `5.9.1` to `5.9.2`
+* Bump `aspectj` from `1.9.9.1` to `1.9.20.1`
+* Bump `postgresql` from `42.5.3` to `42.6.0`
 * Bump `jetbrains-annotations` from `24.0.0` to `24.0.1`
+* Bump `commons-codec` from `1.15` to `1.16.0`
+* Bump `commons-configuration2` from `2.8.0` to `2.9.0`
+* Bump `commons-lang3` from `3.12.0` to `3.13.0`
+* Bump `lombok` from `1.18.26` to `1.18.30`
+* Bump `opencsv` from `5.7.1` to `5.8`
 * Bump `log4j` from `2.19.0` to `2.20.0`
 * Remove `aspectj-maven-plugin` with groupId `com.nickwongdev` & version `1.12.6`
 * Add `aspectj-maven-plugin` with groupId `dev.aspectj` & version `1.13.1`
