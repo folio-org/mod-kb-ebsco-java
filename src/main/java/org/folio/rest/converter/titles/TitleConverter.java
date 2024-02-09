@@ -135,7 +135,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
     );
   }
 
-  private static class PackageNameCustomComparator implements Comparator<CustomerResources> {
+  private static final class PackageNameCustomComparator implements Comparator<CustomerResources> {
 
     private static final Comparator<CustomerResources> NULL_SAFE_LENGTH_COMPARATOR = nullsLast(
       comparing(CustomerResources::getPackageName, comparingInt(String::length).reversed())
