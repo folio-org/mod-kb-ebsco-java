@@ -67,7 +67,7 @@
     <junit-vintage.version>5.10.2</junit-vintage.version>
     <rest-assured.version>5.4.0</rest-assured.version>
     <wiremock.version>3.0.1</wiremock.version>
-    <mockito.version>5.10.0</mockito.version>
+    <mockito.version>5.11.0</mockito.version>
     <assertj.version>3.25.3</assertj.version>
     <jsonassert.version>1.5.1</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
