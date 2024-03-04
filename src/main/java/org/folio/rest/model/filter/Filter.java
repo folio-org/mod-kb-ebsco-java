@@ -13,9 +13,9 @@ import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
 import static org.folio.rest.util.RestConstants.SUPPORTED_TITLE_FILTER_TYPE_VALUES;
 
+import jakarta.validation.ValidationException;
 import java.util.List;
 import java.util.Objects;
-import javax.validation.ValidationException;
 import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.collections4.CollectionUtils;

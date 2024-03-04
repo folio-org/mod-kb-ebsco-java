@@ -7,9 +7,9 @@ import static org.folio.rest.util.RestConstants.PROVIDER_RECTYPE;
 import static org.folio.rest.util.RestConstants.RESOURCE_RECTYPE;
 import static org.folio.rest.util.RestConstants.TITLE_RECTYPE;
 
+import jakarta.validation.ValidationException;
 import java.util.Arrays;
 import java.util.List;
-import javax.validation.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 

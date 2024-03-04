@@ -56,7 +56,6 @@
     <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     <opencsv.version>5.9</opencsv.version>
     <commons-lang3.version>3.14.0</commons-lang3.version>
-    <validation-api.version>2.0.1.Final</validation-api.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
@@ -138,11 +137,6 @@
       <groupId>org.folio</groupId>
       <artifactId>domain-models-runtime</artifactId>
       <version>${rmb.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-      <version>${validation-api.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>

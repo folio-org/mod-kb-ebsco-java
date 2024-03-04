@@ -2,9 +2,9 @@ package org.folio.rest.util;
 
 import static org.folio.common.ListUtils.mapItems;
 
+import jakarta.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageId;

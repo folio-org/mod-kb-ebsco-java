@@ -2,7 +2,7 @@ package org.folio.rest.util;
 
 import static org.junit.Assert.assertEquals;
 
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 import org.folio.holdingsiq.model.ResourceId;
 import org.junit.Test;
 

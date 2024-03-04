@@ -3,6 +3,7 @@ package org.folio.rmapi;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
 import io.vertx.core.Vertx;
+import jakarta.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,7 +12,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import javax.validation.ValidationException;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;

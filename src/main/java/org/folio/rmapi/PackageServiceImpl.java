@@ -4,6 +4,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.util.FutureUtils.allOfSucceeded;
 
 import io.vertx.core.Vertx;
+import jakarta.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,7 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.validation.ValidationException;
 import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;

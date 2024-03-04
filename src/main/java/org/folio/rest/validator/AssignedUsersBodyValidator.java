@@ -1,7 +1,7 @@
 package org.folio.rest.validator;
 
+import jakarta.validation.ValidationException;
 import java.util.Objects;
-import javax.validation.ValidationException;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.springframework.stereotype.Component;
