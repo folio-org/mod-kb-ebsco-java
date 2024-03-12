@@ -11,7 +11,7 @@ import io.vertx.core.Future;
 import org.aspectj.lang.annotation.SuppressAjWarnings;
 
 import javax.ws.rs.core.Response;
-import javax.validation.ValidationException;
+import jakarta.validation.ValidationException;
 
 public aspect ValidationErrorHandlerAspect {
   pointcut validatedMethodCall(Handler<AsyncResult<Response>> asyncResultHandler) : execution(@HandleValidationErrors * *(.., Handler, *)) && args(.., asyncResultHandler, *);

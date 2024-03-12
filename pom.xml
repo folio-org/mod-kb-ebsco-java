@@ -37,11 +37,11 @@
   <properties>
     <java.version>17</java.version>
 
-    <rmb.version>35.1.2</rmb.version>
-    <folio-di-support.version>2.0.1</folio-di-support.version>
-    <folio-service-tools.version>3.1.0</folio-service-tools.version>
-    <folio-holdingsiq-client.version>3.0.0</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>1.7.0</folio-liquibase-util.version>
+    <rmb.version>35.2.0</rmb.version>
+    <folio-di-support.version>2.1.0-SNAPSHOT</folio-di-support.version>
+    <folio-service-tools.version>4.0.0-SNAPSHOT</folio-service-tools.version>
+    <folio-holdingsiq-client.version>3.1.0-SNAPSHOT</folio-holdingsiq-client.version>
+    <folio-liquibase-util.version>1.8.0-SNAPSHOT</folio-liquibase-util.version>
     <mod-configuration-client.version>5.9.2</mod-configuration-client.version>
 
     <vertx.version>4.5.4</vertx.version>
@@ -56,7 +56,6 @@
     <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     <opencsv.version>5.9</opencsv.version>
     <commons-lang3.version>3.14.0</commons-lang3.version>
-    <validation-api.version>2.0.1.Final</validation-api.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
@@ -138,11 +137,6 @@
       <groupId>org.folio</groupId>
       <artifactId>domain-models-runtime</artifactId>
       <version>${rmb.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-      <version>${validation-api.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
