@@ -45,7 +45,7 @@
     <mod-configuration-client.version>5.9.2</mod-configuration-client.version>
 
     <vertx.version>4.5.4</vertx.version>
-    <aspectj.version>1.9.21.1</aspectj.version>
+    <aspectj.version>1.9.21.2</aspectj.version>
     <jackson.version>2.16.2</jackson.version>
     <postgresql.version>42.7.2</postgresql.version>
     <commons-codec.version>1.16.1</commons-codec.version>
