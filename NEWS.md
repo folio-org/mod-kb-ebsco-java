@@ -1,24 +1,22 @@
-## v4.1.0 In progress
-### Breaking changes
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
-
-### New APIs versions
-* Provides `API_NAME vX.Y`
-* Requires `API_NAME vX.Y`
-
-### Features
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
-
-### Bug fixes
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
-
-### Tech Dept
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
-
+## v4.1.0 2024-03-20
 ### Dependencies
-* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
-* Add `LIB_NAME` `2.7.4`
-* Remove `LIB_NAME`
+* Bump `domain-models-runtime` from `35.0.6` to `35.2.0`
+* Bump `folio-di-support` from `2.0.1` to `2.1.0`
+* Bump `folio-service-tools` from `3.1.0` to `4.0.0`
+* Bump `folio-holdingsiq-client` from `3.0.0` to `3.1.0`
+* Bump `folio-liquibase-util` from `1.7.0` to `1.8.0`
+* Bump `mod-configuration-client` from `5.9.2` to `5.10.0`
+* Bump `vertx` from `4.4.6` to `4.5.5`
+* Bump `aspectj` from `1.9.20.1` to `1.9.21.2`
+* Bump `jackson` from `2.15.2` to `2.17.0`
+* Bump `postgresql` from `42.6.0` to `42.7.3`
+* Bump `commons-codec` from `1.16.0` to `1.16.1`
+* Bump `commons-configuration2` from `2.9.0` to `2.10.0`
+* Bump `lombok` from `1.18.30` to `1.18.32`
+* Bump `jetbrains-annotations` from `24.0.1` to `24.1.0`
+* Bump `opencsv` from `5.8` to `5.9`
+* Bump `commons-lang3` from `3.13.0` to `3.14.0`
+* Remove `javax.validation.validation-api`
 
 ## v4.0.0 2023-10-11
 ### Breaking changes

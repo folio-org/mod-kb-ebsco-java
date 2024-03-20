@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-kb-ebsco-java</artifactId>
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>EBSCO KB Broker</name>
@@ -38,20 +38,20 @@
     <java.version>17</java.version>
 
     <rmb.version>35.2.0</rmb.version>
-    <folio-di-support.version>2.1.0-SNAPSHOT</folio-di-support.version>
-    <folio-service-tools.version>4.0.0-SNAPSHOT</folio-service-tools.version>
-    <folio-holdingsiq-client.version>3.1.0-SNAPSHOT</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>1.8.0-SNAPSHOT</folio-liquibase-util.version>
-    <mod-configuration-client.version>5.9.2</mod-configuration-client.version>
+    <folio-di-support.version>2.1.0</folio-di-support.version>
+    <folio-service-tools.version>4.0.0</folio-service-tools.version>
+    <folio-holdingsiq-client.version>3.1.0</folio-holdingsiq-client.version>
+    <folio-liquibase-util.version>1.8.0</folio-liquibase-util.version>
+    <mod-configuration-client.version>5.10.0</mod-configuration-client.version>
 
-    <vertx.version>4.5.4</vertx.version>
-    <aspectj.version>1.9.21.1</aspectj.version>
-    <jackson.version>2.16.2</jackson.version>
-    <postgresql.version>42.7.2</postgresql.version>
+    <vertx.version>4.5.5</vertx.version>
+    <aspectj.version>1.9.21.2</aspectj.version>
+    <jackson.version>2.17.0</jackson.version>
+    <postgresql.version>42.7.3</postgresql.version>
     <commons-codec.version>1.16.1</commons-codec.version>
-    <commons-configuration2.version>2.9.0</commons-configuration2.version>
+    <commons-configuration2.version>2.10.0</commons-configuration2.version>
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
-    <lombok.version>1.18.30</lombok.version>
+    <lombok.version>1.18.32</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
     <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     <opencsv.version>5.9</opencsv.version>
@@ -62,7 +62,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
-    <spring.version>6.1.4</spring.version>
+    <spring.version>6.1.5</spring.version>
     <junit-vintage.version>5.10.2</junit-vintage.version>
     <rest-assured.version>5.4.0</rest-assured.version>
     <wiremock.version>3.0.1</wiremock.version>
@@ -73,7 +73,7 @@
 
     <!-- Plugins versions   -->
     <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
-    <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
     <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
@@ -86,6 +86,7 @@
     <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
+    <checkstyle.version>10.14.2</checkstyle.version>
   </properties>
 
   <profiles>
@@ -353,6 +354,7 @@
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
           <release>${java.version}</release>
+          <parameters>true</parameters>
           <encoding>${project.build.sourceEncoding}</encoding>
           <useIncrementalCompilation>false</useIncrementalCompilation>
 
@@ -564,7 +566,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>10.14.0</version>
+            <version>${checkstyle.version}</version>
           </dependency>
         </dependencies>
         <executions>

@@ -99,7 +99,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   public void shouldReturn400WhenInvalidCredentialsId() {
     String assignedUsersPath = String.format(ASSIGN_USER_PATH, "invalid-id");
     final JsonapiError error = getWithStatus(assignedUsersPath, SC_BAD_REQUEST).as(JsonapiError.class);
-    assertErrorContainsTitle(error, "'credentialsId' parameter is incorrect");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test
@@ -224,7 +224,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
       deleteWithStatus(String.format(KB_CREDENTIALS_ASSIGNED_USER_PATH, credentialsId, "invalid-id"), SC_BAD_REQUEST)
         .as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "'userId' parameter is incorrect.");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test
