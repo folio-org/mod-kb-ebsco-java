@@ -256,7 +256,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
     JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test
@@ -410,7 +410,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
     JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test
@@ -561,7 +561,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
     JsonapiError error = putWithStatus(resourcePath, putBody, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test
@@ -623,7 +623,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/invalid-id";
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test

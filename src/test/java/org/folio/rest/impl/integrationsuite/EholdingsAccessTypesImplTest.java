@@ -261,7 +261,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = ACCESS_TYPES_PATH + "/" + id;
     JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "'id' parameter is incorrect.");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test
@@ -283,7 +283,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, "invalid-id");
     JsonapiError error = deleteWithStatus(resourcePath, SC_BAD_REQUEST).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "'accessTypeId' parameter is incorrect.");
+    assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }
 
   @Test
