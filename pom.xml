@@ -39,7 +39,7 @@
 
     <rmb.version>35.2.0</rmb.version>
     <folio-di-support.version>2.1.0</folio-di-support.version>
-    <folio-service-tools.version>4.0.0</folio-service-tools.version>
+    <folio-service-tools.version>4.0.1</folio-service-tools.version>
     <folio-holdingsiq-client.version>3.1.0</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.8.0</folio-liquibase-util.version>
     <mod-configuration-client.version>5.10.0</mod-configuration-client.version>
@@ -62,7 +62,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
-    <spring.version>6.1.5</spring.version>
+    <spring.version>6.1.6</spring.version>
     <junit-vintage.version>5.10.2</junit-vintage.version>
     <rest-assured.version>5.4.0</rest-assured.version>
     <wiremock.version>3.0.1</wiremock.version>
