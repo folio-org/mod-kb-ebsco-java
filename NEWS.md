@@ -1,3 +1,6 @@
+## in progress
+`* Remove `commons-configuration2`
+
 ## v4.1.0 2024-03-20
 ### Dependencies
 * Bump `domain-models-runtime` from `35.0.6` to `35.2.0`
