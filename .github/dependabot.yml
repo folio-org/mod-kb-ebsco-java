@@ -3,18 +3,14 @@ updates:
   - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
+      day: "sunday"
     commit-message:
       prefix: fix
       prefix-development: chore
       include: scope
     groups:
-      development-dependencies:
+      dev-deps:
         dependency-type: "development"
-      plugins-dependencies:
-        patterns:
-          - "*plugin*"
-      rmb:
-        patterns:
-          - "org.folio*"
-          - "*vertx*"
+      prod-deps:
+        dependency-type: "production"
