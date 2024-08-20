@@ -54,7 +54,7 @@
     <httpcore.version>4.4.16</httpcore.version>
     <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     <opencsv.version>5.9</opencsv.version>
-    <commons-lang3.version>3.14.0</commons-lang3.version>
+    <commons-lang3.version>3.15.0</commons-lang3.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
