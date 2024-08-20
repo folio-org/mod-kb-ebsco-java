@@ -54,7 +54,7 @@
     <httpcore.version>4.4.16</httpcore.version>
     <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     <opencsv.version>5.9</opencsv.version>
-    <commons-lang3.version>3.16.0</commons-lang3.version>
+    <commons-lang3.version>3.14.0</commons-lang3.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
@@ -81,7 +81,7 @@
     <maven-surefire-report-plugin.version>3.3.1</maven-surefire-report-plugin.version>
     <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
     <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
-    <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
+    <exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
     <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
