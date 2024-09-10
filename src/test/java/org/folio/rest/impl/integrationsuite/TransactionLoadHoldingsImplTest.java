@@ -1,4 +1,4 @@
-package org.folio.rest.impl;
+package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -75,6 +75,7 @@ import org.folio.holdingsiq.model.TransactionId;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
 import org.folio.repository.holdings.status.retry.RetryStatusRepository;
+import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.LoadStatusNameEnum;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.holdings.LoadServiceFacade;

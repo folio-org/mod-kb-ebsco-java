@@ -61,11 +61,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
-    <spring.version>6.1.11</spring.version>
-    <junit-vintage.version>5.10.3</junit-vintage.version>
+    <spring.version>6.1.12</spring.version>
+    <junit.version>4.13.2</junit.version>
     <rest-assured.version>5.5.0</rest-assured.version>
     <wiremock.version>3.0.1</wiremock.version>
-    <mockito.version>5.12.0</mockito.version>
+    <mockito.version>5.13.0</mockito.version>
     <assertj.version>3.26.3</assertj.version>
     <jsonassert.version>1.5.3</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
@@ -251,9 +251,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>${junit-vintage.version}</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -308,6 +308,24 @@
       <groupId>org.folio</groupId>
       <artifactId>folio-service-tools-test</artifactId>
       <version>${folio-service-tools.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-engine</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-engine</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-commons</artifactId>
+        </exclusion>
+      </exclusions>
       <scope>test</scope>
     </dependency>
     <dependency>
