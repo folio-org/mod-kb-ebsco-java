@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-kb-ebsco-java</artifactId>
-  <version>4.2.0-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>EBSCO KB Broker</name>
@@ -71,6 +71,7 @@
     <easy-random-core.version>5.0.0</easy-random-core.version>
 
     <!-- Plugins versions   -->
+    <folio-module-descriptor-validator.version>1.0.0</folio-module-descriptor-validator.version>
     <versions-maven-plugin.version>2.17.1</versions-maven-plugin.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
@@ -352,6 +353,19 @@
         <configuration>
           <generateBackupPoms>false</generateBackupPoms>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.folio</groupId>
+        <artifactId>folio-module-descriptor-validator</artifactId>
+        <version>${folio-module-descriptor-validator.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>validate</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>

@@ -4,7 +4,7 @@
   "provides": [
     {
       "id": "eholdings",
-      "version": "3.3",
+      "version": "4.0",
       "handlers": [
         {
           "methods": ["GET"],
@@ -24,7 +24,7 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{credentialsId}/key",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.item.get", "kb-ebsco.kb-credentials.item.patch"]
+          "permissionsRequired": ["kb-ebsco.kb-credentials.key.item.get"]
         },
         {
           "methods": ["PATCH"],
@@ -368,7 +368,7 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/kb-credentials/{id}/uc/key",
-          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.item.get"]
+          "permissionsRequired": ["kb-ebsco.kb-credentials.uc.key.item.get"]
         },
         {
           "methods": ["POST"],
@@ -696,6 +696,11 @@
       "description": "Get KB credentials collection item"
     },
     {
+      "permissionName": "kb-ebsco.kb-credentials.key.item.get",
+      "displayName": "get KB credentials collection item",
+      "description": "Get KB credentials collection item"
+    },
+    {
       "permissionName": "kb-ebsco.kb-credentials.item.patch",
       "displayName": "patch KB credentials collection item",
       "description": "Patch KB credentials collection item"
@@ -762,6 +767,11 @@
       "permissionName": "kb-ebsco.kb-credentials.uc.item.get",
       "displayName": "get usage consolidation settings related to KB credentials",
       "description": "Get usage consolidation settings related to KB credentials"
+    },
+    {
+      "permissionName": "kb-ebsco.kb-credentials.uc.key.item.get",
+      "displayName": "get usage consolidation settings key related to KB credentials",
+      "description": "Get usage consolidation settings key related to KB credentials"
     },
     {
       "permissionName": "kb-ebsco.kb-credentials.uc.collection.post",
