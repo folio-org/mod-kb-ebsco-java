@@ -1,4 +1,15 @@
-## in progress
+## v5.0.0
+### Breaking changes
+* GET `/eholdings/kb-credentials/{credentialsId}/key` requires `kb-ebsco.kb-credentials.key.item.get` permission
+* GET `/eholdings/kb-credentials/{id}/uc/key` requires `kb-ebsco.kb-credentials.uc.key.item.get` permission
+
+### APIs versions
+* Provides `eholdings v4.0`
+
+### Tech Dept
+* Cleanup permissions for eholdings interface ([MODKBEKBJ-769](https://issues.folio.org/browse/MODKBEKBJ-769))
+
+### Dependencies
 `* Remove `commons-configuration2`
 
 ## v4.1.0 2024-03-20
