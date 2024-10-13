@@ -52,7 +52,7 @@
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.34</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
-    <jetbrains-annotations.version>25.0.0</jetbrains-annotations.version>
+    <jetbrains-annotations.version>26.0.0</jetbrains-annotations.version>
     <opencsv.version>5.9</opencsv.version>
     <commons-lang3.version>3.17.0</commons-lang3.version>
 
