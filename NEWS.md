@@ -6,6 +6,9 @@
 ### APIs versions
 * Provides `eholdings v4.0`
 
+### Bug fixes
+* Add missing module permissions to access-types endpoints ([MODKBEKBJ-770](https://issues.folio.org/browse/MODKBEKBJ-770))
+
 ### Tech Dept
 * Cleanup permissions for eholdings interface ([MODKBEKBJ-769](https://issues.folio.org/browse/MODKBEKBJ-769))
 
