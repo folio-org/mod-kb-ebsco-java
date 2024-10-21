@@ -37,7 +37,7 @@
   <properties>
     <java.version>17</java.version>
 
-    <rmb.version>35.2.2</rmb.version>
+    <rmb.version>35.3.0</rmb.version>
     <folio-di-support.version>2.1.0</folio-di-support.version>
     <folio-service-tools.version>4.0.1</folio-service-tools.version>
     <folio-holdingsiq-client.version>3.1.0</folio-holdingsiq-client.version>
@@ -52,7 +52,7 @@
     <commons-beanutils.version>1.9.4</commons-beanutils.version>
     <lombok.version>1.18.34</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
-    <jetbrains-annotations.version>26.0.0</jetbrains-annotations.version>
+    <jetbrains-annotations.version>26.0.1</jetbrains-annotations.version>
     <opencsv.version>5.9</opencsv.version>
     <commons-lang3.version>3.17.0</commons-lang3.version>
 
