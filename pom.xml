@@ -39,10 +39,10 @@
 
     <rmb.version>35.3.0</rmb.version>
     <folio-di-support.version>2.1.0</folio-di-support.version>
-    <folio-service-tools.version>4.0.1</folio-service-tools.version>
-    <folio-holdingsiq-client.version>3.1.0</folio-holdingsiq-client.version>
-    <folio-liquibase-util.version>1.8.0</folio-liquibase-util.version>
-    <mod-configuration-client.version>5.10.0</mod-configuration-client.version>
+    <folio-service-tools.version>4.1.0-SNAPSHOT</folio-service-tools.version>
+    <folio-holdingsiq-client.version>3.2.0-SNAPSHOT</folio-holdingsiq-client.version>
+    <folio-liquibase-util.version>1.9.0-SNAPSHOT</folio-liquibase-util.version>
+    <mod-configuration-client.version>5.11.0-SNAPSHOT</mod-configuration-client.version>
 
     <vertx.version>4.5.10</vertx.version>
     <aspectj.version>1.9.22.1</aspectj.version>
@@ -64,7 +64,6 @@
     <spring.version>6.1.14</spring.version>
     <junit.version>4.13.2</junit.version>
     <rest-assured.version>5.5.0</rest-assured.version>
-    <wiremock.version>3.0.1</wiremock.version>
     <mockito.version>5.14.2</mockito.version>
     <assertj.version>3.26.3</assertj.version>
     <jsonassert.version>1.5.3</jsonassert.version>
@@ -274,18 +273,6 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
-      <version>${wiremock.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>net.sf.jopt-simple</groupId>
-          <artifactId>jopt-simple</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
