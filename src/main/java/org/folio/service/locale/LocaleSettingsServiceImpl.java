@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import jakarta.validation.constraints.NotNull;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
@@ -16,7 +17,6 @@ import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.tools.utils.VertxUtils;
-import org.jetbrains.annotations.NotNull;
 
 @Log4j2
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {

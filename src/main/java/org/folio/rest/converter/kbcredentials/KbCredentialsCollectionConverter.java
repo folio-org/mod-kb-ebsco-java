@@ -2,13 +2,13 @@ package org.folio.rest.converter.kbcredentials;
 
 import static org.folio.common.ListUtils.mapItems;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;

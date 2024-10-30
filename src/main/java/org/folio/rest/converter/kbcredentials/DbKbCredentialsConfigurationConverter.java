@@ -1,8 +1,8 @@
 package org.folio.rest.converter.kbcredentials;
 
+import jakarta.validation.constraints.NotNull;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.repository.kbcredentials.DbKbCredentials;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

@@ -5,6 +5,7 @@ import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
 import static org.folio.db.RowSetUtils.toUUID;
 
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentials;
@@ -12,7 +13,6 @@ import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
 import org.folio.rest.jaxrs.model.KbCredentialsKey;
 import org.folio.rest.jaxrs.model.KbCredentialsKeyDataAttributes;
 import org.folio.rest.jaxrs.model.Meta;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;

@@ -4,6 +4,7 @@ import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
 import static org.folio.db.RowSetUtils.toUUID;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,6 @@ import org.folio.rest.jaxrs.model.UCSettingsKey;
 import org.folio.rest.jaxrs.model.UCSettingsKeyDataAttributes;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rmapi.result.UcSettingsResult;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;

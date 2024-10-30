@@ -1,8 +1,8 @@
 package org.folio.service.holdings.message;
 
+import jakarta.validation.constraints.NotNull;
 import org.folio.holdingsiq.model.DeltaReport;
 import org.folio.holdingsiq.model.Holdings;
-import org.jetbrains.annotations.NotNull;
 
 public final class MessageFactory {
 

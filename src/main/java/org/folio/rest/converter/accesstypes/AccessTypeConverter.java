@@ -5,11 +5,11 @@ import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
 import static org.folio.db.RowSetUtils.toUUID;
 
+import jakarta.validation.constraints.NotNull;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.Metadata;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

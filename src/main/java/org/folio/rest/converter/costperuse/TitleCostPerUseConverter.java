@@ -8,6 +8,7 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTo
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNonPublisherUsage;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,7 +26,6 @@ import org.folio.rest.jaxrs.model.TitleCostPerUseDataAttributes;
 import org.folio.rest.jaxrs.model.Usage;
 import org.folio.rest.jaxrs.model.UsageTotals;
 import org.folio.rmapi.result.TitleCostPerUseResult;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;

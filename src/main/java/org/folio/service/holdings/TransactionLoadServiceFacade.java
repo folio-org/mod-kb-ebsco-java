@@ -10,6 +10,7 @@ import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Comparator;
@@ -30,7 +31,6 @@ import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.repository.holdings.ReportStatus;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

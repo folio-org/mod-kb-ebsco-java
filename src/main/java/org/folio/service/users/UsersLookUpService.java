@@ -15,6 +15,7 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ErrorConverter;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,6 @@ import org.apache.http.HttpHeaders;
 import org.folio.common.OkapiParams;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.util.StringUtil;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

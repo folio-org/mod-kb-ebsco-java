@@ -2,6 +2,7 @@ package org.folio.rest.converter.packages;
 
 import static org.folio.common.ListUtils.mapItems;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.rest.jaxrs.model.FailedPackageIds;
@@ -10,7 +11,6 @@ import org.folio.rest.jaxrs.model.PackageBulkFetchCollection;
 import org.folio.rest.jaxrs.model.PackageBulkFetchCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageBulkResult;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
