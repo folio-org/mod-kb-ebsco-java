@@ -11,6 +11,7 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTo
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.resourceIdToString;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +26,6 @@ import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceCostPerUseCollectionResult;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

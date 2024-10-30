@@ -1,4 +1,4 @@
-## v5.0.0
+## v5.0.0 2024-10-30
 ### Breaking changes
 * GET `/eholdings/kb-credentials/{credentialsId}/key` requires `kb-ebsco.kb-credentials.key.item.get` permission
 * GET `/eholdings/kb-credentials/{id}/uc/key` requires `kb-ebsco.kb-credentials.uc.key.item.get` permission
@@ -13,7 +13,21 @@
 * Cleanup permissions for eholdings interface ([MODKBEKBJ-769](https://issues.folio.org/browse/MODKBEKBJ-769))
 
 ### Dependencies
-`* Remove `commons-configuration2`
+* Bump `domain-models-runtime` from `35.2.0` to `35.3.0`
+* Bump `folio-di-support` from `2.1.0` to `2.2.0`
+* Bump `folio-service-tools` from `4.0.0` to `4.1.0`
+* Bump `folio-holdingsiq-client` from `3.1.0` to `3.2.0`
+* Bump `folio-liquibase-util` from `1.8.0` to `1.9.0`
+* Bump `mod-configuration-client` from `5.10.0` to `5.11.0`
+* Bump `vertx` from `4.5.5` to `4.5.10`
+* Bump `aspectj` from `1.9.21.2` to `1.9.22.1`
+* Bump `jackson` from `2.17.0` to `2.18.1`
+* Bump `postgresql` from `42.7.3` to `42.7.4`
+* Bump `commons-codec` from `1.16.1` to `1.17.1`
+* Bump `lombok` from `1.18.32` to `1.18.34`
+* Bump `jetbrains-annotations` from `24.1.0` to `26.0.1`
+* Bump `commons-lang3` from `3.14.0` to `3.17.0`
+* Remove `commons-configuration2`
 
 ## v4.1.0 2024-03-20
 ### Dependencies
