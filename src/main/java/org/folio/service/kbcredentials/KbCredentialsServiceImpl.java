@@ -109,7 +109,8 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     var token = okapiHeaders.get("X-Okapi-Token");
     log.info("update:: id: {}, token: {}", id, token);
     try {
-      userInfoFromToken(token);
+      var userInfo = userInfoFromToken(token);
+      log.info("update:: user info: {}", userInfo);
     } catch (Exception ex) {
       log.warn("update:: Failed to extract user info from token", ex);
     }
@@ -208,6 +209,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
       .thenCompose(errors -> {
         if (!errors.isEmpty()) {
           log.info("verifyCredentials:: failed: {}", errors);
+          errors.forEach(error -> log.info("verifyCredentials:: error: {}", error.getMessage()));
           CompletableFuture<Void> future = new CompletableFuture<>();
           future.completeExceptionally(new ConfigurationInvalidException(errors));
           return future;
