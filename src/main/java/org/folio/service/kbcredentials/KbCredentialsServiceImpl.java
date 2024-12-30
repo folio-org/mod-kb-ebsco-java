@@ -107,6 +107,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     log.debug("update:: by [id: {}, tenant: {}]", id, tenantId(okapiHeaders));
 
     putBodyValidator.validate(entity);
+    log.info("update:: body validation passed");
     KbCredentials kbCredentials = entity.getData();
     KbCredentialsDataAttributes attributes = kbCredentials.getAttributes();
     return prepareAndSave(fetchDbKbCredentials(id, okapiHeaders),
@@ -198,6 +199,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     return configurationService.verifyCredentials(configuration, context, new OkapiData(okapiHeaders))
       .thenCompose(errors -> {
         if (!errors.isEmpty()) {
+          log.info("verifyCredentials:: failed: {}", errors);
           CompletableFuture<Void> future = new CompletableFuture<>();
           future.completeExceptionally(new ConfigurationInvalidException(errors));
           return future;
