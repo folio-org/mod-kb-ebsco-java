@@ -1,7 +1,6 @@
 package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
-import static org.folio.util.TokenUtils.userInfoFromToken;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -9,7 +8,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import java.util.Map;
 import javax.ws.rs.core.Response;
-import lombok.extern.log4j.Log4j2;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
@@ -23,7 +21,6 @@ import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-@Log4j2
 public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, EholdingsUserKbCredential {
 
   @Autowired
@@ -95,13 +92,6 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
   public void putEholdingsKbCredentialsById(String id, String contentType, KbCredentialsPutRequest entity,
                                             Map<String, String> okapiHeaders,
                                             Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    var token = okapiHeaders.get("X-Okapi-Token");
-    log.info("putEholdingsKbCredentialsById:: id: {}, token: {}", id, token);
-    try {
-      userInfoFromToken(token);
-    } catch (Exception ex) {
-      log.warn("putEholdingsKbCredentialsById:: Failed to extract user info from token", ex);
-    }
     securedCredentialsService.update(id, entity, okapiHeaders)
       .thenAccept(kbCredentials -> asyncResultHandler.handle(succeededFuture(
         PutEholdingsKbCredentialsByIdResponse.respond204())))

@@ -7,6 +7,7 @@ import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.TenantUtil.tenantId;
 import static org.folio.util.TokenUtils.fetchUserInfo;
+import static org.folio.util.TokenUtils.userInfoFromToken;
 
 import io.vertx.core.Context;
 import java.time.OffsetDateTime;
@@ -105,6 +106,13 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   @Override
   public CompletableFuture<Void> update(String id, KbCredentialsPutRequest entity, Map<String, String> okapiHeaders) {
     log.debug("update:: by [id: {}, tenant: {}]", id, tenantId(okapiHeaders));
+    var token = okapiHeaders.get("X-Okapi-Token");
+    log.info("update:: id: {}, token: {}", id, token);
+    try {
+      userInfoFromToken(token);
+    } catch (Exception ex) {
+      log.warn("update:: Failed to extract user info from token", ex);
+    }
 
     putBodyValidator.validate(entity);
     log.info("update:: body validation passed");
