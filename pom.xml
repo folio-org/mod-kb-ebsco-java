@@ -47,12 +47,12 @@
     <vertx.version>4.5.11</vertx.version>
     <aspectj.version>1.9.22.1</aspectj.version>
     <jackson.version>2.18.2</jackson.version>
-    <postgresql.version>42.7.4</postgresql.version>
-    <commons-codec.version>1.17.1</commons-codec.version>
-    <commons-beanutils.version>1.9.4</commons-beanutils.version>
+    <postgresql.version>42.7.5</postgresql.version>
+    <commons-codec.version>1.17.2</commons-codec.version>
+    <commons-beanutils.version>1.10.0</commons-beanutils.version>
     <lombok.version>1.18.36</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
-    <opencsv.version>5.9</opencsv.version>
+    <opencsv.version>5.10</opencsv.version>
     <commons-lang3.version>3.17.0</commons-lang3.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
@@ -84,7 +84,7 @@
     <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-    <checkstyle.version>10.21.0</checkstyle.version>
+    <checkstyle.version>10.21.1</checkstyle.version>
   </properties>
 
   <profiles>
