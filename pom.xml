@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-kb-ebsco-java</artifactId>
-  <version>4.1.1</version>
+  <version>4.1.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>EBSCO KB Broker</name>
@@ -735,7 +735,7 @@
     <url>https://github.com/folio-org/mod-kb-ebsco-java</url>
     <connection>scm:git:git://github.com/folio-org/mod-kb-ebsco-java</connection>
     <developerConnection>scm:git:git@github.com:folio-org/mod-kb-ebsco-java.git</developerConnection>
-    <tag>v4.1.1</tag>
+    <tag>v4.1.0</tag>
   </scm>
 
   <repositories>
