@@ -1,3 +1,7 @@
+## v4.1.1 2025-01-30
+### Bug fixes
+* Fix DB query to fetch provider packages with tags ([MODKBEKBJ-774](https://issues.folio.org/browse/MODKBEKBJ-774))
+
 ## v4.1.0 2024-03-20
 ### Dependencies
 * Bump `domain-models-runtime` from `35.0.6` to `35.2.0`

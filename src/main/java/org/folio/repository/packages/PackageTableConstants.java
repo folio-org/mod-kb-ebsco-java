@@ -73,8 +73,8 @@ public final class PackageTableConstants {
       + "LEFT JOIN %s as tags ON "
       + "tags.record_id = packages.id "
       + "AND tags.record_type = 'package' "
-      + "WHERE packages.id IN (%s)"
-      + "AND " + CREDENTIALS_ID_COLUMN + "=?"
+      + "WHERE packages.id IN (%s) "
+      + "AND " + CREDENTIALS_ID_COLUMN + "=? "
       + "GROUP BY packages.id, packages.credentials_id";
   }
 
