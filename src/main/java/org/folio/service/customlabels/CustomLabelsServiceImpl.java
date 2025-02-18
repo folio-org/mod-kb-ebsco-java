@@ -2,7 +2,7 @@ package org.folio.service.customlabels;
 
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.common.LogUtils.collectionToLogMsg;
-import static org.folio.rest.util.TenantUtil.tenantId;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
 import io.vertx.core.Vertx;
 import java.util.List;

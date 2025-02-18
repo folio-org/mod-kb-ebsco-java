@@ -1,7 +1,7 @@
 package org.folio.service.assignedusers;
 
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.util.TenantUtil.tenantId;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;

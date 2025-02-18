@@ -40,7 +40,7 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertEqualsResourceId;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
@@ -98,7 +98,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   private static final String MANAGED_RESOURCE_ENDPOINT = MANAGED_PACKAGE_ENDPOINT + "/titles/" + STUB_MANAGED_TITLE_ID;
   private static final String CUSTOM_RESOURCE_ENDPOINT =
     "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID
-      + "/titles/" + STUB_CUSTOM_TITLE_ID;
+    + "/titles/" + STUB_CUSTOM_TITLE_ID;
   private static final String STUB_MANAGED_RESOURCE_PATH = "eholdings/resources/" + STUB_MANAGED_RESOURCE_ID;
   private static final String RESOURCE_TAGS_PATH = "eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID + "/tags";
   private static final String RESOURCES_BULK_FETCH = "/eholdings/resources/bulk/fetch";
@@ -129,7 +129,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     mockResource(stubResponseFile);
 
-    String actualResponse = getWithOk(STUB_MANAGED_RESOURCE_PATH, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(STUB_MANAGED_RESOURCE_PATH, STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, true);
   }
@@ -141,7 +141,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     mockResource(stubResponseFile);
 
-    Resource resource = getWithOk(STUB_MANAGED_RESOURCE_PATH, STUB_TOKEN_HEADER).as(Resource.class);
+    Resource resource = getWithOk(STUB_MANAGED_RESOURCE_PATH, STUB_USER_ID_HEADER).as(Resource.class);
 
     assertTrue(resource.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
@@ -155,7 +155,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockResource(stubResponseFile);
 
     String actualResponse = getWithOk("eholdings/resources/" + STUB_MANAGED_RESOURCE_ID + "?include=title",
-      STUB_TOKEN_HEADER).asString();
+      STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, true);
   }
@@ -171,7 +171,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockVendor(stubVendorResponseFile);
 
     String actualResponse = getWithOk("eholdings/resources/" + STUB_MANAGED_RESOURCE_ID + "?include=provider",
-      STUB_TOKEN_HEADER).asString();
+      STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, true);
   }
@@ -187,7 +187,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockPackage(stubPackageResponseFile);
 
     String actualResponse = getWithOk("eholdings/resources/" + STUB_MANAGED_RESOURCE_ID + "?include=package",
-      STUB_TOKEN_HEADER).asString();
+      STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, true);
   }
@@ -205,7 +205,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockPackage(stubPackageResponseFile);
 
     String actualResponse = getWithOk(
-      "eholdings/resources/" + STUB_MANAGED_RESOURCE_ID + "?include=package,title,provider", STUB_TOKEN_HEADER)
+      "eholdings/resources/" + STUB_MANAGED_RESOURCE_ID + "?include=package,title,provider", STUB_USER_ID_HEADER)
       .asString();
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, true);
@@ -221,7 +221,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
           .withBody(readFile(stubResponseFile))
           .withStatus(404)));
 
-    JsonapiError error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND, STUB_TOKEN_HEADER)
+    JsonapiError error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Title is no longer in this package.");
@@ -233,7 +233,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     mockResource(stubResponseFile);
 
-    JsonapiError error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND, STUB_TOKEN_HEADER)
+    JsonapiError error = getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_NOT_FOUND, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Title is no longer in this package");
@@ -241,7 +241,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenValidationErrorOnResourceGet() {
-    JsonapiError error = getWithStatus("eholdings/resources/583-abc-762169", SC_BAD_REQUEST, STUB_TOKEN_HEADER)
+    JsonapiError error = getWithStatus("eholdings/resources/583-abc-762169", SC_BAD_REQUEST, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Resource id is invalid - 583-abc-762169");
@@ -252,7 +252,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
 
     JsonapiError error =
-      getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_INTERNAL_SERVER_ERROR, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), notNullValue());
   }
@@ -324,7 +324,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     String requestBody = readFile("requests/kb-ebsco/resource/put-managed-resource-with-missing-access-type.json");
 
     JsonapiError error = putWithStatus(STUB_MANAGED_RESOURCE_PATH, requestBody, SC_BAD_REQUEST, CONTENT_TYPE_HEADER,
-      STUB_TOKEN_HEADER).as(JsonapiError.class);
+      STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     verify(0, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)));
 
@@ -336,7 +336,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     String requestBody = readFile("requests/kb-ebsco/resource/put-managed-resource-with-invalid-access-type.json");
 
     Errors error = putWithStatus(STUB_MANAGED_RESOURCE_PATH, requestBody, SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER,
-      STUB_TOKEN_HEADER).as(Errors.class);
+      STUB_USER_ID_HEADER).as(Errors.class);
 
     verify(0, putRequestedFor(new UrlPathPattern(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), true)));
 
@@ -429,7 +429,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       mapper.readValue(getFile("requests/kb-ebsco/resource/put-resource-tags.json"), ResourceTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
     JsonapiError error =
-      putWithStatus(RESOURCE_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      putWithStatus(RESOURCE_TAGS_PATH, mapper.writeValueAsString(tags), SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -444,7 +444,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     JsonapiError error =
       putWithStatus("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID, invalidPutBody, SC_UNPROCESSABLE_ENTITY,
-        STUB_TOKEN_HEADER).as(JsonapiError.class);
+        STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid url");
   }
@@ -457,7 +457,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     final String postStubRequest = "requests/kb-ebsco/resource/post-resources-request.json";
     final String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-after-post.json";
 
-
     mockPackageResources(stubPackageResourcesFile);
     mockPackage(stubPackageResponseFile);
     mockTitle(stubTitleResponseFile);
@@ -468,7 +467,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
         true, true);
     mockPut(new RegexPattern(MANAGED_RESOURCE_ENDPOINT), putRequestBodyPattern, SC_NO_CONTENT);
 
-    String actualResponse = postWithOk("eholdings/resources", readFile(postStubRequest), STUB_TOKEN_HEADER).asString();
+    String actualResponse =
+      postWithOk("eholdings/resources", readFile(postStubRequest), STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedResourceFile), actualResponse, true);
 
@@ -484,7 +484,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT), SC_NOT_FOUND);
 
     JsonapiError error =
-      postWithStatus("eholdings/resources", readFile(postStubRequest), SC_NOT_FOUND, STUB_TOKEN_HEADER)
+      postWithStatus("eholdings/resources", readFile(postStubRequest), SC_NOT_FOUND, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "not found");
@@ -502,7 +502,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockTitle(stubTitleResponseFile);
 
     JsonapiError error =
-      postWithStatus("eholdings/resources", readFile(postStubRequest), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      postWithStatus("eholdings/resources", readFile(postStubRequest), SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid PackageId"));
@@ -538,7 +538,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn400WhenResourceIdIsInvalid() {
     JsonapiError error =
-      deleteWithStatus("eholdings/resources/abc-def", SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      deleteWithStatus("eholdings/resources/abc-def", SC_BAD_REQUEST, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Resource id is invalid");
   }
@@ -550,7 +550,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), stubResponseFile);
     JsonapiError error =
-      deleteWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      deleteWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_BAD_REQUEST, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Resource cannot be deleted");
   }
@@ -563,7 +563,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), responseRmApiFile);
 
-    final String actualResponse = postWithOk("/eholdings/resources/bulk/fetch", postBody, STUB_TOKEN_HEADER).asString();
+    final String actualResponse =
+      postWithOk("/eholdings/resources/bulk/fetch", postBody, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(
       readFile(expectedResourceFile), actualResponse, true);
   }
@@ -572,7 +573,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   public void shouldReturn422OnInvalidIdFormat() throws IOException, URISyntaxException {
     String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk-with-invalid-id-format.json");
 
-    final Errors error = postWithStatus(RESOURCES_BULK_FETCH, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    final Errors error = postWithStatus(RESOURCES_BULK_FETCH, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(Errors.class);
     assertThat(error.getErrors().get(0).getMessage(), equalTo("elements in list must match pattern"));
   }
@@ -582,7 +583,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     String postBody = readFile("requests/kb-ebsco/resource/post-resource-with-too-long-id.json");
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-response-on-too-long-id.json";
 
-    final String actualResponse = postWithOk(RESOURCES_BULK_FETCH, postBody, STUB_TOKEN_HEADER).asString();
+    final String actualResponse = postWithOk(RESOURCES_BULK_FETCH, postBody, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(
       readFile(expectedResourceFile), actualResponse, false);
   }
@@ -591,14 +592,13 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   public void shouldReturnResourcesAndFailedIds() throws IOException, URISyntaxException, JSONException {
     final String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk-with-invalid-ids.json");
     final String expectedResourceFile = "responses/kb-ebsco/resources/expected-resources-bulk"
-      + "-response-with-failed-ids.json";
+                                        + "-response-with-failed-ids.json";
     final String resourceResponse1 = "responses/rmapi/resources/get-resource-by-id-success-response.json";
     final String resourceResponse2 = "responses/rmapi/resources/get-custom-resource-updated-response.json";
     final String notFoundResponse = "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
 
     mockGet(new EqualToPattern(MANAGED_RESOURCE_ENDPOINT), resourceResponse1);
     mockGet(new EqualToPattern(CUSTOM_RESOURCE_ENDPOINT), resourceResponse2);
-
 
     stubFor(
       get(new UrlPathPattern(
@@ -608,7 +608,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
           .withBody(readFile(notFoundResponse))
           .withStatus(404)));
 
-    final String actualResponse = postWithOk(RESOURCES_BULK_FETCH, postBody, STUB_TOKEN_HEADER).asString();
+    final String actualResponse = postWithOk(RESOURCES_BULK_FETCH, postBody, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(
       readFile(expectedResourceFile), actualResponse, false);
   }
@@ -619,7 +619,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk.json");
     final ResourceBulkFetchCollection bulkFetchCollection = postWithOk(RESOURCES_BULK_FETCH, postBody,
-      STUB_TOKEN_HEADER).as(ResourceBulkFetchCollection.class);
+      STUB_USER_ID_HEADER).as(ResourceBulkFetchCollection.class);
 
     assertThat(bulkFetchCollection.getIncluded().size(), equalTo(0));
     assertThat(bulkFetchCollection.getMeta().getFailed().getResources().size(), equalTo(1));
@@ -657,7 +657,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       put(new UrlPathPattern(new RegexPattern(resourceEndpoint), true))
         .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
 
-    return putWithOk("eholdings/resources/" + resourceId, requestBody, STUB_TOKEN_HEADER).asString();
+    return putWithOk("eholdings/resources/" + resourceId, requestBody, STUB_USER_ID_HEADER).asString();
 
   }
 
@@ -672,7 +672,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
         .withTagList(newTags));
     }
 
-    putWithOk(RESOURCE_TAGS_PATH, mapper.writeValueAsString(tags), STUB_TOKEN_HEADER).as(ResourceTags.class);
+    putWithOk(RESOURCE_TAGS_PATH, mapper.writeValueAsString(tags), STUB_USER_ID_HEADER).as(ResourceTags.class);
   }
 
   private void deleteResource(EqualToJsonPattern putBodyPattern)
@@ -682,6 +682,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     mockGet(new EqualToPattern(CUSTOM_RESOURCE_ENDPOINT), stubResponseFile);
     mockPut(new EqualToPattern(CUSTOM_RESOURCE_ENDPOINT), putBodyPattern, SC_NO_CONTENT);
 
-    deleteWithNoContent("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID, STUB_TOKEN_HEADER);
+    deleteWithNoContent("eholdings/resources/" + STUB_CUSTOM_RESOURCE_ID, STUB_USER_ID_HEADER);
   }
 }

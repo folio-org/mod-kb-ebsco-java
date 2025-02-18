@@ -28,11 +28,10 @@ import static org.folio.util.HoldingsStatusUtil.getStatus;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_OTHER_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USERNAME;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_OTHER_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.STUB_USER_OTHER_ID;
 import static org.folio.util.KbCredentialsTestUtil.USER_KB_CREDENTIAL_ENDPOINT;
 import static org.folio.util.KbCredentialsTestUtil.getKbCredentials;
@@ -138,7 +137,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyValidCredentialsRequest();
-    KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_TOKEN_HEADER)
+    KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_USER_ID_HEADER)
       .as(KbCredentials.class);
 
     assertNotNull(actual);
@@ -147,7 +146,6 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertEquals(getWiremockUrl(), actual.getAttributes().getUrl());
     assertEquals(STUB_CREDENTIALS_NAME, actual.getAttributes().getName());
     assertEquals(STUB_CUSTOMER_ID, actual.getAttributes().getCustomerId());
-    assertEquals(STUB_USERNAME, actual.getMeta().getCreatedByUsername());
     assertEquals(STUB_USER_ID, actual.getMeta().getCreatedByUserId());
     assertNotNull(actual.getMeta().getCreatedDate());
   }
@@ -159,7 +157,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyFailedCredentialsRequest();
-    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB API Credentials are invalid");
@@ -173,7 +171,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -188,7 +186,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     KbCredentialsPostRequest kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
     String postBody = Json.encode(kbCredentialsPostRequest);
 
-    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -203,7 +201,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyValidCredentialsRequest();
-    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate name");
@@ -221,7 +219,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyValidCredentialsRequest();
-    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate credentials");
@@ -279,7 +277,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    patchWithNoContent(resourcePath, patchBody, STUB_TOKEN_HEADER);
+    patchWithNoContent(resourcePath, patchBody, STUB_USER_ID_HEADER);
 
     KbCredentials actual = getKbCredentialsNonSecured(vertx).get(0);
 
@@ -290,10 +288,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertEquals(STUB_API_KEY, actual.getAttributes().getApiKey());
     assertEquals(STUB_CREDENTIALS_NAME, actual.getAttributes().getName());
     assertEquals("updated", actual.getAttributes().getCustomerId());
-    assertEquals(STUB_USERNAME, actual.getMeta().getCreatedByUsername());
     assertEquals(STUB_USER_ID, actual.getMeta().getCreatedByUserId());
     assertNotNull(actual.getMeta().getCreatedDate());
-    assertEquals(STUB_USERNAME, actual.getMeta().getUpdatedByUsername());
     assertEquals(STUB_USER_ID, actual.getMeta().getUpdatedByUserId());
     assertNotNull(actual.getMeta().getUpdatedDate());
   }
@@ -310,7 +306,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyFailedCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB API Credentials are invalid");
@@ -324,7 +320,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String patchBody = Json.encode(kbCredentialsPatchRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -340,7 +336,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String patchBody = Json.encode(kbCredentialsPatchRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -353,7 +349,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String patchBody = Json.encode(kbCredentialsPatchRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid attributes");
@@ -372,7 +368,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate name");
@@ -392,7 +388,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate credentials");
@@ -423,7 +419,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
     JsonapiError error =
-      patchWithStatus(resourcePath, patchBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      patchWithStatus(resourcePath, patchBody, SC_NOT_FOUND, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KbCredentials not found by id");
   }
@@ -443,7 +439,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    putWithNoContent(resourcePath, putBody, STUB_TOKEN_HEADER);
+    putWithNoContent(resourcePath, putBody, STUB_USER_ID_HEADER);
 
     KbCredentials actual = getKbCredentials(vertx).get(0);
 
@@ -453,10 +449,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     assertEquals(getWiremockUrl(), actual.getAttributes().getUrl());
     assertEquals(STUB_CREDENTIALS_NAME + "updated", actual.getAttributes().getName());
     assertEquals(STUB_CUSTOMER_ID + "updated", actual.getAttributes().getCustomerId());
-    assertEquals(STUB_USERNAME, actual.getMeta().getCreatedByUsername());
     assertEquals(STUB_USER_ID, actual.getMeta().getCreatedByUserId());
     assertNotNull(actual.getMeta().getCreatedDate());
-    assertEquals(STUB_USERNAME, actual.getMeta().getUpdatedByUsername());
     assertEquals(STUB_USER_ID, actual.getMeta().getUpdatedByUserId());
     assertNotNull(actual.getMeta().getUpdatedDate());
   }
@@ -472,7 +466,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyFailedCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB API Credentials are invalid");
@@ -487,7 +481,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -503,7 +497,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String putBody = Json.encode(kbCredentialsPutRequest);
 
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -522,7 +516,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate name");
@@ -542,7 +536,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate credentials");
@@ -574,7 +568,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     mockVerifyValidCredentialsRequest();
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_NOT_FOUND, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KbCredentials not found by id");
   }
@@ -632,7 +626,8 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveAssignedUser(STUB_USER_ID, credentialsId, vertx);
 
-    KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
+    KbCredentials actual =
+      getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_USER_ID_HEADER).as(KbCredentials.class);
     assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
   }
 
@@ -640,22 +635,15 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
   public void shouldReturn200AndKbCredentialsOnGetByUserWhenSingleKbCredentialsPresent() {
     saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    KbCredentials actual = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_TOKEN_HEADER).as(KbCredentials.class);
+    KbCredentials actual =
+      getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_USER_ID_HEADER).as(KbCredentials.class);
     assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
-  }
-
-  @Test
-  public void shouldReturn401OnGetByUserWhenTokenIsInvalid() {
-    JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER)
-      .as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "Invalid token");
   }
 
   @Test
   public void shouldReturn404OnGetByUserWhenAssignedUserIsMissingAndNoKbCredentialsAtAll() {
     JsonapiError error =
-      getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB Credentials do not exist ");
   }
@@ -666,11 +654,11 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
     saveAssignedUser(STUB_USER_ID, credentialsId, vertx);
 
-    JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_TOKEN_OTHER_HEADER).as(
+    JsonapiError error = getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_NOT_FOUND, STUB_USER_ID_OTHER_HEADER).as(
       JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB Credentials do not exist or user with userId = " + STUB_USER_OTHER_ID
-      + " is not assigned to any available knowledgebase.");
+                                    + " is not assigned to any available knowledgebase.");
   }
 
   @Test
@@ -680,7 +668,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyValidCredentialsRequest();
-    KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_TOKEN_HEADER)
+    KbCredentials actual = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_CREATED, STUB_USER_ID_HEADER)
       .as(KbCredentials.class);
 
     final HoldingsLoadingStatus status = getStatus(actual.getId(), vertx);

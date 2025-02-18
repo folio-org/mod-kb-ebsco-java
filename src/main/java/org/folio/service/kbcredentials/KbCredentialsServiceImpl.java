@@ -5,8 +5,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.util.TenantUtil.tenantId;
-import static org.folio.util.TokenUtils.fetchUserInfo;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
 import io.vertx.core.Context;
 import java.time.OffsetDateTime;
@@ -30,12 +29,12 @@ import org.folio.rest.jaxrs.model.KbCredentialsKey;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPostRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPutRequest;
+import org.folio.rest.util.RequestHeadersUtil;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPatchBodyValidator;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPostBodyValidator;
 import org.folio.rest.validator.kbcredentials.KbCredentialsPutBodyValidator;
 import org.folio.service.exc.ServiceExceptions;
 import org.folio.service.holdings.HoldingsService;
-import org.folio.util.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 
@@ -110,7 +109,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     KbCredentials kbCredentials = entity.getData();
     KbCredentialsDataAttributes attributes = kbCredentials.getAttributes();
     return prepareAndSave(fetchDbKbCredentials(id, okapiHeaders),
-      (dbCredentials, userInfo) -> prepareUpdateEntity(dbCredentials, attributes, userInfo), okapiHeaders)
+      (dbCredentials, userId) -> prepareUpdateEntity(dbCredentials, attributes, userId), okapiHeaders)
       .thenApply(dbKbCredentials -> null);
   }
 
@@ -123,7 +122,7 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
     patchBodyValidator.validate(patchRequestData);
     KbCredentialsDataAttributes attributes = patchRequestData.getAttributes();
     return prepareAndSave(fetchDbKbCredentials(id, okapiHeaders),
-      (dbCredentials, userInfo) -> preparePartialUpdateEntity(dbCredentials, attributes, userInfo), okapiHeaders)
+      (dbCredentials, userId) -> preparePartialUpdateEntity(dbCredentials, attributes, userId), okapiHeaders)
       .thenApply(dbKbCredentials -> null);
   }
 
@@ -136,49 +135,47 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   private DbKbCredentials preparePartialUpdateEntity(DbKbCredentials existingCredentials,
-                                                     KbCredentialsDataAttributes attributes, UserInfo userInfo) {
+                                                     KbCredentialsDataAttributes attributes, String userId) {
     return setUpdateMeta(existingCredentials.toBuilder()
       .name(defaultIfBlank(attributes.getName(), existingCredentials.getName()))
       .url(defaultIfBlank(attributes.getUrl(), existingCredentials.getUrl()))
       .apiKey(defaultIfBlank(attributes.getApiKey(), existingCredentials.getApiKey()))
-      .customerId(defaultIfBlank(attributes.getCustomerId(), existingCredentials.getCustomerId())), userInfo)
+      .customerId(defaultIfBlank(attributes.getCustomerId(), existingCredentials.getCustomerId())), userId)
       .build();
   }
 
   private DbKbCredentials prepareUpdateEntity(DbKbCredentials existingCredentials,
                                               KbCredentialsDataAttributes attributes,
-                                              UserInfo userInfo) {
+                                              String userId) {
     return setUpdateMeta(existingCredentials.toBuilder()
       .name(attributes.getName())
       .url(attributes.getUrl())
       .apiKey(attributes.getApiKey())
-      .customerId(attributes.getCustomerId()), userInfo)
+      .customerId(attributes.getCustomerId()), userId)
       .build();
   }
 
   private DbKbCredentials.DbKbCredentialsBuilder<?, ?> setUpdateMeta(
     DbKbCredentials.DbKbCredentialsBuilder<?, ?> builder,
-    UserInfo userInfo) {
+    String userId) {
     return builder
       .updatedDate(OffsetDateTime.now())
-      .updatedByUserId(toUUID(userInfo.getUserId()))
-      .updatedByUserName(userInfo.getUserName());
+      .updatedByUserId(toUUID(userId));
   }
 
   private CompletableFuture<DbKbCredentials> prepareAndSave(
     CompletableFuture<DbKbCredentials> credentialsFuture,
-    BiFunction<DbKbCredentials, UserInfo, DbKbCredentials> prepareEntityFn,
+    BiFunction<DbKbCredentials, String, DbKbCredentials> prepareEntityFn,
     Map<String, String> okapiHeaders) {
     return credentialsFuture
-      .thenCombine(fetchUserInfo(okapiHeaders), prepareEntityFn)
+      .thenCombine(RequestHeadersUtil.userIdFuture(okapiHeaders), prepareEntityFn)
       .thenCompose(dbKbCredentials -> verifyAndSave(dbKbCredentials, okapiHeaders));
   }
 
-  private DbKbCredentials prepareSaveEntity(DbKbCredentials dbKbCredentials, UserInfo userInfo) {
+  private DbKbCredentials prepareSaveEntity(DbKbCredentials dbKbCredentials, String userId) {
     return dbKbCredentials.toBuilder()
       .createdDate(OffsetDateTime.now())
-      .createdByUserId(toUUID(userInfo.getUserId()))
-      .createdByUserName(userInfo.getUserName())
+      .createdByUserId(toUUID(userId))
       .build();
   }
 

@@ -99,10 +99,10 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
       credentials.getCustomerId(),
       credentials.getCreatedDate(),
       credentials.getCreatedByUserId(),
-      credentials.getCreatedByUserName(),
+      credentials.getCreatedByUserName() == null ? "SYSTEM" : credentials.getCreatedByUserName(),
       credentials.getUpdatedDate(),
       credentials.getUpdatedByUserId(),
-      credentials.getUpdatedByUserName()
+      credentials.getUpdatedByUserName() == null ? "SYSTEM" : credentials.getUpdatedByUserName()
     ));
 
     logInsertQueryInfoLevel(log, query, params);

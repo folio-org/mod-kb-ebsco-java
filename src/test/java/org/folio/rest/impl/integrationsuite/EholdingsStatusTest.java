@@ -6,7 +6,7 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 import static org.folio.test.util.TestUtil.readFile;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,7 +48,7 @@ public class EholdingsStatusTest extends WireMockTestBase {
           .withBody(readFile("responses/rmapi/vendors/get-zero-vendors-response.json"))));
 
     final ConfigurationStatus status =
-      getWithOk(EHOLDINGS_STATUS_PATH, STUB_TOKEN_HEADER).as(ConfigurationStatus.class);
+      getWithOk(EHOLDINGS_STATUS_PATH, STUB_USER_ID_HEADER).as(ConfigurationStatus.class);
     assertThat(status.getData().getAttributes().getIsConfigurationValid(), equalTo(true));
 
   }
@@ -62,7 +62,7 @@ public class EholdingsStatusTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder().withStatus(401)));
 
     final ConfigurationStatus status =
-      getWithOk(EHOLDINGS_STATUS_PATH, STUB_TOKEN_HEADER).as(ConfigurationStatus.class);
+      getWithOk(EHOLDINGS_STATUS_PATH, STUB_USER_ID_HEADER).as(ConfigurationStatus.class);
     assertThat(status.getData().getAttributes().getIsConfigurationValid(), equalTo(false));
   }
 
@@ -82,7 +82,7 @@ public class EholdingsStatusTest extends WireMockTestBase {
           + "  ]\n"
           + "}")));
 
-    final JsonapiError error = getWithStatus(EHOLDINGS_STATUS_PATH, 429, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    final JsonapiError error = getWithStatus(EHOLDINGS_STATUS_PATH, 429, STUB_USER_ID_HEADER).as(JsonapiError.class);
     AssertTestUtil.assertErrorContainsTitle(error, "Too Many Requests");
   }
 
@@ -103,7 +103,7 @@ public class EholdingsStatusTest extends WireMockTestBase {
   @Test
   public void shouldReturnFalseIfEmptyConfig() {
     final ConfigurationStatus status =
-      getWithOk(EHOLDINGS_STATUS_PATH, STUB_TOKEN_HEADER).as(ConfigurationStatus.class);
+      getWithOk(EHOLDINGS_STATUS_PATH, STUB_USER_ID_HEADER).as(ConfigurationStatus.class);
 
     assertThat(status.getData().getAttributes().getIsConfigurationValid(), equalTo(false));
   }

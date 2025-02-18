@@ -1,6 +1,6 @@
 package org.folio.service.currencies;
 
-import static org.folio.rest.util.TenantUtil.tenantId;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
 import java.util.List;
 import java.util.Map;

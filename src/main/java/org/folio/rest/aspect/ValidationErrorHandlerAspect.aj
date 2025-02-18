@@ -1,5 +1,6 @@
 package org.folio.rest.aspect;
 
+import org.folio.holdingsiq.service.exception.RequestValidationException;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.util.ErrorUtil;
@@ -21,7 +22,7 @@ public aspect ValidationErrorHandlerAspect {
     try{
       proceed(asyncResultHandler);
     }
-    catch (ValidationException e){
+    catch (ValidationException | RequestValidationException e){
             asyncResultHandler.handle(Future.succeededFuture(Response.status(400)
             .header("Content-Type", "application/vnd.api+json")
             .entity(ErrorUtil.createError(e.getMessage()))

@@ -112,7 +112,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
 
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, STUB_QUERY_PARAMS);
 
-    String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
+    String actual = getWithOk(url, JOHN_USER_ID_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
 
     assertThat(actual, notNullValue());
     assertThat(actual, Matchers.equalTo(readFile("responses/kb-ebsco/export/expected-export-three-items-usd.txt")));
@@ -143,7 +143,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     );
 
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, STUB_QUERY_PARAMS);
-    String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
+    String actual = getWithOk(url, JOHN_USER_ID_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
     assertThat(actual, notNullValue());
 
     assertThat(actual,
@@ -166,7 +166,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     );
 
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, STUB_QUERY_PARAMS);
-    String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
+    String actual = getWithOk(url, JOHN_USER_ID_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
 
     String ucPackagePublisher =
       "/uc/costperuse/package/456?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&aggregatedFullText=true";
@@ -205,7 +205,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     );
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, queryParams);
 
-    String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
+    String actual = getWithOk(url, JOHN_USER_ID_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
     assertThat(actual, notNullValue());
 
     String ucPackagePublisher =
@@ -235,7 +235,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
 
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, STUB_QUERY_PARAMS);
 
-    getWithStatus(url, SC_UNAUTHORIZED, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).as(JsonapiError.class);
+    getWithStatus(url, SC_UNAUTHORIZED, JOHN_USER_ID_HEADER, CONTENT_TYPE_CSV_HEADER).as(JsonapiError.class);
   }
 
   @Test
@@ -263,7 +263,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     );
 
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, STUB_QUERY_PARAMS);
-    String actual = getWithOk(url, JOHN_TOKEN_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
+    String actual = getWithOk(url, JOHN_USER_ID_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
     assertThat(actual, notNullValue());
 
     assertThat(actual,

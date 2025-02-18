@@ -19,7 +19,6 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.selectCredentialsQuery;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.upsertCredentialsQuery;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.test.util.TokenTestUtil.createTokenHeader;
 
 import io.restassured.http.Header;
 import io.vertx.core.Vertx;
@@ -56,13 +55,8 @@ public class KbCredentialsTestUtil {
   public static final String STUB_USER_ID = "88888888-8888-4888-8888-888888888888";
   public static final String STUB_USER_OTHER_ID = "99999999-9999-4999-9999-999999999999";
 
-  public static final String STUB_INVALID_TOKEN = "eyJhbGciOiJIUzI1NiJ9."
-    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    + "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.0ie9IdQ1KymERaS2hOENGsyzGcBiI7jsC-7XLcttcPs";
-
-  public static final Header STUB_TOKEN_HEADER = createTokenHeader(STUB_USERNAME, STUB_USER_ID);
-  public static final Header STUB_TOKEN_OTHER_HEADER = createTokenHeader(STUB_USERNAME_OTHER, STUB_USER_OTHER_ID);
-  public static final Header STUB_INVALID_TOKEN_HEADER = new Header(XOkapiHeaders.TOKEN, STUB_INVALID_TOKEN);
+  public static final Header STUB_USER_ID_HEADER = new Header(XOkapiHeaders.USER_ID, STUB_USER_ID);
+  public static final Header STUB_USER_ID_OTHER_HEADER = new Header(XOkapiHeaders.USER_ID, STUB_USER_OTHER_ID);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
     new KbCredentialsConverter.KbCredentialsFromDbSecuredConverter(STUB_API_KEY);

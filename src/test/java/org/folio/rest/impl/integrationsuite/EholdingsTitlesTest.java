@@ -48,7 +48,7 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertEqualsLong;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
@@ -143,7 +143,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withBody(readFile(stubResponseFile))));
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name";
-    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(resourcePath, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, true);
   }
 
@@ -157,7 +157,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withBody(readFile(stubResponseFile))));
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=1&filter[name]=Mind&sort=name&include=resources";
-    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(resourcePath, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles-with-resources.json"), actualResponse,
       true);
   }
@@ -182,7 +182,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath =
       EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
-    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(resourcePath, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles.json"), actualResponse, true);
   }
 
@@ -209,7 +209,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String resourcePath =
       EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2
         + "&include=resources";
-    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(resourcePath, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles-with-resources.json"),
       actualResponse, true);
   }
@@ -234,7 +234,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]="
       + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
-    TitleCollection response = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    TitleCollection response = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
     assertEquals(STUB_MANAGED_TITLE_ID_2, response.getData().get(0).getId());
   }
 
@@ -247,7 +247,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     mockGetTitles();
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-    TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    TitleCollection titleCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
     List<TitleCollectionItem> titles = titleCollection.getData();
 
     assertThat(titles, hasSize(2));
@@ -267,7 +267,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath =
       EHOLDINGS_TITLES_PATH + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME + "&include=resources";
-    TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    TitleCollection titleCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
     List<TitleCollectionItem> titles = titleCollection.getData();
 
     assertThat(titles, hasSize(2));
@@ -288,7 +288,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
       + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-    TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    TitleCollection titleCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
     List<TitleCollectionItem> titles = titleCollection.getData();
 
     assertThat(titles, hasSize(1));
@@ -305,7 +305,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     mockGetTitles();
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[access-type]=Not Exist";
-    TitleCollection titleCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(TitleCollection.class);
+    TitleCollection titleCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
     List<TitleCollectionItem> titles = titleCollection.getData();
 
     assertThat(titles, hasSize(0));
@@ -323,7 +323,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[packageIds]=1&filter[packageIds]=2&filter[packageIds]=3&"
       + "filter[name]=Mind";
-    String actualResponse = getWithOk(resourcePath, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(resourcePath, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, true);
   }
 
@@ -332,7 +332,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[packageIds]=1&filter[packageIds]=abc&"
       + "filter[name]=Mind";
-    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Invalid Query Parameter for filter[packageIds]");
   }
 
@@ -340,7 +340,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturn400IfCountOutOfRange() {
     JsonapiError error =
       getWithStatus(EHOLDINGS_TITLES_PATH + "?count=1000&page=1&filter[name]=Mind&sort=name", SC_BAD_REQUEST,
-        STUB_TOKEN_HEADER).as(JsonapiError.class);
+        STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "parameter value {1000} is not valid");
   }
@@ -353,7 +353,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withStatus(500)));
 
     JsonapiError error =
-      getWithStatus(EHOLDINGS_TITLES_PATH + "?filter[name]=news", SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER)
+      getWithStatus(EHOLDINGS_TITLES_PATH + "?filter[name]=news", SC_INTERNAL_SERVER_ERROR, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid RMAPI response");
@@ -362,7 +362,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnTitleWhenValidId() throws IOException, URISyntaxException, JSONException {
     mockGetManagedTitleById();
-    String actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_TOKEN_HEADER).asString();
+    String actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(
       readFile("responses/kb-ebsco/titles/expected-title-by-id.json"), actualResponse, false);
   }
@@ -377,7 +377,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
 
-    Title actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_TOKEN_HEADER).as(Title.class);
+    Title actualResponse = getWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, STUB_USER_ID_HEADER).as(Title.class);
 
     assertTrue(actualResponse.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
@@ -392,7 +392,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withBody(readFile(stubResponseFile))
           .withStatus(404)));
 
-    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_NOT_FOUND, STUB_TOKEN_HEADER)
+    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_NOT_FOUND, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Title not found");
@@ -400,7 +400,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400WhenValidationErrorOnTitleGet() {
-    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/12345aaa", SC_BAD_REQUEST, STUB_TOKEN_HEADER)
+    JsonapiError error = getWithStatus(EHOLDINGS_TITLES_PATH + "/12345aaa", SC_BAD_REQUEST, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Title id is invalid - 12345aaa");
@@ -414,7 +414,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withStatus(500)));
 
     JsonapiError error =
-      getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR, STUB_TOKEN_HEADER)
+      getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID, SC_INTERNAL_SERVER_ERROR, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid RMAPI response");
@@ -429,7 +429,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
 
     String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK,
-      STUB_TOKEN_HEADER).asString();
+      STUB_USER_ID_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-response.json");
 
     JSONAssert.assertEquals(expected, actual, true);
@@ -446,7 +446,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
 
     String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=resources", SC_OK,
-      STUB_TOKEN_HEADER).asString();
+      STUB_USER_ID_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-include-resources-with-tags-response.json");
 
     JSONAssert.assertEquals(expected, actual, true);
@@ -461,7 +461,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     mockGet(new RegexPattern(rmapiUrl), rmapiResponseFile);
 
     String actual = getWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID + "?include=badValue", SC_OK,
-      STUB_TOKEN_HEADER).asString();
+      STUB_USER_ID_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/titles/get-title-by-id-invalid-include-response.json");
 
     JSONAssert.assertEquals(expected, actual, false);
@@ -516,7 +516,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withStatus(SC_BAD_REQUEST)));
 
     JsonapiError error =
-      postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST, STUB_TOKEN_HEADER)
+      postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Package with the provided name already exists");
@@ -558,7 +558,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       new ResponseDefinitionBuilder().withBody(readFile(resourceResponse))));
 
     putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request),
-      STUB_TOKEN_HEADER);
+      STUB_USER_ID_HEADER);
 
     List<String> tags = TagsTestUtil.getTags(vertx);
     assertThat(tags, containsInAnyOrder(newTags.toArray()));
@@ -600,7 +600,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       new ResponseDefinitionBuilder().withBody(readFile(updatedResponse))));
 
     putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(request),
-      STUB_TOKEN_HEADER);
+      STUB_USER_ID_HEADER);
 
     List<DbTitle> titles = TitlesTestUtil.getTitles(vertx);
     assertEquals(1, titles.size());
@@ -611,7 +611,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturn422WhenNameIsNotProvided() throws URISyntaxException, IOException {
     Errors error = putWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID,
-      readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+      readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(Errors.class);
 
     assertThat(error.getErrors().get(0).getMessage(), containsString("must not be null"));
@@ -641,7 +641,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     }
 
     return putWithOk(EHOLDINGS_TITLES_PATH + "/" + STUB_CUSTOM_TITLE_ID, mapper.writeValueAsString(titleToBeUpdated),
-      STUB_TOKEN_HEADER).asString();
+      STUB_USER_ID_HEADER).asString();
   }
 
   private ExtractableResponse<Response> postTitle(List<String> tags) throws IOException, URISyntaxException {
@@ -678,7 +678,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     TitlePostRequest request = mapper.readValue(readFile(titlePostStubRequestFile), TitlePostRequest.class);
     request.getData().getAttributes().setTags(new Tags().withTagList(tags));
 
-    return postWithOk(EHOLDINGS_TITLES_PATH, mapper.writeValueAsString(request), STUB_TOKEN_HEADER);
+    return postWithOk(EHOLDINGS_TITLES_PATH, mapper.writeValueAsString(request), STUB_USER_ID_HEADER);
   }
 
   private void mockGetManagedTitleById() throws IOException, URISyntaxException {

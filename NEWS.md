@@ -1,3 +1,7 @@
+## v5.1.0 In progress
+### Features
+* Use user-id header instead of token parsing ([MODKBEKBJ-777](https://issues.folio.org/browse/MODKBEKBJ-777))
+
 ## v5.0.0 2024-10-30
 ### Breaking changes
 * GET `/eholdings/kb-credentials/{credentialsId}/key` requires `kb-ebsco.kb-credentials.key.item.get` permission

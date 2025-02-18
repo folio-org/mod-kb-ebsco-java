@@ -4,7 +4,7 @@ import static java.lang.String.format;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.common.LogUtils.collectionToLogMsg;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.util.TenantUtil.tenantId;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
@@ -26,7 +26,6 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.common.OkapiParams;
 import org.folio.config.Configuration;
 import org.folio.db.exc.DbExcUtils;
-import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesRepository;
@@ -37,6 +36,7 @@ import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.AccessTypePostRequest;
 import org.folio.rest.jaxrs.model.AccessTypePutRequest;
 import org.folio.rest.jaxrs.model.UserDisplayInfo;
+import org.folio.rest.util.RequestHeadersUtil;
 import org.folio.rest.validator.AccessTypesBodyValidator;
 import org.folio.service.kbcredentials.KbCredentialsService;
 import org.folio.service.users.User;
@@ -182,14 +182,14 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   private DbAccessType prePopulateCreatorMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
     return dbAccessType.toBuilder()
-      .createdByUserId(UUID.fromString(okapiHeaders.get(XOkapiHeaders.USER_ID)))
+      .createdByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
       .createdDate(OffsetDateTime.now())
       .build();
   }
 
   private DbAccessType prePopulateUpdaterMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
     return dbAccessType.toBuilder()
-      .updatedByUserId(UUID.fromString(okapiHeaders.get(XOkapiHeaders.USER_ID)))
+      .updatedByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
       .updatedDate(OffsetDateTime.now())
       .build();
   }

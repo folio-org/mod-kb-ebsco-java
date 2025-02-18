@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.folio.common.OkapiParams;
 import org.folio.okapi.common.XOkapiHeaders;
+import org.folio.rest.util.RequestHeadersUtil;
 import org.folio.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -67,19 +68,12 @@ public class UsersLookUpService {
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
-    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
-    String userId = headers.get(XOkapiHeaders.USER_ID);
-    if (StringUtils.isNotBlank(userId)) {
-      String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
-      webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
-        .putHeaders(headers)
-        .as(BodyCodec.jsonObject())
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-        .send(promise);
-      return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUser));
-    } else {
-      return CompletableFuture.failedFuture(new NotAuthorizedException(XOkapiHeaders.USER_ID + " header is required"));
-    }
+    return RequestHeadersUtil.userIdFuture(okapiParams.getHeaders())
+      .thenCompose(userId -> {
+        Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+        sendUserRequest(userId, headers, promise);
+        return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUser));
+      });
   }
 
   public CompletableFuture<List<User>> lookUpUsers(List<UUID> ids, final OkapiParams okapiParams) {
@@ -103,16 +97,20 @@ public class UsersLookUpService {
 
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
     if (StringUtils.isNotBlank(userId)) {
-      String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
-      webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
-        .putHeaders(headers)
-        .as(BodyCodec.jsonObject())
-        .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-        .send(promise);
+      sendUserRequest(userId, headers, promise);
       return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUser));
     } else {
       return CompletableFuture.failedFuture(new NotAuthorizedException(XOkapiHeaders.USER_ID + " header is required"));
     }
+  }
+
+  private void sendUserRequest(String userId, MultiMap headers, Promise<HttpResponse<JsonObject>> promise) {
+    String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
+    webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
+      .putHeaders(headers)
+      .as(BodyCodec.jsonObject())
+      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
+      .send(promise);
   }
 
   private CompletableFuture<List<User>> lookUpUsersUsingCql(String query, int limit, OkapiParams okapiParams) {

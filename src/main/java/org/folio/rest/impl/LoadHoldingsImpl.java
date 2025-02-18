@@ -2,7 +2,7 @@ package org.folio.rest.impl;
 
 import static io.vertx.core.Future.succeededFuture;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.util.TenantUtil.tenantId;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 import static org.folio.util.FutureUtils.failedFuture;
 
 import io.vertx.core.AsyncResult;

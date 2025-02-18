@@ -103,7 +103,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/resources/expected-resource-cost-per-use.json";
     ResourceCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), ResourceCostPerUse.class);
 
-    ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, platform), JOHN_TOKEN_HEADER)
+    ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, platform), JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -120,7 +120,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/resources/expected-empty-resource-cost-per-use.json";
     ResourceCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), ResourceCostPerUse.class);
 
-    ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, null), JOHN_TOKEN_HEADER)
+    ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, null), JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -139,7 +139,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       "responses/kb-ebsco/costperuse/resources/expected-resource-cost-per-use-with-empty-non-publisher.json";
     ResourceCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), ResourceCostPerUse.class);
 
-    ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, platform), JOHN_TOKEN_HEADER)
+    ResourceCostPerUse actual = getWithOk(resourceEndpoint(titleId, packageId, year, platform), JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -178,7 +178,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     );
 
     JsonapiError error =
-      getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+      getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsDetail(error, "Random error message");
@@ -202,7 +202,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/titles/expected-title-cost-per-use.json";
     TitleCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), TitleCostPerUse.class);
 
-    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_TOKEN_HEADER)
+    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_USER_ID_HEADER)
       .as(TitleCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -226,7 +226,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/titles/expected-title-cost-per-use-with-no-usage.json";
     TitleCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), TitleCostPerUse.class);
 
-    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_TOKEN_HEADER)
+    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_USER_ID_HEADER)
       .as(TitleCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -250,7 +250,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/titles/expected-title-cost-per-use-with-no-usage.json";
     TitleCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), TitleCostPerUse.class);
 
-    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_TOKEN_HEADER)
+    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_USER_ID_HEADER)
       .as(TitleCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -268,7 +268,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/titles/expected-empty-title-cost-per-use.json";
     TitleCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), TitleCostPerUse.class);
 
-    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_TOKEN_HEADER)
+    TitleCostPerUse actual = getWithOk(titleEndpoint(titleId, year, platform), JOHN_USER_ID_HEADER)
       .as(TitleCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -305,7 +305,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     );
 
     JsonapiError error =
-      getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+      getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsDetail(error, "Random error message");
@@ -323,7 +323,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     String kbEbscoResponseFile = "responses/kb-ebsco/costperuse/packages/expected-package-cost-per-use.json";
     PackageCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), PackageCostPerUse.class);
 
-    PackageCostPerUse actual = getWithOk(packageEndpoint(packageId, year, platform), JOHN_TOKEN_HEADER)
+    PackageCostPerUse actual = getWithOk(packageEndpoint(packageId, year, platform), JOHN_USER_ID_HEADER)
       .as(PackageCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -351,7 +351,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       "responses/kb-ebsco/costperuse/packages/expected-package-cost-per-use-when-cost-is-empty.json";
     PackageCostPerUse expected = Json.decodeValue(readFile(kbEbscoResponseFile), PackageCostPerUse.class);
 
-    PackageCostPerUse actual = getWithOk(packageEndpoint(packageId, year, platform), JOHN_TOKEN_HEADER)
+    PackageCostPerUse actual = getWithOk(packageEndpoint(packageId, year, platform), JOHN_USER_ID_HEADER)
       .as(PackageCostPerUse.class);
 
     assertEquals(expected, actual);
@@ -386,7 +386,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
     );
 
-    JsonapiError error = getWithStatus(packageEndpoint(packageId, year, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+    JsonapiError error = getWithStatus(packageEndpoint(packageId, year, null), SC_BAD_REQUEST, JOHN_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsDetail(error, "Random error message");
@@ -410,7 +410,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection
-      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null), JOHN_TOKEN_HEADER)
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null), JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -441,7 +441,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection actual =
-      getWithOk(packageResourcesEndpoint(packageId, year, platform, page, size), JOHN_TOKEN_HEADER)
+      getWithOk(packageResourcesEndpoint(packageId, year, platform, page, size), JOHN_USER_ID_HEADER)
         .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -472,7 +472,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
     ResourceCostPerUseCollection
       actual =
-      getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
+      getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_USER_ID_HEADER)
         .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -504,7 +504,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
     ResourceCostPerUseCollection
       actual =
-      getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_TOKEN_HEADER)
+      getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_USER_ID_HEADER)
         .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -534,7 +534,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection
-      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null),
+      JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -564,7 +565,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection
-      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null),
+      JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -594,7 +596,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection
-      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null),
+      JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -624,7 +627,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
     ResourceCostPerUseCollection
-      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null), JOHN_TOKEN_HEADER)
+      actual = getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null),
+      JOHN_USER_ID_HEADER)
       .as(ResourceCostPerUseCollection.class);
 
     assertThat(actual, notNullValue());
@@ -687,7 +691,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     );
 
     JsonapiError error =
-      getWithStatus(packageResourcesEndpoint(packageId, year, null, null, null), SC_BAD_REQUEST, JOHN_TOKEN_HEADER)
+      getWithStatus(packageResourcesEndpoint(packageId, year, null, null, null), SC_BAD_REQUEST, JOHN_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsDetail(error, "Random error message");

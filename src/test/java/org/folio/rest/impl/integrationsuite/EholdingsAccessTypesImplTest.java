@@ -28,7 +28,7 @@ import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.TokenTestUtils.generateToken;
@@ -143,7 +143,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     final String id0 = insertAccessType(testAccessTypes.get(0), vertx);
     final String id1 = insertAccessType(testAccessTypes.get(1), vertx);
 
-    AccessTypeCollection actual = getWithStatus(ACCESS_TYPES_PATH, SC_OK, STUB_TOKEN_HEADER)
+    AccessTypeCollection actual = getWithStatus(ACCESS_TYPES_PATH, SC_OK, STUB_USER_ID_HEADER)
       .as(AccessTypeCollection.class);
 
     assertEquals(Integer.valueOf(2), actual.getMeta().getTotalResults());
@@ -211,7 +211,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     insertAccessTypeMapping("11111111-1113", RecordType.PACKAGE, id, vertx);
 
     String resourcePath = ACCESS_TYPES_PATH + "/" + id;
-    AccessType actual = getWithStatus(resourcePath, SC_OK, STUB_TOKEN_HEADER).as(AccessType.class);
+    AccessType actual = getWithStatus(resourcePath, SC_OK, STUB_USER_ID_HEADER).as(AccessType.class);
 
     assertEquals(id, actual.getId());
     assertEquals(expected.getAttributes(), actual.getAttributes());
@@ -240,7 +240,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void shouldReturn404OnGetByIdAndUserIfAccessTypeIsMissing() {
     String id = "11111111-1111-1111-a111-111111111111";
     String resourcePath = ACCESS_TYPES_PATH + "/" + id;
-    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, String.format("Access type not found: id = %s", id));
   }
@@ -250,7 +250,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String id = UUID.randomUUID().toString();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT,
       UUID.randomUUID(), id);
-    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, String.format("Access type not found: id = %s", id));
   }
@@ -259,7 +259,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void shouldReturn400OnGetByIdAndUserIfIdIsInvalid() {
     String id = "invalid-id";
     String resourcePath = ACCESS_TYPES_PATH + "/" + id;
-    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "parameter value {invalid-id} is not valid: must match");
   }

@@ -2,7 +2,7 @@ package org.folio.service.accesstypes;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.util.TenantUtil.tenantId;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
 import java.util.Collection;
 import java.util.Map;
