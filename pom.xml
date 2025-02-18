@@ -44,12 +44,12 @@
     <folio-liquibase-util.version>1.10.0-SNAPSHOT</folio-liquibase-util.version>
     <mod-configuration-client.version>5.12.0-SNAPSHOT</mod-configuration-client.version>
 
-    <vertx.version>4.5.12</vertx.version>
+    <vertx.version>4.5.13</vertx.version>
     <aspectj.version>1.9.22.1</aspectj.version>
     <jackson.version>2.18.2</jackson.version>
     <postgresql.version>42.7.5</postgresql.version>
     <commons-codec.version>1.18.0</commons-codec.version>
-    <commons-beanutils.version>1.10.0</commons-beanutils.version>
+    <commons-beanutils.version>1.10.1</commons-beanutils.version>
     <lombok.version>1.18.36</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
     <opencsv.version>5.10</opencsv.version>
