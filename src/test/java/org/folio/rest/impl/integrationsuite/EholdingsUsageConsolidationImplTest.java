@@ -86,7 +86,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     UCSettings stubSettings = stubSettings(credentialsId);
     String settingsId = saveUcSettings(stubSettings, vertx);
 
-    UCSettings actual = getWithOk(UC_SETTINGS_USER_ENDPOINT, JOHN_TOKEN_HEADER).as(UCSettings.class);
+    UCSettings actual = getWithOk(UC_SETTINGS_USER_ENDPOINT, JOHN_USER_ID_HEADER).as(UCSettings.class);
 
     UCSettings expected = stubSettings.withId(settingsId);
     expected.getAttributes().withCustomerKey("*".repeat(40));
@@ -99,7 +99,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String settingsId = saveUcSettings(stubSettings, vertx);
 
     String resourcePath = String.format(UC_SETTINGS_KEY_ENDPOINT, credentialsId);
-    UCSettingsKey actual = getWithOk(resourcePath, JOHN_TOKEN_HEADER).as(UCSettingsKey.class);
+    UCSettingsKey actual = getWithOk(resourcePath, JOHN_USER_ID_HEADER).as(UCSettingsKey.class);
 
     assertEquals(settingsId, actual.getId());
     assertEquals(stubSettings.getAttributes().getCustomerKey(), actual.getAttributes().getCustomerKey());
@@ -113,7 +113,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     mockMetricTypeWithExpectedTypeId();
     mockAuthToken();
 
-    UCSettings actual = getWithOk(UC_SETTINGS_USER_ENDPOINT + METRIC_TYPE_PARAM_TRUE, JOHN_TOKEN_HEADER)
+    UCSettings actual = getWithOk(UC_SETTINGS_USER_ENDPOINT + METRIC_TYPE_PARAM_TRUE, JOHN_USER_ID_HEADER)
       .as(UCSettings.class);
 
     UCSettings expected = stubSettings.withId(settingsId);
@@ -161,7 +161,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
           .withCurrency(newCurrencyValue)));
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
-    patchWithNoContent(resourcePath, Json.encode(patchData), JOHN_TOKEN_HEADER);
+    patchWithNoContent(resourcePath, Json.encode(patchData), JOHN_USER_ID_HEADER);
 
     UCSettings actual = getUcSettings(vertx).get(0);
     assertEquals(newCurrencyValue, actual.getAttributes().getCurrency());
@@ -184,7 +184,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     JsonapiError error =
-      patchWithStatus(resourcePath, Json.encode(patchData), SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER)
+      patchWithStatus(resourcePath, Json.encode(patchData), SC_UNPROCESSABLE_ENTITY, JOHN_USER_ID_HEADER)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
@@ -205,7 +205,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String patchBody = Json.encode(patchData);
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     JsonapiError error =
-      patchWithStatus(resourcePath, patchBody, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+      patchWithStatus(resourcePath, patchBody, SC_NOT_FOUND, JOHN_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Usage Consolidation is not enabled for KB credentials");
   }
@@ -224,7 +224,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
     String patchBody = Json.encode(patchData);
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
-    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER)
+    JsonapiError error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY, JOHN_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid UC Credentials");
@@ -238,7 +238,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
-    UCSettings ucSettings = postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER).as(UCSettings.class);
+    UCSettings ucSettings = postWithCreated(resourcePath, postBody, JOHN_USER_ID_HEADER).as(UCSettings.class);
 
     assertEquals(credentialsId, ucSettings.getAttributes().getCredentialsId());
     assertEquals(Month.JAN, ucSettings.getAttributes().getStartMonth());
@@ -253,7 +253,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequestNoDefault());
-    UCSettings ucSettings = postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER).as(UCSettings.class);
+    UCSettings ucSettings = postWithCreated(resourcePath, postBody, JOHN_USER_ID_HEADER).as(UCSettings.class);
 
     assertEquals(credentialsId, ucSettings.getAttributes().getCredentialsId());
     assertEquals(Month.FEB, ucSettings.getAttributes().getStartMonth());
@@ -272,7 +272,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     postRequest.getData().getAttributes().setCurrency("aaa");
     String postBody = Json.encode(postRequest);
     JsonapiError error =
-      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
     assertErrorContainsDetail(error, "is invalid for 'currency'");
@@ -288,7 +288,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
     JsonapiError error =
-      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_USER_ID_HEADER).as(JsonapiError.class);
 
     String expectedErrorMessage = String.format("'%s' is invalid for 'kb_credentials_id'", credentialsId);
     assertErrorContainsTitle(error, "Invalid value");
@@ -303,10 +303,10 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
-    postWithCreated(resourcePath, postBody, JOHN_TOKEN_HEADER);
+    postWithCreated(resourcePath, postBody, JOHN_USER_ID_HEADER);
 
     JsonapiError error =
-      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_USER_ID_HEADER).as(JsonapiError.class);
 
     String expectedErrorMessage = String.format("'%s' is invalid for", credentialsId);
     assertErrorContainsTitle(error, "Invalid value");
@@ -320,7 +320,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
     JsonapiError error =
-      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_USER_ID_HEADER).as(JsonapiError.class);
 
     String expectedErrorMessage = "Invalid UC API Credentials";
     assertErrorContainsTitle(error, expectedErrorMessage);
@@ -336,7 +336,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String postBody = Json.encode(getPostRequest());
     JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNAUTHORIZED).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "Invalid token");
+    assertErrorContainsTitle(error, "X-Okapi-User-Id header is required");
   }
 
   @Test
@@ -349,7 +349,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String postBody = Json.encode(getPostRequest());
     JsonapiError error = postWithStatus(resourcePath, postBody, SC_UNAUTHORIZED).as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "Invalid token");
+    assertErrorContainsTitle(error, "X-Okapi-User-Id header is required");
   }
 
   private void mockSuccessfulVerification() {

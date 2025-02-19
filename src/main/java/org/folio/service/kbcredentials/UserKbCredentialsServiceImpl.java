@@ -3,8 +3,7 @@ package org.folio.service.kbcredentials;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
-import static org.folio.rest.util.TenantUtil.tenantId;
-import static org.folio.util.TokenUtils.fetchUserInfo;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
 import java.util.Collection;
 import java.util.Map;
@@ -21,7 +20,7 @@ import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.repository.kbcredentials.KbCredentialsRepository;
 import org.folio.rest.jaxrs.model.KbCredentials;
-import org.folio.util.UserInfo;
+import org.folio.rest.util.RequestHeadersUtil;
 import org.springframework.core.convert.converter.Converter;
 
 @Log4j2
@@ -44,18 +43,18 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
 
   @Override
   public CompletableFuture<KbCredentials> findByUser(Map<String, String> okapiHeaders) {
-    return fetchUserInfo(okapiHeaders)
-      .thenCompose(userInfo -> findUserCredentials(userInfo, tenantId(okapiHeaders)))
+    return RequestHeadersUtil.userIdFuture(okapiHeaders)
+      .thenCompose(userId -> findUserCredentials(userId, tenantId(okapiHeaders)))
       .thenApply(credentialsFromDbConverter::convert);
   }
 
-  private CompletableFuture<DbKbCredentials> findUserCredentials(UserInfo userInfo, String tenant) {
-    UUID userId = UUID.fromString(userInfo.getUserId());
+  private CompletableFuture<DbKbCredentials> findUserCredentials(String userIdValue, String tenant) {
+    var userId = UUID.fromString(userIdValue);
     log.debug("findUserCredentials:: Attempts to find KbCredentials by [userId: {}, tenant: {}]", userId, tenant);
 
     return credentialsRepository.findByUserId(userId, tenant)
       .thenCompose(ifEmpty(() -> findSingleKbCredentials(tenant)))
-      .thenApply(getCredentialsOrFailWithUserId(userInfo.getUserId()));
+      .thenApply(getCredentialsOrFailWithUserId(userIdValue));
   }
 
   private CompletableFuture<Optional<DbKbCredentials>> findSingleKbCredentials(String tenant) {

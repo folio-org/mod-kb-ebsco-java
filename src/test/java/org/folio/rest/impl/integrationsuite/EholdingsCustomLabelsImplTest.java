@@ -22,7 +22,7 @@ import static org.folio.test.util.TestUtil.readJsonFile;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
@@ -83,7 +83,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   public void shouldReturnCustomLabelsOnGet() throws IOException, URISyntaxException, JSONException {
     mockCustomLabelsConfiguration();
 
-    String actual = getWithOk(KB_CUSTOM_LABELS_PATH, STUB_TOKEN_HEADER).asString();
+    String actual = getWithOk(KB_CUSTOM_LABELS_PATH, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile(KB_GET_CUSTOM_LABELS_RESPONSE), actual, false);
     verify(1, getRequestedFor(urlEqualTo(RM_API_CUSTOMER_PATH)));
   }
@@ -92,7 +92,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   public void shouldReturn403OnGetWithResourcesWhenRmApi401() {
     mockGet(new RegexPattern(RM_API_CUSTOMER_PATH), SC_UNAUTHORIZED);
 
-    JsonapiError error = getWithStatus(KB_CUSTOM_LABELS_PATH, SC_FORBIDDEN, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(KB_CUSTOM_LABELS_PATH, SC_FORBIDDEN, STUB_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized Access");
   }
 
@@ -100,7 +100,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   public void shouldReturn403OnGetWithResourcesWhenRmApi403() {
     mockGet(new RegexPattern(RM_API_CUSTOMER_PATH), SC_FORBIDDEN);
 
-    JsonapiError error = getWithStatus(KB_CUSTOM_LABELS_PATH, SC_FORBIDDEN, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(KB_CUSTOM_LABELS_PATH, SC_FORBIDDEN, STUB_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized Access");
   }
 
@@ -111,7 +111,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
 
     mockCustomLabelsConfiguration();
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, configuration.getId());
-    CustomLabelsCollection actual = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(CustomLabelsCollection.class);
+    CustomLabelsCollection actual = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(CustomLabelsCollection.class);
 
     verify(1, getRequestedFor(urlEqualTo(RM_API_CUSTOMER_PATH)));
     assertEquals(expected, actual);
@@ -121,7 +121,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   public void shouldReturn403OnGetByCredentialsWithResourcesWhenRmApi403() {
     mockGet(new RegexPattern(RM_API_CUSTOMER_PATH), SC_FORBIDDEN);
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, configuration.getId());
-    JsonapiError error = getWithStatus(resourcePath, SC_FORBIDDEN, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(resourcePath, SC_FORBIDDEN, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Unauthorized Access");
   }
@@ -129,7 +129,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnGetByCredentialsWhenCredentialsAreMissing() {
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, UUID.randomUUID());
-    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+    JsonapiError error = getWithStatus(resourcePath, SC_NOT_FOUND, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KbCredentials not found by id");
   }
@@ -141,7 +141,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
 
     String putBody = readFile(PUT_ONE_LABEL_REQUEST);
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, configuration.getId());
-    String actual = putWithOk(resourcePath, putBody, STUB_TOKEN_HEADER).asString();
+    String actual = putWithOk(resourcePath, putBody, STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(PUT_ONE_LABEL_REQUEST), actual, false);
 
@@ -156,7 +156,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
 
     String putBody = readFile(PUT_FIVE_LABEL_REQUEST);
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, configuration.getId());
-    String actual = putWithOk(resourcePath, putBody, STUB_TOKEN_HEADER).asString();
+    String actual = putWithOk(resourcePath, putBody, STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(PUT_FIVE_LABEL_REQUEST), actual, false);
 
@@ -168,7 +168,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPutWhenIdNotInRange() throws IOException, URISyntaxException {
     String putBody = readFile(PUT_WITH_INVALID_ID_REQUEST);
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, UUID.randomUUID());
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid Custom Label id");
@@ -179,7 +179,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPutWhenInvalidNameLength() throws IOException, URISyntaxException {
     String putBody = readFile(PUT_WITH_INVALID_NAME_REQUEST);
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, UUID.randomUUID());
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid Custom Label Name");
@@ -190,7 +190,7 @@ public class EholdingsCustomLabelsImplTest extends WireMockTestBase {
   public void shouldReturn422OnPutWhenHasDuplicateIds() throws IOException, URISyntaxException {
     String putBody = readFile(PUT_WITH_DUPLICATE_ID_REQUEST);
     String resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, UUID.randomUUID());
-    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER)
+    JsonapiError error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid request body");

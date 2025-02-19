@@ -20,7 +20,6 @@ import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.AssignedUsersTestUtil.saveAssignedUser;
 import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.STUB_INVALID_TOKEN_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 
@@ -64,7 +63,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), RMAPI_ROOT_PROXY_CUSTOM_LABELS_RESPONSE);
 
-    String actual = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_OK, JOHN_TOKEN_HEADER).asString();
+    String actual = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_OK, JOHN_USER_ID_HEADER).asString();
 
     String expected = readFile(KB_EBSCO_GET_ROOT_PROXY_RESPONSE);
     JSONAssert.assertEquals(expected, actual, true);
@@ -77,7 +76,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), RMAPI_ROOT_PROXY_CUSTOM_LABELS_RESPONSE);
 
-    String actual = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_OK, JOHN_TOKEN_HEADER).asString();
+    String actual = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_OK, JOHN_USER_ID_HEADER).asString();
 
     String expected = readFile(KB_EBSCO_GET_ROOT_PROXY_RESPONSE);
     JSONAssert.assertEquals(expected, actual, true);
@@ -90,17 +89,10 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
     saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME + "1", STUB_API_KEY, "OTHER_CUSTOMER_ID", vertx);
 
     JsonapiError error =
-      getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_NOT_FOUND, JANE_TOKEN_HEADER).as(JsonapiError.class);
+      getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_NOT_FOUND, JANE_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB Credentials do not exist or user with userId = " + JANE_ID
       + " is not assigned to any available knowledgebase.");
-  }
-
-  @Test
-  public void shouldReturn401WhenNoTokenHeader() {
-    JsonapiError error = getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_UNAUTHORIZED, STUB_INVALID_TOKEN_HEADER)
-      .as(JsonapiError.class);
-    assertErrorContainsTitle(error, "Invalid token");
   }
 
   @Test
@@ -110,7 +102,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_UNAUTHORIZED);
     final JsonapiError error =
-      getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_UNAUTHORIZED, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+      getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_UNAUTHORIZED, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized Access");
   }
 
@@ -121,7 +113,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_FORBIDDEN);
     final JsonapiError error =
-      getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_FORBIDDEN, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+      getWithStatus(EHOLDINGS_ROOT_PROXY_URL, SC_FORBIDDEN, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized");
   }
 
@@ -134,7 +126,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), RMAPI_ROOT_PROXY_CUSTOM_LABELS_RESPONSE);
 
     final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);
-    String actual = getWithStatus(path, SC_OK, JOHN_TOKEN_HEADER).asString();
+    String actual = getWithStatus(path, SC_OK, JOHN_USER_ID_HEADER).asString();
 
     String expected = readFile(KB_EBSCO_GET_ROOT_PROXY_RESPONSE);
     JSONAssert.assertEquals(expected, actual, true);
@@ -147,7 +139,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_UNAUTHORIZED);
     final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);
-    final JsonapiError error = getWithStatus(path, SC_UNAUTHORIZED, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    final JsonapiError error = getWithStatus(path, SC_UNAUTHORIZED, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized Access");
   }
 
@@ -158,7 +150,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_FORBIDDEN);
     final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);
-    final JsonapiError error = getWithStatus(path, SC_FORBIDDEN, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    final JsonapiError error = getWithStatus(path, SC_FORBIDDEN, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized");
   }
 
@@ -166,7 +158,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
   public void shouldReturn404WhenCredentialsNotFound() {
     final String path =
       String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, "11111111-1111-1111-a111-111111111111");
-    final JsonapiError error = getWithStatus(path, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    final JsonapiError error = getWithStatus(path, SC_NOT_FOUND, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "KbCredentials not found by id");
   }
 
@@ -224,7 +216,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_UNAUTHORIZED);
     final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);
-    final JsonapiError error = getWithStatus(path, SC_UNAUTHORIZED, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    final JsonapiError error = getWithStatus(path, SC_UNAUTHORIZED, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized Access");
   }
 
@@ -234,7 +226,7 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(RMAPI_ROOT_PROXY_CUSTOM_LABELS_URL), SC_FORBIDDEN);
     final String path = String.format(EHOLDINGS_ROOT_PROXY_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);
-    final JsonapiError error = getWithStatus(path, SC_FORBIDDEN, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    final JsonapiError error = getWithStatus(path, SC_FORBIDDEN, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized");
   }
 

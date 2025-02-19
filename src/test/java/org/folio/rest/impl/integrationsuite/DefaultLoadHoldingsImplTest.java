@@ -29,7 +29,7 @@ import static org.folio.util.HoldingsStatusAuditTestUtil.saveStatusAudit;
 import static org.folio.util.HoldingsStatusUtil.PROCESS_ID;
 import static org.folio.util.HoldingsStatusUtil.saveStatus;
 import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.interceptAndContinue;
@@ -165,7 +165,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     mockPostHoldings();
     mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
 
-    postWithStatus(HOLDINGS_LOAD_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
 
@@ -195,7 +195,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     mockPostHoldings();
     mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
 
-    postWithStatus(HOLDINGS_LOAD_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
 
@@ -209,7 +209,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     saveStatus(STUB_CREDENTIALS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_CONFLICT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_CONFLICT, STUB_USER_ID_HEADER);
   }
 
   @Test
@@ -275,7 +275,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
       .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
@@ -298,7 +298,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
   }
 
   @Test
@@ -322,7 +322,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -344,7 +344,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, o -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
 
@@ -391,7 +391,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -434,7 +434,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       new ResponseDefinitionBuilder()
         .withBody(readFile(RMAPI_RESPONSE_HOLDINGS))
     );
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
   }
@@ -453,7 +453,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       successfulResponse,
       successfulResponse);
     mockPostHoldings();
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
     mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
 
     async.await(TIMEOUT);
@@ -491,7 +491,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     mockPostHoldings();
     mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
   }

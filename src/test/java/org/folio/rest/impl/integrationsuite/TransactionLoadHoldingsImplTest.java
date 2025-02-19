@@ -27,7 +27,7 @@ import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
 import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.interceptAndContinue;
@@ -212,7 +212,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
 
@@ -254,7 +254,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION, message -> async.complete());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -275,7 +275,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndContinue(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_FAILED_ACTION, o -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
 
@@ -322,7 +322,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SAVE_HOLDINGS_ACTION, message -> async.countDown());
     vertx.eventBus().addOutboundInterceptor(interceptor);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
@@ -366,7 +366,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
       new ResponseDefinitionBuilder().withStatus(SC_INTERNAL_SERVER_ERROR),
       new ResponseDefinitionBuilder().withBody(readFile(RMAPI_RESPONSE_HOLDINGS))
     );
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
     async.await(TIMEOUT);
     assertTrue(async.isSucceeded());
   }
@@ -386,7 +386,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     mockPostHoldings();
     mockGet(new RegexPattern(getHoldingsEndpoint()), RMAPI_RESPONSE_HOLDINGS);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     async.await(TIMEOUT);
   }

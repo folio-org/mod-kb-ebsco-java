@@ -3,8 +3,7 @@ package org.folio.service.uc;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.db.RowSetUtils.toUUID;
-import static org.folio.rest.util.TenantUtil.tenantId;
-import static org.folio.util.TokenUtils.fetchUserInfo;
+import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
@@ -30,9 +29,9 @@ import org.folio.rest.jaxrs.model.UCSettings;
 import org.folio.rest.jaxrs.model.UCSettingsKey;
 import org.folio.rest.jaxrs.model.UCSettingsPatchRequest;
 import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
+import org.folio.rest.util.RequestHeadersUtil;
 import org.folio.rmapi.result.UcSettingsResult;
 import org.folio.service.kbcredentials.KbCredentialsService;
-import org.folio.util.UserInfo;
 import org.springframework.core.convert.ConversionService;
 
 @Log4j2
@@ -75,8 +74,8 @@ public class UcSettingsServiceImpl implements UcSettingsService {
       credentialsId, patchRequest.getData().getId());
 
     return fetchDbUcSettings(credentialsId, okapiHeaders)
-      .thenCombine(fetchUserInfo(okapiHeaders),
-        (dbUcSettings, userInfo) -> prepareUpdate(dbUcSettings, patchRequest, userInfo))
+      .thenCombine(RequestHeadersUtil.userIdFuture(okapiHeaders),
+        (dbUcSettings, userId) -> prepareUpdate(dbUcSettings, patchRequest, userId))
       .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
       .thenApply(nothing());
   }
@@ -88,9 +87,9 @@ public class UcSettingsServiceImpl implements UcSettingsService {
       id, request.getData().getId());
 
     updateRequest(request, id);
-    return fetchUserInfo(okapiHeaders)
+    return RequestHeadersUtil.userIdFuture(okapiHeaders)
       .thenCombine(completedFuture(convertToDb(request)),
-        (userInfo, dbUcSettings) -> prepareSave(dbUcSettings, userInfo))
+        (userId, dbUcSettings) -> prepareSave(dbUcSettings, userId))
       .thenCompose(dbUcSettings -> save(dbUcSettings, okapiHeaders))
       .thenApply(dbUCSettings -> new UcSettingsResult(dbUCSettings, null))
       .thenApply(this::convertResult);
@@ -153,7 +152,7 @@ public class UcSettingsServiceImpl implements UcSettingsService {
   }
 
   private DbUcSettings prepareUpdate(DbUcSettings dbUcSettings, UCSettingsPatchRequest patchRequest,
-                                     UserInfo userInfo) {
+                                     String userId) {
     var patchAttributes = patchRequest.getData().getAttributes();
     log.info("prepareUpdate:: Setting changed fields to UcSettings for update");
 
@@ -167,8 +166,7 @@ public class UcSettingsServiceImpl implements UcSettingsService {
                     ? dbUcSettings.getPlatformType()
                     : patchAttributes.getPlatformType().value())
       .updatedDate(OffsetDateTime.now())
-      .updatedByUserId(toUUID(userInfo.getUserId()))
-      .updatedByUserName(userInfo.getUserName())
+      .updatedByUserId(toUUID(userId))
       .build();
   }
 
@@ -190,11 +188,10 @@ public class UcSettingsServiceImpl implements UcSettingsService {
     attributes.setStartMonth(startMonth);
   }
 
-  private DbUcSettings prepareSave(DbUcSettings request, UserInfo userInfo) {
+  private DbUcSettings prepareSave(DbUcSettings request, String userId) {
     return request.toBuilder()
       .createdDate(OffsetDateTime.now())
-      .createdByUserId(toUUID(userInfo.getUserId()))
-      .createdByUserName(userInfo.getUserName())
+      .createdByUserId(toUUID(userId))
       .build();
   }
 

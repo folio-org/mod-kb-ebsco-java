@@ -39,7 +39,7 @@
 
     <rmb.version>35.3.0</rmb.version>
     <folio-di-support.version>2.3.0-SNAPSHOT</folio-di-support.version>
-    <folio-service-tools.version>4.2.0-SNAPSHOT</folio-service-tools.version>
+    <folio-service-tools.version>5.0.0-SNAPSHOT</folio-service-tools.version>
     <folio-holdingsiq-client.version>3.3.0-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.10.0-SNAPSHOT</folio-liquibase-util.version>
     <mod-configuration-client.version>5.12.0-SNAPSHOT</mod-configuration-client.version>
@@ -219,6 +219,12 @@
       <groupId>org.folio</groupId>
       <artifactId>folio-service-tools-dev</artifactId>
       <version>${folio-service-tools.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-slf4j2-impl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
@@ -305,6 +311,10 @@
         <exclusion>
           <groupId>org.junit.platform</groupId>
           <artifactId>junit-platform-commons</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-slf4j2-impl</artifactId>
         </exclusion>
       </exclusions>
       <scope>test</scope>
@@ -440,10 +450,7 @@
                   <name>jsonschema2pojo.config.useCommonsLang3</name>
                   <value>true</value>
                 </property>
-                <property>
-                  <name>log4j.configurationFile</name>
-                  <value>${project.baseUri}src/main/resources/log4j2.xml</value>
-                </property>
+
               </properties>
             </configuration>
           </execution>
@@ -647,6 +654,7 @@
                 <filter>
                   <artifact>*:*</artifact>
                   <excludes>
+                    <exclude>**/log4j.properties</exclude>
                     <exclude>**/Log4j2Plugins.dat</exclude>
                   </excludes>
                 </filter>
@@ -674,11 +682,6 @@
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
-          <systemPropertyVariables>
-            <vertx.logger-delegate-factory-class-name>
-              io.vertx.core.logging.Log4j2LogDelegateFactory
-            </vertx.logger-delegate-factory-class-name>
-          </systemPropertyVariables>
           <excludes>
             **/org/folio/rest/impl/integrationsuite/*.java
           </excludes>

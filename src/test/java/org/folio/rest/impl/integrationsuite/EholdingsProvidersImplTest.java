@@ -54,7 +54,7 @@ import static org.folio.util.AccessTypesTestUtil.insertAccessTypes;
 import static org.folio.util.AccessTypesTestUtil.testData;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.getDefaultKbConfiguration;
 import static org.folio.util.KbTestUtil.setupDefaultKbConfiguration;
@@ -165,7 +165,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     RestAssured.given()
       .spec(getRequestSpecification())
-      .header(STUB_TOKEN_HEADER)
+      .header(STUB_USER_ID_HEADER)
       .when()
       .get(PROVIDER_PATH + "?q=e&page=1&sort=name")
       .then()
@@ -191,7 +191,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     ProviderCollection providerCollection =
       getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2,
-        STUB_TOKEN_HEADER)
+        STUB_USER_ID_HEADER)
         .as(ProviderCollection.class);
 
     List<Providers> providers = providerCollection.getData();
@@ -212,7 +212,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     PackagesTestUtil.setUpPackages(vertx, configuration.getId());
 
     String endpoint = PROVIDER_PACKAGES + "?filter[tags]=" + STUB_TAG_VALUE;
-    PackageCollection packageCollection = getWithOk(endpoint, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    PackageCollection packageCollection = getWithOk(endpoint, STUB_USER_ID_HEADER).as(PackageCollection.class);
 
     List<PackageCollectionItem> packages = packageCollection.getData();
 
@@ -235,7 +235,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
     PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE
-      + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_TOKEN_HEADER).as(PackageCollection.class);
+      + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_USER_ID_HEADER).as(PackageCollection.class);
     List<PackageCollectionItem> packages = packageCollection.getData();
 
     assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
@@ -257,7 +257,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     String resourcePath = PROVIDER_PACKAGES + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
       + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
-    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(PackageCollection.class);
 
     List<PackageCollectionItem> packages = packageCollection.getData();
 
@@ -275,7 +275,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
 
     String resourcePath = PROVIDER_PACKAGES + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
-    PackageCollection packageCollection = getWithOk(resourcePath, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    PackageCollection packageCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(PackageCollection.class);
     List<PackageCollectionItem> packages = packageCollection.getData();
 
     assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
@@ -294,7 +294,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     mockGet(new RegexPattern(".*vendors/.*"), SC_INTERNAL_SERVER_ERROR);
 
     ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?filter[tags]=" + STUB_TAG_VALUE,
-      STUB_TOKEN_HEADER).as(ProviderCollection.class);
+      STUB_USER_ID_HEADER).as(ProviderCollection.class);
     List<Providers> providers = providerCollection.getData();
 
     assertEquals(2, (int) providerCollection.getMeta().getTotalResults());
@@ -310,7 +310,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     setUpTaggedProviders();
 
     ProviderCollection providerCollection = getWithOk(PROVIDER_PATH + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE,
-      STUB_TOKEN_HEADER).as(ProviderCollection.class);
+      STUB_USER_ID_HEADER).as(ProviderCollection.class);
     List<Providers> providers = providerCollection.getData();
 
     assertEquals(3, (int) providerCollection.getMeta().getTotalResults());
@@ -334,7 +334,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(STUB_PACKAGE_RESPONSE))));
 
-    String actualProvider = getWithOk(PROVIDER_BY_ID + "?include=packages", STUB_TOKEN_HEADER).asString();
+    String actualProvider = getWithOk(PROVIDER_BY_ID + "?include=packages", STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), actualProvider, false);
   }
@@ -347,7 +347,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withStatus(SC_INTERNAL_SERVER_ERROR)));
 
     final JsonapiError error = getWithStatus(PROVIDER_PATH + "?q=e&count=1", SC_INTERNAL_SERVER_ERROR,
-      STUB_TOKEN_HEADER).as(JsonapiError.class);
+      STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertThat(error.getErrors().get(0).getTitle(), notNullValue());
   }
@@ -367,7 +367,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
 
-    String provider = getWithOk(PROVIDER_BY_ID, STUB_TOKEN_HEADER).asString();
+    String provider = getWithOk(PROVIDER_BY_ID, STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
   }
@@ -380,7 +380,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     stubFor(get(PROVIDER_URL_PATTERN).willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile))));
 
-    Provider provider = getWithOk(PROVIDER_BY_ID, STUB_TOKEN_HEADER).as(Provider.class);
+    Provider provider = getWithOk(PROVIDER_BY_ID, STUB_USER_ID_HEADER).as(Provider.class);
 
     assertTrue(provider.getData().getAttributes().getTags().getTagList().contains(STUB_TAG_VALUE));
   }
@@ -393,7 +393,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
           .withStatus(SC_NOT_FOUND)));
 
     JsonapiError error =
-      getWithStatus(PROVIDER_PATH + "/191919", SC_NOT_FOUND, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      getWithStatus(PROVIDER_PATH + "/191919", SC_NOT_FOUND, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Provider not found");
   }
@@ -416,7 +416,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       put(PROVIDER_URL_PATTERN)
         .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
 
-    String provider = putWithOk(PROVIDER_BY_ID, readFile(PUT_PROVIDER), STUB_TOKEN_HEADER).asString();
+    String provider = putWithOk(PROVIDER_BY_ID, readFile(PUT_PROVIDER), STUB_USER_ID_HEADER).asString();
 
     JSONAssert.assertEquals(readFile(expectedProviderFile), provider, false);
 
@@ -449,7 +449,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       PackageTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
     JsonapiError error = putWithStatus(PROVIDER_TAGS_PATH, mapper.writeValueAsString(tags),
-      SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name must not be empty");
@@ -464,7 +464,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder().withBody(readFile(stubResponseFile)).withStatus(SC_BAD_REQUEST)));
 
     JsonapiError error = putWithStatus(PROVIDER_BY_ID, readFile(PUT_PROVIDER), SC_BAD_REQUEST,
-      STUB_TOKEN_HEADER).as(JsonapiError.class);
+      STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Provider does not allow token");
   }
@@ -480,7 +480,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     providerToBeUpdated.getData().getAttributes().setProviderToken(providerToken);
 
     JsonapiError error = putWithStatus(PROVIDER_BY_ID, mapper.writeValueAsString(providerToBeUpdated),
-      SC_UNPROCESSABLE_ENTITY, STUB_TOKEN_HEADER).as(JsonapiError.class);
+      SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
     assertErrorContainsDetail(error, "Value is too long (maximum is 500 characters)");
@@ -491,7 +491,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   public void shouldReturnProviderPackagesWhenValidId() throws IOException, URISyntaxException, JSONException {
     mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
 
-    String actual = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).asString();
+    String actual = getWithOk(PROVIDER_PACKAGES, STUB_USER_ID_HEADER).asString();
     String expected = readFile("responses/kb-ebsco/packages/expected-package-collection-with-one-element.json");
 
     JSONAssert.assertEquals(expected, actual, false);
@@ -503,7 +503,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), packageStubResponseFile);
 
-    PackageCollection packages = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).as(PackageCollection.class);
+    PackageCollection packages = getWithOk(PROVIDER_PACKAGES, STUB_USER_ID_HEADER).as(PackageCollection.class);
     assertThat(packages.getData(), empty());
     assertEquals(0, (int) packages.getMeta().getTotalResults());
   }
@@ -516,7 +516,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(PROVIDER_PACKAGES_RM_API_PATH), STUB_PACKAGE_RESPONSE);
 
-    String actual = getWithOk(PROVIDER_PACKAGES, STUB_TOKEN_HEADER).asString();
+    String actual = getWithOk(PROVIDER_PACKAGES, STUB_USER_ID_HEADER).asString();
     String expected = readFile(
       "responses/kb-ebsco/packages/expected-package-collection-with-one-element-with-tags.json");
 
@@ -567,7 +567,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     mockGet(new RegexPattern(rmapiInvalidProviderIdUrl), SC_NOT_FOUND);
 
-    JsonapiError error = getWithStatus("/eholdings/providers/191919/packages", SC_NOT_FOUND, STUB_TOKEN_HEADER)
+    JsonapiError error = getWithStatus("/eholdings/providers/191919/packages", SC_NOT_FOUND, STUB_USER_ID_HEADER)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Provider not found");
@@ -581,7 +581,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
         .withTagList(newTags));
     }
 
-    putWithOk(PROVIDER_TAGS_PATH, Json.encode(tags), STUB_TOKEN_HEADER).as(PackageTags.class);
+    putWithOk(PROVIDER_TAGS_PATH, Json.encode(tags), STUB_USER_ID_HEADER).as(PackageTags.class);
   }
 
   private void mockProviderWithName(String stubProviderId, String stubProviderName) {

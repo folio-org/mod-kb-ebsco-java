@@ -66,10 +66,10 @@ public class UcSettingsRepositoryImpl implements UcSettingsRepository {
       ucSettings.getPlatformType(),
       ucSettings.getCreatedDate(),
       ucSettings.getCreatedByUserId(),
-      ucSettings.getCreatedByUserName(),
+      ucSettings.getCreatedByUserName() == null ? "SYSTEM" : ucSettings.getCreatedByUserName(),
       ucSettings.getUpdatedDate(),
       ucSettings.getUpdatedByUserId(),
-      ucSettings.getUpdatedByUserName()
+      ucSettings.getUpdatedByUserName() == null ? "SYSTEM" : ucSettings.getUpdatedByUserName()
     );
 
     logInsertQueryInfoLevel(log, query, params);

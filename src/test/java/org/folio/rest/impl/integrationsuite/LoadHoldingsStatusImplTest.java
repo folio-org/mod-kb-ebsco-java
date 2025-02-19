@@ -24,7 +24,7 @@ import static org.folio.test.util.TestUtil.mockResponseList;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.HoldingsRetryStatusTestUtil.insertRetryStatus;
 import static org.folio.util.HoldingsStatusUtil.saveStatusNotStarted;
-import static org.folio.util.KbCredentialsTestUtil.STUB_TOKEN_HEADER;
+import static org.folio.util.KbCredentialsTestUtil.STUB_USER_ID_HEADER;
 import static org.folio.util.KbCredentialsTestUtil.saveKbCredentials;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.folio.util.KbTestUtil.interceptAndContinue;
@@ -102,7 +102,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void shouldReturnStatusNotStarted() {
     setupDefaultLoadKbConfiguration();
     final HoldingsLoadingStatus status =
-      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body().as(HoldingsLoadingStatus.class);
+      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_USER_ID_HEADER).body().as(HoldingsLoadingStatus.class);
     assertThat(status.getData().getAttributes().getStatus().getName(), equalTo(LoadStatusNameEnum.NOT_STARTED));
   }
 
@@ -127,12 +127,12 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     vertx.eventBus().addOutboundInterceptor(interceptor);
     interceptors.add(interceptor);
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     startedAsync.await(TIMEOUT);
 
     final HoldingsLoadingStatus status =
-      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body().as(HoldingsLoadingStatus.class);
+      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_USER_ID_HEADER).body().as(HoldingsLoadingStatus.class);
     assertThat(status.getData().getAttributes().getStatus().getDetail(),
       equalTo(LoadStatusNameDetailEnum.POPULATING_STAGING_AREA));
 
@@ -153,10 +153,10 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
 
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
     async.await(TIMEOUT);
     final HoldingsLoadingStatus status =
-      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body().as(HoldingsLoadingStatus.class);
+      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_USER_ID_HEADER).body().as(HoldingsLoadingStatus.class);
 
     assertThat(status.getData().getType(), equalTo(LoadStatusData.Type.STATUS));
     assertThat(status.getData().getAttributes().getTotalCount(), equalTo(2));
@@ -173,18 +173,18 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
     Async finishedAsync = context.async(SNAPSHOT_RETRIES);
     handleStatusChange(FAILED, holdingsStatusRepository, o -> finishedAsync.countDown());
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_TOKEN_HEADER);
+    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
     finishedAsync.await(TIMEOUT);
 
     final HoldingsLoadingStatus status =
-      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_TOKEN_HEADER).body().as(HoldingsLoadingStatus.class);
+      getWithOk(STUB_HOLDINGS_LOAD_STATUS_BY_ID_URL, STUB_USER_ID_HEADER).body().as(HoldingsLoadingStatus.class);
     assertThat(status.getData().getAttributes().getStatus().getName(), equalTo(FAILED));
   }
 
   @Test
   public void shouldReturn404WhenNoKbCredentialsFound() {
     final String url = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, UUID.randomUUID());
-    final JsonapiError error = getWithStatus(url, SC_NOT_FOUND, JOHN_TOKEN_HEADER).as(JsonapiError.class);
+    final JsonapiError error = getWithStatus(url, SC_NOT_FOUND, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertThat(error.getErrors().get(0).getTitle(), containsString("not exist"));
   }
 
@@ -192,7 +192,7 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void shouldReturn401WhenNoHeader() {
     final String url = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, UUID.randomUUID());
     final JsonapiError error = getWithStatus(url, SC_UNAUTHORIZED).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid token"));
+    assertThat(error.getErrors().get(0).getTitle(), containsString("X-Okapi-User-Id header is required"));
   }
 
   public void setupDefaultLoadKbConfiguration() {
