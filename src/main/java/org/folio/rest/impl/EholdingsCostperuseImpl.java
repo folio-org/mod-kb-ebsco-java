@@ -20,6 +20,7 @@ import org.folio.service.uc.UcCostPerUseService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsCostperuseImpl
   implements EholdingsResourcesResourceIdCostperuse, EholdingsTitlesTitleIdCostperuse,
   EholdingsPackagesPackageIdCostperuse,

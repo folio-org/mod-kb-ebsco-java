@@ -19,6 +19,7 @@ import org.folio.service.rootproxies.RootProxyService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsRootProxyImpl implements EholdingsRootProxy, EholdingsKbCredentialsIdRootProxy {
 
   @Autowired

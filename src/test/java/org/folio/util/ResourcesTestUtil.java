@@ -22,9 +22,10 @@ import org.folio.repository.resources.DbResource;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
 
-public class ResourcesTestUtil {
+public final class ResourcesTestUtil {
 
-  public ResourcesTestUtil() {
+  private ResourcesTestUtil() {
+    throw new UnsupportedOperationException("Cannot instantiate utility class.");
   }
 
   public static List<DbResource> getResources(Vertx vertx) {

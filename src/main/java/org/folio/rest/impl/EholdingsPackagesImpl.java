@@ -36,7 +36,6 @@ import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
-import org.folio.holdingsiq.service.validator.PackageParametersValidator;
 import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
@@ -87,6 +86,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private static final String PACKAGE_NOT_FOUND_MESSAGE = "Package not found";
@@ -100,8 +100,6 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private PackageRequestConverter converter;
   @Autowired
   private Converter<PackagePostRequest, PackagePost> packagePostRequestConverter;
-  @Autowired
-  private PackageParametersValidator packageParametersValidator;
   @Autowired
   private PackagePutBodyValidator packagePutBodyValidator;
   @Autowired
@@ -477,7 +475,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   }
 
   private String getResourceId(TitleResult titleResult) {
-    CustomerResources resource = titleResult.getTitle().getCustomerResourcesList().get(0);
+    CustomerResources resource = titleResult.getTitle().getCustomerResourcesList().getFirst();
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 

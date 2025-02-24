@@ -11,14 +11,17 @@ import java.util.Locale;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
 import org.folio.service.locale.LocaleSettings;
 import org.folio.service.uc.export.TitleExportModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PackageTitlesCostPerUseCollectionToExportConverter {
 
-  @Autowired
-  private PackageTitleCostPerUseConverter resourceCostPerUseExportItemConverter;
+  private final PackageTitleCostPerUseConverter resourceCostPerUseExportItemConverter;
+
+  public PackageTitlesCostPerUseCollectionToExportConverter(
+    PackageTitleCostPerUseConverter resourceCostPerUseExportItemConverter) {
+    this.resourceCostPerUseExportItemConverter = resourceCostPerUseExportItemConverter;
+  }
 
   public List<TitleExportModel> convert(ResourceCostPerUseCollection resourceCostPerUseCollection, String platform,
                                         String year, LocaleSettings localeSettings) {

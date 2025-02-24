@@ -12,7 +12,6 @@ import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.RootProxy;
 import org.folio.rest.jaxrs.model.RootProxyPutRequest;
 import org.folio.service.kbcredentials.KbCredentialsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -20,17 +19,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class RootProxyServiceImpl implements RootProxyService {
 
-  @Autowired
-  @Qualifier("nonSecuredCredentialsService")
-  private KbCredentialsService credentialsService;
-  @Autowired
-  private Converter<KbCredentials, Configuration> configurationConverter;
-  @Autowired
-  private Converter<RootProxyCustomLabels, RootProxy> rootProxyConverter;
-  @Autowired
-  private RootProxyPutConverter putRootProxyConverter;
-  @Autowired
-  private Vertx vertx;
+  private final KbCredentialsService credentialsService;
+  private final Converter<KbCredentials, Configuration> configurationConverter;
+  private final Converter<RootProxyCustomLabels, RootProxy> rootProxyConverter;
+  private final RootProxyPutConverter putRootProxyConverter;
+  private final Vertx vertx;
+
+  public RootProxyServiceImpl(@Qualifier("nonSecuredCredentialsService") KbCredentialsService credentialsService,
+                              Converter<KbCredentials, Configuration> configurationConverter,
+                              Converter<RootProxyCustomLabels, RootProxy> rootProxyConverter,
+                              RootProxyPutConverter putRootProxyConverter, Vertx vertx) {
+    this.credentialsService = credentialsService;
+    this.configurationConverter = configurationConverter;
+    this.rootProxyConverter = rootProxyConverter;
+    this.putRootProxyConverter = putRootProxyConverter;
+    this.vertx = vertx;
+  }
 
   @Override
   public CompletableFuture<RootProxy> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders) {

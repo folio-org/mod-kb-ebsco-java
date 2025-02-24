@@ -2,7 +2,9 @@ package org.folio.rest.converter.titles;
 
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.holdingsiq.model.Subject;
@@ -15,7 +17,6 @@ import org.folio.rest.jaxrs.model.TitleAttributes;
 import org.folio.rest.jaxrs.model.TitleCollectionItem;
 import org.folio.rest.jaxrs.model.TitleCollectionItemDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -28,14 +29,22 @@ public final class TitleCollectionItemConverter {
   @Component
   public static class FromHoldingsTitle implements Converter<Title, TitleCollectionItem> {
 
-    @Autowired
-    private Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
-    @Autowired
-    private Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
-    @Autowired
-    private Converter<List<Contributor>, List<Contributors>> contributorsConverter;
-    @Autowired
-    private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
+    private final Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
+    private final Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
+    private final Converter<List<Contributor>, List<Contributors>> contributorsConverter;
+    private final Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>>
+      alternateTitleConverter;
+
+    public FromHoldingsTitle(
+      Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter,
+      Converter<List<Subject>, List<TitleSubject>> subjectsConverter,
+      Converter<List<Contributor>, List<Contributors>> contributorsConverter,
+      Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter) {
+      this.identifiersConverter = identifiersConverter;
+      this.subjectsConverter = subjectsConverter;
+      this.contributorsConverter = contributorsConverter;
+      this.alternateTitleConverter = alternateTitleConverter;
+    }
 
     @Override
     public TitleCollectionItem convert(@NonNull Title title) {
@@ -51,7 +60,8 @@ public final class TitleCollectionItemConverter {
           .withIdentifiers(identifiersConverter.convert(title.getIdentifiersList()))
           .withContributors(contributorsConverter.convert(title.getContributorsList()))
           .withRelationships(createEmptyResourcesRelationships())
-          .withAlternateTitles(alternateTitleConverter.convert(title.getAlternateTitleList()))
+          .withAlternateTitles(alternateTitleConverter.convert(
+            Objects.requireNonNullElse(title.getAlternateTitleList(), Collections.emptyList())))
         );
     }
   }

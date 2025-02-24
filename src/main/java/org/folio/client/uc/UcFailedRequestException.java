@@ -1,9 +1,11 @@
 package org.folio.client.uc;
 
 import io.vertx.core.json.JsonObject;
+import java.io.Serial;
 
 public class UcFailedRequestException extends RuntimeException {
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   private final int statusCode;

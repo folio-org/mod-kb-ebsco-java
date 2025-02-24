@@ -10,7 +10,6 @@ import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Comparator;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -32,10 +30,11 @@ import org.folio.repository.holdings.LoadStatus;
 import org.folio.repository.holdings.ReportStatus;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Log4j2
-@Component("TransactionLoadServiceFacade")
+@Component("transactionLoadServiceFacade")
 public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
 
   private static final int MAX_SIZE = 4000;
@@ -70,7 +69,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
 
     return transactionExists(message.getPreviousTransactionId(), loadingService)
       .thenCompose(previousTransactionExists -> {
-        if (!previousTransactionExists) {
+        if (Boolean.FALSE.equals(previousTransactionExists)) {
           log.debug("Previous transaction does not exist, attempts to load current transaction & save");
           return loadWithPagination(message.getTotalPages(),
             page -> loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
@@ -112,7 +111,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
         return CompletableFuture.completedFuture(createNoneStatus());
       }
       List<HoldingsDownloadTransaction> sortedTransactions = sortByDate(transactions);
-      HoldingsDownloadTransaction lastTransaction = sortedTransactions.get(sortedTransactions.size() - 1);
+      HoldingsDownloadTransaction lastTransaction = sortedTransactions.getLast();
       return getLoadingStatus(loadingService, lastTransaction.getTransactionId());
     });
   }
@@ -137,7 +136,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
         .anyMatch(transaction -> transaction.getTransactionId().equals(transactionId)));
   }
 
-  @NotNull
+  @NonNull
   private CompletionStage<Void> sendDeltaReportCreatedMessage(LoadHoldingsMessage message, DeltaReportStatus status) {
     Promise<Void> promise = Promise.promise();
     int totalCount = Integer.parseInt(status.getTotalCount());
@@ -176,6 +175,6 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
       .sorted(Comparator.comparing(
         transaction -> LocalDateTime.parse(transaction.getCreationDate(), HOLDINGS_STATUS_TIME_FORMATTER)
           .atZone(ZoneOffset.UTC)))
-      .collect(Collectors.toList());
+      .toList();
   }
 }

@@ -41,7 +41,6 @@ import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.DbMetadataUtil;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -55,10 +54,13 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
   private static final String CREDENTIALS_DELETE_ALLOWED_DETAILS =
     "Credentials have related records and can't be deleted";
 
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public KbCredentialsRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<Collection<DbKbCredentials>> findAll(String tenant) {
@@ -149,8 +151,8 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
   private Optional<DbKbCredentials> mapSingleCredentials(RowSet<Row> resultSet) {
     return isEmpty(resultSet)
-      ? Optional.empty()
-      : Optional.of(mapFirstItem(resultSet, this::mapCredentials));
+           ? Optional.empty()
+           : Optional.of(mapFirstItem(resultSet, this::mapCredentials));
   }
 
   private DbKbCredentials mapCredentials(Row row) {

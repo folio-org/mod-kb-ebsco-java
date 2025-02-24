@@ -110,7 +110,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTitlesTest extends WireMockTestBase {
 
-  public static final String EHOLDINGS_TITLES_PATH = "eholdings/titles";
+  private static final String EHOLDINGS_TITLES_PATH = "eholdings/titles";
 
   private KbCredentials configuration;
 
@@ -235,14 +235,14 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]="
       + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
     TitleCollection response = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
-    assertEquals(STUB_MANAGED_TITLE_ID_2, response.getData().get(0).getId());
+    assertEquals(STUB_MANAGED_TITLE_ID_2, response.getData().getFirst().getId());
   }
 
   @Test
   public void shouldReturnTitlesOnSearchByAccessTypes() throws IOException, URISyntaxException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.getFirst().getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.getFirst().getId(), vertx);
 
     mockGetTitles();
 
@@ -260,8 +260,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturnTitlesWithResourcesOnSearchByAccessTypes() throws IOException, URISyntaxException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.getFirst().getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.getFirst().getId(), vertx);
 
     mockGetTitles();
 
@@ -489,8 +489,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     postTitle(Collections.singletonList(STUB_TAG_VALUE));
     List<DbTitle> titles = TitlesTestUtil.getTitles(vertx);
     assertEquals(1, titles.size());
-    assertEquals(STUB_TITLE_ID, String.valueOf(titles.get(0).getId()));
-    assertEquals("Test Title", titles.get(0).getName());
+    assertEquals(STUB_TITLE_ID, String.valueOf(titles.getFirst().getId()));
+    assertEquals("Test Title", titles.getFirst().getName());
   }
 
   @Test
@@ -498,13 +498,28 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String errorResponse = "responses/rmapi/packages/post-package-400-error-response.json";
     String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" : "
-        + "\"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : "
-        + "\"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" "
-        + ": true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" "
-        + ": 2,\n    \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n  "
-        + "  \"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    "
-        + "\"contributor\" : \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n}",
+      """
+        {
+          "titleName": "Test Title",
+          "edition": "Test edition",
+          "publisherName": "Test publisher",
+          "pubType": "thesisdissertation",
+          "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+          "isPeerReviewed": true,
+          "identifiersList": [ {
+            "id": "1111-2222-3333",
+            "subtype": 2,
+            "type": 0
+          } ],
+          "contributorsList": [ {
+            "type": "author",
+            "contributor": "smith, john"
+          }, {
+            "type": "illustrator",
+            "contributor": "smith, ralph"
+          } ],
+          "peerReviewed": true
+        }""",
       true, true);
 
     stubFor(
@@ -571,8 +586,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     List<DbTitle> titles = TitlesTestUtil.getTitles(vertx);
     assertEquals(1, titles.size());
-    assertEqualsLong(titles.get(0).getId());
-    assertEquals("sd-test-java-again", titles.get(0).getName());
+    assertEqualsLong(titles.getFirst().getId());
+    assertEquals("sd-test-java-again", titles.getFirst().getName());
   }
 
   @Test
@@ -604,8 +619,8 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     List<DbTitle> titles = TitlesTestUtil.getTitles(vertx);
     assertEquals(1, titles.size());
-    assertEqualsLong(titles.get(0).getId());
-    assertEquals(newName, titles.get(0).getName());
+    assertEqualsLong(titles.getFirst().getId());
+    assertEquals(newName, titles.getFirst().getName());
   }
 
   @Test
@@ -614,7 +629,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
       readFile("requests/kb-ebsco/title/put-title-null-name.json"), SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(Errors.class);
 
-    assertThat(error.getErrors().get(0).getMessage(), containsString("must not be null"));
+    assertThat(error.getErrors().getFirst().getMessage(), containsString("must not be null"));
   }
 
   private String putTitle(List<String> tags) throws IOException, URISyntaxException {
@@ -650,14 +665,33 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
 
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      "{\n  \"titleName\" : \"Test Title\",\n  \"edition\" : \"Test edition\",\n  \"publisherName\" :"
-        + " \"Test publisher\",\n  \"pubType\" : \"thesisdissertation\",\n  \"description\" : "
-        + "\"Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\",\n  \"isPeerReviewed\" : "
-        + "true,\n  \"identifiersList\" : [ {\n    \"id\" : \"1111-2222-3333\",\n    \"subtype\" : 2,\n "
-        + "   \"type\" : 0\n  } ],\n  \"contributorsList\" : [ {\n    \"type\" : \"author\",\n    "
-        + "\"contributor\" : \"smith, john\"\n  }, {\n    \"type\" : \"illustrator\",\n    \"contributor\" :"
-        + " \"smith, ralph\"\n  } ],\n  \"peerReviewed\" : true\n} \"userDefinedField2\": \"test 2\","
-        + "\n\"userDefinedField3\": \"\",\n\"userDefinedField4\" : null,\n\"userDefinedField5\": \"test 5\"",
+      """
+        {
+          "titleName": "Test Title",
+          "edition": "Test edition",
+          "publisherName": "Test publisher",
+          "pubType": "thesisdissertation",
+          "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+          "isPeerReviewed": true,
+          "identifiersList": [ {
+            "id": "1111-2222-3333",
+            "subtype": 2,
+            "type": 0
+          } ],
+          "contributorsList": [ {
+            "type": "author",
+            "contributor": "smith, john"
+          }, {
+            "type": "illustrator",
+            "contributor": "smith, ralph"
+          } ],
+          "peerReviewed": true
+        }
+        "userDefinedField2": "test 2",
+        "userDefinedField3": "",
+        "userDefinedField4": null,
+        "userDefinedField5": "test 5"
+        """,
       true, true);
 
     stubFor(

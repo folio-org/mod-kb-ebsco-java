@@ -1,18 +1,17 @@
 package org.folio.rest.converter.titles;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.folio.rest.jaxrs.model.AlternateTitle;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AlternateTitleConverter
   implements Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> {
   @Override
-  public List<AlternateTitle> convert(List<org.folio.holdingsiq.model.AlternateTitle> source) {
-    return source == null ? Collections.emptyList() : source.stream().map(this::convert).collect(Collectors.toList());
+  public List<AlternateTitle> convert(@NonNull List<org.folio.holdingsiq.model.AlternateTitle> source) {
+    return source.stream().map(this::convert).toList();
   }
 
   private AlternateTitle convert(org.folio.holdingsiq.model.AlternateTitle source) {

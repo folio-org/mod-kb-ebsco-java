@@ -8,7 +8,6 @@ import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.util.RestConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -16,8 +15,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProviderCollectionConverter implements Converter<Vendors, ProviderCollection> {
 
-  @Autowired
-  private ProvidersConverter providersConverter;
+  private final ProvidersConverter providersConverter;
+
+  public ProviderCollectionConverter(ProvidersConverter providersConverter) {
+    this.providersConverter = providersConverter;
+  }
 
   @Override
   public ProviderCollection convert(@NonNull Vendors vendors) {

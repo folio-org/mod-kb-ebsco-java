@@ -1,19 +1,19 @@
 package org.folio.repository.holdings;
 
-import jakarta.validation.constraints.NotNull;
 import org.folio.service.holdings.HoldingsStatus;
 import org.folio.service.holdings.message.ConfigurationMessage;
 import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
+import org.springframework.lang.NonNull;
 
 public final class HoldingsServiceMessagesFactory {
 
   private HoldingsServiceMessagesFactory() {
   }
 
-  @NotNull
+  @NonNull
   public static SnapshotFailedMessage getSnapshotFailedMessage(ConfigurationMessage message, Throwable throwable) {
     return new SnapshotFailedMessage(
       message.getConfiguration(),
@@ -22,7 +22,7 @@ public final class HoldingsServiceMessagesFactory {
       message.getTenantId());
   }
 
-  @NotNull
+  @NonNull
   public static SnapshotCreatedMessage getSnapshotCreatedMessage(ConfigurationMessage message, HoldingsStatus status,
                                                                  int requestCount) {
     return new SnapshotCreatedMessage(
@@ -34,7 +34,7 @@ public final class HoldingsServiceMessagesFactory {
       message.getTenantId());
   }
 
-  @NotNull
+  @NonNull
   public static LoadFailedMessage getLoadFailedMessage(LoadHoldingsMessage message, Throwable throwable) {
     return new LoadFailedMessage(
       message.getConfiguration(),
@@ -46,7 +46,7 @@ public final class HoldingsServiceMessagesFactory {
       message.getTotalPages());
   }
 
-  @NotNull
+  @NonNull
   public static LoadHoldingsMessage getLoadHoldingsMessage(SnapshotCreatedMessage message,
                                                            String previousTransactionId) {
     return new LoadHoldingsMessage(
@@ -59,7 +59,7 @@ public final class HoldingsServiceMessagesFactory {
       previousTransactionId);
   }
 
-  @NotNull
+  @NonNull
   public static LoadHoldingsMessage getLoadHoldingsMessage(LoadFailedMessage message, String previousTransactionId) {
     return new LoadHoldingsMessage(
       message.getConfiguration(),

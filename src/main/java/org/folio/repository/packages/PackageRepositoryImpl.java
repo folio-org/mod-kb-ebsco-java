@@ -36,16 +36,18 @@ import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.IdParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class PackageRepositoryImpl implements PackageRepository {
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public PackageRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<Void> save(DbPackage packageData, String tenantId) {

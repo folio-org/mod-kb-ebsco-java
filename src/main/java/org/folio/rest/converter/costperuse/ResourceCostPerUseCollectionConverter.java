@@ -11,14 +11,12 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTo
 import static org.folio.rest.util.IdParser.getResourceId;
 import static org.folio.rest.util.IdParser.resourceIdToString;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.folio.client.uc.model.UcCostAnalysis;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
-import org.folio.rest.jaxrs.model.PlatformType;
 import org.folio.rest.jaxrs.model.PlatformUsage;
 import org.folio.rest.jaxrs.model.PublicationType;
 import org.folio.rest.jaxrs.model.ResourceCostAnalysisAttributes;
@@ -27,6 +25,7 @@ import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceCostPerUseCollectionResult;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,7 +33,7 @@ public class ResourceCostPerUseCollectionConverter
   implements Converter<ResourceCostPerUseCollectionResult, ResourceCostPerUseCollection> {
 
   @Override
-  public ResourceCostPerUseCollection convert(@NotNull ResourceCostPerUseCollectionResult source) {
+  public ResourceCostPerUseCollection convert(@NonNull ResourceCostPerUseCollectionResult source) {
     return new ResourceCostPerUseCollection()
       .withData(convertItems(source))
       .withParameters(convertParameters(source.getConfiguration()))
@@ -53,13 +52,11 @@ public class ResourceCostPerUseCollectionConverter
     PlatformUsage totalUsage;
     var platformType = source.getPlatformType();
     var allPlatformUsages = getAllPlatformUsages(source.getPackageCostPerUse().getUsage());
-    if (PlatformType.NON_PUBLISHER == platformType) {
-      totalUsage = getTotalUsage(getNonPublisherUsages(allPlatformUsages));
-    } else if (PlatformType.PUBLISHER == platformType) {
-      totalUsage = getTotalUsage(getPublisherUsages(allPlatformUsages));
-    } else {
-      totalUsage = getTotalUsage(allPlatformUsages);
-    }
+    totalUsage = switch (platformType) {
+      case NON_PUBLISHER -> getTotalUsage(getNonPublisherUsages(allPlatformUsages));
+      case PUBLISHER -> getTotalUsage(getPublisherUsages(allPlatformUsages));
+      case null, default -> getTotalUsage(allPlatformUsages);
+    };
     return Optional.ofNullable(totalUsage).map(PlatformUsage::getTotal).orElse(INTEGER_ZERO);
   }
 

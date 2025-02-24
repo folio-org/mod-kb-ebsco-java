@@ -15,7 +15,6 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.predicate.ErrorConverter;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
-import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +31,7 @@ import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.util.RequestHeadersUtil;
 import org.folio.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -196,7 +196,7 @@ public class UsersLookUpService {
     }
   }
 
-  @NotNull
+  @NonNull
   private String getIdsCql(List<UUID> ids) {
     var idsQueryValue = ids.stream()
       .map(UUID::toString)

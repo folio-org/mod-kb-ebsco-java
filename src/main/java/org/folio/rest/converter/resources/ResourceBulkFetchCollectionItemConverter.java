@@ -2,7 +2,6 @@ package org.folio.rest.converter.resources;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.Title;
@@ -10,19 +9,21 @@ import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchDataAttributes;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceBulkFetchCollectionItemConverter implements Converter<Title, ResourceBulkFetchCollectionItem> {
 
-  @Autowired
-  private Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
+  private final Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
+
+  public ResourceBulkFetchCollectionItemConverter(Converter<List<CoverageDates>, List<Coverage>> converter) {
+    this.coverageDatesConverter = converter;
+  }
 
   @Override
   public ResourceBulkFetchCollectionItem convert(Title title) {
-    CustomerResources resource = title.getCustomerResourcesList().get(0);
+    CustomerResources resource = title.getCustomerResourcesList().getFirst();
     return new ResourceBulkFetchCollectionItem()
       .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
       .withType(ResourceBulkFetchCollectionItem.Type.RESOURCES)
@@ -37,7 +38,7 @@ public class ResourceBulkFetchCollectionItemConverter implements Converter<Title
         .withCustomCoverages(coverageDatesConverter.convert(
           resource.getCustomCoverageList().stream()
             .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
-            .collect(Collectors.toList())))
+            .toList()))
         .withCoverageStatement(resource.getCoverageStatement())
       );
   }

@@ -64,6 +64,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";

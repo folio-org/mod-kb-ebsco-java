@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.DbTag;
@@ -33,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class EholdingsTagsImplTest extends WireMockTestBase {
 
@@ -194,7 +194,7 @@ public class EholdingsTagsImplTest extends WireMockTestBase {
   }
 
   private List<DbTag> filter(List<DbTag> tags, Predicate<DbTag> filter) {
-    List<DbTag> found = tags.stream().filter(filter).collect(Collectors.toList());
+    List<DbTag> found = tags.stream().filter(filter).toList();
 
     if (CollectionUtils.isEmpty(found)) {
       throw new IllegalArgumentException("Cannot find any tag matching the filter predicate");

@@ -7,11 +7,8 @@ import org.folio.holdingsiq.model.TitlePost;
 import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
-import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
-import org.folio.rmapi.result.ResourceResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -19,12 +16,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class TitlePostRequestConverter implements Converter<TitlePostRequest, TitlePost> {
 
-  @Autowired
-  private Converter<ResourceResult, List<Resource>> resourcesConverter;
-  @Autowired
-  private Converter<List<org.folio.rest.jaxrs.model.Identifier>, List<Identifier>> toIdentifiersConverter;
-  @Autowired
-  private Converter<List<Contributors>, List<Contributor>> toContributorsConverter;
+  private final Converter<List<org.folio.rest.jaxrs.model.Identifier>, List<Identifier>> toIdentifiersConverter;
+  private final Converter<List<Contributors>, List<Contributor>> toContributorsConverter;
+
+  public TitlePostRequestConverter(
+    Converter<List<org.folio.rest.jaxrs.model.Identifier>, List<Identifier>> toIdentifiersConverter,
+    Converter<List<Contributors>, List<Contributor>> toContributorsConverter) {
+    this.toIdentifiersConverter = toIdentifiersConverter;
+    this.toContributorsConverter = toContributorsConverter;
+  }
 
   @Override
   public TitlePost convert(@NonNull TitlePostRequest entity) {

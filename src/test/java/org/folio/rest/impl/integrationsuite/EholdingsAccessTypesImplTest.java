@@ -203,7 +203,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnAccessTypeOnGetByIdAndUser() {
     List<AccessType> accessTypes = testData(credentialsId);
-    AccessType expected = accessTypes.get(0);
+    AccessType expected = accessTypes.getFirst();
     String id = insertAccessType(expected, vertx);
 
     insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id, vertx);
@@ -221,7 +221,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnAccessTypeOnGetByIdAndCredentialsId() {
     List<AccessType> accessTypes = testData(credentialsId);
-    AccessType expected = accessTypes.get(0);
+    AccessType expected = accessTypes.getFirst();
     String id = insertAccessType(expected, vertx);
 
     insertAccessTypeMapping("11111111-1111", RecordType.RESOURCE, id, vertx);
@@ -267,7 +267,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn204OnDelete() {
     List<AccessType> accessTypes = testData(credentialsId);
-    String accessTypeIdToDelete = insertAccessType(accessTypes.get(0), vertx);
+    String accessTypeIdToDelete = insertAccessType(accessTypes.getFirst(), vertx);
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, accessTypeIdToDelete);
     deleteWithNoContent(resourcePath);
@@ -297,7 +297,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn204OnDeleteWhenAssignedToRecords() {
     List<AccessType> accessTypes = testData(credentialsId);
-    String id = insertAccessType(accessTypes.get(0), vertx);
+    String id = insertAccessType(accessTypes.getFirst(), vertx);
     insertAccessTypeMapping("11111111-1111", RecordType.PACKAGE, id, vertx);
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
@@ -344,10 +344,10 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn400WhenPostAccessTypeWithDuplicateName() throws IOException, URISyntaxException {
     List<AccessType> accessTypes = testData(credentialsId);
-    insertAccessType(accessTypes.get(0), vertx);
+    insertAccessType(accessTypes.getFirst(), vertx);
 
     AccessType accessType = stubbedAccessType();
-    stubbedAccessType().getAttributes().setName(accessTypes.get(0).getAttributes().getName());
+    stubbedAccessType().getAttributes().setName(accessTypes.getFirst().getAttributes().getName());
     String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));
 
     mockValidAccessTypesLimit();
@@ -408,7 +408,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     Errors errors = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN).as(Errors.class);
-    assertEquals("data.id", errors.getErrors().get(0).getParameters().get(0).getKey());
+    assertEquals("data.id", errors.getErrors().getFirst().getParameters().getFirst().getKey());
   }
 
   @Test
@@ -452,7 +452,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn204OnPutByCredentialsAndAccessTypeId() {
     List<AccessType> accessTypes = testData(credentialsId);
-    String id = insertAccessType(accessTypes.get(0), vertx);
+    String id = insertAccessType(accessTypes.getFirst(), vertx);
 
     AccessType accessType = stubbedAccessType();
     String updatedName = "UpdatedName";
@@ -464,7 +464,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, id);
     putWithNoContent(resourcePath, putBody, USER9_TOKEN, USER9_ID);
 
-    AccessType actual = getAccessTypes(vertx).get(0);
+    AccessType actual = getAccessTypes(vertx).getFirst();
     assertEquals(id, actual.getId());
     assertEquals(updatedName, actual.getAttributes().getName());
     assertEquals(updatedDescription, actual.getAttributes().getDescription());
@@ -490,7 +490,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID());
     Errors errors = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY, USER9_TOKEN).as(Errors.class);
 
-    assertThat(errors.getErrors().get(0).getParameters().get(0).getKey(), equalTo("data.id"));
+    assertThat(errors.getErrors().getFirst().getParameters().getFirst().getKey(), equalTo("data.id"));
   }
 
   private AccessType findAccessTypeWithId(AccessTypeCollection collection, String id) {

@@ -20,6 +20,7 @@ import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsAccessTypesImpl implements EholdingsAccessTypes, EholdingsKbCredentialsIdAccessTypes {
 
   @Autowired

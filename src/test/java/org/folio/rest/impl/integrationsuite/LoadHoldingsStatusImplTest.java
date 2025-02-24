@@ -66,6 +66,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class LoadHoldingsStatusImplTest extends WireMockTestBase {
 
@@ -185,14 +186,14 @@ public class LoadHoldingsStatusImplTest extends WireMockTestBase {
   public void shouldReturn404WhenNoKbCredentialsFound() {
     final String url = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, UUID.randomUUID());
     final JsonapiError error = getWithStatus(url, SC_NOT_FOUND, JOHN_USER_ID_HEADER).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("not exist"));
+    assertThat(error.getErrors().getFirst().getTitle(), containsString("not exist"));
   }
 
   @Test
   public void shouldReturn401WhenNoHeader() {
     final String url = String.format(HOLDINGS_LOAD_STATUS_BY_ID_URL, UUID.randomUUID());
     final JsonapiError error = getWithStatus(url, SC_UNAUTHORIZED).as(JsonapiError.class);
-    assertThat(error.getErrors().get(0).getTitle(), containsString("X-Okapi-User-Id header is required"));
+    assertThat(error.getErrors().getFirst().getTitle(), containsString("X-Okapi-User-Id header is required"));
   }
 
   public void setupDefaultLoadKbConfiguration() {

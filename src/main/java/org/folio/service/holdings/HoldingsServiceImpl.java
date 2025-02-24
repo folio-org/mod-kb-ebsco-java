@@ -352,7 +352,7 @@ public class HoldingsServiceImpl implements HoldingsService {
     }
     OffsetDateTime startDate = getZonedDateTime(started);
     return isInProgress(status)
-      && OffsetDateTime.now().minus(5, ChronoUnit.DAYS).isAfter(startDate);
+           && OffsetDateTime.now().minusDays(5).isAfter(startDate);
   }
 
   private boolean isInProgress(HoldingsLoadingStatus status) {

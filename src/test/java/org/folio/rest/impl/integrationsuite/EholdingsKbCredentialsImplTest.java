@@ -83,6 +83,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
@@ -108,17 +109,18 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     assertEquals(1, actual.getData().size());
     assertEquals(Integer.valueOf(1), actual.getMeta().getTotalResults());
-    assertNotNull(actual.getData().get(0));
-    assertNotNull(actual.getData().get(0).getId());
+    var credentials = actual.getData().getFirst();
+    assertNotNull(credentials);
+    assertNotNull(credentials.getId());
 
-    assertEquals(STUB_API_URL, actual.getData().get(0).getAttributes().getUrl());
-    assertEquals(STUB_CREDENTIALS_NAME, actual.getData().get(0).getAttributes().getName());
-    assertEquals(STUB_CUSTOMER_ID, actual.getData().get(0).getAttributes().getCustomerId());
-    assertEquals(StringUtils.repeat("*", 40), actual.getData().get(0).getAttributes().getApiKey());
+    assertEquals(STUB_API_URL, credentials.getAttributes().getUrl());
+    assertEquals(STUB_CREDENTIALS_NAME, credentials.getAttributes().getName());
+    assertEquals(STUB_CUSTOMER_ID, credentials.getAttributes().getCustomerId());
+    assertEquals(StringUtils.repeat("*", 40), credentials.getAttributes().getApiKey());
 
-    assertEquals(STUB_USERNAME, actual.getData().get(0).getMeta().getCreatedByUsername());
-    assertEquals(STUB_USER_ID, actual.getData().get(0).getMeta().getCreatedByUserId());
-    assertNotNull(actual.getData().get(0).getMeta().getCreatedDate());
+    assertEquals(STUB_USERNAME, credentials.getMeta().getCreatedByUsername());
+    assertEquals(STUB_USER_ID, credentials.getMeta().getCreatedByUserId());
+    assertNotNull(credentials.getMeta().getCreatedDate());
   }
 
   @Test
@@ -235,7 +237,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     KbCredentials actual = getWithOk(resourcePath).as(KbCredentials.class);
 
-    assertEquals(getKbCredentials(vertx).get(0), actual);
+    assertEquals(getKbCredentials(vertx).getFirst(), actual);
   }
 
   @Test
@@ -279,7 +281,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     patchWithNoContent(resourcePath, patchBody, STUB_USER_ID_HEADER);
 
-    KbCredentials actual = getKbCredentialsNonSecured(vertx).get(0);
+    KbCredentials actual = getKbCredentialsNonSecured(vertx).getFirst();
 
     assertNotNull(actual);
     assertNotNull(actual.getId());
@@ -441,7 +443,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     String resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
     putWithNoContent(resourcePath, putBody, STUB_USER_ID_HEADER);
 
-    KbCredentials actual = getKbCredentials(vertx).get(0);
+    KbCredentials actual = getKbCredentials(vertx).getFirst();
 
     assertNotNull(actual);
     assertNotNull(actual.getId());
@@ -628,7 +630,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     KbCredentials actual =
       getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_USER_ID_HEADER).as(KbCredentials.class);
-    assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
+    assertEquals(getKbCredentialsNonSecured(vertx).getFirst(), actual);
   }
 
   @Test
@@ -637,7 +639,7 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
 
     KbCredentials actual =
       getWithStatus(USER_KB_CREDENTIAL_ENDPOINT, SC_OK, STUB_USER_ID_HEADER).as(KbCredentials.class);
-    assertEquals(getKbCredentialsNonSecured(vertx).get(0), actual);
+    assertEquals(getKbCredentialsNonSecured(vertx).getFirst(), actual);
   }
 
   @Test
@@ -685,11 +687,12 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
     KbCredentialsCollection collection = securedCredentialsService.findAll(headers).join();
     assertThat(collection.getMeta().getTotalResults(), equalTo(1));
-    assertThat(collection.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
-    assertThat(collection.getData().get(0).getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
-    assertThat(collection.getData().get(0).getAttributes().getApiKey(), containsString("*"));
-    assertThat(collection.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
-    assertThat(collection.getData().get(0).getAttributes().getUrl(), equalTo(STUB_API_URL));
+    var credentials = collection.getData().getFirst();
+    assertThat(credentials.getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
+    assertThat(credentials.getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
+    assertThat(credentials.getAttributes().getApiKey(), containsString("*"));
+    assertThat(credentials.getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
+    assertThat(credentials.getAttributes().getUrl(), equalTo(STUB_API_URL));
   }
 
   @Test
@@ -699,11 +702,12 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
     headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
     KbCredentialsCollection collection = nonSecuredCredentialsService.findAll(headers).join();
     assertThat(collection.getMeta().getTotalResults(), equalTo(1));
-    assertThat(collection.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
-    assertThat(collection.getData().get(0).getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
-    assertThat(collection.getData().get(0).getAttributes().getApiKey(), equalTo(STUB_API_KEY));
-    assertThat(collection.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
-    assertThat(collection.getData().get(0).getAttributes().getUrl(), equalTo(STUB_API_URL));
+    var credentials = collection.getData().getFirst();
+    assertThat(credentials.getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
+    assertThat(credentials.getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
+    assertThat(credentials.getAttributes().getApiKey(), equalTo(STUB_API_KEY));
+    assertThat(credentials.getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
+    assertThat(credentials.getAttributes().getUrl(), equalTo(STUB_API_URL));
   }
 
   private KbCredentials stubbedCredentials() {

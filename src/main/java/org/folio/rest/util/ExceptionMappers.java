@@ -301,7 +301,7 @@ public final class ExceptionMappers {
     return exception ->
       Response.status(SC_UNPROCESSABLE_ENTITY)
         .header(CONTENT_TYPE, JSON_API_TYPE)
-        .entity(ErrorUtil.createError(exception.getErrors().get(0).getMessage()))
+        .entity(ErrorUtil.createError(exception.getErrors().getFirst().getMessage()))
         .build();
   }
 

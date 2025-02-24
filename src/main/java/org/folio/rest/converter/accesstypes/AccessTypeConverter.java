@@ -5,12 +5,12 @@ import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
 import static org.folio.db.RowSetUtils.toUUID;
 
-import jakarta.validation.constraints.NotNull;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.AccessTypeDataAttributes;
 import org.folio.rest.jaxrs.model.Metadata;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class AccessTypeConverter {
@@ -23,7 +23,7 @@ public final class AccessTypeConverter {
   public static class FromDb implements Converter<DbAccessType, AccessType> {
 
     @Override
-    public AccessType convert(@NotNull DbAccessType source) {
+    public AccessType convert(@NonNull DbAccessType source) {
       return new AccessType()
         .withId(source.getId().toString())
         .withType(AccessType.Type.ACCESS_TYPES)
@@ -45,7 +45,7 @@ public final class AccessTypeConverter {
   public static class ToDb implements Converter<AccessType, DbAccessType> {
 
     @Override
-    public DbAccessType convert(@NotNull AccessType source) {
+    public DbAccessType convert(@NonNull AccessType source) {
       AccessTypeDataAttributes attributes = source.getAttributes();
       var builder = DbAccessType.builder()
         .id(toUUID(source.getId()))

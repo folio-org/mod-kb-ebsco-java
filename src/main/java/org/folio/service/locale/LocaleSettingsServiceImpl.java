@@ -6,7 +6,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import jakarta.validation.constraints.NotNull;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
@@ -17,6 +16,7 @@ import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.tools.utils.VertxUtils;
+import org.springframework.lang.NonNull;
 
 @Log4j2
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
@@ -31,7 +31,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     return future;
   }
 
-  @NotNull
+  @NonNull
   private BiConsumer<Optional<LocaleSettings>, Throwable> recovery(CompletableFuture<LocaleSettings> future) {
     return (localeSettings, throwable) -> {
       if (throwable != null || localeSettings.isEmpty()) {
@@ -71,7 +71,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     return future;
   }
 
-  @NotNull
+  @NonNull
   private ConfigurationsClient prepareConfigurationsClient(OkapiData okapiData, String tenantId) {
     var options = new WebClientOptions();
     options.setLogActivity(true);

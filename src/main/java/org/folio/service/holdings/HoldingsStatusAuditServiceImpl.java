@@ -6,20 +6,22 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import org.folio.repository.holdings.status.audit.HoldingsStatusAuditRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class HoldingsStatusAuditServiceImpl implements HoldingsStatusAuditService {
 
-  @Autowired
-  private HoldingsStatusAuditRepository repository;
+  private final HoldingsStatusAuditRepository repository;
   /**
    * Duration in milliseconds before records can be cleared from database.
    */
   @Value("${holdings.status.audit.expiration.period}")
   private long auditExpirationPeriod;
+
+  public HoldingsStatusAuditServiceImpl(HoldingsStatusAuditRepository repository) {
+    this.repository = repository;
+  }
 
   @Override
   public CompletableFuture<Void> clearExpiredRecords(String credentialsId, String tenantId) {

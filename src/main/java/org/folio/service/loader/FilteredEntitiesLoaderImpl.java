@@ -9,6 +9,7 @@ import static org.folio.rest.util.IdParser.getResourceIds;
 import static org.folio.rest.util.IdParser.getTitleIds;
 import static org.folio.rest.util.IdParser.resourceIdsToStrings;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -49,29 +50,35 @@ import org.folio.rmapi.result.ResourceCollectionResult;
 import org.folio.service.accesstypes.AccessTypeMappingsService;
 import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.holdings.HoldingsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
-  @Autowired
-  private AccessTypesService accessTypesService;
-  @Autowired
-  private AccessTypeMappingsService accessTypeMappingsService;
-  @Autowired
-  private HoldingsService holdingsService;
-  @Autowired
-  private TagRepository tagRepository;
-  @Autowired
-  private ProviderRepository providerRepository;
-  @Autowired
-  private PackageRepository packageRepository;
-  @Autowired
-  private ResourceRepository resourceRepository;
-  @Autowired
-  private TitlesRepository titlesRepository;
+  private final AccessTypesService accessTypesService;
+  private final AccessTypeMappingsService accessTypeMappingsService;
+  private final HoldingsService holdingsService;
+  private final TagRepository tagRepository;
+  private final ProviderRepository providerRepository;
+  private final PackageRepository packageRepository;
+  private final ResourceRepository resourceRepository;
+  private final TitlesRepository titlesRepository;
+
+  public FilteredEntitiesLoaderImpl(AccessTypesService accessTypesService,
+                                    AccessTypeMappingsService accessTypeMappingsService,
+                                    HoldingsService holdingsService, TagRepository tagRepository,
+                                    ProviderRepository providerRepository, PackageRepository packageRepository,
+                                    ResourceRepository resourceRepository, TitlesRepository titlesRepository) {
+    this.accessTypesService = accessTypesService;
+    this.accessTypeMappingsService = accessTypeMappingsService;
+    this.holdingsService = holdingsService;
+    this.tagRepository = tagRepository;
+    this.providerRepository = providerRepository;
+    this.packageRepository = packageRepository;
+    this.resourceRepository = resourceRepository;
+    this.titlesRepository = titlesRepository;
+  }
 
   @Override
   public CompletableFuture<Packages> fetchPackagesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
@@ -201,12 +208,12 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .map(title -> {
         var filteredCustomerResources = title.getCustomerResourcesList().stream()
           .filter(resource -> resourceIds.contains(IdParser.getResourceId(resource)))
-          .collect(Collectors.toList());
+          .collect(Collectors.toCollection(ArrayList::new));
         return title.toBuilder()
           .customerResourcesList(filteredCustomerResources)
           .build();
       })
-      .collect(Collectors.toList());
+      .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private ResourceCollectionResult toResourceCollectionResult(Titles titles, List<DbResource> resourcesResult,
@@ -260,14 +267,14 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .stream()
       .map(AccessType::getId)
       .map(RowSetUtils::toUUID)
-      .collect(Collectors.toList());
+      .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private List<PackageId> extractPackageIds(Collection<AccessTypeMapping> accessTypeMappings) {
     return accessTypeMappings.stream()
       .map(AccessTypeMapping::getRecordId)
       .map(IdParser::parsePackageId)
-      .collect(Collectors.toList());
+      .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private List<Long> extractTitleIds(Collection<AccessTypeMapping> accessTypeMappings) {
@@ -276,7 +283,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .map(IdParser::parseResourceId)
       .map(ResourceId::getTitleIdPart)
       .distinct()
-      .collect(Collectors.toList());
+      .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private List<Long> extractTitleIds(List<DbResource> dbResources) {
@@ -284,14 +291,14 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .map(DbResource::getId)
       .map(ResourceId::getTitleIdPart)
       .distinct()
-      .collect(Collectors.toList());
+      .collect(Collectors.toCollection(ArrayList::new));
   }
 
   private List<ResourceId> extractResourceIds(Collection<AccessTypeMapping> accessTypeMappings) {
     return accessTypeMappings.stream()
       .map(AccessTypeMapping::getRecordId)
       .map(IdParser::parseResourceId)
-      .collect(Collectors.toList());
+      .collect(Collectors.toCollection(ArrayList::new));
   }
 
 }

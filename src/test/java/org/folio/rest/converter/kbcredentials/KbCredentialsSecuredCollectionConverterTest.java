@@ -8,6 +8,7 @@ import static org.folio.util.KbCredentialsTestUtil.getCredentialsCollectionNoUrl
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.Collection;
 import org.folio.repository.kbcredentials.DbKbCredentials;
@@ -34,23 +35,27 @@ public class KbCredentialsSecuredCollectionConverterTest {
   public void shouldConvertKbCredentialsCollectionWithDefaultUrl() {
     Collection<DbKbCredentials> credentialsCollection = getCredentialsCollectionNoUrl();
     final KbCredentialsCollection kbCredentials = securedConverter.convert(credentialsCollection);
+    assertThat(kbCredentials, notNullValue());
     assertThat(kbCredentials.getMeta().getTotalResults(), equalTo(1));
-    assertThat(kbCredentials.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getApiKey(), containsString("*"));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getUrl(), equalTo(defaultUrl));
+    var credentials = kbCredentials.getData().getFirst();
+    assertThat(credentials.getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
+    assertThat(credentials.getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
+    assertThat(credentials.getAttributes().getApiKey(), containsString("*"));
+    assertThat(credentials.getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
+    assertThat(credentials.getAttributes().getUrl(), equalTo(defaultUrl));
   }
 
   @Test
   public void shouldConvertKbCredentialsCollection() {
     Collection<DbKbCredentials> credentialsCollection = getCredentialsCollection();
     final KbCredentialsCollection kbCredentials = securedConverter.convert(credentialsCollection);
+    assertThat(kbCredentials, notNullValue());
     assertThat(kbCredentials.getMeta().getTotalResults(), equalTo(1));
-    assertThat(kbCredentials.getData().get(0).getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getApiKey(), containsString("*"));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
-    assertThat(kbCredentials.getData().get(0).getAttributes().getUrl(), equalTo(STUB_API_URL));
+    var credentials = kbCredentials.getData().getFirst();
+    assertThat(credentials.getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
+    assertThat(credentials.getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
+    assertThat(credentials.getAttributes().getApiKey(), containsString("*"));
+    assertThat(credentials.getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
+    assertThat(credentials.getAttributes().getUrl(), equalTo(STUB_API_URL));
   }
 }

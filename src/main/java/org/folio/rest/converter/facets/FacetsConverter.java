@@ -6,15 +6,17 @@ import org.folio.holdingsiq.model.Facets;
 import org.folio.holdingsiq.model.PackageFacet;
 import org.folio.rest.jaxrs.model.FacetsDto;
 import org.folio.rest.jaxrs.model.PackageFacetDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
 public final class FacetsConverter implements Converter<Facets, FacetsDto> {
 
-  @Autowired
-  private Converter<PackageFacet, PackageFacetDto> packageFacetConverter;
+  private final Converter<PackageFacet, PackageFacetDto> packageFacetConverter;
+
+  public FacetsConverter(Converter<PackageFacet, PackageFacetDto> packageFacetConverter) {
+    this.packageFacetConverter = packageFacetConverter;
+  }
 
   @Override
   public FacetsDto convert(Facets facets) {

@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component("DefaultLoadServiceFacade")
+@Component("defaultLoadServiceFacade")
 public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   private final int loadPageSize;

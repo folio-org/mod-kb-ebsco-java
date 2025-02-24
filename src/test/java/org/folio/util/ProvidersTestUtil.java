@@ -20,9 +20,10 @@ import java.util.concurrent.CompletableFuture;
 import org.folio.repository.providers.DbProvider;
 import org.folio.rest.persist.PostgresClient;
 
-public class ProvidersTestUtil {
+public final class ProvidersTestUtil {
 
-  public ProvidersTestUtil() {
+  private ProvidersTestUtil() {
+    throw new UnsupportedOperationException("Do not instantiate");
   }
 
   public static List<DbProvider> getProviders(Vertx vertx) {

@@ -25,6 +25,7 @@ import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsUsageConsolidationImpl implements EholdingsKbCredentialsIdUc, EholdingsUc {
 
   @Autowired

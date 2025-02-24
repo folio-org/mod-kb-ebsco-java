@@ -11,7 +11,6 @@ import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -24,8 +23,11 @@ public final class ResourceCollectionConverters {
   @Component
   public static class FromTitles implements Converter<Titles, ResourceCollection> {
 
-    @Autowired
-    private Converter<Title, ResourceCollectionItem> converter;
+    private final Converter<Title, ResourceCollectionItem> converter;
+
+    public FromTitles(Converter<Title, ResourceCollectionItem> converter) {
+      this.converter = converter;
+    }
 
     @Override
     public ResourceCollection convert(@NonNull Titles titles) {
@@ -42,8 +44,11 @@ public final class ResourceCollectionConverters {
   @Component
   public static class FromTitleCollectionResult implements Converter<TitleCollectionResult, ResourceCollection> {
 
-    @Autowired
-    private Converter<TitleResult, ResourceCollectionItem> converter;
+    private final Converter<TitleResult, ResourceCollectionItem> converter;
+
+    public FromTitleCollectionResult(Converter<TitleResult, ResourceCollectionItem> converter) {
+      this.converter = converter;
+    }
 
     @Override
     public ResourceCollection convert(@NonNull TitleCollectionResult col) {

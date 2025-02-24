@@ -10,7 +10,6 @@ import org.folio.holdingsiq.service.impl.HoldingsIQServiceImpl;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.jaxrs.model.ProxyTypes;
 import org.folio.service.kbcredentials.KbCredentialsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -18,18 +17,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProxyTypesServiceImpl implements ProxyTypesService {
 
-  @Autowired
-  @Qualifier("nonSecuredCredentialsService")
-  private KbCredentialsService credentialsService;
+  private final KbCredentialsService credentialsService;
 
-  @Autowired
-  private Converter<KbCredentials, Configuration> configurationConverter;
+  private final Converter<KbCredentials, Configuration> configurationConverter;
 
-  @Autowired
-  private Converter<Proxies, ProxyTypes> proxyTypesConverter;
+  private final Converter<Proxies, ProxyTypes> proxyTypesConverter;
 
-  @Autowired
-  private Vertx vertx;
+  private final Vertx vertx;
+
+  public ProxyTypesServiceImpl(@Qualifier("nonSecuredCredentialsService") KbCredentialsService credentialsService,
+                               Converter<KbCredentials, Configuration> configurationConverter,
+                               Converter<Proxies, ProxyTypes> proxyTypesConverter, Vertx vertx) {
+    this.credentialsService = credentialsService;
+    this.configurationConverter = configurationConverter;
+    this.proxyTypesConverter = proxyTypesConverter;
+    this.vertx = vertx;
+  }
 
   @Override
   public CompletableFuture<ProxyTypes> findByCredentialsId(String credentialsId, Map<String, String> okapiHeaders) {

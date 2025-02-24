@@ -96,15 +96,14 @@ public class Filter {
       .offset((page - 1) * count)
       .count(count);
 
-    if (recordType == RecordType.PACKAGE) {
-      builder.recordIdPrefix(createRecordIdPrefix(providerId));
-    } else if (recordType == RecordType.RESOURCE) {
-      builder.recordIdPrefix(createRecordIdPrefix(packageId));
-    } else if (recordType == RecordType.TITLE) {
-      builder.recordType(RecordType.RESOURCE);
-      builder.recordIdPrefix("");
-    } else {
-      builder.recordIdPrefix("");
+    switch (recordType) {
+      case PACKAGE -> builder.recordIdPrefix(createRecordIdPrefix(providerId));
+      case RESOURCE -> builder.recordIdPrefix(createRecordIdPrefix(packageId));
+      case TITLE -> {
+        builder.recordType(RecordType.RESOURCE);
+        builder.recordIdPrefix("");
+      }
+      case null, default -> builder.recordIdPrefix("");
     }
 
     return builder.build();

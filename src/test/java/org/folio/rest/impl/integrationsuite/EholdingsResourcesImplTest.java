@@ -254,7 +254,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     JsonapiError error =
       getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_INTERNAL_SERVER_ERROR, STUB_USER_ID_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), notNullValue());
+    assertThat(error.getErrors().getFirst().getTitle(), notNullValue());
   }
 
   @Test
@@ -277,7 +277,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   @Test
   public void shouldCreateNewAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    String accessTypeId = accessTypes.get(0).getId();
+    String accessTypeId = accessTypes.getFirst().getId();
     String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
     String expectedResourceFile = "responses/kb-ebsco/resources/expected-resource-by-id-with-access-type.json";
 
@@ -294,14 +294,14 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDb.size());
-    assertEquals(accessTypeId, accessTypeMappingsInDb.get(0).getAccessTypeId().toString());
-    assertEquals(RESOURCE, accessTypeMappingsInDb.get(0).getRecordType());
+    assertEquals(accessTypeId, accessTypeMappingsInDb.getFirst().getAccessTypeId().toString());
+    assertEquals(RESOURCE, accessTypeMappingsInDb.getFirst().getRecordType());
   }
 
   @Test
   public void shouldDeleteAccessTypeMappingOnSuccessfulPut() throws IOException, URISyntaxException, JSONException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    String accessTypeId = accessTypes.get(0).getId();
+    String accessTypeId = accessTypes.getFirst().getId();
     insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypeId, vertx);
 
     String stubResponseFile = "responses/rmapi/resources/get-managed-resource-updated-response.json";
@@ -343,7 +343,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     assertEquals(1, error.getErrors().size());
     assertEquals(
       "must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
-      error.getErrors().get(0).getMessage());
+      error.getErrors().getFirst().getMessage());
   }
 
   @Test
@@ -409,8 +409,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     sendPutTags(tags);
     List<DbResource> resources = ResourcesTestUtil.getResources(vertx);
     assertEquals(1, resources.size());
-    assertEqualsResourceId(resources.get(0).getId());
-    assertEquals(STUB_VENDOR_NAME, resources.get(0).getName());
+    assertEqualsResourceId(resources.getFirst().getId());
+    assertEquals(STUB_VENDOR_NAME, resources.getFirst().getName());
   }
 
   @Test
@@ -505,7 +505,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
       postWithStatus("eholdings/resources", readFile(postStubRequest), SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), containsString("Invalid PackageId"));
+    assertThat(error.getErrors().getFirst().getTitle(), containsString("Invalid PackageId"));
   }
 
   @Test
@@ -527,7 +527,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldDeleteAccessTypeOnDeleteRequest() throws IOException, URISyntaxException {
-    String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).get(0).getId();
+    String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).getFirst().getId();
     insertAccessTypeMapping(STUB_CUSTOM_RESOURCE_ID, RecordType.RESOURCE, accessTypeId, vertx);
     EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
     deleteResource(putBodyPattern);
@@ -575,7 +575,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     final Errors error = postWithStatus(RESOURCES_BULK_FETCH, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(Errors.class);
-    assertThat(error.getErrors().get(0).getMessage(), equalTo("elements in list must match pattern"));
+    assertThat(error.getErrors().getFirst().getMessage(), equalTo("elements in list must match pattern"));
   }
 
   @Test
@@ -623,7 +623,7 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
     assertThat(bulkFetchCollection.getIncluded().size(), equalTo(0));
     assertThat(bulkFetchCollection.getMeta().getFailed().getResources().size(), equalTo(1));
-    assertThat(bulkFetchCollection.getMeta().getFailed().getResources().get(0), equalTo("19-3964-762169"));
+    assertThat(bulkFetchCollection.getMeta().getFailed().getResources().getFirst(), equalTo("19-3964-762169"));
   }
 
   private void mockPackageResources(String stubPackageResourcesFile) throws IOException, URISyntaxException {

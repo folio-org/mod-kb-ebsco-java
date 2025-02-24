@@ -42,17 +42,19 @@ import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepository {
 
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public AccessTypeMappingsRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<Optional<AccessTypeMapping>> findByRecord(String recordId, RecordType recordType,

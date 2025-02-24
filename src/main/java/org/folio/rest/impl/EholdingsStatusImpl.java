@@ -30,6 +30,7 @@ import org.folio.rest.validator.HeaderValidator;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsStatusImpl implements EholdingsStatus {
 
   @Autowired

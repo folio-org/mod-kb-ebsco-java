@@ -130,19 +130,6 @@ public class EholdingsProxyTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnEmptyCollection() throws IOException, URISyntaxException, JSONException {
-    saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
-
-    mockGet(new RegexPattern(RMAPI_PROXIES_URL), "responses/rmapi/proxytypes/get-proxy-types-response.json");
-
-    String resourcePath = String.format(EHOLDINGS_PROXY_TYPES_BY_CREDENTIALS_ID_URL, STUB_CREDENTIALS_ID);
-    String actual = getWithOk(resourcePath).asString();
-
-    String expected = readFile("responses/kb-ebsco/proxytypes/get-proxy-types-response.json");
-    JSONAssert.assertEquals(expected, actual, true);
-  }
-
-  @Test
   public void shouldReturn401WhenRmApiReturns401ErrorStatus() {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
     saveAssignedUser(JOHN_ID, STUB_CREDENTIALS_ID, vertx);

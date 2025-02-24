@@ -1,33 +1,22 @@
 package org.folio.rest.validator;
 
+import static org.apache.commons.lang3.RandomStringUtils.insecure;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
 import java.util.Arrays;
 import java.util.Collections;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class CustomLabelsPutBodyValidatorTest {
 
-  @Rule
-  public ExpectedException expectedEx = ExpectedException.none();
-
   private final CustomLabelsPutBodyValidator validator =
     new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50, 100));
-
-  private void assertInvalidCustomLabelId(Integer id) {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid Custom Label id");
-    CustomLabelsPutRequest putRequest = new CustomLabelsPutRequest()
-      .withData(Collections.singletonList(new CustomLabel()
-        .withAttributes(new CustomLabelDataAttributes().withId(id))));
-    validator.validate(putRequest);
-  }
 
   @Test
   public void shouldThrowExceptionWhenIdTooSmall() {
@@ -46,63 +35,59 @@ public class CustomLabelsPutBodyValidatorTest {
 
   @Test
   public void shouldThrowExceptionWhenNameIsTooLong() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid Custom Label Name");
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Collections.singletonList(
         new CustomLabel().withAttributes(
           new CustomLabelDataAttributes().withId(1)
-            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(51)))));
-    validator.validate(request);
+            .withDisplayLabel(insecure().nextAlphanumeric(51)))));
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
+    assertEquals("Invalid Custom Label Name", exception.getMessage());
   }
 
   @Test
   public void shouldThrowExceptionWhenPublicationFinderIsNull() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid Publication Finder");
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Collections.singletonList(new CustomLabel().withAttributes(
         new CustomLabelDataAttributes()
           .withId(1)
-          .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+          .withDisplayLabel(insecure().nextAlphanumeric(40))
           .withDisplayOnFullTextFinder(false)
           .withDisplayOnPublicationFinder(null))));
-    validator.validate(request);
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
+    assertEquals("Invalid Publication Finder", exception.getMessage());
   }
 
   @Test
   public void shouldThrowExceptionWhenFullTextFinderIsNull() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid Full Text Finder");
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Collections.singletonList(new CustomLabel().withAttributes(
         new CustomLabelDataAttributes()
           .withId(1)
-          .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+          .withDisplayLabel(insecure().nextAlphanumeric(40))
           .withDisplayOnFullTextFinder(null)
           .withDisplayOnPublicationFinder(false))));
-    validator.validate(request);
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
+    assertEquals("Invalid Full Text Finder", exception.getMessage());
   }
 
   @Test
   public void shouldThrowExceptionWhenIdsDuplicating() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Invalid request body");
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Arrays.asList(
         new CustomLabel().withAttributes(
           new CustomLabelDataAttributes()
             .withId(1)
-            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayLabel(insecure().nextAlphanumeric(40))
             .withDisplayOnFullTextFinder(false)
             .withDisplayOnPublicationFinder(false)),
         new CustomLabel().withAttributes(
           new CustomLabelDataAttributes()
             .withId(1)
-            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayLabel(insecure().nextAlphanumeric(40))
             .withDisplayOnFullTextFinder(false)
             .withDisplayOnPublicationFinder(false))));
-    validator.validate(request);
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
+    assertEquals("Invalid request body", exception.getMessage());
   }
 
   @Test
@@ -112,15 +97,23 @@ public class CustomLabelsPutBodyValidatorTest {
         new CustomLabel().withAttributes(
           new CustomLabelDataAttributes()
             .withId(1)
-            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayLabel(insecure().nextAlphanumeric(40))
             .withDisplayOnFullTextFinder(false)
             .withDisplayOnPublicationFinder(false)),
         new CustomLabel().withAttributes(
           new CustomLabelDataAttributes()
             .withId(5)
-            .withDisplayLabel(RandomStringUtils.randomAlphanumeric(40))
+            .withDisplayLabel(insecure().nextAlphanumeric(40))
             .withDisplayOnFullTextFinder(false)
             .withDisplayOnPublicationFinder(false))));
     validator.validate(request);
+  }
+
+  private void assertInvalidCustomLabelId(Integer id) {
+    CustomLabelsPutRequest putRequest = new CustomLabelsPutRequest()
+      .withData(Collections.singletonList(new CustomLabel()
+        .withAttributes(new CustomLabelDataAttributes().withId(id))));
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(putRequest));
+    assertEquals("Invalid Custom Label id", exception.getMessage());
   }
 }

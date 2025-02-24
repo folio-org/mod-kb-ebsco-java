@@ -42,16 +42,19 @@ import org.folio.holdingsiq.model.Title;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class TitlesRepositoryImpl implements TitlesRepository {
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public TitlesRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<Void> save(DbTitle title, String tenantId) {
@@ -87,27 +90,6 @@ public class TitlesRepositoryImpl implements TitlesRepository {
   }
 
   @Override
-  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, UUID credentialsId, String tenantId) {
-
-    if (CollectionUtils.isEmpty(tags)) {
-      return completedFuture(0);
-    }
-
-    Tuple parameters = Tuple.tuple();
-    tags.forEach(parameters::addString);
-    parameters.addUUID(credentialsId);
-
-    final String query = getCountTitlesByResourceTags(tenantId, tags);
-
-    logSelectQueryInfoLevel(log, query, parameters);
-
-    Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
-
-    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
-  }
-
-  @Override
   public CompletableFuture<List<DbTitle>> findByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
     List<String> tags = tagFilter.getTags();
     if (CollectionUtils.isEmpty(tags)) {
@@ -129,6 +111,27 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     pgClient(tenantId).select(query, parameters, promise);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapTitles);
+  }
+
+  @Override
+  public CompletableFuture<Integer> countTitlesByResourceTags(List<String> tags, UUID credentialsId, String tenantId) {
+
+    if (CollectionUtils.isEmpty(tags)) {
+      return completedFuture(0);
+    }
+
+    Tuple parameters = Tuple.tuple();
+    tags.forEach(parameters::addString);
+    parameters.addUUID(credentialsId);
+
+    final String query = getCountTitlesByResourceTags(tenantId, tags);
+
+    logSelectQueryInfoLevel(log, query, parameters);
+
+    Promise<RowSet<Row>> promise = Promise.promise();
+    pgClient(tenantId).select(query, parameters, promise);
+
+    return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
   }
 
   private Integer readTagCount(RowSet<Row> resultSet) {

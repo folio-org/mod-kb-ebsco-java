@@ -18,6 +18,7 @@ import org.folio.service.assignedusers.AssignedUsersService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers {
 
   @Autowired

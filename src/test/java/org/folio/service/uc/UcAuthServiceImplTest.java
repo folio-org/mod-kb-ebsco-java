@@ -41,6 +41,7 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class UcAuthServiceImplTest extends WireMockTestBase {
 
@@ -58,6 +59,7 @@ public class UcAuthServiceImplTest extends WireMockTestBase {
   @Spy
   private HttpRequest<JsonObject> jsonHttpRequest;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();

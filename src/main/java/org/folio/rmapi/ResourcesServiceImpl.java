@@ -114,7 +114,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
           .whenComplete((result, throwable) -> {
             if (throwable != null) {
               failed.add(resourceId.getProviderIdPart() + "-" + resourceId.getPackageIdPart() + "-"
-                + resourceId.getTitleIdPart());
+                         + resourceId.getTitleIdPart());
             }
           }))
       .collect(Collectors.toSet());
@@ -142,7 +142,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
     List<Title> titlesList = resourceFutures.stream()
       .map(ResourceResult::getTitle)
       .sorted(Comparator.comparing(Title::getTitleName))
-      .collect(Collectors.toList());
+      .toList();
     return Titles.builder()
       .titleList(titlesList)
       .build();

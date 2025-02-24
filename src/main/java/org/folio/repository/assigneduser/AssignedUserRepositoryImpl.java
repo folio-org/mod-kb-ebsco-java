@@ -35,7 +35,6 @@ import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.service.users.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -44,10 +43,13 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
   private static final String USER_ASSIGN_NOT_ALLOWED_MESSAGE = "The user is already assigned to another credentials";
 
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public AssignedUserRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<Collection<DbAssignedUser>> findByCredentialsId(UUID credentialsId, String tenant) {

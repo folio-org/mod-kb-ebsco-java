@@ -216,10 +216,10 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   private static class Failure<R, F> implements Result<R, F> {
 
-    private final F failure;
+    private final F failureVal;
 
     Failure(F failure) {
-      this.failure = failure;
+      this.failureVal = failure;
     }
 
     @Override
@@ -239,7 +239,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
     @Override
     public F getFailure() {
-      return failure;
+      return failureVal;
     }
   }
 }

@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 import org.folio.holdingsiq.model.Identifier;
@@ -51,7 +50,7 @@ public final class IdentifiersConverterPair {
           .withType(IDENTIFIER_TYPES
             .getOrDefault(identifier.getType(), Type.ISBN))
           .withSubtype(IDENTIFIER_SUBTYPES.getOrDefault(identifier.getSubtype(), Subtype.ONLINE)))
-        .collect(Collectors.toList());
+        .toList();
     }
 
   }
@@ -69,7 +68,7 @@ public final class IdentifiersConverterPair {
           .type(IDENTIFIER_TYPES.inverseBidiMap().get(identifier.getType()))
           .subtype(IDENTIFIER_SUBTYPES.inverseBidiMap().get(identifier.getSubtype()))
           .build())
-        .collect(Collectors.toList());
+        .toList();
     }
 
   }

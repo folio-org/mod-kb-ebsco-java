@@ -24,7 +24,7 @@ public class TitlePutRequestConverterTest {
     TitlePutRequest request = createEmptyTitlePutRequest();
     request.getData().getAttributes().setPublicationType(PublicationType.BOOK_SERIES);
     ResourcePut resourcePut = converter.convertToRmApiCustomResourcePutRequest(request,
-      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().get(0));
+      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().getFirst());
     assertEquals("bookseries", resourcePut.getPubType());
     //from ProxyUrl to Proxy
     assertEquals(OLD_PROXY_ID, resourcePut.getProxy().getId());
@@ -36,7 +36,7 @@ public class TitlePutRequestConverterTest {
     TitlePutRequest request = createEmptyTitlePutRequest();
     request.getData().getAttributes().setIsPeerReviewed(false);
     ResourcePut resourcePut = converter.convertToRmApiCustomResourcePutRequest(request,
-      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().get(0));
+      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().getFirst());
     assertFalse(resourcePut.getIsPeerReviewed());
   }
 
@@ -45,7 +45,7 @@ public class TitlePutRequestConverterTest {
     TitlePutRequest request = createEmptyTitlePutRequest();
     request.getData().getAttributes().setName("test name");
     ResourcePut resourcePut = converter.convertToRmApiCustomResourcePutRequest(request,
-      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().get(0));
+      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().getFirst());
     assertEquals("test name", resourcePut.getTitleName());
   }
 
@@ -54,7 +54,7 @@ public class TitlePutRequestConverterTest {
     TitlePutRequest request = createEmptyTitlePutRequest();
     request.getData().getAttributes().setPublisherName("test pub name");
     ResourcePut resourcePut = converter.convertToRmApiCustomResourcePutRequest(request,
-      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().get(0));
+      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().getFirst());
     assertEquals("test pub name", resourcePut.getPublisherName());
   }
 
@@ -63,7 +63,7 @@ public class TitlePutRequestConverterTest {
     TitlePutRequest request = createEmptyTitlePutRequest();
     request.getData().getAttributes().setEdition("test edition");
     ResourcePut resourcePut = converter.convertToRmApiCustomResourcePutRequest(request,
-      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().get(0));
+      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().getFirst());
     assertEquals("test edition", resourcePut.getEdition());
   }
 
@@ -72,7 +72,7 @@ public class TitlePutRequestConverterTest {
     TitlePutRequest request = createEmptyTitlePutRequest();
     request.getData().getAttributes().setDescription("test description");
     ResourcePut resourcePut = converter.convertToRmApiCustomResourcePutRequest(request,
-      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().get(0));
+      ResourcesTestData.createResourceData().getTitle().getCustomerResourcesList().getFirst());
     assertEquals("test description", resourcePut.getDescription());
   }
 

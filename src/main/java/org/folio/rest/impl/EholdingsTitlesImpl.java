@@ -54,6 +54,7 @@ import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private static final String GET_TITLE_NOT_FOUND_MESSAGE = "Title not found";
@@ -122,7 +123,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     titlesPostBodyValidator.validate(entity);
 
     TitlePost titlePost = titlePostRequestConverter.convert(entity);
-    PackageId packageId = parsePackageId(entity.getIncluded().get(0).getAttributes().getPackageId());
+    PackageId packageId = parsePackageId(entity.getIncluded().getFirst().getAttributes().getPackageId());
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
@@ -168,7 +169,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
             if (BooleanUtils.isNotTrue(title.getIsTitleCustom())) {
               return completedFuture(null);
             }
-            CustomerResources resource = title.getCustomerResourcesList().get(0);
+            CustomerResources resource = title.getCustomerResourcesList().getFirst();
             ResourcePut resourcePutRequest =
               titlePutRequestConverter.convertToRmApiCustomResourcePutRequest(entity, resource);
             String resourceId = resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();

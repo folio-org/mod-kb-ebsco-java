@@ -187,13 +187,19 @@ public class ApplicationConfig {
       }
 
       @Override
-      public void putValue(T key, E cacheValue) { }
+      public void putValue(T key, E cacheValue) {
+        // do nothing
+      }
 
       @Override
-      public void invalidate(T key) { }
+      public void invalidate(T key) {
+        // do nothing
+      }
 
       @Override
-      public void invalidateAll() { }
+      public void invalidateAll() {
+        // do nothing
+      }
     };
   }
 
@@ -325,14 +331,8 @@ public class ApplicationConfig {
     @Qualifier("secured") Converter<DbKbCredentials, KbCredentials> credentialsFromDbConverter,
     @Qualifier("securedCredentialsCollection")
     Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
-    DefaultConversionService conversionService = new DefaultConversionService();
-    conversionService.addConverter(credentialsToDbConverter);
-    conversionService.addConverter(configurationConverter);
-    conversionService.addConverter(keyConverter);
-    conversionService.addConverter(pathRequestConverter);
-    conversionService.addConverter(credentialsFromDbConverter);
-    conversionService.addConverter(credentialsCollectionConverter);
-    return conversionService;
+    return getConversionService(credentialsToDbConverter, configurationConverter, keyConverter, pathRequestConverter,
+      credentialsFromDbConverter, credentialsCollectionConverter);
   }
 
   @Bean
@@ -343,6 +343,17 @@ public class ApplicationConfig {
     Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter,
     @Qualifier("nonSecured") Converter<DbKbCredentials, KbCredentials> credentialsFromDbConverter,
     @Qualifier("nonSecuredCredentialsCollection")
+    Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
+    return getConversionService(credentialsToDbConverter, configurationConverter, keyConverter, pathRequestConverter,
+      credentialsFromDbConverter, credentialsCollectionConverter);
+  }
+
+  private ConversionService getConversionService(
+    Converter<KbCredentials, DbKbCredentials> credentialsToDbConverter,
+    Converter<DbKbCredentials, org.folio.holdingsiq.model.Configuration> configurationConverter,
+    Converter<DbKbCredentials, KbCredentialsKey> keyConverter,
+    Converter<KbCredentialsPatchRequest, KbCredentials> pathRequestConverter,
+    Converter<DbKbCredentials, KbCredentials> credentialsFromDbConverter,
     Converter<Collection<DbKbCredentials>, KbCredentialsCollection> credentialsCollectionConverter) {
     DefaultConversionService conversionService = new DefaultConversionService();
     conversionService.addConverter(credentialsToDbConverter);

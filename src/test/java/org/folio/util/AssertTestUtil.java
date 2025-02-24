@@ -38,11 +38,11 @@ public final class AssertTestUtil {
 
   public static void assertErrorContainsTitle(JsonapiError error, String substring) {
     assertThat(error.getErrors(), hasSize(1));
-    assertThat(error.getErrors().get(0).getTitle(), containsString(substring));
+    assertThat(error.getErrors().getFirst().getTitle(), containsString(substring));
   }
 
   public static void assertErrorContainsDetail(JsonapiError error, String substring) {
     assertThat(error.getErrors(), hasSize(1));
-    assertThat(error.getErrors().get(0).getDetail(), containsString(substring));
+    assertThat(error.getErrors().getFirst().getDetail(), containsString(substring));
   }
 }

@@ -72,15 +72,16 @@ public class EholdingsStatusTest extends WireMockTestBase {
 
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts.*"), true))
-        .willReturn(new ResponseDefinitionBuilder().withStatus(429).withBody("{\n"
-          + "  \"Errors\": [\n"
-          + "    {\n"
-          + "      \"Code\": 1010,\n"
-          + "      \"Message\": \"Too Many Requests.\",\n"
-          + "      \"SubCode\": 0\n"
-          + "    }\n"
-          + "  ]\n"
-          + "}")));
+        .willReturn(new ResponseDefinitionBuilder().withStatus(429).withBody("""
+          {
+            "Errors": [
+              {
+                "Code": 1010,
+                "Message": "Too Many Requests.",
+                "SubCode": 0
+              }
+            ]
+          }""")));
 
     final JsonapiError error = getWithStatus(EHOLDINGS_STATUS_PATH, 429, STUB_USER_ID_HEADER).as(JsonapiError.class);
     AssertTestUtil.assertErrorContainsTitle(error, "Too Many Requests");

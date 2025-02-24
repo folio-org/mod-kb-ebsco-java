@@ -4,7 +4,6 @@ import static org.folio.rest.validator.ValidatorUtil.checkInRange;
 import static org.folio.rest.validator.ValidatorUtil.checkIsNotNull;
 import static org.folio.rest.validator.ValidatorUtil.checkMaxLength;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.folio.properties.customlabels.CustomLabelsProperties;
@@ -12,6 +11,7 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,30 +28,30 @@ public class CustomLabelsPutBodyValidator {
 
   private final CustomLabelsProperties properties;
 
-  public void validate(@NotNull CustomLabelsPutRequest request) {
+  public void validate(@NonNull CustomLabelsPutRequest request) {
     checkEachLabelIsValid(request);
     checkLabelsHaveUniqueIds(request);
   }
 
-  private void checkEachLabelIsValid(@NotNull CustomLabelsPutRequest request) {
+  private void checkEachLabelIsValid(@NonNull CustomLabelsPutRequest request) {
     request.getData().forEach(this::validateCollectionItem);
   }
 
-  private void validateCollectionItem(@NotNull CustomLabel customLabel) {
+  private void validateCollectionItem(@NonNull CustomLabel customLabel) {
     CustomLabelDataAttributes attributes = customLabel.getAttributes();
     checkInRange(1, 5, attributes.getId(), CUSTOM_LABEL_ID_PARAM);
-    checkMaxLength(CUSTOM_LABEL_NAME_PARAM, attributes.getDisplayLabel(), properties.getLabelMaxLength());
+    checkMaxLength(CUSTOM_LABEL_NAME_PARAM, attributes.getDisplayLabel(), properties.labelMaxLength());
     checkIsNotNull(FULL_TEXT_FINDER_PARAM, attributes.getDisplayOnFullTextFinder());
     checkIsNotNull(PUBLICATION_FINDER_PARAM, attributes.getDisplayOnPublicationFinder());
   }
 
-  private void checkLabelsHaveUniqueIds(@NotNull CustomLabelsPutRequest request) {
+  private void checkLabelsHaveUniqueIds(@NonNull CustomLabelsPutRequest request) {
     if (!request.getData().isEmpty() && getUniqueIdsCount(request) != request.getData().size()) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_LABEL_IDS_MESSAGE);
     }
   }
 
-  private long getUniqueIdsCount(@NotNull CustomLabelsPutRequest request) {
+  private long getUniqueIdsCount(@NonNull CustomLabelsPutRequest request) {
     return request.getData().stream()
       .map(CustomLabel::getAttributes)
       .filter(Objects::nonNull)

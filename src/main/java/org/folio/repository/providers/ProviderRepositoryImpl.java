@@ -28,16 +28,19 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class ProviderRepositoryImpl implements ProviderRepository {
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public ProviderRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<Void> save(DbProvider provider, String tenantId) {

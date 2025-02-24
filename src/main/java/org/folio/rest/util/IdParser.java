@@ -40,11 +40,11 @@ public final class IdParser {
   }
 
   public static Long parseTitleId(String id) {
-    return parseId(id, 1, TITLE_ID_IS_INVALID_ERROR, TITLE_ID_IS_INVALID_ERROR).get(0);
+    return parseId(id, 1, TITLE_ID_IS_INVALID_ERROR, TITLE_ID_IS_INVALID_ERROR).getFirst();
   }
 
   public static Long parseProviderId(String id) {
-    return parseId(id, 1, INVALID_PROVIDER_ID_ERROR, INVALID_PROVIDER_ID_ERROR).get(0);
+    return parseId(id, 1, INVALID_PROVIDER_ID_ERROR, INVALID_PROVIDER_ID_ERROR).getFirst();
   }
 
   public static String packageIdToString(PackageId packageId) {

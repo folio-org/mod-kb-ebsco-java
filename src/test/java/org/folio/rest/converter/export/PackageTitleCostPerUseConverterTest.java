@@ -32,7 +32,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10.0)
           .withCostPerUse(0.2)
@@ -50,7 +50,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10.0)
           .withCostPerUse(0.2)
@@ -68,7 +68,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10.0)
           .withCostPerUse(0.2)
@@ -86,7 +86,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10.4212)
           .withCostPerUse(0.33333333333333)
@@ -105,7 +105,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10.5678)
           .withCostPerUse(1.42857143333333)
@@ -124,7 +124,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10000.0)
           .withCostPerUse(3333.33333333333333)
@@ -143,7 +143,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10000.0)
           .withCostPerUse(3333.33333333333333)
@@ -162,7 +162,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10000.0)
           .withCostPerUse(3333.33333333333333)
@@ -181,7 +181,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10000.0)
           .withCostPerUse(3333.33733333333333)
@@ -200,7 +200,7 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10000.0)
           .withCostPerUse(3333.33733333333333)
@@ -219,19 +219,19 @@ public class PackageTitleCostPerUseConverterTest {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
-          .withName(RandomStringUtils.randomAlphanumeric(10))
+          .withName(RandomStringUtils.insecure().nextAlphanumeric(10))
           .withPublicationType(PublicationType.PROCEEDINGS)
           .withCost(10000.0)
           .withCostPerUse(3333.33733333333333)
           .withUsage(3)
           .withPercent(3.3)
       );
-    Locale jordanLocale = new Locale("ar", "JO");
+    Locale jordanLocale = Locale.of("ar", "JO");
     setNumberFormat(jordanLocale);
     TitleExportModel itemConverted =
       converter.convert(item, PlatformType.NON_PUBLISHER.value(), "2020", "USD", currencyFormatter);
-    assertEquals("١٠٬٠٠٠٫٠٠٠", itemConverted.getCost());
-    assertEquals("٣٬٣٣٣٫٣٣٧", itemConverted.getCostPerUse());
+    assertEquals("\u200F١٠٬٠٠٠٫٠٠٠", itemConverted.getCost());
+    assertEquals("\u200F٣٬٣٣٣٫٣٣٧", itemConverted.getCostPerUse());
   }
 
   private void setNumberFormat(Locale userLocale) {

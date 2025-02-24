@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope("prototype")
+@SuppressWarnings("java:S6813")
 public class RmApiTemplateContextBuilder {
 
   private OkapiData okapiData;

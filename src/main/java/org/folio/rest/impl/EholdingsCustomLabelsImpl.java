@@ -20,11 +20,11 @@ import org.folio.service.customlabels.CustomLabelsService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels, EholdingsKbCredentialsIdCustomLabels {
 
   @Autowired
   private RmApiTemplateFactory templateFactory;
-
   @Autowired
   private CustomLabelsService customLabelsService;
   @Autowired

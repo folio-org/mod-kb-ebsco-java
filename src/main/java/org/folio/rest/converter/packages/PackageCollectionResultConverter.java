@@ -14,7 +14,6 @@ import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageCollectionResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -22,8 +21,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PackageCollectionResultConverter implements Converter<PackageCollectionResult, PackageCollection> {
 
-  @Autowired
-  private Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
+  private final Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
+
+  public PackageCollectionResultConverter(
+    Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter) {
+    this.packageCollectionItemConverter = packageCollectionItemConverter;
+  }
 
   @Override
   public PackageCollection convert(@NonNull PackageCollectionResult packagesResult) {

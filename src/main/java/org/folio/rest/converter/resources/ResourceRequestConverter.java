@@ -41,7 +41,7 @@ public class ResourceRequestConverter {
   private ResourcePut.ResourcePutBuilder convertCommonAttributesToResourcePutRequest(
     ResourcePutDataAttributes attributes, Title oldTitle) {
     var builder = ResourcePut.builder();
-    var oldResource = oldTitle.getCustomerResourcesList().get(0);
+    var oldResource = oldTitle.getCustomerResourcesList().getFirst();
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
     var proxy = attributes.getProxy();

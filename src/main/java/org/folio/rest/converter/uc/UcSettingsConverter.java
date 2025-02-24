@@ -4,7 +4,6 @@ import static org.folio.db.RowSetUtils.fromUUID;
 import static org.folio.db.RowSetUtils.toDate;
 import static org.folio.db.RowSetUtils.toUUID;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
@@ -22,6 +21,7 @@ import org.folio.rest.jaxrs.model.UCSettingsPostRequest;
 import org.folio.rmapi.result.UcSettingsResult;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class UcSettingsConverter {
@@ -34,7 +34,7 @@ public final class UcSettingsConverter {
   public static class FromDbSecuredConverter extends FromDbNonSecuredConverter {
 
     @Override
-    public UCSettings convert(@NotNull DbUcSettings source) {
+    public UCSettings convert(@NonNull DbUcSettings source) {
       UCSettings ucSettings = super.convert(source);
       if (ucSettings != null) {
         ucSettings.getAttributes().withCustomerKey(StringUtils.repeat("*", 40));
@@ -47,7 +47,7 @@ public final class UcSettingsConverter {
   public static class FromDbNonSecuredConverter implements Converter<DbUcSettings, UCSettings> {
 
     @Override
-    public UCSettings convert(@NotNull DbUcSettings source) {
+    public UCSettings convert(@NonNull DbUcSettings source) {
       return new UCSettings()
         .withId(fromUUID(source.getId()))
         .withType(UCSettings.Type.UC_SETTINGS)

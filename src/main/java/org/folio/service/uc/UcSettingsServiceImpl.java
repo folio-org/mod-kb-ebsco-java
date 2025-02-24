@@ -110,8 +110,7 @@ public class UcSettingsServiceImpl implements UcSettingsService {
         log.info("UcSettings are successfully saved.");
         result.complete(settings);
       } else {
-        if (throwable.getCause() instanceof ConstraintViolationException) {
-          ConstraintViolationException cause = (ConstraintViolationException) throwable.getCause();
+        if (throwable.getCause() instanceof ConstraintViolationException cause) {
           Map<String, String> invalidValues = cause.getInvalidValues();
           String detailedMessage = invalidValues.entrySet().stream()
             .map(entry -> String.format("Value '%s' is invalid for '%s'.", entry.getValue(), entry.getKey()))

@@ -108,7 +108,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     String credentialsId =
       saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
 
-    AssignedUserId expected = stubAssignedUserId(JOHN_ID, credentialsId);
+    AssignedUserId expected = stubAssignedUserId(credentialsId);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
@@ -122,8 +122,8 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
 
     List<AssignedUser> assignedUsersInDb = getAssignedUsers(vertx);
     assertThat(assignedUsersInDb, hasSize(1));
-    assertEquals(expected.getId(), assignedUsersInDb.get(0).getId());
-    assertEquals(expected.getCredentialsId(), assignedUsersInDb.get(0).getAttributes().getCredentialsId());
+    assertEquals(expected.getId(), assignedUsersInDb.getFirst().getId());
+    assertEquals(expected.getCredentialsId(), assignedUsersInDb.getFirst().getAttributes().getCredentialsId());
   }
 
   @Test
@@ -133,7 +133,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
     saveAssignedUser(JOHN_ID, credentialsId, vertx);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest()
-      .withData(stubAssignedUserId(JOHN_ID, credentialsId));
+      .withData(stubAssignedUserId(credentialsId));
 
     String postBody = Json.encode(assignedUserPostRequest);
     String endpoint = String.format(ASSIGN_USER_PATH, credentialsId);
@@ -148,7 +148,7 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturn404OnPostWhenAssignedUserToMissingCredentials() {
     String credentialsId = randomId();
-    AssignedUserId expected = stubAssignedUserId(JOHN_ID, credentialsId);
+    AssignedUserId expected = stubAssignedUserId(credentialsId);
 
     AssignedUserPostRequest assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     String postBody = Json.encode(assignedUserPostRequest);
@@ -272,9 +272,9 @@ public class EholdingsAssignedUsersImplTest extends WireMockTestBase {
           .withBody(TestUtil.readFile(USERDATA_STUB_FILE))));
   }
 
-  private AssignedUserId stubAssignedUserId(String userId, String credentialsId) {
+  private AssignedUserId stubAssignedUserId(String credentialsId) {
     return new AssignedUserId()
-      .withId(userId)
+      .withId(WireMockTestBase.JOHN_ID)
       .withCredentialsId(credentialsId);
   }
 }

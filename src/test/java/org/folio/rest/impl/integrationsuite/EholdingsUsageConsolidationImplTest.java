@@ -55,6 +55,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
 
@@ -163,7 +164,7 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     patchWithNoContent(resourcePath, Json.encode(patchData), JOHN_USER_ID_HEADER);
 
-    UCSettings actual = getUcSettings(vertx).get(0);
+    UCSettings actual = getUcSettings(vertx).getFirst();
     assertEquals(newCurrencyValue, actual.getAttributes().getCurrency());
   }
 
@@ -284,13 +285,13 @@ public class EholdingsUsageConsolidationImplTest extends WireMockTestBase {
     mockSuccessfulVerification();
     setUpUcCredentials(vertx);
 
-    String credentialsId = UUID.randomUUID().toString();
-    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
+    String randomCredentialsId = UUID.randomUUID().toString();
+    String resourcePath = String.format(UC_SETTINGS_ENDPOINT, randomCredentialsId);
     String postBody = Json.encode(getPostRequest());
     JsonapiError error =
       postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, JOHN_USER_ID_HEADER).as(JsonapiError.class);
 
-    String expectedErrorMessage = String.format("'%s' is invalid for 'kb_credentials_id'", credentialsId);
+    String expectedErrorMessage = String.format("'%s' is invalid for 'kb_credentials_id'", randomCredentialsId);
     assertErrorContainsTitle(error, "Invalid value");
     assertErrorContainsDetail(error, expectedErrorMessage);
   }

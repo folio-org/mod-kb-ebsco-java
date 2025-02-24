@@ -1,5 +1,8 @@
 package org.folio.rest.validator;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
@@ -8,14 +11,9 @@ import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ResourcePutBodyValidatorTest {
-
-  @Rule
-  public ExpectedException expectedEx = ExpectedException.none();
 
   private final ResourcePutBodyValidator validator = new ResourcePutBodyValidator(new CustomLabelsProperties(50, 100));
 
@@ -29,20 +27,22 @@ public class ResourcePutBodyValidatorTest {
 
   @Test
   public void shouldThrowExceptionWhenUrlIsInvalidFormatForCustomResource() {
-    expectedEx.expect(InputValidationException.class);
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+    var request = ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
-        .withUrl("hello")), true);
+        .withUrl("hello"));
+
+    assertThrows(InputValidationException.class, () -> validator.validate(request, true));
   }
 
   @Test
   public void shouldThrowExceptionWhenCvgStmtExceedsLengthForCustomResource() {
-    expectedEx.expect(InputValidationException.class);
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+    var request = ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
-        .withCoverageStatement(RandomStringUtils.randomAlphanumeric(251))), true);
+        .withCoverageStatement(RandomStringUtils.insecure().nextAlphanumeric(251)));
+
+    assertThrows(InputValidationException.class, () -> validator.validate(request, true));
   }
 
   @Test
@@ -55,32 +55,32 @@ public class ResourcePutBodyValidatorTest {
 
   @Test
   public void shouldThrowExceptionWhenResourceIsNotSelectedAndIsHiddenIsTrue() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+    var request = ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
-        .withVisibilityData(new VisibilityData().withIsHidden(true))), false);
+        .withVisibilityData(new VisibilityData().withIsHidden(true)));
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
+    assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());
   }
 
   @Test
   public void shouldThrowExceptionWhenResourceIsNotSelectedAndCvgStmtIsNotNull() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+    var request = ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
-        .withCoverageStatement("hello")), false);
+        .withCoverageStatement("hello"));
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
+    assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());
   }
 
   @Test
   public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedFieldIsNotNull() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+    var request = ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
-        .withUserDefinedField1("not null")), false);
+        .withUserDefinedField1("not null"));
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
+    assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());
   }
 
   @Test
@@ -117,28 +117,30 @@ public class ResourcePutBodyValidatorTest {
 
   @Test
   public void shouldThrowExceptionWhenUserDefinedFieldIsLongerThanAllowed() {
-    expectedEx.expect(InputValidationException.class);
-
-    expectedEx.expectMessage("Invalid userDefinedField1");
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+    var request = ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
-        .withUserDefinedField1(RandomStringUtils.randomAlphanumeric(101))), false);
+        .withUserDefinedField1(RandomStringUtils.insecure().nextAlphanumeric(101)));
+
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
+    assertEquals("Invalid userDefinedField1", exception.getMessage());
   }
 
   @Test
   public void shouldThrowExceptionWhenResourceIsNotSelectedAndCustomEmbargoIsNotNull() {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+    var request = ResourcesTestData.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
-        .withCustomEmbargoPeriod(new EmbargoPeriod().withEmbargoUnit(EmbargoUnit.DAYS))), false);
+        .withCustomEmbargoPeriod(new EmbargoPeriod().withEmbargoUnit(EmbargoUnit.DAYS)));
+
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
+    assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());
   }
 
   private void testUserDefinedFieldValidation(ResourcePutDataAttributes value) {
-    expectedEx.expect(InputValidationException.class);
-    expectedEx.expectMessage("Resource cannot be updated unless added to holdings");
-    validator.validate(ResourcesTestData.getResourcePutRequest(value), false);
+    var request = ResourcesTestData.getResourcePutRequest(value);
+
+    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
+    assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());
   }
 }

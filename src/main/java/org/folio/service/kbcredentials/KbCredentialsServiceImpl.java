@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 
 @Log4j2
+@SuppressWarnings("java:S6813")
 public class KbCredentialsServiceImpl implements KbCredentialsService {
 
   private final UserKbCredentialsService userKbCredentialsService;

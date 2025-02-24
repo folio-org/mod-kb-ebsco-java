@@ -21,6 +21,7 @@ import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, EholdingsUserKbCredential {
 
   @Autowired
@@ -29,7 +30,6 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
   @Autowired
   @Qualifier("nonSecuredCredentialsService")
   private KbCredentialsService nonSecuredCredentialsService;
-
   @Autowired
   private ErrorHandler errorHandler;
 

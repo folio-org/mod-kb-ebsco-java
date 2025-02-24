@@ -20,7 +20,7 @@ public class CustomLabelsItemCollectionTest {
   public void shouldConvertToCustomLabelOnly() throws URISyntaxException, IOException {
     org.folio.holdingsiq.model.CustomLabel rmCustomLabel =
       readJsonFile("responses/rmapi/proxiescustomlabels/get-success-response.json",
-        RootProxyCustomLabels.class).getLabelList().get(0);
+        RootProxyCustomLabels.class).getLabelList().getFirst();
 
     CustomLabel actual = itemConverter.convert(rmCustomLabel);
 
