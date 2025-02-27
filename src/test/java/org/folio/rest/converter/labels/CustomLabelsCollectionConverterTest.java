@@ -29,7 +29,7 @@ public class CustomLabelsCollectionConverterTest {
 
     assertNotNull(actual);
     assertEquals((Integer) 5, actual.getMeta().getTotalResults());
-    assertEquals(CustomLabel.Type.CUSTOM_LABELS, actual.getData().get(0).getType());
+    assertEquals(CustomLabel.Type.CUSTOM_LABELS, actual.getData().getFirst().getType());
   }
 
   @Test
@@ -41,6 +41,6 @@ public class CustomLabelsCollectionConverterTest {
 
     assertNotNull(actual);
     assertEquals((Integer) 5, actual.getMeta().getTotalResults());
-    assertEquals(CustomLabel.Type.CUSTOM_LABELS, actual.getData().get(0).getType());
+    assertEquals(CustomLabel.Type.CUSTOM_LABELS, actual.getData().getFirst().getType());
   }
 }

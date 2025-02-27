@@ -11,7 +11,6 @@ import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -19,13 +18,16 @@ import org.springframework.stereotype.Component;
 public class UserCollectionDataConverter
   implements Converter<UserCollectionDataConverter.UsersResult, AssignedUserCollection> {
 
-  @Autowired
-  private Converter<User, AssignedUser> itemConverter;
+  private final Converter<User, AssignedUser> itemConverter;
+
+  public UserCollectionDataConverter(Converter<User, AssignedUser> itemConverter) {
+    this.itemConverter = itemConverter;
+  }
 
   @Override
   public AssignedUserCollection convert(UsersResult source) {
     var assignedUserCollection = new AssignedUserCollection()
-      .withData(mapItems(source.getUsers(), user -> itemConverter.convert(user)))
+      .withData(mapItems(source.getUsers(), itemConverter::convert))
       .withMeta(new MetaTotalResults().withTotalResults(source.getUsers().size()))
       .withJsonapi(RestConstants.JSONAPI);
     var groupMap = source.getGroups().stream()

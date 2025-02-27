@@ -1,4 +1,7 @@
-## v5.1.0 In progress
+## v6.0.0 In progress
+### Breaking changes
+* Upgrade to Java 21 ([MODKBEKBJ-778](https://issues.folio.org/browse/MODKBEKBJ-778))
+
 ### Features
 * Use user-id header instead of token parsing ([MODKBEKBJ-777](https://issues.folio.org/browse/MODKBEKBJ-777))
 

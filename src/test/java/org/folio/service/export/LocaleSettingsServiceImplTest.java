@@ -2,7 +2,6 @@ package org.folio.service.export;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
@@ -29,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class LocaleSettingsServiceImplTest extends WireMockTestBase {
 
@@ -37,6 +37,7 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
 
   private OkapiData okapiParams;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -95,7 +96,7 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   @Test
   public void shouldCompleteExceptionallyWhenConfigurationFailed(TestContext context) {
     Async async = context.async();
-    mockFailedConfigurationResponse(SC_BAD_REQUEST);
+    mockFailedConfigurationResponse();
     CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
     future.thenCompose(result -> {
       async.complete();
@@ -115,11 +116,11 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
           .withBody(readFile(configFileName))));
   }
 
-  private void mockFailedConfigurationResponse(int status) {
+  private void mockFailedConfigurationResponse() {
     stubFor(
       get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(status)
+          .withStatus(org.apache.http.HttpStatus.SC_BAD_REQUEST)
           .withBody("")));
   }
 }

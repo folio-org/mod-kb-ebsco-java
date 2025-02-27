@@ -85,6 +85,7 @@ import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsResourcesImpl implements EholdingsResources {
 
   private static final int MAX_TITLE_COUNT = 100;
@@ -207,7 +208,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .requestAction(context ->
         context.getResourcesService().retrieveResource(parsedResourceId)
           .thenCompose(title -> {
-            if (BooleanUtils.isNotTrue(title.getCustomerResourcesList().get(0).getIsPackageCustom())) {
+            if (BooleanUtils.isNotTrue(title.getCustomerResourcesList().getFirst().getIsPackageCustom())) {
               throw new InputValidationException(RESOURCE_CANNOT_BE_DELETED_TITLE, RESOURCE_CANNOT_BE_DELETED_DETAIL);
             }
             return context.getResourcesService().deleteResource(parsedResourceId);
@@ -281,7 +282,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RmApiTemplateContext context) {
-    CustomerResources resource = result.getTitle().getCustomerResourcesList().get(0);
+    CustomerResources resource = result.getTitle().getCustomerResourcesList().getFirst();
     RecordKey recordKey = RecordKey.builder().recordId(getResourceId(resource)).recordType(RecordType.RESOURCE).build();
     return CompletableFuture.allOf(
         relatedEntitiesLoader.loadAccessType(result, recordKey, context),

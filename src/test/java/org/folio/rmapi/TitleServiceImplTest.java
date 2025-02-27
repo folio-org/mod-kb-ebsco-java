@@ -81,7 +81,7 @@ public class TitleServiceImplTest {
 
   @Test
   public void shouldUpdateCachedTitle() {
-    var titleCache = mock(VertxCache.class);
+    VertxCache<TitleCacheKey, Title> titleCache = mock();
     var service = new TitlesServiceImpl(configuration, Vertx.vertx(), STUB_TENANT, titleCache);
 
     when(titleCache.getValue(any(TitleCacheKey.class))).thenReturn(buildTitleWithCustomerResource(1));

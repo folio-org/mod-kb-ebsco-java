@@ -7,6 +7,7 @@ import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 
 import java.util.List;
+import java.util.Objects;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Titles;
@@ -26,7 +27,6 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -34,14 +34,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class PackageConverter implements Converter<PackageResult, Package> {
 
-  @Autowired
-  private Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
-  @Autowired
-  private Converter<VendorById, Provider> vendorConverter;
-  @Autowired
-  private Converter<Titles, ResourceCollection> resourcesConverter;
-  @Autowired
-  private Converter<TokenInfo, Token> tokenInfoConverter;
+  private final Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
+  private final Converter<VendorById, Provider> vendorConverter;
+  private final Converter<Titles, ResourceCollection> resourcesConverter;
+  private final Converter<TokenInfo, Token> tokenInfoConverter;
+
+  public PackageConverter(Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter,
+                          Converter<VendorById, Provider> vendorConverter,
+                          Converter<Titles, ResourceCollection> resourcesConverter,
+                          Converter<TokenInfo, Token> tokenInfoConverter) {
+    this.packageCollectionItemConverter = packageCollectionItemConverter;
+    this.vendorConverter = vendorConverter;
+    this.resourcesConverter = resourcesConverter;
+    this.tokenInfoConverter = tokenInfoConverter;
+  }
 
   @Override
   public Package convert(@NonNull PackageResult result) {
@@ -71,11 +77,11 @@ public class PackageConverter implements Converter<PackageResult, Package> {
 
       packageData
         .getIncluded()
-        .addAll(resourcesConverter.convert(titles).getData());
+        .addAll(Objects.requireNonNull(resourcesConverter.convert(titles)).getData());
     }
 
     if (vendor != null) {
-      packageData.getIncluded().add(vendorConverter.convert(vendor).getData());
+      packageData.getIncluded().add(Objects.requireNonNull(vendorConverter.convert(vendor)).getData());
       packageData.getData()
         .getRelationships()
         .withProvider(new HasOneRelationship()

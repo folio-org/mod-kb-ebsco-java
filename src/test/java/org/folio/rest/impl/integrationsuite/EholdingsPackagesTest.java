@@ -254,7 +254,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
     assertEquals(1, packages.size());
-    assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
+    assertEquals(STUB_PACKAGE_NAME_2, packages.getFirst().getAttributes().getName());
   }
 
   @Test
@@ -273,14 +273,14 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
     assertEquals(1, packages.size());
-    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+    assertEquals(STUB_PACKAGE_NAME, packages.getFirst().getAttributes().getName());
   }
 
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-    insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.getFirst().getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_2, PACKAGE, accessTypes.getFirst().getId(), vertx);
 
     mockGet(new RegexPattern(".*vendors/.*/packages/.*"), HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
@@ -349,7 +349,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnPackageWithAccessTypeOnGetById() throws IOException, URISyntaxException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    String expectedAccessTypeId = accessTypes.get(0).getId();
+    String expectedAccessTypeId = accessTypes.getFirst().getId();
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
 
     mockGet(new RegexPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
@@ -357,7 +357,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     assertNotNull(packageData.getIncluded());
     assertEquals(expectedAccessTypeId, packageData.getData().getRelationships().getAccessType().getData().getId());
-    assertEquals(expectedAccessTypeId, ((LinkedHashMap<?, ?>) packageData.getIncluded().get(0)).get("id"));
+    assertEquals(expectedAccessTypeId, ((LinkedHashMap<?, ?>) packageData.getIncluded().getFirst()).get("id"));
   }
 
   @Test
@@ -375,9 +375,9 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     sendPutTags(tags);
     List<DbPackage> packages = PackagesTestUtil.getPackages(vertx);
     assertEquals(1, packages.size());
-    assertEqualsPackageId(packages.get(0).getId());
-    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getName());
-    assertThat(packages.get(0).getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
+    assertEqualsPackageId(packages.getFirst().getId());
+    assertEquals(STUB_PACKAGE_NAME, packages.getFirst().getName());
+    assertThat(packages.getFirst().getContentType(), equalToIgnoringCase(STUB_PACKAGE_CONTENT_TYPE));
   }
 
   @Test
@@ -437,7 +437,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldDeletePackageAccessTypeMappingOnDelete() throws IOException, URISyntaxException {
-    String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).get(0).getId();
+    String accessTypeId = insertAccessTypes(testData(configuration.getId()), vertx).getFirst().getId();
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
 
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
@@ -605,7 +605,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldUpdateAllAttributesInSelectedPackageAndCreateNewAccessTypeMapping()
     throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    String accessTypeId = accessTypes.get(0).getId();
+    String accessTypeId = accessTypes.getFirst().getId();
 
     boolean updatedSelected = true;
     boolean updatedAllowEbscoToAddTitles = true;
@@ -646,12 +646,12 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDb.size());
-    assertEquals(actualPackage.getData().getId(), accessTypeMappingsInDb.get(0).getRecordId());
-    assertEqualsUuid(accessTypeId, accessTypeMappingsInDb.get(0).getAccessTypeId());
-    assertEquals(PACKAGE, accessTypeMappingsInDb.get(0).getRecordType());
+    assertEquals(actualPackage.getData().getId(), accessTypeMappingsInDb.getFirst().getRecordId());
+    assertEqualsUuid(accessTypeId, accessTypeMappingsInDb.getFirst().getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDb.getFirst().getRecordType());
     assertNotNull(actualPackage.getIncluded());
     assertEquals(accessTypeId, actualPackage.getData().getRelationships().getAccessType().getData().getId());
-    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) actualPackage.getIncluded().get(0)).get("id"));
+    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) actualPackage.getIncluded().getFirst()).get("id"));
   }
 
   @Test
@@ -777,7 +777,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldUpdateAllAttributesInCustomPackageAndCreateNewAccessTypeMapping()
     throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    String accessTypeId = accessTypes.get(0).getId();
+    String accessTypeId = accessTypes.getFirst().getId();
 
     boolean updatedSelected = true;
     boolean updatedHidden = true;
@@ -819,19 +819,19 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDb.size());
-    assertEquals(actualPackage.getData().getId(), accessTypeMappingsInDb.get(0).getRecordId());
-    assertEqualsUuid(accessTypeId, accessTypeMappingsInDb.get(0).getAccessTypeId());
-    assertEquals(PACKAGE, accessTypeMappingsInDb.get(0).getRecordType());
+    assertEquals(actualPackage.getData().getId(), accessTypeMappingsInDb.getFirst().getRecordId());
+    assertEqualsUuid(accessTypeId, accessTypeMappingsInDb.getFirst().getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDb.getFirst().getRecordType());
     assertNotNull(actualPackage.getIncluded());
     assertEquals(accessTypeId, actualPackage.getData().getRelationships().getAccessType().getData().getId());
-    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) actualPackage.getIncluded().get(0)).get("id"));
+    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) actualPackage.getIncluded().getFirst()).get("id"));
   }
 
   @Test
   public void shouldUpdateAllAttributesInCustomPackageAndDeleteAccessTypeMapping()
     throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    String accessTypeId = accessTypes.get(0).getId();
+    String accessTypeId = accessTypes.getFirst().getId();
 
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypeId, vertx);
 
@@ -928,12 +928,12 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDb.size());
-    assertEquals(actualPackage.getData().getId(), accessTypeMappingsInDb.get(0).getRecordId());
-    assertEqualsUuid(newAccessTypeId, accessTypeMappingsInDb.get(0).getAccessTypeId());
-    assertEquals(PACKAGE, accessTypeMappingsInDb.get(0).getRecordType());
+    assertEquals(actualPackage.getData().getId(), accessTypeMappingsInDb.getFirst().getRecordId());
+    assertEqualsUuid(newAccessTypeId, accessTypeMappingsInDb.getFirst().getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDb.getFirst().getRecordType());
     assertNotNull(actualPackage.getIncluded());
     assertEquals(newAccessTypeId, actualPackage.getData().getRelationships().getAccessType().getData().getId());
-    assertEquals(newAccessTypeId, ((LinkedHashMap<?, ?>) actualPackage.getIncluded().get(0)).get("id"));
+    assertEquals(newAccessTypeId, ((LinkedHashMap<?, ?>) actualPackage.getIncluded().getFirst()).get("id"));
   }
 
   @Test
@@ -959,7 +959,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(1, error.getErrors().size());
     assertEquals(
       "must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
-      error.getErrors().get(0).getMessage());
+      error.getErrors().getFirst().getMessage());
   }
 
   @Test
@@ -991,7 +991,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn200OnPostPackageWithExistedAccessType() throws URISyntaxException, IOException {
-    String accessTypeId = insertAccessType(testData(configuration.getId()).get(0), vertx);
+    String accessTypeId = insertAccessType(testData(configuration.getId()).getFirst(), vertx);
 
     String packagePostRmApiRequestFile = "requests/rmapi/packages/post-package.json";
     String requestBody = String.format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"),
@@ -1005,11 +1005,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDb.size());
-    assertEqualsUuid(accessTypeId, accessTypeMappingsInDb.get(0).getAccessTypeId());
-    assertEquals(PACKAGE, accessTypeMappingsInDb.get(0).getRecordType());
+    assertEqualsUuid(accessTypeId, accessTypeMappingsInDb.getFirst().getAccessTypeId());
+    assertEquals(PACKAGE, accessTypeMappingsInDb.getFirst().getRecordType());
     assertNotNull(createdPackage.getIncluded());
     assertEquals(accessTypeId, createdPackage.getData().getRelationships().getAccessType().getData().getId());
-    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) createdPackage.getIncluded().get(0)).get("id"));
+    assertEquals(accessTypeId, ((LinkedHashMap<?, ?>) createdPackage.getIncluded().getFirst()).get("id"));
   }
 
   @Test
@@ -1033,7 +1033,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(1, error.getErrors().size());
     assertEquals(
       "must match \"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$\"",
-      error.getErrors().get(0).getMessage());
+      error.getErrors().getFirst().getMessage());
   }
 
   @Test
@@ -1043,8 +1043,15 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String response = "responses/rmapi/packages/post-package-400-error-response.json";
 
     EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      "{\n  \"contentType\" : 1,\n  \"packageName\" : \"TEST_NAME\",\n  \"customCoverage\" "
-      + ": {\n    \"beginCoverage\" : \"2017-12-23\",\n    \"endCoverage\" : \"2018-03-30\"\n  }\n}",
+      """
+        {
+          "contentType" : 1,
+          "packageName" : "TEST_NAME",
+          "customCoverage" : {
+            "beginCoverage" : "2017-12-23",
+            "endCoverage" : "2018-03-30"
+          }
+        }""",
       false, true);
 
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), providerStubResponseFile);
@@ -1108,8 +1115,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   @Test
   public void shouldReturnResourcesWithAccessTypesOnGetWithResources() throws IOException, URISyntaxException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.get(0).getId(), vertx);
-    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID, RESOURCE, accessTypes.getFirst().getId(), vertx);
+    insertAccessTypeMapping(STUB_MANAGED_RESOURCE_ID_2, RESOURCE, accessTypes.getFirst().getId(), vertx);
 
     mockResourceById("responses/rmapi/titles/get-title-by-id-response.json");
 
@@ -1161,12 +1168,14 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     assertEquals(5, (int) resourceCollection.getMeta().getTotalResults());
     assertEquals(5, resources.size());
 
-    assertEquals("295-2545963-2099944", resources.get(0).getId());
+    assertEquals("295-2545963-2099944", resources.getFirst().getId());
     assertEquals(1, resources.get(0).getIncluded().size());
-    assertEquals(accessTypes.get(0).getId(), ((LinkedHashMap) resources.get(0).getIncluded().get(0)).get("id"));
+    assertEquals(accessTypes.getFirst().getId(),
+      ((LinkedHashMap<?, ?>) resources.get(0).getIncluded().getFirst()).get("id"));
     assertEquals("295-2545963-2172685", resources.get(2).getId());
     assertEquals(1, resources.get(2).getIncluded().size());
-    assertEquals(accessTypes.get(1).getId(), ((LinkedHashMap) resources.get(2).getIncluded().get(0)).get("id"));
+    assertEquals(accessTypes.get(1).getId(),
+      ((LinkedHashMap<?, ?>) resources.get(2).getIncluded().getFirst()).get("id"));
   }
 
   @Test
@@ -1274,7 +1283,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     Errors error = postWithStatus(PACKAGES_BULK_FETCH_PATH, postBody, SC_UNPROCESSABLE_ENTITY, STUB_USER_ID_HEADER)
       .as(Errors.class);
 
-    assertThat(error.getErrors().get(0).getMessage(), equalTo("elements in list must match pattern"));
+    assertThat(error.getErrors().getFirst().getMessage(), equalTo("elements in list must match pattern"));
   }
 
   @Test

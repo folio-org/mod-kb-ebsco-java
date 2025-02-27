@@ -49,6 +49,7 @@ import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
+@SuppressWarnings("java:S6813")
 public class AccessTypesServiceImpl implements AccessTypesService {
 
   private static final String MAXIMUM_ACCESS_TYPES_MESSAGE = "Maximum number of access types allowed is %s";
@@ -58,8 +59,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Autowired
   private UsersLookUpService usersLookUpService;
-  @Autowired
-  private AccessTypeMappingsService mappingService;
   @Autowired
   @Qualifier("nonSecuredCredentialsService")
   private KbCredentialsService kbCredentialsService;
@@ -126,7 +125,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
         if (withMetadata) {
           log.info("findByCredentialsAndAccessTypeId:: Attempting to populate UserMetaData");
           return populateUserMetadata(okapiHeaders, List.of(accessType))
-            .thenApply(accessTypes -> accessTypes.get(0));
+            .thenApply(List::getFirst);
         } else {
           return CompletableFuture.completedFuture(accessType);
         }
@@ -180,20 +179,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .thenCombine(usersLookUpService.lookUpUser(new OkapiParams(okapiHeaders)), this::setCreatorMetaInfo);
   }
 
-  private DbAccessType prePopulateCreatorMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
-    return dbAccessType.toBuilder()
-      .createdByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
-      .createdDate(OffsetDateTime.now())
-      .build();
-  }
-
-  private DbAccessType prePopulateUpdaterMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
-    return dbAccessType.toBuilder()
-      .updatedByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
-      .updatedDate(OffsetDateTime.now())
-      .build();
-  }
-
   @Override
   public CompletableFuture<Void> update(String credentialsId, String accessTypeId, AccessTypePutRequest putRequest,
                                         Map<String, String> okapiHeaders) {
@@ -241,6 +226,20 @@ public class AccessTypesServiceImpl implements AccessTypesService {
     return repository.findPerRecord(credentialsId, recordIds, recordType, tenant);
   }
 
+  private DbAccessType prePopulateCreatorMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
+    return dbAccessType.toBuilder()
+      .createdByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
+      .createdDate(OffsetDateTime.now())
+      .build();
+  }
+
+  private DbAccessType prePopulateUpdaterMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
+    return dbAccessType.toBuilder()
+      .updatedByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
+      .updatedDate(OffsetDateTime.now())
+      .build();
+  }
+
   private CompletableFuture<List<AccessType>> populateUserMetadata(Map<String, String> okapiHeaders,
                                                                    List<AccessType> accessTypes) {
     var usersIds = accessTypes.stream()
@@ -250,7 +249,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .filter(Objects::nonNull)
       .distinct()
       .map(UUID::fromString)
-      .collect(Collectors.toList());
+      .toList();
     return usersLookUpService.lookUpUsers(usersIds, new OkapiParams(okapiHeaders))
       .thenApply(users -> users.stream().collect(Collectors.toMap(User::getId, u -> u)))
       .thenApply(usersMap -> enrichAccessTypes(accessTypes, usersMap));

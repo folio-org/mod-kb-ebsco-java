@@ -3,8 +3,9 @@ package org.folio.rest.converter.common.attr;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.oneOf;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -44,34 +45,12 @@ public class EmbargoPeriodConverterTest {
       .toArray(org.folio.holdingsiq.model.EmbargoPeriod[]::new);
   }
 
-  private static String mixCase(String value) {
-    char[] result = value.toCharArray();
-
-    for (int i = 0; i < result.length; i++) {
-      boolean toUpperCase = RandomUtils.nextBoolean();
-
-      result[i] = toUpperCase ? Character.toUpperCase(result[i]) : Character.toLowerCase(result[i]);
-    }
-
-    return String.valueOf(result);
-  }
-
   @DataPoints("invalid-units")
   public static org.folio.holdingsiq.model.EmbargoPeriod[] periodsWithInvalidUnits() {
     return ArrayUtils.toArray(
-      createPeriod(RandomStringUtils.randomAlphanumeric(10), randomValue()), // randomly generated unit name +
+      createPeriod(RandomStringUtils.insecure().nextAlphanumeric(10), randomValue()), // randomly generated unit name +
       createPeriod(null, randomValue())  // unit == null
     );
-  }
-
-  private static int randomValue() {
-    return RandomUtils.nextInt(MIN_VALUE, MAX_VALUE);
-  }
-
-  private static org.folio.holdingsiq.model.EmbargoPeriod createPeriod(String unit, int value) {
-    return org.folio.holdingsiq.model.EmbargoPeriod.builder()
-      .embargoUnit(unit)
-      .embargoValue(value).build();
   }
 
   @Before
@@ -88,21 +67,13 @@ public class EmbargoPeriodConverterTest {
   @Theory
   public void testEmbargoPeriodWithValidUnitConverted(
     @FromDataPoints("valid-periods") org.folio.holdingsiq.model.EmbargoPeriod period) {
-    EmbargoPeriod result = converter.convert(period);
-
-    assertNotNull(result);
-    assertThat(result.getEmbargoUnit(), isOneOf(EmbargoUnit.values()));
-    assertThat(result.getEmbargoValue(), allOf(greaterThanOrEqualTo(MIN_VALUE), lessThanOrEqualTo(MAX_VALUE)));
+    testEmbargoPeriod(period);
   }
 
   @Theory
   public void testCharacterCaseOfUnitIgnored(
     @FromDataPoints("mixed-case-units") org.folio.holdingsiq.model.EmbargoPeriod period) {
-    EmbargoPeriod result = converter.convert(period);
-
-    assertNotNull(result);
-    assertThat(result.getEmbargoUnit(), isOneOf(EmbargoUnit.values()));
-    assertThat(result.getEmbargoValue(), allOf(greaterThanOrEqualTo(MIN_VALUE), lessThanOrEqualTo(MAX_VALUE)));
+    testEmbargoPeriod(period);
   }
 
   @Theory
@@ -113,5 +84,35 @@ public class EmbargoPeriodConverterTest {
     assertNotNull(result);
     assertNull(result.getEmbargoUnit());
     assertThat(result.getEmbargoValue(), allOf(greaterThanOrEqualTo(MIN_VALUE), lessThanOrEqualTo(MAX_VALUE)));
+  }
+
+  private void testEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod period) {
+    EmbargoPeriod result = converter.convert(period);
+
+    assertNotNull(result);
+    assertThat(result.getEmbargoUnit(), is(oneOf(EmbargoUnit.values())));
+    assertThat(result.getEmbargoValue(), allOf(greaterThanOrEqualTo(MIN_VALUE), lessThanOrEqualTo(MAX_VALUE)));
+  }
+
+  private static String mixCase(String value) {
+    char[] result = value.toCharArray();
+
+    for (int i = 0; i < result.length; i++) {
+      boolean toUpperCase = RandomUtils.insecure().randomBoolean();
+
+      result[i] = toUpperCase ? Character.toUpperCase(result[i]) : Character.toLowerCase(result[i]);
+    }
+
+    return String.valueOf(result);
+  }
+
+  private static int randomValue() {
+    return RandomUtils.insecure().randomInt(MIN_VALUE, MAX_VALUE);
+  }
+
+  private static org.folio.holdingsiq.model.EmbargoPeriod createPeriod(String unit, int value) {
+    return org.folio.holdingsiq.model.EmbargoPeriod.builder()
+      .embargoUnit(unit)
+      .embargoValue(value).build();
   }
 }

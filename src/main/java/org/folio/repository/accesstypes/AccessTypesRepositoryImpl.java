@@ -59,7 +59,6 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.service.exc.ServiceExceptions;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -69,11 +68,14 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
   private static final String NAME_UNIQUENESS_MESSAGE = "Duplicate name";
   private static final String NAME_UNIQUENESS_DETAILS = "Access type with name '%s' already exist";
 
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+  private final DBExceptionTranslator excTranslator;
 
-  @Autowired
-  private Vertx vertx;
+  private final Vertx vertx;
+
+  public AccessTypesRepositoryImpl(DBExceptionTranslator excTranslator, Vertx vertx) {
+    this.excTranslator = excTranslator;
+    this.vertx = vertx;
+  }
 
   @Override
   public CompletableFuture<List<DbAccessType>> findByCredentialsId(UUID credentialsId, String tenantId) {
@@ -259,8 +261,8 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private int getIntValueOrDefault(Row row, String columnName, int defaultValue) {
     return row.getColumnIndex(columnName) != -1
-      ? ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
-      : defaultValue;
+           ? ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
+           : defaultValue;
   }
 
   private Function<Throwable, Future<RowSet<Row>>> uniqueNameConstraintViolation(String value) {

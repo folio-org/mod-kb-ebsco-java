@@ -9,7 +9,6 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPa
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getPublisherUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.folio.rest.jaxrs.model.CostAnalysis;
 import org.folio.rest.jaxrs.model.CostAnalysisAttributes;
@@ -18,13 +17,14 @@ import org.folio.rest.jaxrs.model.PackageCostPerUseDataAttributes;
 import org.folio.rest.jaxrs.model.SpecificPlatformUsage;
 import org.folio.rmapi.result.PackageCostPerUseResult;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PackageCostPerUseConverter implements Converter<PackageCostPerUseResult, PackageCostPerUse> {
 
   @Override
-  public PackageCostPerUse convert(@NotNull PackageCostPerUseResult source) {
+  public PackageCostPerUse convert(@NonNull PackageCostPerUseResult source) {
     var ucPackageCostPerUse = source.getUcPackageCostPerUse();
     var titlePackageCost = source.getTitlePackageCostMap();
 

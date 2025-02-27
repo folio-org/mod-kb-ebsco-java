@@ -8,10 +8,8 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTo
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNonPublisherUsage;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.folio.client.uc.model.UcCostAnalysis;
 import org.folio.holdingsiq.model.CoverageDates;
@@ -26,20 +24,25 @@ import org.folio.rest.jaxrs.model.TitleCostPerUseDataAttributes;
 import org.folio.rest.jaxrs.model.Usage;
 import org.folio.rest.jaxrs.model.UsageTotals;
 import org.folio.rmapi.result.TitleCostPerUseResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult, TitleCostPerUse> {
 
-  @Autowired
-  private Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
-  @Autowired
-  private Converter<List<CoverageDates>, List<Coverage>> coveragesConverter;
+  private final Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
+  private final Converter<List<CoverageDates>, List<Coverage>> coveragesConverter;
+
+  public TitleCostPerUseConverter(
+    Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter,
+    Converter<List<CoverageDates>, List<Coverage>> coveragesConverter) {
+    this.embargoPeriodConverter = embargoPeriodConverter;
+    this.coveragesConverter = coveragesConverter;
+  }
 
   @Override
-  public TitleCostPerUse convert(@NotNull TitleCostPerUseResult source) {
+  public TitleCostPerUse convert(@NonNull TitleCostPerUseResult source) {
     TitleCostPerUse titleCostPerUse = new TitleCostPerUse()
       .withTitleId(source.getTitleId())
       .withType(TitleCostPerUse.Type.TITLE_COST_PER_USE);
@@ -95,7 +98,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
     var titlePackageCostMap = source.getTitlePackageCostMap();
     return customerResources.stream()
       .map(customerResource -> toHoldingsCostAnalysis(totalUsage, titlePackageCostMap, customerResource))
-      .collect(Collectors.toList());
+      .toList();
   }
 
   private HoldingsCostAnalysisAttributes toHoldingsCostAnalysis(

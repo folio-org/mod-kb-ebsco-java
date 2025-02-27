@@ -13,7 +13,6 @@ import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rmapi.result.TitleResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -25,12 +24,15 @@ public final class ResourceCollectionItemConverters {
   @Component
   public static class FromTitle implements Converter<Title, ResourceCollectionItem> {
 
-    @Autowired
-    private CommonResourceConverter commonResourceConverter;
+    private final CommonResourceConverter commonResourceConverter;
+
+    public FromTitle(CommonResourceConverter commonResourceConverter) {
+      this.commonResourceConverter = commonResourceConverter;
+    }
 
     @Override
     public ResourceCollectionItem convert(@NonNull Title title) {
-      CustomerResources resource = title.getCustomerResourcesList().get(0);
+      CustomerResources resource = title.getCustomerResourcesList().getFirst();
       return new ResourceCollectionItem()
         .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
         .withType(ResourceCollectionItem.Type.RESOURCES)
@@ -43,12 +45,17 @@ public final class ResourceCollectionItemConverters {
   @Component
   public static class FromTitleResult implements Converter<TitleResult, ResourceCollectionItem> {
 
-    @Autowired
-    private Converter<Title, ResourceCollectionItem> titleConverter;
-    @Autowired
-    private Converter<List<DbTag>, Tags> tagsConverter;
-    @Autowired
-    private Converter<DbAccessType, AccessType> accessTypeConverter;
+    private final Converter<Title, ResourceCollectionItem> titleConverter;
+    private final Converter<List<DbTag>, Tags> tagsConverter;
+    private final Converter<DbAccessType, AccessType> accessTypeConverter;
+
+    public FromTitleResult(Converter<Title, ResourceCollectionItem> titleConverter,
+                           Converter<List<DbTag>, Tags> tagsConverter,
+                           Converter<DbAccessType, AccessType> accessTypeConverter) {
+      this.titleConverter = titleConverter;
+      this.tagsConverter = tagsConverter;
+      this.accessTypeConverter = accessTypeConverter;
+    }
 
     @Override
     public ResourceCollectionItem convert(@NonNull TitleResult titleResult) {

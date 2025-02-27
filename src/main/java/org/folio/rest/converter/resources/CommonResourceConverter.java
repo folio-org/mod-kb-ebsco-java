@@ -1,8 +1,9 @@
 package org.folio.rest.converter.resources;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
@@ -19,33 +20,45 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CommonResourceConverter {
 
-  @Autowired
-  private Converter<List<Contributor>, List<Contributors>> contributorsConverter;
-  @Autowired
-  private Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
-  @Autowired
-  private Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
-  @Autowired
-  private Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
-  @Autowired
-  private Converter<VisibilityInfo, VisibilityData> visibilityInfoConverter;
-  @Autowired
-  private Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
-  @Autowired
-  private Converter<ProxyUrl, org.folio.rest.jaxrs.model.ProxyUrl> proxyConverter;
-  @Autowired
-  private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
+  private final Converter<List<Contributor>, List<Contributors>> contributorsConverter;
+  private final Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter;
+  private final Converter<List<Subject>, List<TitleSubject>> subjectsConverter;
+  private final Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
+  private final Converter<VisibilityInfo, VisibilityData> visibilityInfoConverter;
+  private final Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
+  private final Converter<ProxyUrl, org.folio.rest.jaxrs.model.ProxyUrl> proxyConverter;
+  private final Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>>
+    alternateTitleConverter;
+
+  public CommonResourceConverter(
+    Converter<List<Contributor>, List<Contributors>> contributorsConverter,
+    Converter<List<Identifier>, List<org.folio.rest.jaxrs.model.Identifier>> identifiersConverter,
+    Converter<List<Subject>, List<TitleSubject>> subjectsConverter,
+    Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter,
+    Converter<VisibilityInfo, VisibilityData> visibilityInfoConverter,
+    Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter,
+    Converter<ProxyUrl, org.folio.rest.jaxrs.model.ProxyUrl> proxyConverter,
+    Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter) {
+    this.contributorsConverter = contributorsConverter;
+    this.identifiersConverter = identifiersConverter;
+    this.subjectsConverter = subjectsConverter;
+    this.embargoPeriodConverter = embargoPeriodConverter;
+    this.visibilityInfoConverter = visibilityInfoConverter;
+    this.coverageDatesConverter = coverageDatesConverter;
+    this.proxyConverter = proxyConverter;
+    this.alternateTitleConverter = alternateTitleConverter;
+  }
 
   public ResourceDataAttributes createResourceDataAttributes(Title title, CustomerResources resource) {
     return new ResourceDataAttributes()
-      .withAlternateTitles(alternateTitleConverter.convert(title.getAlternateTitleList()))
+      .withAlternateTitles(alternateTitleConverter.convert(Objects.requireNonNullElse(title.getAlternateTitleList(),
+        Collections.emptyList())))
       .withDescription(title.getDescription())
       .withEdition(title.getEdition())
       .withIsPeerReviewed(title.getIsPeerReviewed())
@@ -74,7 +87,7 @@ public class CommonResourceConverter {
       .withCustomCoverages(coverageDatesConverter.convert(
         resource.getCustomCoverageList().stream()
           .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
-          .collect(Collectors.toList())))
+          .toList()))
       .withProxy(proxyConverter.convert(resource.getProxy()))
       .withUserDefinedField1(resource.getUserDefinedFields().getUserDefinedField1())
       .withUserDefinedField2(resource.getUserDefinedFields().getUserDefinedField2())

@@ -18,7 +18,6 @@ import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.rest.validator.CustomLabelsPutBodyValidator;
 import org.folio.service.kbcredentials.KbCredentialsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -27,24 +26,32 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomLabelsServiceImpl implements CustomLabelsService {
 
-  @Autowired
-  @Qualifier("nonSecuredCredentialsService")
-  private KbCredentialsService credentialsService;
+  private final KbCredentialsService credentialsService;
 
-  @Autowired
-  private CustomLabelsPutBodyValidator validator;
+  private final CustomLabelsPutBodyValidator validator;
 
-  @Autowired
-  private Converter<KbCredentials, Configuration> configurationConverter;
-  @Autowired
-  private Converter<List<CustomLabel>, CustomLabelsCollection> fromListConverter;
-  @Autowired
-  private Converter<RootProxyCustomLabels, CustomLabelsCollection> fromRmApiConverter;
-  @Autowired
-  private Converter<CustomLabel, org.folio.holdingsiq.model.CustomLabel> labelConverter;
+  private final Converter<KbCredentials, Configuration> configurationConverter;
+  private final Converter<List<CustomLabel>, CustomLabelsCollection> fromListConverter;
+  private final Converter<RootProxyCustomLabels, CustomLabelsCollection> fromRmApiConverter;
+  private final Converter<CustomLabel, org.folio.holdingsiq.model.CustomLabel> labelConverter;
 
-  @Autowired
-  private Vertx vertx;
+  private final Vertx vertx;
+
+  public CustomLabelsServiceImpl(@Qualifier("nonSecuredCredentialsService") KbCredentialsService credentialsService,
+                                 CustomLabelsPutBodyValidator validator,
+                                 Converter<KbCredentials, Configuration> configurationConverter,
+                                 Converter<List<CustomLabel>, CustomLabelsCollection> fromListConverter,
+                                 Converter<RootProxyCustomLabels, CustomLabelsCollection> fromRmApiConverter,
+                                 Converter<CustomLabel, org.folio.holdingsiq.model.CustomLabel> labelConverter,
+                                 Vertx vertx) {
+    this.credentialsService = credentialsService;
+    this.validator = validator;
+    this.configurationConverter = configurationConverter;
+    this.fromListConverter = fromListConverter;
+    this.fromRmApiConverter = fromRmApiConverter;
+    this.labelConverter = labelConverter;
+    this.vertx = vertx;
+  }
 
   @Override
   public CompletableFuture<CustomLabelsCollection> fetch(String credentialsId,

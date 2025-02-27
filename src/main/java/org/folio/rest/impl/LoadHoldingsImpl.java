@@ -34,6 +34,7 @@ import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+@SuppressWarnings("java:S6813")
 public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
 
   private static final Logger LOG = LogManager.getLogger(LoadHoldingsImpl.class);
@@ -80,7 +81,7 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
   public void postEholdingsLoadingKbCredentialsById(String id, String contentType, Map<String, String> okapiHeaders,
                                                     Handler<AsyncResult<Response>> asyncResultHandler,
                                                     Context vertxContext) {
-    LOG.info("Start loading of holdings for credentials: " + id);
+    LOG.info("Start loading of holdings for credentials: {}", id);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .withErrorHandler(loadHoldingsErrorHandler)
       .requestAction(this::validateAndStartLoading)
@@ -105,14 +106,14 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
 
   private CompletableFuture<Void> validateAndStartLoading(RmApiTemplateContext context) {
     return holdingsService.canStartLoading(context.getCredentialsId(), context.getOkapiData().getTenant())
-      .thenCompose(canStartLoading -> canStartLoading
+      .thenCompose(canStartLoading -> Boolean.TRUE.equals(canStartLoading)
                                       ? startLoading(context)
                                       : failedFuture(new ProcessInProgressException(LOADING_IN_PROGRESS_MESSAGE)));
   }
 
   private CompletableFuture<Void> validateAllCredentialsStatus(Map<String, String> okapiHeaders) {
     return holdingsService.canStartLoading(tenantId(okapiHeaders))
-      .thenCompose(allCanStartLoading -> allCanStartLoading
+      .thenCompose(allCanStartLoading -> Boolean.TRUE.equals(allCanStartLoading)
                                          ? CompletableFuture.completedFuture(null)
                                          : failedFuture(new ProcessInProgressException(LOADING_IN_PROGRESS_MESSAGE)));
   }

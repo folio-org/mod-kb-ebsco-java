@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class HeaderValidator {
 
-  private final Collection<String> expectedHeaders = Collections.singletonList(
+  private static final Collection<String> EXPECTED_HEADERS = Collections.singletonList(
     XOkapiHeaders.URL
   );
 
@@ -24,7 +24,7 @@ public class HeaderValidator {
    * @throws ValidationException if validation failed
    */
   public void validate(Map<String, String> okapiHeaders) {
-    for (String header : expectedHeaders) {
+    for (String header : EXPECTED_HEADERS) {
       if (!okapiHeaders.containsKey(header)) {
         throw new ValidationException("Missing header " + header);
       }

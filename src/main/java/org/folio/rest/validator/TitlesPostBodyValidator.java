@@ -38,17 +38,17 @@ public class TitlesPostBodyValidator {
       throw new InputValidationException(INVALID_POST_BODY, "");
     }
     List<TitlePostIncluded> included = entity.getIncluded();
-    if (Objects.isNull(included) || included.isEmpty() || Objects.isNull(included.get(0))) {
+    if (Objects.isNull(included) || included.isEmpty() || Objects.isNull(included.getFirst())) {
       throw new InputValidationException("Missing resource", "");
     }
-    if (Objects.isNull(included.get(0).getAttributes())
-      || Objects.isNull(included.get(0).getAttributes().getPackageId())
-      || StringUtils.isEmpty(included.get(0).getAttributes().getPackageId())) {
+    if (Objects.isNull(included.getFirst().getAttributes())
+      || Objects.isNull(included.getFirst().getAttributes().getPackageId())
+      || StringUtils.isEmpty(included.getFirst().getAttributes().getPackageId())) {
       throw new InputValidationException("Invalid package Id", "");
     }
 
     TitlePostDataAttributes attributes = entity.getData().getAttributes();
-    int valueMaxLength = customLabelsProperties.getValueMaxLength();
+    int valueMaxLength = customLabelsProperties.valueMaxLength();
     checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), valueMaxLength);
     checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), valueMaxLength);
     checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), valueMaxLength);

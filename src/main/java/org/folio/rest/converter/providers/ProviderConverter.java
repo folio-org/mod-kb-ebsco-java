@@ -6,6 +6,7 @@ import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 
 import java.util.List;
+import java.util.Objects;
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -20,7 +21,6 @@ import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.VendorResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -28,10 +28,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProviderConverter implements Converter<VendorResult, Provider> {
 
-  @Autowired
-  private Converter<org.folio.holdingsiq.model.Packages, PackageCollection> packagesConverter;
-  @Autowired
-  private Converter<TokenInfo, Token> tokenInfoConverter;
+  private final Converter<org.folio.holdingsiq.model.Packages, PackageCollection> packagesConverter;
+  private final Converter<TokenInfo, Token> tokenInfoConverter;
+
+  public ProviderConverter(Converter<org.folio.holdingsiq.model.Packages, PackageCollection> packagesConverter,
+                           Converter<TokenInfo, Token> tokenInfoConverter) {
+    this.packagesConverter = packagesConverter;
+    this.tokenInfoConverter = tokenInfoConverter;
+  }
 
   @Override
   public Provider convert(@NonNull VendorResult result) {
@@ -58,7 +62,7 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
       .withJsonapi(RestConstants.JSONAPI);
     if (packages != null) {
       provider
-        .withIncluded(packagesConverter.convert(packages).getData())
+        .withIncluded(Objects.requireNonNull(packagesConverter.convert(packages)).getData())
         .getData()
         .withRelationships(new Relationships()
           .withPackages(new Packages()

@@ -53,16 +53,19 @@ import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
-class TagRepositoryImpl implements TagRepository {
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+public class TagRepositoryImpl implements TagRepository {
+
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public TagRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<List<DbTag>> findAll(String tenantId) {

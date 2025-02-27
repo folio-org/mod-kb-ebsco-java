@@ -49,11 +49,6 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
     return titleFuture;
   }
 
-  private CompletableFuture<Title> retrieveTitleWithCache(long titleId) {
-    var cacheKey = buildTitleCacheKey(titleId);
-    return titleCache.getValueOrLoad(cacheKey, () -> super.retrieveTitle(titleId));
-  }
-
   public CompletableFuture<Titles> retrieveTitles(List<Long> titleIds) {
     Set<CompletableFuture<Title>> futures = titleIds.stream()
       .map(id -> retrieveTitle(id, true))
@@ -71,15 +66,20 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
     titleCache.putValue(cacheKey, title);
   }
 
+  private CompletableFuture<Title> retrieveTitleWithCache(long titleId) {
+    var cacheKey = buildTitleCacheKey(titleId);
+    return titleCache.getValueOrLoad(cacheKey, () -> super.retrieveTitle(titleId));
+  }
+
   private void mergeCustomerResources(Title cachedTitle, Title title) {
     var updatedCustomerResources = title.getCustomerResourcesList();
     var customerResources = cachedTitle.getCustomerResourcesList();
 
     if (!updatedCustomerResources.isEmpty()) {
-      var updatedCustomerResourceId = updatedCustomerResources.get(0).getPackageId();
+      var updatedCustomerResourceId = updatedCustomerResources.getFirst().getPackageId();
       var oldCustomerResources = customerResources.stream()
         .filter(resource -> !Objects.equals(resource.getPackageId(), updatedCustomerResourceId))
-        .collect(Collectors.toList());
+        .toList();
       updatedCustomerResources.addAll(oldCustomerResources);
     }
   }
@@ -89,7 +89,7 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
       .titleList(
         titles.stream()
           .sorted(Comparator.comparing(Title::getTitleName))
-          .collect(Collectors.toList())
+          .toList()
       )
       .build();
   }

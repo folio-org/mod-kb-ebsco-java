@@ -27,8 +27,8 @@ public class TitleCollectionConverterTest {
 
   private final Converter<Facets, FacetsDto> facetsConverterMock = facets -> new FacetsDto()
     .withPackages(singletonList(new PackageFacetDto()
-      .withId(facets.getPackages().get(0).getPackageId())
-      .withName(facets.getPackages().get(0).getPackageName())));
+      .withId(facets.getPackages().getFirst().getPackageId())
+      .withName(facets.getPackages().getFirst().getPackageName())));
   private final TitleCollectionConverter.FromTitles converter = new TitleCollectionConverter.FromTitles(
     titleItemConverterMock, facetsConverterMock);
 
@@ -38,15 +38,16 @@ public class TitleCollectionConverterTest {
 
     TitleCollection titlesCollection = converter.convert(titles);
 
+    assertNotNull(titlesCollection);
     assertEquals(titles.getTotalResults(), titlesCollection.getMeta().getTotalResults());
-    assertEquals(String.valueOf(titles.getTitleList().get(0).getTitleId()),
-      titlesCollection.getData().get(0).getId());
-    assertEquals(titles.getTitleList().get(0).getTitleName(),
-      titlesCollection.getData().get(0).getAttributes().getName());
-    assertEquals(titles.getFacets().getPackages().get(0).getPackageId(),
-      titlesCollection.getFacets().getPackages().get(0).getId());
-    assertEquals(titles.getFacets().getPackages().get(0).getPackageName(),
-      titlesCollection.getFacets().getPackages().get(0).getName());
+    assertEquals(String.valueOf(titles.getTitleList().getFirst().getTitleId()),
+      titlesCollection.getData().getFirst().getId());
+    assertEquals(titles.getTitleList().getFirst().getTitleName(),
+      titlesCollection.getData().getFirst().getAttributes().getName());
+    assertEquals(titles.getFacets().getPackages().getFirst().getPackageId(),
+      titlesCollection.getFacets().getPackages().getFirst().getId());
+    assertEquals(titles.getFacets().getPackages().getFirst().getPackageName(),
+      titlesCollection.getFacets().getPackages().getFirst().getName());
   }
 
   @Test
@@ -55,6 +56,7 @@ public class TitleCollectionConverterTest {
 
     TitleCollection titlesCollection = converter.convert(titles);
 
+    assertNotNull(titlesCollection);
     assertEquals(titles.getTotalResults(), titlesCollection.getMeta().getTotalResults());
     assertNull(titles.getFacets());
     assertNotNull(titles.getTitleList());

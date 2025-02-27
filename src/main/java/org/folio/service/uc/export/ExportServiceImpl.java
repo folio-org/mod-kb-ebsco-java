@@ -16,18 +16,22 @@ import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.converter.costperuse.export.PackageTitlesCostPerUseCollectionToExportConverter;
 import org.folio.service.locale.LocaleSettingsService;
 import org.folio.service.uc.UcCostPerUseService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Log4j2
 @Service
 public class ExportServiceImpl implements ExportService {
-  @Autowired
-  private UcCostPerUseService costPerUseService;
-  @Autowired
-  private LocaleSettingsService localeSettingsService;
-  @Autowired
-  private PackageTitlesCostPerUseCollectionToExportConverter converter;
+
+  private final UcCostPerUseService costPerUseService;
+  private final LocaleSettingsService localeSettingsService;
+  private final PackageTitlesCostPerUseCollectionToExportConverter converter;
+
+  public ExportServiceImpl(UcCostPerUseService costPerUseService, LocaleSettingsService localeSettingsService,
+                           PackageTitlesCostPerUseCollectionToExportConverter converter) {
+    this.costPerUseService = costPerUseService;
+    this.localeSettingsService = localeSettingsService;
+    this.converter = converter;
+  }
 
   public CompletableFuture<String> exportCsv(String packageId, String platform, String year,
                                              Map<String, String> okapiHeaders) {

@@ -16,7 +16,6 @@ import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceCollectionResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -24,17 +23,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResourceCollectionResultConverter implements Converter<ResourceCollectionResult, ResourceCollection> {
 
-  @Autowired
-  private Converter<Title, ResourceCollectionItem> resourceCollectionItemConverter;
-  @Autowired
-  private Converter<DbHoldingInfo, ResourceCollectionItem> holdingCollectionItemConverter;
+  private final Converter<Title, ResourceCollectionItem> resourceCollectionItemConverter;
+  private final Converter<DbHoldingInfo, ResourceCollectionItem> holdingCollectionItemConverter;
 
-  private List<String> getTagsById(List<DbResource> resources, ResourceId resourceId) {
-    return resources.stream()
-      .filter(dbResource -> dbResource.getId().equals(resourceId))
-      .map(DbResource::getTags)
-      .findFirst()
-      .orElse(Collections.emptyList());
+  public ResourceCollectionResultConverter(
+    Converter<Title, ResourceCollectionItem> resourceCollectionItemConverter,
+    Converter<DbHoldingInfo, ResourceCollectionItem> holdingCollectionItemConverter) {
+    this.resourceCollectionItemConverter = resourceCollectionItemConverter;
+    this.holdingCollectionItemConverter = holdingCollectionItemConverter;
   }
 
   @Override
@@ -60,6 +56,14 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
       .withData(resourceCollectionItems);
   }
 
+  private List<String> getTagsById(List<DbResource> resources, ResourceId resourceId) {
+    return resources.stream()
+      .filter(dbResource -> dbResource.getId().equals(resourceId))
+      .map(DbResource::getTags)
+      .findFirst()
+      .orElse(Collections.emptyList());
+  }
+
   private ResourceCollectionItem mapResourceCollectionItem(List<DbResource> resources, ResourceCollectionItem item,
                                                            ResourceId resourceId) {
     item.getAttributes().withTags(new Tags().withTagList(getTagsById(resources, resourceId)));
@@ -68,8 +72,8 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
 
   private ResourceId createResourceId(Title title) {
     return ResourceId.builder()
-      .providerIdPart(title.getCustomerResourcesList().get(0).getVendorId())
-      .packageIdPart(title.getCustomerResourcesList().get(0).getPackageId())
+      .providerIdPart(title.getCustomerResourcesList().getFirst().getVendorId())
+      .packageIdPart(title.getCustomerResourcesList().getFirst().getPackageId())
       .titleIdPart(title.getTitleId()).build();
   }
 

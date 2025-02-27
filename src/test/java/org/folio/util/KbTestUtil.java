@@ -44,7 +44,7 @@ public final class KbTestUtil {
     if (credentials.size() != 1) {
       throw new UnsupportedOperationException("There is 0 or more then 1 configuration");
     } else {
-      return credentials.get(0);
+      return credentials.getFirst();
     }
   }
 
@@ -54,7 +54,7 @@ public final class KbTestUtil {
     PostgresClient.getInstance(vertx, STUB_TENANT)
       .execute(query,
         event -> {
-          logger().info("Table cleaned up: " + tableName);
+          logger().info("Table cleaned up: {}", tableName);
           future.complete(null);
         });
     future.join();

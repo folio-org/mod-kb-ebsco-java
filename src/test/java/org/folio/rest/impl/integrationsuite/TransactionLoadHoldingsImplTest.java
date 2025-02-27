@@ -58,7 +58,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -95,6 +94,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
@@ -125,7 +125,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
   @BeforeClass
   public static void setUpClass(TestContext context) {
-    System.setProperty("holdings.load.implementation.qualifier", "TransactionLoadServiceFacade");
+    System.setProperty("holdings.load.implementation.qualifier", "transactionLoadServiceFacade");
     WireMockTestBase.setUpClass(context);
   }
 
@@ -145,6 +145,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
       anyString());
   }
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -196,7 +197,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     TransactionIdTestUtil.addTransactionId(STUB_CREDENTIALS_ID, PREVIOUS_TRANSACTION_ID, vertx);
 
     HoldingsDownloadTransaction previousTransaction = HoldingsDownloadTransaction.builder()
-      .creationDate(OffsetDateTime.now().minus(500, ChronoUnit.HOURS).toString())
+      .creationDate(OffsetDateTime.now().minusHours(500).toString())
       .transactionId(PREVIOUS_TRANSACTION_ID)
       .build();
     mockTransactionList(Collections.singletonList(previousTransaction));
@@ -350,7 +351,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
 
     async.await(TIMEOUT);
     assertEquals(2, messages.size());
-    assertEquals(STUB_HOLDINGS_TITLE, messages.get(0).getHoldingList().get(0).getPublicationTitle());
+    assertEquals(STUB_HOLDINGS_TITLE, messages.getFirst().getHoldingList().getFirst().getPublicationTitle());
   }
 
   @Test

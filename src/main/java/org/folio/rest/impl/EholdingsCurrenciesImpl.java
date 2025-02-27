@@ -15,6 +15,7 @@ import org.folio.service.currencies.CurrenciesService;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsCurrenciesImpl implements EholdingsCurrencies {
 
   @Autowired

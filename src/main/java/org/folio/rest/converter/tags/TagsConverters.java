@@ -13,7 +13,6 @@ import org.folio.rest.jaxrs.model.TagUniqueCollection;
 import org.folio.rest.jaxrs.model.TagUniqueCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -36,8 +35,11 @@ public final class TagsConverters {
   @Component
   public static class ToTagCollection implements Converter<List<DbTag>, TagCollection> {
 
-    @Autowired
-    private Converter<DbTag, TagCollectionItem> tagConverter;
+    private final Converter<DbTag, TagCollectionItem> tagConverter;
+
+    public ToTagCollection(Converter<DbTag, TagCollectionItem> tagConverter) {
+      this.tagConverter = tagConverter;
+    }
 
     @Override
     public TagCollection convert(@NonNull List<DbTag> source) {
@@ -64,8 +66,11 @@ public final class TagsConverters {
   @Component
   public static class ToUniqueTagCollection implements Converter<List<String>, TagUniqueCollection> {
 
-    @Autowired
-    private Converter<String, TagUniqueCollectionItem> tagConverter;
+    private final Converter<String, TagUniqueCollectionItem> tagConverter;
+
+    public ToUniqueTagCollection(Converter<String, TagUniqueCollectionItem> tagConverter) {
+      this.tagConverter = tagConverter;
+    }
 
     @Override
     public TagUniqueCollection convert(@NonNull List<String> source) {

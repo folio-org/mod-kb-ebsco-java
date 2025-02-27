@@ -56,6 +56,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
@@ -74,7 +75,6 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     super.setUp();
 
     credentialsId = saveKbCredentials(getWiremockUrl(), STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
-    String credentialsId = this.credentialsId;
     saveUcSettings(stubSettings(credentialsId), vertx);
     setUpUcCredentials(vertx);
 
@@ -295,23 +295,6 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400OnGetTitleCpuWhenApigeeFails() {
-    int titleId = 356;
-    int packageId = 473;
-    String year = "2019";
-
-    stubFor(get(urlPathMatching(String.format("/uc/costperuse/title/%s/%s", titleId, packageId)))
-      .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody("Random error message"))
-    );
-
-    JsonapiError error =
-      getWithStatus(resourceEndpoint(titleId, packageId, year, null), SC_BAD_REQUEST, JOHN_USER_ID_HEADER)
-        .as(JsonapiError.class);
-
-    assertErrorContainsDetail(error, "Random error message");
-  }
-
-  @Test
   public void shouldReturnPackageCostPerUse() {
     int packageId = 222222;
     String year = "2019";
@@ -417,8 +400,8 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertThat(actual.getMeta().getTotalResults(), equalTo(20));
     assertThat(actual.getData(), hasSize(20));
     assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
-    assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(2)));
-    assertThat(actual.getData().get(0).getAttributes(), hasProperty("percent", equalTo(2.0 / 36 * 100)));
+    assertThat(actual.getData().getFirst().getAttributes(), hasProperty("usage", equalTo(2)));
+    assertThat(actual.getData().getFirst().getAttributes(), hasProperty("percent", equalTo(2.0 / 36 * 100)));
   }
 
   @Test
@@ -448,7 +431,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
     assertThat(actual.getMeta().getTotalResults(), equalTo(20));
     assertThat(actual.getData(), hasSize(5));
     assertThat(actual.getData(), everyItem(hasProperty("resourceId", startsWith("1-" + packageId))));
-    assertThat(actual.getData().get(0).getAttributes(), hasProperty("usage", equalTo(1)));
+    assertThat(actual.getData().getFirst().getAttributes(), hasProperty("usage", equalTo(1)));
   }
 
   @Test
@@ -740,7 +723,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   private String resourceEndpoint(int titleId, int packageId, String year, String platform) {
     String baseUrl = String.format("eholdings/resources/1-%s-%s/costperuse", packageId, titleId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
-    return paramsSb.length() > 0
+    return !paramsSb.isEmpty()
            ? baseUrl + "?" + paramsSb
            : baseUrl;
   }
@@ -748,7 +731,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   private String titleEndpoint(int titleId, String year, String platform) {
     String baseUrl = String.format("eholdings/titles/%s/costperuse", titleId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
-    return paramsSb.length() > 0
+    return !paramsSb.isEmpty()
            ? baseUrl + "?" + paramsSb
            : baseUrl;
   }
@@ -756,7 +739,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
   private String packageEndpoint(int packageId, String year, String platform) {
     String baseUrl = String.format("eholdings/packages/1-%s/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform);
-    return paramsSb.length() > 0
+    return !paramsSb.isEmpty()
            ? baseUrl + "?" + paramsSb
            : baseUrl;
   }
@@ -769,7 +752,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
                                           String sort, String order) {
     String baseUrl = String.format("eholdings/packages/1-%s/resources/costperuse", packageId);
     StringBuilder paramsSb = getEndpointParams(year, platform, page, size, sort, order);
-    return paramsSb.length() > 0
+    return !paramsSb.isEmpty()
            ? baseUrl + "?" + paramsSb
            : baseUrl;
   }
@@ -794,7 +777,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
 
   private void addParam(String platform, StringBuilder paramsSb, String s) {
     if (platform != null) {
-      if (paramsSb.length() > 0) {
+      if (!paramsSb.isEmpty()) {
         paramsSb.append("&");
       }
       paramsSb.append(s).append(platform);

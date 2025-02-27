@@ -21,7 +21,7 @@ public class ProviderPutBodyValidatorTest {
   @Test
   public void shouldNotThrowExceptionWhenTokenIsValidLength() {
     Token providerToken = new Token();
-    providerToken.setValue(RandomStringUtils.randomAlphanumeric(500));
+    providerToken.setValue(RandomStringUtils.insecure().nextAlphanumeric(500));
 
     ProviderPutRequest request = new ProviderPutRequest()
       .withData(new ProviderPutData().withAttributes(new ProviderPutDataAttributes().withProviderToken(providerToken)));
@@ -31,7 +31,7 @@ public class ProviderPutBodyValidatorTest {
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenTokenIsTooLong() {
     Token providerToken = new Token();
-    providerToken.setValue(RandomStringUtils.randomAlphanumeric(501));
+    providerToken.setValue(RandomStringUtils.insecure().nextAlphanumeric(501));
 
     ProviderPutRequest request = new ProviderPutRequest()
       .withData(new ProviderPutData().withAttributes(new ProviderPutDataAttributes().withProviderToken(providerToken)));

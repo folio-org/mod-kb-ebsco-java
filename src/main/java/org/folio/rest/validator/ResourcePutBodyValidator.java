@@ -57,7 +57,7 @@ public class ResourcePutBodyValidator {
         ValidatorUtil.checkDateValid("endCoverage", customCoverage.getEndCoverage());
       });
 
-      int valueMaxLength = customLabelsProperties.getValueMaxLength();
+      int valueMaxLength = customLabelsProperties.valueMaxLength();
       ValidatorUtil.checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), valueMaxLength);
       ValidatorUtil.checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), valueMaxLength);
       ValidatorUtil.checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), valueMaxLength);
@@ -75,7 +75,7 @@ public class ResourcePutBodyValidator {
       attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
     List<Coverage> customCoverages = attributes.getCustomCoverages();
     if (!isTitleCustom && (isNotEmpty(cvgStmt) || nonNull(embargoUnit)
-      || nonNull(isHidden) && isHidden
+      || nonNull(isHidden) && Boolean.TRUE.equals(isHidden)
       || nonNull(customCoverages) && !customCoverages.isEmpty()
       || isNotEmpty(attributes.getUserDefinedField1())
       || isNotEmpty(attributes.getUserDefinedField2())

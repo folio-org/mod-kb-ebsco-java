@@ -32,6 +32,7 @@ import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 
+@SuppressWarnings("java:S6813")
 public class EholdingsTagsImpl implements EholdingsTags {
 
   private final Logger log = LogManager.getLogger(EholdingsTagsImpl.class);
@@ -89,7 +90,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
   }
 
   private CompletableFuture<List<String>> findUniqueTags(List<String> filterRectypes, String tenantId) {
-    log.info("Retrieving tags: tenantId = {}, recordTypes = {}", tenantId, filterRectypes);
+    log.info("Retrieving unique tags: tenantId = {}, recordTypes = {}", tenantId, filterRectypes);
 
     if (CollectionUtils.isEmpty(filterRectypes)) {
       return tagRepository.findDistinctRecordTags(tenantId);
@@ -115,7 +116,7 @@ public class EholdingsTagsImpl implements EholdingsTags {
 
   private Void failedGetTags(Throwable th, Handler<AsyncResult<Response>> handler,
                              Function<ValidationException, Response> exceptionHandler) {
-    log.warn("Tag retrieval failed: " + th.getMessage(), th);
+    log.warn("Tag retrieval failed: {}", th.getMessage(), th);
 
     ErrorHandler errHandler = new ErrorHandler()
       .add(ValidationException.class, exceptionHandler)

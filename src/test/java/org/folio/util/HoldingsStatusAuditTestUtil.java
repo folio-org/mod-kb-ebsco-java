@@ -56,7 +56,6 @@ public class HoldingsStatusAuditTestUtil {
       return org.folio.dbschema.ObjectMapperTool.getMapper()
         .readValue(row.getValue(JSONB_COLUMN).toString(), HoldingsLoadingStatus.class);
     } catch (IOException e) {
-      e.printStackTrace();
       throw new IllegalArgumentException("Can't parse holdings status", e);
     }
   }

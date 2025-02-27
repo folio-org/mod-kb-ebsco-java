@@ -9,9 +9,10 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.titles.TitleConverterUtils.createEmptyResourcesRelationships;
 import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.holdingsiq.model.Contributor;
 import org.folio.holdingsiq.model.CustomerResources;
@@ -42,7 +43,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TitleConverter implements Converter<TitleResult, Title> {
+@SuppressWarnings("java:S6813")
+public class TitleResultConverter implements Converter<TitleResult, Title> {
 
   private static final String RESOURCES_TYPE = "resources";
 
@@ -76,7 +78,8 @@ public class TitleConverter implements Converter<TitleResult, Title> {
           .withSubjects(subjectsConverter.convert(rmapiTitle.getSubjectsList()))
           .withIdentifiers(identifiersConverter.convert(rmapiTitle.getIdentifiersList()))
           .withContributors(contributorsConverter.convert(rmapiTitle.getContributorsList()))
-          .withAlternateTitles(alternateTitleConverter.convert(rmapiTitle.getAlternateTitleList()))
+          .withAlternateTitles(alternateTitleConverter.convert(
+            Objects.requireNonNullElse(rmapiTitle.getAlternateTitleList(), Collections.emptyList())))
           .withEdition(rmapiTitle.getEdition())
           .withDescription(rmapiTitle.getDescription())
           .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
@@ -116,7 +119,7 @@ public class TitleConverter implements Converter<TitleResult, Title> {
       for (ResourceCollectionItem resourceCollectionItem : title.getIncluded()) {
         List<DbTag> tags = titleResult.getResourceTagList().stream()
           .filter(tag -> resourceCollectionItem.getId().equals(tag.getRecordId()))
-          .collect(Collectors.toList());
+          .toList();
 
         resourceCollectionItem.getAttributes().withTags(tagsConverter.convert(tags));
       }

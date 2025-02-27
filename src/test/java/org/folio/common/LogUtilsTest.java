@@ -6,14 +6,8 @@ import static org.folio.common.LogUtils.collectionToLogMsg;
 
 import java.util.Arrays;
 import java.util.List;
-import org.folio.spring.config.TestConfig;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TestConfig.class)
 public class LogUtilsTest {
 
   private static final List<String> BIG_LIST = Arrays.asList("One", "Two", "Three");

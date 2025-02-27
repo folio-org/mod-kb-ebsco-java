@@ -7,7 +7,6 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTo
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setNonPublisherUsage;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPublisherUsage;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.folio.rest.jaxrs.model.CostAnalysis;
 import org.folio.rest.jaxrs.model.ResourceCostPerUse;
@@ -18,13 +17,14 @@ import org.folio.rest.jaxrs.model.UsageTotals;
 import org.folio.rest.util.IdParser;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceCostPerUseConverter implements Converter<ResourceCostPerUseResult, ResourceCostPerUse> {
 
   @Override
-  public ResourceCostPerUse convert(@NotNull ResourceCostPerUseResult source) {
+  public ResourceCostPerUse convert(@NonNull ResourceCostPerUseResult source) {
     ResourceCostPerUse resourceCostPerUse = new ResourceCostPerUse()
       .withResourceId(IdParser.resourceIdToString(source.getResourceId()))
       .withType(ResourceCostPerUse.Type.RESOURCE_COST_PER_USE);

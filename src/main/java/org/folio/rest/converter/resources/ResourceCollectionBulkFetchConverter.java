@@ -10,7 +10,6 @@ import org.folio.rest.jaxrs.model.ResourceBulkFetchCollection;
 import org.folio.rest.jaxrs.model.ResourceBulkFetchCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceBulkResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +17,11 @@ import org.springframework.stereotype.Component;
 public class ResourceCollectionBulkFetchConverter
   implements Converter<ResourceBulkResult, ResourceBulkFetchCollection> {
 
-  @Autowired
-  private Converter<Title, ResourceBulkFetchCollectionItem> converter;
+  private final Converter<Title, ResourceBulkFetchCollectionItem> converter;
+
+  public ResourceCollectionBulkFetchConverter(Converter<Title, ResourceBulkFetchCollectionItem> converter) {
+    this.converter = converter;
+  }
 
   @Override
   public ResourceBulkFetchCollection convert(ResourceBulkResult resourceBulkResult) {

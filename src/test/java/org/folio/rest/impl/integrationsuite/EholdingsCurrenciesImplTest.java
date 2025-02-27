@@ -28,14 +28,14 @@ public class EholdingsCurrenciesImplTest extends WireMockTestBase {
 
     assertThat(actual.getMeta().getTotalResults(), greaterThan(0));
     assertThat(actual.getData(), hasSize(actual.getMeta().getTotalResults()));
-    assertThat(actual.getData().get(0), notNullValue());
-    assertThat(actual.getData().get(0),
+    assertThat(actual.getData().getFirst(), notNullValue());
+    assertThat(actual.getData().getFirst(),
       allOf(
         hasProperty("id", equalTo("AFN")),
         hasProperty("type", equalTo(Currency.Type.CURRENCIES))
       )
     );
-    assertThat(actual.getData().get(0).getAttributes(),
+    assertThat(actual.getData().getFirst().getAttributes(),
       allOf(
         hasProperty("code", equalTo("AFN")),
         hasProperty("description", equalTo("Afghan Afghani"))

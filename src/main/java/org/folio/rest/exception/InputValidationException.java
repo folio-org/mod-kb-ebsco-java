@@ -1,7 +1,10 @@
 package org.folio.rest.exception;
 
+import java.io.Serial;
+
 public class InputValidationException extends RuntimeException {
 
+  @Serial
   private static final long serialVersionUID = 1L;
 
   private final String messageDetail;

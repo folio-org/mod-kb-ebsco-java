@@ -47,6 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
 
@@ -57,6 +58,7 @@ public class DefaultLoadServiceFacadeTest extends WireMockTestBase {
   private Configuration configuration;
   private Handler<DeliveryContext<LoadHoldingsMessage>> interceptor;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();

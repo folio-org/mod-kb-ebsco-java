@@ -209,7 +209,7 @@ public class ResourceRequestConverterTest {
   @Test
   public void shouldCreateRequestToUpdateUrlForCustomResource() {
     CustomerResources.CustomerResourcesBuilder customerResourcesBuilder =
-      resourceData.getCustomerResourcesList().get(0).toBuilder();
+      resourceData.getCustomerResourcesList().getFirst().toBuilder();
     CustomerResources resources = customerResourcesBuilder.isPackageCustom(true).build();
     Title title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
 
@@ -223,7 +223,7 @@ public class ResourceRequestConverterTest {
 
   @Test
   public void shouldCreateRequestWithOldDataExceptEmbargoWhenUpdateFieldsAreMissing() {
-    var customerResourcesBuilder = resourceData.getCustomerResourcesList().get(0).toBuilder();
+    var customerResourcesBuilder = resourceData.getCustomerResourcesList().getFirst().toBuilder();
     var resources = customerResourcesBuilder.isPackageCustom(true).build();
     var title = resourceData.toBuilder().customerResourcesList(Collections.singletonList(resources)).build();
 

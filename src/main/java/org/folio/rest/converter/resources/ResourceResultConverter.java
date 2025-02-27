@@ -31,6 +31,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
+@SuppressWarnings("java:S6813")
 public class ResourceResultConverter implements Converter<ResourceResult, List<Resource>> {
 
   @Autowired
@@ -46,7 +47,7 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
 
   @Override
   public List<Resource> convert(@NonNull ResourceResult resourceResult) {
-    org.folio.holdingsiq.model.Title rmapiTitle = resourceResult.getTitle();
+    var rmapiTitle = resourceResult.getTitle();
     PackageByIdData packageData = resourceResult.getPackageData();
     VendorById vendor = resourceResult.getVendor();
     AccessType accessType = resourceResult.getAccessType();

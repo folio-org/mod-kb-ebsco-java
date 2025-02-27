@@ -52,6 +52,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
 
@@ -65,6 +66,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
 
   private Handler<DeliveryContext<LoadHoldingsMessage>> interceptor;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -89,7 +91,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
 
     mockEmptyTransactionList();
 
-    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), false),
+    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint()), false),
       new ResponseDefinitionBuilder().withBody(
         readFile("responses/rmapi/holdings/status/get-transaction-status-completed.json"))
     );
@@ -113,7 +115,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
     mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL),
       readFile("responses/rmapi/holdings/status/get-transaction-list-in-progress.json"));
 
-    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), false),
+    mockResponseList(new UrlPathPattern(new EqualToPattern(getStatusEndpoint()), false),
       new ResponseDefinitionBuilder().withBody(
         readFile("responses/rmapi/holdings/status/get-transaction-status-completed.json"))
     );
@@ -137,14 +139,14 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
     String now = HOLDINGS_STATUS_TIME_FORMATTER.format(LocalDateTime.now(ZoneOffset.UTC));
     HoldingsTransactionIdsList idList =
       readJsonFile("responses/rmapi/holdings/status/get-transaction-list.json", HoldingsTransactionIdsList.class);
-    HoldingsDownloadTransaction firstTransaction = idList.getHoldingsDownloadTransactionIds().get(0);
+    HoldingsDownloadTransaction firstTransaction = idList.getHoldingsDownloadTransactionIds().getFirst();
     idList.getHoldingsDownloadTransactionIds().set(0, firstTransaction.toBuilder().creationDate(now).build());
     HoldingsLoadTransactionStatus status =
       readJsonFile("responses/rmapi/holdings/status/get-transaction-status-completed.json",
         HoldingsLoadTransactionStatus.class)
         .toBuilder().creationDate(now).build();
     mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL), Json.encode(idList));
-    mockGetWithBody(new EqualToPattern(getStatusEndpoint(TRANSACTION_ID)), Json.encode(status));
+    mockGetWithBody(new EqualToPattern(getStatusEndpoint()), Json.encode(status));
     mockPostHoldings();
     Async async = context.async();
     interceptor = interceptAndStop(HOLDINGS_SERVICE_ADDRESS, SNAPSHOT_CREATED_ACTION,
@@ -162,7 +164,7 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
   private void mockPostHoldings() {
     stubFor(post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_TRANSACTIONS_HOLDINGS_URL), false))
       .willReturn(new ResponseDefinitionBuilder()
-        .withBody(Json.encode(createTransactionId(TRANSACTION_ID)))
+        .withBody(Json.encode(createTransactionId()))
         .withStatus(202)));
   }
 
@@ -172,12 +174,12 @@ public class TransactionLoadServiceFacadeTest extends WireMockTestBase {
     mockGetWithBody(new EqualToPattern(RMAPI_TRANSACTIONS_URL), Json.encode(emptyTransactionList));
   }
 
-  private String getStatusEndpoint(String transactionId) {
-    return String.format(RMAPI_TRANSACTION_STATUS_URL, transactionId);
+  private String getStatusEndpoint() {
+    return String.format(RMAPI_TRANSACTION_STATUS_URL, TransactionLoadServiceFacadeTest.TRANSACTION_ID);
   }
 
-  private TransactionId createTransactionId(String transactionId) {
-    return TransactionId.builder().transactionId(transactionId).build();
+  private TransactionId createTransactionId() {
+    return TransactionId.builder().transactionId(TransactionLoadServiceFacadeTest.TRANSACTION_ID).build();
   }
 
   private void setupDefaultLoadKbConfiguration() {

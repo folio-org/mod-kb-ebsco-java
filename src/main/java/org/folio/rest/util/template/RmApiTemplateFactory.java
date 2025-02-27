@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.ws.rs.core.Response;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
@@ -14,10 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RmApiTemplateFactory {
 
-  @Autowired
-  private ConversionService conversionService;
-  @Autowired
-  private HeaderValidator headerValidator;
+  private final ConversionService conversionService;
+  private final HeaderValidator headerValidator;
+
+  public RmApiTemplateFactory(ConversionService conversionService, HeaderValidator headerValidator) {
+    this.conversionService = conversionService;
+    this.headerValidator = headerValidator;
+  }
 
   public RmApiTemplate createTemplate(Map<String, String> okapiHeaders,
                                       Handler<AsyncResult<Response>> asyncResultHandler) {

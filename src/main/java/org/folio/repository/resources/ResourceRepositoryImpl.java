@@ -33,16 +33,19 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.folio.db.RowSetUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.model.filter.TagFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Log4j2
 @Component
 public class ResourceRepositoryImpl implements ResourceRepository {
-  @Autowired
-  private Vertx vertx;
-  @Autowired
-  private DBExceptionTranslator excTranslator;
+
+  private final Vertx vertx;
+  private final DBExceptionTranslator excTranslator;
+
+  public ResourceRepositoryImpl(Vertx vertx, DBExceptionTranslator excTranslator) {
+    this.vertx = vertx;
+    this.excTranslator = excTranslator;
+  }
 
   @Override
   public CompletableFuture<Void> save(DbResource resource, String tenantId) {

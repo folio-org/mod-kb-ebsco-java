@@ -1,7 +1,6 @@
 package org.folio.rest.validator;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -110,15 +109,6 @@ public final class ValidatorUtil {
     }
   }
 
-  private static boolean isDateValid(String date) {
-    try {
-      DATE_PATTERN.parse(date);
-      return true;
-    } catch (DateTimeParseException e) {
-      return false;
-    }
-  }
-
   public static void checkDatesOrder(String beginCoverage, String endCoverage) {
     LocalDate start = parseDate(beginCoverage);
     LocalDate end = parseDate(endCoverage);
@@ -128,14 +118,10 @@ public final class ValidatorUtil {
     }
   }
 
-  private static LocalDate parseDate(String date) {
-    return LocalDate.parse(date, DATE_PATTERN);
-  }
-
   public static void checkUrlFormat(String paramName, String value) {
     try {
-      new URL(value);
-    } catch (MalformedURLException e) {
+      URI.create(value).toURL();
+    } catch (Exception e) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_VALID_URL, paramName));
@@ -157,5 +143,18 @@ public final class ValidatorUtil {
         String.format(MUST_BE_EQUALS, paramName, expected, actual)
       );
     }
+  }
+
+  private static boolean isDateValid(String date) {
+    try {
+      DATE_PATTERN.parse(date);
+      return true;
+    } catch (DateTimeParseException e) {
+      return false;
+    }
+  }
+
+  private static LocalDate parseDate(String date) {
+    return LocalDate.parse(date, DATE_PATTERN);
   }
 }

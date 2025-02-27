@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
+import static org.apache.commons.lang3.RandomStringUtils.insecure;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -83,7 +84,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.AccessType;
@@ -109,6 +109,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 @RunWith(VertxUnitRunner.class)
 public class EholdingsProvidersImplTest extends WireMockTestBase {
@@ -218,9 +219,9 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     assertEquals(1, (int) packageCollection.getMeta().getTotalResults());
     assertEquals(1, packages.size());
-    assertThat(packages.get(0).getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE,
+    assertThat(packages.getFirst().getAttributes().getTags().getTagList(), containsInAnyOrder(STUB_TAG_VALUE,
       STUB_TAG_VALUE_2));
-    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+    assertEquals(STUB_PACKAGE_NAME, packages.getFirst().getAttributes().getName());
   }
 
   @Test
@@ -235,12 +236,13 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
     PackageCollection packageCollection = getWithOk(PROVIDER_PACKAGES + "?page=2&count=1&filter[tags]=" + STUB_TAG_VALUE
-      + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_USER_ID_HEADER).as(PackageCollection.class);
+                                                    + "&filter[tags]=" + STUB_TAG_VALUE_2, STUB_USER_ID_HEADER).as(
+      PackageCollection.class);
     List<PackageCollectionItem> packages = packageCollection.getData();
 
     assertEquals(3, (int) packageCollection.getMeta().getTotalResults());
     assertEquals(1, packages.size());
-    assertEquals(STUB_PACKAGE_NAME_2, packages.get(0).getAttributes().getName());
+    assertEquals(STUB_PACKAGE_NAME_2, packages.getFirst().getAttributes().getName());
   }
 
   @Test
@@ -256,21 +258,21 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID, STUB_PACKAGE_NAME_3);
 
     String resourcePath = PROVIDER_PACKAGES + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
-      + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+                          + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
     PackageCollection packageCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(PackageCollection.class);
 
     List<PackageCollectionItem> packages = packageCollection.getData();
 
     assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
     assertEquals(1, packages.size());
-    assertEquals(STUB_PACKAGE_NAME, packages.get(0).getAttributes().getName());
+    assertEquals(STUB_PACKAGE_NAME, packages.getFirst().getAttributes().getName());
   }
 
   @Test
   public void shouldReturnEmptyResponseWhenPackagesReturnedWithErrorOnSearchByAccessType() {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
-    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.get(0).getId(), vertx);
-    insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.get(0).getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.getFirst().getId(), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.getFirst().getId(), vertx);
 
     mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
 
@@ -315,7 +317,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     assertEquals(3, (int) providerCollection.getMeta().getTotalResults());
     assertEquals(1, providers.size());
-    assertEquals(STUB_VENDOR_NAME_2, providers.get(0).getAttributes().getName());
+    assertEquals(STUB_VENDOR_NAME_2, providers.getFirst().getAttributes().getName());
   }
 
   @Test
@@ -349,7 +351,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     final JsonapiError error = getWithStatus(PROVIDER_PATH + "?q=e&count=1", SC_INTERNAL_SERVER_ERROR,
       STUB_USER_ID_HEADER).as(JsonapiError.class);
 
-    assertThat(error.getErrors().get(0).getTitle(), notNullValue());
+    assertThat(error.getErrors().getFirst().getTitle(), notNullValue());
   }
 
   @Test
@@ -475,7 +477,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     ProviderPutRequest providerToBeUpdated = mapper.readValue(getFile(PUT_PROVIDER), ProviderPutRequest.class);
 
     Token providerToken = new Token();
-    providerToken.setValue(RandomStringUtils.randomAlphanumeric(501));
+    providerToken.setValue(insecure().nextAlphanumeric(501));
 
     providerToBeUpdated.getData().getAttributes().setProviderToken(providerToken);
 
@@ -520,7 +522,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     String expected = readFile(
       "responses/kb-ebsco/packages/expected-package-collection-with-one-element-with-tags.json");
 
-    JSONAssert.assertEquals(expected, actual, false);
+    JSONAssert.assertEquals(expected, actual, JSONCompareMode.LENIENT);
   }
 
   @Test

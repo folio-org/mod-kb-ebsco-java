@@ -62,13 +62,11 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.repository.holdings.status.HoldingsStatusRepositoryImpl;
@@ -97,6 +95,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(VertxUnitRunner.class)
 public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
@@ -127,6 +126,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     WireMockTestBase.setUpClass(context);
   }
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
@@ -209,14 +209,15 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     saveStatus(STUB_CREDENTIALS_ID, getStatusLoadingHoldings(1000, 500, 10, 5), PROCESS_ID, vertx);
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_CONFLICT, STUB_USER_ID_HEADER);
+    var statusCode = postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_CONFLICT, STUB_USER_ID_HEADER).statusCode();
+    assertEquals(SC_CONFLICT, statusCode);
   }
 
   @Test
   public void shouldStartLoadingWithOldDateFormat(TestContext context) throws IOException, URISyntaxException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
-    OffsetDateTime dateTime = OffsetDateTime.now().minus(6, ChronoUnit.DAYS);
+    OffsetDateTime dateTime = OffsetDateTime.now().minusDays(6);
     HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
     status.getData().getAttributes().setStarted(dateTime.format(POSTGRES_TIMESTAMP_OLD_FORMATTER));
     status.getData().getAttributes().setUpdated(dateTime.format(POSTGRES_TIMESTAMP_OLD_FORMATTER));
@@ -234,7 +235,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     throws IOException, URISyntaxException {
     saveKbCredentials(STUB_CREDENTIALS_ID, getWiremockUrl(), vertx);
 
-    OffsetDateTime dateTime = OffsetDateTime.now().minus(6, ChronoUnit.DAYS);
+    OffsetDateTime dateTime = OffsetDateTime.now().minusDays(6);
     HoldingsLoadingStatus statusLoadingHoldings = getStatusLoadingHoldings(1000, 500, 10, 5);
     statusLoadingHoldings.getData().getAttributes().setStarted(dateTime.format(POSTGRES_TIMESTAMP_FORMATTER));
     statusLoadingHoldings.getData().getAttributes().setUpdated(dateTime.format(POSTGRES_TIMESTAMP_FORMATTER));
@@ -253,7 +254,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
     runPostHoldingsWithMocks(context);
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
-      .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
+      .stream().map(status -> status.getData().getAttributes()).toList();
 
     assertThat(attributes, containsInAnyOrder(
         statusEquals(LoadStatusNameEnum.NOT_STARTED),
@@ -271,14 +272,14 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   public void shouldClearOldStatusChangeRecords() {
     setupDefaultLoadKbConfiguration();
     saveStatusAudit(STUB_CREDENTIALS_ID, getStatusCompleted(1000),
-      OffsetDateTime.now().minus(60, ChronoUnit.DAYS), vertx);
+      OffsetDateTime.now().minusDays(60), vertx);
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
 
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
-      .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
+      .stream().map(status -> status.getData().getAttributes()).toList();
     assertEquals(3, attributes.size());
     assertThat(attributes, containsInAnyOrder(
       statusEquals(LoadStatusNameEnum.NOT_STARTED), //insert
@@ -292,13 +293,14 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     setupDefaultLoadKbConfiguration();
     HoldingsLoadingStatus status = getStatusLoadingHoldings(1000, 500, 10, 5);
 
-    OffsetDateTime dateTime = OffsetDateTime.now().minus(10, ChronoUnit.DAYS);
+    OffsetDateTime dateTime = OffsetDateTime.now().minusDays(10);
     status.getData().getAttributes().setUpdated(POSTGRES_TIMESTAMP_FORMATTER.format(dateTime));
     saveStatus(STUB_CREDENTIALS_ID, status, PROCESS_ID, vertx);
 
     interceptor = interceptAndStop(LOAD_FACADE_ADDRESS, CREATE_SNAPSHOT_ACTION, message -> { });
     vertx.eventBus().addOutboundInterceptor(interceptor);
-    postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
+    var statusCode = postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER).statusCode();
+    assertEquals(SC_NO_CONTENT, statusCode);
   }
 
   @Test
@@ -417,7 +419,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
     async.await(TIMEOUT);
     assertEquals(2, messages.size());
-    assertEquals(STUB_HOLDINGS_TITLE, messages.get(0).getHoldingList().get(0).getPublicationTitle());
+    assertEquals(STUB_HOLDINGS_TITLE, messages.getFirst().getHoldingList().getFirst().getPublicationTitle());
   }
 
   @Test
@@ -441,7 +443,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
   @Test
   public void shouldRetryCreationOfSnapshotAndUpdateHoldingsStatusWhenItFails(TestContext context)
-                                                          throws IOException, URISyntaxException {
+    throws IOException, URISyntaxException {
     setupDefaultLoadKbConfiguration();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
@@ -460,7 +462,7 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
     assertTrue(async.isSucceeded());
     List<LoadStatusAttributes> attributes = HoldingsStatusAuditTestUtil.getRecords(vertx)
-      .stream().map(record -> record.getData().getAttributes()).collect(Collectors.toList());
+      .stream().map(status -> status.getData().getAttributes()).toList();
     assertThat(attributes, containsInAnyOrder(
       statusEquals(LoadStatusNameEnum.NOT_STARTED),
       statusEquals(LoadStatusNameEnum.NOT_STARTED),
@@ -475,6 +477,18 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
 
     HoldingsLoadingStatus holdingsLoadingStatus = HoldingsStatusUtil.getStatus(STUB_CREDENTIALS_ID, vertx);
     assertThat(holdingsLoadingStatus.getData().getAttributes(), statusEquals(LoadStatusNameEnum.COMPLETED));
+  }
+
+  static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy,
+                                 Consumer<Void> handler) {
+    doAnswer(invocationOnMock -> {
+      @SuppressWarnings("unchecked")
+      CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
+      return future.thenAccept(handler);
+    }).when(repositorySpy).update(
+      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), any(UUID.class),
+      anyString());
+
   }
 
   private void setupDefaultLoadKbConfiguration() {
@@ -502,18 +516,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
       .willReturn(new ResponseDefinitionBuilder()
         .withBody("")
         .withStatus(202)));
-  }
-
-  static void handleStatusChange(LoadStatusNameEnum status, HoldingsStatusRepositoryImpl repositorySpy,
-                                 Consumer<Void> handler) {
-    doAnswer(invocationOnMock -> {
-      @SuppressWarnings("unchecked")
-      CompletableFuture<Void> future = (CompletableFuture<Void>) invocationOnMock.callRealMethod();
-      return future.thenAccept(handler);
-    }).when(repositorySpy).update(
-      argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), any(UUID.class),
-      anyString());
-
   }
 
   private Matcher<LoadStatusAttributes> statusEquals(LoadStatusNameEnum status) {

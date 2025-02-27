@@ -12,7 +12,6 @@ import org.folio.rest.util.template.RmApiTemplateContext;
 import org.folio.rmapi.result.Accessible;
 import org.folio.rmapi.result.Tagable;
 import org.folio.service.accesstypes.AccessTypesService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +19,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
 
-  @Autowired
-  private TagRepository tagRepository;
-  @Autowired
-  private Converter<List<DbTag>, Tags> tagsConverter;
-  @Autowired
-  private AccessTypesService accessTypesService;
+  private final TagRepository tagRepository;
+  private final Converter<List<DbTag>, Tags> tagsConverter;
+  private final AccessTypesService accessTypesService;
+
+  public RelatedEntitiesLoaderImpl(TagRepository tagRepository, Converter<List<DbTag>, Tags> tagsConverter,
+                                   AccessTypesService accessTypesService) {
+    this.tagRepository = tagRepository;
+    this.tagsConverter = tagsConverter;
+    this.accessTypesService = accessTypesService;
+  }
 
   @Override
   public CompletableFuture<Void> loadAccessType(Accessible accessible, RecordKey recordKey,

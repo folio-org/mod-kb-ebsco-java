@@ -14,6 +14,7 @@ import org.folio.spring.SpringContextUtil;
 import org.folio.spring.config.ApplicationConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
+@SuppressWarnings({"java:S6813", "SpringJavaInjectionPointsAutowiringInspection"})
 public class InitApiImpl implements InitAPI {
   @Autowired
   private HoldingsService holdingsService;
