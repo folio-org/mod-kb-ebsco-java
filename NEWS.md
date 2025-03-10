@@ -1,9 +1,27 @@
-## v6.0.0 In progress
+## v6.0.0 2025-03-10
 ### Breaking changes
 * Upgrade to Java 21 ([MODKBEKBJ-778](https://issues.folio.org/browse/MODKBEKBJ-778))
 
 ### Features
 * Use user-id header instead of token parsing ([MODKBEKBJ-777](https://issues.folio.org/browse/MODKBEKBJ-777))
+
+### Dependencies
+* Bump `domain-models-runtime` from `35.3.0` to `35.4.0`
+* Bump `folio-di-support` from `2.2.0` to `3.0.0`
+* Bump `folio-service-tools` from `4.1.0` to `5.0.0`
+* Bump `folio-holdingsiq-client` from `3.2.0` to `4.0.0`
+* Bump `folio-liquibase-util` from `1.9.0` to `1.10.0`
+* Bump `vertx` from `4.5.10` to `4.5.13`
+* Bump `jackson` from `2.18.1` to `2.18.3`
+* Bump `postgresql` from `42.7.4` to `42.7.5`
+* Bump `commons-codec` from `1.17.1` to `1.18.0`
+* Bump `commons-beanutils` from `1.9.4` to `1.10.1`
+* Bump `lombok` from `1.18.34` to `1.18.36`
+* Bump `opencsv` from `5.9` to `5.10`
+* Remove `mod-configuration-client`
+* Remove `jetbrains-annotations`
+
+---
 
 ## v5.0.0 2024-10-30
 ### Breaking changes
