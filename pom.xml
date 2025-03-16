@@ -44,7 +44,7 @@
     <folio-liquibase-util.version>1.11.0-SNAPSHOT</folio-liquibase-util.version>
 
     <vertx.version>4.5.13</vertx.version>
-    <aspectj.version>1.9.22.1</aspectj.version>
+    <aspectj.version>1.9.23</aspectj.version>
     <jackson.version>2.18.3</jackson.version>
     <postgresql.version>42.7.5</postgresql.version>
     <commons-codec.version>1.18.0</commons-codec.version>
