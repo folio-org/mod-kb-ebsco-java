@@ -7,7 +7,7 @@
 * Requires `API_NAME vX.Y`
 
 ### Features
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* Use env variable for accessTypesLimit instead of mod-configuration client ([MODKBEKBJ-790](https://folio-org.atlassian.net/browse/MODKBEKBJ-790))
 
 ### Bug fixes
 * Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
