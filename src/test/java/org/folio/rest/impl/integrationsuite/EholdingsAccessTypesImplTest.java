@@ -50,8 +50,6 @@ import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.UUID;
 import org.folio.okapi.common.XOkapiHeaders;
