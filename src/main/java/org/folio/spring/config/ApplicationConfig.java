@@ -275,11 +275,6 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
-    return new ModConfiguration(module);
-  }
-
-  @Bean
   public UserKbCredentialsService securedUserCredentialsService(KbCredentialsRepository credentialsRepository,
                                                                 AssignedUserRepository assignedUserRepository,
                                                                 @Qualifier("secured")

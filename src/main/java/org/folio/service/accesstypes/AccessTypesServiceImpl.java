@@ -5,7 +5,6 @@ import static org.folio.common.ListUtils.mapItems;
 import static org.folio.common.LogUtils.collectionToLogMsg;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.RequestHeadersUtil.tenantId;
-import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.folio.common.OkapiParams;
-import org.folio.config.Configuration;
 import org.folio.db.exc.DbExcUtils;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
@@ -75,8 +73,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   private Converter<DbAccessType, AccessType> accessTypeFromDbConverter;
   @Autowired
   private Converter<AccessType, DbAccessType> accessTypeToDbConverter;
-  @Autowired
-  private Configuration configuration;
 
   @Value("${kb.ebsco.credentials.access.types.limit}")
   private int accessTypesLimit;
@@ -268,14 +264,13 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   }
 
   private CompletableFuture<Void> validateAccessTypeLimit(String credentialsId, Map<String, String> okapiHeaders) {
-    return mapVertxFuture(configuration.getInt(configurationLimitCode, accessTypesLimit, new OkapiParams(okapiHeaders)))
-      .thenCombine(repository.count(toUUID(credentialsId), tenantId(okapiHeaders)), this::checkStoredAccessTypesAmount);
+    return repository.count(toUUID(credentialsId), tenantId(okapiHeaders))
+      .thenApply(this::checkStoredAccessTypesAmount);
   }
 
-  private Void checkStoredAccessTypesAmount(int configLimit, int stored) {
-    int limit = configLimit <= accessTypesLimit ? configLimit : accessTypesLimit;
-    if (stored >= limit) {
-      throw new BadRequestException(format(MAXIMUM_ACCESS_TYPES_MESSAGE, limit));
+  private Void checkStoredAccessTypesAmount(int stored) {
+    if (stored >= accessTypesLimit) {
+      throw new BadRequestException(format(MAXIMUM_ACCESS_TYPES_MESSAGE, accessTypesLimit));
     }
     return null;
   }
