@@ -305,7 +305,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnAccessTypeWhenDataIsValid() throws IOException, URISyntaxException {
+  public void shouldReturnAccessTypeWhenDataIsValid() {
     String postBody = Json.encode(new AccessTypePostRequest().withData(stubbedAccessType()));
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
@@ -322,7 +322,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400WhenReachedMaximumAccessTypesSize() throws IOException, URISyntaxException {
+  public void shouldReturn400WhenReachedMaximumAccessTypesSize() {
     List<AccessType> accessTypes = testData(credentialsId);
     insertAccessType(accessTypes.get(0), vertx);
     insertAccessType(accessTypes.get(1), vertx);
@@ -340,7 +340,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn400WhenPostAccessTypeWithDuplicateName() throws IOException, URISyntaxException {
+  public void shouldReturn400WhenPostAccessTypeWithDuplicateName() {
     List<AccessType> accessTypes = testData(credentialsId);
     insertAccessType(accessTypes.getFirst(), vertx);
 
@@ -356,7 +356,7 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn404WhenUserNotFound() throws IOException, URISyntaxException {
+  public void shouldReturn404WhenUserNotFound() {
     String postBody = Json.encode(new AccessTypePostRequest().withData(stubbedAccessType()));
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
