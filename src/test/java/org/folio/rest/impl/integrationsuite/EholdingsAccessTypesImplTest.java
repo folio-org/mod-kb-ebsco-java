@@ -1,9 +1,7 @@
 package org.folio.rest.impl.integrationsuite;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -310,7 +308,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   public void shouldReturnAccessTypeWhenDataIsValid() throws IOException, URISyntaxException {
     String postBody = Json.encode(new AccessTypePostRequest().withData(stubbedAccessType()));
 
-    mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     AccessType actual = postWithStatus(resourcePath, postBody, SC_CREATED, USER8_TOKEN, USER8_ID).as(AccessType.class);
 
@@ -334,11 +331,12 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     accessType.getAttributes().setName(STUB_ACCESS_TYPE_NAME_3);
     String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));
 
-    mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     JsonapiError error = postWithStatus(resourcePath, postBody, SC_BAD_REQUEST, USER8_TOKEN).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Maximum number of access types allowed is 2");
+    List<AccessType> accessTypesInDb = getAccessTypes(vertx);
+    assertEquals(2, accessTypesInDb.size());
   }
 
   @Test
@@ -350,7 +348,6 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
     stubbedAccessType().getAttributes().setName(accessTypes.getFirst().getAttributes().getName());
     String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));
 
-    mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     JsonapiError error =
       postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY, USER8_TOKEN, USER8_ID).as(JsonapiError.class);
@@ -359,30 +356,9 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldSaveOnlyAllowedNumberOfAccessTypes() throws IOException, URISyntaxException {
-    List<AccessType> accessTypes = testData(credentialsId);
-    insertAccessType(accessTypes.get(0), vertx);
-    insertAccessType(accessTypes.get(1), vertx);
-    insertAccessType(accessTypes.get(2), vertx);
-
-    AccessType accessType = stubbedAccessType();
-    accessType.getAttributes().setName("new");
-    String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));
-
-    mockInvalidAccessTypesLimit();
-    String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    JsonapiError error = postWithStatus(resourcePath, postBody, SC_BAD_REQUEST, USER8_TOKEN).as(JsonapiError.class);
-
-    assertErrorContainsTitle(error, "Maximum number of access types allowed is 3");
-    List<AccessType> accessTypesInDb = getAccessTypes(vertx);
-    assertEquals(3, accessTypesInDb.size());
-  }
-
-  @Test
   public void shouldReturn404WhenUserNotFound() throws IOException, URISyntaxException {
     String postBody = Json.encode(new AccessTypePostRequest().withData(stubbedAccessType()));
 
-    mockValidAccessTypesLimit();
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     JsonapiError error =
       postWithStatus(resourcePath, postBody, SC_NOT_FOUND, USER2_TOKEN, USER2_ID).as(JsonapiError.class);
@@ -505,23 +481,5 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
       .withAttributes(new AccessTypeDataAttributes()
         .withName(STUB_ACCESS_TYPE_NAME)
         .withCredentialsId(credentialsId));
-  }
-
-  private void mockValidAccessTypesLimit() throws IOException, URISyntaxException {
-    stubFor(
-      get(urlPathMatching("/configurations/entries.*"))
-        .willReturn(aResponse()
-          .withStatus(200)
-          .withBody(readFile("responses/configuration/access-types-limit.json"))
-        ));
-  }
-
-  private void mockInvalidAccessTypesLimit() throws IOException, URISyntaxException {
-    stubFor(
-      get(urlPathMatching("/configurations/entries.*"))
-        .willReturn(aResponse()
-          .withStatus(200)
-          .withBody(readFile("responses/configuration/access-types-limit-invalid.json"))
-        ));
   }
 }

@@ -76,8 +76,6 @@ public class AccessTypesServiceImpl implements AccessTypesService {
 
   @Value("${kb.ebsco.credentials.access.types.limit}")
   private int accessTypesLimit;
-  @Value("${kb.ebsco.credentials.access.types.configuration.limit.code}")
-  private String configurationLimitCode;
 
   @Override
   public CompletableFuture<AccessTypeCollection> findByUser(Map<String, String> okapiHeaders) {

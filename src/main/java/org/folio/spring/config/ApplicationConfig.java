@@ -26,7 +26,6 @@ import javax.ws.rs.NotFoundException;
 import org.folio.cache.VertxCache;
 import org.folio.client.uc.UcFailedRequestException;
 import org.folio.client.uc.model.UcCostAnalysis;
-import org.folio.config.ModConfiguration;
 import org.folio.config.cache.UcTitlePackageCacheKey;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
