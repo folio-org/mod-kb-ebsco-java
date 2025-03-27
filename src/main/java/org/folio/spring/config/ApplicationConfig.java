@@ -26,7 +26,6 @@ import javax.ws.rs.NotFoundException;
 import org.folio.cache.VertxCache;
 import org.folio.client.uc.UcFailedRequestException;
 import org.folio.client.uc.model.UcCostAnalysis;
-import org.folio.config.ModConfiguration;
 import org.folio.config.cache.UcTitlePackageCacheKey;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.db.exc.AuthorizationException;
@@ -272,11 +271,6 @@ public class ApplicationConfig {
   public ErrorHandler exportErrorHandler() {
     return costPerUseErrorHandler()
       .add(ExportException.class, error400ExportMapper());
-  }
-
-  @Bean
-  public org.folio.config.Configuration configuration(@Value("${kb.ebsco.java.configuration.module}") String module) {
-    return new ModConfiguration(module);
   }
 
   @Bean
