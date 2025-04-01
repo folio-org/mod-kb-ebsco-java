@@ -254,8 +254,7 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/status",
-          "permissionsRequired" :["kb-ebsco.status.get"],
-          "modulePermissions" : ["configuration.entries.collection.get"]
+          "permissionsRequired" :["kb-ebsco.status.get"]
         },
         {
           "methods": ["DELETE"],
@@ -921,10 +920,6 @@
     {
       "id": "users",
       "version": "15.0 16.0"
-    },
-    {
-      "id": "configuration",
-      "version": "2.0"
     }
   ],
   "launchDescriptor": {
