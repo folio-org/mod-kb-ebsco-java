@@ -84,7 +84,7 @@
     <aspectj-maven-plugin.version>1.14.1</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
-    <checkstyle.version>10.23.0</checkstyle.version>
+    <checkstyle.version>10.23.1</checkstyle.version>
   </properties>
 
   <profiles>
