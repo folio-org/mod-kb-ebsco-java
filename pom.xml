@@ -60,9 +60,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
-    <spring.version>6.2.6</spring.version>
+    <spring.version>6.2.7</spring.version>
     <junit.version>4.13.2</junit.version>
-    <rest-assured.version>5.5.1</rest-assured.version>
+    <rest-assured.version>5.5.2</rest-assured.version>
     <mockito.version>5.17.0</mockito.version>
     <assertj.version>3.27.3</assertj.version>
     <jsonassert.version>1.5.3</jsonassert.version>
