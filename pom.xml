@@ -43,7 +43,7 @@
     <folio-holdingsiq-client.version>4.1.0-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.11.0-SNAPSHOT</folio-liquibase-util.version>
 
-    <vertx.version>4.5.14</vertx.version>
+    <vertx.version>5.0.0</vertx.version>
     <aspectj.version>1.9.24</aspectj.version>
     <jackson.version>2.19.0</jackson.version>
     <postgresql.version>42.7.5</postgresql.version>
