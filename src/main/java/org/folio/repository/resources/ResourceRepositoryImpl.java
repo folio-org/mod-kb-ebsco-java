@@ -3,9 +3,9 @@ package org.folio.repository.resources;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
-import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.pgClient;
 import static org.folio.repository.resources.ResourceTableConstants.CREDENTIALS_ID_COLUMN;
@@ -58,7 +58,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     final String query = insertOrUpdateResourceStatement(tenantId);
 
-    logInsertQueryInfoLevel(log, query, parameters);
+    logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -72,7 +72,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     final String query = deleteResourceStatement(tenantId);
 
-    logDeleteQueryInfoLevel(log, query, params);
+    logDeleteQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, params, promise);
@@ -98,7 +98,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
     final String query = selectResourcesWithTags(tenantId, tags);
 
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);

@@ -1,7 +1,7 @@
 package org.folio.repository.uc;
 
-import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbMetadataUtil.mapMetadata;
 import static org.folio.repository.DbUtil.pgClient;
@@ -45,7 +45,7 @@ public class UcSettingsRepositoryImpl implements UcSettingsRepository {
     String query = selectUcSettingsByCredentialsId(tenant);
     Tuple params = createParams(credentialsId);
 
-    logSelectQueryInfoLevel(log, query, params);
+    logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
@@ -72,7 +72,7 @@ public class UcSettingsRepositoryImpl implements UcSettingsRepository {
       ucSettings.getUpdatedByUserName() == null ? "SYSTEM" : ucSettings.getUpdatedByUserName()
     );
 
-    logInsertQueryInfoLevel(log, query, params);
+    logInsertQuery(log, query, params, true);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 

@@ -7,9 +7,9 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.createPlaceholders;
-import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
-import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.tag.TagTableConstants.COUNT_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.ID_COLUMN;
@@ -70,7 +70,7 @@ public class TagRepositoryImpl implements TagRepository {
   @Override
   public CompletableFuture<List<DbTag>> findAll(String tenantId) {
     String query = selectAllTags(tenantId);
-    logSelectQueryInfoLevel(log, query);
+    logSelectQuery(log, query);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
@@ -83,7 +83,7 @@ public class TagRepositoryImpl implements TagRepository {
     Tuple parameters = Tuple.of(recordId, recordType.getValue());
 
     String query = selectTagsByRecordIdAndRecordType(tenantId);
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -101,7 +101,7 @@ public class TagRepositoryImpl implements TagRepository {
     String placeholders = createPlaceholders(parameters.size());
 
     String query = selectTagsByRecordTypes(tenantId, placeholders);
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -158,7 +158,7 @@ public class TagRepositoryImpl implements TagRepository {
     String values = createPlaceholders(tags.size());
 
     String query = getCountRecordsByTagValueAndTypeAndRecordIdPrefix(tenantId, values);
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -169,7 +169,7 @@ public class TagRepositoryImpl implements TagRepository {
   @Override
   public CompletableFuture<List<String>> findDistinctRecordTags(String tenantId) {
     String query = selectAllDistinctTags(tenantId);
-    logSelectQueryInfoLevel(log, query);
+    logSelectQuery(log, query);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, promise);
@@ -187,7 +187,7 @@ public class TagRepositoryImpl implements TagRepository {
     String placeholders = createPlaceholders(parameters.size());
 
     String query = selectDistinctTagsByRecordTypes(tenantId, placeholders);
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -200,7 +200,7 @@ public class TagRepositoryImpl implements TagRepository {
     Tuple parameters = createParametersWithRecordType(recordIds, recordType);
 
     String query = selectTagsByResourceIds(tenantId, placeholders);
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);
@@ -268,7 +268,7 @@ public class TagRepositoryImpl implements TagRepository {
     String updatedValues = createInsertStatement(recordId, recordType, tags, parameters);
 
     final String query = updateInsertStatementForProvider(tenantId, updatedValues);
-    logInsertQueryInfoLevel(log, query, parameters);
+    logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     connection
@@ -286,7 +286,7 @@ public class TagRepositoryImpl implements TagRepository {
     final String query = deleteTagRecord(tenantId);
     Tuple parameters = Tuple.of(recordId, recordType.getValue());
 
-    logDeleteQueryInfoLevel(log, query, parameters);
+    logDeleteQuery(log, query, parameters);
 
     connection
       .preparedQuery(query)

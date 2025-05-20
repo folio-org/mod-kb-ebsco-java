@@ -1,7 +1,7 @@
 package org.folio.repository.holdings.status.audit;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.deleteBeforeTimestampForCredentials;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
@@ -32,7 +32,7 @@ public class HoldingsStatusAuditRepositoryImpl implements HoldingsStatusAuditRep
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
     String query = deleteBeforeTimestampForCredentials(tenantId);
     Tuple params = Tuple.of(timestamp, credentialsId);
-    logDeleteQueryDebugLevel(log, query, params);
+    logDeleteQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     PostgresClient.getInstance(vertx, tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());

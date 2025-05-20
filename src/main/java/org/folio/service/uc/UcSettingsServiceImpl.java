@@ -96,7 +96,8 @@ public class UcSettingsServiceImpl implements UcSettingsService {
   }
 
   private CompletableFuture<DbUcSettings> save(DbUcSettings ucSettings, Map<String, String> okapiHeaders) {
-    log.debug("save:: Save Uc Settings by DbUcSettings: {}", ucSettings);
+    log.debug("save:: Save Uc Settings by DbUcSettings: id = {}, credentialsId = {}", ucSettings.getId(),
+      ucSettings.getKbCredentialsId());
     CompletableFuture<DbUcSettings> result = new CompletableFuture<>();
     validate(ucSettings, okapiHeaders)
       .thenCompose(unused -> repository.save(ucSettings, tenantId(okapiHeaders)))

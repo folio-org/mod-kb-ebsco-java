@@ -1,9 +1,9 @@
 package org.folio.repository.uc;
 
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
-import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.RowSetUtils.isEmpty;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.repository.DbUtil.pgClient;
@@ -40,7 +40,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
   public CompletableFuture<Optional<DbUcCredentials>> find(String tenant) {
     String query = selectUcCredentials(tenant);
 
-    logSelectQueryInfoLevel(log, query);
+    logSelectQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, promise);
 
@@ -52,7 +52,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
     String query = saveUcCredentials(tenant);
 
     var params = Tuple.of(credentials.getClientId(), credentials.getClientSecret());
-    logInsertQueryInfoLevel(log, query);
+    logInsertQuery(log, query, params, true);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, params, promise);
 
@@ -63,7 +63,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
   public CompletableFuture<Void> delete(String tenant) {
     String query = deleteUcCredentials(tenant);
 
-    logDeleteQueryInfoLevel(log, query);
+    logDeleteQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenant, vertx).execute(query, promise);
 

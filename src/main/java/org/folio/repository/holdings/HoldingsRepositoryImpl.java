@@ -2,10 +2,9 @@ package org.folio.repository.holdings;
 
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.common.ListUtils.mapItems;
-import static org.folio.common.LogUtils.logDeleteQueryDebugLevel;
-import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
-import static org.folio.common.LogUtils.logInsertQueryDebugLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.holdings.HoldingsTableConstants.PACKAGE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.PUBLICATION_TITLE_COLUMN;
@@ -70,7 +69,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   public CompletableFuture<Void> deleteBeforeTimestamp(OffsetDateTime timestamp, UUID credentialsId, String tenantId) {
     final String query = deleteOldRecordsByCredentialsId(tenantId);
     final Tuple params = Tuple.of(credentialsId, timestamp);
-    logDeleteQueryInfoLevel(log, query, params);
+    logDeleteQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
     return mapVertxFuture(promise.future()).thenApply(nothing());
@@ -84,7 +83,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
     }
     var params = getHoldingsPkKeysParams(credentialsId, resourceIds);
     var query = selectByPkHoldings(tenantId, resourceIds);
-    logSelectQueryInfoLevel(log, query, params);
+    logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapHoldings);
@@ -94,7 +93,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
   public CompletableFuture<List<DbHoldingInfo>> findAllByPackageId(int packageId, UUID credentialsId, String tenantId) {
     var query = selectByPackageIdAndCredentials(tenantId);
     var params = createParams(packageId, credentialsId);
-    logSelectQueryInfoLevel(log, query, params);
+    logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
     return mapResult(promise.future(), this::mapHoldings);
@@ -117,7 +116,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
                                     PgConnection connection) {
     final Tuple parameters = createParameters(credentialsId, holdings, updatedAt);
     final String query = insertOrUpdateHoldings(tenantId, holdings);
-    logInsertQueryDebugLevel(log, query, parameters);
+    logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     connection
@@ -132,7 +131,7 @@ public class HoldingsRepositoryImpl implements HoldingsRepository {
                                       PgConnection connection) {
     var params = getHoldingsPkKeysParams(credentialsId, mapItems(holdings, IdParser::getResourceId));
     var query = deleteByPkHoldings(tenantId, holdings);
-    logDeleteQueryDebugLevel(log, query, params);
+    logDeleteQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     connection

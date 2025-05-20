@@ -1,6 +1,6 @@
 package org.folio.repository.currencies;
 
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.repository.currencies.CurrenciesConstants.CODE_COLUMN;
 import static org.folio.repository.currencies.CurrenciesConstants.DESCRIPTION_COLUMN;
 import static org.folio.repository.currencies.CurrenciesConstants.selectCurrencies;
@@ -33,7 +33,7 @@ public class CurrenciesRepositoryImpl implements CurrenciesRepository {
   public CompletableFuture<List<DbCurrency>> findAll(String tenant) {
     String query = selectCurrencies(tenant);
 
-    logSelectQueryInfoLevel(log, query);
+    logSelectQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
     DbUtil.pgClient(tenant, vertx).execute(query, promise);
 

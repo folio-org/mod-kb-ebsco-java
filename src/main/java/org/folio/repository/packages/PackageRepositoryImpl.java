@@ -3,9 +3,9 @@ package org.folio.repository.packages;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
-import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.repository.DbUtil.pgClient;
 import static org.folio.repository.packages.PackageTableConstants.CONTENT_TYPE_COLUMN;
@@ -60,7 +60,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = insertOrUpdateStatement(tenantId);
 
-    logInsertQueryInfoLevel(log, query, parameters);
+    logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -73,7 +73,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = deleteStatement(tenantId);
 
-    logDeleteQueryInfoLevel(log, query, parameters);
+    logDeleteQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).execute(query, parameters, promise);
@@ -98,7 +98,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = selectPackagesWithTagsByIds(tenantId, packageIds);
 
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);
@@ -124,7 +124,7 @@ public class PackageRepositoryImpl implements PackageRepository {
 
     final String query = selectPackagesWithTags(tenantId, tags);
 
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId, vertx).select(query, parameters, promise);
