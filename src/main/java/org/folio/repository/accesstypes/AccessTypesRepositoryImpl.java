@@ -5,9 +5,9 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.folio.common.LogUtils.logCountQuery;
-import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
-import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.mapFirstItem;
 import static org.folio.db.RowSetUtils.mapItems;
@@ -82,7 +82,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = selectByCredentialsIdWithCountQuery(tenantId);
     Tuple params = createParams(credentialsId);
 
-    logSelectQueryInfoLevel(log, query, params);
+    logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -97,7 +97,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = selectByCredentialsAndAccessTypeIdQuery(tenantId);
     Tuple params = createParams(accessTypeId, credentialsId);
 
-    logSelectQueryInfoLevel(log, query, params);
+    logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -114,7 +114,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     params.addUUID(credentialsId);
     accessTypeNames.forEach(params::addString);
 
-    logSelectQueryInfoLevel(log, query, params);
+    logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -129,7 +129,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = selectByCredentialsAndRecordQuery(tenantId);
     Tuple params = createParams(credentialsId, recordId, recordType.getValue());
 
-    logSelectQueryInfoLevel(log, query, params);
+    logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
 
@@ -155,7 +155,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
       accessType.getUpdatedByUserId()
     );
 
-    logInsertQueryInfoLevel(log, query, params);
+    logInsertQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, params, promise);
@@ -186,7 +186,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     String query = deleteByCredentialsAndAccessTypeIdQuery(tenantId);
     Tuple params = createParams(accessTypeId, credentialsId);
 
-    logDeleteQueryInfoLevel(log, query, params);
+    logDeleteQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, params, promise);
@@ -210,7 +210,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     Tuple parameters = createParametersWithRecordType(credentialsId, recordIds, recordType);
 
     String query = selectByCredentialsAndRecordIdsQuery(recordIds, tenantId);
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);

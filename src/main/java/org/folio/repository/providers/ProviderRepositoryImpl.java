@@ -3,9 +3,9 @@ package org.folio.repository.providers;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.common.FunctionUtils.nothing;
-import static org.folio.common.LogUtils.logDeleteQueryInfoLevel;
-import static org.folio.common.LogUtils.logInsertQueryInfoLevel;
-import static org.folio.common.LogUtils.logSelectQueryInfoLevel;
+import static org.folio.common.LogUtils.logDeleteQuery;
+import static org.folio.common.LogUtils.logInsertQuery;
+import static org.folio.common.LogUtils.logSelectQuery;
 import static org.folio.db.DbUtils.createParams;
 import static org.folio.db.RowSetUtils.mapItems;
 import static org.folio.repository.providers.ProviderTableConstants.ID_COLUMN;
@@ -53,7 +53,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
     final String query = insertOrUpdateProviderStatement(tenantId);
 
-    logInsertQueryInfoLevel(log, query, parameters);
+    logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -67,7 +67,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
     final String query = deleteProviderStatement(tenantId);
 
-    logDeleteQueryInfoLevel(log, query, parameters);
+    logDeleteQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).execute(query, parameters, promise);
@@ -91,7 +91,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
 
     final String query = selectTaggedProviders(tenantId, tags);
 
-    logSelectQueryInfoLevel(log, query, parameters);
+    logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
     pgClient(tenantId).select(query, parameters, promise);

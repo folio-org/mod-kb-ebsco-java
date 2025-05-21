@@ -161,11 +161,11 @@ public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
         HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
         String uri = request.uri();
         Object body = httpContext.body();
-        log.info("Request sends to APIGEE: {} with body {}", uri, body);
+        log.trace("Request sends to APIGEE: {} with body {}", uri, body);
       } else if (ClientPhase.RECEIVE_RESPONSE == httpContext.phase()) {
         HttpRequestImpl<?> request = (HttpRequestImpl<?>) httpContext.request();
         String uri = request.uri();
-        log.info("Response received from APIGEE: {}", uri);
+        log.trace("Response received from APIGEE: {}", uri);
       }
       httpContext.next();
     };
