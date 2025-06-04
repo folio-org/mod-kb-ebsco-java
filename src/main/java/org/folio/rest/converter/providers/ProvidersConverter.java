@@ -28,5 +28,4 @@ public class ProvidersConverter implements Converter<Vendor, Providers> {
         .withProviderToken(token != null ? new Token().withValue(token) : null))
       .withRelationships(createEmptyProviderRelationships());
   }
-
 }

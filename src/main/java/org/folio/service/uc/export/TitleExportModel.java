@@ -44,5 +44,4 @@ public class TitleExportModel {
   @CsvBindByName(column = "Platform")
   @CsvBindByPosition(position = 8)
   private final String platform;
-
 }

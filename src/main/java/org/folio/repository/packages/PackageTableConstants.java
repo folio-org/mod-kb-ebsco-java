@@ -77,5 +77,4 @@ public final class PackageTableConstants {
       + "AND " + CREDENTIALS_ID_COLUMN + "=? "
       + "GROUP BY packages.id, packages.credentials_id";
   }
-
 }

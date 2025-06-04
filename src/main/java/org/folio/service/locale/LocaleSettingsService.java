@@ -6,5 +6,4 @@ import org.folio.holdingsiq.model.OkapiData;
 public interface LocaleSettingsService {
 
   CompletableFuture<LocaleSettings> retrieveSettings(OkapiData okapiData);
-
 }

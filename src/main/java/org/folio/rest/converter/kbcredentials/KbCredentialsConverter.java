@@ -39,7 +39,6 @@ public final class KbCredentialsConverter {
       source.getAttributes().withApiKey(StringUtils.repeat("*", 40));
       return source;
     }
-
   }
 
   @Component("nonSecured")

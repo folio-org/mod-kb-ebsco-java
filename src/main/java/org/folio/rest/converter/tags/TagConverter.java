@@ -47,5 +47,4 @@ public class TagConverter implements Converter<DbTag, TagCollectionItem> {
           .withId(source.getRecordId())
           .withType(RECORD_TYPES.get(source.getRecordType()))));
   }
-
 }

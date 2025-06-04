@@ -19,5 +19,4 @@ public class ProxyConverter implements Converter<ProxyUrl, org.folio.rest.jaxrs.
     p.setProxiedUrl(proxy.getProxiedUrl());
     return p;
   }
-
 }

@@ -45,6 +45,5 @@ public class PackageResponseConverterTest {
 
     assertThat(customCoverages.get(1).getBeginCoverage(), equalTo("2001-01-01"));
     assertThat(customCoverages.get(1).getEndCoverage(), equalTo("2004-02-01"));
-
   }
 }

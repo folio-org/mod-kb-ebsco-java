@@ -123,7 +123,6 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
             .build()
           );
       });
-
   }
 
   @Override
@@ -300,5 +299,4 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .map(IdParser::parseResourceId)
       .collect(Collectors.toCollection(ArrayList::new));
   }
-
 }

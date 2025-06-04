@@ -32,5 +32,4 @@ public class EmbargoPeriodConverter implements Converter<EmbargoPeriod, org.foli
     customEmbargo.setEmbargoValue(customEmbargoPeriod.getEmbargoValue());
     return customEmbargo;
   }
-
 }

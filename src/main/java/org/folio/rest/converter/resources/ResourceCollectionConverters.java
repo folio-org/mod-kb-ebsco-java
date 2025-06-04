@@ -38,7 +38,6 @@ public final class ResourceCollectionConverters {
         .withMeta(new MetaTotalResults().withTotalResults(titles.getTotalResults()))
         .withData(titleList);
     }
-
   }
 
   @Component
@@ -58,7 +57,6 @@ public final class ResourceCollectionConverters {
         .withJsonapi(RestConstants.JSONAPI)
         .withMeta(new MetaTotalResults().withTotalResults(col.getTotalResults()))
         .withData(titleList);
-
     }
   }
 }

@@ -486,7 +486,6 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     assertErrorContainsTitle(error, "Invalid value");
     assertErrorContainsDetail(error, "Value is too long (maximum is 500 characters)");
-
   }
 
   @Test

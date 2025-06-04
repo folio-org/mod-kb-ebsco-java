@@ -25,5 +25,4 @@ public class RmApiTemplateContext {
   Configuration configuration;
   String credentialsId;
   String credentialsName;
-
 }

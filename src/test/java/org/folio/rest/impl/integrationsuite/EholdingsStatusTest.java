@@ -50,7 +50,6 @@ public class EholdingsStatusTest extends WireMockTestBase {
     final ConfigurationStatus status =
       getWithOk(EHOLDINGS_STATUS_PATH, STUB_USER_ID_HEADER).as(ConfigurationStatus.class);
     assertThat(status.getData().getAttributes().getIsConfigurationValid(), equalTo(true));
-
   }
 
   @Test

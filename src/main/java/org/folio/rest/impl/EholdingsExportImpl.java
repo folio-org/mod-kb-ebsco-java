@@ -47,5 +47,4 @@ public class EholdingsExportImpl implements EholdingsPackagesPackageIdResourcesC
             .GetEholdingsPackagesResourcesCostperuseExportByPackageIdResponse.respond200WithTextCsv(result))))
       .exceptionally(exportErrorHandler.handle(asyncResultHandler));
   }
-
 }

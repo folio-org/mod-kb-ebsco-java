@@ -89,5 +89,4 @@ public final class HoldingsTableConstants {
     return deleteQuery() + " "
       + whereConditionsQuery(equalCondition(CREDENTIALS_ID_COLUMN), lessThanCondition(UPDATED_AT_COLUMN)) + ";";
   }
-
 }

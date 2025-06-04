@@ -68,5 +68,4 @@ public class EholdingsCustomLabelsImpl implements EholdingsCustomLabels, Eholdin
         PutEholdingsKbCredentialsCustomLabelsByIdResponse.respond200WithApplicationVndApiJson(customLabelsCollection))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
-
 }

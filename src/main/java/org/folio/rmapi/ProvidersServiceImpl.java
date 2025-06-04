@@ -93,5 +93,4 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
       .build();
     return vendorCache.getValueOrLoad(cacheKey, () -> retrieveProvider(id));
   }
-
 }

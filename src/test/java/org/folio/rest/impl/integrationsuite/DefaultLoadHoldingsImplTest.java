@@ -488,7 +488,6 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     }).when(repositorySpy).update(
       argThat(argument -> argument.getData().getAttributes().getStatus().getName() == status), any(UUID.class),
       anyString());
-
   }
 
   private void setupDefaultLoadKbConfiguration() {

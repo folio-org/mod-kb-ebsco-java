@@ -21,5 +21,4 @@ public final class CurrenciesConstants {
   private static String selectCurrencies() {
     return selectQuery() + " " + orderByQuery(DESCRIPTION_COLUMN) + ";";
   }
-
 }

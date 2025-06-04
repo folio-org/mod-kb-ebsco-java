@@ -126,5 +126,4 @@ public class EholdingsTagsImpl implements EholdingsTags {
 
     return null;
   }
-
 }

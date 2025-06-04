@@ -77,5 +77,4 @@ public final class KbCredentialsTableConstants {
   private static String deleteCredentialsQueryPart() {
     return deleteQuery() + " " + whereQuery(ID_COLUMN) + ";";
   }
-
 }

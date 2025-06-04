@@ -29,5 +29,4 @@ public class TitleConverter implements Converter<org.folio.holdingsiq.model.Titl
         .withAttributes(commonResourceConverter.createResourceDataAttributes(rmapiTitle, resource))
         .withRelationships(createEmptyRelationship()));
   }
-
 }

@@ -24,5 +24,4 @@ public class SubjectsConverter implements Converter<List<Subject>, List<TitleSub
         .withSubject(subject.getValue())
         .withType(subject.getType()));
   }
-
 }

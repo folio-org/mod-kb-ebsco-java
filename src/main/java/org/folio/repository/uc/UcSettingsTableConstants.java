@@ -46,5 +46,4 @@ public final class UcSettingsTableConstants {
   private static String selectUcSettingsByCredentialsIdQuery() {
     return selectQuery() + " " + whereQuery(KB_CREDENTIALS_ID_COLUMN) + ";";
   }
-
 }

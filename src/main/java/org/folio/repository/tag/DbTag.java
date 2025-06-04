@@ -13,5 +13,4 @@ public class DbTag {
   String recordId;
   RecordType recordType;
   String value;
-
 }

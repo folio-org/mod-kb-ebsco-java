@@ -22,5 +22,4 @@ public class TitleCollectionResultConverter implements Converter<Titles, TitleCo
       .facets(titles.getFacets())
       .totalResults(titles.getTotalResults()).build();
   }
-
 }

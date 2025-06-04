@@ -85,6 +85,5 @@ public class ResourcePutBodyValidator {
       throw new InputValidationException(INVALID_IS_SELECTED_TITLE, INVALID_IS_SELECTED_DETAILS);
     }
   }
-
 }
 

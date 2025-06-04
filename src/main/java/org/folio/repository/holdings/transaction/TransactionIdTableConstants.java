@@ -39,5 +39,4 @@ public final class TransactionIdTableConstants {
   private static String insertTransactionIdQuery() {
     return "INSERT INTO %s (" + TRANSACTIONS_FIELD_LIST + ") VALUES (%s);";
   }
-
 }

@@ -143,6 +143,5 @@ public class LoadHoldingsImpl implements EholdingsLoadingKbCredentials {
       .kbCredentials(credentials)
       .build();
   }
-
 }
 

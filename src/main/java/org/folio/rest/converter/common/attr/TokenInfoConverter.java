@@ -21,5 +21,4 @@ public class TokenInfoConverter implements Converter<TokenInfo, Token> {
       .withPrompt(tokenInfo.getPrompt())
       .withValue(tokenInfo.getValue() == null ? null : (String) tokenInfo.getValue());
   }
-
 }

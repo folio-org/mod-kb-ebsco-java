@@ -74,5 +74,4 @@ public class EholdingsAssignedUsersImpl implements EholdingsKbCredentialsIdUsers
         DeleteEholdingsKbCredentialsUsersByIdAndUserIdResponse.respond204())))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
-
 }

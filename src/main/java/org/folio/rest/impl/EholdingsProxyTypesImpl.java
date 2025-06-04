@@ -52,5 +52,4 @@ public class EholdingsProxyTypesImpl implements EholdingsProxyTypes, EholdingsKb
         GetEholdingsKbCredentialsProxyTypesByIdResponse.respond200WithApplicationVndApiJson(proxyTypes))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
-
 }

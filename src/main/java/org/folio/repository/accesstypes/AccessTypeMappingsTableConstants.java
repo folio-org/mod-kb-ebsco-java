@@ -95,5 +95,4 @@ public final class AccessTypeMappingsTableConstants {
     return whereConditionsQuery(equalCondition(RECORD_ID_COLUMN), equalCondition(RECORD_TYPE_COLUMN),
       inCondition(ACCESS_TYPE_ID_COLUMN, AccessTypesTableConstants.selectIdsByCredentialsIdQuery()));
   }
-
 }

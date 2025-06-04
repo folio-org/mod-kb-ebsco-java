@@ -212,5 +212,4 @@ public class PackagePostValidatorTest {
       ));
     validator.validate(postRequest);
   }
-
 }

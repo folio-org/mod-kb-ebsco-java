@@ -79,5 +79,4 @@ public class UserKbCredentialsServiceImpl implements UserKbCredentialsService {
     return credentials -> credentials.orElseThrow(
       () -> new NotFoundException(format(USER_CREDS_NOT_FOUND_MESSAGE, userId)));
   }
-
 }

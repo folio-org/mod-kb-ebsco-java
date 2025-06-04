@@ -229,6 +229,5 @@ public class EholdingsRootProxyImplTest extends WireMockTestBase {
     final JsonapiError error = getWithStatus(path, SC_FORBIDDEN, JOHN_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Unauthorized");
   }
-
 }
 

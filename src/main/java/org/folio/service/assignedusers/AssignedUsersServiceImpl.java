@@ -124,5 +124,4 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
     return loadInBatches(groupIds,
       idBatch -> usersLookUpService.lookUpGroups(idBatch, new OkapiParams(okapiHeaders)));
   }
-
 }

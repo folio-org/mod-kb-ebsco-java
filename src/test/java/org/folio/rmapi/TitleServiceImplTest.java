@@ -102,5 +102,4 @@ public class TitleServiceImplTest {
       .customerResourcesList(new ArrayList<>(List.of(customerResource)))
       .build();
   }
-
 }

@@ -29,5 +29,4 @@ public class RectypeConverter implements Converter<String, org.folio.repository.
 
     return result;
   }
-
 }
