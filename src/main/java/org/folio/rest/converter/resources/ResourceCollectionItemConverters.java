@@ -39,7 +39,6 @@ public final class ResourceCollectionItemConverters {
         .withRelationships(createEmptyRelationship())
         .withAttributes(commonResourceConverter.createResourceDataAttributes(title, resource));
     }
-
   }
 
   @Component

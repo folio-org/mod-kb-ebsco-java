@@ -29,7 +29,6 @@ public final class TagsConverters {
     public Tags convert(@NonNull List<DbTag> source) {
       return new Tags().withTagList(mapItems(source, DbTag::getValue));
     }
-
   }
 
   @Component
@@ -48,7 +47,6 @@ public final class TagsConverters {
         .withJsonapi(RestConstants.JSONAPI)
         .withMeta(new MetaTotalResults().withTotalResults(source.size()));
     }
-
   }
 
   @Component

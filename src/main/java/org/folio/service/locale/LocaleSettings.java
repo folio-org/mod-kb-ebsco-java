@@ -10,5 +10,4 @@ public class LocaleSettings {
   private final String locale;
   private final String timezone;
   private final String currency;
-
 }

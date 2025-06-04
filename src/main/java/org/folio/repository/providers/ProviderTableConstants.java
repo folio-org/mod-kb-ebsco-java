@@ -56,5 +56,4 @@ public final class ProviderTableConstants {
       + "WHERE " + ID_COLUMN + "=? "
       + "AND " + CREDENTIALS_ID_COLUMN + "=?";
   }
-
 }

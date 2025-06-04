@@ -513,5 +513,4 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
       .previousYear(false)
       .build();
   }
-
 }

@@ -9,5 +9,4 @@ public class ProvidersTestData {
   public static final String STUB_VENDOR_NAME_2 = "Vendor Name2";
   public static final String STUB_VENDOR_NAME_3 = "Vendor Name3";
   public static final String PROVIDER_TAGS_PATH = "eholdings/providers/" + STUB_VENDOR_ID + "/tags";
-
 }

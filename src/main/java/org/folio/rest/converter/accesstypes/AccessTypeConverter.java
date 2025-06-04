@@ -38,7 +38,6 @@ public final class AccessTypeConverter {
           .withUpdatedByUserId(fromUUID(source.getUpdatedByUserId()))
           .withUpdatedDate(toDate(source.getUpdatedDate())));
     }
-
   }
 
   @Component

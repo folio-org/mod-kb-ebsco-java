@@ -86,5 +86,4 @@ public class EholdingsStatusImpl implements EholdingsStatus {
   private Function<NotFoundException, Response> notFoundToInvalidStatusMapper() {
     return e -> respond200WithApplicationVndApiJson(converter.convert(Boolean.FALSE));
   }
-
 }

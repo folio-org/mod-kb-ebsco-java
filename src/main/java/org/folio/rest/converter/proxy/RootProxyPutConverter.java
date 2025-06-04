@@ -20,5 +20,4 @@ public class RootProxyPutConverter {
       .proxy(Proxy.builder().id(rootProxyPutRequest.getData().getAttributes().getProxyTypeId()).build())
       .labelList(rootProxyCustomLabels.getLabelList()).build();
   }
-
 }

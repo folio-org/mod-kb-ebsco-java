@@ -83,7 +83,6 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
         }
         return resultResource;
       });
-
   }
 
   private void includeAccessType(AccessType accessType, Resource resultResource) {

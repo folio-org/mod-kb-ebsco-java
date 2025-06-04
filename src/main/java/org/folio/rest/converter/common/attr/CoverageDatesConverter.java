@@ -24,5 +24,4 @@ public class CoverageDatesConverter implements Converter<List<CoverageDates>, Li
         .withBeginCoverage(coverageItem.getBeginCoverage())
         .withEndCoverage(coverageItem.getEndCoverage()));
   }
-
 }

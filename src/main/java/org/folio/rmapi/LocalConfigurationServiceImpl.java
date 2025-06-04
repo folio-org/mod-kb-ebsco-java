@@ -25,5 +25,4 @@ public class LocalConfigurationServiceImpl extends ConfigurationServiceImpl {
   public CompletableFuture<Configuration> retrieveConfiguration(OkapiData okapiData) {
     return userKbCredentialsService.findByUser(okapiData.getHeaders()).thenApply(converter::convert);
   }
-
 }

@@ -15,7 +15,6 @@ public class LogUtils {
   private static final String UPDATE_LOG_MESSAGE = "Do update query = {} with params = {}";
   private static final String SIZE_OF_LIST = "size of list ";
 
-
   public static void logCountQuery(Logger logger, String query) {
     logCountQuery(logger, query, Tuple.tuple());
   }

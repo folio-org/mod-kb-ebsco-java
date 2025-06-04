@@ -40,5 +40,4 @@ public final class UcCredentialsTableConstants {
   private static String deleteUcCredentialsQuery() {
     return deleteQuery() + ";";
   }
-
 }

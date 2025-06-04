@@ -47,7 +47,6 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
       .thenAccept(kbCredentialsCollection -> asyncResultHandler.handle(succeededFuture(
         GetEholdingsKbCredentialsResponse.respond200WithApplicationVndApiJson(kbCredentialsCollection))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
-
   }
 
   @Override
@@ -131,5 +130,4 @@ public class EholdingsKbCredentialsImpl implements EholdingsKbCredentials, Ehold
         GetEholdingsUserKbCredentialResponse.respond200WithApplicationVndApiJson(kbCredentials))))
       .exceptionally(errorHandler.handle(asyncResultHandler));
   }
-
 }

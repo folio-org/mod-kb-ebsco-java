@@ -30,7 +30,6 @@ import org.folio.rest.exception.InputValidationException;
 @Log4j2
 public class ErrorHandler {
 
-
   private static final Function<Throwable, Response> DEFAULT_MAPPER = error500ThrowableMapper();
 
   private final Map<Class<? extends Throwable>, Function<? extends Throwable, Response>> errorMappers =

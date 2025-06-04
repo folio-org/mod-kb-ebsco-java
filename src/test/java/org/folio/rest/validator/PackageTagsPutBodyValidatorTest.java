@@ -30,5 +30,4 @@ public class PackageTagsPutBodyValidatorTest {
         ));
     validator.validate(request);
   }
-
 }

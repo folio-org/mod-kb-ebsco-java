@@ -19,5 +19,4 @@ public class AlternateTitleConverter
       .withAlternateTitle(source.getAlternateTitle())
       .withTitleType(source.getTitleType());
   }
-
 }

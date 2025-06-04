@@ -13,5 +13,4 @@ public class AccessTypeMapping {
   String recordId;
   RecordType recordType;
   UUID accessTypeId;
-
 }

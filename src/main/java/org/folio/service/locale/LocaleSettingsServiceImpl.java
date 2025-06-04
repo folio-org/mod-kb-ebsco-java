@@ -63,7 +63,6 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
           }
         })
         .onFailure(future::completeExceptionally);
-
     } catch (Exception e) {
       log.warn("Request to mod-configuration failed:", e);
       future.completeExceptionally(e);

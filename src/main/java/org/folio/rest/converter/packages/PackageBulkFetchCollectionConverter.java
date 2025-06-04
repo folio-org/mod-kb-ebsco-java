@@ -39,5 +39,4 @@ public class PackageBulkFetchCollectionConverter implements Converter<PackageBul
     return new FailedPackagesInformation()
       .withFailed(new FailedPackageIds().withPackages(failedPackageIds));
   }
-
 }

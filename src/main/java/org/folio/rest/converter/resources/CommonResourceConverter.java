@@ -95,5 +95,4 @@ public class CommonResourceConverter {
       .withUserDefinedField4(resource.getUserDefinedFields().getUserDefinedField4())
       .withUserDefinedField5(resource.getUserDefinedFields().getUserDefinedField5());
   }
-
 }

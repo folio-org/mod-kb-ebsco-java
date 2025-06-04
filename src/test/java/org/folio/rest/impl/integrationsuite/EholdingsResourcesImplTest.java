@@ -658,7 +658,6 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder().withStatus(SC_NO_CONTENT)));
 
     return putWithOk("eholdings/resources/" + resourceId, requestBody, STUB_USER_ID_HEADER).asString();
-
   }
 
   private void sendPutTags(List<String> newTags) throws IOException, URISyntaxException {

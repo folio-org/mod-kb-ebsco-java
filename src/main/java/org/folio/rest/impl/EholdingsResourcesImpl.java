@@ -383,5 +383,4 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       .tags(attributes.getTags() != null ? attributes.getTags().getTagList() : null)
       .build();
   }
-
 }

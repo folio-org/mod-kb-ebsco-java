@@ -52,7 +52,6 @@ public final class IdentifiersConverterPair {
           .withSubtype(IDENTIFIER_SUBTYPES.getOrDefault(identifier.getSubtype(), Subtype.ONLINE)))
         .toList();
     }
-
   }
 
   @Component
@@ -70,7 +69,5 @@ public final class IdentifiersConverterPair {
           .build())
         .toList();
     }
-
   }
-
 }

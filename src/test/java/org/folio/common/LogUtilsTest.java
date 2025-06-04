@@ -1,6 +1,5 @@
 package org.folio.common;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.common.LogUtils.collectionToLogMsg;
 
@@ -13,7 +12,6 @@ public class LogUtilsTest {
   private static final List<String> BIG_LIST = Arrays.asList("One", "Two", "Three");
   private static final List<String> SMALL_LIST = Arrays.asList("One", "Two");
   private static final String MSG = "size of list ";
-
 
   @Test
   public void collectionToLogMsg_moreThanThreeItems() {

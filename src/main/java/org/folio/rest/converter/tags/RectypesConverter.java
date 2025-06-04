@@ -23,5 +23,4 @@ public class RectypesConverter implements Converter<List<String>, Set<org.folio.
       .map(recordTypeConverter::convert)
       .collect(Collectors.toSet());
   }
-
 }

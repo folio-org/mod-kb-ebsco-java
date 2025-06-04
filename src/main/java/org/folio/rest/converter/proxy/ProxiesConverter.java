@@ -36,5 +36,4 @@ public class ProxiesConverter implements Converter<Proxies, ProxyTypes> {
         .withUrlMask(proxy.getUrlMask())
       );
   }
-
 }

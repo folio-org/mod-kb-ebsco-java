@@ -13,5 +13,4 @@ public class User {
   private final String middleName;
   private final String lastName;
   private final String patronGroup;
-
 }

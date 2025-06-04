@@ -82,5 +82,4 @@ public final class TitlesTableConstants {
       + "OFFSET ? "
       + "LIMIT ? ";
   }
-
 }

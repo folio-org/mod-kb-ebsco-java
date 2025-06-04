@@ -37,5 +37,4 @@ public class ProviderPutBodyValidatorTest {
       .withData(new ProviderPutData().withAttributes(new ProviderPutDataAttributes().withProviderToken(providerToken)));
     validator.validate(request);
   }
-
 }

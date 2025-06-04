@@ -93,5 +93,4 @@ public final class TagTableConstants {
   private static String selectDistinctTagsByRecordTypesQuery() {
     return "SELECT DISTINCT tag FROM %s WHERE " + RECORD_TYPE_COLUMN + " IN (%s) ORDER BY " + TAG_COLUMN;
   }
-
 }

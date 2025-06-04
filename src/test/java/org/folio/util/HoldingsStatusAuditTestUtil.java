@@ -63,5 +63,4 @@ public class HoldingsStatusAuditTestUtil {
   private static String holdingsStatusAuditTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + HOLDINGS_STATUS_AUDIT_TABLE;
   }
-
 }

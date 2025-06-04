@@ -41,7 +41,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
 
-
   private static final String FISCAL_YEAR_PARAM = "fiscalYear";
   private static final String FISCAL_MONTH_PARAM = "fiscalMonth";
   private static final String ANALYSIS_CURRENCY_PARAM = "analysisCurrency";

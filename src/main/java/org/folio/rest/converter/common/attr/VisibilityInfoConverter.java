@@ -20,5 +20,4 @@ public class VisibilityInfoConverter implements Converter<VisibilityInfo, Visibi
     visibility.setReason(visibilityData.getReason().equals("Hidden by EP") ? "Set by system" : "");
     return visibility;
   }
-
 }

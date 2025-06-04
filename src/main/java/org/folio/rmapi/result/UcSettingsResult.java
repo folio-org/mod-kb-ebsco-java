@@ -9,5 +9,4 @@ public class UcSettingsResult {
 
   DbUcSettings settings;
   UcMetricType metricType;
-
 }

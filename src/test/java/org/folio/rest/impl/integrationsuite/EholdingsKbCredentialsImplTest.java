@@ -738,5 +738,4 @@ public class EholdingsKbCredentialsImplTest extends WireMockTestBase {
       get(urlPathMatching("/rm/rmaccounts/.*"))
         .willReturn(aResponse().withStatus(SC_UNAUTHORIZED)));
   }
-
 }

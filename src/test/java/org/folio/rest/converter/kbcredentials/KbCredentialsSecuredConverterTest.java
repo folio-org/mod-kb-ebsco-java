@@ -49,5 +49,4 @@ public class KbCredentialsSecuredConverterTest {
     assertThat(kbCredentials.getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
     assertThat(kbCredentials.getAttributes().getUrl(), equalTo(STUB_API_URL));
   }
-
 }

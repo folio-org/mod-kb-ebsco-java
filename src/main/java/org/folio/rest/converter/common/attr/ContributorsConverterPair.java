@@ -43,5 +43,4 @@ public final class ContributorsConverterPair {
           .type(contributor.getType()).build());
     }
   }
-
 }

@@ -7,5 +7,4 @@ public class SearchProperties {
 
   String titlesSearchType;
   String packagesSearchType;
-
 }

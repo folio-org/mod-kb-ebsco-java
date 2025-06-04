@@ -723,5 +723,4 @@ public class EholdingsTitlesTest extends WireMockTestBase {
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))));
   }
-
 }

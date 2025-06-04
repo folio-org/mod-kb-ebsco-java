@@ -78,5 +78,4 @@ public final class HoldingsStatusTableConstants {
   private static String getHoldingsStatusesQuery() {
     return "SELECT " + HOLDINGS_STATUS_FIELD_LIST_FULL + " from %s;";
   }
-
 }

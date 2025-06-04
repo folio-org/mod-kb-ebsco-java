@@ -23,5 +23,4 @@ public class RmApiConstants {
     "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/reports/holdings/deltas/%s";
   public static final String RMAPI_DELTA_STATUS_URL =
     "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/reports/holdings/deltas/%s/status";
-
 }
