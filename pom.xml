@@ -46,7 +46,7 @@
     <vertx.version>4.5.14</vertx.version>
     <aspectj.version>1.9.24</aspectj.version>
     <jackson.version>2.19.0</jackson.version>
-    <postgresql.version>42.7.5</postgresql.version>
+    <postgresql.version>42.7.7</postgresql.version>
     <commons-codec.version>1.18.0</commons-codec.version>
     <commons-beanutils.version>1.11.0</commons-beanutils.version>
     <lombok.version>1.18.38</lombok.version>
