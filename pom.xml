@@ -52,7 +52,7 @@
     <lombok.version>1.18.38</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
     <opencsv.version>5.11</opencsv.version>
-    <commons-lang3.version>3.17.0</commons-lang3.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
