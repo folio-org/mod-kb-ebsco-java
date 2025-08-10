@@ -64,7 +64,7 @@
     <junit.version>4.13.2</junit.version>
     <rest-assured.version>5.5.5</rest-assured.version>
     <mockito.version>5.18.0</mockito.version>
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.4</assertj.version>
     <jsonassert.version>1.5.3</jsonassert.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
 
