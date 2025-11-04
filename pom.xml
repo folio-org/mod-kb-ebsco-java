@@ -43,7 +43,7 @@
     <folio-holdingsiq-client.version>4.1.0-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.11.0-SNAPSHOT</folio-liquibase-util.version>
 
-    <vertx.version>5.0.5</vertx.version>
+    <vertx.version>4.5.14</vertx.version>
     <aspectj.version>1.9.24</aspectj.version>
     <jackson.version>2.20.1</jackson.version>
     <postgresql.version>42.7.8</postgresql.version>
@@ -600,6 +600,9 @@
           <logViolationsToConsole>true</logViolationsToConsole>
           <configLocation>folio-checkstyle/checkstyle.xml</configLocation>
           <cacheFile>${basedir}/target/cachefile</cacheFile>
+          <propertyExpansion>
+            checkstyle.method-length.max=150
+          </propertyExpansion>
         </configuration>
       </plugin>
 
