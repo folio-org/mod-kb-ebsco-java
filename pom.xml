@@ -45,18 +45,18 @@
 
     <vertx.version>4.5.14</vertx.version>
     <aspectj.version>1.9.24</aspectj.version>
-    <jackson.version>2.19.0</jackson.version>
-    <postgresql.version>42.7.7</postgresql.version>
-    <commons-codec.version>1.18.0</commons-codec.version>
+    <jackson.version>2.20.1</jackson.version>
+    <postgresql.version>42.7.8</postgresql.version>
+    <commons-codec.version>1.19.0</commons-codec.version>
     <commons-beanutils.version>1.11.0</commons-beanutils.version>
-    <lombok.version>1.18.38</lombok.version>
+    <lombok.version>1.18.42</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
-    <opencsv.version>5.11</opencsv.version>
-    <commons-lang3.version>3.18.0</commons-lang3.version>
+    <opencsv.version>5.12.0</opencsv.version>
+    <commons-lang3.version>3.19.0</commons-lang3.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
-    <log4j.version>2.24.3</log4j.version>
+    <log4j.version>2.25.2</log4j.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
@@ -70,22 +70,22 @@
 
     <!-- Plugins versions   -->
     <folio-module-descriptor-validator.version>1.0.1</folio-module-descriptor-validator.version>
-    <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
-    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+    <versions-maven-plugin.version>2.19.1</versions-maven-plugin.version>
+    <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
-    <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
+    <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
-    <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+    <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
     <maven-surefire-report-plugin.version>3.5.2</maven-surefire-report-plugin.version>
-    <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
+    <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
-    <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+    <exec-maven-plugin.version>3.6.2</exec-maven-plugin.version>
     <aspectj-maven-plugin.version>1.14.1</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
-    <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
-    <folio-java-checkstyle.version>1.1.0</folio-java-checkstyle.version>
-    <checkstyle.version>10.25.0</checkstyle.version>
+    <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+    <folio-java-checkstyle.version>1.2.0</folio-java-checkstyle.version>
+    <checkstyle.version>12.1.1</checkstyle.version>
   </properties>
 
   <profiles>
@@ -600,6 +600,9 @@
           <logViolationsToConsole>true</logViolationsToConsole>
           <configLocation>folio-checkstyle/checkstyle.xml</configLocation>
           <cacheFile>${basedir}/target/cachefile</cacheFile>
+          <propertyExpansion>
+            checkstyle.method-length.max=150
+          </propertyExpansion>
         </configuration>
       </plugin>
 
