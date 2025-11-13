@@ -85,7 +85,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessTypes);
   }
@@ -100,7 +100,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
   }
@@ -117,7 +117,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessTypes);
   }
@@ -131,7 +131,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
     logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessType);
   }
@@ -158,7 +158,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     logInsertQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
@@ -175,7 +175,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     logCountQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()),
       rs -> mapFirstItem(rs, row -> row.getInteger(0)));
@@ -189,7 +189,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
     logDeleteQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), rs -> null);
   }
@@ -207,13 +207,13 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private Future<RowSet<Row>> findByRecordIdsOfType(String credentialsId, List<String> recordIds, RecordType recordType,
                                                     String tenantId) {
-    Tuple parameters = createParametersWithRecordType(credentialsId, recordIds, recordType);
+    Tuple params = createParametersWithRecordType(credentialsId, recordIds, recordType);
 
     String query = selectByCredentialsAndRecordIdsQuery(recordIds, tenantId);
-    logSelectQuery(log, query, parameters);
+    logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return promise.future().recover(excTranslator.translateOrPassBy());
   }
@@ -261,7 +261,7 @@ public class AccessTypesRepositoryImpl implements AccessTypesRepository {
 
   private int getIntValueOrDefault(Row row, String columnName, int defaultValue) {
     return row.getColumnIndex(columnName) != -1
-           ? ObjectUtils.defaultIfNull(row.getInteger(columnName), defaultValue)
+           ? ObjectUtils.getIfNull(row.getInteger(columnName), defaultValue)
            : defaultValue;
   }
 

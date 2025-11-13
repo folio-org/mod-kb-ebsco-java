@@ -63,7 +63,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId, vertx).execute(query, parameters, promise);
+    pgClient(tenantId, vertx).execute(query, parameters, promise::handle);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
@@ -76,7 +76,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logDeleteQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId, vertx).execute(query, parameters, promise);
+    pgClient(tenantId, vertx).execute(query, parameters, promise::handle);
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
 
@@ -101,7 +101,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId, vertx).select(query, parameters, promise);
+    pgClient(tenantId, vertx).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }
@@ -127,7 +127,7 @@ public class PackageRepositoryImpl implements PackageRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId, vertx).select(query, parameters, promise);
+    pgClient(tenantId, vertx).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapPackages);
   }

@@ -75,7 +75,7 @@ public class ResourcePutBodyValidator {
       attributes.getCustomEmbargoPeriod() != null ? attributes.getCustomEmbargoPeriod().getEmbargoUnit() : null;
     List<Coverage> customCoverages = attributes.getCustomCoverages();
     if (!isTitleCustom && (isNotEmpty(cvgStmt) || nonNull(embargoUnit)
-      || nonNull(isHidden) && Boolean.TRUE.equals(isHidden)
+      || nonNull(isHidden) && isHidden
       || nonNull(customCoverages) && !customCoverages.isEmpty()
       || isNotEmpty(attributes.getUserDefinedField1())
       || isNotEmpty(attributes.getUserDefinedField2())

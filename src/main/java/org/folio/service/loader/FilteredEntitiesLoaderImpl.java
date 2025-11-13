@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
@@ -258,7 +259,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   private String createRecordIdPrefix(AccessTypeFilter accessTypeFilter) {
     String recordIdPrefix = accessTypeFilter.getRecordIdPrefix();
-    return StringUtils.isBlank(recordIdPrefix) ? "" : StringUtils.appendIfMissing(recordIdPrefix, "-");
+    return StringUtils.isBlank(recordIdPrefix) ? "" : Strings.CS.appendIfMissing(recordIdPrefix, "-");
   }
 
   private List<UUID> extractAccessTypeIds(AccessTypeCollection accessTypeCollection) {

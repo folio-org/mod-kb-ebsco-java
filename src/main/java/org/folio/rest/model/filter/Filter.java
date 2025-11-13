@@ -6,7 +6,6 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.collections4.IterableUtils.countMatches;
 import static org.apache.commons.collections4.IterableUtils.matchesAll;
 import static org.apache.commons.collections4.IterableUtils.matchesAny;
-import static org.apache.commons.lang3.StringUtils.appendIfMissing;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
@@ -20,6 +19,7 @@ import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Sort;
@@ -148,14 +148,14 @@ public class Filter {
   }
 
   private String createRecordIdPrefix(String providerId) {
-    return isBlank(providerId) ? "" : appendIfMissing(providerId, "-");
+    return isBlank(providerId) ? "" : Strings.CS.appendIfMissing(providerId, "-");
   }
 
   private boolean isCheckedFilter(List<String> checkedFilter, List<String> otherFilter) {
     return isNotEmpty(checkedFilter)
-      && matchesAll(checkedFilter, StringUtils::isNotBlank)
-      && CollectionUtils.isEmpty(otherFilter)
-      && matchesAll(
+           && matchesAll(checkedFilter, StringUtils::isNotBlank)
+           && CollectionUtils.isEmpty(otherFilter)
+           && matchesAll(
       asList(query, filterIsxn, filterName, filterPublisher, filterSubject, filterCustom, filterSelected),
       StringUtils::isBlank);
   }
@@ -238,14 +238,14 @@ public class Filter {
 
     private void validatePackageFilterType() {
       if (this.filterType != null
-        && !SUPPORTED_PACKAGE_FILTER_TYPE_VALUES.contains(this.filterType)) {
+          && !SUPPORTED_PACKAGE_FILTER_TYPE_VALUES.contains(this.filterType)) {
         throw new ValidationException(INVALID_FILTER_TYPE_PARAMETER_MESSAGE);
       }
     }
 
     private void validateTitleFilterType() {
       if (this.filterType != null
-        && !SUPPORTED_TITLE_FILTER_TYPE_VALUES.contains(this.filterType)) {
+          && !SUPPORTED_TITLE_FILTER_TYPE_VALUES.contains(this.filterType)) {
         throw new ValidationException(INVALID_FILTER_TYPE_PARAMETER_MESSAGE);
       }
     }

@@ -65,7 +65,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleAccessItem);
   }
@@ -91,7 +91,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
     logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAccessItemCollection);
   }
@@ -109,7 +109,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
 
     logInsertQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
 
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(
       updateResult -> mapping);
@@ -124,7 +124,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     logDeleteQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 
@@ -137,7 +137,7 @@ public class AccessTypeMappingsRepositoryImpl implements AccessTypeMappingsRepos
     logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCount);
   }

@@ -46,14 +46,14 @@ public class UcAuthServiceImpl implements UcAuthService {
   @Override
   public CompletableFuture<UCCredentialsClientId> getClientId(Map<String, String> okapiHeaders) {
     return getUcCredentials(tenantId(okapiHeaders))
-      .thenApply(DbUcCredentials::getClientId)
+      .thenApply(DbUcCredentials::clientId)
       .thenApply(this::mapToClientId);
   }
 
   @Override
   public CompletableFuture<UCCredentialsClientSecret> getClientSecret(Map<String, String> okapiHeaders) {
     return getUcCredentials(tenantId(okapiHeaders))
-      .thenApply(DbUcCredentials::getClientSecret)
+      .thenApply(DbUcCredentials::clientSecret)
       .thenApply(this::mapToClientSecret);
   }
 
@@ -99,7 +99,7 @@ public class UcAuthServiceImpl implements UcAuthService {
   private CompletableFuture<String> loadToken(String tenantId) {
     return getUcCredentials(tenantId)
       .thenCompose(this::requestToken)
-      .thenApply(UcAuthToken::getAccessToken);
+      .thenApply(UcAuthToken::accessToken);
   }
 
   private CompletableFuture<DbUcCredentials> getUcCredentials(String tenantId) {
@@ -114,7 +114,7 @@ public class UcAuthServiceImpl implements UcAuthService {
   }
 
   private CompletableFuture<UcAuthToken> requestToken(DbUcCredentials credentials) {
-    return authServiceClient.requestToken(credentials.getClientId(), credentials.getClientSecret());
+    return authServiceClient.requestToken(credentials.clientId(), credentials.clientSecret());
   }
 
   private CompletableFuture<Optional<DbUcCredentials>> findUcCredentials(String tenantId) {

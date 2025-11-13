@@ -4,16 +4,15 @@ import static java.util.Collections.emptyList;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.vertx.core.Completable;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpResponseExpectation;
 import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.predicate.ErrorConverter;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +63,7 @@ public class UsersLookUpService {
    * @return User information.
    */
   public CompletableFuture<User> lookUpUser(final OkapiParams okapiParams) {
-    MultiMap headers = new HeadersMultiMap();
+    MultiMap headers = HeadersMultiMap.caseInsensitive();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
@@ -91,7 +90,7 @@ public class UsersLookUpService {
   }
 
   public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
-    MultiMap headers = new HeadersMultiMap();
+    MultiMap headers = HeadersMultiMap.caseInsensitive();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
@@ -109,8 +108,30 @@ public class UsersLookUpService {
     webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
       .putHeaders(headers)
       .as(BodyCodec.jsonObject())
-      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-      .send(promise);
+      .send()
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete(handleUserResponse(promise));
+  }
+
+  private Completable<HttpResponse<JsonObject>> handleUserResponse(Promise<HttpResponse<JsonObject>> promise) {
+    return (response, failure) -> {
+      if (failure != null) {
+        if (response.statusCode() == 401 || response.statusCode() == 403) {
+          log.warn(AUTHORIZATION_FAIL_ERROR_MESSAGE);
+          promise.fail(new NotAuthorizedException(AUTHORIZATION_FAIL_ERROR_MESSAGE));
+        } else if (response.statusCode() == 404) {
+          log.warn(USER_NOT_FOUND_ERROR_MESSAGE);
+          promise.fail(new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE));
+        } else {
+          String message = failure.getMessage();
+          String serverResponse = response.bodyAsString();
+          log.warn(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message, serverResponse);
+          promise.fail(new IllegalStateException(message));
+        }
+      } else {
+        promise.complete(response);
+      }
+    };
   }
 
   private CompletableFuture<List<User>> lookUpUsersUsingCql(String query, int limit, OkapiParams okapiParams) {
@@ -124,7 +145,7 @@ public class UsersLookUpService {
   }
 
   private Promise<HttpResponse<JsonObject>> lookUpByCql(String path, String query, int limit, OkapiParams okapiParams) {
-    MultiMap headers = new HeadersMultiMap();
+    MultiMap headers = HeadersMultiMap.caseInsensitive();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
@@ -134,27 +155,10 @@ public class UsersLookUpService {
       .addQueryParam(CQL_QUERY_PARAM, query)
       .addQueryParam(LIMIT_PARAM, String.valueOf(limit))
       .as(BodyCodec.jsonObject())
-      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-      .send(promise);
+      .send()
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete(handleUserResponse(promise));
     return promise;
-  }
-
-  private ErrorConverter errorConverter() {
-    return ErrorConverter.createFullBody(result -> {
-      HttpResponse<Buffer> response = result.response();
-      if (response.statusCode() == 401 || response.statusCode() == 403) {
-        log.warn(AUTHORIZATION_FAIL_ERROR_MESSAGE);
-        throw new NotAuthorizedException(AUTHORIZATION_FAIL_ERROR_MESSAGE);
-      } else if (response.statusCode() == 404) {
-        log.warn(USER_NOT_FOUND_ERROR_MESSAGE);
-        throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
-      } else {
-        String message = result.message();
-        String serverResponse = response.bodyAsString();
-        log.warn(CANNOT_GET_USER_DATA_ERROR_MESSAGE, message, serverResponse);
-        throw new IllegalStateException(message);
-      }
-    });
   }
 
   private List<User> mapUserCollection(JsonObject userCollection) {

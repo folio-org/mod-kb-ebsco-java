@@ -2,6 +2,7 @@ package org.folio.rest.util.template;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import java.util.Map;
 import javax.ws.rs.core.Response;
 import org.folio.rest.validator.HeaderValidator;
@@ -19,6 +20,11 @@ public class RmApiTemplateFactory {
   public RmApiTemplateFactory(ConversionService conversionService, HeaderValidator headerValidator) {
     this.conversionService = conversionService;
     this.headerValidator = headerValidator;
+  }
+
+  public RmApiTemplate createTemplate(Map<String, String> okapiHeaders,
+                                      Promise<Response> asyncResultHandler) {
+    return createTemplate(okapiHeaders, asyncResultHandler::handle);
   }
 
   public RmApiTemplate createTemplate(Map<String, String> okapiHeaders,

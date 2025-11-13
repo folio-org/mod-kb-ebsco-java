@@ -18,12 +18,10 @@ import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.util.FutureUtils.failedFuture;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.shareddata.Lock;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -92,7 +90,7 @@ public class HoldingsServiceImpl implements HoldingsService {
   private static final String LOADING_STATUS_IN_PROGRESS_MESSAGE = "Loading status is already In Progress";
   private static final String SAVING_HOLDINGS_MESSAGE = "Saving holdings to database.";
   private static final String SKIPPING_LOADING_SNAPSHOT_MESSAGE = "Skipping loading snapshot, "
-    + "because transaction with id {} is already loaded";
+                                                                  + "because transaction with id {} is already loaded";
 
   private LoadServiceFacade loadServiceFacade;
   private HoldingsRepository holdingsRepository;
@@ -283,19 +281,20 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public void deltaReportCreated(DeltaReportCreatedMessage message, Handler<AsyncResult<Void>> handler) {
+  public Future<Void> deltaReportCreated(DeltaReportCreatedMessage message) {
     final UUID credentialsId = toUUID(message.getCredentialsId());
     final String tenantId = message.getTenantId();
     log.debug("deltaReportCreated:: by [tenant: {}]", tenantId);
-
+    Promise<Void> promise = Promise.promise();
     holdingsStatusRepository.update(getStatusLoadingHoldings(
         message.getTotalCount(), 0, message.getTotalPages(), 0), credentialsId, tenantId)
-      .thenAccept(o -> handler.handle(Future.succeededFuture(null)))
+      .thenAccept(o -> promise.handle(Future.succeededFuture(null)))
       .exceptionally(e -> {
         log.warn(FAILED_CREATE_SNAPSHOT_MESSAGE, e);
-        handler.handle(Future.failedFuture(e));
+        promise.handle(Future.failedFuture(e));
         return null;
       });
+    return promise.future();
   }
 
   @Override
@@ -436,22 +435,21 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   private Future<Void> executeWithLock(String lockName, Producer<CompletableFuture<Void>> futureProducer) {
-    Promise<Lock> lockPromise = Promise.promise();
     Promise<Void> responsePromise = Promise.promise();
-    vertx.sharedData().getLock(lockName, lockPromise);
-    lockPromise.future().map(lock -> {
-      futureProducer.call()
-        .whenComplete((o, throwable) -> {
-            if (throwable != null) {
-              responsePromise.fail(throwable);
-            } else {
-              responsePromise.complete();
+    vertx.sharedData().getLock(lockName)
+      .map(lock -> {
+        futureProducer.call()
+          .whenComplete((o, throwable) -> {
+              if (throwable != null) {
+                responsePromise.fail(throwable);
+              } else {
+                responsePromise.complete();
+              }
+              lock.release();
             }
-            lock.release();
-          }
-        );
-      return null;
-    });
+          );
+        return null;
+      });
     return responsePromise.future();
   }
 
@@ -505,6 +503,6 @@ public class HoldingsServiceImpl implements HoldingsService {
     }
     OffsetDateTime updated = getZonedDateTime(updatedString);
     return isInProgress(status)
-      && OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
+           && OffsetDateTime.now().isAfter(updated.plus(loadHoldingsTimeout, ChronoUnit.MILLIS));
   }
 }

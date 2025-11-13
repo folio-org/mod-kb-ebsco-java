@@ -2,12 +2,10 @@ package org.folio.rest.impl;
 
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,10 +37,10 @@ public class TenantApiImpl extends TenantAPI {
       });
   }
 
-  private Future<List<String>> setupTestData(Vertx vertx, String tenantId) {
+  private Future<Void> setupTestData(Vertx vertx, String tenantId) {
     try {
 
-      if (!Boolean.TRUE.equals(Boolean.valueOf(System.getenv(TEST_MODE)))) {
+      if (!Boolean.parseBoolean(System.getenv(TEST_MODE))) {
         logger.info("Test data will not be initialized.");
         return Future.succeededFuture();
       }
@@ -63,13 +61,10 @@ public class TenantApiImpl extends TenantAPI {
 
       sqlScript = sqlScript.replace(TENANT_PLACEHOLDER, tenantId).replace(MODULE_PLACEHOLDER, moduleName);
 
-      Promise<List<String>> promise = Promise.promise();
-      PostgresClient.getInstance(vertx).runSQLFile(sqlScript, false, promise);
-
       logger.info("Received flag to initialize test data. Check the server log for details.");
       logger.info("************ Creating test data ************");
 
-      return promise.future();
+      return PostgresClient.getInstance(vertx).runSqlFile(sqlScript);
     } catch (IOException e) {
       return Future.failedFuture(e);
     }

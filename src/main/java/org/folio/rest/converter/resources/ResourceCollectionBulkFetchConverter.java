@@ -25,7 +25,7 @@ public class ResourceCollectionBulkFetchConverter
 
   @Override
   public ResourceBulkFetchCollection convert(ResourceBulkResult resourceBulkResult) {
-    List<ResourceBulkFetchCollectionItem> titleList = mapItems(resourceBulkResult.getTitles().getTitleList(),
+    List<ResourceBulkFetchCollectionItem> titleList = mapItems(resourceBulkResult.titles().getTitleList(),
       converter::convert);
 
     return new ResourceBulkFetchCollection()
@@ -33,7 +33,7 @@ public class ResourceCollectionBulkFetchConverter
       .withJsonapi(RestConstants.JSONAPI)
       .withMeta(new FailedResourcesInformation()
         .withFailed(new FailedResourceIds()
-          .withResources(resourceBulkResult.getFailedResources()))
+          .withResources(resourceBulkResult.failedResources()))
       );
   }
 }

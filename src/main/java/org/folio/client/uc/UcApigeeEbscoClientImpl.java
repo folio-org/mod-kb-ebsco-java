@@ -2,10 +2,12 @@ package org.folio.client.uc;
 
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
+import io.vertx.core.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpResponseExpectation;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -15,9 +17,6 @@ import io.vertx.ext.web.client.impl.ClientPhase;
 import io.vertx.ext.web.client.impl.HttpContext;
 import io.vertx.ext.web.client.impl.HttpRequestImpl;
 import io.vertx.ext.web.client.impl.WebClientInternal;
-import io.vertx.ext.web.client.predicate.ErrorConverter;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import io.vertx.ext.web.codec.BodyCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -49,8 +48,9 @@ public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
   private static final String PREVIOUS_YEAR_PARAM = "previousYear";
 
   private static final String VERIFY_URI = "/uc/costperuse/package/1"
-    + "?" + FISCAL_YEAR_PARAM + "=2018&" + FISCAL_MONTH_PARAM + "=DEC&" + ANALYSIS_CURRENCY_PARAM + "=USD&"
-    + AGGREGATED_FULL_TEXT_PARAM + "=true";
+                                           + "?" + FISCAL_YEAR_PARAM + "=2018&" + FISCAL_MONTH_PARAM + "=DEC&"
+                                           + ANALYSIS_CURRENCY_PARAM + "=USD&"
+                                           + AGGREGATED_FULL_TEXT_PARAM + "=true";
 
   private static final String POST_TITLES_URI = "/uc/costperuse/titles";
   private static final String GET_TITLE_URI = "/uc/costperuse/title/%s/%s";
@@ -72,46 +72,47 @@ public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
   public CompletableFuture<Boolean> verifyCredentials(UcConfiguration configuration) {
     CompletableFuture<Boolean> result = new CompletableFuture<>();
     constructGetRequest(VERIFY_URI, configuration)
-      .expect(ResponsePredicate.SC_OK)
-      .send(event -> result.complete(event.succeeded()));
+      .send()
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete((result1, failure) -> result.complete(result1 != null && failure == null));
     return result;
   }
 
   @Override
   public CompletableFuture<UcTitleCostPerUse> getTitleCostPerUse(String titleId, String packageId,
                                                                  GetTitleUcConfiguration configuration) {
-    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    Promise<HttpResponse<Buffer>> promise = Promise.promise();
     constructGetRequest(constructGetTitleUri(titleId, packageId, configuration), configuration)
-      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-      .as(BodyCodec.jsonObject())
-      .send(promise);
+      .send()
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete(handleResponse(promise));
     return mapVertxFuture(promise.future())
       .thenApply(HttpResponse::body)
-      .thenApply(jsonObject -> jsonObject.mapTo(UcTitleCostPerUse.class));
+      .thenApply(buffer -> new JsonObject(buffer).mapTo(UcTitleCostPerUse.class));
   }
 
   @Override
   public CompletableFuture<UcPackageCostPerUse> getPackageCostPerUse(String packageId,
                                                                      GetPackageUcConfiguration configuration) {
-    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    Promise<HttpResponse<Buffer>> promise = Promise.promise();
     constructGetRequest(constructGetPackageUri(packageId, configuration), configuration)
-      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-      .as(BodyCodec.jsonObject())
-      .send(promise);
+      .send()
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete(handleResponse(promise));
     return mapVertxFuture(promise.future())
       .thenApply(HttpResponse::body)
-      .thenApply(jsonObject -> jsonObject.mapTo(UcPackageCostPerUse.class));
+      .thenApply(buffer -> new JsonObject(buffer).mapTo(UcPackageCostPerUse.class));
   }
 
   @Override
   public CompletableFuture<Map<String, UcCostAnalysis>> getTitlePackageCostPerUse(
     List<UcTitlePackageId> ids,
     GetTitlePackageUcConfiguration configuration) {
-    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    Promise<HttpResponse<Buffer>> promise = Promise.promise();
     constructPostRequest(constructPostTitlesUri(configuration), configuration)
-      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-      .as(BodyCodec.jsonObject())
-      .sendJson(ids, promise);
+      .sendJson(ids)
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete(handleResponse(promise));
     return mapVertxFuture(promise.future())
       .thenApply(HttpResponse::body)
       .thenApply(this::toCostAnalysisMap);
@@ -119,18 +120,33 @@ public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
 
   @Override
   public CompletableFuture<UcMetricType> getUsageMetricType(UcConfiguration configuration) {
-    Promise<HttpResponse<JsonObject>> promise = Promise.promise();
+    Promise<HttpResponse<Buffer>> promise = Promise.promise();
     constructGetRequest(GET_METRIC_URI, configuration)
-      .expect(ResponsePredicate.create(ResponsePredicate.SC_OK, errorConverter()))
-      .as(BodyCodec.jsonObject())
-      .send(promise);
+      .send()
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete(handleResponse(promise));
     return mapVertxFuture(promise.future())
       .thenApply(HttpResponse::body)
-      .thenApply(jsonObject -> jsonObject.mapTo(UcMetricType.class));
+      .thenApply(buffer -> new JsonObject(buffer).mapTo(UcMetricType.class));
   }
 
-  private Map<String, UcCostAnalysis> toCostAnalysisMap(JsonObject jsonObject) {
-    return jsonObject.stream()
+  private Completable<HttpResponse<Buffer>> handleResponse(Promise<HttpResponse<Buffer>> promise) {
+    return (response, failure) -> {
+      if (failure != null) {
+        if (ContentType.APPLICATION_JSON.getMimeType().equals(response.getHeader(HttpHeaders.CONTENT_TYPE))) {
+          JsonObject body = response.bodyAsJsonObject();
+          promise.fail(new UcFailedRequestException(response.statusCode(), body));
+        }
+
+        promise.fail(new UcFailedRequestException(response.statusCode(), response.bodyAsString()));
+      } else {
+        promise.complete(response);
+      }
+    };
+  }
+
+  private Map<String, UcCostAnalysis> toCostAnalysisMap(Buffer buffer) {
+    return new JsonObject(buffer).stream()
       .collect(Collectors.toMap(Map.Entry::getKey, o -> JsonObject.mapFrom(o.getValue()).mapTo(UcCostAnalysis.class)));
   }
 
@@ -182,18 +198,6 @@ public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
     return httpRequest
       .bearerTokenAuthentication(configuration.getAccessToken())
       .putHeader("custkey", configuration.getCustomerKey());
-  }
-
-  private ErrorConverter errorConverter() {
-    return ErrorConverter.createFullBody(result -> {
-      HttpResponse<Buffer> response = result.response();
-      if (ContentType.APPLICATION_JSON.getMimeType().equals(response.getHeader(HttpHeaders.CONTENT_TYPE))) {
-        JsonObject body = response.bodyAsJsonObject();
-        return new UcFailedRequestException(response.statusCode(), body);
-      }
-
-      return new UcFailedRequestException(response.statusCode(), response.bodyAsString());
-    });
   }
 
   private String postRequestParams() {

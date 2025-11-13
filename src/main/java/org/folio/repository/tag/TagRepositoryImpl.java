@@ -73,7 +73,7 @@ public class TagRepositoryImpl implements TagRepository {
     logSelectQuery(log, query);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, promise);
+    pgClient(tenantId).select(query, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTags);
   }
@@ -86,7 +86,7 @@ public class TagRepositoryImpl implements TagRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTags);
   }
@@ -104,7 +104,7 @@ public class TagRepositoryImpl implements TagRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTags);
   }
@@ -161,7 +161,7 @@ public class TagRepositoryImpl implements TagRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
   }
@@ -172,7 +172,7 @@ public class TagRepositoryImpl implements TagRepository {
     logSelectQuery(log, query);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, promise);
+    pgClient(tenantId).select(query, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagValues);
   }
@@ -190,7 +190,7 @@ public class TagRepositoryImpl implements TagRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagValues);
   }
@@ -203,7 +203,7 @@ public class TagRepositoryImpl implements TagRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return promise.future().recover(excTranslator.translateOrPassBy());
   }

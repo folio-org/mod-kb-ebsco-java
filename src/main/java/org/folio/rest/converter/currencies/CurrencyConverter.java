@@ -26,11 +26,11 @@ public class CurrencyConverter implements Converter<List<DbCurrency>, CurrencyCo
 
   private Currency toCurrency(DbCurrency dbCurrency) {
     return new Currency()
-      .withId(dbCurrency.getCode())
+      .withId(dbCurrency.code())
       .withType(Currency.Type.CURRENCIES)
       .withAttributes(new CurrencyDataAttributes()
-        .withCode(dbCurrency.getCode())
-        .withDescription(dbCurrency.getDescription())
+        .withCode(dbCurrency.code())
+        .withDescription(dbCurrency.description())
       );
   }
 }

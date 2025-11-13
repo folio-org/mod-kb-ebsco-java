@@ -68,7 +68,7 @@ public final class IdParser {
   }
 
   public static String getResourceId(HoldingsId holding) {
-    return concat(holding.getVendorId(), Long.parseLong(holding.getPackageId()), Long.parseLong(holding.getTitleId()));
+    return concat(holding.vendorId(), Long.parseLong(holding.packageId()), Long.parseLong(holding.titleId()));
   }
 
   public static ResourceId getResourceId(DbHoldingInfo resource) {

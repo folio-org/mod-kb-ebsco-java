@@ -53,10 +53,10 @@ public class EholdingsStatusImpl implements EholdingsStatus {
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
         okapiData.setValue(new OkapiData(okapiHeaders));
-        return configurationService.retrieveConfiguration(okapiData.getValue());
+        return configurationService.retrieveConfiguration(okapiData.get());
       })
       .thenCompose(configuration -> configurationService.verifyCredentials(configuration, vertxContext,
-        okapiData.getValue())
+        okapiData.get())
       )
       .thenAccept(verificationErrorsToResponse(asyncResultHandler))
       .exceptionally(handleStatusException(asyncResultHandler));

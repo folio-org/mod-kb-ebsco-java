@@ -131,7 +131,7 @@ public class AccessTypesTestUtil {
       .credentialsId(resultRow.getUUID(CREDENTIALS_ID_COLUMN))
       .name(resultRow.getString(NAME_COLUMN))
       .description(resultRow.getString(DESCRIPTION_COLUMN))
-      .usageNumber(ObjectUtils.defaultIfNull(resultRow.getInteger(USAGE_NUMBER_COLUMN), 0))
+      .usageNumber(ObjectUtils.getIfNull(resultRow.getInteger(USAGE_NUMBER_COLUMN), 0))
       .createdDate(resultRow.getOffsetDateTime(CREATED_DATE_COLUMN))
       .createdByUserId(resultRow.getUUID(CREATED_BY_USER_ID_COLUMN))
       .updatedDate(resultRow.getOffsetDateTime(UPDATED_DATE_COLUMN))

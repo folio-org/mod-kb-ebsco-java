@@ -36,7 +36,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
     final String query = insertTransactionId(tenantId, params);
     logInsertQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
     return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 
@@ -46,7 +46,7 @@ public class TransactionIdRepositoryImpl implements TransactionIdRepository {
     final String query = getLastTransactionIdByCredentials(tenantId);
     logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, params, promise);
+    pgClient(tenantId).select(query, params, promise::handle);
     return mapResult(promise.future(), this::mapId);
   }
 

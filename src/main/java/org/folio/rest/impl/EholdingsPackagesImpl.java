@@ -173,12 +173,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
           if (Boolean.TRUE.equals(filter.getFilterCustom())) {
             return getCustomProviderId(context).thenCompose(providerId ->
               context.getPackagesService()
-                .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.getPackagesSearchType(),
+                .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.packagesSearchType(),
                   providerId, q, page, count, filter.getSort())
             );
           } else {
             return context.getPackagesService()
-              .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.getPackagesSearchType(),
+              .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.packagesSearchType(),
                 null, q, page, count, filter.getSort());
           }
         });
@@ -321,7 +321,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
         long packageIdPart = pkgId.getPackageIdPart();
         return context.getTitlesService()
           .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(),
-            searchProperties.getTitlesSearchType(), filter.getSort(), page, count)
+            searchProperties.titlesSearchType(), filter.getSort(), page, count)
           .thenApply(titles -> titleCollectionConverter.convert(titles))
           .thenCompose(loadResourceTags(context))
           .thenCompose(loadResourceAccessTypes(context));

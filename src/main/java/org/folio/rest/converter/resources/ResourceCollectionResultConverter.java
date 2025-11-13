@@ -36,9 +36,9 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   @Override
   public ResourceCollection convert(@NonNull ResourceCollectionResult resourceCollectionResult) {
 
-    final Titles titles = resourceCollectionResult.getTitles();
-    final List<DbResource> resources = resourceCollectionResult.getTitlesList();
-    final List<DbHoldingInfo> holdings = resourceCollectionResult.getHoldings();
+    final Titles titles = resourceCollectionResult.titles();
+    final List<DbResource> resources = resourceCollectionResult.titlesList();
+    final List<DbHoldingInfo> holdings = resourceCollectionResult.holdings();
     final List<ResourceCollectionItem> resourceCollectionItems = mapItems(titles.getTitleList(),
       title -> mapResourceCollectionItem(resources, resourceCollectionItemConverter.convert(title),
         createResourceId(title)));

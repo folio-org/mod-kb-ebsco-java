@@ -30,8 +30,8 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
 
   @Override
   public PackageCollection convert(@NonNull PackageCollectionResult packagesResult) {
-    Packages packages = packagesResult.getPackages();
-    List<DbPackage> dbPackages = packagesResult.getDbPackages();
+    Packages packages = packagesResult.packages();
+    List<DbPackage> dbPackages = packagesResult.dbPackages();
     List<PackageCollectionItem> packageList = mapItems(packages.getPackagesList(),
       packageData -> {
         PackageCollectionItem item = packageCollectionItemConverter.convert(packageData);

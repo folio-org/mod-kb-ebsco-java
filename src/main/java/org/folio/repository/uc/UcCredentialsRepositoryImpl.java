@@ -42,7 +42,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
 
     logSelectQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant, vertx).execute(query, promise);
+    pgClient(tenant, vertx).execute(query, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapUcCredentials);
   }
@@ -51,10 +51,10 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
   public CompletableFuture<Void> save(DbUcCredentials credentials, String tenant) {
     String query = saveUcCredentials(tenant);
 
-    var params = Tuple.of(credentials.getClientId(), credentials.getClientSecret());
+    var params = Tuple.of(credentials.clientId(), credentials.clientSecret());
     logInsertQuery(log, query, params, true);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant, vertx).execute(query, params, promise);
+    pgClient(tenant, vertx).execute(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -65,7 +65,7 @@ public class UcCredentialsRepositoryImpl implements UcCredentialsRepository {
 
     logDeleteQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant, vertx).execute(query, promise);
+    pgClient(tenant, vertx).execute(query, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }

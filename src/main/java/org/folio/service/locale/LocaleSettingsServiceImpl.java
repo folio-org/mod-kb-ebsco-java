@@ -1,6 +1,5 @@
 package org.folio.service.locale;
 
-import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
@@ -49,10 +48,9 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     try {
       var configurationsClient = prepareConfigurationsClient(okapiData, tenantId);
       log.info("Send GET request to mod-configuration {}", QUERY);
-      Promise<HttpResponse<Buffer>> promise = Promise.promise();
-      configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null, promise);
+      configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null);
 
-      promise.future()
+      configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null)
         .onSuccess(event -> {
           try {
             if (isSuccessfulResponse(event)) {

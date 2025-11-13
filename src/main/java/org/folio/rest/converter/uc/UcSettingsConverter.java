@@ -93,11 +93,11 @@ public final class UcSettingsConverter {
 
     @Override
     public UCSettings convert(UcSettingsResult ucSettingsResult) {
-      UCSettings ucSettings = Objects.requireNonNull(fromDbConverter.convert(ucSettingsResult.getSettings()));
-      UcMetricType ucMetricType = ucSettingsResult.getMetricType();
+      UCSettings ucSettings = Objects.requireNonNull(fromDbConverter.convert(ucSettingsResult.settings()));
+      UcMetricType ucMetricType = ucSettingsResult.metricType();
       if (ucMetricType != null) {
         UCSettingsDataAttributes.MetricType metricType = metricTypeMapper
-          .getOrDefault(ucMetricType.getMetricTypeId(), UCSettingsDataAttributes.MetricType.UNKNOWN);
+          .getOrDefault(ucMetricType.metricTypeId(), UCSettingsDataAttributes.MetricType.UNKNOWN);
         ucSettings.getAttributes().setMetricType(metricType);
       }
       return ucSettings;

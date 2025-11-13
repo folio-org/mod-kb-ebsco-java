@@ -1,6 +1,6 @@
-## v6.1.0 YYYY-mm-DD
+## v7.0.0 YYYY-mm-DD
 ### Breaking changes
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* Upgrade the module for Vert.X 5.0.x ([FHIQC-48](https://issues.folio.org/browse/FHIQC-48))
 
 ### New APIs versions
 * Provides `API_NAME vX.Y`

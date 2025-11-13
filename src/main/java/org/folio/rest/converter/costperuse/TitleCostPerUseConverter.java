@@ -1,7 +1,7 @@
 package org.folio.rest.converter.costperuse;
 
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
-import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+import static org.apache.commons.lang3.ObjectUtils.getIfNull;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.convertParameters;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getAllPlatformUsages;
 import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.getTotalUsage;
@@ -48,11 +48,11 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
       .withType(TitleCostPerUse.Type.TITLE_COST_PER_USE);
 
     var ucTitleCostPerUse = source.getUcTitleCostPerUse();
-    if (ucTitleCostPerUse.getUsage() == null || ucTitleCostPerUse.getUsage().getPlatforms() == null) {
+    if (ucTitleCostPerUse.usage() == null || ucTitleCostPerUse.usage().platforms() == null) {
       return titleCostPerUse;
     }
 
-    List<SpecificPlatformUsage> specificPlatformUsages = getAllPlatformUsages(ucTitleCostPerUse.getUsage());
+    List<SpecificPlatformUsage> specificPlatformUsages = getAllPlatformUsages(ucTitleCostPerUse.usage());
 
     var usage = new Usage().withTotals(new UsageTotals());
     var analysis = new TitleCostAnalysis();
@@ -108,14 +108,14 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
     var packageId = customerResource.getPackageId();
     var vendorId = customerResource.getVendorId();
     var titlePackageId = titleId + "." + packageId;
-    var ucCostAnalysis = titlePackageCostMap.get(titlePackageId).getCurrent();
+    var ucCostAnalysis = titlePackageCostMap.get(titlePackageId).current();
 
     var embargoPeriod = defineEmbargoType(customerResource);
 
     var customCoverageList = emptyIfNull(customerResource.getCustomCoverageList());
     var managedCoverageList = emptyIfNull(customerResource.getManagedCoverageList());
     var coverageDates = customCoverageList.isEmpty() ? managedCoverageList : customCoverageList;
-    var cost = defaultIfNull(ucCostAnalysis.getCost(), NumberUtils.DOUBLE_ZERO);
+    var cost = getIfNull(ucCostAnalysis.cost(), NumberUtils.DOUBLE_ZERO);
     return new HoldingsCostAnalysisAttributes()
       .withPackageId(vendorId + "-" + packageId)
       .withResourceId(vendorId + "-" + packageId + "-" + titleId)
