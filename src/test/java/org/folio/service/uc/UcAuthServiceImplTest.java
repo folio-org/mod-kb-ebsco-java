@@ -9,12 +9,9 @@ import static org.folio.util.UcCredentialsTestUtil.setUpUcCredentials;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
@@ -23,7 +20,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 import java.util.Map;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
@@ -36,8 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -67,9 +61,8 @@ public class UcAuthServiceImplTest extends WireMockTestBase {
     ReflectionTestUtils.setField(authServiceClient, "webClient", client);
 
     when(client.postAbs(anyString())).thenReturn(httpRequest);
-    doAnswer(httpResponseAnswer(httpResponse, 1)).when(jsonHttpRequest).sendForm(any(), any(Handler.class));
+    when(jsonHttpRequest.sendForm(any())).thenReturn(succeededFuture(httpResponse));
     when(httpRequest.timeout(anyLong())).thenReturn(httpRequest);
-    when(httpRequest.expect(any(ResponsePredicate.class))).thenReturn(httpRequest);
     when(httpRequest.as(BodyCodec.jsonObject())).thenReturn(jsonHttpRequest);
   }
 
@@ -89,7 +82,7 @@ public class UcAuthServiceImplTest extends WireMockTestBase {
     Async async = context.async();
     ucAuthService.authenticate(new CaseInsensitiveMap<>(Map.of(XOkapiHeaders.TENANT, STUB_TENANT)))
       .thenAccept(expected -> {
-        context.assertEquals(expected, mockedToken.getAccessToken());
+        context.assertEquals(expected, mockedToken.accessToken());
         async.complete();
       })
       .exceptionally(throwable -> {
@@ -110,35 +103,5 @@ public class UcAuthServiceImplTest extends WireMockTestBase {
         return null;
       });
     async.await(TIMEOUT);
-  }
-
-  private static <T> HandlerAnswer<AsyncResult<HttpResponse<T>>, Void> httpResponseAnswer(HttpResponse<T> httpResponse,
-                                                                                          int argumentIndex) {
-    AsyncResult<HttpResponse<T>> res = succeededFuture(httpResponse);
-    return new HandlerAnswer<>(res, argumentIndex);
-  }
-
-  private static class HandlerAnswer<H, R> implements Answer<R> {
-
-    private final H handlerResult;
-    private final int argumentIndex;
-    private R returnResult;
-
-    HandlerAnswer(H handlerResult, int handlerArgumentIndex) {
-      this.handlerResult = handlerResult;
-      this.argumentIndex = handlerArgumentIndex;
-    }
-
-    HandlerAnswer(H handlerResult, int handlerArgumentIndex, R returnResult) {
-      this(handlerResult, handlerArgumentIndex);
-      this.returnResult = returnResult;
-    }
-
-    @Override
-    public R answer(InvocationOnMock invocation) {
-      Handler<H> handler = invocation.getArgument(argumentIndex);
-      handler.handle(handlerResult);
-      return returnResult;
-    }
   }
 }

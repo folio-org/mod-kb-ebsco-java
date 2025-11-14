@@ -35,7 +35,7 @@ public class CurrenciesRepositoryImpl implements CurrenciesRepository {
 
     logSelectQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    DbUtil.pgClient(tenant, vertx).execute(query, promise);
+    DbUtil.pgClient(tenant, vertx).execute(query, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCurrenciesCollection);
   }

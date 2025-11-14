@@ -83,8 +83,8 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
 
     var actualCredentials = getUcCredentials(vertx);
 
-    assertEquals(STUB_CLIENT_ID, actualCredentials.getClientId());
-    assertEquals(STUB_CLIENT_SECRET, actualCredentials.getClientSecret());
+    assertEquals(STUB_CLIENT_ID, actualCredentials.clientId());
+    assertEquals(STUB_CLIENT_SECRET, actualCredentials.clientSecret());
   }
 
   @Test
@@ -112,8 +112,8 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
 
     var actualCredentials = getUcCredentials(vertx);
 
-    assertEquals(newClientId, actualCredentials.getClientId());
-    assertEquals(newClientSecret, actualCredentials.getClientSecret());
+    assertEquals(newClientId, actualCredentials.clientId());
+    assertEquals(newClientSecret, actualCredentials.clientSecret());
   }
 
   @Test
@@ -129,8 +129,8 @@ public class UsageConsolidationCredentialsApiTest extends WireMockTestBase {
     assertErrorContainsTitle(error, "Invalid Usage Consolidation Credentials");
     var actualCredentials = getUcCredentials(vertx);
 
-    assertEquals(STUB_CLIENT_ID, actualCredentials.getClientId());
-    assertEquals(STUB_CLIENT_SECRET, actualCredentials.getClientSecret());
+    assertEquals(STUB_CLIENT_ID, actualCredentials.clientId());
+    assertEquals(STUB_CLIENT_SECRET, actualCredentials.clientSecret());
   }
 
   @Test

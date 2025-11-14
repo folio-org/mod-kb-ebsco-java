@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.folio</groupId>
   <artifactId>mod-kb-ebsco-java</artifactId>
-  <version>6.1.0-SNAPSHOT</version>
+  <version>7.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>EBSCO KB Broker</name>
@@ -37,13 +37,13 @@
   <properties>
     <java.version>21</java.version>
 
-    <rmb.version>35.4.0</rmb.version>
-    <folio-di-support.version>3.1.0-SNAPSHOT</folio-di-support.version>
-    <folio-service-tools.version>5.1.0-SNAPSHOT</folio-service-tools.version>
-    <folio-holdingsiq-client.version>4.1.0-SNAPSHOT</folio-holdingsiq-client.version>
+    <rmb.version>36.0.0-SNAPSHOT</rmb.version>
+    <folio-di-support.version>4.0.0-SNAPSHOT</folio-di-support.version>
+    <folio-service-tools.version>6.0.0-SNAPSHOT</folio-service-tools.version>
+    <folio-holdingsiq-client.version>5.0.0-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.11.0-SNAPSHOT</folio-liquibase-util.version>
 
-    <vertx.version>4.5.14</vertx.version>
+    <vertx.version>5.0.5</vertx.version>
     <aspectj.version>1.9.24</aspectj.version>
     <jackson.version>2.20.1</jackson.version>
     <postgresql.version>42.7.8</postgresql.version>

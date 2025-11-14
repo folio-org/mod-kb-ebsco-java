@@ -61,7 +61,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId, vertx).execute(query, parameters, promise);
+    pgClient(tenantId, vertx).execute(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -75,7 +75,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     logDeleteQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId, vertx).execute(query, params, promise);
+    pgClient(tenantId, vertx).execute(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -101,7 +101,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId, vertx).select(query, parameters, promise);
+    pgClient(tenantId, vertx).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapResources);
   }

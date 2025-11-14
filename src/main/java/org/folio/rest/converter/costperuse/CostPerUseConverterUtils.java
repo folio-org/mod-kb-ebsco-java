@@ -26,16 +26,16 @@ final class CostPerUseConverterUtils {
 
   public static double getPackageTitlesTotalCost(Map<String, UcCostAnalysis> titlePackageCost) {
     return titlePackageCost.values().stream()
-      .map(UcCostAnalysis::getCurrent)
+      .map(UcCostAnalysis::current)
       .filter(Objects::nonNull)
-      .map(UcCostAnalysisDetails::getCost)
+      .map(UcCostAnalysisDetails::cost)
       .filter(Objects::nonNull)
       .mapToDouble(Double::doubleValue)
       .sum();
   }
 
   static List<SpecificPlatformUsage> getAllPlatformUsages(UcUsage ucUsage) {
-    return ucUsage.getPlatforms().entrySet()
+    return ucUsage.platforms().entrySet()
       .stream()
       .map(CostPerUseConverterUtils::toSpecificPlatformUsage)
       .toList();
@@ -55,8 +55,8 @@ final class CostPerUseConverterUtils {
 
   static SpecificPlatformUsage toSpecificPlatformUsage(Map.Entry<String, UcPlatformUsage> entry) {
     UcPlatformUsage ucPlatformUsage = entry.getValue();
-    List<Integer> ucPlatformUsageCounts = ucPlatformUsage.getCounts();
-    Boolean isPublisherPlatform = ucPlatformUsage.getPublisherPlatform();
+    List<Integer> ucPlatformUsageCounts = ucPlatformUsage.counts();
+    Boolean isPublisherPlatform = ucPlatformUsage.publisherPlatform();
     return new SpecificPlatformUsage()
       .withName(entry.getKey())
       .withCounts(ucPlatformUsageCounts)
@@ -67,10 +67,10 @@ final class CostPerUseConverterUtils {
   static CostAnalysisAttributes getCostAnalysisAttributes(UcTitleCostPerUse ucTitleCostPerUse,
                                                           PlatformUsage publisher) {
     var analysisAttributes = new CostAnalysisAttributes();
-    if (ucTitleCostPerUse.getAnalysis() != null
-        && ucTitleCostPerUse.getAnalysis().getCurrent() != null
-        && ucTitleCostPerUse.getAnalysis().getCurrent().getCost() != null) {
-      analysisAttributes.setCost(ucTitleCostPerUse.getAnalysis().getCurrent().getCost());
+    if (ucTitleCostPerUse.analysis() != null
+        && ucTitleCostPerUse.analysis().current() != null
+        && ucTitleCostPerUse.analysis().current().cost() != null) {
+      analysisAttributes.setCost(ucTitleCostPerUse.analysis().current().cost());
       analysisAttributes.setUsage(publisher == null ? null : publisher.getTotal());
       analysisAttributes.setCostPerUse(getCostPerUse(analysisAttributes));
     }

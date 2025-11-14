@@ -89,11 +89,11 @@ public class AssignedUsersServiceImplTest {
 
     var captorValue = resultArgumentCaptor.getValue();
     assertThat(captorValue).isNotNull();
-    assertThat(captorValue.getGroups())
+    assertThat(captorValue.groups())
       .hasSize(1)
       .extracting(Group::getGroup)
       .containsExactly("group");
-    assertThat(captorValue.getUsers())
+    assertThat(captorValue.users())
       .hasSize(2)
       .extracting(User::getLastName)
       .containsExactly("a", "b");

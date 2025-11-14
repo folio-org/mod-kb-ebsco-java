@@ -76,7 +76,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     CompletableFuture<Titles> titlesFuture;
     if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
       titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
-        FilterQuery.builder().build(), searchProperties.getTitlesSearchType(), Sort.NAME, 1, 25);
+        FilterQuery.builder().build(), searchProperties.titlesSearchType(), Sort.NAME, 1, 25);
     } else {
       titlesFuture = completedFuture(null);
     }
@@ -166,13 +166,13 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
     boolean failed();
 
-    R getResult();
+    R result();
 
     F getFailure();
 
     default Result<R, F> accept(Consumer<? super R> consumer) {
       if (successful()) {
-        consumer.accept(getResult());
+        consumer.accept(result());
       }
       return this;
     }
@@ -185,13 +185,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     }
   }
 
-  private static class Success<R, F> implements Result<R, F> {
-
-    private final R result;
-
-    Success(R result) {
-      this.result = result;
-    }
+  private record Success<R, F>(R result) implements Result<R, F> {
 
     @Override
     public boolean successful() {
@@ -201,11 +195,6 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     @Override
     public boolean failed() {
       return false;
-    }
-
-    @Override
-    public R getResult() {
-      return result;
     }
 
     @Override
@@ -214,13 +203,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     }
   }
 
-  private static class Failure<R, F> implements Result<R, F> {
-
-    private final F failureVal;
-
-    Failure(F failure) {
-      this.failureVal = failure;
-    }
+  private record Failure<R, F>(F failureVal) implements Result<R, F> {
 
     @Override
     public boolean successful() {
@@ -233,7 +216,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
     }
 
     @Override
-    public R getResult() {
+    public R result() {
       throw new NoSuchElementException("Result is not present");
     }
 

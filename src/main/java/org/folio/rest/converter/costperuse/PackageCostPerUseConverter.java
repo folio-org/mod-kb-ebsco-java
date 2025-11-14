@@ -32,11 +32,11 @@ public class PackageCostPerUseConverter implements Converter<PackageCostPerUseRe
     if (titlePackageCost != null) {
       cost = getPackageTitlesTotalCost(titlePackageCost);
     } else {
-      cost = ucPackageCostPerUse.getAnalysis().getCurrent().getCost();
+      cost = ucPackageCostPerUse.analysis().current().cost();
     }
 
     var costAnalysis = new CostAnalysis();
-    var allPlatformUsages = getAllPlatformUsages(ucPackageCostPerUse.getUsage());
+    var allPlatformUsages = getAllPlatformUsages(ucPackageCostPerUse.usage());
     switch (source.getPlatformType()) {
       case PUBLISHER:
         costAnalysis.setPublisherPlatforms(getCostAnalysisAttributes(getPublisherUsages(allPlatformUsages), cost));

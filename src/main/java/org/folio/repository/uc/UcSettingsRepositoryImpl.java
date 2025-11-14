@@ -47,7 +47,7 @@ public class UcSettingsRepositoryImpl implements UcSettingsRepository {
 
     logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant, vertx).execute(query, params, promise);
+    pgClient(tenant, vertx).execute(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapUcSettings);
   }
@@ -74,7 +74,7 @@ public class UcSettingsRepositoryImpl implements UcSettingsRepository {
 
     logInsertQuery(log, query, params, true);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant, vertx).execute(query, params, promise);
+    pgClient(tenant, vertx).execute(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), setId(ucSettings, id));
   }

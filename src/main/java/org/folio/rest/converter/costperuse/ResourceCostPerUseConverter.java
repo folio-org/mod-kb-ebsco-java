@@ -30,10 +30,10 @@ public class ResourceCostPerUseConverter implements Converter<ResourceCostPerUse
       .withType(ResourceCostPerUse.Type.RESOURCE_COST_PER_USE);
 
     var ucTitleCostPerUse = source.getUcTitleCostPerUse();
-    if (ucTitleCostPerUse.getUsage() == null || ucTitleCostPerUse.getUsage().getPlatforms() == null) {
+    if (ucTitleCostPerUse.usage() == null || ucTitleCostPerUse.usage().platforms() == null) {
       return resourceCostPerUse;
     }
-    List<SpecificPlatformUsage> specificPlatformUsages = getAllPlatformUsages(ucTitleCostPerUse.getUsage());
+    List<SpecificPlatformUsage> specificPlatformUsages = getAllPlatformUsages(ucTitleCostPerUse.usage());
 
     var usage = new Usage().withTotals(new UsageTotals());
     var analysis = new CostAnalysis();

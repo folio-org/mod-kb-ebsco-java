@@ -68,7 +68,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
     logSelectQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, promise);
+    pgClient(tenant).select(query, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapCredentialsCollection);
   }
@@ -80,7 +80,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     logSelectQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, params, promise);
+    pgClient(tenant).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }
@@ -109,7 +109,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
     logInsertQuery(log, query, params, true);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, params, promise);
+    pgClient(tenant).execute(query, params, promise::handle);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
@@ -125,7 +125,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
     logDeleteQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, params, promise);
+    pgClient(tenant).execute(query, params, promise::handle);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
@@ -140,7 +140,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
 
     logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, params, promise);
+    pgClient(tenant).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
   }

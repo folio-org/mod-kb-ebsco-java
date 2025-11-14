@@ -56,7 +56,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameters, promise);
+    pgClient(tenantId).execute(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -70,7 +70,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     logDeleteQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameters, promise);
+    pgClient(tenantId).execute(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -94,7 +94,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapProviderIds);
   }

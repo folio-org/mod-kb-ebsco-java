@@ -8,7 +8,7 @@ import static org.folio.service.holdings.message.MessageFactory.getDeltaReportMe
 import static org.folio.service.holdings.message.MessageFactory.getHoldingsMessage;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
-import io.vertx.core.Promise;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -89,9 +89,9 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
             })
             .thenCompose(o -> {
               int totalPages =
-                getRequestCount(Integer.valueOf(deltaReportStatus.getValue().getTotalCount()), DELTA_REPORT_MAX_SIZE);
+                getRequestCount(Integer.valueOf(deltaReportStatus.get().getTotalCount()), DELTA_REPORT_MAX_SIZE);
               return loadWithPagination(totalPages,
-                page -> loadingService.loadDeltaReport(deltaReportId.getValue(), DELTA_REPORT_MAX_SIZE, page)
+                page -> loadingService.loadDeltaReport(deltaReportId.get(), DELTA_REPORT_MAX_SIZE, page)
                   .thenAccept(holdings -> holdingsService.processChanges(getDeltaReportMessage(message, holdings))));
             });
         }
@@ -138,11 +138,10 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @NonNull
   private CompletionStage<Void> sendDeltaReportCreatedMessage(LoadHoldingsMessage message, DeltaReportStatus status) {
-    Promise<Void> promise = Promise.promise();
     int totalCount = Integer.parseInt(status.getTotalCount());
-    holdingsService.deltaReportCreated(
-      getDeltaReportCreatedMessage(message, totalCount, getRequestCount(totalCount, DELTA_REPORT_MAX_SIZE)), promise);
-    return mapVertxFuture(promise.future());
+    Future<Void> future = holdingsService.deltaReportCreated(
+      getDeltaReportCreatedMessage(message, totalCount, getRequestCount(totalCount, DELTA_REPORT_MAX_SIZE)));
+    return mapVertxFuture(future);
   }
 
   private CompletableFuture<DeltaReportStatus> waitForReportToComplete(LoadService loadingService,

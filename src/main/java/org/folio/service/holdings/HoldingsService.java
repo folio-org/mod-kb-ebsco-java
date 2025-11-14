@@ -3,8 +3,7 @@ package org.folio.service.holdings;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -74,7 +73,7 @@ public interface HoldingsService {
 
   void snapshotFailed(SnapshotFailedMessage message);
 
-  void deltaReportCreated(DeltaReportCreatedMessage message, Handler<AsyncResult<Void>> handler);
+  Future<Void> deltaReportCreated(DeltaReportCreatedMessage message);
 
   void loadingFailed(LoadFailedMessage message);
 }

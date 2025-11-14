@@ -6,11 +6,11 @@ import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpResponseExpectation;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -44,9 +44,10 @@ public class UcAuthEbscoClientImpl implements UcAuthEbscoClient {
     webClient
       .postAbs(baseUrl + REQUEST_URI)
       .timeout(TIMEOUT)
-      .expect(ResponsePredicate.SC_OK)
       .as(BodyCodec.jsonObject())
-      .sendForm(createRequestBody(clientId, clientSecret), promise);
+      .sendForm(createRequestBody(clientId, clientSecret))
+      .expecting(HttpResponseExpectation.SC_OK)
+      .onComplete(promise);
     return mapVertxFuture(promise.future().recover(mapException()))
       .thenApply(HttpResponse::body)
       .thenApply(jsonObject -> jsonObject.mapTo(UcAuthToken.class));

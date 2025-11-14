@@ -26,13 +26,13 @@ public class PackageBulkFetchCollectionConverter implements Converter<PackageBul
 
   @Override
   public PackageBulkFetchCollection convert(@NonNull PackageBulkResult source) {
-    List<PackageBulkFetchCollectionItem> packageList = mapItems(source.getPackages().getPackagesList(),
+    List<PackageBulkFetchCollectionItem> packageList = mapItems(source.packages().getPackagesList(),
       packageBulkItemConverter::convert);
 
     return new PackageBulkFetchCollection()
       .withJsonapi(RestConstants.JSONAPI)
       .withIncluded(packageList)
-      .withMeta(toMeta(source.getFailedPackageIds()));
+      .withMeta(toMeta(source.failedPackageIds()));
   }
 
   private FailedPackagesInformation toMeta(List<String> failedPackageIds) {

@@ -122,7 +122,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
             .resourceId(id)
             .ucTitleCostPerUse(ucTitleCostPerUse)
             .configuration(configuration)
-            .platformType(platformTypeHolder.getValue())
+            .platformType(platformTypeHolder.get())
             .build()
           )
           .thenApply(resourceCostPerUseConverter::convert);
@@ -159,7 +159,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
       .thenCompose(context -> fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
         .thenCompose(ucConfiguration ->
-          composePackageCostPerUseResult(packageId, platformTypeHolder.getValue(), context, ucConfiguration))
+          composePackageCostPerUseResult(packageId, platformTypeHolder.get(), context, ucConfiguration))
       )
       .thenApply(packageCostPerUseConverter::convert);
   }
@@ -205,7 +205,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
       .thenCompose(context -> fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
         .thenCompose(ucConfiguration ->
           composeResourceCostPerUseCollectionResult(packageIdPart, context, ucConfiguration,
-            platformTypeHolder.getValue())));
+            platformTypeHolder.get())));
   }
 
   private CompletableFuture<PackageCostPerUseResult> composePackageCostPerUseResult(
@@ -223,7 +223,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
           .configuration(ucConfiguration)
           .platformType(platformType);
 
-        var cost = ucPackageCostPerUse.getAnalysis().getCurrent().getCost();
+        var cost = ucPackageCostPerUse.analysis().current().cost();
         if (cost == null || cost.equals(NumberUtils.DOUBLE_ZERO)) {
           return fetchHoldingsData(packageIdPart, context)
             .thenCompose(dbHoldingInfos -> {
@@ -319,7 +319,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
               .titlePackageCostMap(titlePackageCost)
               .customerResources(customerResources)
               .configuration(ucConfiguration)
-              .platformType(platformTypeHolder.getValue())
+              .platformType(platformTypeHolder.get())
               .build()
           )
           .thenApply(titleCostPerUseConverter::convert);
@@ -362,12 +362,12 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   }
 
   private UcCostAnalysis toAllPublisherUcCostAnalysis(UcCostAnalysis ucCostAnalysis1, UcCostAnalysis ucCostAnalysis2) {
-    var current1 = ucCostAnalysis1.getCurrent();
-    var current2 = ucCostAnalysis2.getCurrent();
+    var current1 = ucCostAnalysis1.current();
+    var current2 = ucCostAnalysis2.current();
 
-    var cost = Optional.ofNullable(current1.getCost());
-    var usage1 = Optional.ofNullable(current1.getUsage());
-    var usage2 = Optional.ofNullable(current2.getUsage());
+    var cost = Optional.ofNullable(current1.cost());
+    var usage1 = Optional.ofNullable(current1.usage());
+    var usage2 = Optional.ofNullable(current2.usage());
 
     Optional<Integer> usage = usage1.flatMap(left -> usage2.map(right -> left + right));
 

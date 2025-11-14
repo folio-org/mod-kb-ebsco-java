@@ -4,7 +4,6 @@ import static org.folio.common.ListUtils.mapItems;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
-import lombok.Value;
 import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -27,10 +26,10 @@ public class UserCollectionDataConverter
   @Override
   public AssignedUserCollection convert(UsersResult source) {
     var assignedUserCollection = new AssignedUserCollection()
-      .withData(mapItems(source.getUsers(), itemConverter::convert))
-      .withMeta(new MetaTotalResults().withTotalResults(source.getUsers().size()))
+      .withData(mapItems(source.users(), itemConverter::convert))
+      .withMeta(new MetaTotalResults().withTotalResults(source.users().size()))
       .withJsonapi(RestConstants.JSONAPI);
-    var groupMap = source.getGroups().stream()
+    var groupMap = source.groups().stream()
       .collect(Collectors.toMap(Group::getId, Group::getGroup));
 
     assignedUserCollection.getData().stream()
@@ -41,9 +40,5 @@ public class UserCollectionDataConverter
     return assignedUserCollection;
   }
 
-  @Value
-  public static class UsersResult {
-    Collection<User> users;
-    Collection<Group> groups;
-  }
+  public record UsersResult(Collection<User> users, Collection<Group> groups) { }
 }

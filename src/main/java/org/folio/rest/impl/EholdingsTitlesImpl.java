@@ -189,7 +189,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context);
     } else {
       return context.getTitlesService()
-        .retrieveTitles(filter.createFilterQuery(), searchProperties.getTitlesSearchType(),
+        .retrieveTitles(filter.createFilterQuery(), searchProperties.titlesSearchType(),
           filter.getSort(), filter.getPage(), filter.getCount()
         );
     }

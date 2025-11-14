@@ -58,7 +58,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     logSelectQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, params, promise);
+    pgClient(tenant).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapAssignedUserCollection);
   }
@@ -71,7 +71,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
     logCountQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).select(query, params, promise);
+    pgClient(tenant).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()),
       rs -> mapFirstItem(rs, row -> row.getInteger(0)));
@@ -88,7 +88,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     logInsertQuery(log, query, params, true);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, params, promise);
+    pgClient(tenant).execute(query, params, promise::handle);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy())
@@ -105,7 +105,7 @@ public class AssignedUserRepositoryImpl implements AssignedUserRepository {
 
     logDeleteQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenant).execute(query, params, promise);
+    pgClient(tenant).execute(query, params, promise::handle);
 
     Future<RowSet<Row>> resultFuture = promise.future()
       .recover(excTranslator.translateOrPassBy());

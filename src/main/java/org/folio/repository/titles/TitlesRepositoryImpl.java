@@ -70,7 +70,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     logInsertQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, parameters, promise);
+    pgClient(tenantId).execute(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -84,7 +84,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     logDeleteQuery(log, query, params);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), nothing());
   }
@@ -108,7 +108,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapTitles);
   }
@@ -129,7 +129,7 @@ public class TitlesRepositoryImpl implements TitlesRepository {
     logSelectQuery(log, query, parameters);
 
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, parameters, promise);
+    pgClient(tenantId).select(query, parameters, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::readTagCount);
   }

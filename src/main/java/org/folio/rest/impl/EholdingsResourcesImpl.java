@@ -140,8 +140,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getTitlesService(),
           context.getPackagesService())
           .thenCompose(result -> {
-            Title title = result.getTitle();
-            postValidator.validateRelatedObjects(result.getPackageData(), title, result.getTitles());
+            Title title = result.title();
+            postValidator.validateRelatedObjects(result.packageData(), title, result.titles());
             ResourceSelectedPayload postRequest =
               new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
             ResourceId resourceId = ResourceId.builder()
@@ -326,7 +326,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
           .name(titleFuture.join().getTitleName())
           .build();
         return titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
-          filterByName, searchProperties.getTitlesSearchType(), Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
+          filterByName, searchProperties.titlesSearchType(), Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
       })
       .thenCompose(titles -> CompletableFuture.completedFuture(
         new ObjectsForPostResourceResult(titleFuture.join(), packageFuture.join(), titles)));

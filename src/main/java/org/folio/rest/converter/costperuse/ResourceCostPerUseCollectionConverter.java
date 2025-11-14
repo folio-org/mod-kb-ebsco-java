@@ -51,7 +51,7 @@ public class ResourceCostPerUseCollectionConverter
   private Integer calcPackageUsage(ResourceCostPerUseCollectionResult source) {
     PlatformUsage totalUsage;
     var platformType = source.getPlatformType();
-    var allPlatformUsages = getAllPlatformUsages(source.getPackageCostPerUse().getUsage());
+    var allPlatformUsages = getAllPlatformUsages(source.getPackageCostPerUse().usage());
     totalUsage = switch (platformType) {
       case NON_PUBLISHER -> getTotalUsage(getNonPublisherUsages(allPlatformUsages));
       case PUBLISHER -> getTotalUsage(getPublisherUsages(allPlatformUsages));
@@ -68,7 +68,7 @@ public class ResourceCostPerUseCollectionConverter
     if (INTEGER_ZERO.equals(packageUsage)) {
       usagePercent = DOUBLE_ZERO;
     } else {
-      usagePercent = Optional.ofNullable(ucCostAnalysis.getCurrent().getUsage())
+      usagePercent = Optional.ofNullable(ucCostAnalysis.current().usage())
         .map(titleUsage -> (double) titleUsage / packageUsage * 100)
         .orElse(DOUBLE_ZERO);
     }
@@ -79,9 +79,9 @@ public class ResourceCostPerUseCollectionConverter
       .withAttributes(new ResourceCostAnalysisAttributes()
         .withName(dbHoldingInfo.getPublicationTitle())
         .withPublicationType(PublicationType.fromValue(dbHoldingInfo.getResourceType()))
-        .withCost(ucCostAnalysis.getCurrent().getCost())
-        .withUsage(ucCostAnalysis.getCurrent().getUsage())
-        .withCostPerUse(ucCostAnalysis.getCurrent().getCostPerUse())
+        .withCost(ucCostAnalysis.current().cost())
+        .withUsage(ucCostAnalysis.current().usage())
+        .withCostPerUse(ucCostAnalysis.current().costPerUse())
         .withPercent(usagePercent)
       );
   }

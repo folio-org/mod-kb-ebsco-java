@@ -1,6 +1,7 @@
 package org.folio.service.uc;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.lang3.ObjectUtils.getIfNull;
 import static org.folio.common.FunctionUtils.nothing;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.RequestHeadersUtil.tenantId;
@@ -15,7 +16,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.ObjectUtils;
 import org.folio.client.uc.UcApigeeEbscoClient;
 import org.folio.client.uc.configuration.UcConfiguration;
 import org.folio.client.uc.model.UcMetricType;
@@ -157,8 +157,8 @@ public class UcSettingsServiceImpl implements UcSettingsService {
     log.info("prepareUpdate:: Setting changed fields to UcSettings for update");
 
     return dbUcSettings.toBuilder()
-      .customerKey(ObjectUtils.defaultIfNull(patchAttributes.getCustomerKey(), dbUcSettings.getCustomerKey()))
-      .currency(ObjectUtils.defaultIfNull(patchAttributes.getCurrency(), dbUcSettings.getCurrency()).toUpperCase())
+      .customerKey(getIfNull(patchAttributes.getCustomerKey(), dbUcSettings.getCustomerKey()))
+      .currency(getIfNull(patchAttributes.getCurrency(), dbUcSettings.getCurrency()).toUpperCase())
       .startMonth(patchAttributes.getStartMonth() == null
                   ? dbUcSettings.getStartMonth()
                   : patchAttributes.getStartMonth().value())
@@ -178,10 +178,10 @@ public class UcSettingsServiceImpl implements UcSettingsService {
 
   private void updateRequest(UCSettingsPostRequest request, String credentialsId) {
     var attributes = request.getData().getAttributes();
-    var platformType = ObjectUtils.defaultIfNull(attributes.getPlatformType(), PlatformType.ALL);
-    var startMonth = ObjectUtils.defaultIfNull(attributes.getStartMonth(), Month.JAN);
+    var platformType = getIfNull(attributes.getPlatformType(), PlatformType.ALL);
+    var startMonth = getIfNull(attributes.getStartMonth(), Month.JAN);
     log.info("updateRequest:: Setting [credentialsId: {}, platformType: {}, startMonth: {} ] getAttributes "
-      + "fields to save", credentialsId, platformType, startMonth);
+             + "fields to save", credentialsId, platformType, startMonth);
 
     attributes.setCredentialsId(credentialsId);
     attributes.setPlatformType(platformType);

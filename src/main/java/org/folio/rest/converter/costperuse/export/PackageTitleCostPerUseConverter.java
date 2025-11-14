@@ -1,6 +1,6 @@
 package org.folio.rest.converter.costperuse.export;
 
-import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+import static org.apache.commons.lang3.ObjectUtils.getIfNull;
 import static org.apache.commons.lang3.math.NumberUtils.DOUBLE_ZERO;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
@@ -18,11 +18,11 @@ public class PackageTitleCostPerUseConverter {
     return TitleExportModel.builder()
       .title(resourceCostPerUseCollectionItem.getAttributes().getName())
       .type(resourceCostPerUseCollectionItem.getAttributes().getPublicationType().value())
-      .usage(defaultIfNull(resourceCostPerUseCollectionItem.getAttributes().getUsage(), INTEGER_ZERO))
+      .usage(getIfNull(resourceCostPerUseCollectionItem.getAttributes().getUsage(), INTEGER_ZERO))
       .cost(roundCost(resourceCostPerUseCollectionItem.getAttributes().getCost(), currencyFormatter))
       .costPerUse(roundCost(resourceCostPerUseCollectionItem.getAttributes().getCostPerUse(), currencyFormatter))
       .percent(roundPercent(resourceCostPerUseCollectionItem.getAttributes().getPercent()))
-      .platform(defaultIfNull(platform, PlatformType.ALL.value()))
+      .platform(getIfNull(platform, PlatformType.ALL.value()))
       .currency(currency)
       .year(year)
       .build();

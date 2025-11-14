@@ -34,7 +34,7 @@ public class HoldingsStatusAuditRepositoryImpl implements HoldingsStatusAuditRep
     Tuple params = Tuple.of(timestamp, credentialsId);
     logDeleteQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    PostgresClient.getInstance(vertx, tenantId).execute(query, params, promise);
+    PostgresClient.getInstance(vertx, tenantId).execute(query, params, promise::handle);
     return mapVertxFuture(promise.future()).thenApply(nothing());
   }
 }

@@ -58,7 +58,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     final String query = getHoldingsStatuses(tenantId);
     logSelectQuery(log, query);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).select(query, promise);
+    pgClient(tenantId).select(query, promise::handle);
     return mapResult(promise.future(), this::mapStatusesCollection);
   }
 
@@ -73,7 +73,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     final String query = insertLoadingStatus(tenantId, params);
     logInsertQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 
@@ -83,7 +83,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     final String query = updateLoadingStatus(tenantId);
     logUpdateQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(this::assertUpdated);
   }
 
@@ -93,7 +93,7 @@ public class HoldingsStatusRepositoryImpl implements HoldingsStatusRepository {
     final String query = deleteLoadingStatus(tenantId);
     logDeleteQuery(log, query, params);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgClient(tenantId).execute(query, params, promise);
+    pgClient(tenantId).execute(query, params, promise::handle);
     return mapVertxFuture(promise.future().recover(excTranslator.translateOrPassBy())).thenApply(nothing());
   }
 
