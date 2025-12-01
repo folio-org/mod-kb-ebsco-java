@@ -52,7 +52,7 @@
     <lombok.version>1.18.42</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
     <opencsv.version>5.12.0</opencsv.version>
-    <commons-lang3.version>3.19.0</commons-lang3.version>
+    <commons-lang3.version>3.20.0</commons-lang3.version>
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
@@ -70,9 +70,9 @@
 
     <!-- Plugins versions   -->
     <folio-module-descriptor-validator.version>1.0.1</folio-module-descriptor-validator.version>
-    <versions-maven-plugin.version>2.19.1</versions-maven-plugin.version>
+    <versions-maven-plugin.version>2.20.1</versions-maven-plugin.version>
     <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
-    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+    <maven-resources-plugin.version>3.4.0</maven-resources-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
     <maven-release-plugin.version>3.2.0</maven-release-plugin.version>
