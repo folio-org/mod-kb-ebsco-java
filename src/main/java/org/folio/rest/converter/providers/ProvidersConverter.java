@@ -8,14 +8,13 @@ import org.folio.rest.jaxrs.model.ProviderListDataAttributes;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.jaxrs.model.Token;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProvidersConverter implements Converter<Vendor, Providers> {
 
   @Override
-  public Providers convert(@NonNull Vendor vendor) {
+  public Providers convert(Vendor vendor) {
     String token = vendor.getVendorToken();
     return new Providers()
       .withId(String.valueOf(vendor.getVendorId()))

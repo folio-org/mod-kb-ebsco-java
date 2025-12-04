@@ -10,7 +10,6 @@ import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.TitlePostDataAttributes;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,7 +26,7 @@ public class TitlePostRequestConverter implements Converter<TitlePostRequest, Ti
   }
 
   @Override
-  public TitlePost convert(@NonNull TitlePostRequest entity) {
+  public TitlePost convert(TitlePostRequest entity) {
     TitlePostDataAttributes attributes = entity.getData().getAttributes();
     Boolean isPeerReviewed = attributes.getIsPeerReviewed();
     TitlePost.TitlePostBuilder titlePost = TitlePost.builder()
@@ -37,13 +36,7 @@ public class TitlePostRequestConverter implements Converter<TitlePostRequest, Ti
       .isPeerReviewed(java.util.Objects.isNull(isPeerReviewed) ? Boolean.FALSE : isPeerReviewed)
       .publisherName(attributes.getPublisherName())
       .pubType(ConverterConsts.PUBLICATION_TYPES.inverseBidiMap().get(attributes.getPublicationType()))
-      .userDefinedFields(UserDefinedFields.builder()
-        .userDefinedField1(attributes.getUserDefinedField1())
-        .userDefinedField2(attributes.getUserDefinedField2())
-        .userDefinedField3(attributes.getUserDefinedField3())
-        .userDefinedField4(attributes.getUserDefinedField4())
-        .userDefinedField5(attributes.getUserDefinedField5())
-        .build()
+      .userDefinedFields(convertUserDefinedFields(attributes)
       );
 
     List<org.folio.rest.jaxrs.model.Identifier> identifiersList = attributes.getIdentifiers();
@@ -57,5 +50,15 @@ public class TitlePostRequestConverter implements Converter<TitlePostRequest, Ti
     }
 
     return titlePost.build();
+  }
+
+  private UserDefinedFields convertUserDefinedFields(TitlePostDataAttributes attributes) {
+    return UserDefinedFields.builder()
+      .userDefinedField1(attributes.getUserDefinedField1())
+      .userDefinedField2(attributes.getUserDefinedField2())
+      .userDefinedField3(attributes.getUserDefinedField3())
+      .userDefinedField4(attributes.getUserDefinedField4())
+      .userDefinedField5(attributes.getUserDefinedField5())
+      .build();
   }
 }

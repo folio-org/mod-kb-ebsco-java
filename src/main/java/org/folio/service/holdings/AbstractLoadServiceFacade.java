@@ -19,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 import lombok.extern.log4j.Log4j2;
@@ -28,8 +29,8 @@ import org.folio.holdingsiq.service.impl.LoadServiceImpl;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.service.holdings.message.ConfigurationMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -102,84 +103,6 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
    */
   protected abstract CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService);
 
-  private CompletableFuture<HoldingsStatus> populateHoldingsIfNecessary(LoadService loadingService) {
-    return getLastLoadingStatus(loadingService).thenCompose(loadStatus -> {
-      if (IN_PROGRESS.equals(loadStatus.getStatus())) {
-        return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
-      } else if (snapshotCreatedRecently(loadStatus)) {
-        log.info("Snapshot created recently: {}", loadStatus);
-        final Integer totalCount = loadStatus.getTotalCount();
-        if (INTEGER_ZERO.equals(totalCount)) {
-          throw new IllegalStateException("Snapshot created with invalid totalCount: " + loadStatus);
-        } else {
-          return CompletableFuture.completedFuture(loadStatus);
-        }
-      } else {
-        log.info("Start populating holdings to stage environment.");
-        return populateHoldings(loadingService)
-          .thenCompose(transactionId -> waitForCompleteStatus(statusRetryCount, transactionId, loadingService));
-      }
-    });
-  }
-
-  private CompletableFuture<HoldingsStatus> waitForCompleteStatus(int retryCount, String transactionId,
-                                                                  LoadService loadingService) {
-    CompletableFuture<HoldingsStatus> future = new CompletableFuture<>();
-    waitForCompleteStatus(retryCount, transactionId, future, loadingService);
-    return future;
-  }
-
-  private void waitForCompleteStatus(int retries, String transactionId, CompletableFuture<HoldingsStatus> future,
-                                     LoadService loadingService) {
-
-    vertx.setTimer(statusRetryDelay, timerId -> getLoadingStatus(loadingService, transactionId)
-      .thenAccept(loadStatus -> {
-        log.debug("waitForCompleteStatus: stage snapshot [status: {}]", loadStatus.getStatus());
-        final LoadStatus status = loadStatus.getStatus();
-        if (COMPLETED.equals(status)) {
-          final Integer totalCount = loadStatus.getTotalCount();
-          if (INTEGER_ZERO.equals(totalCount)) {
-            throw new IllegalStateException("Snapshot created with invalid totalCount: " + loadStatus);
-          } else {
-            future.complete(loadStatus);
-          }
-        } else if (IN_PROGRESS.equals(status) || NONE.equals(status)) {
-          if (retries <= 1) {
-            throw new IllegalStateException("Failed to get status with status response: " + loadStatus.getStatus());
-          }
-          waitForCompleteStatus(retries - 1, transactionId, future, loadingService);
-        } else {
-          future.completeExceptionally(
-            new IllegalStateException("Failed to get status with status response: " + loadStatus));
-        }
-      }).exceptionally(throwable -> {
-        future.completeExceptionally(throwable);
-        return null;
-      }));
-  }
-
-  /**
-   * Runs action provided by futureFunction, if future is completed exceptionally then futureFunction
-   * will be called again after given delay.
-   *
-   * @param retries        Amount of times action will be retried
-   *                       (e.g. if retries = 2 then futureFunction will be called 2 times)
-   * @param delay          delay in milliseconds before action is executed again after failure
-   * @param futureFunction provides an asynchronous action
-   * @return future returned by
-   */
-  private <T> CompletableFuture<T> retryOnFailure(int retries, long delay,
-                                                  IntFunction<CompletableFuture<T>> futureFunction) {
-    CompletableFuture<T> future = new CompletableFuture<>();
-    retryOnFailure(retries, delay, future, futureFunction);
-    return future;
-  }
-
-  private <T> void retryOnFailure(int retries, long delay, CompletableFuture<T> future,
-                                  IntFunction<CompletableFuture<T>> futureFunction) {
-    doUntilResultMatches(retries, delay, future, futureFunction, (result, ex) -> ex == null);
-  }
-
   /**
    * Runs action provided by futureFunction, when future completes the result is passed to matcher,
    * if matcher returns false then futureFunction will be called again after delay.
@@ -196,31 +119,8 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
                                                           IntFunction<CompletableFuture<T>> futureFunction,
                                                           BiPredicate<T, Throwable> matcher) {
     CompletableFuture<T> future = new CompletableFuture<>();
-    doUntilResultMatches(retries, delay, future, futureFunction, matcher);
+    executeWithRetries(retries, delay, future, futureFunction, matcher);
     return future;
-  }
-
-  private <T> void doUntilResultMatches(int retries, long delay, CompletableFuture<T> future,
-                                        IntFunction<CompletableFuture<T>> futureFunction,
-                                        BiPredicate<T, Throwable> matcher) {
-    futureFunction.apply(retries)
-      .handle((result, ex) -> {
-        if (matcher.test(result, ex)) {
-          future.complete(result);
-        } else {
-          if (retries > 1) {
-            vertx.setTimer(delay, timerId -> doUntilResultMatches(retries - 1, delay, future, futureFunction, matcher));
-          } else {
-            future.completeExceptionally(
-              ex != null ? ex : new IllegalStateException("Action failed with result " + result));
-          }
-        }
-        return null;
-      })
-      .exceptionally(ex -> {
-        future.completeExceptionally(ex);
-        return null;
-      });
   }
 
   /**
@@ -234,18 +134,6 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
     final int quotient = totalCount / maxRequestCount;
     final int remainder = totalCount % maxRequestCount;
     return remainder == 0 ? quotient : quotient + 1;
-  }
-
-  private boolean snapshotCreatedRecently(HoldingsStatus status) {
-    if (StringUtils.isEmpty(status.getCreated())) {
-      return false;
-    }
-
-    ZonedDateTime earliestDateConsideredFresh =
-      ZonedDateTime.now(ZoneOffset.UTC).minus(snapshotRefreshPeriod, ChronoUnit.MILLIS);
-    ZonedDateTime snapshotCreated =
-      LocalDateTime.parse(status.getCreated(), HOLDINGS_STATUS_TIME_FORMATTER).atZone(ZoneOffset.UTC);
-    return snapshotCreated.isAfter(earliestDateConsideredFresh);
   }
 
   protected CompletableFuture<Void> loadWithPagination(Integer totalPages,
@@ -295,4 +183,124 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
    * Specifies the page size that will be used when loading data from snapshots.
    */
   protected abstract int getMaxPageSize();
+
+  private CompletableFuture<HoldingsStatus> populateHoldingsIfNecessary(LoadService loadingService) {
+    return getLastLoadingStatus(loadingService).thenCompose(loadStatus -> {
+      if (IN_PROGRESS.equals(loadStatus.getStatus())) {
+        return waitForCompleteStatus(statusRetryCount, loadStatus.getTransactionId(), loadingService);
+      } else if (snapshotCreatedRecently(loadStatus)) {
+        log.info("Snapshot created recently: {}", loadStatus);
+        final Integer totalCount = loadStatus.getTotalCount();
+        if (INTEGER_ZERO.equals(totalCount)) {
+          throw new IllegalStateException("Snapshot created with invalid totalCount: " + loadStatus);
+        } else {
+          return CompletableFuture.completedFuture(loadStatus);
+        }
+      } else {
+        log.info("Start populating holdings to stage environment.");
+        return populateHoldings(loadingService)
+          .thenCompose(transactionId -> waitForCompleteStatus(statusRetryCount, transactionId, loadingService));
+      }
+    });
+  }
+
+  private CompletableFuture<HoldingsStatus> waitForCompleteStatus(int retryCount, String transactionId,
+                                                                  LoadService loadingService) {
+    CompletableFuture<HoldingsStatus> future = new CompletableFuture<>();
+    waitForCompleteStatus(retryCount, transactionId, future, loadingService);
+    return future;
+  }
+
+  private void waitForCompleteStatus(int retries, String transactionId, CompletableFuture<HoldingsStatus> future,
+                                     LoadService loadingService) {
+
+    vertx.setTimer(statusRetryDelay, timerId -> getLoadingStatus(loadingService, transactionId)
+      .thenAccept(loadStatusHandler(retries, transactionId, future, loadingService))
+      .exceptionally(throwable -> {
+        future.completeExceptionally(throwable);
+        return null;
+      }));
+  }
+
+  private Consumer<HoldingsStatus> loadStatusHandler(int retries, String transactionId,
+                                                     CompletableFuture<HoldingsStatus> future,
+                                                     LoadService loadingService) {
+    return loadStatus -> {
+      log.debug("waitForCompleteStatus: stage snapshot [status: {}]", loadStatus.getStatus());
+      final LoadStatus status = loadStatus.getStatus();
+      if (COMPLETED.equals(status)) {
+        final Integer totalCount = loadStatus.getTotalCount();
+        if (INTEGER_ZERO.equals(totalCount)) {
+          throw new IllegalStateException("Snapshot created with invalid totalCount: " + loadStatus);
+        } else {
+          future.complete(loadStatus);
+        }
+      } else if (IN_PROGRESS.equals(status) || NONE.equals(status)) {
+        if (retries <= 1) {
+          throw new IllegalStateException("Failed to get status with status response: " + loadStatus.getStatus());
+        }
+        waitForCompleteStatus(retries - 1, transactionId, future, loadingService);
+      } else {
+        future.completeExceptionally(
+          new IllegalStateException("Failed to get status with status response: " + loadStatus));
+      }
+    };
+  }
+
+  /**
+   * Runs action provided by futureFunction, if future is completed exceptionally then futureFunction
+   * will be called again after given delay.
+   *
+   * @param retries        Amount of times action will be retried
+   *                       (e.g. if retries = 2 then futureFunction will be called 2 times)
+   * @param delay          delay in milliseconds before action is executed again after failure
+   * @param futureFunction provides an asynchronous action
+   * @return future returned by
+   */
+  private <T> CompletableFuture<T> retryOnFailure(int retries, long delay,
+                                                  IntFunction<CompletableFuture<T>> futureFunction) {
+    CompletableFuture<T> future = new CompletableFuture<>();
+    retryOnFailure(retries, delay, future, futureFunction);
+    return future;
+  }
+
+  private <T> void retryOnFailure(int retries, long delay, CompletableFuture<T> future,
+                                  IntFunction<CompletableFuture<T>> futureFunction) {
+    executeWithRetries(retries, delay, future, futureFunction, (result, ex) -> ex == null);
+  }
+
+  private <T> void executeWithRetries(int retries, long delay, CompletableFuture<T> future,
+                                      IntFunction<CompletableFuture<T>> futureFunction,
+                                      BiPredicate<T, Throwable> matcher) {
+    futureFunction.apply(retries)
+      .handle((result, ex) -> {
+        if (matcher.test(result, ex)) {
+          future.complete(result);
+        } else {
+          if (retries > 1) {
+            vertx.setTimer(delay, timerId -> executeWithRetries(retries - 1, delay, future, futureFunction, matcher));
+          } else {
+            future.completeExceptionally(
+              ex != null ? ex : new IllegalStateException("Action failed with result " + result));
+          }
+        }
+        return null;
+      })
+      .exceptionally(ex -> {
+        future.completeExceptionally(ex);
+        return null;
+      });
+  }
+
+  private boolean snapshotCreatedRecently(HoldingsStatus status) {
+    if (StringUtils.isEmpty(status.getCreated())) {
+      return false;
+    }
+
+    ZonedDateTime earliestDateConsideredFresh =
+      ZonedDateTime.now(ZoneOffset.UTC).minus(snapshotRefreshPeriod, ChronoUnit.MILLIS);
+    ZonedDateTime snapshotCreated =
+      LocalDateTime.parse(status.getCreated(), HOLDINGS_STATUS_TIME_FORMATTER).atZone(ZoneOffset.UTC);
+    return snapshotCreated.isAfter(earliestDateConsideredFresh);
+  }
 }

@@ -22,7 +22,6 @@ import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.VendorResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,27 +37,13 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
   }
 
   @Override
-  public Provider convert(@NonNull VendorResult result) {
+  public Provider convert(VendorResult result) {
     VendorById vendor = result.getVendor();
     org.folio.holdingsiq.model.Packages packages = result.getPackages();
 
     TokenInfo vendorToken = vendor.getVendorByIdToken();
     Provider provider = new Provider()
-      .withData(new ProviderData()
-        .withId(String.valueOf(vendor.getVendorId()))
-        .withType(PROVIDERS_TYPE)
-        .withAttributes(new ProviderGetDataAttributes()
-          .withName(vendor.getVendorName())
-          .withPackagesTotal(vendor.getPackagesTotal())
-          .withPackagesSelected(vendor.getPackagesSelected())
-          .withSupportsCustomPackages(vendor.isCustomer())
-          .withProviderToken(tokenInfoConverter.convert(vendorToken))
-          .withProxy(new Proxy()
-            .withId(vendor.getProxy().getId())
-            .withInherited(vendor.getProxy().getInherited()))
-          .withTags(result.getTags())
-        )
-        .withRelationships(createEmptyProviderRelationships()))
+      .withData(convertProviderData(result, vendor, vendorToken))
       .withJsonapi(RestConstants.JSONAPI);
     if (packages != null) {
       provider
@@ -70,6 +55,24 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
             .withData(convertPackagesRelationship(packages))));
     }
     return provider;
+  }
+
+  private ProviderData convertProviderData(VendorResult result, VendorById vendor, TokenInfo vendorToken) {
+    return new ProviderData()
+      .withId(String.valueOf(vendor.getVendorId()))
+      .withType(PROVIDERS_TYPE)
+      .withAttributes(new ProviderGetDataAttributes()
+        .withName(vendor.getVendorName())
+        .withPackagesTotal(vendor.getPackagesTotal())
+        .withPackagesSelected(vendor.getPackagesSelected())
+        .withSupportsCustomPackages(vendor.isCustomer())
+        .withProviderToken(tokenInfoConverter.convert(vendorToken))
+        .withProxy(new Proxy()
+          .withId(vendor.getProxy().getId())
+          .withInherited(vendor.getProxy().getInherited()))
+        .withTags(result.getTags())
+      )
+      .withRelationships(createEmptyProviderRelationships());
   }
 
   private List<RelationshipData> convertPackagesRelationship(org.folio.holdingsiq.model.Packages packages) {

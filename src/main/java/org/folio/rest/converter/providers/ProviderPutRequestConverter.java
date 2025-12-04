@@ -4,14 +4,13 @@ import org.folio.holdingsiq.model.VendorPut;
 import org.folio.holdingsiq.model.VendorPutToken;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProviderPutRequestConverter implements Converter<ProviderPutRequest, VendorPut> {
 
   @Override
-  public VendorPut convert(@NonNull ProviderPutRequest provider) {
+  public VendorPut convert(ProviderPutRequest provider) {
     VendorPut.VendorPutBuilder vpb = VendorPut.builder();
 
     // RM API gives an error when we pass inherited as true along with updated proxy

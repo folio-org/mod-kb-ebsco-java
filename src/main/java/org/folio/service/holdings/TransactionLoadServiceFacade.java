@@ -29,8 +29,8 @@ import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.repository.holdings.ReportStatus;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -75,25 +75,7 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
             page -> loadingService.loadHoldingsTransaction(message.getCurrentTransactionId(), getMaxPageSize(), page)
               .thenAccept(holdings -> holdingsService.saveHolding(getHoldingsMessage(message, holdings))));
         } else {
-          MutableObject<String> deltaReportId = new MutableObject<>();
-          MutableObject<DeltaReportStatus> deltaReportStatus = new MutableObject<>();
-          return loadingService.populateDeltaReport(message.getCurrentTransactionId(),
-              message.getPreviousTransactionId())
-            .thenCompose(id -> {
-              deltaReportId.setValue(id);
-              return waitForReportToComplete(loadingService, id);
-            })
-            .thenCompose(status -> {
-              deltaReportStatus.setValue(status);
-              return sendDeltaReportCreatedMessage(message, status);
-            })
-            .thenCompose(o -> {
-              int totalPages =
-                getRequestCount(Integer.valueOf(deltaReportStatus.get().getTotalCount()), DELTA_REPORT_MAX_SIZE);
-              return loadWithPagination(totalPages,
-                page -> loadingService.loadDeltaReport(deltaReportId.get(), DELTA_REPORT_MAX_SIZE, page)
-                  .thenAccept(holdings -> holdingsService.processChanges(getDeltaReportMessage(message, holdings))));
-            });
+          return processDeltaReport(message, loadingService);
         }
       });
   }
@@ -125,6 +107,27 @@ public class TransactionLoadServiceFacade extends AbstractLoadServiceFacade {
   @Override
   protected int getMaxPageSize() {
     return MAX_SIZE;
+  }
+
+  private CompletableFuture<Void> processDeltaReport(LoadHoldingsMessage message, LoadService loadingService) {
+    MutableObject<String> deltaReportId = new MutableObject<>();
+    MutableObject<DeltaReportStatus> deltaReportStatus = new MutableObject<>();
+    return loadingService.populateDeltaReport(message.getCurrentTransactionId(), message.getPreviousTransactionId())
+      .thenCompose(id -> {
+        deltaReportId.setValue(id);
+        return waitForReportToComplete(loadingService, id);
+      })
+      .thenCompose(status -> {
+        deltaReportStatus.setValue(status);
+        return sendDeltaReportCreatedMessage(message, status);
+      })
+      .thenCompose(o -> {
+        int totalPages =
+          getRequestCount(Integer.valueOf(deltaReportStatus.get().getTotalCount()), DELTA_REPORT_MAX_SIZE);
+        return loadWithPagination(totalPages,
+          page -> loadingService.loadDeltaReport(deltaReportId.get(), DELTA_REPORT_MAX_SIZE, page)
+            .thenAccept(holdings -> holdingsService.processChanges(getDeltaReportMessage(message, holdings))));
+      });
   }
 
   private CompletableFuture<Boolean> transactionExists(String transactionId, LoadService loadingService) {

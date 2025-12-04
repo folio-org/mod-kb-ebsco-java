@@ -59,30 +59,10 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
 
   public CompletableFuture<ResourceResult> retrieveResource(ResourceId resourceId, List<String> includes,
                                                             boolean useCache) {
-    CompletableFuture<Title> titleFuture;
-    CompletableFuture<PackageByIdData> packageFuture;
-    CompletableFuture<VendorResult> vendorFuture;
 
-    if (useCache) {
-      titleFuture = retrieveResourceWithCache(resourceId, tenantId, configuration)
-        .thenApply(this::validateCustomerResourcesList);
-    } else {
-      titleFuture = super.retrieveResource(resourceId)
-        .thenApply(this::validateCustomerResourcesList);
-    }
-    if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
-      vendorFuture = providerService.retrieveProvider(resourceId.getProviderIdPart(), "");
-    } else {
-      vendorFuture = completedFuture(new VendorResult(null, null));
-    }
-    if (includes.contains(INCLUDE_PACKAGE_VALUE)) {
-      PackageId id = PackageId.builder()
-        .providerIdPart(resourceId.getProviderIdPart())
-        .packageIdPart(resourceId.getPackageIdPart()).build();
-      packageFuture = packagesService.retrievePackage(id);
-    } else {
-      packageFuture = completedFuture(null);
-    }
+    var titleFuture = retrieveTitle(resourceId, useCache);
+    var vendorFuture = retrieveVendor(resourceId, includes);
+    var packageFuture = retrievePackage(resourceId, includes);
     boolean includeTitle = includes.contains("title");
 
     return CompletableFuture.allOf(titleFuture, vendorFuture, packageFuture)
@@ -121,6 +101,35 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
 
     return FutureUtils.allOfSucceeded(futures, throwable -> log.warn(throwable.getMessage(), throwable))
       .thenApply(resourceFutures -> mapToResources(resourceFutures, failed));
+  }
+
+  private CompletableFuture<PackageByIdData> retrievePackage(ResourceId resourceId,
+                                                             List<String> includes) {
+    if (includes.contains(INCLUDE_PACKAGE_VALUE)) {
+      PackageId id = PackageId.builder()
+        .providerIdPart(resourceId.getProviderIdPart())
+        .packageIdPart(resourceId.getPackageIdPart()).build();
+      return packagesService.retrievePackage(id);
+    }
+    return completedFuture(null);
+  }
+
+  private CompletableFuture<VendorResult> retrieveVendor(ResourceId resourceId,
+                                                         List<String> includes) {
+    if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
+      return providerService.retrieveProvider(resourceId.getProviderIdPart(), "");
+    }
+    return completedFuture(new VendorResult(null, null));
+  }
+
+  private CompletableFuture<Title> retrieveTitle(ResourceId resourceId, boolean useCache) {
+    if (useCache) {
+      return retrieveResourceWithCache(resourceId, tenantId, configuration)
+        .thenApply(this::validateCustomerResourcesList);
+    } else {
+      return super.retrieveResource(resourceId)
+        .thenApply(this::validateCustomerResourcesList);
+    }
   }
 
   private CompletableFuture<Title> retrieveResourceWithCache(ResourceId resourceId, String tenantId,

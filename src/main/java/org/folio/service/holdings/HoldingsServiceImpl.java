@@ -190,13 +190,7 @@ public class HoldingsServiceImpl implements HoldingsService {
         LoadStatusAttributes attributes = status.getData().getAttributes();
 
         if (hasLoadedLastPage(status)) {
-          log.debug("saveHolding:: Attempts to delete holdings by timestamp & update holding status");
-          return holdingsRepository
-            .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()), credentialsId, tenantId)
-            .thenCompose(o -> holdingsStatusRepository
-              .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId)
-            )
-            .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
+          return handleLastPage(holdings, attributes, credentialsId, tenantId);
         }
         return CompletableFuture.completedFuture(null);
       })
@@ -334,6 +328,16 @@ public class HoldingsServiceImpl implements HoldingsService {
 
     return holdingsRepository.saveAll(holdingsToSave, updatedAt, credentialsId, tenantId)
       .thenCompose(o -> holdingsRepository.deleteAll(holdingsToDelete, credentialsId, tenantId));
+  }
+
+  private CompletableFuture<Void> handleLastPage(HoldingsMessage holdings, LoadStatusAttributes attributes,
+                                                 UUID credentialsId, String tenantId) {
+    log.debug("saveHolding:: Attempts to delete holdings by timestamp & update holding status");
+    return holdingsRepository
+      .deleteBeforeTimestamp(getZonedDateTime(attributes.getStarted()), credentialsId, tenantId)
+      .thenCompose(o -> holdingsStatusRepository
+        .update(getStatusCompleted(attributes.getTotalCount()), credentialsId, tenantId))
+      .thenCompose(o -> transactionIdRepository.save(credentialsId, holdings.getTransactionId(), tenantId));
   }
 
   private CompletableFuture<Boolean> canStart(List<HoldingsLoadingStatus> statuses) {

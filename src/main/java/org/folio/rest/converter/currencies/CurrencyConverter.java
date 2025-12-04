@@ -9,15 +9,15 @@ import org.folio.rest.jaxrs.model.CurrencyCollection;
 import org.folio.rest.jaxrs.model.CurrencyDataAttributes;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CurrencyConverter implements Converter<List<DbCurrency>, CurrencyCollection> {
+public class CurrencyConverter implements Converter<@NonNull List<DbCurrency>, @NonNull CurrencyCollection> {
 
   @Override
-  public CurrencyCollection convert(@NonNull List<DbCurrency> source) {
+  public CurrencyCollection convert(List<DbCurrency> source) {
     return new CurrencyCollection()
       .withData(mapItems(source, this::toCurrency))
       .withMeta(new MetaTotalResults().withTotalResults(source.size()))

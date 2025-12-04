@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import javax.ws.rs.core.Response;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.Packages;
@@ -197,43 +198,46 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         Map<String, String> okapiHeaders,
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
-    RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    Filter filter = Filter.builder()
-      .recordType(RecordType.PACKAGE)
-      .query(q)
-      .filterTags(filterTags)
-      .providerId(providerId)
-      .filterAccessType(filterAccessType)
-      .filterSelected(filterSelected)
-      .filterType(filterType)
-      .sort(sort)
-      .page(page)
-      .count(count)
-      .build();
+    var filter = Filter.getSortableFilter(getPackageFilter(providerId, q, filterTags, filterAccessType, filterSelected,
+      filterType), sort, page, count);
 
+    RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
       template.requestAction(
         context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
         .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
-        .thenApply(packages -> new PackageCollectionResult(packages, emptyList()))
-      );
+        .thenApply(packages -> new PackageCollectionResult(packages, emptyList())));
     } else {
-      template
-        .requestAction(context ->
-          context.getPackagesService()
-            .retrievePackages(filter.getFilterSelected(), filterType, packagesSearchType, filter.getProviderId(), q,
-              page,
-              count, filter.getSort())
-            .thenCompose(packages -> loadTags(packages, context)));
+      template.requestAction(retrieveFilteredPackages(filter));
     }
     template
       .addErrorMapper(ResourceNotFoundException.class, exception ->
         GetEholdingsProvidersPackagesByProviderIdResponse.respond404WithApplicationVndApiJson(
-          ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)
-        ))
+          ErrorUtil.createError(GET_PROVIDER_NOT_FOUND_MESSAGE)))
       .executeWithResult(PackageCollection.class);
+  }
+
+  private Filter.FilterBuilder getPackageFilter(String providerId, String q, List<String> filterTags,
+                                                List<String> filterAccessType,
+                                                String filterSelected, String filterType) {
+    return Filter.builder()
+      .recordType(RecordType.PACKAGE)
+      .query(q)
+      .filterTags(filterTags)
+      .providerId(providerId)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType);
+  }
+
+  private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(Filter filter) {
+    return context ->
+      context.getPackagesService()
+        .retrievePackages(filter.getFilterSelected(), filter.getFilterType(), packagesSearchType,
+          filter.getProviderId(), filter.getQuery(), filter.getPage(), filter.getCount(), filter.getSort())
+        .thenCompose(packages -> loadTags(packages, context));
   }
 
   private CompletableFuture<VendorResult> loadTags(VendorResult result, RmApiTemplateContext context) {

@@ -7,14 +7,13 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageBulkFetchCollectionItem;
 import org.folio.rest.jaxrs.model.PackageBulkFetchDataAttributes;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PackageBulkFetchCollectionItemConverter implements Converter<PackageData, PackageBulkFetchCollectionItem> {
 
   @Override
-  public PackageBulkFetchCollectionItem convert(@NonNull PackageData packageData) {
+  public PackageBulkFetchCollectionItem convert(PackageData packageData) {
     Integer providerId = packageData.getVendorId();
     String providerName = packageData.getVendorName();
     Integer packageId = packageData.getPackageId();

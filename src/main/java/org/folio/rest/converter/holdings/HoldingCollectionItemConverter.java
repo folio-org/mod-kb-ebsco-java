@@ -6,15 +6,16 @@ import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HoldingCollectionItemConverter implements Converter<DbHoldingInfo, ResourceCollectionItem> {
+public class HoldingCollectionItemConverter
+  implements Converter<@NonNull DbHoldingInfo, @NonNull ResourceCollectionItem> {
 
   @Override
-  public ResourceCollectionItem convert(@NonNull DbHoldingInfo holding) {
+  public ResourceCollectionItem convert(DbHoldingInfo holding) {
 
     return new ResourceCollectionItem()
       .withId(holding.getVendorId() + "-" + holding.getPackageId() + "-" + holding.getTitleId())

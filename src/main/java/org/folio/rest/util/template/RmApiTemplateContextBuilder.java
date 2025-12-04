@@ -60,6 +60,7 @@ public class RmApiTemplateContextBuilder {
     return this;
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   public RmApiTemplateContext build() {
     String tenant = okapiData.getTenant();
 

@@ -11,7 +11,6 @@ import org.folio.rest.jaxrs.model.PackageBulkFetchCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageBulkResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,7 +24,7 @@ public class PackageBulkFetchCollectionConverter implements Converter<PackageBul
   }
 
   @Override
-  public PackageBulkFetchCollection convert(@NonNull PackageBulkResult source) {
+  public PackageBulkFetchCollection convert(PackageBulkResult source) {
     List<PackageBulkFetchCollectionItem> packageList = mapItems(source.packages().getPackagesList(),
       packageBulkItemConverter::convert);
 

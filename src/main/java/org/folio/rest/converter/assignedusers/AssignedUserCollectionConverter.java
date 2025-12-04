@@ -9,7 +9,6 @@ import org.folio.rest.jaxrs.model.AssignedUserCollection;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,7 +21,7 @@ public class AssignedUserCollectionConverter implements Converter<Collection<DbA
   }
 
   @Override
-  public AssignedUserCollection convert(@NonNull Collection<DbAssignedUser> source) {
+  public AssignedUserCollection convert(Collection<DbAssignedUser> source) {
     return new AssignedUserCollection()
       .withData(mapItems(source, itemConverter::convert))
       .withMeta(new MetaTotalResults().withTotalResults(source.size()))

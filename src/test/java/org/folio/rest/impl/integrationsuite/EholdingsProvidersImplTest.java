@@ -2,6 +2,7 @@ package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -151,18 +152,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnProvidersOnGet() throws IOException, URISyntaxException {
     String stubResponseFile = "responses/rmapi/vendors/get-vendors-response.json";
-    int expectedTotalResults = 115;
-    String id = "131872";
-    String name = "Editions de L'Universite de Bruxelles";
-    int packagesTotal = 1;
-    int packagesSelected = 0;
-    boolean supportsCustomPackages = false;
-    String token = "sampleToken";
-
-    stubFor(
-      get(PROVIDER_URL_PATTERN)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(stubResponseFile))));
+    stubFor(get(PROVIDER_URL_PATTERN).willReturn(ok(readFile(stubResponseFile))));
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -171,14 +161,14 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
       .get(PROVIDER_PATH + "?q=e&page=1&sort=name")
       .then()
       .statusCode(SC_OK)
-      .body("meta.totalResults", equalTo(expectedTotalResults))
+      .body("meta.totalResults", equalTo(115))
       .body("data[0].type", equalTo(PROVIDERS_TYPE))
-      .body("data[0].id", equalTo(id))
-      .body("data[0].attributes.name", equalTo(name))
-      .body("data[0].attributes.packagesTotal", equalTo(packagesTotal))
-      .body("data[0].attributes.packagesSelected", equalTo(packagesSelected))
-      .body("data[0].attributes.supportsCustomPackages", equalTo(supportsCustomPackages))
-      .body("data[0].attributes.providerToken.value", equalTo(token));
+      .body("data[0].id", equalTo("131872"))
+      .body("data[0].attributes.name", equalTo("Editions de L'Universite de Bruxelles"))
+      .body("data[0].attributes.packagesTotal", equalTo(1))
+      .body("data[0].attributes.packagesSelected", equalTo(0))
+      .body("data[0].attributes.supportsCustomPackages", equalTo(false))
+      .body("data[0].attributes.providerToken.value", equalTo("sampleToken"));
   }
 
   @Test

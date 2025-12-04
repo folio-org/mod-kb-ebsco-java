@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,7 +19,7 @@ public class RectypeConverter implements Converter<String, org.folio.repository.
   }
 
   @Override
-  public org.folio.repository.RecordType convert(@NonNull String source) {
+  public org.folio.repository.RecordType convert(String source) {
     org.folio.repository.RecordType result = MAPPING.get(source);
 
     if (result == null) {

@@ -11,7 +11,7 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component

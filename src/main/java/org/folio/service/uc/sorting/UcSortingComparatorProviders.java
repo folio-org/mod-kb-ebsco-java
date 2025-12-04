@@ -42,9 +42,7 @@ public class UcSortingComparatorProviders {
         .thenComparing(nameExtractor));
 
     return (sorting, order) -> {
-      Comparator<ResourceCostPerUseCollectionItem> comparator =
-        comparatorPerSort.getOrDefault(sorting, Comparator.comparing(nameExtractor));
-
+      var comparator = comparatorPerSort.getOrDefault(sorting, Comparator.comparing(nameExtractor));
       return order == Order.ASC ? comparator : comparator.reversed();
     };
   }

@@ -12,7 +12,6 @@ import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class ResourceCollectionConverters {
@@ -30,7 +29,7 @@ public final class ResourceCollectionConverters {
     }
 
     @Override
-    public ResourceCollection convert(@NonNull Titles titles) {
+    public ResourceCollection convert(Titles titles) {
       List<ResourceCollectionItem> titleList = mapItems(titles.getTitleList(), converter::convert);
 
       return new ResourceCollection()
@@ -50,7 +49,7 @@ public final class ResourceCollectionConverters {
     }
 
     @Override
-    public ResourceCollection convert(@NonNull TitleCollectionResult col) {
+    public ResourceCollection convert(TitleCollectionResult col) {
       List<ResourceCollectionItem> titleList = mapItems(col.getTitleResults(), converter::convert);
 
       return new ResourceCollection()
