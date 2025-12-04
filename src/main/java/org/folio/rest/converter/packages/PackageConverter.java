@@ -27,8 +27,8 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageResult;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,10 +50,8 @@ public class PackageConverter implements Converter<PackageResult, Package> {
   }
 
   @Override
-  public Package convert(@NonNull PackageResult result) {
+  public Package convert(PackageResult result) {
     PackageByIdData packageByIdData = result.getPackageData();
-    Titles titles = result.getTitles();
-    VendorById vendor = result.getVendor();
 
     Package packageData = new Package()
       .withData(packageCollectionItemConverter.convert(packageByIdData))
@@ -67,6 +65,14 @@ public class PackageConverter implements Converter<PackageResult, Package> {
       .withPackageToken(tokenInfoConverter.convert(packageByIdData.getPackageToken()))
       .withTags(result.getTags());
 
+    addTitlesRelationship(result, packageData, packageByIdData);
+    addProviderRelationship(result, packageData);
+    addAccessTypeRelationship(result, packageData);
+    return packageData;
+  }
+
+  private void addTitlesRelationship(PackageResult result, Package packageData, PackageByIdData packageByIdData) {
+    Titles titles = result.getTitles();
     if (titles != null) {
       packageData.getData()
         .withRelationships(new PackageRelationship()
@@ -79,7 +85,10 @@ public class PackageConverter implements Converter<PackageResult, Package> {
         .getIncluded()
         .addAll(Objects.requireNonNull(resourcesConverter.convert(titles)).getData());
     }
+  }
 
+  private void addProviderRelationship(PackageResult result, Package packageData) {
+    VendorById vendor = result.getVendor();
     if (vendor != null) {
       packageData.getIncluded().add(Objects.requireNonNull(vendorConverter.convert(vendor)).getData());
       packageData.getData()
@@ -89,7 +98,9 @@ public class PackageConverter implements Converter<PackageResult, Package> {
             .withId(String.valueOf(vendor.getVendorId()))
             .withType(PROVIDERS_TYPE)));
     }
+  }
 
+  private void addAccessTypeRelationship(PackageResult result, Package packageData) {
     AccessType accessType = result.getAccessType();
     if (accessType != null) {
       packageData.getIncluded().add(accessType);
@@ -102,10 +113,9 @@ public class PackageConverter implements Converter<PackageResult, Package> {
           .withMeta(new MetaDataIncluded()
             .withIncluded(true)));
     }
-    return packageData;
   }
 
-  private Proxy convertToProxy(org.folio.holdingsiq.model.Proxy proxy) {
+  private @Nullable Proxy convertToProxy(org.folio.holdingsiq.model.Proxy proxy) {
     return proxy != null ? new Proxy().withId(proxy.getId()).withInherited(proxy.getInherited()) : null;
   }
 

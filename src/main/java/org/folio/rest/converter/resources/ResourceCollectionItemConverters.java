@@ -14,7 +14,6 @@ import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rmapi.result.TitleResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class ResourceCollectionItemConverters {
@@ -31,7 +30,7 @@ public final class ResourceCollectionItemConverters {
     }
 
     @Override
-    public ResourceCollectionItem convert(@NonNull Title title) {
+    public ResourceCollectionItem convert(Title title) {
       CustomerResources resource = title.getCustomerResourcesList().getFirst();
       return new ResourceCollectionItem()
         .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
@@ -57,7 +56,7 @@ public final class ResourceCollectionItemConverters {
     }
 
     @Override
-    public ResourceCollectionItem convert(@NonNull TitleResult titleResult) {
+    public ResourceCollectionItem convert(TitleResult titleResult) {
       ResourceCollectionItem result = requireNonNull(titleConverter.convert(titleResult.getTitle()));
       result.getAttributes().setTags(tagsConverter.convert(emptyIfNull(titleResult.getResourceTagList())));
       if (titleResult.getResourceAccessType() != null) {

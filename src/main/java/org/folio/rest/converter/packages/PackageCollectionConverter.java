@@ -10,7 +10,6 @@ import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +22,7 @@ public class PackageCollectionConverter implements Converter<Packages, PackageCo
   }
 
   @Override
-  public PackageCollection convert(@NonNull Packages packages) {
+  public PackageCollection convert(Packages packages) {
     List<PackageCollectionItem> packageList = mapItems(packages.getPackagesList(),
       packageCollectionItemConverter::convert);
 

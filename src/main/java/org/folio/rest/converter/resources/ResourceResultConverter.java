@@ -10,6 +10,7 @@ import static org.folio.rest.util.RestConstants.TITLES_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.VendorById;
@@ -25,9 +26,9 @@ import org.folio.rest.jaxrs.model.Title;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -46,7 +47,7 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
   private Converter<PackageByIdData, Package> packageByIdConverter;
 
   @Override
-  public List<Resource> convert(@NonNull ResourceResult resourceResult) {
+  public List<Resource> convert(ResourceResult resourceResult) {
     var rmapiTitle = resourceResult.getTitle();
     PackageByIdData packageData = resourceResult.getPackageData();
     VendorById vendor = resourceResult.getVendor();
@@ -56,33 +57,47 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
     List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
     boolean titleHasSelectedResources = matchesAny(customerResourcesList, CustomerResources::getIsSelected);
     return mapItems(customerResourcesList,
-      resource -> {
-        Resource resultResource = new org.folio.rest.jaxrs.model.Resource()
-          .withData(new ResourceCollectionItem()
-            .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
-            .withType(ResourceCollectionItem.Type.RESOURCES)
-            .withAttributes(commonResourceConverter.createResourceDataAttributes(rmapiTitle, resource))
-            .withRelationships(createEmptyRelationship())
-          )
-          .withIncluded(null)
-          .withJsonapi(RestConstants.JSONAPI);
+      convertToResource(rmapiTitle, titleHasSelectedResources, includeTitle, vendor, packageData, accessType));
+  }
 
-        resultResource.getData().getAttributes().setTitleHasSelectedResources(titleHasSelectedResources);
-        resultResource.setIncluded(new ArrayList<>());
-        if (includeTitle) {
-          includeTitle(rmapiTitle, resultResource);
-        }
-        if (vendor != null) {
-          includeVendor(vendor, resultResource);
-        }
-        if (packageData != null) {
-          includePackage(packageData, resultResource);
-        }
-        if (accessType != null) {
-          includeAccessType(accessType, resultResource);
-        }
-        return resultResource;
-      });
+  private Function<CustomerResources, Resource> convertToResource(org.folio.holdingsiq.model.Title rmapiTitle,
+                                                                  boolean titleHasSelectedResources,
+                                                                  boolean includeTitle,
+                                                                  VendorById vendor, PackageByIdData packageData,
+                                                                  AccessType accessType) {
+    return resource -> {
+      Resource resultResource = new Resource()
+        .withData(new ResourceCollectionItem()
+          .withId(resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId())
+          .withType(ResourceCollectionItem.Type.RESOURCES)
+          .withAttributes(commonResourceConverter.createResourceDataAttributes(rmapiTitle, resource))
+          .withRelationships(createEmptyRelationship())
+        )
+        .withIncluded(null)
+        .withJsonapi(RestConstants.JSONAPI);
+
+      resultResource.getData().getAttributes().setTitleHasSelectedResources(titleHasSelectedResources);
+      includedResources(rmapiTitle, includeTitle, vendor, packageData, accessType, resultResource);
+      return resultResource;
+    };
+  }
+
+  private void includedResources(org.folio.holdingsiq.model.Title rmapiTitle, boolean includeTitle,
+                                 @Nullable VendorById vendor, @Nullable PackageByIdData packageData,
+                                 @Nullable AccessType accessType, Resource resultResource) {
+    resultResource.setIncluded(new ArrayList<>());
+    if (includeTitle) {
+      includeTitle(rmapiTitle, resultResource);
+    }
+    if (vendor != null) {
+      includeVendor(vendor, resultResource);
+    }
+    if (packageData != null) {
+      includePackage(packageData, resultResource);
+    }
+    if (accessType != null) {
+      includeAccessType(accessType, resultResource);
+    }
   }
 
   private void includeAccessType(AccessType accessType, Resource resultResource) {

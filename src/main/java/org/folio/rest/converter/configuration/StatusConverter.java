@@ -4,15 +4,15 @@ import org.folio.rest.jaxrs.model.ConfigurationStatus;
 import org.folio.rest.jaxrs.model.StatusAttributes;
 import org.folio.rest.jaxrs.model.StatusData;
 import org.folio.rest.util.RestConstants;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StatusConverter implements Converter<Boolean, ConfigurationStatus> {
+public class StatusConverter implements Converter<@NonNull Boolean, @NonNull ConfigurationStatus> {
 
   @Override
-  public ConfigurationStatus convert(@NonNull Boolean isValid) {
+  public ConfigurationStatus convert(Boolean isValid) {
     return new ConfigurationStatus()
       .withData(new StatusData()
         .withId("status")

@@ -4,6 +4,7 @@ import static org.folio.common.ListUtils.mapItems;
 
 import java.util.List;
 import org.folio.holdingsiq.model.CoverageDates;
+import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Title;
@@ -11,6 +12,7 @@ import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,6 +46,41 @@ public class ResourceRequestConverter {
     var oldResource = oldTitle.getCustomerResourcesList().getFirst();
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
+    convertProxy(attributes, oldResource, builder);
+    convertHidden(attributes, oldResource, builder);
+    if (Boolean.TRUE == oldResource.getIsPackageCustom()) {
+      builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
+    }
+
+    var coverageStatement = valueOrDefault(attributes.getCoverageStatement(), oldResource.getCoverageStatement());
+    builder.coverageStatement(coverageStatement);
+
+    convertEmbargoPeriod(attributes, builder);
+    convertCoverageDates(attributes, oldResource, builder);
+
+    // For now, we do not have any attributes specific to managed resources to be mapped to RM API fields
+    // but below, we set the same values as we conduct a GET for pubType and isPeerReviewed because otherwise
+    // RM API gives a bad request error if those values are set to null. All the other fields are retained as
+    // is by RM API because they cannot be updated.
+    builder.pubType(oldTitle.getPubType());
+    builder.isPeerReviewed(oldTitle.getIsPeerReviewed());
+
+    convertUserDefinedFields(attributes, builder, oldResource);
+
+    return builder;
+  }
+
+  private void convertHidden(ResourcePutDataAttributes attributes, CustomerResources oldResource,
+                         ResourcePut.ResourcePutBuilder builder) {
+    var oldHidden = oldResource.getVisibilityData() != null ? oldResource.getVisibilityData().getIsHidden() : null;
+    var isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null
+                   ? attributes.getVisibilityData().getIsHidden() : oldHidden;
+
+    builder.isHidden(isHidden);
+  }
+
+  private void convertProxy(ResourcePutDataAttributes attributes, CustomerResources oldResource,
+                         ResourcePut.ResourcePutBuilder builder) {
     var proxy = attributes.getProxy();
     var proxyId = proxy != null && proxy.getId() != null ? proxy.getId() : oldResource.getProxy().getId();
     //RM API gives an error when we pass inherited as true along with updated proxy value
@@ -53,19 +90,17 @@ public class ResourceRequestConverter {
       .inherited(false)
       .build();
     builder.proxy(rmApiProxy);
+  }
 
-    var oldHidden = oldResource.getVisibilityData() != null ? oldResource.getVisibilityData().getIsHidden() : null;
-    var isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null
-                   ? attributes.getVisibilityData().getIsHidden() : oldHidden;
+  private void convertCoverageDates(ResourcePutDataAttributes attributes, CustomerResources oldResource,
+                         ResourcePut.ResourcePutBuilder builder) {
+    var coverageDates = attributes.getCustomCoverages() != null
+                        ? convertToRmApiCustomCoverageList(attributes.getCustomCoverages())
+                        : oldResource.getCustomCoverageList();
+    builder.customCoverageList(coverageDates);
+  }
 
-    builder.isHidden(isHidden);
-    if (Boolean.TRUE == oldResource.getIsPackageCustom()) {
-      builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
-    }
-
-    var coverageStatement = valueOrDefault(attributes.getCoverageStatement(), oldResource.getCoverageStatement());
-    builder.coverageStatement(coverageStatement);
-
+  private void convertEmbargoPeriod(ResourcePutDataAttributes attributes, ResourcePut.ResourcePutBuilder builder) {
     var embargoPeriod = attributes.getCustomEmbargoPeriod();
     if (embargoPeriod != null && embargoPeriod.getEmbargoUnit() != null
       && embargoPeriod.getEmbargoValue() != null && embargoPeriod.getEmbargoValue() > 0) {
@@ -75,19 +110,10 @@ public class ResourceRequestConverter {
         .build();
       builder.customEmbargoPeriod(customEmbargo);
     }
+  }
 
-    var coverageDates = attributes.getCustomCoverages() != null
-                        ? convertToRmApiCustomCoverageList(attributes.getCustomCoverages())
-                        : oldResource.getCustomCoverageList();
-    builder.customCoverageList(coverageDates);
-
-    // For now, we do not have any attributes specific to managed resources to be mapped to RM API fields
-    // but below, we set the same values as we conduct a GET for pubType and isPeerReviewed because otherwise
-    // RM API gives a bad request error if those values are set to null. All the other fields are retained as
-    // is by RM API because they cannot be updated.
-    builder.pubType(oldTitle.getPubType());
-    builder.isPeerReviewed(oldTitle.getIsPeerReviewed());
-
+  private void convertUserDefinedFields(ResourcePutDataAttributes attributes, ResourcePut.ResourcePutBuilder builder,
+                         CustomerResources oldResource) {
     builder.userDefinedFields(UserDefinedFields.builder()
       .userDefinedField1(
         valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedFields().getUserDefinedField1()))
@@ -100,11 +126,9 @@ public class ResourceRequestConverter {
       .userDefinedField5(
         valueOrDefault(attributes.getUserDefinedField5(), oldResource.getUserDefinedFields().getUserDefinedField5()))
       .build());
-
-    return builder;
   }
 
-  private <T> T valueOrDefault(T value, T defaultValue) {
+  private <T> T valueOrDefault(@Nullable T value, T defaultValue) {
     return value != null ? value : defaultValue;
   }
 

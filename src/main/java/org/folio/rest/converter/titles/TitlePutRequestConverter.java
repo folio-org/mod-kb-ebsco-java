@@ -11,6 +11,7 @@ import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.model.TitleCommonRequestAttributes;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -32,14 +33,7 @@ public class TitlePutRequestConverter {
   public ResourcePut convertToRmApiCustomResourcePutRequest(TitlePutRequest entity, CustomerResources oldResource) {
     ResourcePut.ResourcePutBuilder builder = ResourcePut.builder();
 
-    Proxy proxy = null;
-    if (oldResource.getProxy() != null && oldResource.getProxy().getId() != null) {
-      proxy = Proxy.builder()
-        .inherited(false)
-        .id(oldResource.getProxy().getId())
-        .build();
-    }
-    builder.proxy(proxy);
+    builder.proxy(convertProxy(oldResource));
     builder.isHidden(oldResource.getVisibilityData().getIsHidden());
     builder.coverageStatement(oldResource.getCoverageStatement());
     builder.customEmbargoPeriod(oldResource.getCustomEmbargoPeriod());
@@ -58,13 +52,28 @@ public class TitlePutRequestConverter {
     builder.description(attributes.getDescription());
     builder.identifiersList(toIdentifiersConverter.convert(attributes.getIdentifiers()));
     builder.contributorsList(toContributorsConverter.convert(attributes.getContributors()));
-    builder.userDefinedFields(UserDefinedFields.builder()
+    builder.userDefinedFields(convertUserDefinedFields(oldResource));
+    return builder.build();
+  }
+
+  private @Nullable Proxy convertProxy(CustomerResources oldResource) {
+    Proxy proxy = null;
+    if (oldResource.getProxy() != null && oldResource.getProxy().getId() != null) {
+      proxy = Proxy.builder()
+        .inherited(false)
+        .id(oldResource.getProxy().getId())
+        .build();
+    }
+    return proxy;
+  }
+
+  private UserDefinedFields convertUserDefinedFields(CustomerResources oldResource) {
+    return UserDefinedFields.builder()
       .userDefinedField1(oldResource.getUserDefinedFields().getUserDefinedField1())
       .userDefinedField2(oldResource.getUserDefinedFields().getUserDefinedField2())
       .userDefinedField3(oldResource.getUserDefinedFields().getUserDefinedField3())
       .userDefinedField4(oldResource.getUserDefinedFields().getUserDefinedField4())
       .userDefinedField5(oldResource.getUserDefinedFields().getUserDefinedField5())
-      .build());
-    return builder.build();
+      .build();
   }
 }

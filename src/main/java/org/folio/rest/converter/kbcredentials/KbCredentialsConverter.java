@@ -15,7 +15,6 @@ import org.folio.rest.jaxrs.model.Meta;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class KbCredentialsConverter {
@@ -31,7 +30,7 @@ public final class KbCredentialsConverter {
     }
 
     @Override
-    public KbCredentials convert(@NonNull DbKbCredentials source) {
+    public KbCredentials convert(DbKbCredentials source) {
       return hideApiKey(requireNonNull(super.convert(source)));
     }
 
@@ -51,7 +50,7 @@ public final class KbCredentialsConverter {
     }
 
     @Override
-    public KbCredentials convert(@NonNull DbKbCredentials source) {
+    public KbCredentials convert(DbKbCredentials source) {
       return new KbCredentials()
         .withId(fromUUID(source.getId()))
         .withType(KbCredentials.Type.KB_CREDENTIALS)
@@ -71,7 +70,7 @@ public final class KbCredentialsConverter {
         );
     }
 
-    private String getUrl(@NonNull DbKbCredentials source) {
+    private String getUrl(DbKbCredentials source) {
       return source.getUrl() != null ? source.getUrl() : defaultUrl;
     }
   }
@@ -80,7 +79,7 @@ public final class KbCredentialsConverter {
   public static class KbCredentialsToDbConverter implements Converter<KbCredentials, DbKbCredentials> {
 
     @Override
-    public DbKbCredentials convert(@NonNull KbCredentials source) {
+    public DbKbCredentials convert(KbCredentials source) {
       var dbKbCredentialsBuilder = DbKbCredentials.builder();
 
       KbCredentialsDataAttributes attributes = source.getAttributes();
@@ -98,7 +97,7 @@ public final class KbCredentialsConverter {
   public static class KbCredentialsKeyConverter implements Converter<DbKbCredentials, KbCredentialsKey> {
 
     @Override
-    public KbCredentialsKey convert(@NonNull DbKbCredentials source) {
+    public KbCredentialsKey convert(DbKbCredentials source) {
       return new KbCredentialsKey()
         .withId(fromUUID(source.getId()))
         .withType(KbCredentialsKey.Type.KB_CREDENTIALS_KEY)

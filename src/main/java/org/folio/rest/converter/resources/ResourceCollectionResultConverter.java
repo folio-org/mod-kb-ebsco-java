@@ -17,7 +17,6 @@ import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceCollectionResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,7 +33,7 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   }
 
   @Override
-  public ResourceCollection convert(@NonNull ResourceCollectionResult resourceCollectionResult) {
+  public ResourceCollection convert(ResourceCollectionResult resourceCollectionResult) {
 
     final Titles titles = resourceCollectionResult.titles();
     final List<DbResource> resources = resourceCollectionResult.titlesList();

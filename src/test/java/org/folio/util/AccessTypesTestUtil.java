@@ -144,37 +144,22 @@ public class AccessTypesTestUtil {
   }
 
   public static List<AccessType> testData(String credentialsId) {
-    AccessType accessType1 = new AccessType()
-      .withType(AccessType.Type.ACCESS_TYPES)
-      .withAttributes(new AccessTypeDataAttributes()
-        .withCredentialsId(credentialsId)
-        .withName(STUB_ACCESS_TYPE_NAME)
-        .withDescription("Access Type description 1"))
-      .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"));
-
-    AccessType accessType2 = new AccessType()
-      .withType(AccessType.Type.ACCESS_TYPES)
-      .withAttributes(new AccessTypeDataAttributes()
-        .withCredentialsId(credentialsId)
-        .withName(STUB_ACCESS_TYPE_NAME_2)
-        .withDescription("Access Type description 2"))
-      .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"));
-
-    AccessType accessType3 = new AccessType()
-      .withType(AccessType.Type.ACCESS_TYPES)
-      .withAttributes(new AccessTypeDataAttributes()
-        .withCredentialsId(credentialsId)
-        .withName(STUB_ACCESS_TYPE_NAME_3)
-        .withDescription("Access Type description 3"))
-      .withCreator(new UserDisplayInfo()
-        .withFirstName("first name")
-        .withLastName("last name"));
-
+    var accessType1 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME, "Access Type description 1");
+    var accessType2 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME_2, "Access Type description 2");
+    var accessType3 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME_3, "Access Type description 3");
     return Arrays.asList(accessType1, accessType2, accessType3);
+  }
+
+  private static AccessType getAccessType(String credentialsId, String name, String description) {
+    return new AccessType()
+      .withType(AccessType.Type.ACCESS_TYPES)
+      .withAttributes(new AccessTypeDataAttributes()
+        .withCredentialsId(credentialsId)
+        .withName(name)
+        .withDescription(description))
+      .withCreator(new UserDisplayInfo()
+        .withFirstName("first name")
+        .withLastName("last name"));
   }
 
   private static String accessTypesTestTable() {

@@ -1,5 +1,6 @@
 package org.folio.rest.impl.integrationsuite;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -9,6 +10,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
+import static java.lang.String.format;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -79,7 +81,6 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.matching.AnythingPattern;
-import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
@@ -426,7 +427,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
-    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+    var putBodyPattern = equalToJson("{\"isSelected\":false}", true, true);
     mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), putBodyPattern, SC_NO_CONTENT);
 
     deleteWithNoContent(PACKAGES_PATH, STUB_USER_ID_HEADER);
@@ -442,7 +443,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
-    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+    var putBodyPattern = equalToJson("{\"isSelected\":false}", true, true);
     mockPut(new EqualToPattern(PACKAGE_BY_ID_URL), putBodyPattern, SC_NO_CONTENT);
 
     deleteWithNoContent(PACKAGES_PATH, STUB_USER_ID_HEADER);
@@ -506,7 +507,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldSendDeleteRequestForPackage() throws IOException, URISyntaxException {
-    EqualToJsonPattern putBodyPattern = new EqualToJsonPattern("{\"isSelected\":false}", true, true);
+    var putBodyPattern = equalToJson("{\"isSelected\":false}", true, true);
 
     mockGet(new EqualToPattern(PACKAGE_BY_ID_URL), CUSTOM_PACKAGE_STUB_FILE);
 
@@ -555,10 +556,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     assertEquals(updatedIsSelected, actualPackage.getData().getAttributes().getIsSelected());
 
-    EqualToJsonPattern putBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(putBodyPattern));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true)));
   }
 
   @Test
@@ -569,30 +568,15 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedBeginCoverage = "2003-01-01";
     String updatedEndCoverage = "2004-01-01";
 
-    EqualToJsonPattern putBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
-
-    PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
-      .isSelected(updatedSelected)
-      .customCoverage(CoverageDates.builder()
-        .beginCoverage(updatedBeginCoverage)
-        .endCoverage(updatedEndCoverage)
-        .build())
-      .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-      .build();
-
-    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    var updatedPackageValue = preparePackageData(updatedSelected, updatedBeginCoverage, updatedEndCoverage,
+      updatedAllowEbscoToAddTitles, updatedHidden);
     mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
 
-    Package actualPackage = putWithOk(
-      PACKAGES_PATH,
+    Package actualPackage = putWithOk(PACKAGES_PATH,
       readFile("requests/kb-ebsco/package/put-package-selected.json"), STUB_USER_ID_HEADER).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(putBodyPattern));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true)));
 
     assertEquals(updatedSelected, actualPackage.getData().getAttributes().getIsSelected());
     assertEquals(updatedAllowEbscoToAddTitles, actualPackage.getData().getAttributes().getAllowKbToAddTitles());
@@ -602,6 +586,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:methodLength")
   public void shouldUpdateAllAttributesInSelectedPackageAndCreateNewAccessTypeMapping()
     throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
@@ -613,30 +598,16 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedBeginCoverage = "2003-01-01";
     String updatedEndCoverage = "2004-01-01";
 
-    EqualToJsonPattern putBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true);
-
-    PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
-      .isSelected(updatedSelected)
-      .customCoverage(CoverageDates.builder()
-        .beginCoverage(updatedBeginCoverage)
-        .endCoverage(updatedEndCoverage)
-        .build())
-      .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-      .build();
-
-    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    var updatedPackageValue = preparePackageData(updatedSelected, updatedBeginCoverage, updatedEndCoverage,
+      updatedAllowEbscoToAddTitles, updatedHidden);
     mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
 
-    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-selected-with-access-type.json"),
+    String putBody = format(readFile("requests/kb-ebsco/package/put-package-selected-with-access-type.json"),
       accessTypeId);
     Package actualPackage = putWithOk(PACKAGES_PATH, putBody, STUB_USER_ID_HEADER).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(putBodyPattern));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/packages/put-package-is-selected.json"), true, true)));
 
     assertEquals(updatedSelected, actualPackage.getData().getAttributes().getIsSelected());
     assertEquals(updatedAllowEbscoToAddTitles, actualPackage.getData().getAttributes().getAllowKbToAddTitles());
@@ -670,12 +641,11 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
-    String getByIdBody = readFile(CUSTOM_PACKAGE_STUB_FILE);
-    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+    String putBody = format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
       newAccessTypeId);
     stubFor(get(PACKAGE_URL_PATTERN).inScenario("Put package")
       .whenScenarioStateIs(STARTED)
-      .willReturn(new ResponseDefinitionBuilder().withBody(getByIdBody))
+      .willReturn(new ResponseDefinitionBuilder().withBody(readFile(CUSTOM_PACKAGE_STUB_FILE)))
       .willSetStateTo("Not found"));
     stubFor(get(PACKAGE_URL_PATTERN).inScenario("Put package")
       .whenScenarioStateIs("Not found")
@@ -728,7 +698,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
         .toBuilder().isFullPackage(false).build();
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(new EqualToJsonPattern(mapper.writeValueAsString(rmApiPutRequest), true, true)));
+      .withRequestBody(equalToJson(mapper.writeValueAsString(rmApiPutRequest), true, true)));
   }
 
   @Test
@@ -739,31 +709,17 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedEndCoverage = "2004-01-01";
     String updatedPackageName = "name of the ages forever and ever";
 
-    EqualToJsonPattern putBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
-
-    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
-      .isSelected(updatedSelected)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-      .customCoverage(CoverageDates.builder()
-        .beginCoverage(updatedBeginCoverage)
-        .endCoverage(updatedEndCoverage)
-        .build())
-      .packageName(updatedPackageName)
-      .contentType("streamingmedia").build();
-
-    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    var updatedPackageValue =
+      prepareCustomPackageData(updatedSelected, updatedHidden, updatedBeginCoverage, updatedEndCoverage,
+        updatedPackageName);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
-    Package actualPackage = putWithOk(
-      PACKAGES_PATH,
+    Package actualPackage = putWithOk(PACKAGES_PATH,
       readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json"),
       STUB_USER_ID_HEADER).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(putBodyPattern));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/packages/put-package-custom.json"), true, true)));
 
     assertEquals(updatedSelected, actualPackage.getData().getAttributes().getIsSelected());
     assertEquals(updatedHidden, actualPackage.getData().getAttributes().getVisibilityData().getIsHidden());
@@ -774,6 +730,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:methodLength")
   public void shouldUpdateAllAttributesInCustomPackageAndCreateNewAccessTypeMapping()
     throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
@@ -785,30 +742,16 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedEndCoverage = "2004-01-01";
     String updatedPackageName = "name of the ages forever and ever";
 
-    EqualToJsonPattern putBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
-
-    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
-      .isSelected(updatedSelected)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-      .customCoverage(CoverageDates.builder()
-        .beginCoverage(updatedBeginCoverage)
-        .endCoverage(updatedEndCoverage)
-        .build())
-      .packageName(updatedPackageName)
-      .contentType("streamingmedia").build();
-
-    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    var updatedPackageValue = prepareCustomPackageData(updatedSelected, updatedHidden, updatedBeginCoverage,
+      updatedEndCoverage, updatedPackageName);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
-    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+    String putBody = format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
       accessTypeId);
     Package actualPackage = putWithOk(PACKAGES_PATH, putBody, STUB_USER_ID_HEADER).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(putBodyPattern));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/packages/put-package-custom.json"), true, true)));
 
     assertEquals(updatedSelected, actualPackage.getData().getAttributes().getIsSelected());
     assertEquals(updatedHidden, actualPackage.getData().getAttributes().getVisibilityData().getIsHidden());
@@ -828,6 +771,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:methodLength")
   public void shouldUpdateAllAttributesInCustomPackageAndDeleteAccessTypeMapping()
     throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
@@ -841,29 +785,15 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedEndCoverage = "2004-01-01";
     String updatedPackageName = "name of the ages forever and ever";
 
-    EqualToJsonPattern putBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
-
-    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
-      .isSelected(updatedSelected)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-      .customCoverage(CoverageDates.builder()
-        .beginCoverage(updatedBeginCoverage)
-        .endCoverage(updatedEndCoverage)
-        .build())
-      .packageName(updatedPackageName)
-      .contentType("streamingmedia").build();
-
-    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    var updatedPackageValue = prepareCustomPackageData(updatedSelected, updatedHidden, updatedBeginCoverage,
+      updatedEndCoverage, updatedPackageName);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
     String putBody = readFile("requests/kb-ebsco/package/put-package-custom-multiple-attributes.json");
     Package actualPackage = putWithOk(PACKAGES_PATH, putBody, STUB_USER_ID_HEADER).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(putBodyPattern));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/packages/put-package-custom.json"), true, true)));
 
     assertEquals(updatedSelected, actualPackage.getData().getAttributes().getIsSelected());
     assertEquals(updatedHidden, actualPackage.getData().getAttributes().getVisibilityData().getIsHidden());
@@ -881,6 +811,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:methodLength")
   public void shouldUpdateAllAttributesInCustomPackageAndUpdateAccessTypeMapping()
     throws URISyntaxException, IOException {
     List<AccessType> accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
@@ -894,30 +825,16 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String updatedEndCoverage = "2004-01-01";
     String updatedPackageName = "name of the ages forever and ever";
 
-    EqualToJsonPattern putBodyPattern =
-      new EqualToJsonPattern(readFile("requests/rmapi/packages/put-package-custom.json"), true, true);
-
-    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
-      .isSelected(updatedSelected)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
-      .customCoverage(CoverageDates.builder()
-        .beginCoverage(updatedBeginCoverage)
-        .endCoverage(updatedEndCoverage)
-        .build())
-      .packageName(updatedPackageName)
-      .contentType("streamingmedia").build();
-
-    String updatedPackageValue = mapper.writeValueAsString(packageData);
+    var updatedPackageValue = prepareCustomPackageData(updatedSelected, updatedHidden, updatedBeginCoverage,
+      updatedEndCoverage, updatedPackageName);
     mockUpdateScenario(readFile(CUSTOM_PACKAGE_STUB_FILE), updatedPackageValue);
 
-    String putBody = String.format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
+    String putBody = format(readFile("requests/kb-ebsco/package/put-package-custom-with-access-type.json"),
       newAccessTypeId);
     Package actualPackage = putWithOk(PACKAGES_PATH, putBody, STUB_USER_ID_HEADER).as(Package.class);
 
     verify(putRequestedFor(PACKAGE_URL_PATTERN)
-      .withRequestBody(putBodyPattern));
+      .withRequestBody(equalToJson(readFile("requests/rmapi/packages/put-package-custom.json"), true, true)));
 
     assertEquals(updatedSelected, actualPackage.getData().getAttributes().getIsSelected());
     assertEquals(updatedHidden, actualPackage.getData().getAttributes().getVisibilityData().getIsHidden());
@@ -984,9 +901,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     final Package createdPackage = sendPost(readFile(packagePostStubRequestFile)).as(Package.class);
 
     assertTrue(Objects.isNull(createdPackage.getData().getAttributes().getTags()));
-    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRmApiRequestFile), false, true);
     verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
-      .withRequestBody(postBodyPattern));
+      .withRequestBody(equalToJson(readFile(packagePostRmApiRequestFile), false, true)));
   }
 
   @Test
@@ -994,14 +910,13 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String accessTypeId = insertAccessType(testData(configuration.getId()).getFirst(), vertx);
 
     String packagePostRmApiRequestFile = "requests/rmapi/packages/post-package.json";
-    String requestBody = String.format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"),
+    String requestBody = format(readFile("requests/kb-ebsco/package/post-package-with-access-type-request.json"),
       accessTypeId);
     Package createdPackage = sendPost(requestBody).as(Package.class);
 
     assertTrue(Objects.isNull(createdPackage.getData().getAttributes().getTags()));
-    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(readFile(packagePostRmApiRequestFile), false, true);
     verify(1, postRequestedFor(new UrlPathPattern(new EqualToPattern(PACKAGES_STUB_URL), false))
-      .withRequestBody(postBodyPattern));
+      .withRequestBody(equalToJson(readFile(packagePostRmApiRequestFile), false, true)));
 
     List<AccessTypeMapping> accessTypeMappingsInDb = getAccessTypeMappings(vertx);
     assertEquals(1, accessTypeMappingsInDb.size());
@@ -1042,21 +957,18 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String packagePostStubRequestFile = "requests/kb-ebsco/package/post-package-request.json";
     String response = "responses/rmapi/packages/post-package-400-error-response.json";
 
-    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      """
-        {
-          "contentType" : 1,
-          "packageName" : "TEST_NAME",
-          "customCoverage" : {
-            "beginCoverage" : "2017-12-23",
-            "endCoverage" : "2018-03-30"
-          }
-        }""",
-      false, true);
-
     mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*"), providerStubResponseFile);
     mockPost(new EqualToPattern(PACKAGES_STUB_URL),
-      postBodyPattern, response, SC_BAD_REQUEST);
+      equalToJson("""
+          {
+            "contentType" : 1,
+            "packageName" : "TEST_NAME",
+            "customCoverage" : {
+              "beginCoverage" : "2017-12-23",
+              "endCoverage" : "2018-03-30"
+            }
+          }""",
+        false, true), response, SC_BAD_REQUEST);
 
     RestAssured.given()
       .spec(getRequestSpecification())
@@ -1314,6 +1226,43 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/packages/expected-post-packages-bulk-empty.json"),
       actualResponse, false);
+  }
+
+  private String prepareCustomPackageData(boolean updatedSelected, boolean updatedHidden, String updatedBeginCoverage,
+                                          String updatedEndCoverage, String updatedPackageName)
+    throws IOException, URISyntaxException {
+    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
+
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .packageName(updatedPackageName)
+      .contentType("streamingmedia")
+      .build();
+
+    return mapper.writeValueAsString(packageData);
+  }
+
+  private String preparePackageData(boolean updatedSelected, String updatedBeginCoverage, String updatedEndCoverage,
+                                    boolean updatedAllowEbscoToAddTitles, boolean updatedHidden)
+    throws IOException, URISyntaxException {
+    PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
+
+    packageData = packageData.toByIdBuilder()
+      .isSelected(updatedSelected)
+      .customCoverage(CoverageDates.builder()
+        .beginCoverage(updatedBeginCoverage)
+        .endCoverage(updatedEndCoverage)
+        .build())
+      .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
+      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .build();
+
+    return mapper.writeValueAsString(packageData);
   }
 
   private void shouldReturnResourcesOnGetWithResources(String getUrl, String rmApiQuery)

@@ -57,15 +57,19 @@ public class ResourcePutBodyValidator {
         ValidatorUtil.checkDateValid("endCoverage", customCoverage.getEndCoverage());
       });
 
-      int valueMaxLength = customLabelsProperties.valueMaxLength();
-      ValidatorUtil.checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), valueMaxLength);
-      ValidatorUtil.checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), valueMaxLength);
-      ValidatorUtil.checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), valueMaxLength);
-      ValidatorUtil.checkMaxLength("userDefinedField4", attributes.getUserDefinedField4(), valueMaxLength);
-      ValidatorUtil.checkMaxLength("userDefinedField5", attributes.getUserDefinedField5(), valueMaxLength);
+      validateUserDefinedFields(attributes);
     } else {
       validateManagedResourceIfNotSelected(attributes, isTitleCustom, cvgStmt);
     }
+  }
+
+  private void validateUserDefinedFields(ResourcePutDataAttributes attributes) {
+    int valueMaxLength = customLabelsProperties.valueMaxLength();
+    ValidatorUtil.checkMaxLength("userDefinedField1", attributes.getUserDefinedField1(), valueMaxLength);
+    ValidatorUtil.checkMaxLength("userDefinedField2", attributes.getUserDefinedField2(), valueMaxLength);
+    ValidatorUtil.checkMaxLength("userDefinedField3", attributes.getUserDefinedField3(), valueMaxLength);
+    ValidatorUtil.checkMaxLength("userDefinedField4", attributes.getUserDefinedField4(), valueMaxLength);
+    ValidatorUtil.checkMaxLength("userDefinedField5", attributes.getUserDefinedField5(), valueMaxLength);
   }
 
   private void validateManagedResourceIfNotSelected(ResourcePutDataAttributes attributes, boolean isTitleCustom,

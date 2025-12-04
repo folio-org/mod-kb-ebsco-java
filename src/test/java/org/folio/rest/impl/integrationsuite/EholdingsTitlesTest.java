@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -73,7 +74,6 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.matching.EqualToJsonPattern;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
@@ -208,7 +208,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
 
     String resourcePath =
       EHOLDINGS_TITLES_PATH + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2
-        + "&include=resources";
+      + "&include=resources";
     String actualResponse = getWithOk(resourcePath, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-tagged-titles-with-resources.json"),
       actualResponse, true);
@@ -233,7 +233,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     saveTag(vertx, STUB_MANAGED_RESOURCE_ID_2, RecordType.RESOURCE, STUB_TAG_VALUE_2);
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[tags]="
-      + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
+                          + STUB_TAG_VALUE + "&filter[tags]=" + STUB_TAG_VALUE_2;
     TitleCollection response = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
     assertEquals(STUB_MANAGED_TITLE_ID_2, response.getData().getFirst().getId());
   }
@@ -287,7 +287,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     mockGetTitles();
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?page=2&count=1&filter[access-type]=" + STUB_ACCESS_TYPE_NAME
-      + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
+                          + "&filter[access-type]=" + STUB_ACCESS_TYPE_NAME_2;
     TitleCollection titleCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(TitleCollection.class);
     List<TitleCollectionItem> titles = titleCollection.getData();
 
@@ -322,7 +322,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
           .withBody(readFile(stubResponseFile))));
 
     String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[packageIds]=1&filter[packageIds]=2&filter[packageIds]=3&"
-      + "filter[name]=Mind";
+                          + "filter[name]=Mind";
     String actualResponse = getWithOk(resourcePath, STUB_USER_ID_HEADER).asString();
     JSONAssert.assertEquals(readFile("responses/kb-ebsco/titles/expected-titles.json"), actualResponse, true);
   }
@@ -330,8 +330,7 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   @Test
   public void shouldReturn400ValidationErrorForPackageIds() {
 
-    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[packageIds]=1&filter[packageIds]=abc&"
-      + "filter[name]=Mind";
+    String resourcePath = EHOLDINGS_TITLES_PATH + "?filter[packageIds]=1&filter[packageIds]=abc&filter[name]=Mind";
     JsonapiError error = getWithStatus(resourcePath, SC_BAD_REQUEST, STUB_USER_ID_HEADER).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Invalid Query Parameter for filter[packageIds]");
   }
@@ -497,40 +496,12 @@ public class EholdingsTitlesTest extends WireMockTestBase {
   public void shouldReturn400WhenInvalidPostRequest() throws URISyntaxException, IOException {
     String errorResponse = "responses/rmapi/packages/post-package-400-error-response.json";
     String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
-    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      """
-        {
-          "titleName": "Test Title",
-          "edition": "Test edition",
-          "publisherName": "Test publisher",
-          "pubType": "thesisdissertation",
-          "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
-          "isPeerReviewed": true,
-          "identifiersList": [ {
-            "id": "1111-2222-3333",
-            "subtype": 2,
-            "type": 0
-          } ],
-          "contributorsList": [ {
-            "type": "author",
-            "contributor": "smith, john"
-          }, {
-            "type": "illustrator",
-            "contributor": "smith, ralph"
-          } ],
-          "peerReviewed": true
-        }""",
-      true, true);
 
-    stubFor(
-      post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
-        + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles"), false))
-        .withRequestBody(postBodyPattern)
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(readFile(errorResponse))
-          .withStatus(SC_BAD_REQUEST)));
+    stubFor(post(urlPathEqualTo("/rm/rmaccounts/%s/vendors/%s/packages/%s/titles"
+      .formatted(STUB_CUSTOMER_ID, STUB_VENDOR_ID, STUB_PACKAGE_ID)))
+      .willReturn(new ResponseDefinitionBuilder().withBody(readFile(errorResponse)).withStatus(SC_BAD_REQUEST)));
 
-    JsonapiError error =
+    var error =
       postWithStatus(EHOLDINGS_TITLES_PATH, readFile(titlePostStubRequestFile), SC_BAD_REQUEST, STUB_USER_ID_HEADER)
         .as(JsonapiError.class);
 
@@ -664,40 +635,9 @@ public class EholdingsTitlesTest extends WireMockTestBase {
     String titlePostStubRequestFile = "requests/kb-ebsco/title/post-title-request.json";
     String getTitleByTitleIdStubFile = "responses/rmapi/titles/get-title-by-id-for-post-request.json";
 
-    EqualToJsonPattern postBodyPattern = new EqualToJsonPattern(
-      """
-        {
-          "titleName": "Test Title",
-          "edition": "Test edition",
-          "publisherName": "Test publisher",
-          "pubType": "thesisdissertation",
-          "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
-          "isPeerReviewed": true,
-          "identifiersList": [ {
-            "id": "1111-2222-3333",
-            "subtype": 2,
-            "type": 0
-          } ],
-          "contributorsList": [ {
-            "type": "author",
-            "contributor": "smith, john"
-          }, {
-            "type": "illustrator",
-            "contributor": "smith, ralph"
-          } ],
-          "peerReviewed": true
-        }
-        "userDefinedField2": "test 2",
-        "userDefinedField3": "",
-        "userDefinedField4": null,
-        "userDefinedField5": "test 5"
-        """,
-      true, true);
-
     stubFor(
       post(new UrlPathPattern(new EqualToPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
-        + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles"), false))
-        .withRequestBody(postBodyPattern)
+                                                 + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID + "/titles"), false))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(titleCreatedIdStubResponseFile))
           .withStatus(SC_OK)));

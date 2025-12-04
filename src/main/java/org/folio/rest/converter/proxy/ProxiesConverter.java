@@ -11,14 +11,13 @@ import org.folio.rest.jaxrs.model.ProxyTypesData;
 import org.folio.rest.jaxrs.model.ProxyTypesDataAttributes;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProxiesConverter implements Converter<Proxies, ProxyTypes> {
 
   @Override
-  public ProxyTypes convert(@NonNull Proxies proxies) {
+  public ProxyTypes convert(Proxies proxies) {
     List<ProxyTypesData> providerList = mapItems(proxies.getProxyList(), this::convertProxy);
 
     return new ProxyTypes()

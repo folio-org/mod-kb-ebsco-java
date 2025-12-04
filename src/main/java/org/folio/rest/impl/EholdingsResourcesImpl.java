@@ -132,28 +132,8 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
     ResourcePostDataAttributes attributes = entity.getData().getAttributes();
 
-    long titleId = parseTitleId(attributes.getTitleId());
-    PackageId packageId = parsePackageId(attributes.getPackageId());
-
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(
-        context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getTitlesService(),
-          context.getPackagesService())
-          .thenCompose(result -> {
-            Title title = result.title();
-            postValidator.validateRelatedObjects(result.packageData(), title, result.titles());
-            ResourceSelectedPayload postRequest =
-              new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
-            ResourceId resourceId = ResourceId.builder()
-              .providerIdPart(packageId.getProviderIdPart())
-              .packageIdPart(packageId.getPackageIdPart())
-              .titleIdPart(titleId)
-              .build();
-            return context.getResourcesService().postResource(postRequest, resourceId);
-          })
-          .thenCompose(title -> CompletableFuture.completedFuture(
-            new ResourceResult(title, null, null, false)))
-      )
+      .requestAction(processResourcePost(attributes))
       .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .executeWithResult(Resource.class);
   }
@@ -251,6 +231,28 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     final RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     template.requestAction(context -> context.getResourcesService().retrieveResourcesBulk(entity.getResources()))
       .executeWithResult(ResourceBulkFetchCollection.class);
+  }
+
+  private Function<RmApiTemplateContext, CompletableFuture<?>> processResourcePost(
+    ResourcePostDataAttributes attributes) {
+    long titleId = parseTitleId(attributes.getTitleId());
+    PackageId packageId = parsePackageId(attributes.getPackageId());
+    return context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getTitlesService(),
+      context.getPackagesService())
+      .thenCompose(result -> {
+        Title title = result.title();
+        postValidator.validateRelatedObjects(result.packageData(), title, result.titles());
+        ResourceSelectedPayload postRequest =
+          new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
+        ResourceId resourceId = ResourceId.builder()
+          .providerIdPart(packageId.getProviderIdPart())
+          .packageIdPart(packageId.getPackageIdPart())
+          .titleIdPart(titleId)
+          .build();
+        return context.getResourcesService().postResource(postRequest, resourceId);
+      })
+      .thenCompose(title -> CompletableFuture.completedFuture(
+        new ResourceResult(title, null, null, false)));
   }
 
   private CompletableFuture<AccessType> fetchAccessType(ResourcePutRequest entity,

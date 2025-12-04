@@ -9,7 +9,6 @@ import org.folio.rest.jaxrs.model.ProviderCollection;
 import org.folio.rest.jaxrs.model.Providers;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,7 +21,7 @@ public class ProviderCollectionConverter implements Converter<Vendors, ProviderC
   }
 
   @Override
-  public ProviderCollection convert(@NonNull Vendors vendors) {
+  public ProviderCollection convert(Vendors vendors) {
     List<Providers> providerList = mapItems(vendors.getVendorList(), providersConverter::convert);
 
     return new ProviderCollection()

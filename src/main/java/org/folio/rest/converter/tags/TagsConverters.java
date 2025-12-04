@@ -14,7 +14,6 @@ import org.folio.rest.jaxrs.model.TagUniqueCollectionItem;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class TagsConverters {
@@ -26,7 +25,7 @@ public final class TagsConverters {
   public static class ToTags implements Converter<List<DbTag>, Tags> {
 
     @Override
-    public Tags convert(@NonNull List<DbTag> source) {
+    public Tags convert(List<DbTag> source) {
       return new Tags().withTagList(mapItems(source, DbTag::getValue));
     }
   }
@@ -41,7 +40,7 @@ public final class TagsConverters {
     }
 
     @Override
-    public TagCollection convert(@NonNull List<DbTag> source) {
+    public TagCollection convert(List<DbTag> source) {
       return new TagCollection()
         .withData(mapItems(source, tagConverter::convert))
         .withJsonapi(RestConstants.JSONAPI)
@@ -53,7 +52,7 @@ public final class TagsConverters {
   public static class ToUniqueCollectionItem implements Converter<String, TagUniqueCollectionItem> {
 
     @Override
-    public TagUniqueCollectionItem convert(@NonNull String source) {
+    public TagUniqueCollectionItem convert(String source) {
       return new TagUniqueCollectionItem()
         .withId(UUID.randomUUID().toString())
         .withType(RestConstants.TAGS_TYPE)
@@ -71,7 +70,7 @@ public final class TagsConverters {
     }
 
     @Override
-    public TagUniqueCollection convert(@NonNull List<String> source) {
+    public TagUniqueCollection convert(List<String> source) {
       return new TagUniqueCollection()
         .withData(mapItems(source, tagConverter::convert))
         .withJsonapi(RestConstants.JSONAPI)

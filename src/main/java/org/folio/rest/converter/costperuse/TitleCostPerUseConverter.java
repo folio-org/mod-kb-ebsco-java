@@ -24,8 +24,8 @@ import org.folio.rest.jaxrs.model.TitleCostPerUseDataAttributes;
 import org.folio.rest.jaxrs.model.Usage;
 import org.folio.rest.jaxrs.model.UsageTotals;
 import org.folio.rmapi.result.TitleCostPerUseResult;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,7 +42,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
   }
 
   @Override
-  public TitleCostPerUse convert(@NonNull TitleCostPerUseResult source) {
+  public TitleCostPerUse convert(TitleCostPerUseResult source) {
     TitleCostPerUse titleCostPerUse = new TitleCostPerUse()
       .withTitleId(source.getTitleId())
       .withType(TitleCostPerUse.Type.TITLE_COST_PER_USE);
@@ -56,33 +56,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
 
     var usage = new Usage().withTotals(new UsageTotals());
     var analysis = new TitleCostAnalysis();
-    Integer totalUsage = NumberUtils.INTEGER_ZERO;
-
-    switch (source.getPlatformType()) {
-      case PUBLISHER:
-        setPublisherUsage(specificPlatformUsages, usage);
-        PlatformUsage publisherPlatformUsage = usage.getTotals().getPublisher();
-        if (publisherPlatformUsage != null) {
-          totalUsage = publisherPlatformUsage.getTotal();
-        }
-        break;
-      case NON_PUBLISHER:
-        setNonPublisherUsage(specificPlatformUsages, usage);
-        PlatformUsage nonPublisherPlatformUsage = usage.getTotals().getNonPublisher();
-        if (nonPublisherPlatformUsage != null) {
-          totalUsage = nonPublisherPlatformUsage.getTotal();
-        }
-        break;
-      default:
-        setPublisherUsage(specificPlatformUsages, usage);
-        setNonPublisherUsage(specificPlatformUsages, usage);
-        usage.setPlatforms(specificPlatformUsages);
-        var platformUsage = getTotalUsage(specificPlatformUsages);
-        usage.getTotals().setAll(platformUsage);
-
-        totalUsage = platformUsage == null ? 0 : platformUsage.getTotal();
-        break;
-    }
+    Integer totalUsage = processPlatformUsages(source, specificPlatformUsages, usage);
 
     analysis.setHoldingsSummary(getHoldingsSummary(source, totalUsage));
     return titleCostPerUse
@@ -91,6 +65,35 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
         .withAnalysis(analysis)
         .withParameters(convertParameters(source.getConfiguration()))
       );
+  }
+
+  private Integer processPlatformUsages(TitleCostPerUseResult source,
+                                        List<SpecificPlatformUsage> specificPlatformUsages, Usage usage) {
+    return switch (source.getPlatformType()) {
+      case PUBLISHER -> {
+        setPublisherUsage(specificPlatformUsages, usage);
+        yield getTotal(usage.getTotals().getPublisher());
+      }
+      case NON_PUBLISHER -> {
+        setNonPublisherUsage(specificPlatformUsages, usage);
+        yield getTotal(usage.getTotals().getNonPublisher());
+      }
+      default -> {
+        setPublisherUsage(specificPlatformUsages, usage);
+        setNonPublisherUsage(specificPlatformUsages, usage);
+        usage.setPlatforms(specificPlatformUsages);
+        var platformUsage = getTotalUsage(specificPlatformUsages);
+        usage.getTotals().setAll(platformUsage);
+        yield platformUsage.getTotal();
+      }
+    };
+  }
+
+  private Integer getTotal(@Nullable PlatformUsage usage) {
+    if (usage != null) {
+      return usage.getTotal();
+    }
+    return NumberUtils.INTEGER_ZERO;
   }
 
   private List<HoldingsCostAnalysisAttributes> getHoldingsSummary(TitleCostPerUseResult source, Integer totalUsage) {

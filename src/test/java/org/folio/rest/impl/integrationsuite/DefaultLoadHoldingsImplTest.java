@@ -2,6 +2,7 @@ package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_CONFLICT;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -370,22 +371,17 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
     setupDefaultLoadKbConfiguration();
     mockGet(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED);
 
-    stubFor(
-      post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody("")
-          .withStatus(202)));
+    stubFor(post(urlPathEqualTo(RMAPI_POST_HOLDINGS_URL))
+      .willReturn(new ResponseDefinitionBuilder()
+        .withBody("")
+        .withStatus(202)));
 
-    ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
+    ResponseDefinitionBuilder successResponse = new ResponseDefinitionBuilder()
       .withBody(readFile(RMAPI_RESPONSE_HOLDINGS))
       .withStatus(200);
-    ResponseDefinitionBuilder failedResponse = new ResponseDefinitionBuilder().withStatus(500);
-    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_POST_HOLDINGS_URL), false),
-      successfulResponse,
-      failedResponse,
-      failedResponse,
-      successfulResponse
-    );
+    ResponseDefinitionBuilder failResponse = new ResponseDefinitionBuilder().withStatus(500);
+    mockResponseList(urlPathEqualTo(RMAPI_POST_HOLDINGS_URL), successResponse, failResponse, failResponse,
+      successResponse);
 
     int firstTryPages = 1;
     int secondTryPages = 2;
@@ -442,18 +438,16 @@ public class DefaultLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:methodLength")
   public void shouldRetryCreationOfSnapshotAndUpdateHoldingsStatusWhenItFails(TestContext context)
     throws IOException, URISyntaxException {
     setupDefaultLoadKbConfiguration();
     Async async = context.async();
     handleStatusChange(COMPLETED, holdingsStatusRepository, o -> async.complete());
-    ResponseDefinitionBuilder failedResponse = new ResponseDefinitionBuilder().withStatus(500);
-    ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
+    var failResponse = new ResponseDefinitionBuilder().withStatus(500);
+    var successResponse = new ResponseDefinitionBuilder()
       .withBody(readFile(RMAPI_RESPONSE_HOLDINGS_STATUS_COMPLETED_ONE_PAGE));
-    mockResponseList(new UrlPathPattern(new EqualToPattern(RMAPI_HOLDINGS_STATUS_URL), false),
-      failedResponse,
-      successfulResponse,
-      successfulResponse);
+    mockResponseList(urlPathEqualTo(RMAPI_HOLDINGS_STATUS_URL), failResponse, successResponse, successResponse);
     mockPostHoldings();
     postWithStatus(HOLDINGS_LOAD_BY_ID_URL, "", SC_NO_CONTENT, STUB_USER_ID_HEADER);
     mockGet(new RegexPattern(RMAPI_POST_HOLDINGS_URL), RMAPI_RESPONSE_HOLDINGS);
