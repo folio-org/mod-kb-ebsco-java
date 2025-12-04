@@ -17,7 +17,6 @@ public class PackagePutBodyValidator {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
     PackagePutDataAttributes attributes = request.getData().getAttributes();
-    Boolean isSelected = attributes.getIsSelected();
     Boolean allowKbToAddTitles = attributes.getAllowKbToAddTitles();
 
     Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
@@ -30,6 +29,15 @@ public class PackagePutBodyValidator {
 
     String value = attributes.getPackageToken() != null ? attributes.getPackageToken().getValue() : null;
 
+    validateNotSelected(attributes, allowKbToAddTitles, isHidden, beginCoverage, endCoverage, value);
+    ValidatorUtil.checkMaxLength("value", value, MAX_TOKEN_LENGTH);
+    ValidatorUtil.checkDateValid("beginCoverage", beginCoverage);
+    ValidatorUtil.checkDateValid("endCoverage", endCoverage);
+  }
+
+  private void validateNotSelected(PackagePutDataAttributes attributes, Boolean allowKbToAddTitles, Boolean isHidden,
+                         String beginCoverage, String endCoverage, String value) {
+    Boolean isSelected = attributes.getIsSelected();
     if (isSelected == null || !isSelected) {
       ValidatorUtil.checkFalseOrNull("allowKbToAddTitles", allowKbToAddTitles);
       ValidatorUtil.checkFalseOrNull("visibilityData.isHidden", isHidden);
@@ -37,8 +45,5 @@ public class PackagePutBodyValidator {
       ValidatorUtil.checkIsEmpty("customCoverage.endCoverage", endCoverage);
       ValidatorUtil.checkIsNull("packageToken.value", value);
     }
-    ValidatorUtil.checkMaxLength("value", value, MAX_TOKEN_LENGTH);
-    ValidatorUtil.checkDateValid("beginCoverage", beginCoverage);
-    ValidatorUtil.checkDateValid("endCoverage", endCoverage);
   }
 }

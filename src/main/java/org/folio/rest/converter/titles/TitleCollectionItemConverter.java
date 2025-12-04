@@ -18,7 +18,6 @@ import org.folio.rest.jaxrs.model.TitleCollectionItem;
 import org.folio.rest.jaxrs.model.TitleCollectionItemDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class TitleCollectionItemConverter {
@@ -47,7 +46,7 @@ public final class TitleCollectionItemConverter {
     }
 
     @Override
-    public TitleCollectionItem convert(@NonNull Title title) {
+    public TitleCollectionItem convert(Title title) {
       return new TitleCollectionItem()
         .withId(String.valueOf(title.getTitleId()))
         .withType(TitleCollectionItem.Type.TITLES)

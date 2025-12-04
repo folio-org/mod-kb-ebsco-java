@@ -55,6 +55,7 @@ public class CommonResourceConverter {
     this.alternateTitleConverter = alternateTitleConverter;
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   public ResourceDataAttributes createResourceDataAttributes(Title title, CustomerResources resource) {
     return new ResourceDataAttributes()
       .withAlternateTitles(alternateTitleConverter.convert(Objects.requireNonNullElse(title.getAlternateTitleList(),

@@ -5,8 +5,8 @@ import java.util.Objects;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.folio.holdingsiq.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component

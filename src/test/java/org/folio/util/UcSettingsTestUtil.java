@@ -24,6 +24,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.folio.repository.uc.DbUcSettings;
@@ -57,24 +58,8 @@ public class UcSettingsTestUtil {
     var meta = ucSettings.getMeta();
 
     var query = prepareQuery(insertUcSettings(), ucSettingsTestTable());
-    UUID id = toUUID(ucSettings.getId());
-    if (id == null) {
-      id = UUID.randomUUID();
-    }
-    Tuple params = Tuple.of(
-      id,
-      toUUID(attributes.getCredentialsId()),
-      attributes.getCustomerKey(),
-      attributes.getCurrency(),
-      attributes.getStartMonth().value(),
-      attributes.getPlatformType().value(),
-      fromDate(meta.getCreatedDate()),
-      toUUID(meta.getCreatedByUserId()),
-      meta.getCreatedByUsername(),
-      fromDate(meta.getUpdatedDate()),
-      toUUID(meta.getUpdatedByUserId()),
-      meta.getUpdatedByUsername()
-    );
+    var id = Objects.requireNonNullElse(toUUID(ucSettings.getId()), UUID.randomUUID());
+    var params = getParamsForSave(id, attributes, meta);
 
     PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
     future.join();
@@ -87,21 +72,6 @@ public class UcSettingsTestUtil {
     PostgresClient.getInstance(vertx)
       .select(query, event -> future.complete(mapItems(event.result(), UcSettingsTestUtil::mapUcSettings)));
     return future.join();
-  }
-
-  private static UCSettings mapUcSettings(Row row) {
-    var builder = DbUcSettings.builder()
-      .id(row.getUUID(ID_COLUMN))
-      .kbCredentialsId(row.getUUID(KB_CREDENTIALS_ID_COLUMN))
-      .customerKey(row.getString(CUSTOMER_KEY_COLUMN))
-      .currency(row.getString(CURRENCY_COLUMN))
-      .startMonth(row.getString(START_MONTH_COLUMN))
-      .platformType(row.getString(PLATFORM_TYPE_COLUMN));
-    return CONVERTER.convert(mapMetadata(builder, row).build());
-  }
-
-  private static String ucSettingsTestTable() {
-    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + UC_SETTINGS_TABLE_NAME;
   }
 
   public static UCSettings stubSettings(String credentialsId) {
@@ -119,5 +89,37 @@ public class UcSettingsTestUtil {
         .withCreatedByUserId(JOHN_ID)
         .withCreatedByUsername(JOHN_USERNAME)
       );
+  }
+
+  private static Tuple getParamsForSave(UUID id, UCSettingsDataAttributes attributes, Meta meta) {
+    return Tuple.of(
+      id,
+      toUUID(attributes.getCredentialsId()),
+      attributes.getCustomerKey(),
+      attributes.getCurrency(),
+      attributes.getStartMonth().value(),
+      attributes.getPlatformType().value(),
+      fromDate(meta.getCreatedDate()),
+      toUUID(meta.getCreatedByUserId()),
+      meta.getCreatedByUsername(),
+      fromDate(meta.getUpdatedDate()),
+      toUUID(meta.getUpdatedByUserId()),
+      meta.getUpdatedByUsername()
+    );
+  }
+
+  private static UCSettings mapUcSettings(Row row) {
+    var builder = DbUcSettings.builder()
+      .id(row.getUUID(ID_COLUMN))
+      .kbCredentialsId(row.getUUID(KB_CREDENTIALS_ID_COLUMN))
+      .customerKey(row.getString(CUSTOMER_KEY_COLUMN))
+      .currency(row.getString(CURRENCY_COLUMN))
+      .startMonth(row.getString(START_MONTH_COLUMN))
+      .platformType(row.getString(PLATFORM_TYPE_COLUMN));
+    return CONVERTER.convert(mapMetadata(builder, row).build());
+  }
+
+  private static String ucSettingsTestTable() {
+    return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + UC_SETTINGS_TABLE_NAME;
   }
 }

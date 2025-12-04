@@ -34,6 +34,7 @@ import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
+import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
@@ -146,40 +147,24 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                    Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                    Context vertxContext) {
 
-    Filter filter = Filter.builder()
-      .recordType(RecordType.PACKAGE)
-      .query(q)
-      .filterTags(filterTags)
-      .filterCustom(filterCustom)
-      .filterAccessType(filterAccessType)
-      .filterSelected(filterSelected)
-      .filterType(filterType)
-      .sort(sort)
-      .page(page)
-      .count(count)
-      .build();
+    var filter = Filter.getSortableFilter(prepareFilterForPackage(filterCustom, q, filterSelected, filterType,
+      filterTags, filterAccessType), sort, page, count);
 
-    RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+    var template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
       template.requestAction(
         context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
-        .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
-      );
+        .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context));
     } else {
       template
         .requestAction(context -> {
           if (Boolean.TRUE.equals(filter.getFilterCustom())) {
-            return getCustomProviderId(context).thenCompose(providerId ->
-              context.getPackagesService()
-                .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.packagesSearchType(),
-                  providerId, q, page, count, filter.getSort())
-            );
+            return getCustomProviderId(context)
+              .thenCompose(providerId -> retrievePackages(providerId, filter, context));
           } else {
-            return context.getPackagesService()
-              .retrievePackages(filter.getFilterSelected(), filterType, searchProperties.packagesSearchType(),
-                null, q, page, count, filter.getSort());
+            return retrievePackages(null, filter, context);
           }
         });
     }
@@ -290,21 +275,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                                        Context vertxContext) {
 
-    Filter filter = Filter.builder()
-      .recordType(RecordType.RESOURCE)
-      .filterTags(filterTags)
-      .packageId(packageId)
-      .filterAccessType(filterAccessType)
-      .filterSelected(filterSelected)
-      .filterType(filterType)
-      .filterName(filterName)
-      .filterIsxn(filterIsxn)
-      .filterSubject(filterSubject)
-      .filterPublisher(filterPublisher)
-      .sort(sort)
-      .page(page)
-      .count(count)
-      .build();
+    var filter = Filter.getSortableFilter(prepareFilterForResource(packageId, filterTags, filterAccessType,
+      filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher), sort, page, count);
 
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
@@ -315,17 +287,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       template.requestAction(
         context -> filteredEntitiesLoader.fetchResourcesByAccessTypeFilter(filter.createAccessTypeFilter(), context));
     } else {
-      template.requestAction(context -> {
-        PackageId pkgId = filter.getPackageId();
-        long providerIdPart = pkgId.getProviderIdPart();
-        long packageIdPart = pkgId.getPackageIdPart();
-        return context.getTitlesService()
-          .retrieveTitles(providerIdPart, packageIdPart, filter.createFilterQuery(),
-            searchProperties.titlesSearchType(), filter.getSort(), page, count)
-          .thenApply(titles -> titleCollectionConverter.convert(titles))
-          .thenCompose(loadResourceTags(context))
-          .thenCompose(loadResourceAccessTypes(context));
-      });
+      template.requestAction(retrievePackageTitles(filter));
     }
 
     template.addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -370,6 +332,55 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     template.requestAction(context -> context.getPackagesService().retrievePackagesBulk(entity.getPackages()))
       .executeWithResult(PackageBulkFetchCollection.class);
+  }
+
+  private Function<RmApiTemplateContext, CompletableFuture<?>> retrievePackageTitles(Filter filter) {
+    return context -> {
+      var pkgId = filter.getPackageId();
+      return context.getTitlesService()
+        .retrieveTitles(pkgId.getProviderIdPart(), pkgId.getPackageIdPart(), filter.createFilterQuery(),
+          searchProperties.titlesSearchType(), filter.getSort(), filter.getPage(), filter.getCount())
+        .thenApply(titles -> titleCollectionConverter.convert(titles))
+        .thenCompose(loadResourceTags(context))
+        .thenCompose(loadResourceAccessTypes(context));
+    };
+  }
+
+  private CompletableFuture<Packages> retrievePackages(Long providerId, Filter filter, RmApiTemplateContext context) {
+    return context.getPackagesService()
+      .retrievePackages(filter.getFilterSelected(), filter.getFilterType(), searchProperties.packagesSearchType(),
+        providerId, filter.getQuery(), filter.getPage(), filter.getCount(), filter.getSort());
+  }
+
+  @SuppressWarnings("java:S107")
+  private Filter.FilterBuilder prepareFilterForResource(String packageId, List<String> filterTags,
+                                                        List<String> filterAccessType, String filterSelected,
+                                                        String filterType, String filterName, String filterIsxn,
+                                                        String filterSubject, String filterPublisher) {
+    return Filter.builder()
+      .recordType(RecordType.RESOURCE)
+      .filterTags(filterTags)
+      .packageId(packageId)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher);
+  }
+
+  private Filter.FilterBuilder prepareFilterForPackage(String filterCustom, String q, String filterSelected,
+                                                       String filterType, List<String> filterTags,
+                                                       List<String> filterAccessType) {
+    return Filter.builder()
+      .recordType(RecordType.PACKAGE)
+      .query(q)
+      .filterTags(filterTags)
+      .filterCustom(filterCustom)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType);
   }
 
   private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessType accessType,

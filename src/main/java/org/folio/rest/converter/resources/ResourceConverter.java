@@ -6,7 +6,6 @@ import java.util.List;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rmapi.result.ResourceResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +18,7 @@ public class ResourceConverter implements Converter<ResourceResult, Resource> {
   }
 
   @Override
-  public Resource convert(@NonNull ResourceResult resourceResult) {
+  public Resource convert(ResourceResult resourceResult) {
     Resource resource = requireNonNull(resultListConverter.convert(resourceResult)).getFirst();
     resource.getData().getAttributes().setTags(resourceResult.getTags());
     return resource;

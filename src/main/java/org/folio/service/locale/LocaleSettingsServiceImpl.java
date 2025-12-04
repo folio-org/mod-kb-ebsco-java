@@ -15,7 +15,7 @@ import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.client.ConfigurationsClient;
 import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.tools.utils.VertxUtils;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 
 @Log4j2
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {

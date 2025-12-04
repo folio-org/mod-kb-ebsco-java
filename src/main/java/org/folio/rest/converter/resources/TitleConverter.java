@@ -7,7 +7,6 @@ import java.util.List;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.rest.jaxrs.model.ResourceCollectionItem;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,7 +19,7 @@ public class TitleConverter implements Converter<org.folio.holdingsiq.model.Titl
   }
 
   @Override
-  public List<ResourceCollectionItem> convert(@NonNull org.folio.holdingsiq.model.Title rmapiTitle) {
+  public List<ResourceCollectionItem> convert(org.folio.holdingsiq.model.Title rmapiTitle) {
     List<CustomerResources> customerResourcesList = rmapiTitle.getCustomerResourcesList();
     return mapItems(customerResourcesList,
       resource -> new ResourceCollectionItem()

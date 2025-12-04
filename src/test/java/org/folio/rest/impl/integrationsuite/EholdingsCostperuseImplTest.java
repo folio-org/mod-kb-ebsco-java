@@ -453,8 +453,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
-    ResourceCostPerUseCollection
-      actual =
+    var actual =
       getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_USER_ID_HEADER)
         .as(ResourceCostPerUseCollection.class);
 
@@ -485,8 +484,7 @@ public class EholdingsCostperuseImplTest extends WireMockTestBase {
       "responses/uc/title-packages/get-different-title-packages-cost-per-use-for-package-response.json";
     mockSuccessfulTitlePackageCostPerUse(stubApigeeGetTitlePackageResponseFile);
 
-    ResourceCostPerUseCollection
-      actual =
+    var actual =
       getWithOk(packageResourcesEndpoint(packageId, year, platform, null, null, sort, order), JOHN_USER_ID_HEADER)
         .as(ResourceCostPerUseCollection.class);
 

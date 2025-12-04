@@ -1,7 +1,9 @@
 package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
@@ -43,9 +45,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.vertx.core.json.Json;
@@ -91,37 +91,21 @@ public class EholdingsAccessTypesImplTest extends WireMockTestBase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users/" + USER_8), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(200)
-          .withBody(readFile("responses/userlookup/mock_user_response_200.json"))
-        ));
+    stubFor(get(urlPathEqualTo("/users/" + USER_8))
+      .willReturn(ok(readFile("responses/userlookup/mock_user_response_200.json"))));
 
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users/" + USER_9), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(200)
-          .withBody(readFile("responses/userlookup/mock_user_response_2_200.json"))
-        ));
+    stubFor(get(urlPathEqualTo("/users/" + USER_9))
+      .willReturn(ok(readFile("responses/userlookup/mock_user_response_2_200.json"))));
 
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users/" + USER_2), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(404)
-        ));
+    stubFor(get(urlPathEqualTo("/users/" + USER_2))
+      .willReturn(new ResponseDefinitionBuilder().withStatus(404)));
 
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users/" + USER_3), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(403)
-        ));
+    stubFor(get(urlPathEqualTo("/users/" + USER_3))
+      .willReturn(new ResponseDefinitionBuilder().withStatus(403)));
 
-    stubFor(
-      get(new UrlPathPattern(new EqualToPattern("/users"), false))
-        .withQueryParam("query", new RegexPattern("id.*"))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
+    stubFor(get(urlPathEqualTo("/users"))
+      .withQueryParam("query", new RegexPattern("id.*"))
+      .willReturn(ok(TestUtil.readFile(USERDATA_COLLECTION_INFO_STUB_FILE))));
 
     credentialsId = saveKbCredentials(STUB_API_URL, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
   }

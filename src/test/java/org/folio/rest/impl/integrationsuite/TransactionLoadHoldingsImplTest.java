@@ -2,6 +2,7 @@ package org.folio.rest.impl.integrationsuite;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -187,6 +188,7 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
   }
 
   @Test
+  @SuppressWarnings("checkstyle:MethodLength")
   public void shouldUpdateHoldingsWithDeltas(TestContext context) throws IOException, URISyntaxException {
     HoldingsTestUtil.saveHolding(STUB_CREDENTIALS_ID,
       Json.decodeValue(readFile("responses/kb-ebsco/holdings/custom-holding.json"), DbHoldingInfo.class),
@@ -300,22 +302,17 @@ public class TransactionLoadHoldingsImplTest extends WireMockTestBase {
     mockEmptyTransactionList();
     mockGet(new EqualToPattern(getStatusEndpoint()), RMAPI_RESPONSE_TRANSACTION_STATUS_COMPLETED);
 
-    stubFor(
-      post(new UrlPathPattern(new EqualToPattern(RMAPI_POST_TRANSACTIONS_HOLDINGS_URL), false))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withBody(Json.encode(createTransactionId()))
-          .withStatus(202)));
+    stubFor(post(urlPathEqualTo(RMAPI_POST_TRANSACTIONS_HOLDINGS_URL))
+      .willReturn(new ResponseDefinitionBuilder()
+        .withBody(Json.encode(createTransactionId()))
+        .withStatus(202)));
 
-    ResponseDefinitionBuilder successfulResponse = new ResponseDefinitionBuilder()
+    ResponseDefinitionBuilder successResponse = new ResponseDefinitionBuilder()
       .withBody(readFile(RMAPI_RESPONSE_HOLDINGS))
       .withStatus(200);
-    ResponseDefinitionBuilder failedResponse = new ResponseDefinitionBuilder().withStatus(500);
-    mockResponseList(new UrlPathPattern(new EqualToPattern(getHoldingsEndpoint()), false),
-      successfulResponse,
-      failedResponse,
-      failedResponse,
-      successfulResponse
-    );
+    ResponseDefinitionBuilder failResponse = new ResponseDefinitionBuilder().withStatus(500);
+    mockResponseList(urlPathEqualTo(getHoldingsEndpoint()),
+      successResponse, failResponse, failResponse, successResponse);
 
     int firstTryPages = 1;
     int secondTryPages = 2;

@@ -9,7 +9,6 @@ import org.folio.rest.jaxrs.model.CustomLabelsCollection;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class CustomLabelsCollectionConverter {
@@ -28,7 +27,7 @@ public final class CustomLabelsCollectionConverter {
     }
 
     @Override
-    public CustomLabelsCollection convert(@NonNull RootProxyCustomLabels customLabels) {
+    public CustomLabelsCollection convert(RootProxyCustomLabels customLabels) {
       return new CustomLabelsCollection()
         .withData(mapItems(customLabels.getLabelList(), customLabelConverter::convert))
         .withMeta(new MetaTotalResults().withTotalResults(customLabels.getLabelList().size()))
@@ -40,7 +39,7 @@ public final class CustomLabelsCollectionConverter {
   public static class FromLabelsList implements Converter<List<CustomLabel>, CustomLabelsCollection> {
 
     @Override
-    public CustomLabelsCollection convert(@NonNull List<CustomLabel> customLabels) {
+    public CustomLabelsCollection convert(List<CustomLabel> customLabels) {
       return new CustomLabelsCollection()
         .withData(customLabels)
         .withMeta(new MetaTotalResults().withTotalResults(customLabels.size()))

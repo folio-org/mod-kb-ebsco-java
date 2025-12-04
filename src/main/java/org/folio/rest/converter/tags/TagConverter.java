@@ -12,7 +12,6 @@ import org.folio.rest.jaxrs.model.TagDataAttributes;
 import org.folio.rest.jaxrs.model.TagRelationship;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,7 +27,7 @@ public class TagConverter implements Converter<DbTag, TagCollectionItem> {
   }
 
   @Override
-  public TagCollectionItem convert(@NonNull DbTag source) {
+  public TagCollectionItem convert(DbTag source) {
     return new TagCollectionItem()
       .withType(RestConstants.TAGS_TYPE)
       .withId(RowSetUtils.fromUUID(source.getId()))

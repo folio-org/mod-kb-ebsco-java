@@ -3,6 +3,7 @@ package org.folio.rest.impl.integrationsuite;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -181,8 +182,6 @@ public class EholdingsExportImplTest extends WireMockTestBase {
   @Test
   public void shouldReturnResponseWithPublisherEqualsToAllWhenNotSpecifiedInUrl()
     throws IOException, URISyntaxException {
-    final String queryParams = "?fiscalYear=2019";
-
     setUpUcCredentials(vertx);
     saveUcSettings(stubSettings(credentialsId), vertx);
     mockAuthToken();
@@ -191,34 +190,23 @@ public class EholdingsExportImplTest extends WireMockTestBase {
       "responses/kb-ebsco/export/holding-for-export-2.json",
       "responses/kb-ebsco/export/holding-for-export-3.json");
 
-    String configFileName = "responses/configuration/locale-settings-empty.json";
-    mockSuccessfulConfigurationResponse(configFileName);
+    mockSuccessfulConfigurationResponse("responses/configuration/locale-settings-empty.json");
 
     String apigeeGetPackageResponse = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     stubFor(get(urlPathMatching(String.format(UC_COSTPERUSE_PACKAGE_REQ, STUB_PACKAGE_ID)))
-      .willReturn(aResponse().withStatus(SC_OK).withBody(readFile(apigeeGetPackageResponse)))
-    );
+      .willReturn(ok(readFile(apigeeGetPackageResponse))));
 
     String apigeeGetTitlePackageResponse = "responses/export/get-different-title-packages-response.json";
-    stubFor(post(urlPathMatching(UC_COSTPERUSE_TITLES_REQ))
-      .willReturn(aResponse().withStatus(SC_OK).withBody(readFile(apigeeGetTitlePackageResponse)))
-    );
-    var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, queryParams);
+    stubFor(post(urlPathMatching(UC_COSTPERUSE_TITLES_REQ)).willReturn(ok(readFile(apigeeGetTitlePackageResponse))));
+    var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, "?fiscalYear=2019");
 
     String actual = getWithOk(url, JOHN_USER_ID_HEADER, CONTENT_TYPE_CSV_HEADER).body().asString();
     assertThat(actual, notNullValue());
 
-    String ucPackagePublisher =
-      "/uc/costperuse/package/456?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD&aggregatedFullText=true";
-    verify(1, getRequestedFor(urlEqualTo(ucPackagePublisher)));
-
-    String ucTitlesPublisher = "/uc/costperuse/titles?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD"
-      + "&publisherPlatform=false&previousYear=false";
-    verify(1, postRequestedFor(urlEqualTo(ucTitlesPublisher)));
-
-    String ucTitlesNonPublisher = "/uc/costperuse/titles?fiscalYear=2019&fiscalMonth=apr&analysisCurrency=USD"
-      + "&publisherPlatform=true&previousYear=false";
-    verify(1, postRequestedFor(urlEqualTo(ucTitlesNonPublisher)));
+    verify(1, getRequestedFor(urlEqualTo("/uc/costperuse/package/456?fiscalYear=?"
+                                         + "&fiscalMonth=apr&analysisCurrency=USD&aggregatedFullText=true")));
+    verify(1, postRequestedFor(urlEqualTo(titlesUrl("2019", "apr", "USD", false, false))));
+    verify(1, postRequestedFor(urlEqualTo(titlesUrl("2019", "apr", "USD", true, false))));
   }
 
   @Test
@@ -268,6 +256,12 @@ public class EholdingsExportImplTest extends WireMockTestBase {
 
     assertThat(actual,
       Matchers.equalTo(readFile("responses/kb-ebsco/export/expected-export-three-items-zero-values.txt")));
+  }
+
+  private String titlesUrl(String year, String month, String currency, boolean publisherPlatform,
+                           boolean previousYear) {
+    return "/uc/costperuse/titles?fiscalYear=%s&fiscalMonth=%s&analysisCurrency=%s&publisherPlatform=%s&previousYear=%s"
+      .formatted(year, month, currency, publisherPlatform, previousYear);
   }
 
   private void mockAuthToken() {

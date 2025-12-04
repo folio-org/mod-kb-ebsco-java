@@ -93,19 +93,7 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     if (id == null) {
       id = UUID.randomUUID();
     }
-    Tuple params = createParams(asList(
-      id,
-      credentials.getUrl(),
-      credentials.getName(),
-      credentials.getApiKey(),
-      credentials.getCustomerId(),
-      credentials.getCreatedDate(),
-      credentials.getCreatedByUserId(),
-      credentials.getCreatedByUserName() == null ? "SYSTEM" : credentials.getCreatedByUserName(),
-      credentials.getUpdatedDate(),
-      credentials.getUpdatedByUserId(),
-      credentials.getUpdatedByUserName() == null ? "SYSTEM" : credentials.getUpdatedByUserName()
-    ));
+    Tuple params = getParamsForSave(credentials, id);
 
     logInsertQuery(log, query, params, true);
     Promise<RowSet<Row>> promise = Promise.promise();
@@ -143,6 +131,22 @@ public class KbCredentialsRepositoryImpl implements KbCredentialsRepository {
     pgClient(tenant).select(query, params, promise::handle);
 
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapSingleCredentials);
+  }
+
+  private Tuple getParamsForSave(DbKbCredentials credentials, UUID id) {
+    return createParams(asList(
+      id,
+      credentials.getUrl(),
+      credentials.getName(),
+      credentials.getApiKey(),
+      credentials.getCustomerId(),
+      credentials.getCreatedDate(),
+      credentials.getCreatedByUserId(),
+      credentials.getCreatedByUserName() == null ? "SYSTEM" : credentials.getCreatedByUserName(),
+      credentials.getUpdatedDate(),
+      credentials.getUpdatedByUserId(),
+      credentials.getUpdatedByUserName() == null ? "SYSTEM" : credentials.getUpdatedByUserName()
+    ));
   }
 
   private Collection<DbKbCredentials> mapCredentialsCollection(RowSet<Row> resultSet) {

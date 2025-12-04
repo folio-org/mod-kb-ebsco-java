@@ -6,14 +6,13 @@ import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestData;
 import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestDataAttributes;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class KbCredentialsPatchRequestConverter implements Converter<KbCredentialsPatchRequest, KbCredentials> {
 
   @Override
-  public KbCredentials convert(@NonNull KbCredentialsPatchRequest source) {
+  public KbCredentials convert(KbCredentialsPatchRequest source) {
     KbCredentialsPatchRequestData data = source.getData();
     KbCredentialsPatchRequestDataAttributes attributes = data.getAttributes();
     return new KbCredentials()
