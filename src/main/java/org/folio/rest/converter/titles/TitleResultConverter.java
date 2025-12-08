@@ -39,7 +39,6 @@ import org.folio.rmapi.result.ResourceResult;
 import org.folio.rmapi.result.TitleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -64,29 +63,14 @@ public class TitleResultConverter implements Converter<TitleResult, Title> {
   private Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter;
 
   @Override
-  public Title convert(@NonNull TitleResult titleResult) {
+  public Title convert(TitleResult titleResult) {
     org.folio.holdingsiq.model.Title rmapiTitle = titleResult.getTitle();
     Title title = new Title()
       .withData(new Data()
         .withId(String.valueOf(rmapiTitle.getTitleId()))
         .withType(TITLES_TYPE)
-        .withAttributes(new TitleAttributes()
-          .withName(rmapiTitle.getTitleName())
-          .withPublisherName(rmapiTitle.getPublisherName())
-          .withIsTitleCustom(rmapiTitle.getIsTitleCustom())
-          .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(rmapiTitle.getPubType().toLowerCase()))
-          .withSubjects(subjectsConverter.convert(rmapiTitle.getSubjectsList()))
-          .withIdentifiers(identifiersConverter.convert(rmapiTitle.getIdentifiersList()))
-          .withContributors(contributorsConverter.convert(rmapiTitle.getContributorsList()))
-          .withAlternateTitles(alternateTitleConverter.convert(
-            Objects.requireNonNullElse(rmapiTitle.getAlternateTitleList(), Collections.emptyList())))
-          .withEdition(rmapiTitle.getEdition())
-          .withDescription(rmapiTitle.getDescription())
-          .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
-          .withTags(titleResult.getTags())
-        )
-        .withRelationships(createEmptyResourcesRelationships())
-      )
+        .withAttributes(convertAttributes(titleResult, rmapiTitle))
+        .withRelationships(createEmptyResourcesRelationships()))
       .withIncluded(null)
       .withJsonapi(RestConstants.JSONAPI);
 
@@ -95,6 +79,23 @@ public class TitleResultConverter implements Converter<TitleResult, Title> {
 
     includeResourcesIfNeeded(title, titleResult);
     return title;
+  }
+
+  private TitleAttributes convertAttributes(TitleResult titleResult, org.folio.holdingsiq.model.Title rmapiTitle) {
+    return new TitleAttributes()
+      .withName(rmapiTitle.getTitleName())
+      .withPublisherName(rmapiTitle.getPublisherName())
+      .withIsTitleCustom(rmapiTitle.getIsTitleCustom())
+      .withPublicationType(ConverterConsts.PUBLICATION_TYPES.get(rmapiTitle.getPubType().toLowerCase()))
+      .withSubjects(subjectsConverter.convert(rmapiTitle.getSubjectsList()))
+      .withIdentifiers(identifiersConverter.convert(rmapiTitle.getIdentifiersList()))
+      .withContributors(contributorsConverter.convert(rmapiTitle.getContributorsList()))
+      .withAlternateTitles(alternateTitleConverter.convert(
+        Objects.requireNonNullElse(rmapiTitle.getAlternateTitleList(), Collections.emptyList())))
+      .withEdition(rmapiTitle.getEdition())
+      .withDescription(rmapiTitle.getDescription())
+      .withIsPeerReviewed(rmapiTitle.getIsPeerReviewed())
+      .withTags(titleResult.getTags());
   }
 
   private void includeResourcesIfNeeded(Title title, TitleResult titleResult) {

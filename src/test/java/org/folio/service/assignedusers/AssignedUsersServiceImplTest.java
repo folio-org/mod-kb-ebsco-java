@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -60,27 +61,11 @@ public class AssignedUsersServiceImplTest {
     when(assignedUserRepository.findByCredentialsId(credId, TENANT_ID))
       .thenReturn(completedFuture(List.of(
         DbAssignedUser.builder().credentialsId(credId).id(user1Id).build(),
-        DbAssignedUser.builder().credentialsId(credId).id(user2Id).build()
-      )));
+        DbAssignedUser.builder().credentialsId(credId).id(user2Id).build())));
     when(usersLookUpService.lookUpUsers(eq(List.of(user1Id, user2Id)), any(OkapiParams.class)))
-      .thenReturn(completedFuture(List.of(
-        User.builder().id(user1Id.toString())
-          .patronGroup(groupId.toString())
-          .firstName("b")
-          .lastName("b")
-          .userName("b")
-          .build(),
-        User.builder().id(user1Id.toString())
-          .patronGroup(groupId.toString())
-          .firstName("a")
-          .lastName("a")
-          .userName("a")
-          .build()
-      )));
+      .thenReturn(completedFuture(List.of(dummyUser(user1Id, groupId, "b"), dummyUser(user1Id, groupId, "a"))));
     when(usersLookUpService.lookUpGroups(eq(List.of(groupId)), any(OkapiParams.class)))
-      .thenReturn(completedFuture(List.of(
-        Group.builder().id(groupId.toString()).group("group").build()
-      )));
+      .thenReturn(completedFuture(List.of(Group.builder().id(groupId.toString()).group("group").build())));
 
     getResult(usersService.findByCredentialsId(credId.toString(), HEADERS));
 
@@ -89,14 +74,9 @@ public class AssignedUsersServiceImplTest {
 
     var captorValue = resultArgumentCaptor.getValue();
     assertThat(captorValue).isNotNull();
-    assertThat(captorValue.groups())
-      .hasSize(1)
-      .extracting(Group::getGroup)
-      .containsExactly("group");
-    assertThat(captorValue.users())
-      .hasSize(2)
-      .extracting(User::getLastName)
-      .containsExactly("a", "b");
+    var groups = captorValue.groups();
+    assertGroups(groups);
+    assertUsers(captorValue.users());
   }
 
   @Test
@@ -134,8 +114,31 @@ public class AssignedUsersServiceImplTest {
       .hasMessageEndingWith("Unable to lookup user: " + lookupExceptionMessage);
   }
 
+  private void assertUsers(Collection<User> users) {
+    assertThat(users)
+      .hasSize(2)
+      .extracting(User::getLastName)
+      .containsExactly("a", "b");
+  }
+
+  private void assertGroups(Collection<Group> groups) {
+    assertThat(groups)
+      .hasSize(1)
+      .extracting(Group::getGroup)
+      .containsExactly("group");
+  }
+
+  private User dummyUser(UUID user1Id, UUID groupId, String val) {
+    return User.builder().id(user1Id.toString())
+      .patronGroup(groupId.toString())
+      .firstName(val)
+      .lastName(val)
+      .userName(val)
+      .build();
+  }
+
   @SneakyThrows
-  private <T> T getResult(CompletableFuture<T> future) {
-    return future.get();
+  private <T> void getResult(CompletableFuture<T> future) {
+    future.get();
   }
 }

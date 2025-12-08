@@ -11,7 +11,6 @@ import org.folio.rest.util.RestConstants;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class KbCredentialsCollectionConverter {
@@ -31,7 +30,7 @@ public final class KbCredentialsCollectionConverter {
     }
 
     @Override
-    public KbCredentialsCollection convert(@NonNull Collection<DbKbCredentials> source) {
+    public KbCredentialsCollection convert(Collection<DbKbCredentials> source) {
       return new KbCredentialsCollection()
         .withData(mapItems(source, credentialsConverter::convert))
         .withMeta(new MetaTotalResults()
@@ -52,7 +51,7 @@ public final class KbCredentialsCollectionConverter {
     }
 
     @Override
-    public KbCredentialsCollection convert(@NonNull Collection<DbKbCredentials> source) {
+    public KbCredentialsCollection convert(Collection<DbKbCredentials> source) {
       return new KbCredentialsCollection()
         .withData(mapItems(source, nonSecuredCredentialsConverter::convert))
         .withMeta(new MetaTotalResults()

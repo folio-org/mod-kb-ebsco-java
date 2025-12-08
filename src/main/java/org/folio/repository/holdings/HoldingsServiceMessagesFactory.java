@@ -6,7 +6,7 @@ import org.folio.service.holdings.message.LoadFailedMessage;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
 import org.folio.service.holdings.message.SnapshotCreatedMessage;
 import org.folio.service.holdings.message.SnapshotFailedMessage;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 
 public final class HoldingsServiceMessagesFactory {
 

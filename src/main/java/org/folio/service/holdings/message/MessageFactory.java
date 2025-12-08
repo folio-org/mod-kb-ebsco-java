@@ -2,7 +2,7 @@ package org.folio.service.holdings.message;
 
 import org.folio.holdingsiq.model.DeltaReport;
 import org.folio.holdingsiq.model.Holdings;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 
 public final class MessageFactory {
 

@@ -63,6 +63,14 @@ public class Filter {
     };
   }
 
+  public static Filter getSortableFilter(Filter.FilterBuilder filterBuilder, String sort, int page, int count) {
+    return filterBuilder
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
+  }
+
   public boolean isTagsFilter() {
     return isCheckedFilter(filterTags, filterAccessType);
   }

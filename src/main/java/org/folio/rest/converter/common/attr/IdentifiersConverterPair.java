@@ -9,9 +9,9 @@ import org.apache.commons.collections4.bidimap.TreeBidiMap;
 import org.folio.holdingsiq.model.Identifier;
 import org.folio.rest.jaxrs.model.Identifier.Subtype;
 import org.folio.rest.jaxrs.model.Identifier.Type;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 public final class IdentifiersConverterPair {
@@ -58,7 +58,7 @@ public final class IdentifiersConverterPair {
   public static class ToRmApi implements Converter<List<org.folio.rest.jaxrs.model.Identifier>, List<Identifier>> {
 
     @Override
-    public List<Identifier> convert(@NonNull List<org.folio.rest.jaxrs.model.Identifier> identifiersList) {
+    public List<@NonNull Identifier> convert(List<org.folio.rest.jaxrs.model.Identifier> identifiersList) {
       return identifiersList.stream()
         .sorted(Comparator.comparing(org.folio.rest.jaxrs.model.Identifier::getSubtype)
           .thenComparing(org.folio.rest.jaxrs.model.Identifier::getType))

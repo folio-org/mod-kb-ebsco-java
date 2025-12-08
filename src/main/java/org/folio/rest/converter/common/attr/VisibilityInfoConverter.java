@@ -3,8 +3,8 @@ package org.folio.rest.converter.common.attr;
 import java.util.Objects;
 import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.jaxrs.model.VisibilityData;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component

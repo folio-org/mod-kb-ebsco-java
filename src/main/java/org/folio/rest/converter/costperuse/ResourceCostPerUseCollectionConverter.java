@@ -25,7 +25,6 @@ import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.ResourceCostPerUseCollectionResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,7 +32,7 @@ public class ResourceCostPerUseCollectionConverter
   implements Converter<ResourceCostPerUseCollectionResult, ResourceCostPerUseCollection> {
 
   @Override
-  public ResourceCostPerUseCollection convert(@NonNull ResourceCostPerUseCollectionResult source) {
+  public ResourceCostPerUseCollection convert(ResourceCostPerUseCollectionResult source) {
     return new ResourceCostPerUseCollection()
       .withData(convertItems(source))
       .withParameters(convertParameters(source.getConfiguration()))

@@ -15,7 +15,6 @@ import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
 import org.folio.rmapi.result.PackageCollectionResult;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,7 +28,7 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
   }
 
   @Override
-  public PackageCollection convert(@NonNull PackageCollectionResult packagesResult) {
+  public PackageCollection convert(PackageCollectionResult packagesResult) {
     Packages packages = packagesResult.packages();
     List<DbPackage> dbPackages = packagesResult.dbPackages();
     List<PackageCollectionItem> packageList = mapItems(packages.getPackagesList(),

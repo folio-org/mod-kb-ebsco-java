@@ -15,7 +15,6 @@ import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 public final class TitleCollectionConverter {
@@ -38,7 +37,7 @@ public final class TitleCollectionConverter {
     }
 
     @Override
-    public TitleCollection convert(@NonNull Titles titles) {
+    public TitleCollection convert(Titles titles) {
       var titleList = mapItems(titles.getTitleList(), titleConverter::convert);
       var facetsDto = isNull(titles.getFacets()) ? null : facetsConverter.convert(titles.getFacets());
 
@@ -57,10 +56,9 @@ public final class TitleCollectionConverter {
     private final Converter<Title, TitleCollectionItem> titlesConverter;
     private final Converter<Facets, FacetsDto> facetsConverter;
 
-    public FromTitleCollectionResult(
-      Converter<TitleResult, Title> titleConverter,
-      Converter<Title, TitleCollectionItem> titlesConverter,
-      Converter<Facets, FacetsDto> facetsConverter) {
+    public FromTitleCollectionResult(Converter<TitleResult, Title> titleConverter,
+                                     Converter<Title, TitleCollectionItem> titlesConverter,
+                                     Converter<Facets, FacetsDto> facetsConverter) {
       this.titleConverter = titleConverter;
       this.titlesConverter = titlesConverter;
       this.facetsConverter = facetsConverter;

@@ -4,8 +4,8 @@ import java.util.UUID;
 import lombok.Builder;
 import lombok.Value;
 import org.folio.holdingsiq.model.Title;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 @Value
 @Builder
