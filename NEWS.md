@@ -1,3 +1,8 @@
+## v5.0.1 2025-12-10
+### Dependencies
+* Bump `RMB` from `35.3.0` to Ramsons version `35.3.1`. ([MODKBEKBJ-811](https://folio-org.atlassian.net/browse/MODKBEKBJ-811))
+* Bump `Vertx` from `4.5.10` to Ramsons version `4.5.22`.
+
 ## v5.0.0 2024-10-30
 ### Breaking changes
 * GET `/eholdings/kb-credentials/{credentialsId}/key` requires `kb-ebsco.kb-credentials.key.item.get` permission
