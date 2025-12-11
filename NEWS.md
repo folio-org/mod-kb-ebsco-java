@@ -1,3 +1,10 @@
+## v6.0.1 2025-12-11
+### Dependencies
+* Bump `RMB` from `35.4.0` to `35.4.1` ([MODKBEKBJ-812](https://folio-org.atlassian.net/browse/MODKBEKBJ-812))
+* Bump `Vertx` from `4.5.13` to `4.5.22`
+
+---
+
 ## v6.0.0 2025-03-10
 ### Breaking changes
 * Upgrade to Java 21 ([MODKBEKBJ-778](https://issues.folio.org/browse/MODKBEKBJ-778))

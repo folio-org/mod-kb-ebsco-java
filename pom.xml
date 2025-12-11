@@ -37,13 +37,13 @@
   <properties>
     <java.version>21</java.version>
 
-    <rmb.version>35.4.0</rmb.version>
+    <rmb.version>35.4.1</rmb.version>
     <folio-di-support.version>3.0.0</folio-di-support.version>
-    <folio-service-tools.version>5.0.0</folio-service-tools.version>
+    <folio-service-tools.version>5.0.1</folio-service-tools.version>
     <folio-holdingsiq-client.version>4.0.0</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.10.0</folio-liquibase-util.version>
 
-    <vertx.version>4.5.13</vertx.version>
+    <vertx.version>4.5.22</vertx.version>
     <aspectj.version>1.9.22.1</aspectj.version>
     <jackson.version>2.18.3</jackson.version>
     <postgresql.version>42.7.5</postgresql.version>
