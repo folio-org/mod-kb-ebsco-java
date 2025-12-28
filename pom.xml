@@ -43,8 +43,8 @@
     <folio-holdingsiq-client.version>5.0.0-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.11.0-SNAPSHOT</folio-liquibase-util.version>
 
-    <vertx.version>5.0.5</vertx.version>
-    <aspectj.version>1.9.25</aspectj.version>
+    <vertx.version>5.0.6</vertx.version>
+    <aspectj.version>1.9.25.1</aspectj.version>
     <jackson.version>2.20.1</jackson.version>
     <postgresql.version>42.7.8</postgresql.version>
     <commons-codec.version>1.20.0</commons-codec.version>
@@ -56,7 +56,7 @@
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
-    <log4j.version>2.25.2</log4j.version>
+    <log4j.version>2.25.3</log4j.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
@@ -80,7 +80,7 @@
     <maven-surefire-report-plugin.version>3.5.2</maven-surefire-report-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
-    <exec-maven-plugin.version>3.6.2</exec-maven-plugin.version>
+    <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
     <aspectj-maven-plugin.version>1.14.1</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
