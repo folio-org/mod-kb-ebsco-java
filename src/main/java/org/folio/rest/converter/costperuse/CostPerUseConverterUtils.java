@@ -18,6 +18,7 @@ import org.folio.rest.jaxrs.model.Month;
 import org.folio.rest.jaxrs.model.PlatformUsage;
 import org.folio.rest.jaxrs.model.SpecificPlatformUsage;
 import org.folio.rest.jaxrs.model.Usage;
+import org.jspecify.annotations.Nullable;
 
 final class CostPerUseConverterUtils {
 
@@ -93,7 +94,7 @@ final class CostPerUseConverterUtils {
     usage.getTotals().setPublisher(getTotalUsage(publisherPlatformUsages));
   }
 
-  static PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
+  static @Nullable PlatformUsage getTotalUsage(List<SpecificPlatformUsage> platformUsages) {
     var totalUsage = new PlatformUsage();
     var totalCounts = IntStream.range(0, 12)
       .boxed()
