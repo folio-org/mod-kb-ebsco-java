@@ -12,7 +12,6 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.rest.tools.utils.VertxUtils;
@@ -24,59 +23,51 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
   public static final String LOCALE_ENDPOINT_PATH = "/locale";
 
   public CompletableFuture<LocaleSettings> retrieveSettings(OkapiData okapiData) {
-    CompletableFuture<LocaleSettings> future = new CompletableFuture<>();
-
     log.debug("Retrieving locale settings");
 
-    retrieveLocaleSettings(okapiData)
+    return retrieveLocaleSettings(okapiData)
       .thenApply(this::mapToLocaleSettings)
-      .whenComplete(recovery(future));
-    return future;
-  }
-
-  @NonNull
-  private BiConsumer<Optional<LocaleSettings>, Throwable> recovery(CompletableFuture<LocaleSettings> future) {
-    return (localeSettings, throwable) -> {
-      if (throwable != null) {
+      .exceptionally(throwable -> {
         log.warn("Locale settings retrieval failed, falling back to default", throwable);
-        future.complete(getDefaultLocaleSettings());
-        return;
-      }
-
-      if (localeSettings.isEmpty()) {
-        log.warn("Locale settings response couldn't be mapped, falling back to default");
-        future.complete(getDefaultLocaleSettings());
-        return;
-      }
-
-      log.debug("Locale settings retrieved successfully");
-      future.complete(localeSettings.get());
-    };
+        return Optional.of(getDefaultLocaleSettings());
+      })
+      .thenApply(localeSettings -> {
+        if (localeSettings.isEmpty()) {
+          log.warn("Locale settings response couldn't be mapped, falling back to default");
+          return getDefaultLocaleSettings();
+        }
+        log.debug("Locale settings retrieved successfully");
+        return localeSettings.get();
+      });
   }
 
   private CompletableFuture<JsonObject> retrieveLocaleSettings(OkapiData okapiData) {
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
+    WebClient webClient = null;
 
     try {
-      if (log.isDebugEnabled()) {
-        log.debug("Sending request to GET {}", LOCALE_ENDPOINT_PATH);
-      }
-      var webClient = prepareConfigurationsClient();
+      log.debug("Sending request to GET {}", LOCALE_ENDPOINT_PATH);
+      webClient = prepareConfigurationsClient();
       var request = prepareRequest(okapiData, webClient);
 
+      WebClient finalWebClient = webClient;
       request.send()
-        .onSuccess(handleSuccess(future))
-        .onFailure(handleFailure(future));
+        .onSuccess(handleSuccess(future, finalWebClient))
+        .onFailure(handleFailure(future, finalWebClient));
     } catch (Exception e) {
       log.warn("Request to GET {} couldn't be executed", LOCALE_ENDPOINT_PATH, e);
+      if (webClient != null) {
+        webClient.close();
+      }
       future.completeExceptionally(e);
     }
     return future;
   }
 
-  private Handler<Throwable> handleFailure(CompletableFuture<JsonObject> future) {
+  private Handler<Throwable> handleFailure(CompletableFuture<JsonObject> future, WebClient webClient) {
     return t -> {
-      log.warn("Request to GET {} failed [tookMs={}]", LOCALE_ENDPOINT_PATH, t);
+      log.warn("Request to GET {} failed", LOCALE_ENDPOINT_PATH, t);
+      webClient.close();
       future.completeExceptionally(t);
     };
   }
@@ -88,14 +79,17 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     return request;
   }
 
-  private Handler<HttpResponse<Buffer>> handleSuccess(CompletableFuture<JsonObject> future) {
+  private Handler<HttpResponse<Buffer>> handleSuccess(CompletableFuture<JsonObject> future, WebClient webClient) {
     return response -> {
       try {
         if (isSuccessfulResponse(response)) {
           future.complete(response.body().toJsonObject());
         }
       } catch (Exception e) {
+        log.warn("Failed to process response from GET {}", LOCALE_ENDPOINT_PATH, e);
         future.completeExceptionally(e);
+      } finally {
+        webClient.close();
       }
     };
   }
@@ -119,9 +113,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
       throw new IllegalStateException(errorMessage);
     }
 
-    if (log.isDebugEnabled()) {
-      log.debug("Request to GET {} succeeded [status={}]", LOCALE_ENDPOINT_PATH, status);
-    }
+    log.debug("Request to GET {} succeeded [status={}]", LOCALE_ENDPOINT_PATH, status);
     return true;
   }
 
