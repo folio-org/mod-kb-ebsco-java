@@ -3,12 +3,10 @@ package org.folio.service.export;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
 
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
@@ -41,11 +39,10 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnValidSettings(TestContext context) {
-    Async async = context.async();
-
+    var async = context.async();
     mockSuccessfulLocaleResponse();
 
-    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
+    var future = localeSettingsService.retrieveSettings(okapiParams);
 
     future.thenCompose(result -> {
       context.assertEquals(result.getCurrency(), "EUR");
@@ -62,17 +59,14 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnDefaultSettingsWhenResponseUnexpected(TestContext context) {
-    Async async = context.async();
-
-    String configFileName = "responses/configuration/locale-unexpected.json";
+    var async = context.async();
+    var configFileName = "responses/configuration/locale-unexpected.json";
     mockSuccessfulLocaleResponse(configFileName);
 
-    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
+    var future = localeSettingsService.retrieveSettings(okapiParams);
 
     future.thenCompose(result -> {
-      context.assertEquals(result.getCurrency(), "USD");
-      context.assertEquals(result.getLocale(), "en-US");
-      context.assertEquals(result.getTimezone(), "UTC");
+      assertLocaleSettingsRecoveredToDefault(context, result);
       async.complete();
       return null;
     }).exceptionally(exception -> {
@@ -83,17 +77,97 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldCompleteExceptionallyWhenConfigurationFailed(TestContext context) {
-    Async async = context.async();
+  public void shouldReturnDefaultSettingsWhenConfigurationFailed(TestContext context) {
+    var async = context.async();
     mockFailedLocaleResponse();
-    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
     future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
       async.complete();
       return null;
     }).exceptionally(exception -> {
-      context.assertEquals(IllegalStateException.class, exception.getCause().getClass());
+      failTest(context);
       async.complete();
       return null;
     });
+  }
+
+  @Test
+  public void shouldReturnDefaultSettingsWhenResponseIsInvalidJson(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithInvalidJson();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
+  public void shouldReturnDefaultSettingsWhenResponseIsEmpty(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithEmptyBody();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
+  public void shouldReturnDefaultSettingsWhenServerError(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithServerError();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
+  public void shouldReturnDefaultSettingsWhenNetworkFailure(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithNetworkError();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
+  }
+
+  private void failTest(TestContext context) {
+    context.fail("Should not complete exceptionally, but return default settings");
+  }
+
+  private void assertLocaleSettingsRecoveredToDefault(TestContext context, LocaleSettings result) {
+    context.assertEquals("USD", result.getCurrency());
+    context.assertEquals("en-US", result.getLocale());
+    context.assertEquals("UTC", result.getTimezone());
   }
 }

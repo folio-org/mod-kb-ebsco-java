@@ -1,8 +1,10 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.badRequest;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static io.restassured.RestAssured.given;
@@ -12,10 +14,12 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
+import static org.folio.service.locale.LocaleSettingsServiceImpl.LOCALE_ENDPOINT_PATH;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.hamcrest.Matchers.notNullValue;
 
+import com.github.tomakehurst.wiremock.http.Fault;
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
@@ -214,14 +218,34 @@ public abstract class WireMockTestBase extends TestBase {
 
   @SneakyThrows
   protected void mockSuccessfulLocaleResponse(String configFileName) {
-    stubFor(get(urlPathEqualTo("/locale"))
+    stubFor(get(urlPathEqualTo(LOCALE_ENDPOINT_PATH))
       .willReturn(ok(readFile(configFileName))));
   }
 
   @SneakyThrows
   protected void mockFailedLocaleResponse() {
-    stubFor(get(urlPathEqualTo("/locale"))
+    stubFor(get(urlPathEqualTo(LOCALE_ENDPOINT_PATH))
       .willReturn(badRequest()));
+  }
+
+  protected void mockLocaleResponseWithInvalidJson() {
+    stubFor(get(urlPathEqualTo(LOCALE_ENDPOINT_PATH))
+      .willReturn(ok("{ invalid json }")));
+  }
+
+  protected void mockLocaleResponseWithEmptyBody() {
+    stubFor(get(urlPathEqualTo(LOCALE_ENDPOINT_PATH))
+      .willReturn(ok()));
+  }
+
+  protected void mockLocaleResponseWithServerError() {
+    stubFor(get(urlPathEqualTo(LOCALE_ENDPOINT_PATH))
+      .willReturn(serverError()));
+  }
+
+  protected void mockLocaleResponseWithNetworkError() {
+    stubFor(get(urlPathEqualTo(LOCALE_ENDPOINT_PATH))
+      .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
   }
 
   private Header[] addContentHeader(Header[] headers) {

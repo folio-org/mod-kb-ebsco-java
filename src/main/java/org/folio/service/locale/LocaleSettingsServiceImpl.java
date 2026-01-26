@@ -21,7 +21,7 @@ import org.jspecify.annotations.NonNull;
 @Log4j2
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
-  private static final String LOCALE_ENDPOINT_PATH = "/locale";
+  public static final String LOCALE_ENDPOINT_PATH = "/locale";
 
   public CompletableFuture<LocaleSettings> retrieveSettings(OkapiData okapiData) {
     CompletableFuture<LocaleSettings> future = new CompletableFuture<>();
@@ -94,7 +94,7 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
         if (isSuccessfulResponse(response)) {
           future.complete(response.body().toJsonObject());
         }
-      } catch (IllegalStateException e) {
+      } catch (Exception e) {
         future.completeExceptionally(e);
       }
     };
