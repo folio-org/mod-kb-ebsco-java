@@ -122,7 +122,11 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
   }
 
   private Optional<LocaleSettings> mapToLocaleSettings(JsonObject config) {
-    return config == null ? Optional.empty() : Optional.of(config.mapTo(LocaleSettings.class));
+    return Optional.ofNullable(config)
+      .map(json -> json.mapTo(LocaleSettings.class))
+      .filter(localeSettings -> localeSettings.getLocale() != null
+                                && localeSettings.getTimezone() != null
+                                && localeSettings.getCurrency() != null);
   }
 
   private LocaleSettings getDefaultLocaleSettings() {
