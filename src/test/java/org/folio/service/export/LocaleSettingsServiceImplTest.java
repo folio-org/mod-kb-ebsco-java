@@ -1,20 +1,11 @@
 package org.folio.service.export;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
-import static org.folio.test.util.TestUtil.readFile;
 
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -49,11 +40,10 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnValidSettings(TestContext context) throws Exception {
+  public void shouldReturnValidSettings(TestContext context) {
     Async async = context.async();
 
-    String configFileName = "responses/configuration/locale-settings.json";
-    mockSuccessfulConfigurationResponse(configFileName);
+    mockSuccessfulLocaleResponse();
 
     CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
 
@@ -71,12 +61,11 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenNoLocaleSettingsExists(TestContext context)
-    throws IOException, URISyntaxException {
+  public void shouldReturnDefaultSettingsWhenResponseUnexpected(TestContext context) {
     Async async = context.async();
 
-    String configFileName = "responses/configuration/locale-settings-empty.json";
-    mockSuccessfulConfigurationResponse(configFileName);
+    String configFileName = "responses/configuration/locale-unexpected.json";
+    mockSuccessfulLocaleResponse(configFileName);
 
     CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
 
@@ -96,7 +85,7 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   @Test
   public void shouldCompleteExceptionallyWhenConfigurationFailed(TestContext context) {
     Async async = context.async();
-    mockFailedConfigurationResponse();
+    mockFailedLocaleResponse();
     CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
     future.thenCompose(result -> {
       async.complete();
@@ -106,21 +95,5 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
       async.complete();
       return null;
     });
-  }
-
-  private void mockSuccessfulConfigurationResponse(String configFileName) throws IOException, URISyntaxException {
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(SC_OK)
-          .withBody(readFile(configFileName))));
-  }
-
-  private void mockFailedConfigurationResponse() {
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(org.apache.http.HttpStatus.SC_BAD_REQUEST)
-          .withBody("")));
   }
 }

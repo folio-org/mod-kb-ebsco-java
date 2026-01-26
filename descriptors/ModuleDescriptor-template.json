@@ -114,7 +114,8 @@
         {
           "methods": ["GET"],
           "pathPattern": "/eholdings/packages/{packageId}/resources/costperuse/export",
-          "permissionsRequired": ["kb-ebsco.package-resources.export.collection.get"]
+          "permissionsRequired": ["kb-ebsco.package-resources.export.collection.get"],
+          "modulePermissions": ["locale.item.get"]
         },
         {
           "methods": ["PUT"],
@@ -920,6 +921,12 @@
     {
       "id": "users",
       "version": "15.0 16.0"
+    }
+  ],
+  "optional": [
+    {
+      "id": "locale",
+      "version": "1.0"
     }
   ],
   "launchDescriptor": {
