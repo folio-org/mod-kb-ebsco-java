@@ -1,20 +1,5 @@
 {
-  "configs": [
-    {
-      "id": "24d52b76-5b4e-49ee-8094-f7c2d1b7c51b",
-      "module": "ORG",
-      "configName": "localeSettings",
-      "code": "",
-      "description": "tenant based locale settings",
-      "default": false,
-      "enabled": true,
-      "value": "{\"locale\":\"en-GB\",\"timezone\":\"UTC\",\"currency\":\"EUR\"}"
-    }
-  ],
-  "totalRecords": 1,
-  "resultInfo": {
-    "totalRecords": 1,
-    "facets": [],
-    "diagnostics": []
-  }
+  "locale": "en-GB",
+  "timezone": "UTC",
+  "currency": "EUR"
 }

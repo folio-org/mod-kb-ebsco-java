@@ -27,9 +27,6 @@ import static org.folio.util.UcSettingsTestUtil.stubSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import io.restassured.http.Header;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -43,7 +40,6 @@ import org.folio.client.uc.model.UcAuthToken;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.impl.WireMockTestBase;
 import org.folio.rest.jaxrs.model.JsonapiError;
-import org.folio.service.locale.LocaleSettingsService;
 import org.folio.util.HoldingsTestUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -54,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(VertxUnitRunner.class)
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class EholdingsExportImplTest extends WireMockTestBase {
 
   public static final String UC_COSTPERUSE_PACKAGE_REQ = "/uc/costperuse/package/%s";
@@ -69,8 +66,6 @@ public class EholdingsExportImplTest extends WireMockTestBase {
   private UcAuthEbscoClient authEbscoClient;
   @Autowired
   private UcApigeeEbscoClient apigeeEbscoClient;
-  @Autowired
-  private LocaleSettingsService configurationService;
 
   @Override
   @Before
@@ -97,8 +92,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     saveHoldingFromFile("responses/kb-ebsco/export/holding-for-export-1.json",
       "responses/kb-ebsco/export/holding-for-export-2.json",
       "responses/kb-ebsco/export/holding-for-export-3.json");
-    String configFileName = "responses/configuration/locale-settings-empty.json";
-    mockSuccessfulConfigurationResponse(configFileName);
+    mockFailedLocaleResponse();
 
     String apigeeGetPackageResponse = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     stubFor(get(urlPathMatching(String.format(UC_COSTPERUSE_PACKAGE_REQ, STUB_PACKAGE_ID)))
@@ -129,8 +123,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
       "responses/kb-ebsco/export/holding-for-export-2.json",
       "responses/kb-ebsco/export/holding-for-export-3.json");
 
-    String configFileName = "responses/configuration/locale-settings-empty.json";
-    mockSuccessfulConfigurationResponse(configFileName);
+    mockSuccessfulLocaleResponse();
 
     String apigeeGetPackageResponse = "responses/uc/packages/empty-package-cost-per-use-response.json";
 
@@ -157,8 +150,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     saveUcSettings(stubSettings(credentialsId), vertx);
     mockAuthToken();
 
-    String configFileName = "responses/configuration/locale-settings-empty.json";
-    mockSuccessfulConfigurationResponse(configFileName);
+    mockSuccessfulLocaleResponse();
 
     String apigeeGetPackageResponse = "responses/uc/packages/empty-package-cost-per-use-response.json";
 
@@ -190,7 +182,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
       "responses/kb-ebsco/export/holding-for-export-2.json",
       "responses/kb-ebsco/export/holding-for-export-3.json");
 
-    mockSuccessfulConfigurationResponse("responses/configuration/locale-settings-empty.json");
+    mockFailedLocaleResponse();
 
     String apigeeGetPackageResponse = "responses/uc/packages/get-package-cost-per-use-with-empty-cost-response.json";
     stubFor(get(urlPathMatching(String.format(UC_COSTPERUSE_PACKAGE_REQ, STUB_PACKAGE_ID)))
@@ -210,7 +202,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturn401ErrorWhenCanNotRetrieveAuthToken() throws IOException, URISyntaxException {
+  public void shouldReturn401ErrorWhenCanNotRetrieveAuthToken() {
     setUpUcCredentials(vertx);
     saveUcSettings(stubSettings(credentialsId), vertx);
 
@@ -218,8 +210,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
     stubFor(post(urlPathMatching("/oauth-proxy/token"))
       .willReturn(aResponse().withStatus(SC_BAD_REQUEST).withBody(errorMessage))
     );
-    String configFileName = "responses/configuration/locale-settings-empty.json";
-    mockSuccessfulConfigurationResponse(configFileName);
+    mockSuccessfulLocaleResponse();
 
     var url = String.format(EXPORT_PACKAGE_TITLES, STUB_PROVIDER_ID, STUB_PACKAGE_ID, STUB_QUERY_PARAMS);
 
@@ -237,7 +228,7 @@ public class EholdingsExportImplTest extends WireMockTestBase {
       "responses/kb-ebsco/export/holding-for-export-2.json",
       "responses/kb-ebsco/export/holding-for-export-3.json");
 
-    mockFailedConfigurationResponse(SC_BAD_REQUEST);
+    mockFailedLocaleResponse();
 
     String apigeeGetPackageResponse = "responses/uc/packages/empty-package-cost-per-use-response.json";
 
@@ -277,21 +268,5 @@ public class EholdingsExportImplTest extends WireMockTestBase {
         Json.decodeValue(readFile(holdingsArray[i]), DbHoldingInfo.class),
         OffsetDateTime.now(), vertx);
     }
-  }
-
-  private void mockSuccessfulConfigurationResponse(String configFileName) throws IOException, URISyntaxException {
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(SC_OK)
-          .withBody(readFile(configFileName))));
-  }
-
-  private void mockFailedConfigurationResponse(int status) {
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(status)
-          .withBody("")));
   }
 }

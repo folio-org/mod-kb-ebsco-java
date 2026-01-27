@@ -44,7 +44,7 @@ public class ExportServiceImpl implements ExportService {
 
   private CompletableFuture<String> mapToCsv(List<TitleExportModel> entities) {
     CompletableFuture<String> result = new CompletableFuture<>();
-    log.info("Mapping {} entities to SCV", entities.size());
+    log.info("Mapping {} entities to CSV", entities.size());
     StringWriter writer = new StringWriter();
 
     // mapping of columns by position

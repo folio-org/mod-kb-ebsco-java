@@ -71,16 +71,22 @@ public class PackageCostPerUseConverter implements Converter<PackageCostPerUseRe
   }
 
   private CostAnalysisAttributes getCostAnalysisAttributes(List<SpecificPlatformUsage> usages, Double cost) {
-    var usageCount = getTotalUsage(usages).getTotal();
-    double costPerUse;
-    if (INTEGER_ZERO.equals(usageCount) && DOUBLE_ZERO.equals(cost)) {
-      costPerUse = DOUBLE_ZERO;
+    var totalUsage = getTotalUsage(usages);
+    if (totalUsage != null) {
+      var usageCount = totalUsage.getTotal();
+      double costPerUse;
+      if (INTEGER_ZERO.equals(usageCount) && DOUBLE_ZERO.equals(cost)) {
+        costPerUse = DOUBLE_ZERO;
+      } else {
+        costPerUse = cost / usageCount;
+      }
+      return new CostAnalysisAttributes()
+        .withCost(cost)
+        .withUsage(usageCount)
+        .withCostPerUse(costPerUse);
     } else {
-      costPerUse = cost / usageCount;
+      return new CostAnalysisAttributes()
+        .withCost(cost);
     }
-    return new CostAnalysisAttributes()
-      .withCost(cost)
-      .withUsage(usageCount)
-      .withCostPerUse(costPerUse);
   }
 }

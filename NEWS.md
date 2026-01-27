@@ -8,6 +8,7 @@
 
 ### Features
 * Use env variable for accessTypesLimit instead of mod-configuration client ([MODKBEKBJ-790](https://folio-org.atlassian.net/browse/MODKBEKBJ-790))
+* Use GET /locale to get tenant language & locale settings ([MODKBEKBJ-815](https://folio-org.atlassian.net/browse/MODKBEKBJ-815))
 
 ### Bug fixes
 * Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))

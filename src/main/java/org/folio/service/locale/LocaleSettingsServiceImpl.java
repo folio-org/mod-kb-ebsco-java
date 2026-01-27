@@ -1,7 +1,10 @@
 package org.folio.service.locale;
 
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -9,84 +12,108 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.rest.client.ConfigurationsClient;
-import org.folio.rest.tools.utils.TenantTool;
 import org.folio.rest.tools.utils.VertxUtils;
 import org.jspecify.annotations.NonNull;
 
 @Log4j2
 public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
-  private static final String QUERY = "module=ORG and configName=localeSettings";
+  public static final String LOCALE_ENDPOINT_PATH = "/locale";
 
   public CompletableFuture<LocaleSettings> retrieveSettings(OkapiData okapiData) {
-    CompletableFuture<LocaleSettings> future = new CompletableFuture<>();
-    retrieveLocationSettings(okapiData)
+    log.debug("Retrieving locale settings");
+
+    return retrieveLocaleSettings(okapiData)
       .thenApply(this::mapToLocaleSettings)
-      .whenComplete(recovery(future));
-    return future;
+      .exceptionally(throwable -> {
+        log.warn("Locale settings retrieval failed, falling back to default", throwable);
+        return Optional.of(getDefaultLocaleSettings());
+      })
+      .thenApply(localeSettings -> {
+        if (localeSettings.isEmpty()) {
+          log.warn("Locale settings response couldn't be mapped, falling back to default");
+          return getDefaultLocaleSettings();
+        }
+        log.debug("Locale settings retrieved successfully");
+        return localeSettings.get();
+      });
   }
 
-  @NonNull
-  private BiConsumer<Optional<LocaleSettings>, Throwable> recovery(CompletableFuture<LocaleSettings> future) {
-    return (localeSettings, throwable) -> {
-      if (throwable != null || localeSettings.isEmpty()) {
-        log.info("Default Locale settings will be used to proceed");
-        future.complete(getDefaultLocaleSettings());
-      } else {
-        future.complete(localeSettings.get());
-      }
-    };
-  }
-
-  private CompletableFuture<JsonObject> retrieveLocationSettings(OkapiData okapiData) {
-    final String tenantId = TenantTool.calculateTenantId(okapiData.getTenant());
+  private CompletableFuture<JsonObject> retrieveLocaleSettings(OkapiData okapiData) {
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
-    try {
-      var configurationsClient = prepareConfigurationsClient(okapiData, tenantId);
-      log.info("Send GET request to mod-configuration {}", QUERY);
-      configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null);
+    WebClient webClient = null;
 
-      configurationsClient.getConfigurationsEntries(QUERY, 0, 100, null, null)
-        .onSuccess(event -> {
-          try {
-            if (isSuccessfulResponse(event)) {
-              future.complete(event.body().toJsonObject());
-            }
-          } catch (IllegalStateException e) {
-            future.completeExceptionally(e);
-          }
-        })
-        .onFailure(future::completeExceptionally);
+    try {
+      log.debug("Sending request to GET {}", LOCALE_ENDPOINT_PATH);
+      webClient = prepareConfigurationsClient();
+      var request = prepareRequest(okapiData, webClient);
+
+      WebClient finalWebClient = webClient;
+      request.send()
+        .onSuccess(handleSuccess(future, finalWebClient))
+        .onFailure(handleFailure(future, finalWebClient));
     } catch (Exception e) {
-      log.warn("Request to mod-configuration failed:", e);
+      log.warn("Request to GET {} couldn't be executed", LOCALE_ENDPOINT_PATH, e);
+      if (webClient != null) {
+        webClient.close();
+      }
       future.completeExceptionally(e);
     }
     return future;
   }
 
+  private Handler<Throwable> handleFailure(CompletableFuture<JsonObject> future, WebClient webClient) {
+    return t -> {
+      log.warn("Request to GET {} failed", LOCALE_ENDPOINT_PATH, t);
+      webClient.close();
+      future.completeExceptionally(t);
+    };
+  }
+
+  private HttpRequest<Buffer> prepareRequest(OkapiData okapiData, WebClient webClient) {
+    var request = webClient.requestAbs(HttpMethod.GET, okapiData.getOkapiUrl() + LOCALE_ENDPOINT_PATH);
+    okapiData.getHeaders().forEach(request::putHeader);
+    request.putHeader("Accept", "application/json,text/plain");
+    return request;
+  }
+
+  private Handler<HttpResponse<Buffer>> handleSuccess(CompletableFuture<JsonObject> future, WebClient webClient) {
+    return response -> {
+      try {
+        if (isSuccessfulResponse(response)) {
+          future.complete(response.body().toJsonObject());
+        }
+      } catch (Exception e) {
+        log.warn("Failed to process response from GET {}", LOCALE_ENDPOINT_PATH, e);
+        future.completeExceptionally(e);
+      } finally {
+        webClient.close();
+      }
+    };
+  }
+
   @NonNull
-  private ConfigurationsClient prepareConfigurationsClient(OkapiData okapiData, String tenantId) {
+  private WebClient prepareConfigurationsClient() {
     var options = new WebClientOptions();
     options.setLogActivity(true);
     options.setKeepAlive(true);
     options.setConnectTimeout(2000);
     options.setIdleTimeout(5000);
-    var webClient = WebClient.create(VertxUtils.getVertxFromContextOrNew(), options);
-    return new ConfigurationsClient(okapiData.getOkapiUrl(), tenantId, okapiData.getApiToken(), webClient);
+    return WebClient.create(VertxUtils.getVertxFromContextOrNew(), options);
   }
 
   private boolean isSuccessfulResponse(HttpResponse<Buffer> response) {
-    if (!isSuccess(response.statusCode())) {
-      String errorMessage = String.format(
-        "Request to mod-configuration failed: error code - %s response body - %s", response.statusCode(),
-        response.bodyAsString());
+    int status = response.statusCode();
+
+    if (!isSuccess(status)) {
+      var errorMessage = String.format("Request to GET %s failed: status=%s", LOCALE_ENDPOINT_PATH, status);
       log.warn(errorMessage);
       throw new IllegalStateException(errorMessage);
     }
+
+    log.debug("Request to GET {} succeeded [status={}]", LOCALE_ENDPOINT_PATH, status);
     return true;
   }
 
@@ -95,20 +122,11 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
   }
 
   private Optional<LocaleSettings> mapToLocaleSettings(JsonObject config) {
-    return config.getJsonArray("configs")
-      .stream()
-      .filter(JsonObject.class::isInstance)
-      .map(JsonObject.class::cast)
-      .findFirst()
-      .map(entry -> mapLocale(new JsonObject(entry.getString("value"))));
-  }
-
-  private LocaleSettings mapLocale(JsonObject jsonObject) {
-    return LocaleSettings.builder()
-      .locale(jsonObject.getString("locale"))
-      .timezone(jsonObject.getString("timezone"))
-      .currency(jsonObject.getString("currency"))
-      .build();
+    return Optional.ofNullable(config)
+      .map(json -> json.mapTo(LocaleSettings.class))
+      .filter(localeSettings -> localeSettings.getLocale() != null
+                                && localeSettings.getTimezone() != null
+                                && localeSettings.getCurrency() != null);
   }
 
   private LocaleSettings getDefaultLocaleSettings() {

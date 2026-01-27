@@ -1,23 +1,12 @@
 package org.folio.service.export;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.STUB_TOKEN;
-import static org.folio.test.util.TestUtil.readFile;
 
-import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import org.folio.holdingsiq.model.OkapiData;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.impl.WireMockTestBase;
@@ -49,13 +38,11 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnValidSettings(TestContext context) throws Exception {
-    Async async = context.async();
+  public void shouldReturnValidSettings(TestContext context) {
+    var async = context.async();
+    mockSuccessfulLocaleResponse();
 
-    String configFileName = "responses/configuration/locale-settings.json";
-    mockSuccessfulConfigurationResponse(configFileName);
-
-    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
+    var future = localeSettingsService.retrieveSettings(okapiParams);
 
     future.thenCompose(result -> {
       context.assertEquals(result.getCurrency(), "EUR");
@@ -71,19 +58,15 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenNoLocaleSettingsExists(TestContext context)
-    throws IOException, URISyntaxException {
-    Async async = context.async();
+  public void shouldReturnDefaultSettingsWhenResponseUnexpected(TestContext context) {
+    var async = context.async();
+    var configFileName = "responses/configuration/locale-unexpected.json";
+    mockSuccessfulLocaleResponse(configFileName);
 
-    String configFileName = "responses/configuration/locale-settings-empty.json";
-    mockSuccessfulConfigurationResponse(configFileName);
-
-    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
+    var future = localeSettingsService.retrieveSettings(okapiParams);
 
     future.thenCompose(result -> {
-      context.assertEquals(result.getCurrency(), "USD");
-      context.assertEquals(result.getLocale(), "en-US");
-      context.assertEquals(result.getTimezone(), "UTC");
+      assertLocaleSettingsRecoveredToDefault(context, result);
       async.complete();
       return null;
     }).exceptionally(exception -> {
@@ -94,33 +77,97 @@ public class LocaleSettingsServiceImplTest extends WireMockTestBase {
   }
 
   @Test
-  public void shouldCompleteExceptionallyWhenConfigurationFailed(TestContext context) {
-    Async async = context.async();
-    mockFailedConfigurationResponse();
-    CompletableFuture<LocaleSettings> future = localeSettingsService.retrieveSettings(okapiParams);
+  public void shouldReturnDefaultSettingsWhenConfigurationFailed(TestContext context) {
+    var async = context.async();
+    mockFailedLocaleResponse();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
     future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
       async.complete();
       return null;
     }).exceptionally(exception -> {
-      context.assertEquals(IllegalStateException.class, exception.getCause().getClass());
+      failTest(context);
       async.complete();
       return null;
     });
   }
 
-  private void mockSuccessfulConfigurationResponse(String configFileName) throws IOException, URISyntaxException {
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(SC_OK)
-          .withBody(readFile(configFileName))));
+  @Test
+  public void shouldReturnDefaultSettingsWhenResponseIsInvalidJson(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithInvalidJson();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
   }
 
-  private void mockFailedConfigurationResponse() {
-    stubFor(
-      get(new UrlPathPattern(new RegexPattern("/configurations/entries.*"), true))
-        .willReturn(new ResponseDefinitionBuilder()
-          .withStatus(org.apache.http.HttpStatus.SC_BAD_REQUEST)
-          .withBody("")));
+  @Test
+  public void shouldReturnDefaultSettingsWhenResponseIsEmpty(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithEmptyBody();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
+  public void shouldReturnDefaultSettingsWhenServerError(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithServerError();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
+  }
+
+  @Test
+  public void shouldReturnDefaultSettingsWhenNetworkFailure(TestContext context) {
+    var async = context.async();
+    mockLocaleResponseWithNetworkError();
+    var future = localeSettingsService.retrieveSettings(okapiParams);
+
+    future.thenCompose(result -> {
+      assertLocaleSettingsRecoveredToDefault(context, result);
+      async.complete();
+      return null;
+    }).exceptionally(exception -> {
+      failTest(context);
+      async.complete();
+      return null;
+    });
+  }
+
+  private void failTest(TestContext context) {
+    context.fail("Should not complete exceptionally, but return default settings");
+  }
+
+  private void assertLocaleSettingsRecoveredToDefault(TestContext context, LocaleSettings result) {
+    context.assertEquals("USD", result.getCurrency());
+    context.assertEquals("en-US", result.getLocale());
+    context.assertEquals("UTC", result.getTimezone());
   }
 }
