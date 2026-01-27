@@ -45,7 +45,7 @@
 
     <vertx.version>5.0.7</vertx.version>
     <aspectj.version>1.9.25.1</aspectj.version>
-    <jackson.version>2.20.1</jackson.version>
+    <jackson.version>2.21.0</jackson.version>
     <postgresql.version>42.7.9</postgresql.version>
     <commons-codec.version>1.20.0</commons-codec.version>
     <commons-beanutils.version>1.11.0</commons-beanutils.version>
