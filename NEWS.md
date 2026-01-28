@@ -16,6 +16,7 @@
 ### Tech Dept
 * Adjust logging to hide sensitive data ([MODKBEKBJ-776](https://folio-org.atlassian.net/browse/MODKBEKBJ-776))
 * Refactor code to comply with Checkstyle method length limit (max 25 lines) ([MODKBEKBJ-808](https://folio-org.atlassian.net/browse/MODKBEKBJ-808))
+* Use GitHub workflow for CI/CD ([MODKBEKBJ-817](https://folio-org.atlassian.net/browse/MODKBEKBJ-817))
 
 ### Dependencies
 * Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
