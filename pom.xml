@@ -71,7 +71,7 @@
     <!-- Plugins versions   -->
     <folio-module-descriptor-validator.version>1.0.1</folio-module-descriptor-validator.version>
     <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
-    <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
     <maven-resources-plugin.version>3.4.0</maven-resources-plugin.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
