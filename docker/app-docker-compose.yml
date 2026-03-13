@@ -1,0 +1,42 @@
+# Full application stack for mmod-kb-ebsco-java (infrastructure + module)
+# This includes all infrastructure services and the mod-kb-ebsco-java module itself
+
+include:
+  - infra-docker-compose.yml
+
+services:
+  mod-kb-ebsco-java:
+    image: dev.folio/mod-kb-ebsco-java
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    ports:
+      - "${MODULE_PORT}:8081"
+      - "${DEBUG_PORT}:5005"
+    environment:
+      ENV: ${ENV}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PORT: ${DB_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JAVA_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    depends_on:
+      - postgres
+      - wiremock
+    networks:
+      - mod-kb-ebsco-java-local
+    deploy:
+      replicas: ${MODULE_REPLICAS:-1}
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
