@@ -1,10 +1,12 @@
-version: "3.9"
+# Infrastructure services for mod-kb-ebsco-java
+# This file contains all infrastructure dependencies (database, storage, mocks)
+# It can be used standalone for local development or included in app-docker-compose.yml
 
 services:
   postgres:
-    image: postgres:12-alpine
+    image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - ${DB_PORT}:5432
     volumes:
       - postgres-data:/data/postgres
     environment:
@@ -16,7 +18,7 @@ services:
       - mod-kb-ebsco-java-local
 
   pgadmin:
-    image: dpage/pgadmin4:6.7
+    image: dpage/pgadmin4:latest
     ports:
       - ${PGADMIN_PORT}:80
     volumes:
@@ -28,24 +30,13 @@ services:
     networks:
       - mod-kb-ebsco-java-local
 
-  mod-kb-ebsco-java:
-    image: dev.folio/mod-kb-ebsco-java
-    build:
-      context: ..\
-      dockerfile: Dockerfile
+  wiremock:
+    image: wiremock/wiremock:latest
     ports:
-      - "8081:8081"
-      - "5005:5005"
-    environment:
-      ENV: ${ENV}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PORT: ${DB_PORT}
-      DB_HOST: ${DB_HOST}
-      DB_DATABASE: ${DB_DATABASE}
-      DB_PASSWORD: ${DB_PASSWORD}
-      JAVA_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:${DEBUG_PORT}"
-    depends_on:
-      - "postgres"
+      - ${WIREMOCK_PORT}:8080
+    volumes:
+      - ../src/test/resources/mappings:/home/wiremock/mappings
+    entrypoint: [ "/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose" ]
     networks:
       - mod-kb-ebsco-java-local
 
@@ -54,7 +45,5 @@ networks:
     driver: "bridge"
 
 volumes:
-  pgadmin-data:
-    driver: "local"
   postgres-data:
-    driver: "local"
+  pgadmin-data:
