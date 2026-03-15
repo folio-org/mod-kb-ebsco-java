@@ -49,7 +49,7 @@
     <postgresql.version>42.7.10</postgresql.version>
     <commons-codec.version>1.21.0</commons-codec.version>
     <commons-beanutils.version>1.11.0</commons-beanutils.version>
-    <lombok.version>1.18.42</lombok.version>
+    <lombok.version>1.18.44</lombok.version>
     <httpcore.version>4.4.16</httpcore.version>
     <opencsv.version>5.12.0</opencsv.version>
     <commons-lang3.version>3.20.0</commons-lang3.version>
