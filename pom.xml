@@ -43,7 +43,7 @@
     <folio-holdingsiq-client.version>5.0.0-SNAPSHOT</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.11.0-SNAPSHOT</folio-liquibase-util.version>
 
-    <vertx.version>5.0.8</vertx.version>
+    <vertx.version>5.0.10</vertx.version>
     <aspectj.version>1.9.25.1</aspectj.version>
     <jackson.version>2.21.2</jackson.version>
     <postgresql.version>42.7.10</postgresql.version>
@@ -56,7 +56,7 @@
 
     <ramlfiles_path>${basedir}/ramls</ramlfiles_path>
     <jsonschema_paths>types/**</jsonschema_paths>
-    <log4j.version>2.25.3</log4j.version>
+    <log4j.version>2.25.4</log4j.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Test dependencies versions   -->
