@@ -1,3 +1,27 @@
+## v7.1.0 YYYY-mm-DD
+### Breaking changes
+* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+
+### New APIs versions
+* Provides `API_NAME vX.Y`
+* Requires `API_NAME vX.Y`
+
+### Features
+* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+
+### Bug fixes
+* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+
+### Tech Dept
+* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+
+### Dependencies
+* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
+* Add `LIB_NAME VERSION`
+* Remove `LIB_NAME`
+
+---
+
 ## v7.0.0 2026-04-16
 ### Breaking changes
 * Upgrade the module for Vert.X 5.0.x ([FHIQC-48](https://issues.folio.org/browse/FHIQC-48))
