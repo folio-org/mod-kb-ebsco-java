@@ -1,10 +1,10 @@
-## v7.0.0 YYYY-mm-DD
+## v7.0.0 2026-04-16
 ### Breaking changes
 * Upgrade the module for Vert.X 5.0.x ([FHIQC-48](https://issues.folio.org/browse/FHIQC-48))
 
 ### New APIs versions
-* Provides `API_NAME vX.Y`
-* Requires `API_NAME vX.Y`
+* Add optional `locale v1.0`
+* Remove required `configuration v2.0`
 
 ### Features
 * Use env variable for accessTypesLimit instead of mod-configuration client ([MODKBEKBJ-790](https://folio-org.atlassian.net/browse/MODKBEKBJ-790))
@@ -20,9 +20,26 @@
 * Improve Docker Compose setup for local development ([MODKBEKBJ-805](https://folio-org.atlassian.net/browse/MODKBEKBJ-805))
 
 ### Dependencies
-* Bump `LIB_NAME` from `OLD_VERSION` to `NEW_VERSION`
-* Add `LIB_NAME VERSION`
-* Remove `LIB_NAME`
+* Bump `domain-models-runtime` from `35.4.1` to `36.0.0`
+* Bump `folio-di-support` from `3.0.0` to `4.0.0`
+* Bump `folio-service-tools` from `5.0.1` to `6.0.0`
+* Bump `folio-holdingsiq-client` from `4.0.0` to `5.0.0`
+* Bump `folio-liquibase-util` from `1.10.0` to `1.11.0`
+* Bump `vertx` from `4.5.22` to `5.0.10`
+* Bump `aspectj` from `1.9.22.1` to `1.9.25.1`
+* Bump `jackson` from `2.18.3` to `2.21.2`
+* Bump `postgresql` from `42.7.5` to `42.7.10`
+* Bump `commons-codec` from `1.18.0` to `1.21.0`
+* Bump `commons-beanutils` from `1.10.1` to `1.11.0`
+* Bump `lombok` from `1.18.36` to `1.18.44`
+* Bump `opencsv` from `5.10` to `5.12.0`
+* Bump `commons-lang3` from `3.17.0` to `3.20.0`
+* Bump `log4j` from `2.24.3` to `2.25.4`
+* Bump `spring` from `6.2.3` to `7.0.6`
+* Bump `rest-assured` from `5.5.1` to `6.0.0`
+* Bump `mockito` from `5.16.0` to `5.23.0`
+* Bump `assertj` from `3.27.3` to `3.27.7`
+* Add `folio-java-checkstyle 1.2.0`
 
 ---
 
