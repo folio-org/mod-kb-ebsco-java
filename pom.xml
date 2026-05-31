@@ -43,9 +43,9 @@
     <folio-holdingsiq-client.version>5.0.0</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.11.0</folio-liquibase-util.version>
 
-    <vertx.version>5.0.12</vertx.version>
+    <vertx.version>5.1.0</vertx.version>
     <aspectj.version>1.9.25.1</aspectj.version>
-    <jackson.version>2.21.3</jackson.version>
+    <jackson.version>2.21.4</jackson.version>
     <postgresql.version>42.7.11</postgresql.version>
     <commons-codec.version>1.22.0</commons-codec.version>
     <commons-beanutils.version>1.11.0</commons-beanutils.version>
@@ -85,7 +85,7 @@
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
     <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
     <folio-java-checkstyle.version>1.2.0</folio-java-checkstyle.version>
-    <checkstyle.version>13.4.2</checkstyle.version>
+    <checkstyle.version>13.5.0</checkstyle.version>
   </properties>
 
   <profiles>

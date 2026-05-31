@@ -9,7 +9,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpResponseExpectation;
-import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -63,7 +62,7 @@ public class UsersLookUpService {
    * @return User information.
    */
   public CompletableFuture<User> lookUpUser(final OkapiParams okapiParams) {
-    MultiMap headers = HeadersMultiMap.caseInsensitive();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
@@ -90,7 +89,7 @@ public class UsersLookUpService {
   }
 
   public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
-    MultiMap headers = HeadersMultiMap.caseInsensitive();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
@@ -145,7 +144,7 @@ public class UsersLookUpService {
   }
 
   private Promise<HttpResponse<JsonObject>> lookUpByCql(String path, String query, int limit, OkapiParams okapiParams) {
-    MultiMap headers = HeadersMultiMap.caseInsensitive();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.addAll(okapiParams.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
