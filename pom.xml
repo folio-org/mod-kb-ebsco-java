@@ -83,7 +83,7 @@
     <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
     <aspectj-maven-plugin.version>1.14.1</aspectj-maven-plugin.version>
     <copy-rename-maven-plugin.version>1.0.1</copy-rename-maven-plugin.version>
-    <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
     <folio-java-checkstyle.version>1.2.0</folio-java-checkstyle.version>
     <checkstyle.version>13.5.0</checkstyle.version>
   </properties>
