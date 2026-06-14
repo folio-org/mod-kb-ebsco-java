@@ -2,7 +2,7 @@
   "totalResults": 414,
   "packagesList": [
     {
-      "packageId": 3007,
+      "listId": 3007,
       "packageName": "American Academy of Family Physicians",
       "isCustom": false,
       "vendorId": 392,
@@ -33,7 +33,7 @@
       }
     },
     {
-      "packageId": 1597443,
+      "listId": 1597443,
       "packageName": "American Academy of Orthopaedic Surgeons",
       "isCustom": false,
       "vendorId": 114569,
@@ -54,7 +54,7 @@
       "packageType": "Variable"
     },
     {
-      "packageId": 3943,
+      "listId": 3943,
       "packageName": "American Academy of Pediatrics (AAP)",
       "isCustom": false,
       "vendorId": 554,
@@ -75,7 +75,7 @@
       "packageType": "Variable"
     },
     {
-      "packageId": 7566,
+      "listId": 7566,
       "packageName": "American Academy of Pediatrics (AAP) eBooks",
       "isCustom": false,
       "vendorId": 554,
@@ -96,7 +96,7 @@
       "packageType": "Variable"
     },
     {
-      "packageId": 19236,
+      "listId": 19236,
       "packageName": "American Academy of Pediatrics (KMLA)",
       "isCustom": false,
       "vendorId": 554,

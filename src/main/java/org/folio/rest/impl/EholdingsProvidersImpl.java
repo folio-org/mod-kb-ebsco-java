@@ -22,7 +22,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.ws.rs.core.Response;
 import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.PackageFilter;
+import org.folio.holdingsiq.model.PackageFilterSelected;
+import org.folio.holdingsiq.model.PackageFilterType;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.Pageable;
+import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
@@ -233,10 +238,16 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(Filter filter) {
+    var packageFilter = PackageFilter.builder()
+      .query(filter.getQuery())
+      .filterSelected(PackageFilterSelected.fromValue(filter.getFilterSelected()))
+      .filterType(PackageFilterType.fromValue(filter.getFilterType()))
+      .searchType(SearchType.fromValue(packagesSearchType))
+      .build();
+    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.getSort());
     return context ->
       context.getPackagesService()
-        .retrievePackages(filter.getFilterSelected(), filter.getFilterType(), packagesSearchType,
-          filter.getProviderId(), filter.getQuery(), filter.getPage(), filter.getCount(), filter.getSort())
+        .retrievePackages(filter.getProviderId(), packageFilter, pageable)
         .thenCompose(packages -> loadTags(packages, context));
   }
 

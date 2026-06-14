@@ -11,9 +11,9 @@ public class IdParserTest {
   @Test
   public void parseResourceIdWhenIdIsValid() {
     ResourceId resourceId = IdParser.parseResourceId("1-2-3");
-    assertEquals(1, resourceId.getProviderIdPart());
-    assertEquals(2, resourceId.getPackageIdPart());
-    assertEquals(3, resourceId.getTitleIdPart());
+    assertEquals(1, resourceId.providerIdPart());
+    assertEquals(2, resourceId.packageIdPart());
+    assertEquals(3, resourceId.titleIdPart());
   }
 
   @Test(expected = ValidationException.class)

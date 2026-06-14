@@ -33,7 +33,7 @@ import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DatabaseException;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.ConfigurationService;
@@ -121,7 +121,7 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<PackageCacheKey, PackageByIdData> packageCache(Vertx vertx,
+  public VertxCache<PackageCacheKey, PackageData> packageCache(Vertx vertx,
                                                                    @Value("${package.cache.expire}")
                                                                    long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "packageCache");

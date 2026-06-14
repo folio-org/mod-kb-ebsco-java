@@ -17,7 +17,7 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
@@ -93,8 +93,8 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
         retrieveResource(resourceId, Collections.emptyList(), true)
           .whenComplete((result, throwable) -> {
             if (throwable != null) {
-              failed.add(resourceId.getProviderIdPart() + "-" + resourceId.getPackageIdPart() + "-"
-                         + resourceId.getTitleIdPart());
+              failed.add(resourceId.providerIdPart() + "-" + resourceId.packageIdPart() + "-"
+                         + resourceId.titleIdPart());
             }
           }))
       .collect(Collectors.toSet());
@@ -103,13 +103,11 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
       .thenApply(resourceFutures -> mapToResources(resourceFutures, failed));
   }
 
-  private CompletableFuture<PackageByIdData> retrievePackage(ResourceId resourceId,
+  private CompletableFuture<PackageData> retrievePackage(ResourceId resourceId,
                                                              List<String> includes) {
     if (includes.contains(INCLUDE_PACKAGE_VALUE)) {
-      PackageId id = PackageId.builder()
-        .providerIdPart(resourceId.getProviderIdPart())
-        .packageIdPart(resourceId.getPackageIdPart()).build();
-      return packagesService.retrievePackage(id);
+      PackageId id = new PackageId(resourceId.providerIdPart(), resourceId.packageIdPart());
+      return packagesService.retrievePackage(id.packageIdPart());
     }
     return completedFuture(null);
   }
@@ -117,7 +115,7 @@ public class ResourcesServiceImpl extends ResourcesHoldingsIQServiceImpl {
   private CompletableFuture<VendorResult> retrieveVendor(ResourceId resourceId,
                                                          List<String> includes) {
     if (includes.contains(INCLUDE_PROVIDER_VALUE)) {
-      return providerService.retrieveProvider(resourceId.getProviderIdPart(), "");
+      return providerService.retrieveProvider(resourceId.providerIdPart(), "");
     }
     return completedFuture(new VendorResult(null, null));
   }

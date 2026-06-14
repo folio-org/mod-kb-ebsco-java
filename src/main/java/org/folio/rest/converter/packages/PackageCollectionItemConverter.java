@@ -8,7 +8,6 @@ import org.folio.holdingsiq.model.PackageData;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
-import org.folio.rest.jaxrs.model.VisibilityData;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -26,21 +25,22 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
         .withIsCustom(packageData.getIsCustom())
         .withIsSelected(packageData.getIsSelected())
         .withName(packageData.getPackageName())
-        .withPackageId(packageData.getPackageId())
+        .withPackageId(Math.toIntExact(packageData.getPackageId()))
         .withPackageType(packageData.getPackageType())
-        .withProviderId(packageData.getVendorId())
+        .withProviderId(Math.toIntExact(packageData.getVendorId()))
         .withProviderName(packageData.getVendorName())
         .withSelectedCount(packageData.getSelectedCount())
         .withTitleCount(packageData.getTitleCount())
         .withAllowKbToAddTitles(packageData.getAllowEbscoToAddTitles())
-        .withVisibilityData(convertVisibilityData(packageData)))
+//        .withVisibilityData(convertVisibilityData(packageData))
+      )
       .withRelationships(createEmptyPackageRelationship());
   }
 
-  private VisibilityData convertVisibilityData(PackageData packageData) {
-    return new VisibilityData().withIsHidden(packageData.getVisibilityData().getIsHidden())
-      .withReason(packageData.getVisibilityData().getReason().equals("Hidden by EP") ? "Set by system" : "");
-  }
+//  private VisibilityData convertVisibilityData(PackageData packageData) {
+//    return new VisibilityData().withIsHidden(packageData.getVisibilityData().getIsHidden())
+//      .withReason(packageData.getVisibilityData().getReason().equals("Hidden by EP") ? "Set by system" : "");
+//  }
 
   private Coverage convertCustomCoverage(PackageData packageData) {
     return new Coverage()

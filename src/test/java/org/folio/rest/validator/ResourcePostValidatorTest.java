@@ -2,7 +2,7 @@ package org.folio.rest.validator;
 
 import java.util.Collections;
 import java.util.List;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.rest.exception.InputValidationException;
@@ -56,7 +56,7 @@ public class ResourcePostValidatorTest {
 
   @Test(expected = InputValidationException.class)
   public void shouldThrowExceptionWhenPackageIsNotCustom() {
-    PackageByIdData packageData = createPackage()
+    PackageData packageData = createPackage()
       .isCustom(false)
       .build();
     validator.validateRelatedObjects(
@@ -69,7 +69,7 @@ public class ResourcePostValidatorTest {
   public void shouldThrowExceptionWhenTitleIsAlreadyAddedToPackage() {
     Title title = createTitle().build();
     Titles titles = createTitles().titleList(Collections.singletonList(title)).build();
-    PackageByIdData packageData = createPackage().build();
+    PackageData packageData = createPackage().build();
     validator.validateRelatedObjects(
       packageData,
       title,
@@ -92,11 +92,11 @@ public class ResourcePostValidatorTest {
     return request;
   }
 
-  private PackageByIdData.PackageByIdDataBuilder createPackage() {
-    return PackageByIdData.byIdBuilder()
+  private PackageData.PackageDataBuilder createPackage() {
+    return PackageData.builder()
       .packageName("package")
-      .vendorId(123)
-      .packageId(456)
+      .vendorId(123L)
+      .packageId(456L)
       .isCustom(true);
   }
 

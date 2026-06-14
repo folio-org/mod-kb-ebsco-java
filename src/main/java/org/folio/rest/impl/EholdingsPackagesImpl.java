@@ -30,11 +30,16 @@ import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.PackageFilter;
+import org.folio.holdingsiq.model.PackageFilterSelected;
+import org.folio.holdingsiq.model.PackageFilterType;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.Pageable;
+import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
@@ -226,12 +231,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                               Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = parsePackageId(packageId);
+    var packageIdPart = parsedPackageId.packageIdPart();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> context.getPackagesService().retrievePackage(parsedPackageId)
-        .thenCompose(packageByIdData -> fetchAccessType(entity, context)
-          .thenCompose(accessType -> processUpdateRequest(entity, packageByIdData, context)
+      .requestAction(context -> context.getPackagesService().retrievePackage(packageIdPart)
+        .thenCompose(packageData -> fetchAccessType(entity, context)
+          .thenCompose(accessType -> processUpdateRequest(entity, packageData, context)
             .thenCompose(voidEntity -> {
-              CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
+              CompletableFuture<PackageData> future = context.getPackagesService().retrievePackage(packageIdPart);
               return handleDeletedPackage(future, parsedPackageId, context);
             })
             .thenApply(packageById -> new PackageResult(packageById, null, null))
@@ -250,14 +256,15 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                  Handler<AsyncResult<Response>> asyncResultHandler,
                                                  Context vertxContext) {
     PackageId parsedPackageId = parsePackageId(packageId);
+    var packageIdPart = parsedPackageId.packageIdPart();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getPackagesService().retrievePackage(parsedPackageId)
+        context.getPackagesService().retrievePackage(packageIdPart)
           .thenCompose(packageData -> {
             if (BooleanUtils.isNotTrue(packageData.getIsCustom())) {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
-            return context.getPackagesService().deletePackage(parsedPackageId)
+            return context.getPackagesService().deletePackage(packageIdPart)
               .thenCompose(v -> deleteAssignedResources(parsedPackageId, context));
           }))
       .execute();
@@ -338,7 +345,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return context -> {
       var pkgId = filter.getPackageId();
       return context.getTitlesService()
-        .retrieveTitles(pkgId.getProviderIdPart(), pkgId.getPackageIdPart(), filter.createFilterQuery(),
+        .retrieveTitles(pkgId.providerIdPart(), pkgId.packageIdPart(), filter.createFilterQuery(),
           searchProperties.titlesSearchType(), filter.getSort(), filter.getPage(), filter.getCount())
         .thenApply(titles -> titleCollectionConverter.convert(titles))
         .thenCompose(loadResourceTags(context))
@@ -346,10 +353,18 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     };
   }
 
-  private CompletableFuture<Packages> retrievePackages(Long providerId, Filter filter, RmApiTemplateContext context) {
-    return context.getPackagesService()
-      .retrievePackages(filter.getFilterSelected(), filter.getFilterType(), searchProperties.packagesSearchType(),
-        providerId, filter.getQuery(), filter.getPage(), filter.getCount(), filter.getSort());
+  private CompletableFuture<Packages> retrievePackages(Long providerId, Filter filter,
+                                                       RmApiTemplateContext context) {
+    var packageFilter = PackageFilter.builder()
+      .query(filter.getQuery())
+      .filterSelected(PackageFilterSelected.fromValue(filter.getFilterSelected()))
+      .filterType(PackageFilterType.fromValue(filter.getFilterType()))
+      .searchType(SearchType.fromValue(searchProperties.packagesSearchType()))
+      .build();
+    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.getSort());
+    return providerId == null
+           ? context.getPackagesService().retrievePackages(packageFilter, pageable)
+           : context.getPackagesService().retrievePackages(providerId, packageFilter, pageable);
   }
 
   @SuppressWarnings("java:S107")
@@ -535,7 +550,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return packageRepository.delete(pkg.getId(), pkg.getCredentialsId(), tenant);
   }
 
-  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageByIdData originalPackage,
+  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageData originalPackage,
                                                        RmApiTemplateContext context) {
     Boolean isEntityCustom = entity.getData().getAttributes().getIsCustom();
     validateIsCustomMatch(originalPackage.getIsCustom(), isEntityCustom);
@@ -549,7 +564,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       packagePutBody = converter.convertToRmApiPackagePutRequest(entity);
     }
     return context.getPackagesService()
-      .updatePackage(parsePackageId(originalPackage.getFullPackageId()), packagePutBody);
+      .updatePackage(originalPackage.getPackageId(), packagePutBody);
   }
 
   private void validateIsCustomMatch(Boolean isOriginalCustom, Boolean isUpdatableCustom) {
@@ -565,8 +580,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
    *
    * @return future with initial result, or exceptionally completed future if deletion of tags failed
    */
-  private CompletableFuture<PackageByIdData> handleDeletedPackage(CompletableFuture<PackageByIdData> future,
-                                                                  PackageId packageId, RmApiTemplateContext context) {
+  private CompletableFuture<PackageData> handleDeletedPackage(CompletableFuture<PackageData> future,
+                                                              PackageId packageId, RmApiTemplateContext context) {
     CompletableFuture<Void> deleteFuture = new CompletableFuture<>();
     return future.whenComplete((packageById, e) -> {
       if (e instanceof ResourceNotFoundException) {

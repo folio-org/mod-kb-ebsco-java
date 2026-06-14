@@ -34,7 +34,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.repository.packages.DbPackage;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
@@ -72,11 +72,11 @@ public final class PackagesTestUtil {
 
   public static String getPackageResponse(String packageName, String packageId, String providerId)
     throws IOException, URISyntaxException {
-    PackageByIdData packageData = readJsonFile(STUB_PACKAGE_JSON_PATH, PackageByIdData.class);
-    return Json.encode(packageData.toByIdBuilder()
+    PackageData packageData = readJsonFile(STUB_PACKAGE_JSON_PATH, PackageData.class);
+    return Json.encode(packageData.toBuilder()
       .packageName(packageName)
-      .packageId(Integer.parseInt(packageId))
-      .vendorId(Integer.parseInt(providerId))
+      .packageId(Long.parseLong(packageId))
+      .vendorId(Long.parseLong(providerId))
       .build());
   }
 

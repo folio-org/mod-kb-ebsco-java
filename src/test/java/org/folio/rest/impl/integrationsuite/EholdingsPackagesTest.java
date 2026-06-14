@@ -97,7 +97,6 @@ import java.util.List;
 import java.util.Objects;
 import org.apache.http.HttpStatus;
 import org.folio.holdingsiq.model.CoverageDates;
-import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.repository.accesstypes.AccessTypeMapping;
@@ -194,7 +193,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturnPackagesOnGet() throws IOException, URISyntaxException, JSONException {
     String stubResponseFile = "responses/rmapi/packages/get-packages-response.json";
 
-    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/packages.*"), stubResponseFile);
+    mockGet(new RegexPattern("/rm/rmaccounts/v2/" + STUB_CUSTOMER_ID + "/lists.*"), stubResponseFile);
 
     String packages = getWithOk(PACKAGES_ENDPOINT + "?q=American&filter[type]=abstractandindex&count=5",
       STUB_USER_ID_HEADER).asString();
@@ -546,8 +545,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   public void shouldReturn200WhenSelectingPackage() throws URISyntaxException, IOException {
     boolean updatedIsSelected = true;
 
-    PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
-    packageData = packageData.toByIdBuilder().isSelected(updatedIsSelected).build();
+    PackageData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageData.class);
+    packageData = packageData.toBuilder().isSelected(updatedIsSelected).build();
     String updatedPackageValue = mapper.writeValueAsString(packageData);
     mockUpdateScenario(readFile(PACKAGE_STUB_FILE), updatedPackageValue);
 
@@ -632,9 +631,9 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     String newAccessTypeId = accessTypes.get(1).getId();
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, currentAccessTypeId, vertx);
 
-    PackageByIdData packageData = mapper
-      .readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class)
-      .toByIdBuilder()
+    PackageData packageData = mapper
+      .readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class)
+      .toBuilder()
       .contentType("streamingmedia")
       .build();
 
@@ -683,8 +682,8 @@ public class EholdingsPackagesTest extends WireMockTestBase {
 
   @Test
   public void shouldPassIsFullPackageAttributeToRmApi() throws URISyntaxException, IOException {
-    PackageByIdData updatedPackage = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class)
-      .toByIdBuilder().isSelected(true).build();
+    PackageData updatedPackage = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageData.class)
+      .toBuilder().isSelected(true).build();
 
     mockUpdateScenario(readFile(PACKAGE_STUB_FILE), mapper.writeValueAsString(updatedPackage));
 
@@ -1231,11 +1230,13 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private String prepareCustomPackageData(boolean updatedSelected, boolean updatedHidden, String updatedBeginCoverage,
                                           String updatedEndCoverage, String updatedPackageName)
     throws IOException, URISyntaxException {
-    PackageByIdData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
+    PackageData packageData = mapper.readValue(getFile(CUSTOM_PACKAGE_STUB_FILE), PackageData.class);
+    var visibilities = packageData.getVisibilityDetails().stream()
+      .map(visibilityDetail -> visibilityDetail.toBuilder().hidden(updatedHidden).build())
+      .toList();
+    packageData = packageData.toBuilder()
       .isSelected(updatedSelected)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .visibilityDetails(visibilities)
       .customCoverage(CoverageDates.builder()
         .beginCoverage(updatedBeginCoverage)
         .endCoverage(updatedEndCoverage)
@@ -1250,16 +1251,18 @@ public class EholdingsPackagesTest extends WireMockTestBase {
   private String preparePackageData(boolean updatedSelected, String updatedBeginCoverage, String updatedEndCoverage,
                                     boolean updatedAllowEbscoToAddTitles, boolean updatedHidden)
     throws IOException, URISyntaxException {
-    PackageByIdData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageByIdData.class);
-
-    packageData = packageData.toByIdBuilder()
+    PackageData packageData = mapper.readValue(getFile(PACKAGE_STUB_FILE), PackageData.class);
+    var visibilities = packageData.getVisibilityDetails().stream()
+      .map(visibilityDetail -> visibilityDetail.toBuilder().hidden(updatedHidden).build())
+      .toList();
+    packageData = packageData.toBuilder()
       .isSelected(updatedSelected)
       .customCoverage(CoverageDates.builder()
         .beginCoverage(updatedBeginCoverage)
         .endCoverage(updatedEndCoverage)
         .build())
       .allowEbscoToAddTitles(updatedAllowEbscoToAddTitles)
-      .visibilityData(packageData.getVisibilityData().toBuilder().isHidden(updatedHidden).build())
+      .visibilityDetails(visibilities)
       .build();
 
     return mapper.writeValueAsString(packageData);

@@ -4,7 +4,7 @@ import io.vertx.core.Vertx;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.HoldingsIQService;
@@ -39,7 +39,7 @@ public class RmApiTemplateContextBuilder {
   @Autowired
   private VertxCache<VendorCacheKey, VendorById> vendorCache;
   @Autowired
-  private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private VertxCache<PackageCacheKey, PackageData> packageCache;
   @Autowired
   private VertxCache<ResourceCacheKey, Title> resourceCache;
   @Autowired

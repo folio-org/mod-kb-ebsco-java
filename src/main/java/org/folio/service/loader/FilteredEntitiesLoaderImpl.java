@@ -281,7 +281,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     return accessTypeMappings.stream()
       .map(AccessTypeMapping::getRecordId)
       .map(IdParser::parseResourceId)
-      .map(ResourceId::getTitleIdPart)
+      .map(ResourceId::titleIdPart)
       .distinct()
       .collect(Collectors.toCollection(ArrayList::new));
   }
@@ -289,7 +289,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   private List<Long> extractTitleIds(List<DbResource> dbResources) {
     return dbResources.stream()
       .map(DbResource::getId)
-      .map(ResourceId::getTitleIdPart)
+      .map(ResourceId::titleIdPart)
       .distinct()
       .collect(Collectors.toCollection(ArrayList::new));
   }

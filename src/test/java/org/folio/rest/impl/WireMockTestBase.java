@@ -35,7 +35,7 @@ import org.apache.http.protocol.HTTP;
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.okapi.common.XOkapiHeaders;
@@ -77,7 +77,7 @@ public abstract class WireMockTestBase extends TestBase {
   @Qualifier("vendorIdCache")
   private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
   @Autowired
-  private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private VertxCache<PackageCacheKey, PackageData> packageCache;
   @Autowired
   private VertxCache<VendorCacheKey, VendorById> vendorCache;
   @Autowired

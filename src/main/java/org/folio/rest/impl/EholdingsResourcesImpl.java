@@ -36,7 +36,7 @@ import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
 import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.ResourcePut;
@@ -244,11 +244,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         postValidator.validateRelatedObjects(result.packageData(), title, result.titles());
         ResourceSelectedPayload postRequest =
           new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
-        ResourceId resourceId = ResourceId.builder()
-          .providerIdPart(packageId.getProviderIdPart())
-          .packageIdPart(packageId.getPackageIdPart())
-          .titleIdPart(titleId)
-          .build();
+        ResourceId resourceId = new ResourceId(packageId.providerIdPart(), packageId.packageIdPart(), titleId);
         return context.getResourcesService().postResource(postRequest, resourceId);
       })
       .thenCompose(title -> CompletableFuture.completedFuture(
@@ -321,13 +317,13 @@ public class EholdingsResourcesImpl implements EholdingsResources {
     TitlesHoldingsIQService titlesService,
     PackagesHoldingsIQService packagesService) {
     CompletableFuture<Title> titleFuture = titlesService.retrieveTitle(titleId);
-    CompletableFuture<PackageByIdData> packageFuture = packagesService.retrievePackage(packageId);
+    CompletableFuture<PackageData> packageFuture = packagesService.retrievePackage(packageId.packageIdPart());
     return CompletableFuture.allOf(titleFuture, packageFuture)
       .thenCompose(o -> {
         FilterQuery filterByName = FilterQuery.builder()
           .name(titleFuture.join().getTitleName())
           .build();
-        return titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
+        return titlesService.retrieveTitles(packageId.providerIdPart(), packageId.packageIdPart(),
           filterByName, searchProperties.titlesSearchType(), Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
       })
       .thenCompose(titles -> CompletableFuture.completedFuture(

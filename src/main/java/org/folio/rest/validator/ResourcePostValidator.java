@@ -2,7 +2,7 @@ package org.folio.rest.validator;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.rest.exception.InputValidationException;
@@ -23,7 +23,7 @@ public class ResourcePostValidator {
     ValidatorUtil.checkIsNotBlank("Title Id", attributes.getTitleId());
   }
 
-  public void validateRelatedObjects(PackageByIdData packageData, Title title, Titles existingTitles) {
+  public void validateRelatedObjects(PackageData packageData, Title title, Titles existingTitles) {
     if (BooleanUtils.isNotTrue(packageData.getIsCustom())) {
       throw new InputValidationException("Invalid PackageId",
         "Packageid Cannot associate Title with a managed Package");

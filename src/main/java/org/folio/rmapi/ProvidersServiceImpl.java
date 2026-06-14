@@ -11,7 +11,10 @@ import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
+import org.folio.holdingsiq.model.PackageFilter;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.Pageable;
+import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Vendor;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.Vendors;
@@ -58,7 +61,9 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
       vendorFuture = super.retrieveProvider(id);
     }
     if (INCLUDE_PACKAGES_VALUE.equalsIgnoreCase(include)) {
-      packagesFuture = packagesService.retrievePackages(id);
+      packagesFuture = packagesService.retrievePackages(id,
+        PackageFilter.builder().build(),
+        new Pageable(1, 25, Sort.NAME));
     } else {
       packagesFuture = completedFuture(null);
     }
