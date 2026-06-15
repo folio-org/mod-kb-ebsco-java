@@ -2,6 +2,8 @@ package org.folio.service.holdings;
 
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.IntFunction;
+import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component("defaultLoadServiceFacade")
+@Log4j2
 public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   private final int loadPageSize;
@@ -32,10 +35,9 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   @Override
   protected CompletableFuture<Void> loadHoldings(LoadHoldingsMessage message, LoadService loadingService) {
-    return
-      loadWithPagination(message.getTotalPages(), page -> loadingService.loadHoldings(getMaxPageSize(), page)
-        .thenAccept(holdings -> holdingsService.saveHolding(
-          new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null, message.getCredentialsId()))));
+    return loadWithPagination(message.getTotalPages(), offset -> loadingService.loadHoldings(getMaxPageSize(), offset)
+      .thenAccept(holdings -> holdingsService.saveHolding(
+        new HoldingsMessage(holdings.getHoldingsList(), message.getTenantId(), null, message.getCredentialsId()))));
   }
 
   @Override
@@ -57,6 +59,21 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
   @Override
   protected int getMaxPageSize() {
     return loadPageSize;
+  }
+
+  /**
+   * Convert the page index (1..totalPages) into a record offset based on the page size.
+   * page 1 -> offset 1     (records 1..2500)
+   * page 2 -> offset 2501  (records 2501..5000)
+   *
+   * @return CompletableFuture that will be completed when offset is loaded
+   */
+  @Override
+  protected CompletableFuture<Void> calculateOffset(IntFunction<CompletableFuture<Void>> offsetLoader, Integer page,
+                                                    Integer retries) {
+    int offset = (page - 1) * getMaxPageSize() + 1;
+    log.info("Calculated offset {} for page {}, retry {}", offset, page, retries);
+    return offsetLoader.apply(offset);
   }
 
   private HoldingsStatus mapToStatus(HoldingsLoadStatus status) {
