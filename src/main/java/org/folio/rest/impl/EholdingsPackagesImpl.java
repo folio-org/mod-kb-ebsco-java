@@ -29,7 +29,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageFilter;
 import org.folio.holdingsiq.model.PackageFilterSelected;
@@ -39,6 +38,7 @@ import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Pageable;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
@@ -118,7 +118,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private RmApiTemplateFactory templateFactory;
   @Autowired
   @Qualifier("vendorIdCache")
-  private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
+  private VertxCache<VendorIdCacheKey, Integer> vendorIdCache;
   @Autowired
   private TagRepository tagRepository;
   @Autowired
@@ -305,17 +305,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   @Override
   public void putEholdingsPackagesTagsByPackageId(String packageId, String contentType, PackageTagsPutRequest entity,
-                                                  Map<String, String> okapiHeaders,
+                                                  Map<String, String> headers,
                                                   Handler<AsyncResult<Response>> asyncResultHandler,
                                                   Context vertxContext) {
-    userKbCredentialsService.findByUser(okapiHeaders)
+    userKbCredentialsService.findByUser(headers)
       .thenCompose(creds -> {
         packageTagsPutBodyValidator.validate(entity);
 
         PackageTagsDataAttributes attributes = entity.getData().getAttributes();
 
         return updateTags(attributes.getTags(), createDbPackage(packageId, UUID.fromString(creds.getId()), attributes),
-          new OkapiData(okapiHeaders).getTenant())
+          new RequestContext(headers).getTenant())
           .thenAccept(o2 ->
             asyncResultHandler
               .handle(
@@ -353,7 +353,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     };
   }
 
-  private CompletableFuture<Packages> retrievePackages(Long providerId, Filter filter,
+  private CompletableFuture<Packages> retrievePackages(Integer providerId, Filter filter,
                                                        RmApiTemplateContext context) {
     var packageFilter = PackageFilter.builder()
       .query(filter.getQuery())
@@ -412,7 +412,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       RmApiTemplateContext context) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.PACKAGE, context.getCredentialsId(),
-      context.getOkapiData().getHeaders());
+      context.getRequestContext().getHeaders());
   }
 
   private CompletableFuture<AccessType> fetchAccessType(PackagePutRequest entity,
@@ -422,7 +422,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       return CompletableFuture.completedFuture(null);
     } else {
       return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId, false,
-        context.getOkapiData().getHeaders());
+        context.getRequestContext().getHeaders());
     }
   }
 
@@ -454,7 +454,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return titleCollection -> {
       Map<String, TitleResult> resourceIdToTitle = mapResourceIdToTitleResult(titleCollection);
 
-      return tagRepository.findPerRecord(context.getOkapiData().getTenant(),
+      return tagRepository.findPerRecord(context.getRequestContext().getTenant(),
           new ArrayList<>(resourceIdToTitle.keySet()),
           RecordType.RESOURCE)
         .thenApply(tagMap -> {
@@ -476,7 +476,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return titleCollection -> {
       Map<String, TitleResult> resourceIdToAccessType = mapResourceIdToTitleResult(titleCollection);
       String credentialsId = context.getCredentialsId();
-      String tenant = context.getOkapiData().getTenant();
+      String tenant = context.getRequestContext().getTenant();
       return accessTypesService.findPerRecord(credentialsId, new ArrayList<>(resourceIdToAccessType.keySet()),
           RecordType.RESOURCE, tenant)
         .thenApply(accessTypeMap -> {
@@ -505,12 +505,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 
-  private CompletableFuture<Long> getCustomProviderId(RmApiTemplateContext context) {
+  private CompletableFuture<Integer> getCustomProviderId(RmApiTemplateContext context) {
     VendorIdCacheKey cacheKey = VendorIdCacheKey.builder()
-      .tenant(context.getOkapiData().getTenant())
+      .tenant(context.getRequestContext().getTenant())
       .rmapiConfiguration(context.getConfiguration())
       .build();
-    Long cachedId = vendorIdCache.getValue(cacheKey);
+    var cachedId = vendorIdCache.getValue(cacheKey);
     if (cachedId != null) {
       return completedFuture(cachedId);
     } else {
@@ -524,7 +524,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> deleteTags(PackageId packageId, RmApiTemplateContext context) {
     UUID credentialsId = toUUID(context.getCredentialsId());
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
 
     return packageRepository.delete(packageId, credentialsId, tenant)
       .thenCompose(o -> tagRepository.deleteRecordTags(tenant, packageIdToString(packageId), RecordType.PACKAGE))

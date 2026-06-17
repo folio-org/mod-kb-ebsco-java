@@ -55,9 +55,6 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
   }
 
   private PackageId createPackageId(PackageData packageData) {
-    return PackageId.builder()
-      .providerIdPart(packageData.getVendorId())
-      .packageIdPart(packageData.getPackageId())
-      .build();
+    return new PackageId(packageData.getVendorId(), packageData.getPackageId());
   }
 }

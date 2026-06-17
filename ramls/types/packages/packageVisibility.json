@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Visibility details schema",
+  "description": "Visibility details schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageVisibility",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "Visibility category",
+      "enum": [
+        "PF",
+        "FTF",
+        "MARC"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason the resource was hidden"
+    },
+    "hidden": {
+      "type": "boolean",
+      "description": "Hidden status"
+    }
+  },
+  "required": [
+    "category",
+    "reason"
+  ]
+}

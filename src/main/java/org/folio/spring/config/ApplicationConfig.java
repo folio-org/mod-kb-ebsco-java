@@ -115,7 +115,7 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx,
+  public VertxCache<VendorIdCacheKey, Integer> vendorIdCache(Vertx vertx,
                                                           @Value("${vendor.id.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorIdCache");
   }

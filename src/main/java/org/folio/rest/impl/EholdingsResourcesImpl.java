@@ -35,9 +35,9 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
-import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.ResourceSelectedPayload;
@@ -201,15 +201,15 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Override
   public void putEholdingsResourcesTagsByResourceId(String resourceId, String contentType,
                                                     ResourceTagsPutRequest entity,
-                                                    Map<String, String> okapiHeaders,
+                                                    Map<String, String> headers,
                                                     Handler<AsyncResult<Response>> asyncResultHandler,
                                                     Context vertxContext) {
-    userKbCredentialsService.findByUser(okapiHeaders)
+    userKbCredentialsService.findByUser(headers)
       .thenCompose(creds -> {
         ResourceTagsDataAttributes attributes = entity.getData().getAttributes();
         resourceTagsPutBodyValidator.validate(entity, attributes);
         return updateResourceTags(createDbResource(resourceId, creds.getId(), attributes),
-          new OkapiData(okapiHeaders).getTenant())
+          new RequestContext(headers).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
             Future.succeededFuture(PutEholdingsResourcesTagsByResourceIdResponse.respond200WithApplicationVndApiJson(
               convertToResourceTags(attributes)))));
@@ -235,7 +235,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private Function<RmApiTemplateContext, CompletableFuture<?>> processResourcePost(
     ResourcePostDataAttributes attributes) {
-    long titleId = parseTitleId(attributes.getTitleId());
+    var titleId = parseTitleId(attributes.getTitleId());
     PackageId packageId = parsePackageId(attributes.getPackageId());
     return context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getTitlesService(),
       context.getPackagesService())
@@ -258,7 +258,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       return CompletableFuture.completedFuture(null);
     } else {
       return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId, false,
-        context.getOkapiData().getHeaders());
+        context.getRequestContext().getHeaders());
     }
   }
 
@@ -276,7 +276,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       RmApiTemplateContext context) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.RESOURCE, context.getCredentialsId(),
-      context.getOkapiData().getHeaders());
+      context.getRequestContext().getHeaders());
   }
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RmApiTemplateContext context) {
@@ -304,7 +304,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<Void> deleteTags(String resourceId, RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     UUID credentialsId = RowSetUtils.toUUID(context.getCredentialsId());
 
     return resourceRepository.delete(resourceId, credentialsId, tenant)
@@ -313,7 +313,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(
-    Long titleId, PackageId packageId,
+    int titleId, PackageId packageId,
     TitlesHoldingsIQService titlesService,
     PackagesHoldingsIQService packagesService) {
     CompletableFuture<Title> titleFuture = titlesService.retrieveTitle(titleId);

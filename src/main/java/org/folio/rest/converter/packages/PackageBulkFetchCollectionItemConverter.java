@@ -14,9 +14,9 @@ public class PackageBulkFetchCollectionItemConverter implements Converter<Packag
 
   @Override
   public PackageBulkFetchCollectionItem convert(PackageData packageData) {
-    Integer providerId = packageData.getVendorId();
+    var providerId = packageData.getVendorId();
     String providerName = packageData.getVendorName();
-    Integer packageId = packageData.getPackageId();
+    var packageId = packageData.getPackageId();
 
     return new PackageBulkFetchCollectionItem()
       .withId(providerId + "-" + packageId)

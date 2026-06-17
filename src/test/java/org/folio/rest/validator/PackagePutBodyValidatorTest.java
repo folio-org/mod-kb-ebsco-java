@@ -10,7 +10,6 @@ import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.Token;
-import org.folio.rest.jaxrs.model.VisibilityData;
 import org.junit.Test;
 
 public class PackagePutBodyValidatorTest {
@@ -24,9 +23,10 @@ public class PackagePutBodyValidatorTest {
         .withIsSelected(true)
         .withCustomCoverage(new Coverage())
         .withAllowKbToAddTitles(true)
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(false)
-          .withReason(""))));
+    //        .withVisibilityData(new VisibilityData()
+    //          .withIsHidden(false)
+    //          .withReason(""))
+    ));
   }
 
   @Test
@@ -34,8 +34,9 @@ public class PackagePutBodyValidatorTest {
     var request = PackagesTestData.getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(false)
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(true)));
+    //        .withVisibilityData(new VisibilityData()
+    //          .withIsHidden(true))
+    );
 
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertThat(exception.getMessage(), containsString("isHidden"));

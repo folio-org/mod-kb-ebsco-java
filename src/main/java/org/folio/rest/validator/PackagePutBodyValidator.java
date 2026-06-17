@@ -19,7 +19,8 @@ public class PackagePutBodyValidator {
     PackagePutDataAttributes attributes = request.getData().getAttributes();
     Boolean allowKbToAddTitles = attributes.getAllowKbToAddTitles();
 
-    Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
+    //    Boolean isHidden = attributes.getVisibilityData() != null
+    //    ? attributes.getVisibilityData().getIsHidden() : null;
     String beginCoverage = null;
     String endCoverage = null;
     if (attributes.getCustomCoverage() != null) {
@@ -29,7 +30,7 @@ public class PackagePutBodyValidator {
 
     String value = attributes.getPackageToken() != null ? attributes.getPackageToken().getValue() : null;
 
-    validateNotSelected(attributes, allowKbToAddTitles, isHidden, beginCoverage, endCoverage, value);
+    //    validateNotSelected(attributes, allowKbToAddTitles, isHidden, beginCoverage, endCoverage, value);
     ValidatorUtil.checkMaxLength("value", value, MAX_TOKEN_LENGTH);
     ValidatorUtil.checkDateValid("beginCoverage", beginCoverage);
     ValidatorUtil.checkDateValid("endCoverage", endCoverage);

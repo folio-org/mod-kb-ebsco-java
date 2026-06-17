@@ -28,6 +28,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.persist.PostgresClient;
+import org.folio.rest.util.IdParser;
 import org.springframework.stereotype.Component;
 
 @Log4j2
@@ -76,7 +77,7 @@ public class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @Override
-  public CompletableFuture<List<Long>> findIdsByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
+  public CompletableFuture<List<Integer>> findIdsByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId) {
     List<String> tags = tagFilter.getTags();
     if (CollectionUtils.isEmpty(tags)) {
       return completedFuture(Collections.emptyList());
@@ -99,12 +100,12 @@ public class ProviderRepositoryImpl implements ProviderRepository {
     return mapResult(promise.future().recover(excTranslator.translateOrPassBy()), this::mapProviderIds);
   }
 
-  private List<Long> mapProviderIds(RowSet<Row> resultSet) {
+  private List<Integer> mapProviderIds(RowSet<Row> resultSet) {
     return mapItems(resultSet, this::readProviderId);
   }
 
-  private Long readProviderId(Row row) {
-    return Long.parseLong(row.getString(ID_COLUMN));
+  private Integer readProviderId(Row row) {
+    return IdParser.parseProviderId(row.getString(ID_COLUMN));
   }
 
   private PostgresClient pgClient(String tenantId) {

@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.log4j.Log4j2;
-import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.rest.tools.utils.VertxUtils;
 import org.jspecify.annotations.NonNull;
 
@@ -22,10 +22,10 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
 
   public static final String LOCALE_ENDPOINT_PATH = "/locale";
 
-  public CompletableFuture<LocaleSettings> retrieveSettings(OkapiData okapiData) {
+  public CompletableFuture<LocaleSettings> retrieveSettings(RequestContext requestContext) {
     log.debug("Retrieving locale settings");
 
-    return retrieveLocaleSettings(okapiData)
+    return retrieveLocaleSettings(requestContext)
       .thenApply(this::mapToLocaleSettings)
       .exceptionally(throwable -> {
         log.warn("Locale settings retrieval failed, falling back to default", throwable);
@@ -41,14 +41,14 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
       });
   }
 
-  private CompletableFuture<JsonObject> retrieveLocaleSettings(OkapiData okapiData) {
+  private CompletableFuture<JsonObject> retrieveLocaleSettings(RequestContext requestContext) {
     CompletableFuture<JsonObject> future = new CompletableFuture<>();
     WebClient webClient = null;
 
     try {
       log.debug("Sending request to GET {}", LOCALE_ENDPOINT_PATH);
       webClient = prepareConfigurationsClient();
-      var request = prepareRequest(okapiData, webClient);
+      var request = prepareRequest(requestContext, webClient);
 
       WebClient finalWebClient = webClient;
       request.send()
@@ -72,9 +72,9 @@ public class LocaleSettingsServiceImpl implements LocaleSettingsService {
     };
   }
 
-  private HttpRequest<Buffer> prepareRequest(OkapiData okapiData, WebClient webClient) {
-    var request = webClient.requestAbs(HttpMethod.GET, okapiData.getOkapiUrl() + LOCALE_ENDPOINT_PATH);
-    okapiData.getHeaders().forEach(request::putHeader);
+  private HttpRequest<Buffer> prepareRequest(RequestContext requestContext, WebClient webClient) {
+    var request = webClient.requestAbs(HttpMethod.GET, requestContext.getUrl() + LOCALE_ENDPOINT_PATH);
+    requestContext.getHeaders().forEach(request::putHeader);
     request.putHeader("Accept", "application/json,text/plain");
     return request;
   }

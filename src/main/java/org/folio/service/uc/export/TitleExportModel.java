@@ -19,7 +19,7 @@ public class TitleExportModel {
 
   @CsvBindByName(column = "Usage")
   @CsvBindByPosition(position = 2)
-  private final int usage;
+  private final long usage;
 
   @CsvBindByName(column = "Cost")
   @CsvBindByPosition(position = 3)

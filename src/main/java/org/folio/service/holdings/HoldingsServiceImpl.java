@@ -129,7 +129,7 @@ public class HoldingsServiceImpl implements HoldingsService {
 
   @Override
   public CompletableFuture<Void> loadSingleHoldings(RmApiTemplateContext context) {
-    final String tenantId = context.getOkapiData().getTenant();
+    final String tenantId = context.getRequestContext().getTenant();
     final String credentialsId = context.getCredentialsId();
     log.debug("loadSingleHoldings:: by [tenant: {}]", tenantId);
 

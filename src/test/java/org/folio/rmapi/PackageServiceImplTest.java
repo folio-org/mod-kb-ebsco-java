@@ -49,10 +49,7 @@ public class PackageServiceImplTest {
 
     mockGet(getPackagePattern, CUSTOM_PACKAGE_STUB_FILE);
 
-    PackageId packageId = PackageId.builder()
-      .packageIdPart(STUB_PACKAGE_ID)
-      .providerIdPart(STUB_VENDOR_ID)
-      .build();
+    var packageId = new PackageId(STUB_PACKAGE_ID, STUB_VENDOR_ID);
     service.retrievePackage(packageId, Collections.emptyList(), true).join();
     service.retrievePackage(packageId, Collections.emptyList(), true).join();
 

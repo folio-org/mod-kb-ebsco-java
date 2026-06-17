@@ -1,11 +1,17 @@
 {
   "contentType": 8,
   "isSelected": true,
+  "customAltNames": [
+    "Name of the ages (custom name)",
+    "Another custom name"
+  ],
+  "customDisplayName": "Name of The Ages (2026)",
   "customCoverage": {
     "beginCoverage": "2003-01-01",
     "endCoverage": "2004-01-01"
   },
   "packageToken": null,
   "isHidden": true,
+  "isFreeAccess":  true,
   "packageName": "name of the ages forever and ever"
 }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.log4j.Log4j2;
-import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.rest.converter.costperuse.export.PackageTitlesCostPerUseCollectionToExportConverter;
 import org.folio.service.locale.LocaleSettingsService;
 import org.folio.service.uc.UcCostPerUseService;
@@ -34,10 +34,10 @@ public class ExportServiceImpl implements ExportService {
   }
 
   public CompletableFuture<String> exportCsv(String packageId, String platform, String year,
-                                             Map<String, String> okapiHeaders) {
+                                             Map<String, String> headers) {
     log.info("Perform export for package - {}", packageId);
-    return costPerUseService.getPackageResourcesCostPerUse(packageId, platform, year, okapiHeaders)
-      .thenCombine(localeSettingsService.retrieveSettings(new OkapiData(okapiHeaders)),
+    return costPerUseService.getPackageResourcesCostPerUse(packageId, platform, year, headers)
+      .thenCombine(localeSettingsService.retrieveSettings(new RequestContext(headers)),
         (collection, localeSettings) -> converter.convert(collection, platform, year, localeSettings))
       .thenCompose(this::mapToCsv);
   }

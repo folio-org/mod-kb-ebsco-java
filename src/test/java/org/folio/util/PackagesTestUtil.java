@@ -75,8 +75,8 @@ public final class PackagesTestUtil {
     PackageData packageData = readJsonFile(STUB_PACKAGE_JSON_PATH, PackageData.class);
     return Json.encode(packageData.toBuilder()
       .packageName(packageName)
-      .packageId(Long.parseLong(packageId))
-      .vendorId(Long.parseLong(providerId))
+      .packageId(Integer.parseInt(packageId))
+      .vendorId(Integer.parseInt(providerId))
       .build());
   }
 

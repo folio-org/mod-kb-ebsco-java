@@ -27,20 +27,20 @@ public final class IdParser {
   }
 
   public static ResourceId parseResourceId(String id) {
-    List<Long> parts = parseId(id, 3, RESOURCE_ID_INVALID_ERROR, RESOURCE_ID_INVALID_ERROR);
+    var parts = parseId(id, 3, RESOURCE_ID_INVALID_ERROR, RESOURCE_ID_INVALID_ERROR);
     return new ResourceId(parts.get(0), parts.get(1), parts.get(2));
   }
 
   public static PackageId parsePackageId(String id) {
-    List<Long> parts = parseId(id, 2, PACKAGE_ID_MISSING_ERROR, PACKAGE_ID_INVALID_ERROR);
+    var parts = parseId(id, 2, PACKAGE_ID_MISSING_ERROR, PACKAGE_ID_INVALID_ERROR);
     return new PackageId(parts.get(0), parts.get(1));
   }
 
-  public static Long parseTitleId(String id) {
+  public static Integer parseTitleId(String id) {
     return parseId(id, 1, TITLE_ID_IS_INVALID_ERROR, TITLE_ID_IS_INVALID_ERROR).getFirst();
   }
 
-  public static Long parseProviderId(String id) {
+  public static Integer parseProviderId(String id) {
     return parseId(id, 1, INVALID_PROVIDER_ID_ERROR, INVALID_PROVIDER_ID_ERROR).getFirst();
   }
 
@@ -93,16 +93,16 @@ public final class IdParser {
     return StringUtils.join(parts, '-');
   }
 
-  private static List<Long> parseId(String id, int partCount, String wrongCountErrorMessage,
+  private static List<Integer> parseId(String id, int partCount, String wrongCountErrorMessage,
                                     String numberFormatErrorMessage) {
-    String[] parts = id.split("-");
+    var parts = id.split("-");
     if (parts.length != partCount) {
       throw new ValidationException(String.format(wrongCountErrorMessage, id));
     }
-    List<Long> parsedParts = new ArrayList<>();
+    var parsedParts = new ArrayList<Integer>();
     try {
       for (String part : parts) {
-        parsedParts.add(Long.parseLong(part));
+        parsedParts.add(Integer.parseInt(part));
       }
       return parsedParts;
     } catch (NumberFormatException e) {

@@ -95,8 +95,8 @@ public class ResourcePostValidatorTest {
   private PackageData.PackageDataBuilder createPackage() {
     return PackageData.builder()
       .packageName("package")
-      .vendorId(123L)
-      .packageId(456L)
+      .vendorId(123)
+      .packageId(456)
       .isCustom(true);
   }
 

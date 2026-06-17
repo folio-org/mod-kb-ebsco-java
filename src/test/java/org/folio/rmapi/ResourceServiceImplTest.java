@@ -50,11 +50,7 @@ public class ResourceServiceImplTest {
 
     mockGet(getResourcePattern, CUSTOM_RESOURCE_STUB_FILE);
 
-    ResourceId resourceId = ResourceId.builder()
-      .packageIdPart(STUB_PACKAGE_ID)
-      .providerIdPart(STUB_VENDOR_ID)
-      .titleIdPart(STUB_TITLE_ID)
-      .build();
+    var resourceId = new ResourceId(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_TITLE_ID);
     service.retrieveResource(resourceId, Collections.emptyList(), true).join();
     service.retrieveResource(resourceId, Collections.emptyList(), true).join();
 

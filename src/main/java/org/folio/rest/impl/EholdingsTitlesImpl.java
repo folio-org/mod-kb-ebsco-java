@@ -139,7 +139,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @HandleValidationErrors
   public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    long titleIdLong = parseTitleId(titleId);
+    var titleIdLong = parseTitleId(titleId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
@@ -161,7 +161,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     titleCommonRequestAttributesValidator.validate(entity.getData().getAttributes());
 
-    Long parsedTitleId = parseTitleId(titleId);
+    var parsedTitleId = parseTitleId(titleId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(parsedTitleId)
@@ -223,7 +223,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         .stream()
         .map(IdParser::getResourceId)
         .toList();
-      return tagRepository.findByRecordByIds(context.getOkapiData().getTenant(), resourceIds, RecordType.RESOURCE)
+      return tagRepository.findByRecordByIds(context.getRequestContext().getTenant(), resourceIds, RecordType.RESOURCE)
         .thenApply(tags -> {
           result.setResourceTagList(tags);
           return result;
@@ -240,7 +240,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     if (Objects.isNull(tags)) {
       return completedFuture(result);
     } else {
-      String tenant = context.getOkapiData().getTenant();
+      String tenant = context.getRequestContext().getTenant();
       UUID credentialsId = toUUID(context.getCredentialsId());
 
       return updateStoredTitles(createDbTitle(result, credentialsId), tags, tenant)

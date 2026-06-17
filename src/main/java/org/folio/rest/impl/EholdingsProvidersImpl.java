@@ -21,12 +21,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.ws.rs.core.Response;
-import org.folio.holdingsiq.model.OkapiData;
 import org.folio.holdingsiq.model.PackageFilter;
 import org.folio.holdingsiq.model.PackageFilterSelected;
 import org.folio.holdingsiq.model.PackageFilterType;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Pageable;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
@@ -135,11 +135,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler,
                                                 Context vertxContext) {
-    long providerIdLong = parseProviderId(providerId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getProvidersService().retrieveProvider(providerIdLong, include)
+        context.getProvidersService().retrieveProvider(parseProviderId(providerId), include)
           .thenCompose(result -> loadTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -154,13 +153,12 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                 Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler,
                                                 Context vertxContext) {
-    long providerIdLong = parseProviderId(providerId);
 
     bodyValidator.validate(entity);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        processUpdateRequest(entity, providerIdLong, context)
+        processUpdateRequest(entity, parseProviderId(providerId), context)
           .thenApply(result -> new VendorResult(result, null)))
       .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .executeWithResult(Provider.class);
@@ -169,18 +167,18 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   public void putEholdingsProvidersTagsByProviderId(String providerId, String contentType,
                                                     ProviderTagsPutRequest entity,
-                                                    Map<String, String> okapiHeaders,
+                                                    Map<String, String> headers,
                                                     Handler<AsyncResult<Response>> asyncResultHandler,
                                                     Context vertxContext) {
     final Tags tags = entity.getData().getAttributes().getTags();
 
-    userKbCredentialsService.findByUser(okapiHeaders)
+    userKbCredentialsService.findByUser(headers)
       .thenCompose(creds -> {
         ProviderTagsDataAttributes attributes = entity.getData().getAttributes();
         providerTagsPutBodyValidator.validate(entity, attributes);
         return updateTags(
           createDbProvider(providerId, UUID.fromString(creds.getId()), entity.getData().getAttributes()),
-          tags, new OkapiData(okapiHeaders).getTenant())
+          tags, new RequestContext(headers).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
             Future.succeededFuture(PutEholdingsProvidersTagsByProviderIdResponse.respond200WithApplicationVndApiJson(
               convertToProviderTags(attributes)
@@ -261,7 +259,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, RmApiTemplateContext context) {
     UUID credentialsId = toUUID(context.getCredentialsId());
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     return packageRepository.findByIds(getPackageIds(packages), credentialsId, tenant)
       .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
@@ -301,13 +299,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     return providerRepository.delete(provider.getId(), provider.getCredentialsId(), tenant);
   }
 
-  private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, long providerIdLong,
+  private CompletableFuture<VendorById> processUpdateRequest(ProviderPutRequest request, int providerId,
                                                              RmApiTemplateContext context) {
     if (!providerCanBeUpdated(request)) {
       //Return current state of provider without updating it
-      return context.getProvidersService().retrieveProvider(providerIdLong);
+      return context.getProvidersService().retrieveProvider(providerId);
     }
-    return context.getProvidersService().updateProvider(providerIdLong, putRequestConverter.convert(request));
+    return context.getProvidersService().updateProvider(providerId, putRequestConverter.convert(request));
   }
 
   private boolean providerCanBeUpdated(ProviderPutRequest request) {

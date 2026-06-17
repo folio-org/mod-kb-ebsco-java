@@ -20,7 +20,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.folio.holdingsiq.model.ConfigurationError;
-import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.configuration.StatusConverter;
@@ -46,17 +46,17 @@ public class EholdingsStatusImpl implements EholdingsStatus {
 
   @Override
   @HandleValidationErrors
-  public void getEholdingsStatus(Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
+  public void getEholdingsStatus(Map<String, String> headers, Handler<AsyncResult<Response>> asyncResultHandler,
                                  Context vertxContext) {
-    headerValidator.validate(okapiHeaders);
-    MutableObject<OkapiData> okapiData = new MutableObject<>();
+    headerValidator.validate(headers);
+    MutableObject<RequestContext> requestContext = new MutableObject<>();
     CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
-        okapiData.setValue(new OkapiData(okapiHeaders));
-        return configurationService.retrieveConfiguration(okapiData.get());
+        requestContext.setValue(new RequestContext(headers));
+        return configurationService.retrieveConfiguration(requestContext.get());
       })
       .thenCompose(configuration -> configurationService.verifyCredentials(configuration, vertxContext,
-        okapiData.get())
+        requestContext.get())
       )
       .thenAccept(verificationErrorsToResponse(asyncResultHandler))
       .exceptionally(handleStatusException(asyncResultHandler));

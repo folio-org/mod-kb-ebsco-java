@@ -6,62 +6,91 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "contentType": {
-      "type": "string",
-      "description": "Content Type of Package",
-      "$ref" : "contentTypeEnum.json",
-      "example": "Online Reference"
-    },
     "accessTypeId": {
-      "type": "string",
-      "description": "Access type id",
       "$ref": "../../raml-util/schemas/uuid.schema",
-      "example": "f973c3b6-85fc-4d35-bda8-f31b568957bf"
-    },
-    "customCoverage": {
-      "type": "object",
-      "description": "Custom Coverage",
-      "$ref": "../coverage.json"
-    },
-    "isCustom": {
-      "type": "boolean",
-      "description": "Whether this package is custom or not",
-      "example": false
-    },
-    "isSelected": {
-      "type": "boolean",
-      "description": "Whether this package is selected or not",
-      "example": false
-    },
-    "isFullPackage": {
-      "type": "boolean",
-      "description": "Whether this package is partially selected or not",
-      "example": false
-    },
-    "name": {
-      "type": "string",
-      "description": "Package name",
-      "example": "Shenbao"
-    },
-    "visibilityData": {
-      "type": "object",
-      "description": "Visibility data",
-      "$ref": "../visibilityData.json"
+      "description": "Access type id",
+      "example": "f973c3b6-85fc-4d35-bda8-f31b568957bf",
+      "type": "string"
     },
     "allowKbToAddTitles": {
-      "type": "boolean",
       "description": "Allow KB to add titles",
-      "example": true
+      "example": true,
+      "type": "boolean"
+    },
+    "contentType": {
+      "$ref": "contentTypeEnum.json",
+      "description": "Content Type of Package",
+      "example": "Online Reference",
+      "type": "string"
+    },
+    "customAltNames": {
+      "description": "The list of custom alternate names for the package",
+      "items": {
+        "$ref": "packageAltName.json",
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "customCoverage": {
+      "$ref": "../coverage.json",
+      "description": "Custom Coverage",
+      "type": "object"
+    },
+    "customDescription": {
+      "description": "The custom description of the package",
+      "example": "Package of medicinal journals (custom)",
+      "type": "string"
+    },
+    "customDisplayName": {
+      "description": "The custom description of the package",
+      "type": "string"
+    },
+    "isCustom": {
+      "description": "Whether this package is custom or not",
+      "example": false,
+      "type": "boolean"
+    },
+    "isFreeAccess": {
+      "description": "Whether this package has free access designation or not",
+      "example": false,
+      "type": "boolean"
+    },
+    "isFullPackage": {
+      "description": "Whether this package is partially selected or not",
+      "example": false,
+      "type": "boolean"
+    },
+    "isSelected": {
+      "description": "Whether this package is selected or not",
+      "example": false,
+      "type": "boolean"
+    },
+    "name": {
+      "description": "Package name",
+      "example": "Shenbao",
+      "type": "string"
     },
     "packageToken": {
-      "type": "object",
+      "$ref": "../token.json",
       "description": "Package Token",
-      "$ref": "../token.json"
+      "type": "object"
     },
     "proxy": {
-      "type": "object",
+      "$ref": "../proxy.json",
       "description": "Proxy",
-      "$ref": "../proxy.json"
+      "type": "object"
+    },
+    "url": {
+      "description": "Package URL",
+      "type": "string"
+    },
+    "visibility": {
+      "description": "Visibility details",
+      "items": {
+        "$ref": "packageVisibility.json",
+        "type": "object"
+      },
+      "type": "array"
     }
   }
 }

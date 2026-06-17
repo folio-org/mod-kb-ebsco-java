@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 
 import java.util.Collections;
-import java.util.List;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.spring.config.TestConfig;
@@ -27,7 +26,7 @@ public class ProviderRepositoryImplTest {
     TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
       .recordType(RecordType.PROVIDER)
       .build();
-    List<Long> providerIds = repository.findIdsByTagFilter(filter, null, STUB_TENANT).join();
+    var providerIds = repository.findIdsByTagFilter(filter, null, STUB_TENANT).join();
     assertThat(providerIds, empty());
   }
 }

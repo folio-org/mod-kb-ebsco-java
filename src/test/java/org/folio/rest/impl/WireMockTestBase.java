@@ -75,7 +75,7 @@ public abstract class WireMockTestBase extends TestBase {
   private VertxCache<String, Configuration> configurationCache;
   @Autowired
   @Qualifier("vendorIdCache")
-  private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
+  private VertxCache<VendorIdCacheKey, Integer> vendorIdCache;
   @Autowired
   private VertxCache<PackageCacheKey, PackageData> packageCache;
   @Autowired

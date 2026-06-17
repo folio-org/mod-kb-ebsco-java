@@ -47,11 +47,11 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
     this.packagesService = packagesService;
   }
 
-  public CompletableFuture<VendorResult> retrieveProvider(long id, String include) {
+  public CompletableFuture<VendorResult> retrieveProvider(int id, String include) {
     return retrieveProvider(id, include, false);
   }
 
-  public CompletableFuture<VendorResult> retrieveProvider(long id, String include, boolean useCache) {
+  public CompletableFuture<VendorResult> retrieveProvider(int id, String include, boolean useCache) {
 
     CompletableFuture<VendorById> vendorFuture;
     CompletableFuture<Packages> packagesFuture;
@@ -72,7 +72,7 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
         completedFuture(new VendorResult(vendorFuture.join(), packagesFuture.join())));
   }
 
-  public CompletableFuture<Vendors> retrieveProviders(List<Long> providerIds) {
+  public CompletableFuture<Vendors> retrieveProviders(List<Integer> providerIds) {
     Set<CompletableFuture<VendorResult>> futures = providerIds.stream()
       .map(id -> retrieveProvider(id, "", true))
       .collect(Collectors.toSet());
@@ -90,7 +90,7 @@ public class ProvidersServiceImpl extends ProviderHoldingsIQServiceImpl {
       .build();
   }
 
-  private CompletableFuture<VendorById> retrieveProviderWithCache(long id) {
+  private CompletableFuture<VendorById> retrieveProviderWithCache(int id) {
     VendorCacheKey cacheKey = VendorCacheKey.builder()
       .vendorId(String.valueOf(id))
       .rmapiConfiguration(configuration)

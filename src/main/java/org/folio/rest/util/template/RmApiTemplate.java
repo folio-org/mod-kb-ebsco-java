@@ -11,7 +11,7 @@ import java.util.function.Function;
 import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.apache.http.protocol.HTTP;
-import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
@@ -119,8 +119,8 @@ public class RmApiTemplate {
     headerValidator.validate(okapiHeaders);
     return CompletableFuture.completedFuture(null)
       .thenCompose(o -> {
-        OkapiData okapiData = new OkapiData(okapiHeaders);
-        contextBuilder.okapiData(okapiData);
+        var requestContext = new RequestContext(okapiHeaders);
+        contextBuilder.requestContext(requestContext);
         return userKbCredentialsService.findByUser(okapiHeaders);
       })
       .thenAccept(contextBuilder::kbCredentials)

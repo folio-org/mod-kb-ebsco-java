@@ -3,7 +3,7 @@ package org.folio.rest.util.template;
 import lombok.Builder;
 import lombok.Value;
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.service.HoldingsIQService;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.rmapi.PackageServiceImpl;
@@ -21,7 +21,7 @@ public class RmApiTemplateContext {
   ResourcesServiceImpl resourcesService;
   TitlesServiceImpl titlesService;
   LoadService loadingService;
-  OkapiData okapiData;
+  RequestContext requestContext;
   Configuration configuration;
   String credentialsId;
   String credentialsName;

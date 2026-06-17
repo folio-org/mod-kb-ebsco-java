@@ -129,7 +129,7 @@ public class Filter {
       .build();
   }
 
-  public Long getProviderId() {
+  public Integer getProviderId() {
     return IdParser.parseProviderId(providerId);
   }
 

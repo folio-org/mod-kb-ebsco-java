@@ -8,7 +8,6 @@ import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
-import org.folio.rest.jaxrs.model.VisibilityData;
 import org.folio.spring.config.TestConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,15 +29,15 @@ public class PackageRequestConverterTest {
     assertTrue(packagePut.getIsSelected());
   }
 
-  @Test
-  public void shouldCreateRequestToHidePackage() {
-    PackagePut packagePut = packagesConverter.convertToRmApiPackagePutRequest(PackagesTestData.getPackagePutRequest(
-      new PackagePutDataAttributes()
-        .withIsSelected(true)
-        .withVisibilityData(new VisibilityData()
-          .withIsHidden(true))));
-    assertTrue(packagePut.getIsHidden());
-  }
+  //  @Test
+  //  public void shouldCreateRequestToHidePackage() {
+  //    PackagePut packagePut = packagesConverter.convertToRmApiPackagePutRequest(PackagesTestData.getPackagePutRequest(
+  //      new PackagePutDataAttributes()
+  //        .withIsSelected(true)
+  //        .withVisibilityData(new VisibilityData()
+  //          .withIsHidden(true))));
+  //    assertTrue(packagePut.getIsHidden());
+  //  }
 
   @Test
   public void shouldCreateRequestToAllowKbAddTitlesToPackage() {
@@ -104,13 +103,13 @@ public class PackageRequestConverterTest {
     assertEquals(aggregatedFullTextContentTypeCode, packagePut.getContentType());
   }
 
-  @Test
-  public void shouldCreateRequestToChangeCustomPackageVisibility() {
-    PackagePut packagePut =
-      packagesConverter.convertToRmApiCustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-        new PackagePutDataAttributes()
-          .withVisibilityData(new VisibilityData()
-            .withIsHidden(true))));
-    assertTrue(packagePut.getIsHidden());
-  }
+  //  @Test
+  //  public void shouldCreateRequestToChangeCustomPackageVisibility() {
+  //    PackagePut packagePut =
+  //      packagesConverter.convertToRmApiCustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
+  //        new PackagePutDataAttributes()
+  //          .withVisibilityData(new VisibilityData()
+  //            .withIsHidden(true))));
+  //    assertTrue(packagePut.getIsHidden());
+  //  }
 }

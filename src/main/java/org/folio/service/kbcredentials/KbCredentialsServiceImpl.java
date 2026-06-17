@@ -17,7 +17,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.service.ConfigurationService;
 import org.folio.holdingsiq.service.exception.ConfigurationInvalidException;
 import org.folio.repository.kbcredentials.DbKbCredentials;
@@ -167,10 +167,10 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   private CompletableFuture<DbKbCredentials> prepareAndSave(
     CompletableFuture<DbKbCredentials> credentialsFuture,
     BiFunction<DbKbCredentials, String, DbKbCredentials> prepareEntityFn,
-    Map<String, String> okapiHeaders) {
+    Map<String, String> headers) {
     return credentialsFuture
-      .thenCombine(RequestHeadersUtil.userIdFuture(okapiHeaders), prepareEntityFn)
-      .thenCompose(dbKbCredentials -> verifyAndSave(dbKbCredentials, okapiHeaders));
+      .thenCombine(RequestHeadersUtil.userIdFuture(headers), prepareEntityFn)
+      .thenCompose(dbKbCredentials -> verifyAndSave(dbKbCredentials, headers));
   }
 
   private DbKbCredentials prepareSaveEntity(DbKbCredentials dbKbCredentials, String userId) {
@@ -181,19 +181,19 @@ public class KbCredentialsServiceImpl implements KbCredentialsService {
   }
 
   private CompletableFuture<DbKbCredentials> verifyAndSave(DbKbCredentials dbKbCredentials,
-                                                           Map<String, String> okapiHeaders) {
+                                                           Map<String, String> headers) {
 
-    String tenantId = tenantId(okapiHeaders);
+    String tenantId = tenantId(headers);
     log.info("verifyAndSave:: Attempting to save by [id: {}, tenant: {}]", fromUUID(dbKbCredentials.getId()),
       tenantId);
 
-    return verifyCredentials(dbKbCredentials, okapiHeaders)
+    return verifyCredentials(dbKbCredentials, headers)
       .thenCompose(v -> repository.save(dbKbCredentials, tenantId));
   }
 
-  private CompletableFuture<Void> verifyCredentials(DbKbCredentials dbKbCredentials, Map<String, String> okapiHeaders) {
+  private CompletableFuture<Void> verifyCredentials(DbKbCredentials dbKbCredentials, Map<String, String> headers) {
     Configuration configuration = convertToConfiguration(dbKbCredentials);
-    return configurationService.verifyCredentials(configuration, context, new OkapiData(okapiHeaders))
+    return configurationService.verifyCredentials(configuration, context, new RequestContext(headers))
       .thenCompose(errors -> {
         if (!errors.isEmpty()) {
           CompletableFuture<Void> future = new CompletableFuture<>();

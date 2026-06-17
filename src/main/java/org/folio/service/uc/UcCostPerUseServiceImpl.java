@@ -384,7 +384,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   private CompletableFuture<List<DbHoldingInfo>> fetchHoldingsData(String packageIdPart, RmApiTemplateContext context) {
     log.info("fetchHoldingsData:: Get Holdings data by packageId: {} ", packageIdPart);
     return holdingsService
-      .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant());
+      .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getRequestContext().getTenant());
   }
 
   private CompletableFuture<CommonUcConfiguration> fetchCommonConfiguration(
@@ -401,7 +401,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     String platform, String fiscalYear,
     MutableObject<PlatformType> platformTypeHolder,
     RmApiTemplateContext context) {
-    Map<String, String> okapiHeaders = context.getOkapiData().getHeaders();
+    Map<String, String> okapiHeaders = context.getRequestContext().getHeaders();
     return authService.authenticate(okapiHeaders)
       .thenCombine(settingsService.fetchByCredentialsId(context.getCredentialsId(), false, okapiHeaders),
         toCommonUcConfiguration(platform, fiscalYear, platformTypeHolder)
