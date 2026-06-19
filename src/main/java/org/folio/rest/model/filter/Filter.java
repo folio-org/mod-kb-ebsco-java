@@ -1,119 +1,56 @@
 package org.folio.rest.model.filter;
 
-import static java.util.Arrays.asList;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.collections4.IterableUtils.matchesAll;
 import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 
 import java.util.List;
-import lombok.Builder;
-import lombok.Value;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.holdingsiq.model.FilterQuery;
-import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.repository.RecordType;
-import org.folio.rest.util.IdParser;
 
-@Value
-@Builder
-public class Filter {
+public sealed interface Filter permits ProviderFilter, PackageRecordFilter, ResourceFilter, TitleFilter {
 
-  String query;
-  String filterIsxn;
-  String filterName;
-  String filterPublisher;
-  String filterSubject;
-  String filterType;
-  String filterCustom;
-  String filterSelected;
-  List<String> filterPackageIds;
+  // Common getters (implemented by each @Value class via Lombok)
+  String getSort();
 
-  String packageId;
-  String providerId;
+  int getPage();
 
-  List<String> filterTags;
-  List<String> filterAccessType;
+  int getCount();
 
-  String sort;
-  int page;
-  int count;
+  List<String> getFilterTags();
 
-  RecordType recordType;
+  List<String> getFilterAccessType();
 
-  public static FilterBuilder builder() {
-    return new FilterBuilder() {
+  RecordType getRecordType();
 
-      @Override
-      public Filter build() {
-        Filter filter = super.build();
-        FilterValidators.validate(filter);
-        return filter;
-      }
-    };
+  // Each impl returns its own search-criteria field values (used by isTagsFilter/isAccessTypeFilter)
+  List<String> searchCriteriaValues();
+
+  // Default methods
+  default Sort resolveSort() {
+    return Sort.valueOf(getSort().toUpperCase());
   }
 
-  public static Filter getSortableFilter(Filter.FilterBuilder filterBuilder, String sort, int page, int count) {
-    return filterBuilder
-      .sort(sort)
-      .page(page)
-      .count(count)
-      .build();
+  default boolean isTagsFilter() {
+    return isFilteredBy(getFilterTags(), getFilterAccessType());
   }
 
-  public boolean isTagsFilter() {
-    return isCheckedFilter(filterTags, filterAccessType);
+  default boolean isAccessTypeFilter() {
+    return isFilteredBy(getFilterAccessType(), getFilterTags());
   }
 
-  public boolean isAccessTypeFilter() {
-    return isCheckedFilter(filterAccessType, filterTags);
+  // Private helper
+  private boolean isFilteredBy(List<String> primary, List<String> other) {
+    return isNotEmpty(primary)
+           && matchesAll(primary, StringUtils::isNotBlank)
+           && CollectionUtils.isEmpty(other)
+           && matchesAll(searchCriteriaValues(), StringUtils::isBlank);
   }
 
-  public FilterQuery createFilterQuery() {
-    return FilterQuery.builder()
-      .type(filterType)
-      .name(filterName)
-      .isxn(filterIsxn)
-      .subject(filterSubject)
-      .publisher(filterPublisher)
-      .selected(resolveFilterSelected())
-      .packageIds(resolveFilterPackageIds())
-      .build();
-  }
-
-  public Integer parseProviderId() {
-    return IdParser.parseProviderId(providerId);
-  }
-
-  public PackageId parsePackageId() {
-    return IdParser.parsePackageId(packageId);
-  }
-
-  public String resolveFilterSelected() {
+  // Shared utility for resolveFilterSelected (used by 3 implementations)
+  static String mapFilterSelected(String filterSelected) {
     return filterSelected == null ? null : FILTER_SELECTED_MAPPING.get(filterSelected);
-  }
-
-  public List<Integer> resolveFilterPackageIds() {
-    return filterPackageIds == null ? null : filterPackageIds.stream()
-      .map(Integer::parseInt)
-      .toList();
-  }
-
-  public Boolean resolveFilterCustom() {
-    return filterCustom == null ? null : Boolean.parseBoolean(filterCustom);
-  }
-
-  public Sort resolveSort() {
-    return Sort.valueOf(sort.toUpperCase());
-  }
-
-  private boolean isCheckedFilter(List<String> checkedFilter, List<String> otherFilter) {
-    return isNotEmpty(checkedFilter)
-           && matchesAll(checkedFilter, StringUtils::isNotBlank)
-           && CollectionUtils.isEmpty(otherFilter)
-           && matchesAll(
-      asList(query, filterIsxn, filterName, filterPublisher, filterSubject, filterCustom, filterSelected),
-      StringUtils::isBlank);
   }
 }

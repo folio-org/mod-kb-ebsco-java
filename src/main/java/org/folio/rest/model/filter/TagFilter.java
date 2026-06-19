@@ -19,21 +19,20 @@ public class TagFilter {
   int count;
 
   public static TagFilter from(Filter filter) {
-    RecordType recordType = filter.getRecordType();
     TagFilterBuilder builder = TagFilter.builder()
       .tags(filter.getFilterTags())
-      .recordType(recordType)
+      .recordType(filter.getRecordType())
       .offset((filter.getPage() - 1) * filter.getCount())
       .count(filter.getCount());
 
-    switch (recordType) {
-      case PACKAGE -> builder.recordIdPrefix(ensureTrailingDash(filter.getProviderId()));
-      case RESOURCE -> builder.recordIdPrefix(ensureTrailingDash(filter.getPackageId()));
-      case TITLE -> {
+    switch (filter) {
+      case PackageRecordFilter pf -> builder.recordIdPrefix(ensureTrailingDash(pf.getProviderId()));
+      case ResourceFilter rf -> builder.recordIdPrefix(ensureTrailingDash(rf.getPackageId()));
+      case TitleFilter tf -> {
         builder.recordType(RecordType.RESOURCE);
         builder.recordIdPrefix("");
       }
-      case null, default -> builder.recordIdPrefix("");
+      case ProviderFilter prov -> builder.recordIdPrefix("");
     }
 
     return builder.build();

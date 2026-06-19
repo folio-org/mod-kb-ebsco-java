@@ -40,8 +40,8 @@ import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
 import org.folio.rest.model.filter.AccessTypeFilter;
-import org.folio.rest.model.filter.Filter;
 import org.folio.rest.model.filter.TagFilter;
+import org.folio.rest.model.filter.TitleFilter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RmApiTemplateContext;
@@ -96,8 +96,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                  List<String> filterPackageIds, String include, String sort, int page, int count,
                                  Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                  Context vertxContext) {
-    Filter filter = Filter.builder()
-      .recordType(RecordType.TITLE)
+    var filter = TitleFilter.builder()
       .filterTags(filterTags)
       .filterAccessType(filterAccessType)
       .filterSelected(filterSelected)
@@ -184,7 +183,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .executeWithResult(Title.class);
   }
 
-  private CompletableFuture<Titles> fetchTitlesByFilter(Filter filter, RmApiTemplateContext context) {
+  private CompletableFuture<Titles> fetchTitlesByFilter(TitleFilter filter, RmApiTemplateContext context) {
     if (filter.isTagsFilter()) {
       return filteredEntitiesLoader.fetchTitlesByTagFilter(TagFilter.from(filter), context);
     } else if (filter.isAccessTypeFilter()) {

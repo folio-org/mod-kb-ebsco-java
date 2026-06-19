@@ -52,7 +52,8 @@ import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
 import org.folio.rest.model.filter.AccessTypeFilter;
-import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.PackageRecordFilter;
+import org.folio.rest.model.filter.ProviderFilter;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
@@ -113,8 +114,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
 
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
-    Filter filter = Filter.builder()
-      .recordType(RecordType.PROVIDER)
+    var filter = ProviderFilter.builder()
       .query(q)
       .filterTags(filterTags)
       .sort(sort)
@@ -203,8 +203,17 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         Map<String, String> okapiHeaders,
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
-    var filter = Filter.getSortableFilter(getPackageFilter(providerId, q, filterTags, filterAccessType, filterSelected,
-      filterType), sort, page, count);
+    var filter = PackageRecordFilter.builder()
+        .query(q)
+        .filterTags(filterTags)
+        .providerId(providerId)
+        .filterAccessType(filterAccessType)
+        .filterSelected(filterSelected)
+        .filterType(filterType)
+        .sort(sort)
+        .page(page)
+        .count(count)
+        .build();
 
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
@@ -224,20 +233,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .executeWithResult(PackageCollection.class);
   }
 
-  private Filter.FilterBuilder getPackageFilter(String providerId, String q, List<String> filterTags,
-                                                List<String> filterAccessType,
-                                                String filterSelected, String filterType) {
-    return Filter.builder()
-      .recordType(RecordType.PACKAGE)
-      .query(q)
-      .filterTags(filterTags)
-      .providerId(providerId)
-      .filterAccessType(filterAccessType)
-      .filterSelected(filterSelected)
-      .filterType(filterType);
-  }
-
-  private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(Filter filter) {
+  private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(PackageRecordFilter filter) {
     var packageFilter = PackageFilter.builder()
       .query(filter.getQuery())
       .filterSelected(PackageFilterSelected.fromValue(filter.resolveFilterSelected()))

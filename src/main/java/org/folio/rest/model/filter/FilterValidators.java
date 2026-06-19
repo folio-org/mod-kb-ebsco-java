@@ -10,14 +10,11 @@ import static org.folio.rest.util.RestConstants.SUPPORTED_TITLE_FILTER_TYPE_VALU
 
 import jakarta.validation.ValidationException;
 import java.util.Collection;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.holdingsiq.model.Sort;
-import org.folio.repository.RecordType;
 import org.folio.rest.util.IdParser;
 
 public final class FilterValidators {
@@ -37,91 +34,88 @@ public final class FilterValidators {
   static final String INVALID_KEYWORD_SEARCH_PARAMETERS_MESSAGE =
     "Value of required parameter filter[name], filter[isxn], filter[subject] or filter[publisher] is missing.";
 
-  private static final Map<RecordType, FilterValidator> VALIDATORS = new EnumMap<>(RecordType.class);
-
-  static {
-    VALIDATORS.put(RecordType.PROVIDER, FilterValidators::validateProvider);
-    VALIDATORS.put(RecordType.PACKAGE, FilterValidators::validatePackage);
-    VALIDATORS.put(RecordType.RESOURCE, FilterValidators::validateResource);
-    VALIDATORS.put(RecordType.TITLE, FilterValidators::validateTitle);
-  }
-
   private FilterValidators() {
   }
 
-  public static void validate(Filter filter) {
+  public static void validateProvider(ProviderFilter filter) {
     if (CollectionUtils.isNotEmpty(filter.getFilterTags())
         || CollectionUtils.isNotEmpty(filter.getFilterAccessType())) {
       return;
     }
+    validateSort(filter.getSort());
+    validateQuery(filter.getQuery());
+  }
 
-    validateSort(filter);
-
-    FilterValidator validator = VALIDATORS.get(filter.getRecordType());
-    if (validator != null) {
-      validator.validate(filter);
+  public static void validatePackage(PackageRecordFilter filter) {
+    if (CollectionUtils.isNotEmpty(filter.getFilterTags())
+        || CollectionUtils.isNotEmpty(filter.getFilterAccessType())) {
+      return;
     }
+    validateSort(filter.getSort());
+    validateQuery(filter.getQuery());
+    validateFilterType(filter.getFilterType(), SUPPORTED_PACKAGE_FILTER_TYPE_VALUES);
+    validateFilterCustom(filter.getFilterCustom());
+    validateFilterSelected(filter.getFilterSelected());
+    validateProviderId(filter.getProviderId());
   }
 
-  private static void validateProvider(Filter filter) {
-    validateQuery(filter);
+  public static void validateResource(ResourceFilter filter) {
+    if (CollectionUtils.isNotEmpty(filter.getFilterTags())
+        || CollectionUtils.isNotEmpty(filter.getFilterAccessType())) {
+      return;
+    }
+    validateSort(filter.getSort());
+    validatePackageId(filter.getPackageId());
+    validateFilterType(filter.getFilterType(), SUPPORTED_TITLE_FILTER_TYPE_VALUES);
+    validateFilterSelected(filter.getFilterSelected());
+    validateKeywordSearch(filter.getFilterName(), filter.getFilterIsxn(),
+        filter.getFilterSubject(), filter.getFilterPublisher(), true);
   }
 
-  private static void validatePackage(Filter filter) {
-    validateQuery(filter);
-    validateFilterType(filter, SUPPORTED_PACKAGE_FILTER_TYPE_VALUES);
-    validateFilterCustom(filter);
-    validateFilterSelected(filter);
-    validateProviderId(filter);
+  public static void validateTitle(TitleFilter filter) {
+    if (CollectionUtils.isNotEmpty(filter.getFilterTags())
+        || CollectionUtils.isNotEmpty(filter.getFilterAccessType())) {
+      return;
+    }
+    validateSort(filter.getSort());
+    validateFilterType(filter.getFilterType(), SUPPORTED_TITLE_FILTER_TYPE_VALUES);
+    validateFilterSelected(filter.getFilterSelected());
+    validateFilterPackageIds(filter.getFilterPackageIds());
+    validateKeywordSearch(filter.getFilterName(), filter.getFilterIsxn(),
+        filter.getFilterSubject(), filter.getFilterPublisher(), false);
   }
 
-  private static void validateResource(Filter filter) {
-    validatePackageId(filter);
-    validateFilterType(filter, SUPPORTED_TITLE_FILTER_TYPE_VALUES);
-    validateFilterSelected(filter);
-    validateKeywordSearch(filter, true);
-  }
-
-  private static void validateTitle(Filter filter) {
-    validateFilterType(filter, SUPPORTED_TITLE_FILTER_TYPE_VALUES);
-    validateFilterSelected(filter);
-    validateFilterPackageIds(filter);
-    validateKeywordSearch(filter, false);
-  }
-
-  private static void validateSort(Filter filter) {
-    if (!Sort.contains(filter.getSort().toUpperCase())) {
+  private static void validateSort(String sort) {
+    if (!Sort.contains(sort.toUpperCase())) {
       throw new ValidationException(INVALID_SORT_PARAMETER_MESSAGE);
     }
   }
 
-  private static void validateQuery(Filter filter) {
-    if ("".equals(filter.getQuery())) {
+  private static void validateQuery(String query) {
+    if ("".equals(query)) {
       throw new ValidationException(INVALID_QUERY_PARAMETER_MESSAGE);
     }
   }
 
-  private static void validateFilterType(Filter filter, Collection<String> supportedValues) {
-    if (filter.getFilterType() != null && !supportedValues.contains(filter.getFilterType())) {
+  private static void validateFilterType(String filterType, Collection<String> supportedValues) {
+    if (filterType != null && !supportedValues.contains(filterType)) {
       throw new ValidationException(INVALID_FILTER_TYPE_PARAMETER_MESSAGE);
     }
   }
 
-  private static void validateFilterCustom(Filter filter) {
-    if (filter.getFilterCustom() != null && !Boolean.parseBoolean(filter.getFilterCustom())) {
+  private static void validateFilterCustom(String filterCustom) {
+    if (filterCustom != null && !Boolean.parseBoolean(filterCustom)) {
       throw new ValidationException(INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE);
     }
   }
 
-  private static void validateFilterSelected(Filter filter) {
-    if (filter.getFilterSelected() != null
-        && !FILTER_SELECTED_MAPPING.containsKey(filter.getFilterSelected())) {
+  private static void validateFilterSelected(String filterSelected) {
+    if (filterSelected != null && !FILTER_SELECTED_MAPPING.containsKey(filterSelected)) {
       throw new ValidationException(INVALID_FILTER_SELECTED_PARAMETER_MESSAGE);
     }
   }
 
-  private static void validateFilterPackageIds(Filter filter) {
-    List<String> packageIds = filter.getFilterPackageIds();
+  private static void validateFilterPackageIds(List<String> packageIds) {
     if (packageIds != null && !packageIds.isEmpty()) {
       packageIds.forEach(id -> {
         if (!isNumeric(id)) {
@@ -131,10 +125,10 @@ public final class FilterValidators {
     }
   }
 
-  private static void validateKeywordSearch(Filter filter, boolean allowNullFilters) {
-    List<String> searchParameters =
-      asList(filter.getFilterName(), filter.getFilterIsxn(),
-        filter.getFilterSubject(), filter.getFilterPublisher());
+  private static void validateKeywordSearch(String filterName, String filterIsxn,
+                                           String filterSubject, String filterPublisher,
+                                           boolean allowNullFilters) {
+    List<String> searchParameters = asList(filterName, filterIsxn, filterSubject, filterPublisher);
 
     long nonNullFilters = countMatches(searchParameters, Objects::nonNull);
 
@@ -149,15 +143,15 @@ public final class FilterValidators {
     }
   }
 
-  private static void validateProviderId(Filter filter) {
-    if (filter.getProviderId() != null) {
-      IdParser.parseProviderId(filter.getProviderId());
+  private static void validateProviderId(String providerId) {
+    if (providerId != null) {
+      IdParser.parseProviderId(providerId);
     }
   }
 
-  private static void validatePackageId(Filter filter) {
-    if (filter.getPackageId() != null) {
-      IdParser.parsePackageId(filter.getPackageId());
+  private static void validatePackageId(String packageId) {
+    if (packageId != null) {
+      IdParser.parsePackageId(packageId);
     }
   }
 }

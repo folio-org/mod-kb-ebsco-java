@@ -21,15 +21,17 @@ public class AccessTypeFilter {
     accessTypeFilter.setCount(filter.getCount());
     accessTypeFilter.setPage(filter.getPage());
 
-    RecordType recordType = filter.getRecordType();
-    if (recordType == RecordType.PACKAGE) {
-      accessTypeFilter.setRecordIdPrefix(filter.getProviderId());
-      accessTypeFilter.setRecordType(RecordType.PACKAGE);
-    } else if (recordType == RecordType.RESOURCE) {
-      accessTypeFilter.setRecordIdPrefix(filter.getPackageId());
-      accessTypeFilter.setRecordType(RecordType.RESOURCE);
-    } else if (recordType == RecordType.TITLE) {
-      accessTypeFilter.setRecordType(RecordType.RESOURCE);
+    switch (filter) {
+      case PackageRecordFilter pf -> {
+        accessTypeFilter.setRecordIdPrefix(pf.getProviderId());
+        accessTypeFilter.setRecordType(RecordType.PACKAGE);
+      }
+      case ResourceFilter rf -> {
+        accessTypeFilter.setRecordIdPrefix(rf.getPackageId());
+        accessTypeFilter.setRecordType(RecordType.RESOURCE);
+      }
+      case TitleFilter tf -> accessTypeFilter.setRecordType(RecordType.RESOURCE);
+      case ProviderFilter prov -> { }
     }
     return accessTypeFilter;
   }
