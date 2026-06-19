@@ -31,15 +31,19 @@ import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageFilter;
+import org.folio.holdingsiq.model.PackageFilterFreeAccess;
 import org.folio.holdingsiq.model.PackageFilterSelected;
 import org.folio.holdingsiq.model.PackageFilterType;
+import org.folio.holdingsiq.model.PackageFilterVisibility;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
+import org.folio.holdingsiq.model.PackageSearchField;
 import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Pageable;
 import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.SearchType;
+import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
@@ -69,7 +73,11 @@ import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
+import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.PackageFilterParams;
+import org.folio.rest.model.filter.TagFilter;
+import org.folio.rest.model.query.PackageSearchParams;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RmApiTemplate;
@@ -146,26 +154,29 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsPackages(String filterCustom, String q, String filterSelected, String filterType,
-                                   List<String> filterTags, List<String> filterAccessType, String sort, int page,
-                                   int count,
-                                   Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-                                   Context vertxContext) {
+  public void getEholdingsPackages(String filterCustom, String q, String qField, String qType, boolean highlight,
+                                   String filterSelected, String filterType, String filterVisibility,
+                                   String filterFreeAccess, List<String> filterTags, List<String> filterAccessType,
+                                   String sort, int page, int count, Map<String, String> okapiHeaders,
+                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    var packageSearchParams = new PackageSearchParams(q, qField, qType, highlight);
+    var packageFilterParams = new PackageFilterParams(filterCustom, filterSelected, filterType, filterVisibility,
+      filterFreeAccess, filterTags, filterAccessType);
+    var pageable = new Pageable(page, count, Sort.valueOf(sort.toUpperCase()));
 
-    var filter = Filter.getSortableFilter(prepareFilterForPackage(filterCustom, q, filterSelected, filterType,
-      filterTags, filterAccessType), sort, page, count);
+    var filter = Filter.getPackageFilter(packageSearchParams, packageFilterParams, pageable);
 
     var template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
+        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(TagFilter.from(filter), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
-        .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context));
+        .fetchPackagesByAccessTypeFilter(AccessTypeFilter.from(filter), context));
     } else {
       template
         .requestAction(context -> {
-          if (Boolean.TRUE.equals(filter.getFilterCustom())) {
+          if (Boolean.TRUE.equals(filter.resolveFilterCustom())) {
             return getCustomProviderId(context)
               .thenCompose(providerId -> retrievePackages(providerId, filter, context));
           } else {
@@ -289,10 +300,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     if (filter.isTagsFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchResourcesByTagFilter(filter.createTagFilter(), context));
+        context -> filteredEntitiesLoader.fetchResourcesByTagFilter(TagFilter.from(filter), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchResourcesByAccessTypeFilter(filter.createAccessTypeFilter(), context));
+        context -> filteredEntitiesLoader.fetchResourcesByAccessTypeFilter(AccessTypeFilter.from(filter), context));
     } else {
       template.requestAction(retrievePackageTitles(filter));
     }
@@ -343,10 +354,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private Function<RmApiTemplateContext, CompletableFuture<?>> retrievePackageTitles(Filter filter) {
     return context -> {
-      var pkgId = filter.getPackageId();
+      var pkgId = filter.parsePackageId();
       return context.getTitlesService()
         .retrieveTitles(pkgId.providerIdPart(), pkgId.packageIdPart(), filter.createFilterQuery(),
-          searchProperties.titlesSearchType(), filter.getSort(), filter.getPage(), filter.getCount())
+          searchProperties.titlesSearchType(), filter.resolveSort(), filter.getPage(), filter.getCount())
         .thenApply(titles -> titleCollectionConverter.convert(titles))
         .thenCompose(loadResourceTags(context))
         .thenCompose(loadResourceAccessTypes(context));
@@ -355,16 +366,46 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Packages> retrievePackages(Integer providerId, Filter filter,
                                                        RmApiTemplateContext context) {
+    var filterParams = filter.getPackageFilterParams();
+    var searchParams = filter.getPackageSearchParams();
     var packageFilter = PackageFilter.builder()
-      .query(filter.getQuery())
-      .filterSelected(PackageFilterSelected.fromValue(filter.getFilterSelected()))
-      .filterType(PackageFilterType.fromValue(filter.getFilterType()))
-      .searchType(SearchType.fromValue(searchProperties.packagesSearchType()))
+      .query(searchParams.query())
+      .searchType(searchParams.queryType() == null
+        ? SearchType.fromValue(searchProperties.packagesSearchType())
+        : SearchType.fromValue(searchParams.queryType()))
+      .searchField(PackageSearchField.fromValue(searchParams.queryField()))
+      .highlightTag(searchParams.highlight() ? searchProperties.highlightTag() : null)
+      .filterSelected(PackageFilterSelected.fromValue(filterParams.filterSelected()))
+      .filterType(PackageFilterType.fromValue(filterParams.filterType()))
+      .filterPackageFreeAccess(toFilterPackageFreeAccess(filterParams.filterFreeAccess()))
+      .filterVisibility(toFilterVisibility(filterParams.filterVisibility()))
       .build();
-    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.getSort());
+    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.resolveSort());
     return providerId == null
            ? context.getPackagesService().retrievePackages(packageFilter, pageable)
            : context.getPackagesService().retrievePackages(providerId, packageFilter, pageable);
+  }
+
+  private PackageFilterVisibility toFilterVisibility(String source) {
+    return switch (source) {
+      case "visibleInPF" -> PackageFilterVisibility.VISIBLE_IN_PF;
+      case "visibleInFTF" -> PackageFilterVisibility.VISIBLE_IN_FTF;
+      case "visibleInMARC" -> PackageFilterVisibility.INCLUDED_IN_MARC;
+      case "hiddenInPF" -> PackageFilterVisibility.HIDDEN_IN_PF;
+      case "hiddenInFTF" -> PackageFilterVisibility.HIDDEN_IN_FTF;
+      case "hiddenInMARC" -> PackageFilterVisibility.EXCLUDED_FROM_MARC;
+      case null -> null;
+      default -> throw new IllegalStateException("Unexpected value: " + source);
+    };
+  }
+
+  private PackageFilterFreeAccess toFilterPackageFreeAccess(String source) {
+    return switch (source) {
+      case "public" -> PackageFilterFreeAccess.TRUE;
+      case "controlled" -> PackageFilterFreeAccess.FALSE;
+      case null -> null;
+      default -> throw new IllegalStateException("Unexpected value: " + source);
+    };
   }
 
   @SuppressWarnings("java:S107")
@@ -419,7 +460,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                         RmApiTemplateContext context) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {
-      return CompletableFuture.completedFuture(null);
+      return completedFuture(null);
     } else {
       return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId, false,
         context.getRequestContext().getHeaders());

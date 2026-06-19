@@ -39,7 +39,9 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
+import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RmApiTemplateContext;
@@ -184,13 +186,13 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
 
   private CompletableFuture<Titles> fetchTitlesByFilter(Filter filter, RmApiTemplateContext context) {
     if (filter.isTagsFilter()) {
-      return filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context);
+      return filteredEntitiesLoader.fetchTitlesByTagFilter(TagFilter.from(filter), context);
     } else if (filter.isAccessTypeFilter()) {
-      return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context);
+      return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(AccessTypeFilter.from(filter), context);
     } else {
       return context.getTitlesService()
         .retrieveTitles(filter.createFilterQuery(), searchProperties.titlesSearchType(),
-          filter.getSort(), filter.getPage(), filter.getCount()
+          filter.resolveSort(), filter.getPage(), filter.getCount()
         );
     }
   }

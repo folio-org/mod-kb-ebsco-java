@@ -51,7 +51,9 @@ import org.folio.rest.jaxrs.model.ProviderTagsItem;
 import org.folio.rest.jaxrs.model.ProviderTagsPutRequest;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsProviders;
+import org.folio.rest.model.filter.AccessTypeFilter;
 import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RmApiTemplate;
@@ -121,11 +123,11 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .build();
     if (filter.isTagsFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchProvidersByTagFilter(filter.createTagFilter(), context));
+        context -> filteredEntitiesLoader.fetchProvidersByTagFilter(TagFilter.from(filter), context));
     } else {
       template
         .requestAction(context ->
-          context.getProvidersService().retrieveProviders(q, page, count, filter.getSort()));
+          context.getProvidersService().retrieveProviders(q, page, count, filter.resolveSort()));
     }
     template.executeWithResult(ProviderCollection.class);
   }
@@ -207,10 +209,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
+        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(TagFilter.from(filter), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
-        .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context)
+        .fetchPackagesByAccessTypeFilter(AccessTypeFilter.from(filter), context)
         .thenApply(packages -> new PackageCollectionResult(packages, emptyList())));
     } else {
       template.requestAction(retrieveFilteredPackages(filter));
@@ -238,14 +240,14 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(Filter filter) {
     var packageFilter = PackageFilter.builder()
       .query(filter.getQuery())
-      .filterSelected(PackageFilterSelected.fromValue(filter.getFilterSelected()))
+      .filterSelected(PackageFilterSelected.fromValue(filter.resolveFilterSelected()))
       .filterType(PackageFilterType.fromValue(filter.getFilterType()))
       .searchType(SearchType.fromValue(packagesSearchType))
       .build();
-    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.getSort());
+    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.resolveSort());
     return context ->
       context.getPackagesService()
-        .retrievePackages(filter.getProviderId(), packageFilter, pageable)
+        .retrievePackages(filter.parseProviderId(), packageFilter, pageable)
         .thenCompose(packages -> loadTags(packages, context));
   }
 
