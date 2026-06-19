@@ -3,11 +3,11 @@ package org.folio.rest.model.filter;
 import static java.util.Arrays.asList;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.Builder;
 import lombok.Value;
-import org.folio.holdingsiq.model.Pageable;
+import org.folio.holdingsiq.model.SearchType;
 import org.folio.repository.RecordType;
-import org.folio.rest.model.query.PackageSearchParams;
 import org.folio.rest.util.IdParser;
 
 @Value
@@ -15,17 +15,26 @@ import org.folio.rest.util.IdParser;
 public class PackageRecordFilter implements Filter {
 
   String query;
+  String queryField;
+  String queryType;
+  boolean highlight;
+
   String providerId;
   String filterCustom;
   String filterSelected;
   String filterType;
+  String filterVisibility;
+  String filterFreeAccess;
   String sort;
   int page;
   int count;
   List<String> filterTags;
   List<String> filterAccessType;
-  PackageSearchParams packageSearchParams;
-  PackageFilterParams packageFilterParams;
+
+  public Optional<SearchType> getSearchType() {
+    return Optional.ofNullable(queryType)
+      .map(SearchType::fromValue);
+  }
 
   @Override
   public RecordType getRecordType() {
@@ -47,24 +56,6 @@ public class PackageRecordFilter implements Filter {
 
   public String resolveFilterSelected() {
     return Filter.mapFilterSelected(filterSelected);
-  }
-
-  public static PackageRecordFilter create(PackageSearchParams searchParams,
-                                           PackageFilterParams filterParams,
-                                           Pageable pageable) {
-    return PackageRecordFilter.builder()
-        .query(searchParams.query())
-        .filterTags(filterParams.filterTags())
-        .filterCustom(filterParams.filterCustom())
-        .filterAccessType(filterParams.filterAccessType())
-        .filterSelected(filterParams.filterSelected())
-        .filterType(filterParams.filterType())
-        .packageFilterParams(filterParams)
-        .packageSearchParams(searchParams)
-        .sort(pageable.sort().getValue())
-        .page(pageable.page())
-        .count(pageable.count())
-        .build();
   }
 
   public static PackageRecordFilterBuilder builder() {

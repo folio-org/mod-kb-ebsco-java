@@ -43,7 +43,6 @@ import org.folio.holdingsiq.model.Packages;
 import org.folio.holdingsiq.model.Pageable;
 import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.SearchType;
-import org.folio.holdingsiq.model.Sort;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
@@ -74,11 +73,9 @@ import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
 import org.folio.rest.model.filter.AccessTypeFilter;
-import org.folio.rest.model.filter.PackageFilterParams;
 import org.folio.rest.model.filter.PackageRecordFilter;
 import org.folio.rest.model.filter.ResourceFilter;
 import org.folio.rest.model.filter.TagFilter;
-import org.folio.rest.model.query.PackageSearchParams;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RmApiTemplate;
@@ -160,12 +157,22 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                    String filterFreeAccess, List<String> filterTags, List<String> filterAccessType,
                                    String sort, int page, int count, Map<String, String> okapiHeaders,
                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    var packageSearchParams = new PackageSearchParams(q, qField, qType, highlight);
-    var packageFilterParams = new PackageFilterParams(filterCustom, filterSelected, filterType, filterVisibility,
-      filterFreeAccess, filterTags, filterAccessType);
-    var pageable = new Pageable(page, count, Sort.valueOf(sort.toUpperCase()));
-
-    var filter = PackageRecordFilter.create(packageSearchParams, packageFilterParams, pageable);
+    var filter = PackageRecordFilter.builder()
+      .query(q)
+      .queryField(qField)
+      .queryType(qType)
+      .highlight(highlight)
+      .filterCustom(filterCustom)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterVisibility(filterVisibility)
+      .filterFreeAccess(filterFreeAccess)
+      .filterTags(filterTags)
+      .filterAccessType(filterAccessType)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
 
     var template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
@@ -379,13 +386,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Packages> retrievePackages(Integer providerId, PackageRecordFilter filter,
                                                        RmApiTemplateContext context) {
-    var filterParams = filter.getPackageFilterParams();
-    var searchParams = filter.getPackageSearchParams();
     var packageFilter = PackageFilter.builder()
-      .query(searchParams.query())
-      .searchType(searchParams.queryType() == null
-        ? SearchType.fromValue(searchProperties.packagesSearchType())
-        : SearchType.fromValue(searchParams.queryType()))
+      .query(filter.getQuery())
+      .searchType(filter.getSearchType().orElse(SearchType.fromValue(searchProperties.packagesSearchType())))
       .searchField(PackageSearchField.fromValue(searchParams.queryField()))
       .highlightTag(searchParams.highlight() ? searchProperties.highlightTag() : null)
       .filterSelected(PackageFilterSelected.fromValue(filterParams.filterSelected()))

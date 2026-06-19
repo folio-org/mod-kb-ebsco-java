@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.folio.holdingsiq.model.PackageSearchField;
+import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.Sort;
 import org.folio.rest.util.IdParser;
 
@@ -21,6 +23,8 @@ public final class FilterValidators {
 
   static final String INVALID_QUERY_PARAMETER_MESSAGE = "Search parameter cannot be empty";
   static final String INVALID_SORT_PARAMETER_MESSAGE = "Invalid Query Parameter for sort";
+  static final String INVALID_QUERY_TYPE_PARAMETER_MESSAGE = "Invalid Query Parameter for qType";
+  static final String INVALID_QUERY_FIELD_PARAMETER_MESSAGE = "Invalid Query Parameter for qField";
   static final String INVALID_FILTER_CUSTOM_PARAMETER_MESSAGE =
     "Invalid Query Parameter for filter[custom]: only 'true' is supported";
   static final String INVALID_FILTER_TYPE_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[type]";
@@ -53,6 +57,8 @@ public final class FilterValidators {
     }
     validateSort(filter.getSort());
     validateQuery(filter.getQuery());
+    validateQueryType(filter.getQueryType());
+    validateQueryField(filter.getQueryField());
     validateFilterType(filter.getFilterType(), SUPPORTED_PACKAGE_FILTER_TYPE_VALUES);
     validateFilterCustom(filter.getFilterCustom());
     validateFilterSelected(filter.getFilterSelected());
@@ -94,6 +100,18 @@ public final class FilterValidators {
   private static void validateQuery(String query) {
     if ("".equals(query)) {
       throw new ValidationException(INVALID_QUERY_PARAMETER_MESSAGE);
+    }
+  }
+
+  private static void validateQueryType(String queryType) {
+    if (!SearchType.contains(queryType.toUpperCase())) {
+      throw new ValidationException(INVALID_QUERY_TYPE_PARAMETER_MESSAGE);
+    }
+  }
+
+  private static void validateQueryField(String queryField) {
+    if (!PackageSearchField.contains(queryField.toUpperCase())) {
+      throw new ValidationException(INVALID_QUERY_FIELD_PARAMETER_MESSAGE);
     }
   }
 
