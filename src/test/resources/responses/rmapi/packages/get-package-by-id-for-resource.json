@@ -6,10 +6,13 @@
   "vendorName": "ABC-CLIO",
   "titleCount": 9590,
   "isSelected": true,
-  "visibilityData": {
-    "isHidden": true,
-    "reason": "Hidden by Customer"
-  },
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": "Hidden by customer"
+    }
+  ],
   "selectedCount": 9590,
   "isTokenNeeded": false,
   "contentType": "mixedcontent",

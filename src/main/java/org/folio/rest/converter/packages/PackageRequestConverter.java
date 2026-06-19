@@ -65,7 +65,7 @@ public class PackageRequestConverter {
 
     if (attributes.getCustomAltNames() != null) {
       builder.customAltNames(mapItems(attributes.getCustomAltNames(),
-        packageAltName -> new AlternateName(null, packageAltName.getAltName())));
+        packageAltName -> new AlternateName(packageAltName.getId(), packageAltName.getAltName())));
     }
 
     builder.customDescription(attributes.getCustomDescription());

@@ -21,6 +21,13 @@ public class ListUtils {
     return source.stream().map(mapper).collect(Collectors.toList());
   }
 
+  public static <T, R> List<R> mapItemsNullable(Collection<T> source, Function<? super T, ? extends R> mapper) {
+    if (source == null) {
+      return null;
+    }
+    return source.stream().map(mapper).collect(Collectors.toList());
+  }
+
   public static String createPlaceholders(int size) {
     return String.join(",", Collections.nCopies(size, "?"));
   }

@@ -1,6 +1,5 @@
 package org.folio.rest.model.filter;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -8,7 +7,7 @@ import org.jspecify.annotations.NonNull;
 
 public sealed interface FilterValidator<F extends Filter> permits PackageFilterValidator {
 
-  List<String> validate(@NonNull F filter);
+  void validate(@NonNull F filter);
 
   default Optional<String> validate(@NonNull F filter,
                                     @NonNull Function<F, String> paramExtractor,
@@ -22,7 +21,7 @@ public sealed interface FilterValidator<F extends Filter> permits PackageFilterV
     }
   }
 
-  default Optional<String> validate(@NonNull F filter, @NonNull FilterValidatorLogic logic) {
+  default Optional<String> validate(@NonNull F filter, @NonNull FilterValidatorLogic<F> logic) {
     var param = logic.extractor().apply(filter);
     if (logic.validator().test(param)) {
       return Optional.empty();

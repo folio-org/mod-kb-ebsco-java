@@ -1,15 +1,18 @@
 {
-  "packageId": 3964,
+  "listId": 3964,
   "packageName": "carole and sams test",
   "isCustom": true,
   "vendorId": 19,
   "vendorName": "APIDEV CORPORATE CUSTOMER",
   "titleCount": 6,
   "isSelected": true,
-  "visibilityData": {
-    "isHidden": false,
-    "reason": ""
-  },
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": "Hidden by customer"
+    }
+  ],
   "selectedCount": 6,
   "isTokenNeeded": false,
   "contentType": "AggregatedFullText",

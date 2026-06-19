@@ -7,12 +7,12 @@ import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 import static org.folio.rest.util.RestConstants.FILTER_VISIBILITY_MAPPING;
 import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.folio.holdingsiq.model.PackageSearchField;
 import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.Sort;
+import org.folio.rest.exception.QueryParamsValidationException;
 import org.jspecify.annotations.NonNull;
 
 public final class PackageFilterValidator implements FilterValidator<PackageRecordFilter> {
@@ -49,51 +49,75 @@ public final class PackageFilterValidator implements FilterValidator<PackageReco
   );
 
   @Override
-  public List<String> validate(@NonNull PackageRecordFilter filter) {
+  public void validate(@NonNull PackageRecordFilter filter) {
     if (isNotEmpty(filter.getFilterTags())
         || isNotEmpty(filter.getFilterAccessType())) {
-      return Collections.emptyList();
+      return;
     }
-    return VALIDATORS.stream()
+    var failMessages = VALIDATORS.stream()
       .map(logic -> validate(filter, logic))
       .filter(Optional::isPresent)
       .map(Optional::get)
       .toList();
+    if (!failMessages.isEmpty()) {
+      throw new QueryParamsValidationException(failMessages);
+    }
   }
 
   private static boolean isFilterFreeAccessValid(String filterFreeAccess) {
-    return filterFreeAccess != null && !FILTER_FREE_ACCESS_MAPPING.containsKey(filterFreeAccess);
+    if (filterFreeAccess == null) {
+      return true;
+    }
+    return FILTER_FREE_ACCESS_MAPPING.containsKey(filterFreeAccess);
   }
 
   private static boolean isFilterVisibilityValid(String filterVisibility) {
-    return filterVisibility != null && !FILTER_VISIBILITY_MAPPING.containsKey(filterVisibility);
+    if (filterVisibility == null) {
+      return true;
+    }
+    return FILTER_VISIBILITY_MAPPING.containsKey(filterVisibility);
   }
 
   private static boolean isFilterSelectedValid(String filterSelected) {
-    return filterSelected != null && !FILTER_SELECTED_MAPPING.containsKey(filterSelected);
+    if (filterSelected == null) {
+      return true;
+    }
+    return FILTER_SELECTED_MAPPING.containsKey(filterSelected);
   }
 
   private static boolean isFilterCustomValid(String filterCustom) {
-    return filterCustom != null && !Boolean.parseBoolean(filterCustom);
+    if (filterCustom == null) {
+      return true;
+    }
+    return Boolean.parseBoolean(filterCustom);
   }
 
   private static boolean isFilterTypeValid(String filterType) {
-    return filterType != null && !SUPPORTED_PACKAGE_FILTER_TYPE_VALUES.contains(filterType);
+    if (filterType == null) {
+      return true;
+    }
+    return SUPPORTED_PACKAGE_FILTER_TYPE_VALUES.contains(filterType);
   }
 
   private static boolean isQueryValid(String anObject) {
-    return "".equals(anObject);
+    return !"".equals(anObject);
   }
 
   private static boolean isQueryFieldValid(String queryField) {
-    return !PackageSearchField.contains(queryField.toUpperCase());
+    if (queryField == null) {
+      return true;
+    }
+    return PackageSearchField.contains(queryField);
   }
 
   private static boolean isQueryTypeValid(String queryType) {
-    return !SearchType.contains(queryType.toUpperCase());
+    if (queryType == null) {
+      return true;
+    }
+    return SearchType.contains(queryType);
   }
 
   private static boolean isSortValid(String sort) {
-    return !Sort.contains(sort.toUpperCase());
+    return Sort.contains(sort.toUpperCase());
   }
 }

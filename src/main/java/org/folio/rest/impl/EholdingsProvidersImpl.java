@@ -21,16 +21,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.ws.rs.core.Response;
-import org.folio.holdingsiq.model.PackageFilter;
-import org.folio.holdingsiq.model.PackageFilterSelected;
-import org.folio.holdingsiq.model.PackageFilterType;
 import org.folio.holdingsiq.model.Packages;
-import org.folio.holdingsiq.model.Pageable;
 import org.folio.holdingsiq.model.RequestContext;
-import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.model.VendorPut;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
+import org.folio.properties.common.SearchProperties;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.packages.PackageRepository;
@@ -70,7 +66,6 @@ import org.folio.service.loader.RelatedEntitiesLoader;
 import org.folio.spring.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 
 @SuppressWarnings("java:S6813")
@@ -99,8 +94,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Autowired
   @Qualifier("securedUserCredentialsService")
   private UserKbCredentialsService userKbCredentialsService;
-  @Value("${kb.ebsco.search-type.packages}")
-  private String packagesSearchType;
+  @Autowired
+  private SearchProperties searchProperties;
 
   public EholdingsProvidersImpl() {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
@@ -194,26 +189,31 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       });
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   @Override
-  @Validate
-  @HandleValidationErrors
-  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, List<String> filterTags,
+  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, String queryField,
+                                                        String queryType, boolean highlight, List<String> filterTags,
                                                         List<String> filterAccessType, String filterSelected,
-                                                        String filterType, String sort, int page, int count,
+                                                        String filterType, String filterVisibility, String filterAccess,
+                                                        String sort, int page, int count,
                                                         Map<String, String> okapiHeaders,
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
     var filter = PackageRecordFilter.builder()
-        .query(q)
-        .filterTags(filterTags)
-        .providerId(providerId)
-        .filterAccessType(filterAccessType)
-        .filterSelected(filterSelected)
-        .filterType(filterType)
-        .sort(sort)
-        .page(page)
-        .count(count)
-        .build();
+      .query(q)
+      .queryField(queryField)
+      .queryType(queryType)
+      .filterTags(filterTags)
+      .providerId(providerId)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterVisibility(filterVisibility)
+      .filterFreeAccess(filterAccess)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
 
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
@@ -234,13 +234,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(PackageRecordFilter filter) {
-    var packageFilter = PackageFilter.builder()
-      .query(filter.getQuery())
-      .filterSelected(PackageFilterSelected.fromValue(filter.resolveFilterSelected()))
-      .filterType(PackageFilterType.fromValue(filter.getFilterType()))
-      .searchType(SearchType.fromValue(packagesSearchType))
-      .build();
-    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.resolveSort());
+    var packageFilter = filter.toClientFilter(searchProperties);
+    var pageable = filter.toPageable();
     return context ->
       context.getPackagesService()
         .retrievePackages(filter.parseProviderId(), packageFilter, pageable)

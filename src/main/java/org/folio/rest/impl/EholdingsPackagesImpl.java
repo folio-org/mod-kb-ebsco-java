@@ -30,19 +30,11 @@ import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.PackageData;
-import org.folio.holdingsiq.model.PackageFilter;
-import org.folio.holdingsiq.model.PackageFilterFreeAccess;
-import org.folio.holdingsiq.model.PackageFilterSelected;
-import org.folio.holdingsiq.model.PackageFilterType;
-import org.folio.holdingsiq.model.PackageFilterVisibility;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
-import org.folio.holdingsiq.model.PackageSearchField;
 import org.folio.holdingsiq.model.Packages;
-import org.folio.holdingsiq.model.Pageable;
 import org.folio.holdingsiq.model.RequestContext;
-import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
@@ -149,18 +141,19 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsPackages(String filterCustom, String q, String qField, String qType, boolean highlight,
-                                   String filterSelected, String filterType, String filterVisibility,
+  public void getEholdingsPackages(String filterCustom, String q, String queryField, String queryType,
+                                   boolean highlight, String filterSelected, String filterType, String filterVisibility,
                                    String filterFreeAccess, List<String> filterTags, List<String> filterAccessType,
                                    String sort, int page, int count, Map<String, String> okapiHeaders,
                                    Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     var filter = PackageRecordFilter.builder()
       .query(q)
-      .queryField(qField)
-      .queryType(qType)
+      .queryField(queryField)
+      .queryType(queryType)
       .highlight(highlight)
       .filterCustom(filterCustom)
       .filterSelected(filterSelected)
@@ -289,6 +282,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .execute();
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   @Override
   @Validate
   @HandleValidationErrors
@@ -302,19 +296,19 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                        Context vertxContext) {
 
     var filter = ResourceFilter.builder()
-        .packageId(packageId)
-        .filterTags(filterTags)
-        .filterAccessType(filterAccessType)
-        .filterSelected(filterSelected)
-        .filterType(filterType)
-        .filterName(filterName)
-        .filterIsxn(filterIsxn)
-        .filterSubject(filterSubject)
-        .filterPublisher(filterPublisher)
-        .sort(sort)
-        .page(page)
-        .count(count)
-        .build();
+      .packageId(packageId)
+      .filterTags(filterTags)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
 
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
@@ -386,42 +380,11 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Packages> retrievePackages(Integer providerId, PackageRecordFilter filter,
                                                        RmApiTemplateContext context) {
-    var packageFilter = PackageFilter.builder()
-      .query(filter.getQuery())
-      .searchType(filter.getSearchType().orElse(SearchType.fromValue(searchProperties.packagesSearchType())))
-      .searchField(PackageSearchField.fromValue(searchParams.queryField()))
-      .highlightTag(searchParams.highlight() ? searchProperties.highlightTag() : null)
-      .filterSelected(PackageFilterSelected.fromValue(filterParams.filterSelected()))
-      .filterType(PackageFilterType.fromValue(filterParams.filterType()))
-      .filterPackageFreeAccess(toFilterPackageFreeAccess(filterParams.filterFreeAccess()))
-      .filterVisibility(toFilterVisibility(filterParams.filterVisibility()))
-      .build();
-    var pageable = new Pageable(filter.getPage(), filter.getCount(), filter.resolveSort());
+    var packageFilter = filter.toClientFilter(searchProperties);
+    var pageable = filter.toPageable();
     return providerId == null
            ? context.getPackagesService().retrievePackages(packageFilter, pageable)
            : context.getPackagesService().retrievePackages(providerId, packageFilter, pageable);
-  }
-
-  private PackageFilterVisibility toFilterVisibility(String source) {
-    return switch (source) {
-      case "visibleInPF" -> PackageFilterVisibility.VISIBLE_IN_PF;
-      case "visibleInFTF" -> PackageFilterVisibility.VISIBLE_IN_FTF;
-      case "visibleInMARC" -> PackageFilterVisibility.INCLUDED_IN_MARC;
-      case "hiddenInPF" -> PackageFilterVisibility.HIDDEN_IN_PF;
-      case "hiddenInFTF" -> PackageFilterVisibility.HIDDEN_IN_FTF;
-      case "hiddenInMARC" -> PackageFilterVisibility.EXCLUDED_FROM_MARC;
-      case null -> null;
-      default -> throw new IllegalStateException("Unexpected value: " + source);
-    };
-  }
-
-  private PackageFilterFreeAccess toFilterPackageFreeAccess(String source) {
-    return switch (source) {
-      case "public" -> PackageFilterFreeAccess.TRUE;
-      case "controlled" -> PackageFilterFreeAccess.FALSE;
-      case null -> null;
-      default -> throw new IllegalStateException("Unexpected value: " + source);
-    };
   }
 
   private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessType accessType,

@@ -2,9 +2,7 @@ package org.folio.rest.exception;
 
 import java.io.Serial;
 import java.util.List;
-import lombok.Getter;
 
-@Getter
 public class QueryParamsValidationException extends RuntimeException {
 
   @Serial
@@ -12,8 +10,12 @@ public class QueryParamsValidationException extends RuntimeException {
 
   private final List<String> messageDetail;
 
-  public QueryParamsValidationException(String message, List<String> messageDetail) {
-    super(message);
+  public QueryParamsValidationException(List<String> messageDetail) {
+    super("Query params validation failed.");
     this.messageDetail = messageDetail;
+  }
+
+  public List<String> getMessageDetail() {
+    return messageDetail;
   }
 }

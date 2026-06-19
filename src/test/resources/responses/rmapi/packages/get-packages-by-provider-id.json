@@ -9,10 +9,13 @@
       "vendorName": "TEST_VENDOR_NAME",
       "titleCount": 5,
       "isSelected": true,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        }
+      ],
       "selectedCount": 5,
       "isTokenNeeded": false,
       "contentType": "OnlineReference",

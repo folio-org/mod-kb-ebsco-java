@@ -26,6 +26,6 @@
   },
   "required": [
     "category",
-    "reason"
+    "hidden"
   ]
 }

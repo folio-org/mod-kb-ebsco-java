@@ -19,6 +19,15 @@ public final class ErrorUtil {
   private ErrorUtil() {
   }
 
+  public static JsonapiError createErrors(List<String> errorMessage) {
+    var jsonapiErrorResponses = errorMessage.stream()
+      .map(msg -> createErrorResponse(msg, null))
+      .toList();
+    return new JsonapiError()
+      .withErrors(jsonapiErrorResponses)
+      .withJsonapi(RestConstants.JSONAPI);
+  }
+
   public static JsonapiError createError(String errorMessage) {
     return createError(errorMessage, null);
   }

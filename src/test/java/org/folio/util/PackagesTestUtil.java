@@ -95,7 +95,7 @@ public final class PackagesTestUtil {
 
   public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName)
     throws IOException, URISyntaxException {
-    mockGetWithBody(new RegexPattern(".*vendors/" + stubProviderId + "/packages/" + stubPackageId),
+    mockGetWithBody(new RegexPattern(".*lists/" + stubPackageId),
       getPackageResponse(stubPackageName, stubPackageId, stubProviderId));
   }
 

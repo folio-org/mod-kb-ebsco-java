@@ -1,6 +1,6 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.common.ListUtils.mapItems;
+import static org.folio.common.ListUtils.mapItemsNullable;
 import static org.folio.rest.converter.common.ConverterConsts.CONTENT_TYPES;
 import static org.folio.rest.converter.packages.PackageConverterUtils.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
@@ -33,7 +33,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
     return new PackageDataAttributes()
       .withAllowKbToAddTitles(packageData.getAllowEbscoToAddTitles())
       .withContentType(CONTENT_TYPES.get(packageData.getContentType().toLowerCase()))
-      .withCustomAltNames(mapItems(packageData.getCustomAltNames(), this::convertAltName))
+      .withCustomAltNames(mapItemsNullable(packageData.getCustomAltNames(), this::convertAltName))
       .withCustomCoverage(convertCustomCoverage(packageData))
       .withCustomDescription(packageData.getCustomDescription())
       .withCustomDisplayName(packageData.getCustomDisplayName())
@@ -42,7 +42,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
       .withIsFreeAccess(packageData.getPackageFreeAccess())
       .withIsPrimaryPackage(packageData.getIsPrimaryPackage())
       .withIsSelected(packageData.getIsSelected())
-      .withManagedAltNames(mapItems(packageData.getManagedAltNames(), this::convertAltName))
+      .withManagedAltNames(mapItemsNullable(packageData.getManagedAltNames(), this::convertAltName))
       .withManagedDescription(packageData.getManagedDescription())
       .withName(packageData.getPackageName())
       .withPackageId(packageData.getPackageId())
@@ -53,7 +53,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
       .withSelectedCount(packageData.getSelectedCount())
       .withTitleCount(packageData.getTitleCount())
       .withUrl(packageData.getPackageUrl())
-      .withVisibility(mapItems(packageData.getVisibilityDetails(), this::convertVisibility));
+      .withVisibility(mapItemsNullable(packageData.getVisibilityDetails(), this::convertVisibility));
   }
 
   private PackageVisibility convertVisibility(Visibility visibility) {
@@ -71,7 +71,7 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
 
   private PackageAltName convertAltName(AlternateName alternateName) {
     return new PackageAltName()
-      .withId(alternateName.id() == null ? null : Integer.parseInt(alternateName.id()))
+      .withId(alternateName.id() == null ? null : alternateName.id())
       .withAltName(alternateName.altName());
   }
 }
