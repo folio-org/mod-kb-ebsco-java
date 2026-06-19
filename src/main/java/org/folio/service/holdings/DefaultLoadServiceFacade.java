@@ -3,7 +3,6 @@ package org.folio.service.holdings;
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.IntFunction;
-import lombok.extern.log4j.Log4j2;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.holdingsiq.service.LoadService;
 import org.folio.repository.holdings.LoadStatus;
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component("defaultLoadServiceFacade")
-@Log4j2
 public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
 
   private final int loadPageSize;
@@ -72,7 +70,6 @@ public class DefaultLoadServiceFacade extends AbstractLoadServiceFacade {
   protected CompletableFuture<Void> calculateOffset(IntFunction<CompletableFuture<Void>> offsetLoader, Integer page,
                                                     Integer retries) {
     int offset = (page - 1) * getMaxPageSize() + 1;
-    log.info("Calculated offset {} for page {}, retry {}", offset, page, retries);
     return offsetLoader.apply(offset);
   }
 

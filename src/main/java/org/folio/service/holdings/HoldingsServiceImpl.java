@@ -196,10 +196,6 @@ public class HoldingsServiceImpl implements HoldingsService {
       })
       .exceptionally(e -> {
         log.warn(FAILED_SAVE_HOLDINGS_MESSAGE, e);
-        log.warn("saveHolding:: failed to save holdings{}", holdings.getHoldingList().stream()
-          .map(holding -> String.format("titleId: %s, packageId: %s, vendorId: %s",
-            holding.getTitleId(), holding.getPackageId(), holding.getVendorId()))
-          .collect(Collectors.joining(", ", " [", "]")));
         return null;
       });
   }
@@ -464,16 +460,6 @@ public class HoldingsServiceImpl implements HoldingsService {
   private CompletableFuture<Void> saveHoldings(List<Holding> holdings, OffsetDateTime updatedAt, UUID credentialsId,
                                                String tenantId) {
     Set<DbHoldingInfo> dbHoldings = holdings.stream()
-      .peek(holding -> {
-        if (holding.getVendorId() == 58 && "3885686".equals(holding.getPackageId())) {
-          log.info("saveHoldings:: Processing holding with titleId: {}", holding.getTitleId());
-        }
-        if (holding.getPublisherName() != null && holding.getPublisherName().length() > 200) {
-          log.warn("saveHoldings:: Publisher name is too long : titleId: {}, packageId: {}, vendorId: {}, "
-              + "pubName: {}, length: {}", holding.getTitleId(), holding.getPackageId(), holding.getVendorId(),
-            holding.getPublisherName(), holding.getPublisherName().length());
-        }
-      })
       .filter(distinctByKey(this::getHoldingsId))
       .map(holding -> DbHoldingInfo.builder()
         .titleId(parseInt(holding.getTitleId()))
