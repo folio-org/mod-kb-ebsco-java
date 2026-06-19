@@ -1,0 +1,27 @@
+queryParameters:
+  q:
+    displayName: Search query
+    type: string
+    description: String used to search to retrieve a collection
+    example: ABC-CLIO
+    required: false
+  q[field]:
+    displayName: Search field
+    type: string
+    description: |
+      Field to search.
+      name - Searches on Package Names and Alternative Names. 
+      keyword - Searches on Package Name, Alternative Name, Vendor Name, Managed Description and Custom Description.
+    default: name
+  q[type]:
+    displayName: Search type
+    type: string
+    description: |
+      Type of search to be performed.
+      Possible values: exactphrase, advanced, any, contains, exactmatch, beginswith
+  highlight:
+    displayName: Hit highlighting
+    type: boolean
+    description: If enabled, highlight which parts of the Package result were matched on during searching
+    required: false
+    default: false

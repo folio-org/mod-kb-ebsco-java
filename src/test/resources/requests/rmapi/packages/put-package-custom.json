@@ -2,8 +2,13 @@
   "contentType": 8,
   "isSelected": true,
   "customAltNames": [
-    "Name of the ages (custom name)",
-    "Another custom name"
+    {
+      "id": 1234,
+      "altName": "Name of the ages (custom name)"
+    },
+    {
+      "altName": "Another custom name"
+    }
   ],
   "customDisplayName": "Name of The Ages (2026)",
   "customCoverage": {

@@ -312,8 +312,10 @@ public class ApplicationConfig {
 
   @Bean
   public SearchProperties searchProperties(@Value("${kb.ebsco.search-type.titles}") String titlesSearchType,
-                                           @Value("${kb.ebsco.search-type.packages}") String packagesSearchType) {
-    return new SearchProperties(titlesSearchType, packagesSearchType);
+                                           @Value("${kb.ebsco.search-type.packages}") String packagesSearchType,
+                                           @Value("${kb-ebsco.highlight-tag}") String highlightTag
+                                           ) {
+    return new SearchProperties(titlesSearchType, packagesSearchType, highlightTag);
   }
 
   @Bean
