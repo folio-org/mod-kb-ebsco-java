@@ -218,7 +218,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
     String stubResponseFile = "responses/rmapi/resources/get-resource-by-id-not-found-response.json";
 
     stubFor(
-      get(new UrlPathPattern(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), true))
+      get(new UrlPathPattern(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID
+                                              + "/packages/" + STUB_PACKAGE_ID + "/titles.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))
           .withStatus(404)));
@@ -251,7 +252,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn500WhenRmApiReturns500ErrorOnResourceGet() {
-    mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID
+                             + "/packages/" + STUB_PACKAGE_ID + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
 
     JsonapiError error =
       getWithStatus(STUB_MANAGED_RESOURCE_PATH, SC_INTERNAL_SERVER_ERROR, STUB_USER_ID_HEADER).as(JsonapiError.class);
@@ -617,7 +619,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturnErrorWhenRmApiFails() throws IOException, URISyntaxException {
-    mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID
+                             + "/packages/" + STUB_PACKAGE_ID + "/titles.*"), SC_INTERNAL_SERVER_ERROR);
 
     String postBody = readFile("requests/kb-ebsco/resource/post-resources-bulk.json");
     final ResourceBulkFetchCollection bulkFetchCollection = postWithOk(RESOURCES_BULK_FETCH, postBody,

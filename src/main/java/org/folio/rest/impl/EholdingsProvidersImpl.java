@@ -191,6 +191,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
 
   @SuppressWarnings("checkstyle:MethodLength")
   @Override
+  @Validate
+  @HandleValidationErrors
   public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, String queryField,
                                                         String queryType, boolean highlight, List<String> filterTags,
                                                         List<String> filterAccessType, String filterSelected,

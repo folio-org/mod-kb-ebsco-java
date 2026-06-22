@@ -12,6 +12,7 @@
         "isCustom": true,
         "isSelected": true,
         "name": "TEST_PACKAGE_NAME",
+        "packageId": 3964,
         "packageType": "Custom",
         "providerId": 19,
         "providerName": "TEST_VENDOR_NAME",
