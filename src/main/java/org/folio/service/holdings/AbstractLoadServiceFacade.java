@@ -137,18 +137,18 @@ public abstract class AbstractLoadServiceFacade implements LoadServiceFacade {
   }
 
   protected CompletableFuture<Void> loadWithPagination(Integer totalPages,
-                                                       IntFunction<CompletableFuture<Void>> pageLoader) {
+                                                       IntFunction<CompletableFuture<Void>> offsetLoader) {
     CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
     List<Integer> pagesToLoad = IntStream.range(1, totalPages + 1).boxed().toList();
     for (Integer page : pagesToLoad) {
       future = future.thenCompose(
-        o -> retryOnFailure(loadPageRetries, loadPageDelay, retries -> calculatePage(pageLoader, page, retries)));
+        o -> retryOnFailure(loadPageRetries, loadPageDelay, retries -> calculateOffset(offsetLoader, page, retries)));
     }
     return future;
   }
 
-  protected CompletableFuture<Void> calculatePage(IntFunction<CompletableFuture<Void>> pageLoader,
-                                                  Integer page, Integer retries) {
+  protected CompletableFuture<Void> calculateOffset(IntFunction<CompletableFuture<Void>> pageLoader,
+                                                    Integer page, Integer retries) {
     if (loadPageRetries > retries) {
       page = Math.max(page / 2, loadPageSizeMin);
     }
