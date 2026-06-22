@@ -128,6 +128,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler,
@@ -145,6 +146,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   @Override
+  @Validate
   @HandleValidationErrors
   public void putEholdingsProvidersByProviderId(String providerId, String contentType, ProviderPutRequest entity,
                                                 Map<String, String> okapiHeaders,
@@ -162,6 +164,8 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   @Override
+  @Validate
+  @HandleValidationErrors
   public void putEholdingsProvidersTagsByProviderId(String providerId, String contentType,
                                                     ProviderTagsPutRequest entity,
                                                     Map<String, String> headers,
@@ -201,6 +205,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                         Map<String, String> okapiHeaders,
                                                         Handler<AsyncResult<Response>> asyncResultHandler,
                                                         Context vertxContext) {
+    var parsedProviderId = parseProviderId(providerId);
     var filter = PackageRecordFilter.builder()
       .query(q)
       .queryField(queryField)
@@ -226,7 +231,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         .fetchPackagesByAccessTypeFilter(AccessTypeFilter.from(filter), context)
         .thenApply(packages -> new PackageCollectionResult(packages, emptyList())));
     } else {
-      template.requestAction(retrieveFilteredPackages(filter));
+      template.requestAction(retrieveFilteredPackages(parsedProviderId, filter));
     }
     template
       .addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -235,12 +240,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .executeWithResult(PackageCollection.class);
   }
 
-  private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(PackageRecordFilter filter) {
+  private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(int providerId,
+                                                                                        PackageRecordFilter filter) {
     var packageFilter = filter.toClientFilter(searchProperties);
     var pageable = filter.toPageable();
     return context ->
       context.getPackagesService()
-        .retrievePackages(filter.parseProviderId(), packageFilter, pageable)
+        .retrievePackages(providerId, packageFilter, pageable)
         .thenCompose(packages -> loadTags(packages, context));
   }
 

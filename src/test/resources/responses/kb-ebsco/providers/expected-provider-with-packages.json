@@ -51,10 +51,13 @@
         "providerName": "TEST_VENDOR_NAME",
         "selectedCount": 5,
         "titleCount": 5,
-        "visibilityData": {
-          "isHidden": false,
-          "reason": ""
-        }
+        "visibility": [
+          {
+            "category": "PF",
+            "reason": "Hidden by customer",
+            "hidden": false
+          }
+        ]
       },
       "relationships": {
         "resources": {

@@ -322,7 +322,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
     stubFor(
       get(new UrlPathPattern(
-        new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*"), true))
+        new RegexPattern("/rm/rmaccounts/v2/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/lists.*"), true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(STUB_PACKAGE_RESPONSE))));
 
@@ -516,7 +516,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400IfProviderIdInvalid() {
-    checkResponseNotEmptyWhenStatusIs400(PROVIDER_PATH + "/invalid/lists");
+    checkResponseNotEmptyWhenStatusIs400(PROVIDER_PATH + "/invalid/packages");
   }
 
   @Test
