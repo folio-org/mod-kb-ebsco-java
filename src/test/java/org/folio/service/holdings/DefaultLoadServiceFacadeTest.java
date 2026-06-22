@@ -144,45 +144,20 @@ public class DefaultLoadServiceFacadeTest {
 
   @Test
   @SneakyThrows
-  public void shouldCalculateOffsetForFirstPage() {
-    CompletableFuture<Void> callbackFuture = CompletableFuture.completedFuture(null);
-
-    IntFunction<CompletableFuture<Void>> offsetLoader = offset -> {
-      assertEquals(1, offset);
-      return callbackFuture;
-    };
-
-    defaultLoadServiceFacade.calculateOffset(offsetLoader, 1, pageRetryCount);
-
-    assertTrue(callbackFuture.isDone());
+  public void shouldCalculateOffsetForPages() {
+    verifyOffset(1, 1);
+    verifyOffset(2, 2501);
+    verifyOffset(3, 5001);
   }
 
-  @Test
-  @SneakyThrows
-  public void shouldCalculateOffsetForSecondPage() {
+  private void verifyOffset(int pageNumber, int expectedOffset) {
     CompletableFuture<Void> callbackFuture = CompletableFuture.completedFuture(null);
-
     IntFunction<CompletableFuture<Void>> offsetLoader = offset -> {
-      assertEquals(2501, offset);
+      assertEquals(expectedOffset, offset);
       return callbackFuture;
     };
 
-    defaultLoadServiceFacade.calculateOffset(offsetLoader, 2, pageRetryCount);
-
-    assertTrue(callbackFuture.isDone());
-  }
-
-  @Test
-  @SneakyThrows
-  public void shouldCalculateOffsetForThirdPage() {
-    CompletableFuture<Void> callbackFuture = CompletableFuture.completedFuture(null);
-
-    IntFunction<CompletableFuture<Void>> offsetLoader = offset -> {
-      assertEquals(5001, offset);
-      return callbackFuture;
-    };
-
-    defaultLoadServiceFacade.calculateOffset(offsetLoader, 3, pageRetryCount);
+    defaultLoadServiceFacade.calculateOffset(offsetLoader, pageNumber, pageRetryCount);
 
     assertTrue(callbackFuture.isDone());
   }
@@ -190,16 +165,6 @@ public class DefaultLoadServiceFacadeTest {
   @Test
   @SneakyThrows
   public void shouldPopulateHoldingsReturnNullTransactionId() {
-    Mockito.when(loadService.populateHoldingsForce())
-      .thenReturn(CompletableFuture.completedFuture(null));
-
-    var result = defaultLoadServiceFacade.populateHoldings(loadService);
-    assertNull(result.get());
-  }
-
-  @Test
-  @SneakyThrows
-  public void shouldPopulateHoldingsHandleNullResult() {
     Mockito.when(loadService.populateHoldingsForce())
       .thenReturn(CompletableFuture.completedFuture(null));
 
