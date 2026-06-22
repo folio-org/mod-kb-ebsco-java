@@ -133,10 +133,10 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   public void getEholdingsProvidersByProviderId(String providerId, String include, Map<String, String> okapiHeaders,
                                                 Handler<AsyncResult<Response>> asyncResultHandler,
                                                 Context vertxContext) {
-
+    var parseProviderId = parseProviderId(providerId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getProvidersService().retrieveProvider(parseProviderId(providerId), include)
+        context.getProvidersService().retrieveProvider(parseProviderId, include)
           .thenCompose(result -> loadTags(result, context))
       )
       .addErrorMapper(ResourceNotFoundException.class, exception ->
