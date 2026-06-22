@@ -4,11 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThrows;
 
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.impl.PackagesTestData;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
+import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.folio.rest.jaxrs.model.Token;
 import org.junit.Test;
 
@@ -34,12 +36,11 @@ public class PackagePutBodyValidatorTest {
     var request = PackagesTestData.getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(false)
-    //        .withVisibilityData(new VisibilityData()
-    //          .withIsHidden(true))
+        .withVisibility(List.of(new PackageVisibility().withCategory(PackageVisibility.Category.PF).withHidden(true)))
     );
 
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
-    assertThat(exception.getMessage(), containsString("isHidden"));
+    assertThat(exception.getMessage(), containsString("visibility"));
   }
 
   @Test

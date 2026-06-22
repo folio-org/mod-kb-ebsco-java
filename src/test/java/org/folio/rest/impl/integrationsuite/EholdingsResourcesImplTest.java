@@ -94,8 +94,10 @@ import org.skyscreamer.jsonassert.JSONAssert;
 public class EholdingsResourcesImplTest extends WireMockTestBase {
 
   private static final String MANAGED_PACKAGE_ENDPOINT =
-    "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID;
-  private static final String MANAGED_RESOURCE_ENDPOINT = MANAGED_PACKAGE_ENDPOINT + "/titles/" + STUB_MANAGED_TITLE_ID;
+    "/rm/rmaccounts/v2/" + STUB_CUSTOMER_ID + "/lists/" + STUB_PACKAGE_ID;
+  private static final String MANAGED_RESOURCE_ENDPOINT = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/"
+                                                          + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID
+                                                          + "/titles/" + STUB_MANAGED_TITLE_ID;
   private static final String CUSTOM_RESOURCE_ENDPOINT =
     "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_CUSTOM_VENDOR_ID + "/packages/" + STUB_CUSTOM_PACKAGE_ID
     + "/titles/" + STUB_CUSTOM_TITLE_ID;
@@ -627,7 +629,8 @@ public class EholdingsResourcesImplTest extends WireMockTestBase {
   }
 
   private void mockPackageResources(String stubPackageResourcesFile) throws IOException, URISyntaxException {
-    mockGet(new RegexPattern(MANAGED_PACKAGE_ENDPOINT + "/titles.*"), stubPackageResourcesFile);
+    mockGet(new RegexPattern("/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID
+                             + "/packages/" + STUB_PACKAGE_ID + "/titles.*"), stubPackageResourcesFile);
   }
 
   private void mockPackage(String responseFile) throws IOException, URISyntaxException {

@@ -37,7 +37,7 @@ public class PackageServiceImplTest {
   @Test
   public void shouldReturnCachedPackage() throws IOException, URISyntaxException {
     RegexPattern getPackagePattern = new RegexPattern(
-      "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages/" + STUB_PACKAGE_ID);
+      "/rm/rmaccounts/v2/" + STUB_CUSTOMER_ID  + "/lists/" + STUB_PACKAGE_ID);
 
     Configuration configuration = Configuration.builder()
       .url("http://127.0.0.1:" + userMockServer.port())
@@ -49,7 +49,7 @@ public class PackageServiceImplTest {
 
     mockGet(getPackagePattern, CUSTOM_PACKAGE_STUB_FILE);
 
-    var packageId = new PackageId(STUB_PACKAGE_ID, STUB_VENDOR_ID);
+    var packageId = new PackageId(STUB_VENDOR_ID, STUB_PACKAGE_ID);
     service.retrievePackage(packageId, Collections.emptyList(), true).join();
     service.retrievePackage(packageId, Collections.emptyList(), true).join();
 

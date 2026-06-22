@@ -15,12 +15,15 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
 import static org.folio.service.locale.LocaleSettingsServiceImpl.LOCALE_ENDPOINT_PATH;
+import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.test.util.TestUtil.readFile;
 import static org.folio.util.KbTestUtil.clearDataFromTable;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.github.tomakehurst.wiremock.http.Fault;
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.response.ExtractableResponse;
@@ -203,8 +206,16 @@ public abstract class WireMockTestBase extends TestBase {
   }
 
   protected void checkResponseNotEmptyWhenStatusIs400(String path) {
+    var specification = new RequestSpecBuilder()
+      .addHeader(XOkapiHeaders.TENANT, STUB_TENANT)
+      .addHeader(XOkapiHeaders.USER_ID, JOHN_ID)
+      .addHeader(XOkapiHeaders.URL, getWiremockUrl())
+      .setBaseUri(host + ":" + port)
+      .setPort(port)
+      .log(LogDetail.ALL)
+      .build();
     RestAssured.given()
-      .spec(getRequestSpecification())
+      .spec(specification)
       .when()
       .get(path)
       .then()

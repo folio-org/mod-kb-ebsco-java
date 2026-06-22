@@ -117,7 +117,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   private static final String PROVIDER_RM_API_PATH = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors.*";
   private static final String PROVIDER_PACKAGES_RM_API_PATH =
-    "/rm/rmaccounts.*" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/packages.*";
+    "/rm/rmaccounts/v2/.*" + STUB_CUSTOMER_ID + "/vendors/" + STUB_VENDOR_ID + "/lists.*";
   private static final UrlPathPattern PROVIDER_URL_PATTERN =
     new UrlPathPattern(new RegexPattern(PROVIDER_RM_API_PATH), true);
 
@@ -264,7 +264,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
     insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.getFirst().getId(), vertx);
     insertAccessTypeMapping(FULL_PACKAGE_ID_4, PACKAGE, accessTypes.getFirst().getId(), vertx);
 
-    mockGet(new RegexPattern(".*vendors/.*/packages/.*"), SC_INTERNAL_SERVER_ERROR);
+    mockGet(new RegexPattern(".*/lists/.*"), SC_INTERNAL_SERVER_ERROR);
 
     String resourcePath = PROVIDER_PACKAGES + "?filter[access-type]=" + STUB_ACCESS_TYPE_NAME;
     PackageCollection packageCollection = getWithOk(resourcePath, STUB_USER_ID_HEADER).as(PackageCollection.class);
@@ -516,7 +516,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn400IfProviderIdInvalid() {
-    checkResponseNotEmptyWhenStatusIs400(PROVIDER_PATH + "/invalid/packages");
+    checkResponseNotEmptyWhenStatusIs400(PROVIDER_PATH + "/invalid/lists");
   }
 
   @Test
@@ -554,7 +554,7 @@ public class EholdingsProvidersImplTest extends WireMockTestBase {
 
   @Test
   public void shouldReturn404WhenNonProviderIdNotFound() {
-    String rmapiInvalidProviderIdUrl = "/rm/rmaccounts/" + STUB_CUSTOMER_ID + "/vendors/191919/packages";
+    String rmapiInvalidProviderIdUrl = ".*" + STUB_CUSTOMER_ID + "/vendors/191919/lists";
 
     mockGet(new RegexPattern(rmapiInvalidProviderIdUrl), SC_NOT_FOUND);
 

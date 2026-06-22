@@ -2,7 +2,7 @@
   "totalResults": 1,
   "packagesList": [
     {
-      "packageId": 3964,
+      "listId": 3964,
       "packageName": "TEST_PACKAGE_NAME",
       "isCustom": true,
       "vendorId": 19,

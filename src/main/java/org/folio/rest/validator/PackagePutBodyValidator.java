@@ -42,7 +42,7 @@ public class PackagePutBodyValidator {
     Boolean isSelected = attributes.getIsSelected();
     if (isSelected == null || !isSelected) {
       ValidatorUtil.checkFalseOrNull("allowKbToAddTitles", allowKbToAddTitles);
-      ValidatorUtil.checkIsNull("visibility", visibility);
+      ValidatorUtil.checkIsEmptyCollection("visibility", visibility);
       ValidatorUtil.checkIsEmpty("customCoverage.beginCoverage", beginCoverage);
       ValidatorUtil.checkIsEmpty("customCoverage.endCoverage", endCoverage);
       ValidatorUtil.checkIsNull("packageToken.value", value);

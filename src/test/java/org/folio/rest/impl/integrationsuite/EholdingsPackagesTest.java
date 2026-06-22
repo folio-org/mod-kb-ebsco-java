@@ -1137,7 +1137,7 @@ public class EholdingsPackagesTest extends WireMockTestBase {
     stubFor(
       get(
         new UrlPathPattern(new RegexPattern(
-          LIST_BY_ID_STUB_URL + "/titles.*"),
+          PACKAGE_BY_ID_URL + "/titles.*"),
           true))
         .willReturn(new ResponseDefinitionBuilder()
           .withBody(readFile(stubResponseFile))
