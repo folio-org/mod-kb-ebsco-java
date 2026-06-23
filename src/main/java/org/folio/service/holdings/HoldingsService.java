@@ -5,9 +5,7 @@ import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.util.template.RmApiTemplateContext;
 import org.folio.service.holdings.message.DeltaReportCreatedMessage;
 import org.folio.service.holdings.message.DeltaReportMessage;
@@ -39,12 +37,6 @@ public interface HoldingsService {
   }
 
   @GenIgnore
-  default CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<String> ids, String credentialsId,
-                                                                  String tenant) {
-    throw new UnsupportedOperationException();
-  }
-
-  @GenIgnore
   default CompletableFuture<Boolean> canStartLoading(String tenant) {
     throw new UnsupportedOperationException();
   }
@@ -56,12 +48,6 @@ public interface HoldingsService {
 
   @GenIgnore
   default CompletableFuture<Void> setUpCredentials(String credentialsId, String tenant) {
-    throw new UnsupportedOperationException();
-  }
-
-  @GenIgnore
-  default CompletableFuture<List<DbHoldingInfo>> getHoldingsByPackageId(String packageId, String credentialsId,
-                                                                        String tenant) {
     throw new UnsupportedOperationException();
   }
 

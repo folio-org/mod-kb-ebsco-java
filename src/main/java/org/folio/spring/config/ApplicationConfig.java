@@ -59,6 +59,7 @@ import org.folio.rmapi.cache.PackageCacheKey;
 import org.folio.rmapi.cache.ResourceCacheKey;
 import org.folio.rmapi.cache.TitleCacheKey;
 import org.folio.rmapi.cache.VendorCacheKey;
+import org.folio.rmapi.result.UcCostAnalysisResult;
 import org.folio.service.holdings.LoadServiceFacade;
 import org.folio.service.holdings.exception.ProcessInProgressException;
 import org.folio.service.kbcredentials.KbCredentialsService;
@@ -164,6 +165,18 @@ public class ApplicationConfig {
     @Value("${uc.title-package.cache.enable:false}") boolean isEnabled) {
     if (isEnabled) {
       return new VertxCache<>(vertx, expirationTime, "ucTitlePackageCache");
+    } else {
+      return emptyCache(vertx);
+    }
+  }
+
+  @Bean
+  public VertxCache<UcTitlePackageCacheKey, UcCostAnalysisResult> ucTitlePackageCostCache(
+    Vertx vertx,
+    @Value("${uc.title-package-cost.cache.expire}") long expirationTime,
+    @Value("${uc.title-package-cost.cache.enable:false}") boolean isEnabled) {
+    if (isEnabled) {
+      return new VertxCache<>(vertx, expirationTime, "ucTitlePackageCostCache");
     } else {
       return emptyCache(vertx);
     }

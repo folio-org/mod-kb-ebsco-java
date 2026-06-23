@@ -146,12 +146,6 @@ public class HoldingsServiceImpl implements HoldingsService {
   }
 
   @Override
-  public CompletableFuture<List<DbHoldingInfo>> getHoldingsByIds(List<String> ids, String credentialsId,
-                                                                 String tenantId) {
-    return holdingsRepository.findAllById(ids, toUUID(credentialsId), tenantId);
-  }
-
-  @Override
   public CompletableFuture<Boolean> canStartLoading(String tenant) {
     return holdingsStatusRepository.findAll(tenant)
       .thenCompose(this::canStart);
@@ -168,12 +162,6 @@ public class HoldingsServiceImpl implements HoldingsService {
     UUID credentialsUuid = toUUID(credentialsId);
     return setStatusToNotStarted(credentialsUuid, tenant)
       .thenCompose(v -> resetRetries(0, credentialsUuid, tenant));
-  }
-
-  @Override
-  public CompletableFuture<List<DbHoldingInfo>> getHoldingsByPackageId(String packageId, String credentialsId,
-                                                                       String tenantId) {
-    return holdingsRepository.findAllByPackageId(Integer.parseInt(packageId), toUUID(credentialsId), tenantId);
   }
 
   @Override

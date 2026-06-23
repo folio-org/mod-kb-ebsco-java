@@ -7,10 +7,8 @@ import static org.folio.repository.SqlQueryHelper.deleteQuery;
 import static org.folio.repository.SqlQueryHelper.equalCondition;
 import static org.folio.repository.SqlQueryHelper.joinWithComma;
 import static org.folio.repository.SqlQueryHelper.lessThanCondition;
-import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.SqlQueryHelper.updateOnConflictedIdQuery;
 import static org.folio.repository.SqlQueryHelper.whereConditionsQuery;
-import static org.folio.repository.SqlQueryHelper.whereQuery;
 
 import java.util.List;
 
@@ -46,17 +44,6 @@ public final class HoldingsTableConstants {
     );
   }
 
-  public static String selectByPkHoldings(String tenantId, List<String> resourceIds) {
-    return prepareQuery(selectByPkHoldingsQuery(),
-      getHoldingsTableName(tenantId),
-      createPlaceholders(2, resourceIds.size())
-    );
-  }
-
-  public static String selectByPackageIdAndCredentials(String tenantId) {
-    return prepareQuery(selectByPackageIdAndCredentialsQuery(), getHoldingsTableName(tenantId));
-  }
-
   public static String deleteOldRecordsByCredentialsId(String tenantId) {
     return prepareQuery(deleteOldRecordsByCredentialsIdQuery(), getHoldingsTableName(tenantId));
   }
@@ -75,14 +62,6 @@ public final class HoldingsTableConstants {
 
   private static String deleteByPkHoldingsQuery() {
     return "DELETE FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
-  }
-
-  private static String selectByPkHoldingsQuery() {
-    return "SELECT * FROM %s WHERE (" + PK_HOLDINGS + ") IN (%s);";
-  }
-
-  private static String selectByPackageIdAndCredentialsQuery() {
-    return selectQuery() + " " + whereQuery(PACKAGE_ID_COLUMN, CREDENTIALS_ID_COLUMN) + ";";
   }
 
   private static String deleteOldRecordsByCredentialsIdQuery() {

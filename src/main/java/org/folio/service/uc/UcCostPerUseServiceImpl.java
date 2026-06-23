@@ -8,13 +8,16 @@ import static org.folio.rest.util.IdParser.parseTitleId;
 import com.google.common.collect.Iterables;
 import io.vertx.core.Promise;
 import io.vertx.core.json.Json;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import lombok.extern.log4j.Log4j2;
@@ -30,13 +33,18 @@ import org.folio.client.uc.configuration.GetTitlePackageUcConfiguration;
 import org.folio.client.uc.configuration.GetTitleUcConfiguration;
 import org.folio.client.uc.model.UcCostAnalysis;
 import org.folio.client.uc.model.UcCostAnalysisDetails;
+import org.folio.client.uc.model.UcPackageCostPerUse;
 import org.folio.client.uc.model.UcTitleCostPerUse;
 import org.folio.client.uc.model.UcTitlePackageId;
 import org.folio.config.cache.UcTitlePackageCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.Title;
+import org.folio.holdingsiq.model.Titles;
+import org.folio.properties.common.SearchProperties;
+import org.folio.repository.RecordType;
 import org.folio.repository.holdings.DbHoldingInfo;
+import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.Order;
 import org.folio.rest.jaxrs.model.PackageCostPerUse;
@@ -46,12 +54,14 @@ import org.folio.rest.jaxrs.model.ResourceCostPerUseCollection;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.rest.jaxrs.model.TitleCostPerUse;
 import org.folio.rest.jaxrs.model.UCSettings;
+import org.folio.rest.model.filter.Filter;
 import org.folio.rest.util.template.RmApiTemplateContext;
 import org.folio.rest.util.template.RmApiTemplateFactory;
 import org.folio.rmapi.result.PackageCostPerUseResult;
 import org.folio.rmapi.result.ResourceCostPerUseCollectionResult;
 import org.folio.rmapi.result.ResourceCostPerUseResult;
 import org.folio.rmapi.result.TitleCostPerUseResult;
+import org.folio.rmapi.result.UcCostAnalysisResult;
 import org.folio.service.holdings.HoldingsService;
 import org.folio.service.uc.sorting.CostPerUseSort;
 import org.folio.service.uc.sorting.UcSortingComparatorProvider;
@@ -74,6 +84,8 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   public static final String INVALID_SORT_DETAILS =
     "Parameter 'sort' should by one of: 'name', 'type', 'cost', 'usage', 'costperuse'";
   private static final int MAX_PARTITION_SIZE = 1000;
+  private static final int COUNT = 100;
+  private static final String SORT = "relevance";
 
   private static final String PARAM_VALIDATION_ERROR_MESSAGE = "validateParams:: {}: {}";
 
@@ -88,6 +100,8 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   private UcApigeeEbscoClient client;
   @Autowired
   private RmApiTemplateFactory templateFactory;
+  @Autowired
+  private SearchProperties searchProperties;
 
   @Autowired
   private Converter<ResourceCostPerUseResult, ResourceCostPerUse> resourceCostPerUseConverter;
@@ -101,6 +115,9 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
 
   @Autowired
   private VertxCache<UcTitlePackageCacheKey, Map<String, UcCostAnalysis>> ucTitlePackageCache;
+
+  @Autowired
+  private VertxCache<UcTitlePackageCacheKey, UcCostAnalysisResult> ucTitlePackageCostCache;
 
   @Autowired
   private UcSortingComparatorProvider<ResourceCostPerUseCollectionItem> sortingComparatorProvider;
@@ -204,54 +221,126 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
       .thenCompose(context -> fetchCommonConfiguration(platform, fiscalYear, platformTypeHolder, context)
         .thenCompose(ucConfiguration ->
-          composeResourceCostPerUseCollectionResult(packageIdPart, context, ucConfiguration,
+          composeResourceCostPerUseCollectionResult(packageIdPart, packageId, context, ucConfiguration,
             platformTypeHolder.get())));
   }
 
-  private CompletableFuture<PackageCostPerUseResult> composePackageCostPerUseResult(
-    String packageId, PlatformType platformType,
-    RmApiTemplateContext context,
-    CommonUcConfiguration ucConfiguration) {
-    var packageIdPart = valueOf(parsePackageId(packageId).getPackageIdPart());
+  private CompletableFuture<PackageCostPerUseResult> composePackageCostPerUseResult(String packageId,
+                                                                                    PlatformType platformType,
+                                                                                    RmApiTemplateContext context,
+                                                                                    CommonUcConfiguration ucConfig) {
+    var id = parsePackageId(packageId);
+    var packageIdPart = valueOf(id.getPackageIdPart());
+    var providerIdPart = valueOf(id.getProviderIdPart());
     log.info("composePackageCostPerUseResult:: Composing Result for Package Cost Per use with packageIdPart: {}, "
-             + "platformType: {}", packageIdPart, platformType);
-    return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
+      + "platformType: {}", packageIdPart, platformType);
+    return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfig))
       .thenCompose(ucPackageCostPerUse -> {
-        var resultBuilder = PackageCostPerUseResult.builder()
-          .packageId(packageId)
-          .ucPackageCostPerUse(ucPackageCostPerUse)
-          .configuration(ucConfiguration)
-          .platformType(platformType);
+        var resultBuilder = getResultBuilder(packageId, platformType, ucConfig, ucPackageCostPerUse);
 
         var cost = ucPackageCostPerUse.analysis().current().cost();
         if (cost == null || cost.equals(NumberUtils.DOUBLE_ZERO)) {
-          return fetchHoldingsData(packageIdPart, context)
-            .thenCompose(dbHoldingInfos -> {
-              var configuration = createGetTitlePackageConfiguration(ucConfiguration, true);
-              return loadFromCache(extractTitlePackageIds(dbHoldingInfos), configuration);
-            })
-            .thenApply(titlePackageCost -> resultBuilder.titlePackageCostMap(titlePackageCost).build());
+          log.info("composePackageCostPerUseResult:: Cost is null or zero for packageIdPart: {}, providerIdPart: {}. "
+            + "Fetch title package cost.", packageIdPart, providerIdPart);
+          var configuration = createGetTitlePackageConfiguration(ucConfig, true);
+          return loadFromCache(packageId, context, configuration)
+            .thenApply(titlePackageCost ->
+              resultBuilder.titlePackageCostMap(titlePackageCost.costAnalysisMap()).build());
         } else {
           return CompletableFuture.completedFuture(resultBuilder.build());
         }
       });
   }
 
+  private PackageCostPerUseResult.PackageCostPerUseResultBuilder getResultBuilder(
+    String packageId,
+    PlatformType platformType,
+    CommonUcConfiguration ucConfig,
+    UcPackageCostPerUse ucPackageCostPerUse) {
+
+    return PackageCostPerUseResult.builder()
+      .packageId(packageId)
+      .ucPackageCostPerUse(ucPackageCostPerUse)
+      .configuration(ucConfig)
+      .platformType(platformType);
+  }
+
   private CompletableFuture<ResourceCostPerUseCollectionResult> composeResourceCostPerUseCollectionResult(
-    String packageIdPart, RmApiTemplateContext context, CommonUcConfiguration ucConfiguration,
-    PlatformType platformType) {
+    String packageIdPart, String packageId, RmApiTemplateContext context,
+    CommonUcConfiguration ucConfiguration, PlatformType platformType) {
+
     var resultBuilder = ResourceCostPerUseCollectionResult.builder()
       .configuration(ucConfiguration)
       .platformType(platformType);
     return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
       .thenAccept(resultBuilder::packageCostPerUse)
-      .thenCompose(unused -> fetchHoldingsData(packageIdPart, context))
-      .thenApply(dbHoldingInfos -> {
-        resultBuilder.holdingInfos(dbHoldingInfos);
-        return extractTitlePackageIds(dbHoldingInfos);
-      })
-      .thenCompose(ids -> fetchTitlePackageCost(ids, platformType, ucConfiguration))
-      .thenApply(titlePackageCostMap -> resultBuilder.titlePackageCostMap(titlePackageCostMap).build());
+      .thenCompose(unused -> fetchTitlePackageCost(packageId, context, platformType, ucConfiguration))
+      .thenApply(titlePackageCost -> {
+        resultBuilder.holdingInfos(titlePackageCost.holdingInfos());
+        return resultBuilder.titlePackageCostMap(titlePackageCost.costAnalysisMap()).build();
+      });
+  }
+
+  private List<DbHoldingInfo> getHoldingInfos(String packageIdPart, String providerIdPart, List<Title> titles) {
+    return titles.stream()
+      .map(title -> new DbHoldingInfo(
+        title.getTitleId(),
+        Integer.parseInt(packageIdPart),
+        Integer.parseInt(providerIdPart),
+        title.getTitleName(),
+        title.getPublisherName(),
+        ConverterConsts.PUBLICATION_TYPES.get(title.getPubType().toLowerCase()).value()))
+      .toList();
+  }
+
+  private CompletableFuture<List<Title>> retrieveAllTitles(RmApiTemplateContext context, Long providerId,
+                                                           Long packageId, String packageIdFilter) {
+    var firstPageFilter = Filter.getSortableFilter(prepareFilterForResource(packageIdFilter), SORT, 1, COUNT);
+    return retrieveTitles(context, providerId, packageId, firstPageFilter)
+      .thenCompose(firstPage -> {
+        List<Title> allTitles = new ArrayList<>();
+        if (firstPage != null && firstPage.getTitleList() != null && !firstPage.getTitleList().isEmpty()) {
+          allTitles.addAll(firstPage.getTitleList());
+        }
+        if (firstPage == null || firstPage.getTotalResults() <= COUNT) {
+          return CompletableFuture.completedFuture(allTitles);
+        }
+        int pages = (firstPage.getTotalResults() + COUNT - 1) / COUNT;
+        List<CompletableFuture<Titles>> pageFutures = IntStream.rangeClosed(2, pages)
+          .mapToObj(page -> {
+            var pageFilter = Filter.getSortableFilter(prepareFilterForResource(packageIdFilter), SORT, page, COUNT);
+            return retrieveTitles(context, providerId, packageId, pageFilter);
+          })
+          .toList();
+        return getAllTitles(pageFutures, allTitles);
+      });
+  }
+
+  private static CompletableFuture<List<Title>> getAllTitles(List<CompletableFuture<Titles>> pageFutures,
+                                                             List<Title> allTitles) {
+    return CompletableFuture.allOf(pageFutures.toArray(new CompletableFuture[0]))
+      .thenApply(v -> {
+        pageFutures.stream()
+          .map(CompletableFuture::join)
+          .filter(Objects::nonNull)
+          .map(Titles::getTitleList)
+          .filter(Objects::nonNull)
+          .forEach(allTitles::addAll);
+        return allTitles;
+      });
+  }
+
+  private Filter.FilterBuilder prepareFilterForResource(String packageId) {
+    return Filter.builder()
+      .recordType(RecordType.RESOURCE)
+      .packageId(packageId);
+  }
+
+  private CompletableFuture<Titles> retrieveTitles(RmApiTemplateContext context, Long providerId,
+                                                   Long packageId, Filter pageFilter) {
+    return context.getTitlesService()
+      .retrieveTitles(providerId, packageId, pageFilter.createFilterQuery(), searchProperties.titlesSearchType(),
+        pageFilter.getSort(), pageFilter.getPage(), pageFilter.getCount());
   }
 
   private ResourceCostPerUseCollection createResultPage(ResourceCostPerUseCollection resourceCostPerUseCollection,
@@ -273,6 +362,27 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     return ucTitlePackageCache.getValueOrLoad(cacheKey, () -> loadInPartitions(titlePackageIds, configuration));
   }
 
+  private CompletableFuture<UcCostAnalysisResult> loadFromCache(String packageId, RmApiTemplateContext context,
+                                                                GetTitlePackageUcConfiguration configuration) {
+    @SuppressWarnings("java:S4790")
+    var cacheKey = new UcTitlePackageCacheKey(configuration, DigestUtils.md5(Json.encode(packageId)));
+    return ucTitlePackageCostCache.getValueOrLoad(cacheKey, () -> load(packageId, context, configuration));
+  }
+
+  private CompletableFuture<UcCostAnalysisResult> load(String packageId, RmApiTemplateContext context,
+                                                       GetTitlePackageUcConfiguration configuration) {
+    var id = parsePackageId(packageId);
+    var packageIdPart = valueOf(id.getPackageIdPart());
+    var providerIdPart = valueOf(id.getProviderIdPart());
+
+    return retrieveAllTitles(context, Long.parseLong(providerIdPart), Long.parseLong(packageIdPart), packageId)
+      .thenApply(titles -> getHoldingInfos(packageIdPart, providerIdPart, titles))
+      .thenCompose(holdingInfos -> {
+        var titlePackageIds = extractTitlePackageIds(holdingInfos);
+        return loadInPartitions(titlePackageIds, holdingInfos, configuration);
+      });
+  }
+
   private CompletableFuture<Map<String, UcCostAnalysis>> loadInPartitions(
     List<UcTitlePackageId> titlePackageIds,
     GetTitlePackageUcConfiguration configuration) {
@@ -290,6 +400,32 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
           .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     } else {
       return client.getTitlePackageCostPerUse(titlePackageIds, configuration);
+    }
+  }
+
+  private CompletableFuture<UcCostAnalysisResult> loadInPartitions(List<UcTitlePackageId> titlePackageIds,
+                                                                   List<DbHoldingInfo> holdingInfos,
+                                                                   GetTitlePackageUcConfiguration configuration) {
+    if (titlePackageIds.isEmpty()) {
+      return CompletableFuture.completedFuture(new UcCostAnalysisResult(Collections.emptyMap(), holdingInfos));
+    } else if (titlePackageIds.size() > MAX_PARTITION_SIZE) {
+      var futures = StreamSupport.stream(Iterables.partition(titlePackageIds, MAX_PARTITION_SIZE).spliterator(), false)
+        .map(ids -> client.getTitlePackageCostPerUse(ids, configuration))
+        .toList();
+
+      return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+        .thenApply(unused -> {
+          Map<String, UcCostAnalysis> costAnalysisMap = futures.stream()
+            .map(CompletableFuture::join)
+            .flatMap(map -> map.entrySet().stream())
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+          return new UcCostAnalysisResult(costAnalysisMap, holdingInfos);
+        });
+    } else {
+      return client.getTitlePackageCostPerUse(titlePackageIds, configuration)
+        .thenApply(costAnalysisMap ->
+          new UcCostAnalysisResult(costAnalysisMap, holdingInfos)
+        );
     }
   }
 
@@ -346,18 +482,29 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     return loadFromCache(titlePackageIds, configuration);
   }
 
-  private CompletableFuture<Map<String, UcCostAnalysis>> fetchTitlePackageCost(List<UcTitlePackageId> titlePackageIds,
-                                                                               PlatformType platformType,
-                                                                               CommonUcConfiguration ucConfiguration) {
-    log.info("fetchTitlePackageCost:: Fetching Title Package Cost for platformType: {} with ids: {}",
-      platformType, titlePackageIds.stream().map(UcTitlePackageId::toString).collect(Collectors.joining(",")));
+  private CompletableFuture<UcCostAnalysisResult> fetchTitlePackageCost(String packageId,
+                                                                        RmApiTemplateContext context,
+                                                                        PlatformType platformType,
+                                                                        CommonUcConfiguration ucConfiguration) {
+    log.info("fetchTitlePackageCost:: Fetching Title Package Cost for platformType: {}", platformType);
     return switch (platformType) {
-      case PUBLISHER -> loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, true));
-      case NON_PUBLISHER -> loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, false));
-      default -> loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, true))
-        .thenCombine(loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, false)),
-          (costMap1, costMap2) -> Stream.concat(costMap1.entrySet().stream(), costMap2.entrySet().stream())
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, this::toAllPublisherUcCostAnalysis)));
+      case PUBLISHER -> loadFromCache(packageId, context, createGetTitlePackageConfiguration(ucConfiguration, true));
+      case NON_PUBLISHER ->
+        loadFromCache(packageId, context, createGetTitlePackageConfiguration(ucConfiguration, false));
+      default -> loadFromCache(packageId, context, createGetTitlePackageConfiguration(ucConfiguration, true))
+        .thenCompose(pubResult -> {
+          var titlePackageIds = pubResult.holdingInfos().stream()
+            .map(cr -> new UcTitlePackageId(cr.getTitleId(), cr.getPackageId()))
+            .distinct()
+            .toList();
+          return loadFromCache(titlePackageIds, createGetTitlePackageConfiguration(ucConfiguration, false))
+            .thenApply(nonPubResult -> {
+              var costAnalysisMap = Stream.concat(
+                  pubResult.costAnalysisMap().entrySet().stream(), nonPubResult.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, this::toAllPublisherUcCostAnalysis));
+              return new UcCostAnalysisResult(costAnalysisMap, pubResult.holdingInfos());
+            });
+        });
     };
   }
 
@@ -379,12 +526,6 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
       usage.orElse(null),
       costPerUse.orElse(null)
     ), null);
-  }
-
-  private CompletableFuture<List<DbHoldingInfo>> fetchHoldingsData(String packageIdPart, RmApiTemplateContext context) {
-    log.info("fetchHoldingsData:: Get Holdings data by packageId: {} ", packageIdPart);
-    return holdingsService
-      .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant());
   }
 
   private CompletableFuture<CommonUcConfiguration> fetchCommonConfiguration(

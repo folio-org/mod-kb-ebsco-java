@@ -7,7 +7,6 @@ import static org.folio.rest.util.IdParser.dbResourcesToIdStrings;
 import static org.folio.rest.util.IdParser.getPackageIds;
 import static org.folio.rest.util.IdParser.getResourceIds;
 import static org.folio.rest.util.IdParser.getTitleIds;
-import static org.folio.rest.util.IdParser.resourceIdsToStrings;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -99,12 +98,10 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     AtomicInteger totalCount = new AtomicInteger();
     return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
       .thenApply(this::extractResourceIds)
-      .thenCompose(resourceIds -> holdingsService
-        .getHoldingsByIds(resourceIdsToStrings(resourceIds), context.getCredentialsId(), tenant)
-        .thenCompose(dbHoldings -> context.getResourcesService()
-          .retrieveResources(getMissingResourceIds(dbHoldings, resourceIds))
-          .thenApply(resources -> toResourceCollectionResult(resources, emptyList(), dbHoldings, totalCount.get()))
-        ));
+      .thenCompose(resourceIds -> context.getResourcesService()
+        .retrieveResources(resourceIds)
+        .thenApply(resources -> toResourceCollectionResult(resources, emptyList(), emptyList(), totalCount.get()))
+      );
   }
 
   @Override
@@ -169,12 +166,9 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
     return tagRepository.countRecordsByTagFilter(tagFilter, tenant)
       .thenCompose(resourcesCount -> resourceRepository.findByTagFilter(tagFilter, credentialsId, tenant)
         .thenCompose(dbResources -> {
-            List<String> ids = dbResourcesToIdStrings(dbResources);
-            return holdingsService.getHoldingsByIds(ids, context.getCredentialsId(), tenant)
-              .thenCompose(dbHoldings -> context.getResourcesService()
-                .retrieveResources(getMissingResourceIds(dbHoldings, getTitleIds(dbResources)))
-                .thenApply(resources -> toResourceCollectionResult(resources, dbResources, dbHoldings, resourcesCount))
-              );
+            return context.getResourcesService()
+              .retrieveResources(getTitleIds(dbResources))
+              .thenApply(resources -> toResourceCollectionResult(resources, dbResources, emptyList(), resourcesCount));
           }
         )
       );
