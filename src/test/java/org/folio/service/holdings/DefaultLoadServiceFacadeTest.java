@@ -4,18 +4,22 @@ import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.FAILED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
 import static org.folio.repository.holdings.LoadStatus.NONE;
+import static org.folio.util.TestUtil.result;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.IntFunction;
-import lombok.SneakyThrows;
 import org.folio.holdingsiq.model.HoldingsLoadStatus;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -24,18 +28,15 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 class DefaultLoadServiceFacadeTest {
 
-  @Mock
-  private LoadServiceImpl loadService;
-
   private final Vertx vertx = Vertx.vertx();
-
   private final int pageSize = 2500;
   private final int pageRetryCount = 3;
-
+  @Mock
+  private LoadServiceImpl loadService;
   private DefaultLoadServiceFacade defaultLoadServiceFacade;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     defaultLoadServiceFacade = new DefaultLoadServiceFacade(
       1L, // statusRetryDelay
       1,  // statusRetryCount
@@ -48,29 +49,27 @@ class DefaultLoadServiceFacadeTest {
   }
 
   @Test
-  @SneakyThrows
   void shouldNotFailOnEmptyStatusFromHoldingsIq() {
-    Mockito.when(loadService.getLoadingStatus())
+    when(loadService.getLoadingStatus())
       .thenReturn(CompletableFuture.completedFuture(null));
 
-    var result = defaultLoadServiceFacade.getLastLoadingStatus(loadService);
-    assertEquals(NONE, result.get().getStatus());
+    var result = result(defaultLoadServiceFacade.getLastLoadingStatus(loadService));
+
+    assertEquals(NONE, result.getStatus());
   }
 
   @Test
-  @SneakyThrows
-  public void shouldMapLoadStatusCompletedCorrectly() {
-    HoldingsLoadStatus holdingsLoadStatus = HoldingsLoadStatus.builder()
+  void shouldMapLoadStatusCompletedCorrectly() {
+    var holdingsLoadStatus = HoldingsLoadStatus.builder()
       .status("Completed")
       .created("2024-01-01 10:00:00")
       .totalCount(5000)
       .build();
 
-    Mockito.when(loadService.getLoadingStatus())
+    when(loadService.getLoadingStatus())
       .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
 
-    var result = defaultLoadServiceFacade.getLastLoadingStatus(loadService);
-    HoldingsStatus holdingsStatus = result.get();
+    var holdingsStatus = result(defaultLoadServiceFacade.getLastLoadingStatus(loadService));
 
     assertEquals(COMPLETED, holdingsStatus.getStatus());
     assertEquals("2024-01-01 10:00:00", holdingsStatus.getCreated());
@@ -78,19 +77,17 @@ class DefaultLoadServiceFacadeTest {
   }
 
   @Test
-  @SneakyThrows
-  public void shouldMapLoadStatusInProgressCorrectly() {
-    HoldingsLoadStatus holdingsLoadStatus = HoldingsLoadStatus.builder()
+  void shouldMapLoadStatusInProgressCorrectly() {
+    var holdingsLoadStatus = HoldingsLoadStatus.builder()
       .status("In progress")
       .created("2024-01-01 09:00:00")
       .totalCount(3000)
       .build();
 
-    Mockito.when(loadService.getLoadingStatus())
+    when(loadService.getLoadingStatus())
       .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
 
-    var result = defaultLoadServiceFacade.getLastLoadingStatus(loadService);
-    HoldingsStatus holdingsStatus = result.get();
+    var holdingsStatus = result(defaultLoadServiceFacade.getLastLoadingStatus(loadService));
 
     assertEquals(IN_PROGRESS, holdingsStatus.getStatus());
     assertEquals("2024-01-01 09:00:00", holdingsStatus.getCreated());
@@ -98,19 +95,17 @@ class DefaultLoadServiceFacadeTest {
   }
 
   @Test
-  @SneakyThrows
-  public void shouldMapLoadStatusFailedCorrectly() {
-    HoldingsLoadStatus holdingsLoadStatus = HoldingsLoadStatus.builder()
+  void shouldMapLoadStatusFailedCorrectly() {
+    var holdingsLoadStatus = HoldingsLoadStatus.builder()
       .status("Failed")
       .created("2024-01-01 08:00:00")
       .totalCount(0)
       .build();
 
-    Mockito.when(loadService.getLoadingStatus())
+    when(loadService.getLoadingStatus())
       .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
 
-    var result = defaultLoadServiceFacade.getLastLoadingStatus(loadService);
-    HoldingsStatus holdingsStatus = result.get();
+    var holdingsStatus = result(defaultLoadServiceFacade.getLastLoadingStatus(loadService));
 
     assertEquals(FAILED, holdingsStatus.getStatus());
     assertEquals("2024-01-01 08:00:00", holdingsStatus.getCreated());
@@ -118,39 +113,81 @@ class DefaultLoadServiceFacadeTest {
   }
 
   @Test
-  @SneakyThrows
-  public void shouldGetLoadingStatusReturnLastLoadingStatusIgnoringTransactionId() {
-    HoldingsLoadStatus holdingsLoadStatus = HoldingsLoadStatus.builder()
+  void shouldGetLoadingStatusReturnLastLoadingStatusIgnoringTransactionId() {
+    var holdingsLoadStatus = HoldingsLoadStatus.builder()
       .status("Completed")
       .created("2024-01-01 10:00:00")
       .totalCount(5000)
       .build();
 
-    Mockito.when(loadService.getLoadingStatus())
+    when(loadService.getLoadingStatus())
       .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
 
-    var result = defaultLoadServiceFacade.getLoadingStatus(loadService, "tx-123");
-    HoldingsStatus holdingsStatus = result.get();
+    var holdingsStatus = result(defaultLoadServiceFacade.getLoadingStatus(loadService, "tx-123"));
 
     assertEquals(COMPLETED, holdingsStatus.getStatus());
     assertEquals(Integer.valueOf(5000), holdingsStatus.getTotalCount());
   }
 
   @Test
-  public void shouldGetMaxPageSizeReturnConfiguredPageSize() {
+  void shouldGetMaxPageSizeReturnConfiguredPageSize() {
     assertEquals(pageSize, defaultLoadServiceFacade.getMaxPageSize());
   }
 
   @Test
-  @SneakyThrows
-  public void shouldCalculateOffsetForPages() {
+  void shouldCalculateOffsetForPages() {
     verifyOffset(1, 1);
     verifyOffset(2, 2501);
     verifyOffset(3, 5001);
   }
 
+  @Test
+  void shouldPopulateHoldingsReturnNullTransactionId() {
+    when(loadService.populateHoldingsForce())
+      .thenReturn(CompletableFuture.completedFuture(null));
+
+    var actual = result(defaultLoadServiceFacade.populateHoldings(loadService));
+
+    assertNull(actual);
+  }
+
+  @Test
+  void shouldGetLastLoadingStatusWithDefaultValues() {
+    var holdingsLoadStatus = HoldingsLoadStatus.builder()
+      .status("Completed")
+      .build();
+
+    when(loadService.getLoadingStatus())
+      .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
+
+    var holdingsStatus = result(defaultLoadServiceFacade.getLastLoadingStatus(loadService));
+
+    assertEquals(COMPLETED, holdingsStatus.getStatus());
+    assertNull(holdingsStatus.getCreated());
+    assertNull(holdingsStatus.getTotalCount());
+  }
+
+  @Test
+  void shouldGetLastLoadingStatusPreserveCreatedAndCount() {
+    var holdingsLoadStatus = HoldingsLoadStatus.builder()
+      .status("Completed")
+      .created("2024-01-01 10:00:00")
+      .totalCount(5000)
+      .build();
+
+    when(loadService.getLoadingStatus())
+      .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
+
+    var holdingsStatus = result(defaultLoadServiceFacade.getLastLoadingStatus(loadService));
+
+    assertNotNull(holdingsStatus);
+    assertEquals(COMPLETED, holdingsStatus.getStatus());
+    assertEquals("2024-01-01 10:00:00", holdingsStatus.getCreated());
+    assertEquals(Integer.valueOf(5000), holdingsStatus.getTotalCount());
+  }
+
   private void verifyOffset(int pageNumber, int expectedOffset) {
-    CompletableFuture<Void> callbackFuture = CompletableFuture.completedFuture(null);
+    var callbackFuture = CompletableFuture.<Void>completedFuture(null);
     IntFunction<CompletableFuture<Void>> offsetLoader = offset -> {
       assertEquals(expectedOffset, offset);
       return callbackFuture;
@@ -159,54 +196,5 @@ class DefaultLoadServiceFacadeTest {
     defaultLoadServiceFacade.calculateOffset(offsetLoader, pageNumber, pageRetryCount);
 
     assertTrue(callbackFuture.isDone());
-  }
-
-  @Test
-  @SneakyThrows
-  public void shouldPopulateHoldingsReturnNullTransactionId() {
-    Mockito.when(loadService.populateHoldingsForce())
-      .thenReturn(CompletableFuture.completedFuture(null));
-
-    var result = defaultLoadServiceFacade.populateHoldings(loadService);
-    assertNull(result.get());
-  }
-
-  @Test
-  @SneakyThrows
-  public void shouldGetLastLoadingStatusWithDefaultValues() {
-    HoldingsLoadStatus holdingsLoadStatus = HoldingsLoadStatus.builder()
-      .status("Completed")
-      .build();
-
-    Mockito.when(loadService.getLoadingStatus())
-      .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
-
-    var result = defaultLoadServiceFacade.getLastLoadingStatus(loadService);
-    HoldingsStatus holdingsStatus = result.get();
-
-    assertEquals(COMPLETED, holdingsStatus.getStatus());
-    assertNull(holdingsStatus.getCreated());
-    assertNull(holdingsStatus.getTotalCount());
-  }
-
-  @Test
-  @SneakyThrows
-  public void shouldGetLastLoadingStatusPreserveCreatedAndCount() {
-    HoldingsLoadStatus holdingsLoadStatus = HoldingsLoadStatus.builder()
-      .status("Completed")
-      .created("2024-01-01 10:00:00")
-      .totalCount(5000)
-      .build();
-
-    Mockito.when(loadService.getLoadingStatus())
-      .thenReturn(CompletableFuture.completedFuture(holdingsLoadStatus));
-
-    var result = defaultLoadServiceFacade.getLastLoadingStatus(loadService);
-    HoldingsStatus holdingsStatus = result.get();
-
-    assertNotNull(holdingsStatus);
-    assertEquals(COMPLETED, holdingsStatus.getStatus());
-    assertEquals("2024-01-01 10:00:00", holdingsStatus.getCreated());
-    assertEquals(Integer.valueOf(5000), holdingsStatus.getTotalCount());
   }
 }
