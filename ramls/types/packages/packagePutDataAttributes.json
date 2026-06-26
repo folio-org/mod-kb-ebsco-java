@@ -91,6 +91,11 @@
         "type": "object"
       },
       "type": "array"
+    },
+    "visibilityData": {
+      "type": "object",
+      "description": "Visibility data",
+      "$ref": "../visibilityData.json"
     }
   }
 }

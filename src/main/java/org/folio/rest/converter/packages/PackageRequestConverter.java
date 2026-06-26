@@ -3,6 +3,7 @@ package org.folio.rest.converter.packages;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.rest.converter.packages.PackageConverterUtils.CONTENT_TYPE_TO_RMAPI_CODE;
 
+import java.util.Arrays;
 import org.folio.holdingsiq.model.AlternateName;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackagePut;
@@ -11,6 +12,7 @@ import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -73,8 +75,16 @@ public class PackageRequestConverter {
     builder.packageFreeAccess(attributes.getIsFreeAccess());
     builder.packageUrl(attributes.getUrl());
 
-    builder.visibilityDetails(mapItems(attributes.getVisibility(),
-      pv -> new Visibility(pv.getCategory().value(), pv.getHidden(), pv.getReason())));
+    var visibilityData = attributes.getVisibilityData();
+    if (visibilityData == null || visibilityData.getIsHidden() == null) {
+      builder.visibilityDetails(mapItems(attributes.getVisibility(),
+        pv -> new Visibility(pv.getCategory().value(), pv.getHidden(), pv.getReason())));
+    } else {
+      var visibilities = Arrays.stream(PackageVisibility.Category.values())
+        .map(category -> new Visibility(category.value(), visibilityData.getIsHidden(), visibilityData.getReason()))
+        .toList();
+      builder.visibilityDetails(visibilities);
+    }
 
     return builder;
   }

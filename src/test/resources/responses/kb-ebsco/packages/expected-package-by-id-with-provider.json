@@ -37,7 +37,11 @@
           "reason": "Hidden by customer",
           "hidden": false
         }
-      ]
+      ],
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
+      }
     },
     "relationships": {
       "resources": {

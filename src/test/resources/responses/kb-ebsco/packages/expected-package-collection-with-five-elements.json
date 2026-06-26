@@ -40,7 +40,11 @@
             "reason": "Hidden by customer",
             "hidden": false
           }
-        ]
+        ],
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
       },
       "relationships": {
         "resources": {
@@ -61,12 +65,14 @@
       "type": "packages",
       "attributes": {
         "contentType": "Aggregated Full Text",
+        "customAltNames": [],
         "customCoverage": {
           "beginCoverage": "",
           "endCoverage": ""
         },
         "isCustom": false,
         "isSelected": false,
+        "managedAltNames": [],
         "name": "American Academy of Orthopaedic Surgeons",
         "packageId": 1597443,
         "packageType": "Variable",
@@ -84,7 +90,11 @@
             "category": "MARC",
             "hidden": true
           }
-        ]
+        ],
+        "visibilityData": {
+          "isHidden": true,
+          "reason": ""
+        }
       },
       "relationships": {
         "resources": {
@@ -105,12 +115,14 @@
       "type": "packages",
       "attributes": {
         "contentType": "E-Journal",
+        "customAltNames": [],
         "customCoverage": {
           "beginCoverage": "",
           "endCoverage": ""
         },
         "isCustom": false,
         "isSelected": false,
+        "managedAltNames": [],
         "name": "American Academy of Pediatrics (AAP)",
         "packageId": 3943,
         "packageType": "Variable",
@@ -132,7 +144,11 @@
             "category": "MARC",
             "hidden": true
           }
-        ]
+        ],
+        "visibilityData": {
+          "isHidden": true,
+          "reason": ""
+        }
       },
       "relationships": {
         "resources": {
@@ -153,12 +169,14 @@
       "type": "packages",
       "attributes": {
         "contentType": "E-Book",
+        "customAltNames": [],
         "customCoverage": {
           "beginCoverage": "",
           "endCoverage": ""
         },
         "isCustom": false,
         "isSelected": false,
+        "managedAltNames": [],
         "name": "American Academy of Pediatrics (AAP) eBooks",
         "packageId": 7566,
         "packageType": "Variable",
@@ -171,7 +189,11 @@
             "category": "FTF",
             "hidden": false
           }
-        ]
+        ],
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
       },
       "relationships": {
         "resources": {
@@ -192,12 +214,14 @@
       "type": "packages",
       "attributes": {
         "contentType": "E-Journal",
+        "customAltNames": [],
         "customCoverage": {
           "beginCoverage": "",
           "endCoverage": ""
         },
         "isCustom": false,
         "isSelected": false,
+        "managedAltNames": [],
         "name": "American Academy of Pediatrics (KMLA)",
         "packageId": 19236,
         "packageType": "Complete",
@@ -211,7 +235,11 @@
             "reason": "Hidden by customer",
             "hidden": false
           }
-        ]
+        ],
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
+        }
       },
       "relationships": {
         "resources": {

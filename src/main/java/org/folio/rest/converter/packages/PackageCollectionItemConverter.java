@@ -13,6 +13,7 @@ import org.folio.rest.jaxrs.model.PackageAltName;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
 import org.folio.rest.jaxrs.model.PackageVisibility;
+import org.folio.rest.jaxrs.model.VisibilityData;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +54,20 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
       .withSelectedCount(packageData.getSelectedCount())
       .withTitleCount(packageData.getTitleCount())
       .withUrl(packageData.getPackageUrl())
-      .withVisibility(mapItemsNullable(packageData.getVisibilityDetails(), this::convertVisibility));
+      .withVisibility(mapItemsNullable(packageData.getVisibilityDetails(), this::convertVisibility))
+      .withVisibilityData(convertVisibilityData(packageData));
+  }
+
+  private VisibilityData convertVisibilityData(PackageData packageData) {
+    var isHidden = packageData.getVisibilityDetails().stream()
+      .map(Visibility::hidden)
+      .reduce(Boolean::logicalOr);
+    var hiddenByEp = packageData.getVisibilityDetails().stream()
+      .map(Visibility::reason)
+      .filter("Hidden by EP"::equals)
+      .findAny();
+    return new VisibilityData().withIsHidden(isHidden.orElse(false))
+      .withReason(hiddenByEp.isPresent() ? "Set by system" : "");
   }
 
   private PackageVisibility convertVisibility(Visibility visibility) {
