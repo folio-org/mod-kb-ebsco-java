@@ -9,7 +9,7 @@ import static org.folio.repository.providers.ProviderTableConstants.CREDENTIALS_
 import static org.folio.repository.providers.ProviderTableConstants.ID_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.NAME_COLUMN;
 import static org.folio.repository.providers.ProviderTableConstants.PROVIDERS_TABLE_NAME;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -17,14 +17,12 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.repository.providers.DbProvider;
 import org.folio.rest.persist.PostgresClient;
 
+@UtilityClass
 public final class ProvidersTestUtil {
-
-  private ProvidersTestUtil() {
-    throw new UnsupportedOperationException("Do not instantiate");
-  }
 
   public static List<DbProvider> getProviders(Vertx vertx) {
     CompletableFuture<List<DbProvider>> future = new CompletableFuture<>();
@@ -42,20 +40,21 @@ public final class ProvidersTestUtil {
     future.join();
   }
 
-  public static DbProvider buildDbProvider(String id, String credentialsId, String name) {
+  public static DbProvider buildDbProvider(int id, String credentialsId, String name) {
     return buildDbProvider(id, toUUID(credentialsId), name);
   }
 
-  private static DbProvider buildDbProvider(String id, UUID credentialsId, String name) {
+  private static DbProvider buildDbProvider(int id, UUID credentialsId, String name) {
     return DbProvider.builder()
-      .id(id)
+      .id(String.valueOf(id))
       .credentialsId(credentialsId)
       .name(name)
       .build();
   }
 
   private static DbProvider mapDbProvider(Row row) {
-    return buildDbProvider(row.getString(ID_COLUMN), row.getUUID(CREDENTIALS_ID_COLUMN), row.getString(NAME_COLUMN));
+    return buildDbProvider(Integer.parseInt(row.getString(ID_COLUMN)), row.getUUID(CREDENTIALS_ID_COLUMN),
+      row.getString(NAME_COLUMN));
   }
 
   private static String providerTestTable() {

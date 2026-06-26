@@ -1,5 +1,7 @@
 package org.folio.rest.validator;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.Collections;
 import java.util.List;
 import org.folio.holdingsiq.model.PackageData;
@@ -9,9 +11,9 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ResourcePostData;
 import org.folio.rest.jaxrs.model.ResourcePostDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePostRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ResourcePostValidatorTest {
+class ResourcePostValidatorTest {
 
   private static final String PACKAGE_ID = "123-456";
   private static final String TITLE_ID = "789";
@@ -21,59 +23,66 @@ public class ResourcePostValidatorTest {
   private final ResourcePostValidator validator = new ResourcePostValidator();
 
   @Test
-  public void shouldValidateRequest() {
+  void shouldValidateRequest() {
     validator.validate(createRequest(PACKAGE_ID, TITLE_ID, "http://example.com"));
   }
 
   @Test
-  public void shouldValidateWhenUrlIsNullOrEmpty() {
+  void shouldValidateWhenUrlIsNullOrEmpty() {
     validator.validate(createRequest(PACKAGE_ID, TITLE_ID, null));
     validator.validate(createRequest(PACKAGE_ID, TITLE_ID, ""));
   }
 
-  @Test(expected = InputValidationException.class)
-  public void shouldThrowExceptionWhenTitleIdIsNotPresent() {
-    validator.validate(createRequest(PACKAGE_ID, null, "http://example.com"));
-  }
-
-  @Test(expected = InputValidationException.class)
-  public void shouldThrowExceptionWhenPackageIdIsNotPresent() {
-    validator.validate(createRequest(null, TITLE_ID, "http://example.com"));
-  }
-
-  @Test(expected = InputValidationException.class)
-  public void shouldThrowExceptionWhenUrlIsInvalid() {
-    validator.validate(createRequest(PACKAGE_ID, TITLE_ID, "hdttp://example.com"));
+  @Test
+  void shouldThrowExceptionWhenTitleIdIsNotPresent() {
+    var request = createRequest(PACKAGE_ID, null, "http://example.com");
+    assertThrows(InputValidationException.class, () -> validator.validate(request));
   }
 
   @Test
-  public void shouldValidateTitleAndPackage() {
+  void shouldThrowExceptionWhenPackageIdIsNotPresent() {
+    var request = createRequest(null, TITLE_ID, "http://example.com");
+    assertThrows(InputValidationException.class, () -> validator.validate(request));
+  }
+
+  @Test
+  void shouldThrowExceptionWhenUrlIsInvalid() {
+    var request = createRequest(PACKAGE_ID, TITLE_ID, "hdttp://example.com");
+    assertThrows(InputValidationException.class, () -> validator.validate(request));
+  }
+
+  @Test
+  void shouldValidateTitleAndPackage() {
     validator.validateRelatedObjects(
       createPackage().build(),
       createTitle().build(),
       createTitles().build());
   }
 
-  @Test(expected = InputValidationException.class)
-  public void shouldThrowExceptionWhenPackageIsNotCustom() {
+  @Test
+  void shouldThrowExceptionWhenPackageIsNotCustom() {
     PackageData packageData = createPackage()
       .isCustom(false)
       .build();
-    validator.validateRelatedObjects(
-      packageData,
-      createTitle().build(),
-      createTitles().build());
+    Title build = createTitle().build();
+    Titles build1 = createTitles().build();
+    assertThrows(InputValidationException.class, () ->
+      validator.validateRelatedObjects(
+        packageData,
+        build,
+        build1));
   }
 
-  @Test(expected = InputValidationException.class)
-  public void shouldThrowExceptionWhenTitleIsAlreadyAddedToPackage() {
+  @Test
+  void shouldThrowExceptionWhenTitleIsAlreadyAddedToPackage() {
     Title title = createTitle().build();
     Titles titles = createTitles().titleList(Collections.singletonList(title)).build();
     PackageData packageData = createPackage().build();
-    validator.validateRelatedObjects(
-      packageData,
-      title,
-      titles);
+    assertThrows(InputValidationException.class, () ->
+      validator.validateRelatedObjects(
+        packageData,
+        title,
+        titles));
   }
 
   private Titles.TitlesBuilder createTitles() {

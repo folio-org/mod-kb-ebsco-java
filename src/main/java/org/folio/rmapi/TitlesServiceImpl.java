@@ -68,7 +68,13 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
 
   private CompletableFuture<Title> retrieveTitleWithCache(int titleId) {
     var cacheKey = buildTitleCacheKey(titleId);
-    return titleCache.getValueOrLoad(cacheKey, () -> super.retrieveTitle(titleId));
+    return titleCache.getValueOrLoad(cacheKey, () -> {
+      log.info("Title not found in cache, retrieving from HoldingsIQ");
+      return super.retrieveTitle(titleId);
+    }).handle((title, throwable) -> {
+      log.info("Title fetched from cache: " + title);
+      return title;
+    });
   }
 
   private void mergeCustomerResources(Title cachedTitle, Title title) {

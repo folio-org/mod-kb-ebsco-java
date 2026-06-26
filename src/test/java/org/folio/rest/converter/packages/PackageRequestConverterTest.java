@@ -1,47 +1,50 @@
 package org.folio.rest.converter.packages;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.folio.util.PackagesTestUtil.getPackagePutRequest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.folio.holdingsiq.model.PackagePut;
-import org.folio.rest.impl.PackagesTestData;
+import java.util.List;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
+import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.folio.spring.config.TestConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class PackageRequestConverterTest {
+class PackageRequestConverterTest {
   @Autowired
   private PackageRequestConverter packagesConverter;
 
   @Test
-  public void shouldCreateRequestToSelectPackage() {
-    PackagePut packagePut = packagesConverter.convertToRmApiPackagePutRequest(PackagesTestData.getPackagePutRequest(
+  void shouldCreateRequestToSelectPackage() {
+    var packagePut = packagesConverter.convertToRmApiPackagePutRequest(getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(true)));
     assertTrue(packagePut.getIsSelected());
   }
 
-  //  @Test
-  //  public void shouldCreateRequestToHidePackage() {
-  //    PackagePut packagePut = packagesConverter.convertToRmApiPackagePutRequest(PackagesTestData.getPackagePutRequest(
-  //      new PackagePutDataAttributes()
-  //        .withIsSelected(true)
-  //        .withVisibilityData(new VisibilityData()
-  //          .withIsHidden(true))));
-  //    assertTrue(packagePut.getIsHidden());
-  //  }
+  @Test
+  void shouldCreateRequestToHidePackage() {
+    var packagePut = packagesConverter.convertToRmApiPackagePutRequest(getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withIsSelected(true)
+        .withVisibility(List.of(new PackageVisibility()
+          .withHidden(true)
+          .withCategory(PackageVisibility.Category.PF)))
+    ));
+    assertTrue(packagePut.getVisibilityDetails().getFirst().hidden());
+  }
 
   @Test
-  public void shouldCreateRequestToAllowKbAddTitlesToPackage() {
-    PackagePut packagePut = packagesConverter.convertToRmApiPackagePutRequest(PackagesTestData.getPackagePutRequest(
+  void shouldCreateRequestToAllowKbAddTitlesToPackage() {
+    var packagePut = packagesConverter.convertToRmApiPackagePutRequest(getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(true)
         .withAllowKbToAddTitles(true)));
@@ -49,8 +52,8 @@ public class PackageRequestConverterTest {
   }
 
   @Test
-  public void shouldCreateRequestToAddCustomCoverage() {
-    PackagePut packagePut = packagesConverter.convertToRmApiPackagePutRequest(PackagesTestData.getPackagePutRequest(
+  void shouldCreateRequestToAddCustomCoverage() {
+    var packagePut = packagesConverter.convertToRmApiPackagePutRequest(getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(true)
         .withCustomCoverage(new Coverage()
@@ -61,55 +64,53 @@ public class PackageRequestConverterTest {
   }
 
   @Test
-  public void shouldCreateRequestToChangeCustomPackageName() {
-    PackagePut packagePut =
-      packagesConverter.convertToRmApiCustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-        new PackagePutDataAttributes()
-          .withName("new package name")));
+  void shouldCreateRequestToChangeCustomPackageName() {
+    var packagePut = packagesConverter.convertToRmApiCustomPackagePutRequest(getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withName("new package name")));
     assertEquals("new package name", packagePut.getPackageName());
   }
 
   @Test
-  public void shouldCreateRequestToChangeCustomPackageCoverageDates() {
-    PackagePut packagePut =
-      packagesConverter.convertToRmApiCustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-        new PackagePutDataAttributes()
-          .withCustomCoverage(new Coverage()
-            .withBeginCoverage("2003-01-01")
-            .withEndCoverage("2004-01-01"))));
+  void shouldCreateRequestToChangeCustomPackageCoverageDates() {
+    var packagePut = packagesConverter.convertToRmApiCustomPackagePutRequest(getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withCustomCoverage(new Coverage()
+          .withBeginCoverage("2003-01-01")
+          .withEndCoverage("2004-01-01"))));
     assertEquals("2003-01-01", packagePut.getCustomCoverage().getBeginCoverage());
     assertEquals("2004-01-01", packagePut.getCustomCoverage().getEndCoverage());
   }
 
   @Test
-  public void shouldCreateRequestToChangeCustomPackageCoverageDatesToEmpty() {
-    PackagePut packagePut =
-      packagesConverter.convertToRmApiCustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-        new PackagePutDataAttributes()
-          .withCustomCoverage(new Coverage()
-            .withBeginCoverage("")
-            .withEndCoverage(""))));
+  void shouldCreateRequestToChangeCustomPackageCoverageDatesToEmpty() {
+    var packagePut = packagesConverter.convertToRmApiCustomPackagePutRequest(getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withCustomCoverage(new Coverage()
+          .withBeginCoverage("")
+          .withEndCoverage(""))));
     assertEquals("", packagePut.getCustomCoverage().getBeginCoverage());
     assertEquals("", packagePut.getCustomCoverage().getEndCoverage());
   }
 
   @Test
-  public void shouldCreateRequestToChangeCustomPackageContentType() {
-    PackagePut packagePut =
-      packagesConverter.convertToRmApiCustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-        new PackagePutDataAttributes()
-          .withContentType(ContentType.STREAMING_MEDIA)));
-    Integer aggregatedFullTextContentTypeCode = 8;
+  void shouldCreateRequestToChangeCustomPackageContentType() {
+    var packagePut = packagesConverter.convertToRmApiCustomPackagePutRequest(getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withContentType(ContentType.STREAMING_MEDIA)));
+    var aggregatedFullTextContentTypeCode = 8;
     assertEquals(aggregatedFullTextContentTypeCode, packagePut.getContentType());
   }
 
-  //  @Test
-  //  public void shouldCreateRequestToChangeCustomPackageVisibility() {
-  //    PackagePut packagePut =
-  //      packagesConverter.convertToRmApiCustomPackagePutRequest(PackagesTestData.getPackagePutRequest(
-  //        new PackagePutDataAttributes()
-  //          .withVisibilityData(new VisibilityData()
-  //            .withIsHidden(true))));
-  //    assertTrue(packagePut.getIsHidden());
-  //  }
+  @Test
+  void shouldCreateRequestToChangeCustomPackageVisibility() {
+    var packagePut =
+      packagesConverter.convertToRmApiCustomPackagePutRequest(getPackagePutRequest(
+        new PackagePutDataAttributes()
+          .withVisibility(List.of(new PackageVisibility()
+            .withHidden(true)
+            .withCategory(PackageVisibility.Category.PF)))
+      ));
+    assertTrue(packagePut.getVisibilityDetails().getFirst().hidden());
+  }
 }

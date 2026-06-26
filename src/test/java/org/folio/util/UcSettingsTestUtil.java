@@ -15,9 +15,9 @@ import static org.folio.repository.uc.UcSettingsTableConstants.PLATFORM_TYPE_COL
 import static org.folio.repository.uc.UcSettingsTableConstants.START_MONTH_COLUMN;
 import static org.folio.repository.uc.UcSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
 import static org.folio.repository.uc.UcSettingsTableConstants.insertUcSettings;
-import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
-import static org.folio.rest.impl.WireMockTestBase.JOHN_USERNAME;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.util.WireMockTestBase.JOHN_ID;
+import static org.folio.util.WireMockTestBase.JOHN_USERNAME;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.repository.uc.DbUcSettings;
 import org.folio.rest.converter.uc.UcSettingsConverter;
 import org.folio.rest.jaxrs.model.Meta;
@@ -37,6 +38,7 @@ import org.folio.rest.jaxrs.model.UCSettingsDataAttributes;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.core.convert.converter.Converter;
 
+@UtilityClass
 public class UcSettingsTestUtil {
 
   public static final String UC_SETTINGS_ENDPOINT = "eholdings/kb-credentials/%s/uc";

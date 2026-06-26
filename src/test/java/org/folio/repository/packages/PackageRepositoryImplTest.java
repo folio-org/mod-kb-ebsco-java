@@ -1,49 +1,46 @@
 package org.folio.repository.packages;
 
-import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
+import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
-import java.util.List;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.spring.config.TestConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class PackageRepositoryImplTest {
+class PackageRepositoryImplTest {
 
   @Autowired
   PackageRepository repository;
 
   @Test
-  public void shouldReturnEmptyListWhenIdListIsEmpty() {
-    List<DbPackage> packages = repository.findByIds(Collections.emptyList(), null, null).join();
-    assertThat(packages, empty());
+  void shouldReturnEmptyListWhenIdListIsEmpty() {
+    var packages = repository.findByIds(Collections.emptyList(), null, null).join();
+    assertTrue(packages.isEmpty());
   }
 
   @Test
-  public void shouldReturnEmptyListWhenTagListIsEmpty() {
-    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+  void shouldReturnEmptyListWhenTagListIsEmpty() {
+    var filter = TagFilter.builder().tags(Collections.emptyList())
       .recordType(RecordType.PACKAGE)
       .count(25).offset(0).build();
-    List<DbPackage> packages = repository.findByTagFilter(filter, null, STUB_TENANT).join();
-    assertThat(packages, empty());
+    var packages = repository.findByTagFilter(filter, null, STUB_TENANT).join();
+    assertTrue(packages.isEmpty());
   }
 
   @Test
-  public void shouldReturnEmptyListWhenTagListIsEmptyAndProviderIdIsPresent() {
-    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
-      .recordIdPrefix(STUB_VENDOR_ID).recordType(RecordType.PACKAGE)
+  void shouldReturnEmptyListWhenTagListIsEmptyAndProviderIdIsPresent() {
+    var filter = TagFilter.builder().tags(Collections.emptyList())
+      .recordIdPrefix("vendor-id").recordType(RecordType.PACKAGE)
       .count(25).offset(0).build();
-    List<DbPackage> packages = repository.findByTagFilter(filter, null, null).join();
-    assertThat(packages, empty());
+    var packages = repository.findByTagFilter(filter, null, null).join();
+    assertTrue(packages.isEmpty());
   }
 }

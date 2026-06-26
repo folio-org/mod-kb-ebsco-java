@@ -1,49 +1,41 @@
 package org.folio.rest.converter.packages;
 
-import static org.folio.test.util.TestUtil.getFile;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.folio.util.TestUtil.readJsonFile;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
 import org.folio.holdingsiq.model.Title;
-import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.Resource;
 import org.folio.rmapi.result.ResourceResult;
 import org.folio.spring.config.TestConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class PackageResponseConverterTest {
+class PackageResponseConverterTest {
 
   @Autowired
   private ConversionService conversionService;
 
   @Test
-  public void shouldReturnCustomCoverageInDescendingOrder() throws URISyntaxException, IOException {
+  void shouldReturnCustomCoverageInDescendingOrder() {
+    var title = readJsonFile("responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json", Title.class);
 
-    ObjectMapper mapper = new ObjectMapper();
+    var resourceResult = new ResourceResult(title, null, null, false);
+    var resource = conversionService.convert(resourceResult, Resource.class);
+    assertNotNull(resource);
 
-    Title title =
-      mapper.readValue(getFile("responses/rmapi/titles/get-custom-title-with-coverage-dates-asc.json"), Title.class);
+    var customCoverages = resource.getData().getAttributes().getCustomCoverages();
+    assertEquals(2, customCoverages.size());
+    assertEquals("2004-03-01", customCoverages.get(0).getBeginCoverage());
+    assertEquals("2004-03-04", customCoverages.get(0).getEndCoverage());
 
-    final ResourceResult resourceResult = new ResourceResult(title, null, null, false);
-    final Resource resource = conversionService.convert(resourceResult, Resource.class);
-
-    final List<Coverage> customCoverages = resource.getData().getAttributes().getCustomCoverages();
-    assertThat(customCoverages.size(), equalTo(2));
-    assertThat(customCoverages.get(0).getBeginCoverage(), equalTo("2004-03-01"));
-    assertThat(customCoverages.get(0).getEndCoverage(), equalTo("2004-03-04"));
-
-    assertThat(customCoverages.get(1).getBeginCoverage(), equalTo("2001-01-01"));
-    assertThat(customCoverages.get(1).getEndCoverage(), equalTo("2004-02-01"));
+    assertEquals("2001-01-01", customCoverages.get(1).getBeginCoverage());
+    assertEquals("2004-02-01", customCoverages.get(1).getEndCoverage());
   }
 }

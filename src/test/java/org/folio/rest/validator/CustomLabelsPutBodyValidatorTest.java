@@ -1,8 +1,8 @@
 package org.folio.rest.validator;
 
 import static org.apache.commons.lang3.RandomStringUtils.insecure;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,30 +11,30 @@ import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.CustomLabel;
 import org.folio.rest.jaxrs.model.CustomLabelDataAttributes;
 import org.folio.rest.jaxrs.model.CustomLabelsPutRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CustomLabelsPutBodyValidatorTest {
+class CustomLabelsPutBodyValidatorTest {
 
   private final CustomLabelsPutBodyValidator validator =
     new CustomLabelsPutBodyValidator(new CustomLabelsProperties(50, 100));
 
   @Test
-  public void shouldThrowExceptionWhenIdTooSmall() {
+  void shouldThrowExceptionWhenIdTooSmall() {
     assertInvalidCustomLabelId(0);
   }
 
   @Test
-  public void shouldThrowExceptionWhenIdTooBig() {
+  void shouldThrowExceptionWhenIdTooBig() {
     assertInvalidCustomLabelId(6);
   }
 
   @Test
-  public void shouldThrowExceptionWhenIdIsNull() {
+  void shouldThrowExceptionWhenIdIsNull() {
     assertInvalidCustomLabelId(null);
   }
 
   @Test
-  public void shouldThrowExceptionWhenNameIsTooLong() {
+  void shouldThrowExceptionWhenNameIsTooLong() {
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Collections.singletonList(
         new CustomLabel().withAttributes(
@@ -45,7 +45,7 @@ public class CustomLabelsPutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenPublicationFinderIsNull() {
+  void shouldThrowExceptionWhenPublicationFinderIsNull() {
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Collections.singletonList(new CustomLabel().withAttributes(
         new CustomLabelDataAttributes()
@@ -58,7 +58,7 @@ public class CustomLabelsPutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenFullTextFinderIsNull() {
+  void shouldThrowExceptionWhenFullTextFinderIsNull() {
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Collections.singletonList(new CustomLabel().withAttributes(
         new CustomLabelDataAttributes()
@@ -71,7 +71,7 @@ public class CustomLabelsPutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenIdsDuplicating() {
+  void shouldThrowExceptionWhenIdsDuplicating() {
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Arrays.asList(
         new CustomLabel().withAttributes(
@@ -91,7 +91,7 @@ public class CustomLabelsPutBodyValidatorTest {
   }
 
   @Test
-  public void shouldNotFallWhenPutBodyRequestIsValid() {
+  void shouldNotFallWhenPutBodyRequestIsValid() {
     final CustomLabelsPutRequest request = new CustomLabelsPutRequest()
       .withData(Arrays.asList(
         new CustomLabel().withAttributes(

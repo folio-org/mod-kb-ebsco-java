@@ -1,30 +1,26 @@
 package org.folio.rest.converter.kbcredentials;
 
-import static org.folio.util.KbCredentialsTestUtil.STUB_API_URL;
-import static org.folio.util.KbCredentialsTestUtil.STUB_CREDENTIALS_NAME;
-import static org.folio.util.KbCredentialsTestUtil.STUB_CUSTOMER_ID;
+import static org.folio.util.KbCredentialsTestUtil.API_URL;
+import static org.folio.util.KbCredentialsTestUtil.CREDENTIALS_NAME;
+import static org.folio.util.KbCredentialsTestUtil.CUSTOMER_ID;
 import static org.folio.util.KbCredentialsTestUtil.getCredentialsCollection;
 import static org.folio.util.KbCredentialsTestUtil.getCredentialsCollectionNoUrl;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Collection;
-import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.jaxrs.model.KbCredentials;
-import org.folio.rest.jaxrs.model.KbCredentialsCollection;
 import org.folio.spring.config.TestConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class KbCredentialsSecuredCollectionConverterTest {
+class KbCredentialsSecuredCollectionConverterTest {
 
   @Autowired
   private KbCredentialsCollectionConverter.SecuredKbCredentialsCollectionConverter securedConverter;
@@ -32,30 +28,30 @@ public class KbCredentialsSecuredCollectionConverterTest {
   private String defaultUrl;
 
   @Test
-  public void shouldConvertKbCredentialsCollectionWithDefaultUrl() {
-    Collection<DbKbCredentials> credentialsCollection = getCredentialsCollectionNoUrl();
-    final KbCredentialsCollection kbCredentials = securedConverter.convert(credentialsCollection);
-    assertThat(kbCredentials, notNullValue());
-    assertThat(kbCredentials.getMeta().getTotalResults(), equalTo(1));
+  void shouldConvertKbCredentialsCollectionWithDefaultUrl() {
+    var credentialsCollection = getCredentialsCollectionNoUrl();
+    var kbCredentials = securedConverter.convert(credentialsCollection);
+    assertNotNull(kbCredentials);
+    assertEquals(1, kbCredentials.getMeta().getTotalResults());
     var credentials = kbCredentials.getData().getFirst();
-    assertThat(credentials.getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
-    assertThat(credentials.getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
-    assertThat(credentials.getAttributes().getApiKey(), containsString("*"));
-    assertThat(credentials.getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
-    assertThat(credentials.getAttributes().getUrl(), equalTo(defaultUrl));
+    assertEquals(KbCredentials.Type.KB_CREDENTIALS, credentials.getType());
+    assertEquals(CREDENTIALS_NAME, credentials.getAttributes().getName());
+    assertTrue(credentials.getAttributes().getApiKey().contains("*"));
+    assertEquals(CUSTOMER_ID, credentials.getAttributes().getCustomerId());
+    assertEquals(credentials.getAttributes().getUrl(), defaultUrl);
   }
 
   @Test
-  public void shouldConvertKbCredentialsCollection() {
-    Collection<DbKbCredentials> credentialsCollection = getCredentialsCollection();
-    final KbCredentialsCollection kbCredentials = securedConverter.convert(credentialsCollection);
-    assertThat(kbCredentials, notNullValue());
-    assertThat(kbCredentials.getMeta().getTotalResults(), equalTo(1));
+  void shouldConvertKbCredentialsCollection() {
+    var credentialsCollection = getCredentialsCollection();
+    var kbCredentials = securedConverter.convert(credentialsCollection);
+    assertNotNull(kbCredentials);
+    assertEquals(1, kbCredentials.getMeta().getTotalResults());
     var credentials = kbCredentials.getData().getFirst();
-    assertThat(credentials.getType(), equalTo(KbCredentials.Type.KB_CREDENTIALS));
-    assertThat(credentials.getAttributes().getName(), equalTo(STUB_CREDENTIALS_NAME));
-    assertThat(credentials.getAttributes().getApiKey(), containsString("*"));
-    assertThat(credentials.getAttributes().getCustomerId(), equalTo(STUB_CUSTOMER_ID));
-    assertThat(credentials.getAttributes().getUrl(), equalTo(STUB_API_URL));
+    assertEquals(KbCredentials.Type.KB_CREDENTIALS, credentials.getType());
+    assertEquals(CREDENTIALS_NAME, credentials.getAttributes().getName());
+    assertTrue(credentials.getAttributes().getApiKey().contains("*"));
+    assertEquals(CUSTOMER_ID, credentials.getAttributes().getCustomerId());
+    assertEquals(API_URL, credentials.getAttributes().getUrl());
   }
 }

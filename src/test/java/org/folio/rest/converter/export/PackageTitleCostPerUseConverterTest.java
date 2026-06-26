@@ -1,6 +1,6 @@
 package org.folio.rest.converter.export;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -14,21 +14,21 @@ import org.folio.rest.jaxrs.model.PublicationType;
 import org.folio.rest.jaxrs.model.ResourceCostAnalysisAttributes;
 import org.folio.rest.jaxrs.model.ResourceCostPerUseCollectionItem;
 import org.folio.service.uc.export.TitleExportModel;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class PackageTitleCostPerUseConverterTest {
+class PackageTitleCostPerUseConverterTest {
 
   private PackageTitleCostPerUseConverter converter;
   private NumberFormat currencyFormatter;
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     converter = new PackageTitleCostPerUseConverter();
   }
 
   @Test
-  public void shouldRoundPercentToLessThanOne() {
+  void shouldRoundPercentToLessThanOne() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -46,7 +46,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldRoundPercentToLower() {
+  void shouldRoundPercentToLower() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -64,7 +64,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldRoundPercentToHigher() {
+  void shouldRoundPercentToHigher() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -82,7 +82,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldRoundDownCosts() {
+  void shouldRoundDownCosts() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -101,7 +101,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldRoundUpCosts() {
+  void shouldRoundUpCosts() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -120,7 +120,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldFormatCostsToUsFormat() {
+  void shouldFormatCostsToUsFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -139,7 +139,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldFormatCostsToGbFormat() {
+  void shouldFormatCostsToGbFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -158,7 +158,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldFormatCostsToFrFormat() {
+  void shouldFormatCostsToFrFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -177,7 +177,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldFormatCostsToUkFormat() {
+  void shouldFormatCostsToUkFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -196,7 +196,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldFormatCostsToKoreanFormat() {
+  void shouldFormatCostsToKoreanFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()
@@ -215,7 +215,7 @@ public class PackageTitleCostPerUseConverterTest {
   }
 
   @Test
-  public void shouldFormatCostsToJordanFormat() {
+  void shouldFormatCostsToJordanFormat() {
     ResourceCostPerUseCollectionItem item = new ResourceCostPerUseCollectionItem()
       .withAttributes(
         new ResourceCostAnalysisAttributes()

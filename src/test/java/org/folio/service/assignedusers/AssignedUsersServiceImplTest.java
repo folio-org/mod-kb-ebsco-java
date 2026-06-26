@@ -3,6 +3,7 @@ package org.folio.service.assignedusers;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.folio.util.TestUtil.result;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.ws.rs.NotFoundException;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.folio.common.OkapiParams;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
@@ -26,15 +27,18 @@ import org.folio.rest.jaxrs.model.AssignedUserId;
 import org.folio.service.users.Group;
 import org.folio.service.users.User;
 import org.folio.service.users.UsersLookUpService;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AssignedUsersServiceImplTest {
+@MockitoSettings(strictness = Strictness.WARN)
+@ExtendWith(MockitoExtension.class)
+class AssignedUsersServiceImplTest {
 
   private static final String TENANT_ID = "test";
   private static final Map<String, String> HEADERS = new CaseInsensitiveMap<>(Map.of(
@@ -53,7 +57,7 @@ public class AssignedUsersServiceImplTest {
   private UsersLookUpService usersLookUpService;
 
   @Test
-  public void testFindByCredentialsId_sortedByLastName() {
+  void findByCredentialsIdSortedByLastName() {
     var credId = UUID.randomUUID();
     var user1Id = UUID.randomUUID();
     var user2Id = UUID.randomUUID();
@@ -62,12 +66,12 @@ public class AssignedUsersServiceImplTest {
       .thenReturn(completedFuture(List.of(
         DbAssignedUser.builder().credentialsId(credId).id(user1Id).build(),
         DbAssignedUser.builder().credentialsId(credId).id(user2Id).build())));
-    when(usersLookUpService.lookUpUsers(eq(List.of(user1Id, user2Id)), any(OkapiParams.class)))
+    when(usersLookUpService.lookUpUsers(eq(List.of(user1Id, user2Id)), any(RequestContext.class)))
       .thenReturn(completedFuture(List.of(dummyUser(user1Id, groupId, "b"), dummyUser(user1Id, groupId, "a"))));
-    when(usersLookUpService.lookUpGroups(eq(List.of(groupId)), any(OkapiParams.class)))
+    when(usersLookUpService.lookUpGroups(eq(List.of(groupId)), any(RequestContext.class)))
       .thenReturn(completedFuture(List.of(Group.builder().id(groupId.toString()).group("group").build())));
 
-    getResult(usersService.findByCredentialsId(credId.toString(), HEADERS));
+    result(usersService.findByCredentialsId(credId.toString(), HEADERS));
 
     var resultArgumentCaptor = ArgumentCaptor.forClass(UserCollectionDataConverter.UsersResult.class);
     verify(userCollectionConverter).convert(resultArgumentCaptor.capture());
@@ -81,7 +85,7 @@ public class AssignedUsersServiceImplTest {
 
   @Test
   @SneakyThrows
-  public void shouldNotAssignNonExistentUser() {
+  void shouldNotAssignNonExistentUser() {
     var assignUserData = new AssignedUserId()
       .withId(UUID.randomUUID().toString())
       .withCredentialsId(UUID.randomUUID().toString());
@@ -98,7 +102,7 @@ public class AssignedUsersServiceImplTest {
 
   @Test
   @SneakyThrows
-  public void shouldNotAssignUserIfLookupFails() {
+  void shouldNotAssignUserIfLookupFails() {
     var assignUserData = new AssignedUserId()
       .withId(UUID.randomUUID().toString())
       .withCredentialsId(UUID.randomUUID().toString());
@@ -135,10 +139,5 @@ public class AssignedUsersServiceImplTest {
       .lastName(val)
       .userName(val)
       .build();
-  }
-
-  @SneakyThrows
-  private <T> void getResult(CompletableFuture<T> future) {
-    future.get();
   }
 }

@@ -1,173 +1,104 @@
 package org.folio.service.export;
 
-import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.test.util.TestUtil.STUB_TOKEN;
+import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TOKEN;
+import static org.folio.util.TestUtil.result;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import java.util.HashMap;
 import java.util.Map;
 import org.folio.holdingsiq.model.RequestContext;
 import org.folio.okapi.common.XOkapiHeaders;
-import org.folio.rest.impl.WireMockTestBase;
 import org.folio.service.locale.LocaleSettings;
 import org.folio.service.locale.LocaleSettingsService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.folio.service.locale.LocaleSettingsServiceImpl;
+import org.folio.util.WireMockTestBase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-@RunWith(VertxUnitRunner.class)
-public class LocaleSettingsServiceImplTest extends WireMockTestBase {
+class LocaleSettingsServiceImplTest extends WireMockTestBase {
 
-  @Autowired
-  private LocaleSettingsService localeSettingsService;
+  private final LocaleSettingsService localeSettingsService = new LocaleSettingsServiceImpl();
 
   private RequestContext requestContext;
 
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
+  @BeforeEach
+  void setUp() {
     Map<String, String> headers = new HashMap<>();
     headers.put(XOkapiHeaders.TOKEN, STUB_TOKEN);
     headers.put(XOkapiHeaders.TENANT, STUB_TENANT);
-    headers.put(XOkapiHeaders.URL, getWiremockUrl());
+    headers.put(XOkapiHeaders.URL, wm.baseUrl());
     requestContext = new RequestContext(headers);
   }
 
   @Test
-  public void shouldReturnValidSettings(TestContext context) {
-    var async = context.async();
+  void shouldReturnValidSettings() {
     mockSuccessfulLocaleResponse();
 
-    var future = localeSettingsService.retrieveSettings(requestContext);
+    var result = result(localeSettingsService.retrieveSettings(requestContext));
 
-    future.thenCompose(result -> {
-      context.assertEquals(result.getCurrency(), "EUR");
-      context.assertEquals(result.getLocale(), "en-GB");
-      context.assertEquals(result.getTimezone(), "UTC");
-      async.complete();
-      return null;
-    }).exceptionally(exception -> {
-      context.assertNull(exception);
-      async.complete();
-      return null;
-    });
+    assertEquals("EUR", result.getCurrency());
+    assertEquals("en-GB", result.getLocale());
+    assertEquals("UTC", result.getTimezone());
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenResponseUnexpected(TestContext context) {
-    var async = context.async();
-    var configFileName = "responses/configuration/locale-unexpected.json";
-    mockSuccessfulLocaleResponse(configFileName);
+  void shouldReturnDefaultSettingsWhenResponseUnexpected() {
+    mockSuccessfulLocaleResponse("responses/configuration/locale-unexpected.json");
 
-    var future = localeSettingsService.retrieveSettings(requestContext);
+    var result = result(localeSettingsService.retrieveSettings(requestContext));
 
-    future.thenCompose(result -> {
-      assertLocaleSettingsRecoveredToDefault(context, result);
-      async.complete();
-      return null;
-    }).exceptionally(exception -> {
-      context.assertNull(exception);
-      async.complete();
-      return null;
-    });
+    assertDefaultLocaleSettings(result);
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenConfigurationFailed(TestContext context) {
-    var async = context.async();
+  void shouldReturnDefaultSettingsWhenConfigurationFailed() {
     mockFailedLocaleResponse();
-    var future = localeSettingsService.retrieveSettings(requestContext);
 
-    future.thenCompose(result -> {
-      assertLocaleSettingsRecoveredToDefault(context, result);
-      async.complete();
-      return null;
-    }).exceptionally(exception -> {
-      failTest(context);
-      async.complete();
-      return null;
-    });
+    var result = result(localeSettingsService.retrieveSettings(requestContext));
+
+    assertDefaultLocaleSettings(result);
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenResponseIsInvalidJson(TestContext context) {
-    var async = context.async();
+  void shouldReturnDefaultSettingsWhenResponseIsInvalidJson() {
     mockLocaleResponseWithInvalidJson();
-    var future = localeSettingsService.retrieveSettings(requestContext);
 
-    future.thenCompose(result -> {
-      assertLocaleSettingsRecoveredToDefault(context, result);
-      async.complete();
-      return null;
-    }).exceptionally(exception -> {
-      failTest(context);
-      async.complete();
-      return null;
-    });
+    var result = result(localeSettingsService.retrieveSettings(requestContext));
+
+    assertDefaultLocaleSettings(result);
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenResponseIsEmpty(TestContext context) {
-    var async = context.async();
+  void shouldReturnDefaultSettingsWhenResponseIsEmpty() {
     mockLocaleResponseWithEmptyBody();
-    var future = localeSettingsService.retrieveSettings(requestContext);
 
-    future.thenCompose(result -> {
-      assertLocaleSettingsRecoveredToDefault(context, result);
-      async.complete();
-      return null;
-    }).exceptionally(exception -> {
-      failTest(context);
-      async.complete();
-      return null;
-    });
+    var result = result(localeSettingsService.retrieveSettings(requestContext));
+
+    assertDefaultLocaleSettings(result);
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenServerError(TestContext context) {
-    var async = context.async();
+  void shouldReturnDefaultSettingsWhenServerError() {
     mockLocaleResponseWithServerError();
-    var future = localeSettingsService.retrieveSettings(requestContext);
 
-    future.thenCompose(result -> {
-      assertLocaleSettingsRecoveredToDefault(context, result);
-      async.complete();
-      return null;
-    }).exceptionally(exception -> {
-      failTest(context);
-      async.complete();
-      return null;
-    });
+    var result = result(localeSettingsService.retrieveSettings(requestContext));
+
+    assertDefaultLocaleSettings(result);
   }
 
   @Test
-  public void shouldReturnDefaultSettingsWhenNetworkFailure(TestContext context) {
-    var async = context.async();
+  void shouldReturnDefaultSettingsWhenNetworkFailure() {
     mockLocaleResponseWithNetworkError();
-    var future = localeSettingsService.retrieveSettings(requestContext);
 
-    future.thenCompose(result -> {
-      assertLocaleSettingsRecoveredToDefault(context, result);
-      async.complete();
-      return null;
-    }).exceptionally(exception -> {
-      failTest(context);
-      async.complete();
-      return null;
-    });
+    var result = result(localeSettingsService.retrieveSettings(requestContext));
+
+    assertDefaultLocaleSettings(result);
   }
 
-  private void failTest(TestContext context) {
-    context.fail("Should not complete exceptionally, but return default settings");
-  }
-
-  private void assertLocaleSettingsRecoveredToDefault(TestContext context, LocaleSettings result) {
-    context.assertEquals("USD", result.getCurrency());
-    context.assertEquals("en-US", result.getLocale());
-    context.assertEquals("UTC", result.getTimezone());
+  private void assertDefaultLocaleSettings(LocaleSettings result) {
+    assertEquals("USD", result.getCurrency());
+    assertEquals("en-US", result.getLocale());
+    assertEquals("UTC", result.getTimezone());
   }
 }

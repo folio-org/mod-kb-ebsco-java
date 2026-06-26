@@ -10,16 +10,18 @@ import static org.folio.repository.holdings.status.retry.RetryStatusTableConstan
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.RETRY_STATUS_TABLE;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.TIMER_ID_COLUMN;
 import static org.folio.repository.holdings.status.retry.RetryStatusTableConstants.getRetryStatusByCredentials;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.repository.holdings.status.retry.RetryStatus;
 import org.folio.rest.persist.PostgresClient;
 
+@UtilityClass
 public class HoldingsRetryStatusTestUtil {
 
   public static RetryStatus insertRetryStatus(String credentialsId, Vertx vertx) {

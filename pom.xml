@@ -61,11 +61,12 @@
 
     <!-- Test dependencies versions   -->
     <spring.version>7.0.7</spring.version>
-    <junit.version>4.13.2</junit.version>
+    <junit.version>6.1.0</junit.version>
     <rest-assured.version>6.0.0</rest-assured.version>
     <mockito.version>5.23.0</mockito.version>
     <assertj.version>3.27.7</assertj.version>
     <jsonassert.version>1.5.3</jsonassert.version>
+    <wiremock.version>3.13.2</wiremock.version>
     <easy-random-core.version>5.0.0</easy-random-core.version>
 
     <!-- Plugins versions   -->
@@ -88,24 +89,6 @@
     <checkstyle.version>13.5.0</checkstyle.version>
   </properties>
 
-  <profiles>
-    <profile>
-      <id>default</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <test.coverage.skip>false</test.coverage.skip>
-      </properties>
-    </profile>
-    <profile>
-      <id>no-coverage</id>
-      <properties>
-        <test.coverage.skip>true</test.coverage.skip>
-      </properties>
-    </profile>
-  </profiles>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -126,6 +109,13 @@
         <groupId>io.vertx</groupId>
         <artifactId>vertx-stack-depchain</artifactId>
         <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -241,21 +231,26 @@
 
     <!-- Test dependencies -->
     <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-unit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-junit5</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hamcrest</groupId>
-          <artifactId>hamcrest-core</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>postgres-testing</artifactId>
+      <version>${rmb.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
@@ -276,6 +271,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>${assertj.version}</version>
@@ -288,37 +289,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.folio</groupId>
-      <artifactId>folio-service-tools-test</artifactId>
-      <version>${folio-service-tools.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.junit.jupiter</groupId>
-          <artifactId>junit-jupiter-engine</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.junit.jupiter</groupId>
-          <artifactId>junit-jupiter-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.junit.platform</groupId>
-          <artifactId>junit-platform-engine</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.junit.platform</groupId>
-          <artifactId>junit-platform-commons</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-slf4j2-impl</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
-      <version>${spring.version}</version>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock</artifactId>
+      <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -686,15 +659,11 @@
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
-          <excludes>
-            **/org/folio/rest/impl/integrationsuite/*.java
-          </excludes>
           <includes>
             <include>**/Test*.java</include>
             <include>**/*Test.java</include>
             <include>**/*Tests.java</include>
             <include>**/*TestCase.java</include>
-            <include>org/folio/rest/impl/IntegrationTestSuite.java</include>
           </includes>
         </configuration>
       </plugin>
@@ -709,9 +678,6 @@
             <goals>
               <goal>prepare-agent</goal>
             </goals>
-            <configuration>
-              <skip>${test.coverage.skip}</skip>
-            </configuration>
           </execution>
           <execution>
             <id>jacoco-coverage-report</id>
@@ -719,9 +685,6 @@
             <goals>
               <goal>report</goal>
             </goals>
-            <configuration>
-              <skip>${test.coverage.skip}</skip>
-            </configuration>
           </execution>
         </executions>
       </plugin>

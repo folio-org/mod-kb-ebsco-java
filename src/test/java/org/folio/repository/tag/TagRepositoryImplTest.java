@@ -1,33 +1,30 @@
 package org.folio.repository.tag;
 
 import static java.util.Collections.emptyList;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
+import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import org.folio.repository.RecordType;
 import org.folio.rest.model.filter.TagFilter;
 import org.folio.spring.config.TestConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
-public class TagRepositoryImplTest {
+class TagRepositoryImplTest {
 
   @Autowired
   private TagRepository repository;
 
   @Test
-  public void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTags() {
-    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+  void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTags() {
+    var filter = TagFilter.builder().tags(Collections.emptyList())
       .recordType(RecordType.RESOURCE)
       .build();
     int count = repository.countRecordsByTagFilter(filter, STUB_TENANT).join();
@@ -35,8 +32,8 @@ public class TagRepositoryImplTest {
   }
 
   @Test
-  public void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTagsAndPrefix() {
-    TagFilter filter = TagFilter.builder().tags(Collections.emptyList())
+  void shouldReturnZeroWhenTagListIsEmptyOnCountRecordsByTagsAndPrefix() {
+    var filter = TagFilter.builder().tags(Collections.emptyList())
       .recordType(RecordType.RESOURCE)
       .recordIdPrefix("123")
       .build();
@@ -45,14 +42,14 @@ public class TagRepositoryImplTest {
   }
 
   @Test
-  public void shouldReturnEmptyListWhenIdListIsEmptyOnFindByRecordByIds() {
-    List<DbTag> tags = repository.findByRecordByIds(STUB_TENANT, emptyList(), RecordType.RESOURCE).join();
-    assertThat(tags, empty());
+  void shouldReturnEmptyListWhenIdListIsEmptyOnFindByRecordByIds() {
+    var tags = repository.findByRecordByIds(STUB_TENANT, emptyList(), RecordType.RESOURCE).join();
+    assertTrue(tags.isEmpty());
   }
 
   @Test
-  public void shouldReturnEmptyMapWhenIdListIsEmptyOnFindByRecordByIds() {
-    Map<String, List<DbTag>> tags = repository.findPerRecord(STUB_TENANT, emptyList(), RecordType.RESOURCE).join();
-    assertThat(tags.keySet(), empty());
+  void shouldReturnEmptyMapWhenIdListIsEmptyOnFindByRecordByIds() {
+    var tags = repository.findPerRecord(STUB_TENANT, emptyList(), RecordType.RESOURCE).join();
+    assertTrue(tags.isEmpty());
   }
 }

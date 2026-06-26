@@ -18,7 +18,7 @@ import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.NAM
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.URL_COLUMN;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.selectCredentialsQuery;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.upsertCredentialsQuery;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.restassured.http.Header;
 import io.vertx.core.Vertx;
@@ -32,44 +32,48 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.repository.kbcredentials.DbKbCredentials;
 import org.folio.rest.converter.kbcredentials.KbCredentialsConverter;
 import org.folio.rest.jaxrs.model.KbCredentials;
+import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequest;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestData;
+import org.folio.rest.jaxrs.model.KbCredentialsPatchRequestDataAttributes;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.core.convert.converter.Converter;
 
+@UtilityClass
 public class KbCredentialsTestUtil {
 
   public static final String KB_CREDENTIALS_ENDPOINT = "/eholdings/kb-credentials";
   public static final String USER_KB_CREDENTIAL_ENDPOINT = "/eholdings/user-kb-credential";
   public static final String KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT = KB_CREDENTIALS_ENDPOINT + "/%s/custom-labels";
 
-  public static final String STUB_CREDENTIALS_NAME = "TEST_NAME";
-  public static final String STUB_API_KEY = "TEST_API_KEY";
-  public static final String STUB_API_URL = "https://api.ebsco.io";
-  public static final String STUB_CUSTOMER_ID = "TEST_CUSTOMER_ID";
+  public static final String CREDENTIALS_NAME = "TEST_NAME";
+  public static final String API_KEY = "TEST_API_KEY";
+  public static final String API_URL = "https://api.ebsco.io";
+  public static final String CUSTOMER_ID = "TEST_CUSTOMER_ID";
 
   public static final String STUB_USERNAME = "TEST_USER_NAME";
-  public static final String STUB_USERNAME_OTHER = "TEST_USER_NAME_OTHER";
   public static final String STUB_USER_ID = "88888888-8888-4888-8888-888888888888";
   public static final String STUB_USER_OTHER_ID = "99999999-9999-4999-9999-999999999999";
 
-  public static final Header STUB_USER_ID_HEADER = new Header(XOkapiHeaders.USER_ID, STUB_USER_ID);
   public static final Header STUB_USER_ID_OTHER_HEADER = new Header(XOkapiHeaders.USER_ID, STUB_USER_OTHER_ID);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER =
-    new KbCredentialsConverter.KbCredentialsFromDbSecuredConverter(STUB_API_KEY);
+    new KbCredentialsConverter.KbCredentialsFromDbSecuredConverter(API_KEY);
 
   private static final Converter<DbKbCredentials, KbCredentials> CONVERTER_NON_SECURED =
-    new KbCredentialsConverter.KbCredentialsFromDbNonSecuredConverter(STUB_API_KEY);
+    new KbCredentialsConverter.KbCredentialsFromDbNonSecuredConverter(API_KEY);
 
   public static String saveKbCredentials(String url, String name, String apiKey, String customerId, Vertx vertx) {
     return saveKbCredentials(UUID.randomUUID().toString(), url, name, apiKey, customerId, vertx);
   }
 
   public static String saveKbCredentials(String id, String url, Vertx vertx) {
-    return saveKbCredentials(id, url, STUB_CREDENTIALS_NAME, STUB_API_KEY, STUB_CUSTOMER_ID, vertx);
+    return saveKbCredentials(id, url, CREDENTIALS_NAME, API_KEY, CUSTOMER_ID, vertx);
   }
 
   public static String saveKbCredentials(String id, String url, String name, String apiKey, String customerId,
@@ -93,6 +97,63 @@ public class KbCredentialsTestUtil {
     return id;
   }
 
+  public static String setupDefaultKbConfiguration(String wiremockUrl, Vertx vertx) {
+    return saveKbCredentials(wiremockUrl, CREDENTIALS_NAME, API_KEY, CUSTOMER_ID, vertx);
+  }
+
+  public static KbCredentials getDefaultKbConfiguration(Vertx vertx) {
+    List<KbCredentials> credentials = getKbCredentialsNonSecured(vertx);
+    if (credentials.size() != 1) {
+      throw new UnsupportedOperationException("There is 0 or more then 1 configuration");
+    } else {
+      return credentials.getFirst();
+    }
+  }
+
+  public static List<KbCredentials> getKbCredentialsNonSecured(Vertx vertx) {
+    return getKbCredentials(vertx, CONVERTER_NON_SECURED);
+  }
+
+  public static KbCredentials stubbedCredentials(String url) {
+    return new KbCredentials()
+      .withType(KbCredentials.Type.KB_CREDENTIALS)
+      .withAttributes(new KbCredentialsDataAttributes()
+        .withName(CREDENTIALS_NAME)
+        .withCustomerId(CUSTOMER_ID)
+        .withApiKey(API_KEY)
+        .withUrl(url));
+  }
+
+  public static KbCredentialsPatchRequest stubPatchRequest() {
+    return new KbCredentialsPatchRequest().withData(
+      new KbCredentialsPatchRequestData().withType(KbCredentialsPatchRequestData.Type.KB_CREDENTIALS)
+        .withAttributes(new KbCredentialsPatchRequestDataAttributes())
+    );
+  }
+
+  public static DbKbCredentials getCredentialsNoUrl() {
+    return DbKbCredentials.builder()
+      .name(CREDENTIALS_NAME)
+      .customerId(CUSTOMER_ID)
+      .apiKey(API_KEY).build();
+  }
+
+  public static DbKbCredentials getCredentials() {
+    return DbKbCredentials.builder()
+      .name(CREDENTIALS_NAME)
+      .customerId(CUSTOMER_ID)
+      .apiKey(API_KEY)
+      .url(API_URL).build();
+  }
+
+  public static Collection<DbKbCredentials> getCredentialsCollectionNoUrl() {
+    return Collections.singletonList(getCredentialsNoUrl());
+  }
+
+  public static Collection<DbKbCredentials> getCredentialsCollection() {
+    return Collections.singletonList(getCredentials());
+  }
+
   public static List<KbCredentials> getKbCredentials(Vertx vertx) {
     return getKbCredentials(vertx, CONVERTER);
   }
@@ -104,10 +165,6 @@ public class KbCredentialsTestUtil {
     PostgresClient.getInstance(vertx, STUB_TENANT).select(query,
       event -> future.complete(mapItems(event.result(), row -> converter.convert(mapKbCredentials(row)))));
     return future.join();
-  }
-
-  public static List<KbCredentials> getKbCredentialsNonSecured(Vertx vertx) {
-    return getKbCredentials(vertx, CONVERTER_NON_SECURED);
   }
 
   private static DbKbCredentials mapKbCredentials(Row row) {
@@ -128,28 +185,5 @@ public class KbCredentialsTestUtil {
 
   private static String kbCredentialsTestTable() {
     return PostgresClient.convertToPsqlStandard(STUB_TENANT) + "." + KB_CREDENTIALS_TABLE_NAME;
-  }
-
-  public static DbKbCredentials getCredentialsNoUrl() {
-    return DbKbCredentials.builder()
-      .name(STUB_CREDENTIALS_NAME)
-      .customerId(STUB_CUSTOMER_ID)
-      .apiKey(STUB_API_KEY).build();
-  }
-
-  public static DbKbCredentials getCredentials() {
-    return DbKbCredentials.builder()
-      .name(STUB_CREDENTIALS_NAME)
-      .customerId(STUB_CUSTOMER_ID)
-      .apiKey(STUB_API_KEY)
-      .url(STUB_API_URL).build();
-  }
-
-  public static Collection<DbKbCredentials> getCredentialsCollectionNoUrl() {
-    return Collections.singletonList(getCredentialsNoUrl());
-  }
-
-  public static Collection<DbKbCredentials> getCredentialsCollection() {
-    return Collections.singletonList(getCredentials());
   }
 }

@@ -10,6 +10,7 @@ import static org.folio.rest.converter.costperuse.CostPerUseConverterUtils.setPu
 
 import java.util.List;
 import java.util.Map;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.folio.client.uc.model.UcCostAnalysis;
 import org.folio.holdingsiq.model.CoverageDates;
@@ -28,6 +29,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
+@Log4j2
 @Component
 public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult, TitleCostPerUse> {
 
@@ -49,6 +51,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
 
     var ucTitleCostPerUse = source.getUcTitleCostPerUse();
     if (ucTitleCostPerUse.usage() == null || ucTitleCostPerUse.usage().platforms() == null) {
+      log.warn("No usage data for title {}", source.getTitleId());
       return titleCostPerUse;
     }
 
@@ -59,12 +62,12 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
     Integer totalUsage = processPlatformUsages(source, specificPlatformUsages, usage);
 
     analysis.setHoldingsSummary(getHoldingsSummary(source, totalUsage));
-    return titleCostPerUse
-      .withAttributes(new TitleCostPerUseDataAttributes()
-        .withUsage(usage)
-        .withAnalysis(analysis)
-        .withParameters(convertParameters(source.getConfiguration()))
-      );
+    var attributes = new TitleCostPerUseDataAttributes()
+      .withUsage(usage)
+      .withAnalysis(analysis)
+      .withParameters(convertParameters(source.getConfiguration()));
+    log.info("Title cost per use: {}", attributes);
+    return titleCostPerUse.withAttributes(attributes);
   }
 
   private Integer processPlatformUsages(TitleCostPerUseResult source,

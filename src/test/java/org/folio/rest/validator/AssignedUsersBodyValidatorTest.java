@@ -1,15 +1,16 @@
 package org.folio.rest.validator;
 
-import org.folio.rest.exception.InputValidationException;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class AssignedUsersBodyValidatorTest {
+import org.folio.rest.exception.InputValidationException;
+import org.junit.jupiter.api.Test;
+
+class AssignedUsersBodyValidatorTest {
 
   private final AssignedUsersBodyValidator validator = new AssignedUsersBodyValidator();
 
   @Test
-  public void shouldThrowExceptionWhenNoData() {
-    Assert.assertThrows(InputValidationException.class, () -> validator.validate(null));
+  void shouldThrowExceptionWhenNoData() {
+    assertThrows(InputValidationException.class, () -> validator.validate(null));
   }
 }

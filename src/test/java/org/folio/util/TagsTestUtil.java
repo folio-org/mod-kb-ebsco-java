@@ -9,7 +9,7 @@ import static org.folio.repository.tag.TagTableConstants.RECORD_ID_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.RECORD_TYPE_COLUMN;
 import static org.folio.repository.tag.TagTableConstants.TAGS_TABLE_NAME;
 import static org.folio.repository.tag.TagTableConstants.TAG_COLUMN;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -20,14 +20,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.db.RowSetUtils;
 import org.folio.repository.RecordType;
 import org.folio.repository.tag.DbTag;
 import org.folio.rest.persist.PostgresClient;
 
+@UtilityClass
 public final class TagsTestUtil {
 
-  private TagsTestUtil() {
+  public static DbTag buildTag(int recordId, RecordType recordType, String value) {
+    return buildTag(String.valueOf(recordId), recordType, value);
+  }
+
+  public static DbTag buildTag(String recordId, RecordType recordType, String value) {
+    return DbTag.builder()
+      .recordId(recordId)
+      .recordType(recordType)
+      .value(value)
+      .build();
+  }
+
+  public static void saveTag(Vertx vertx, int recordId, RecordType recordType, String value) {
+    saveTag(vertx, String.valueOf(recordId), recordType, value);
   }
 
   public static void saveTag(Vertx vertx, String recordId, RecordType recordType, String value) {
@@ -58,17 +73,6 @@ public final class TagsTestUtil {
     return populateTagIds(tags, future.join());
   }
 
-  private static List<DbTag> populateTagIds(List<DbTag> tags, RowSet<Row> keys) {
-    List<DbTag> result = new ArrayList<>(tags.size());
-
-    RowIterator<Row> iterator = keys.iterator();
-    for (DbTag tag : tags) {
-      result.add(tag.toBuilder().id(iterator.next().getUUID(ID_COLUMN)).build());
-    }
-
-    return result;
-  }
-
   public static List<String> getTags(Vertx vertx) {
     CompletableFuture<List<String>> future = new CompletableFuture<>();
     String query = prepareQuery(selectQuery(TAG_COLUMN), tagTestTable());
@@ -85,6 +89,17 @@ public final class TagsTestUtil {
       .select(query, params,
         event -> future.complete(RowSetUtils.mapItems(event.result(), row -> row.getString(TAG_COLUMN))));
     return future.join();
+  }
+
+  private static List<DbTag> populateTagIds(List<DbTag> tags, RowSet<Row> keys) {
+    List<DbTag> result = new ArrayList<>(tags.size());
+
+    RowIterator<Row> iterator = keys.iterator();
+    for (DbTag tag : tags) {
+      result.add(tag.toBuilder().id(iterator.next().getUUID(ID_COLUMN)).build());
+    }
+
+    return result;
   }
 
   private static String tagTestTable() {

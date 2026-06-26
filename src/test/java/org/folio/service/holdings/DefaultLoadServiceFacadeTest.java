@@ -1,20 +1,23 @@
 package org.folio.service.holdings;
 
 import static org.folio.repository.holdings.LoadStatus.NONE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
 import lombok.SneakyThrows;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultLoadServiceFacadeTest {
+@MockitoSettings(strictness = Strictness.WARN)
+@ExtendWith(MockitoExtension.class)
+class DefaultLoadServiceFacadeTest {
 
   @Mock
   private LoadServiceImpl loadService;
@@ -26,7 +29,7 @@ public class DefaultLoadServiceFacadeTest {
 
   @Test
   @SneakyThrows
-  public void shouldNotFailOnEmptyStatusFromHoldingsIq() {
+  void shouldNotFailOnEmptyStatusFromHoldingsIq() {
     Mockito.when(loadService.getLoadingStatus())
       .thenReturn(CompletableFuture.completedFuture(null));
 
