@@ -1,7 +1,7 @@
 package org.folio.service.uc;
 
 import static io.vertx.core.Future.succeededFuture;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_OK;
 import static org.folio.repository.uc.UcCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.TestUtil.STUB_TENANT;
 import static org.folio.util.TestUtil.clearDataFromTable;

@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.ws.rs.core.Response;
-import org.apache.http.HttpStatus;
-import org.apache.http.protocol.HTTP;
+import org.folio.HttpHeaders;
+import org.folio.HttpStatus;
 import org.folio.holdingsiq.model.RequestContext;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.validator.HeaderValidator;
@@ -98,7 +98,7 @@ public class RmApiTemplate {
       result ->
         Response
           .status(HttpStatus.SC_OK)
-          .header(HTTP.CONTENT_TYPE, JSON_API_TYPE)
+          .header(HttpHeaders.CONTENT_TYPE, JSON_API_TYPE)
           .entity(conversionService.convert(result, responseClass))
           .build()
     );

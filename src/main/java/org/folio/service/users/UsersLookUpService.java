@@ -23,7 +23,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
+import org.folio.HttpHeaders;
 import org.folio.holdingsiq.model.RequestContext;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.util.RequestHeadersUtil;

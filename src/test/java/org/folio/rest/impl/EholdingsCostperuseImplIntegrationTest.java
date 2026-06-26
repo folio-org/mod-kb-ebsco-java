@@ -1,9 +1,9 @@
 package org.folio.rest.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.holdings.HoldingsTableConstants.HOLDINGS_TABLE;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UcCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
@@ -155,7 +155,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnGetResourceCpuWhenYearIsNull() {
     int titleId = 356;
     int packageId = 473;
-    var error = getWithStatus(resourceEndpoint(titleId, packageId, null, null), SC_UNPROCESSABLE_ENTITY)
+    var error = getWithStatus(resourceEndpoint(titleId, packageId, null, null), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid fiscalYear");
@@ -167,7 +167,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
     int packageId = 473;
     String year = "2019";
     String platform = "invalid";
-    var error = getWithStatus(resourceEndpoint(titleId, packageId, year, platform), SC_UNPROCESSABLE_ENTITY)
+    var error = getWithStatus(resourceEndpoint(titleId, packageId, year, platform), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid platform");
@@ -254,7 +254,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
   @Test
   void shouldReturn422OnGetTitleCpuWhenYearIsNull() {
     int titleId = 356;
-    var error = getWithStatus(titleEndpoint(titleId, null, null), SC_UNPROCESSABLE_ENTITY)
+    var error = getWithStatus(titleEndpoint(titleId, null, null), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid fiscalYear");
@@ -265,7 +265,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
     int titleId = 356;
     String year = "2019";
     String platform = "invalid";
-    var error = getWithStatus(titleEndpoint(titleId, year, platform), SC_UNPROCESSABLE_ENTITY)
+    var error = getWithStatus(titleEndpoint(titleId, year, platform), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid platform");
@@ -308,7 +308,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
   @Test
   void shouldReturn422OnGetPackageCpuWhenYearIsNull() {
     int packageId = 222222;
-    var error = getWithStatus(packageEndpoint(packageId, null, null), SC_UNPROCESSABLE_ENTITY)
+    var error = getWithStatus(packageEndpoint(packageId, null, null), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid fiscalYear");
@@ -319,7 +319,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
     int packageId = 222222;
     String year = "2019";
     String platform = "invalid";
-    var error = getWithStatus(packageEndpoint(packageId, year, platform), SC_UNPROCESSABLE_ENTITY)
+    var error = getWithStatus(packageEndpoint(packageId, year, platform), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid platform");
@@ -549,7 +549,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnGetPackageResourcesCpuWhenYearIsNull() {
     int packageId = 222222;
     var error =
-      getWithStatus(packageResourcesEndpoint(packageId, null, null, null, null), SC_UNPROCESSABLE_ENTITY)
+      getWithStatus(packageResourcesEndpoint(packageId, null, null, null, null), SC_UNPROCESSABLE_CONTENT)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid fiscalYear");
@@ -561,7 +561,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
     String year = "2019";
     String platform = "invalid";
     var error =
-      getWithStatus(packageResourcesEndpoint(packageId, year, platform, null, null), SC_UNPROCESSABLE_ENTITY)
+      getWithStatus(packageResourcesEndpoint(packageId, year, platform, null, null), SC_UNPROCESSABLE_CONTENT)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid platform");
@@ -575,7 +575,7 @@ class EholdingsCostperuseImplIntegrationTest extends IntegrationTestBase {
     String sort = "invalid";
     var error =
       getWithStatus(packageResourcesEndpoint(packageId, year, platform, null, null, sort, null),
-        SC_UNPROCESSABLE_ENTITY)
+        SC_UNPROCESSABLE_CONTENT)
         .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid sort");

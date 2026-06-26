@@ -1,9 +1,9 @@
 package org.folio.rest.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.uc.UcCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
 import static org.folio.util.TestUtil.clearDataFromTable;
@@ -72,7 +72,7 @@ class UsageConsolidationCredentialsApiIntegrationTest extends IntegrationTestBas
     mockAuthToken(SC_BAD_REQUEST);
 
     var requestBody = getRequestBody(STUB_CLIENT_ID, STUB_CLIENT_SECRET);
-    var error = putWithStatus(UC_CREDENTIALS_ENDPOINT, requestBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(UC_CREDENTIALS_ENDPOINT, requestBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     var actualCredentials = getUcCredentials(vertx);
 
@@ -104,7 +104,7 @@ class UsageConsolidationCredentialsApiIntegrationTest extends IntegrationTestBas
     var newClientId = "NEW_ID";
     var newClientSecret = "NEW_TOKEN";
     var requestBody = getRequestBody(newClientId, newClientSecret);
-    var error = putWithStatus(UC_CREDENTIALS_ENDPOINT, requestBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(UC_CREDENTIALS_ENDPOINT, requestBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
     assertErrorContainsTitle(error, "Invalid Usage Consolidation Credentials");
 
     var actualCredentials = getUcCredentials(vertx);

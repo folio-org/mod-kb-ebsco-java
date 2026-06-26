@@ -1,11 +1,11 @@
 package org.folio.rest.impl;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_CREATED;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_NO_CONTENT;
+import static org.folio.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
@@ -284,7 +284,7 @@ class EholdingsAccessTypesImplIntegrationTest extends IntegrationTestBase {
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
     var error =
-      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+      postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate name");
   }
@@ -306,7 +306,7 @@ class EholdingsAccessTypesImplIntegrationTest extends IntegrationTestBase {
       .replaceFirst("type", "BadType");
 
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    String response = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY).asString();
+    String response = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_CONTENT).asString();
     assertTrue(response.contains("Unrecognized field"));
   }
 
@@ -317,7 +317,7 @@ class EholdingsAccessTypesImplIntegrationTest extends IntegrationTestBase {
     String postBody = Json.encode(new AccessTypePostRequest().withData(accessType));
 
     var resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT, credentialsId);
-    var errors = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    var errors = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_CONTENT).as(Errors.class);
     assertEquals("data.id", errors.getErrors().getFirst().getParameters().getFirst().getKey());
   }
 
@@ -398,7 +398,7 @@ class EholdingsAccessTypesImplIntegrationTest extends IntegrationTestBase {
 
     String putBody = Json.encode(new AccessTypePutRequest().withData(accessType));
     String resourcePath = String.format(KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT, credentialsId, UUID.randomUUID());
-    Errors errors = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    Errors errors = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT).as(Errors.class);
 
     assertEquals("data.id", errors.getErrors().getFirst().getParameters().getFirst().getKey());
   }

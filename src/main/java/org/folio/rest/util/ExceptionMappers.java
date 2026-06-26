@@ -1,14 +1,14 @@
 package org.folio.rest.util;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CONFLICT;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_CONFLICT;
+import static org.folio.HttpStatus.SC_FORBIDDEN;
+import static org.folio.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_UNAUTHORIZED;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ErrorUtil.createErrorFromRmApiResponse;
 import static org.folio.rest.util.RestConstants.JSON_API_TYPE;
@@ -281,7 +281,7 @@ public final class ExceptionMappers {
    */
   public static Function<InputValidationException, Response> error422InputValidationMapper() {
     return exception ->
-      Response.status(SC_UNPROCESSABLE_ENTITY)
+      Response.status(SC_UNPROCESSABLE_CONTENT)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(createError(exception.getMessage(), exception.getMessageDetail()))
         .build();
@@ -299,7 +299,7 @@ public final class ExceptionMappers {
    */
   public static Function<ConfigurationInvalidException, Response> error422ConfigurationInvalidMapper() {
     return exception ->
-      Response.status(SC_UNPROCESSABLE_ENTITY)
+      Response.status(SC_UNPROCESSABLE_CONTENT)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(ErrorUtil.createError(exception.getErrors().getFirst().getMessage()))
         .build();
@@ -317,7 +317,7 @@ public final class ExceptionMappers {
    */
   public static Function<UcAuthenticationException, Response> error422UcSettingsInvalidMapper() {
     return exception ->
-      Response.status(SC_UNPROCESSABLE_ENTITY)
+      Response.status(SC_UNPROCESSABLE_CONTENT)
         .header(CONTENT_TYPE, JSON_API_TYPE)
         .entity(ErrorUtil.createError(exception.getMessage()))
         .build();

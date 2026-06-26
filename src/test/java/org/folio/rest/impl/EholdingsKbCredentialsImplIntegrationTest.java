@@ -1,10 +1,10 @@
 package org.folio.rest.impl;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_CREATED;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_CREATED;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
@@ -130,7 +130,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyFailedCredentialsRequest();
-    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB API Credentials are invalid");
   }
@@ -143,7 +143,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
     var postBody = Json.encode(kbCredentialsPostRequest);
 
-    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name is too long (maximum is 255 characters)");
@@ -157,7 +157,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var kbCredentialsPostRequest = new KbCredentialsPostRequest().withData(creds);
     var postBody = Json.encode(kbCredentialsPostRequest);
 
-    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name must not be empty");
@@ -170,7 +170,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyValidCredentialsRequest();
-    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate name");
     assertErrorContainsDetail(error, String.format("Credentials with name '%s' already exist", CREDENTIALS_NAME));
@@ -187,7 +187,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var postBody = Json.encode(kbCredentialsPostRequest);
 
     mockVerifyValidCredentialsRequest();
-    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = postWithStatus(KB_CREDENTIALS_ENDPOINT, postBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate credentials");
     assertErrorContainsDetail(error, String.format("Credentials with customer id '%s' and url '%s' already exist",
@@ -271,7 +271,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
 
     mockVerifyFailedCredentialsRequest();
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB API Credentials are invalid");
   }
@@ -284,7 +284,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var patchBody = Json.encode(kbCredentialsPatchRequest);
 
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name is too long (maximum is 255 characters)");
@@ -299,7 +299,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var patchBody = Json.encode(kbCredentialsPatchRequest);
 
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name must not be empty");
@@ -311,7 +311,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var patchBody = Json.encode(kbCredentialsPatchRequest);
 
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid attributes");
     assertErrorContainsDetail(error, "At least one of attributes must not be empty");
@@ -329,7 +329,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
 
     mockVerifyValidCredentialsRequest();
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate name");
     assertErrorContainsDetail(error, String.format("Credentials with name '%s' already exist", CREDENTIALS_NAME));
@@ -348,7 +348,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var credentialsId = saveKbCredentials(getWiremockUrl(), CREDENTIALS_NAME + "2",
       STUB_API_KEY, OTHER_CUST_ID, vertx);
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate credentials");
     assertErrorContainsDetail(error, String.format("Credentials with customer id '%s' and url '%s' already exist",
@@ -424,7 +424,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
 
     mockVerifyFailedCredentialsRequest();
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "KB API Credentials are invalid");
   }
@@ -438,7 +438,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var putBody = Json.encode(kbCredentialsPutRequest);
 
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name is too long (maximum is 255 characters)");
@@ -453,7 +453,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
     var putBody = Json.encode(kbCredentialsPutRequest);
 
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/11111111-1111-1111-a111-111111111111";
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name must not be empty");
@@ -469,7 +469,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
 
     mockVerifyValidCredentialsRequest();
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate name");
     assertErrorContainsDetail(error, String.format("Credentials with name '%s' already exist", CREDENTIALS_NAME));
@@ -487,7 +487,7 @@ class EholdingsKbCredentialsImplIntegrationTest extends IntegrationTestBase {
 
     mockVerifyValidCredentialsRequest();
     var resourcePath = KB_CREDENTIALS_ENDPOINT + "/" + credentialsId;
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Duplicate credentials");
     assertErrorContainsDetail(error, String.format("Credentials with customer id '%s' and url '%s' already exist",

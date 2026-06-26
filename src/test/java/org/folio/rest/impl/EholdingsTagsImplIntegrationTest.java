@@ -1,7 +1,7 @@
 package org.folio.rest.impl;
 
 import static java.util.Arrays.asList;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
 import static org.folio.common.ListUtils.mapItems;
 import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.PROVIDER;
@@ -104,8 +104,8 @@ class EholdingsTagsImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldFailOnInvalidRecordTypeOnGet() {
-    var error = getWithStatus(TAGS_PATH + "?filter[rectype]=INVALID&filter[rectype]=title",
-      SC_BAD_REQUEST).as(JsonapiError.class);
+    var error = getWithStatus(TAGS_PATH + "?filter[rectype]=INVALID&filter[rectype]=title", SC_BAD_REQUEST)
+      .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid 'filter[rectype]' parameter value");
   }

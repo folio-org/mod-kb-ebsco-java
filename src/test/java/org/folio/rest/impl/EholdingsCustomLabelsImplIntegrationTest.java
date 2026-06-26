@@ -2,11 +2,11 @@ package org.folio.rest.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_FORBIDDEN;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_NO_CONTENT;
+import static org.folio.HttpStatus.SC_UNAUTHORIZED;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsDetail;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
@@ -143,7 +143,7 @@ class EholdingsCustomLabelsImplIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutWhenIdNotInRange() {
     var putBody = readFile(PUT_WITH_INVALID_ID_REQUEST);
     var resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, UUID.randomUUID());
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY)
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid Custom Label id");
@@ -154,7 +154,7 @@ class EholdingsCustomLabelsImplIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutWhenInvalidNameLength() {
     var putBody = readFile(PUT_WITH_INVALID_NAME_REQUEST);
     var resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, UUID.randomUUID());
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY)
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid Custom Label Name");
@@ -165,7 +165,7 @@ class EholdingsCustomLabelsImplIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutWhenHasDuplicateIds() {
     var putBody = readFile(PUT_WITH_DUPLICATE_ID_REQUEST);
     var resourcePath = String.format(KB_CREDENTIALS_CUSTOM_LABELS_ENDPOINT, UUID.randomUUID());
-    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_ENTITY)
+    var error = putWithStatus(resourcePath, putBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid request body");

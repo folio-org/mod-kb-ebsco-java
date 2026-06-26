@@ -1,8 +1,7 @@
 package org.folio.rest.impl;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
 import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
@@ -32,6 +31,7 @@ import java.util.function.Function;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.BooleanUtils;
+import org.folio.HttpHeaders;
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
@@ -368,7 +368,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private Function<ResourceNotFoundException, Response> error404ResourceNotFoundMapper() {
     return exception ->
       Response.status(SC_NOT_FOUND)
-        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .header(HttpHeaders.CONTENT_TYPE, JSON_API_TYPE)
         .entity(createError(RESOURCE_NOT_FOUND_MESSAGE))
         .build();
   }

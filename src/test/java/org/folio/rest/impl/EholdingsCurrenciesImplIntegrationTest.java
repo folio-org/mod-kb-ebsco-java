@@ -1,6 +1,6 @@
 package org.folio.rest.impl;
 
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;

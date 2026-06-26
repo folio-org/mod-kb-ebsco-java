@@ -4,11 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static java.lang.String.format;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_NO_CONTENT;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
@@ -336,7 +336,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
     var managedResourceEndpoint = resourcesRmApi(STUB_VENDOR_ID, STUB_PACKAGE_ID, STUB_MANAGED_TITLE_ID);
 
     var error = putWithStatus(STUB_MANAGED_RESOURCE_PATH, readFile(REQUEST_PUT_MANAGED_RESOURCE_INVALID_ACCESS_TYPE),
-      SC_UNPROCESSABLE_ENTITY, CONTENT_TYPE_HEADER).as(Errors.class);
+      SC_UNPROCESSABLE_CONTENT, CONTENT_TYPE_HEADER).as(Errors.class);
 
     verifyPut(matching(managedResourceEndpoint), 0);
 
@@ -412,7 +412,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
     var tags = readJsonFile(REQUEST_PUT_RESOURCE_TAGS, ResourceTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
 
-    var error = putWithStatus(RESOURCE_TAGS_PATH, Json.encode(tags), SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(RESOURCE_TAGS_PATH, Json.encode(tags), SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
   }
@@ -424,7 +424,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
     mockGet(matching(customResourceEndpoint), readFile(RMAPI_GET_CUSTOM_RESOURCE_UPDATED));
 
     var error = putWithStatus(RESOURCE_BY_ID_PATH.formatted(STUB_CUSTOM_RESOURCE_ID),
-      readFile(REQUEST_PUT_CUSTOM_RESOURCE_INVALID_URL), SC_UNPROCESSABLE_ENTITY)
+      readFile(REQUEST_PUT_CUSTOM_RESOURCE_INVALID_URL), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid url");
@@ -466,7 +466,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
     mockTitle(RMAPI_GET_RESOURCE_BY_ID_SUCCESS);
 
     var error =
-      postWithStatus(RESOURCES_PATH, readFile(REQUEST_POST_RESOURCES), SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+      postWithStatus(RESOURCES_PATH, readFile(REQUEST_POST_RESOURCES), SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertTrue(error.getErrors().getFirst().getTitle().contains("Invalid PackageId"));
   }
@@ -534,7 +534,7 @@ class EholdingsResourcesImplIntegrationTest extends IntegrationTestBase {
   @Test
   void shouldReturn422OnInvalidIdFormat() {
     var error = postWithStatus(RESOURCES_BULK_FETCH, readFile(REQUEST_POST_RESOURCES_BULK_INVALID_FORMAT),
-      SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+      SC_UNPROCESSABLE_CONTENT).as(Errors.class);
 
     assertEquals("elements in list must match pattern", error.getErrors().getFirst().getMessage());
   }

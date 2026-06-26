@@ -2,10 +2,10 @@ package org.folio.rest.impl;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UcCredentialsTableConstants.UC_CREDENTIALS_TABLE_NAME;
 import static org.folio.repository.uc.UcSettingsTableConstants.UC_SETTINGS_TABLE_NAME;
@@ -161,7 +161,7 @@ class EholdingsUsageConsolidationImplIntegrationTest extends IntegrationTestBase
           .withCurrency(newCurrencyValue)));
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
-    var error = patchWithStatus(resourcePath, Json.encode(patchData), SC_UNPROCESSABLE_ENTITY)
+    var error = patchWithStatus(resourcePath, Json.encode(patchData), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
@@ -200,7 +200,7 @@ class EholdingsUsageConsolidationImplIntegrationTest extends IntegrationTestBase
 
     String patchBody = Json.encode(patchData);
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
-    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_ENTITY)
+    var error = patchWithStatus(resourcePath, patchBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid UC Credentials");
@@ -247,7 +247,7 @@ class EholdingsUsageConsolidationImplIntegrationTest extends IntegrationTestBase
     var postRequest = getPostRequestNoDefault();
     postRequest.getData().getAttributes().setCurrency("aaa");
     String postBody = Json.encode(postRequest);
-    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY)
+    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
@@ -263,7 +263,7 @@ class EholdingsUsageConsolidationImplIntegrationTest extends IntegrationTestBase
     String randomCredentialsId = UUID.randomUUID().toString();
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, randomCredentialsId);
     String postBody = Json.encode(getPostRequest());
-    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY)
+    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     String expectedErrorMessage = String.format("'%s' is invalid for 'kb_credentials_id'", randomCredentialsId);
@@ -281,7 +281,7 @@ class EholdingsUsageConsolidationImplIntegrationTest extends IntegrationTestBase
     String postBody = Json.encode(getPostRequest());
     postWithCreated(resourcePath, postBody);
 
-    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY)
+    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     String expectedErrorMessage = String.format("'%s' is invalid for", credentialsId);
@@ -295,7 +295,7 @@ class EholdingsUsageConsolidationImplIntegrationTest extends IntegrationTestBase
 
     String resourcePath = String.format(UC_SETTINGS_ENDPOINT, credentialsId);
     String postBody = Json.encode(getPostRequest());
-    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_ENTITY)
+    var error = postWithStatus(resourcePath, postBody, SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     String expectedErrorMessage = "Invalid UC API Credentials";

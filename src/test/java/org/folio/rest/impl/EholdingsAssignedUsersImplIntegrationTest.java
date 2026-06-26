@@ -1,8 +1,8 @@
 package org.folio.rest.impl;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_USERS_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
 import static org.folio.util.AssertTestUtil.assertErrorContainsTitle;
@@ -126,7 +126,7 @@ class EholdingsAssignedUsersImplIntegrationTest extends IntegrationTestBase {
 
     var assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     var postBody = Json.encode(assignedUserPostRequest);
-    var errors = postWithStatus(assignedUserPath(credentialsId), postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    var errors = postWithStatus(assignedUserPath(credentialsId), postBody, SC_UNPROCESSABLE_CONTENT).as(Errors.class);
 
     assertEquals(1, errors.getErrors().size());
     assertThat(errors.getErrors(), everyItem(hasProperty("message", equalTo("must not be null"))));
@@ -143,7 +143,7 @@ class EholdingsAssignedUsersImplIntegrationTest extends IntegrationTestBase {
 
     var assignedUserPostRequest = new AssignedUserPostRequest().withData(expected);
     var postBody = Json.encode(assignedUserPostRequest);
-    var errors = postWithStatus(assignedUserPath(credentialsId), postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    var errors = postWithStatus(assignedUserPath(credentialsId), postBody, SC_UNPROCESSABLE_CONTENT).as(Errors.class);
 
     assertEquals(1, errors.getErrors().size());
     assertThat(errors.getErrors(), everyItem(hasProperty("additionalProperties",

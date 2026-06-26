@@ -10,14 +10,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static java.lang.String.format;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_FORBIDDEN;
+import static org.folio.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_NO_CONTENT;
+import static org.folio.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_UNAUTHORIZED;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
@@ -415,7 +415,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutTagsWhenRequestBodyIsInvalid() {
     var tags = readJsonFile(PUT_PACKAGE_TAGS_REQUEST, PackageTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
-    var error = putWithStatus(tagsPath(FULL_PACKAGE_ID), Json.encode(tags), SC_UNPROCESSABLE_ENTITY)
+    var error = putWithStatus(tagsPath(FULL_PACKAGE_ID), Json.encode(tags), SC_UNPROCESSABLE_CONTENT)
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
@@ -639,7 +639,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutWhenUnselectNonCustomPackageIsHidden() {
     var putBody = readFile(PUT_PACKAGE_NOT_SELECTED_NON_EMPTY_REQUEST);
     mockGet(matching(packageRmApi(STUB_PACKAGE_ID)), readFile(PACKAGE_STUB_FILE));
-    var error = putWithStatus(packagePath(FULL_PACKAGE_ID), putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(packagePath(FULL_PACKAGE_ID), putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     verifyPut(WireMock.equalTo(packageRmApi(STUB_PACKAGE_ID)), 0);
 
@@ -650,7 +650,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutWhenCustomPackageUpdateLikeNotCustom() {
     var putBody = readFile(PUT_PACKAGE_SELECTED_REQUEST);
     mockGet(matching(packageRmApi(STUB_PACKAGE_ID)), readFile(CUSTOM_PACKAGE_STUB_FILE));
-    var error = putWithStatus(packagePath(FULL_PACKAGE_ID), putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(packagePath(FULL_PACKAGE_ID), putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     verifyPut(WireMock.equalTo(packageRmApi(STUB_PACKAGE_ID)), 0);
 
@@ -829,7 +829,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutPackageWithInvalidAccessTypeId() {
     var requestBody = readFile(PUT_PACKAGE_WITH_INVALID_ACCESS_TYPE_REQUEST);
 
-    var error = putWithStatus(packagePath(FULL_PACKAGE_ID), requestBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    var error = putWithStatus(packagePath(FULL_PACKAGE_ID), requestBody, SC_UNPROCESSABLE_CONTENT).as(Errors.class);
 
     assertEquals(1, error.getErrors().size());
     assertEquals(
@@ -893,7 +893,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPostPackageWithInvalidAccessTypeId() {
     var requestBody = readFile(POST_PACKAGE_WITH_INVALID_ACCESS_TYPE_REQUEST);
 
-    var error = postWithStatus(packagesPath(), requestBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    var error = postWithStatus(packagesPath(), requestBody, SC_UNPROCESSABLE_CONTENT).as(Errors.class);
 
     assertEquals(1, error.getErrors().size());
     assertEquals(
@@ -1096,7 +1096,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnFetchPackagesInBulkWithInvalidIdFormat() {
     var postBody = readFile(POST_PACKAGES_BULK_WITH_INVALID_ID_REQUEST);
 
-    var error = postWithStatus(packagesBulkPath(), postBody, SC_UNPROCESSABLE_ENTITY).as(Errors.class);
+    var error = postWithStatus(packagesBulkPath(), postBody, SC_UNPROCESSABLE_CONTENT).as(Errors.class);
 
     assertEquals("elements in list must match pattern", error.getErrors().getFirst().getMessage());
   }

@@ -1,5 +1,6 @@
 package org.folio.client.uc;
 
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static org.folio.util.FutureUtils.mapVertxFuture;
 
 import io.vertx.core.Completable;
@@ -22,8 +23,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.HttpHeaders;
-import org.apache.http.entity.ContentType;
+import org.folio.HttpHeaders;
 import org.folio.client.uc.configuration.GetPackageUcConfiguration;
 import org.folio.client.uc.configuration.GetTitlePackageUcConfiguration;
 import org.folio.client.uc.configuration.GetTitleUcConfiguration;
@@ -133,7 +133,7 @@ public class UcApigeeEbscoClientImpl implements UcApigeeEbscoClient {
   private Completable<HttpResponse<Buffer>> handleResponse(Promise<HttpResponse<Buffer>> promise) {
     return (response, failure) -> {
       if (failure != null) {
-        if (ContentType.APPLICATION_JSON.getMimeType().equals(response.getHeader(HttpHeaders.CONTENT_TYPE))) {
+        if (APPLICATION_JSON.toString().equalsIgnoreCase(response.getHeader(HttpHeaders.CONTENT_TYPE))) {
           JsonObject body = response.bodyAsJsonObject();
           promise.fail(new UcFailedRequestException(response.statusCode(), body));
         }

@@ -4,11 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static org.apache.commons.lang3.RandomStringUtils.insecure;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_NO_CONTENT;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.RecordType.PACKAGE;
 import static org.folio.repository.RecordType.PROVIDER;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
@@ -357,7 +357,7 @@ class EholdingsProvidersImplIntegrationTest extends IntegrationTestBase {
   void shouldReturn422OnPutTagsWhenRequestBodyIsInvalid() {
     var tags = readJsonFile(PUT_PROVIDER_TAGS, PackageTagsPutRequest.class);
     tags.getData().getAttributes().setName("");
-    var error = putWithStatus(providerTagsPath(), Json.encode(tags), SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(providerTagsPath(), Json.encode(tags), SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid name");
     assertErrorContainsDetail(error, "name must not be empty");
@@ -381,7 +381,7 @@ class EholdingsProvidersImplIntegrationTest extends IntegrationTestBase {
     providerToBeUpdated.getData().getAttributes().setProviderToken(providerToken);
 
     var putBody = Json.encode(providerToBeUpdated);
-    var error = putWithStatus(PROVIDER_BY_ID, putBody, SC_UNPROCESSABLE_ENTITY).as(JsonapiError.class);
+    var error = putWithStatus(PROVIDER_BY_ID, putBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Invalid value");
     assertErrorContainsDetail(error, "Value is too long (maximum is 500 characters)");

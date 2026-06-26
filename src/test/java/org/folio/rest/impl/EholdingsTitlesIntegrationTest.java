@@ -3,12 +3,12 @@ package org.folio.rest.impl;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
+import static org.folio.HttpStatus.SC_BAD_REQUEST;
+import static org.folio.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
+import static org.folio.HttpStatus.SC_NO_CONTENT;
+import static org.folio.HttpStatus.SC_OK;
+import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.RecordType.RESOURCE;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
@@ -495,7 +495,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
   @Test
   void shouldReturn422WhenNameIsNotProvided() {
     var error = putWithStatus(EHOLDINGS_TITLES_PATH + "/" + STUB_TITLE_ID,
-      readFile(PUT_TITLE_NULL_NAME_REQUEST), SC_UNPROCESSABLE_ENTITY)
+      readFile(PUT_TITLE_NULL_NAME_REQUEST), SC_UNPROCESSABLE_CONTENT)
       .as(Errors.class);
 
     assertTrue(error.getErrors().getFirst().getMessage().contains("must not be null"));
