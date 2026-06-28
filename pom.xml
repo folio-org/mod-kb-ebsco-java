@@ -43,7 +43,7 @@
     <folio-holdingsiq-client.version>5.0.0</folio-holdingsiq-client.version>
     <folio-liquibase-util.version>1.11.0</folio-liquibase-util.version>
 
-    <vertx.version>5.1.2</vertx.version>
+    <vertx.version>5.1.3</vertx.version>
     <aspectj.version>1.9.25.1</aspectj.version>
     <jackson.version>2.22.0</jackson.version>
     <postgresql.version>42.7.11</postgresql.version>
