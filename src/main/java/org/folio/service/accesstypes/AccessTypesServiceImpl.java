@@ -6,6 +6,7 @@ import static org.folio.common.LogUtils.collectionToLogMsg;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.RequestHeadersUtil.tenantId;
 
+import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,8 +23,8 @@ import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
-import org.folio.common.OkapiParams;
 import org.folio.db.exc.DbExcUtils;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.repository.RecordKey;
 import org.folio.repository.RecordType;
 import org.folio.repository.accesstypes.AccessTypesRepository;
@@ -170,7 +171,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .thenApply(dbAccessType -> prePopulateCreatorMetadata(dbAccessType, okapiHeaders))
       .thenCompose(dbAccessType -> repository.save(dbAccessType, tenantId(okapiHeaders)))
       .thenApply(accessTypeFromDbConverter::convert)
-      .thenCombine(usersLookUpService.lookUpUser(new OkapiParams(okapiHeaders)), this::setCreatorMetaInfo);
+      .thenCombine(usersLookUpService.lookUpUser(new RequestContext(okapiHeaders)), this::setCreatorMetaInfo);
   }
 
   @Override
@@ -223,14 +224,14 @@ public class AccessTypesServiceImpl implements AccessTypesService {
   private DbAccessType prePopulateCreatorMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
     return dbAccessType.toBuilder()
       .createdByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
-      .createdDate(OffsetDateTime.now())
+      .createdDate(OffsetDateTime.now(Clock.systemDefaultZone()))
       .build();
   }
 
   private DbAccessType prePopulateUpdaterMetadata(DbAccessType dbAccessType, Map<String, String> okapiHeaders) {
     return dbAccessType.toBuilder()
       .updatedByUserId(UUID.fromString(RequestHeadersUtil.userId(okapiHeaders)))
-      .updatedDate(OffsetDateTime.now())
+      .updatedDate(OffsetDateTime.now(Clock.systemDefaultZone()))
       .build();
   }
 
@@ -244,7 +245,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
       .distinct()
       .map(UUID::fromString)
       .toList();
-    return usersLookUpService.lookUpUsers(usersIds, new OkapiParams(okapiHeaders))
+    return usersLookUpService.lookUpUsers(usersIds, new RequestContext(okapiHeaders))
       .thenApply(users -> users.stream().collect(Collectors.toMap(User::getId, u -> u)))
       .thenApply(usersMap -> enrichAccessTypes(accessTypes, usersMap));
   }

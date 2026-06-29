@@ -1,8 +1,10 @@
 package org.folio.rest.validator;
 
+import java.util.List;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +21,6 @@ public class PackagePutBodyValidator {
     PackagePutDataAttributes attributes = request.getData().getAttributes();
     Boolean allowKbToAddTitles = attributes.getAllowKbToAddTitles();
 
-    Boolean isHidden = attributes.getVisibilityData() != null ? attributes.getVisibilityData().getIsHidden() : null;
     String beginCoverage = null;
     String endCoverage = null;
     if (attributes.getCustomCoverage() != null) {
@@ -29,18 +30,19 @@ public class PackagePutBodyValidator {
 
     String value = attributes.getPackageToken() != null ? attributes.getPackageToken().getValue() : null;
 
-    validateNotSelected(attributes, allowKbToAddTitles, isHidden, beginCoverage, endCoverage, value);
+    validateNotSelected(attributes, allowKbToAddTitles, attributes.getVisibility(), beginCoverage, endCoverage, value);
     ValidatorUtil.checkMaxLength("value", value, MAX_TOKEN_LENGTH);
     ValidatorUtil.checkDateValid("beginCoverage", beginCoverage);
     ValidatorUtil.checkDateValid("endCoverage", endCoverage);
   }
 
-  private void validateNotSelected(PackagePutDataAttributes attributes, Boolean allowKbToAddTitles, Boolean isHidden,
-                         String beginCoverage, String endCoverage, String value) {
+  private void validateNotSelected(PackagePutDataAttributes attributes, Boolean allowKbToAddTitles,
+                                   List<PackageVisibility> visibility,
+                                   String beginCoverage, String endCoverage, String value) {
     Boolean isSelected = attributes.getIsSelected();
     if (isSelected == null || !isSelected) {
       ValidatorUtil.checkFalseOrNull("allowKbToAddTitles", allowKbToAddTitles);
-      ValidatorUtil.checkFalseOrNull("visibilityData.isHidden", isHidden);
+      ValidatorUtil.checkIsEmptyCollection("visibility", visibility);
       ValidatorUtil.checkIsEmpty("customCoverage.beginCoverage", beginCoverage);
       ValidatorUtil.checkIsEmpty("customCoverage.endCoverage", endCoverage);
       ValidatorUtil.checkIsNull("packageToken.value", value);

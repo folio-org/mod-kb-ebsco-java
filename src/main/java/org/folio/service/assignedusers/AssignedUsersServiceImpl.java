@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
-import org.folio.common.OkapiParams;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.repository.assigneduser.AssignedUserRepository;
 import org.folio.repository.assigneduser.DbAssignedUser;
 import org.folio.rest.converter.assignedusers.UserCollectionDataConverter;
@@ -63,7 +63,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
         .map(DbAssignedUser::getId)
         .toList())
       .thenCompose(idBatches -> loadInBatches(idBatches,
-        idBatch -> usersLookUpService.lookUpUsers(idBatch, new OkapiParams(okapiHeaders))))
+        idBatch -> usersLookUpService.lookUpUsers(idBatch, new RequestContext(okapiHeaders))))
       .thenCompose(users -> CompletableFuture.completedFuture(sortByLastName(users))
         .thenCombine(fetchGroups(users, okapiHeaders), UserCollectionDataConverter.UsersResult::new)
         .thenApply(userCollectionConverter::convert));
@@ -74,7 +74,7 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
     String tenantId = tenantId(okapiHeaders);
     log.debug("save:: by [assignedUserId: {}, tenant: {}]", assignedUserId, tenantId);
 
-    return usersLookUpService.lookUpUserById(assignedUserId.getId(), new OkapiParams(okapiHeaders))
+    return usersLookUpService.lookUpUserById(assignedUserId.getId(), new RequestContext(okapiHeaders))
       .exceptionally(throwable -> {
           if (throwable instanceof NotFoundException) {
             throw new InputValidationException("Unable to assign user", "User doesn't exist");
@@ -122,6 +122,6 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
       .distinct()
       .toList();
     return loadInBatches(groupIds,
-      idBatch -> usersLookUpService.lookUpGroups(idBatch, new OkapiParams(okapiHeaders)));
+      idBatch -> usersLookUpService.lookUpGroups(idBatch, new RequestContext(okapiHeaders)));
   }
 }

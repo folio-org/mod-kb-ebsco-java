@@ -3,8 +3,8 @@ package org.folio.rest.util.template;
 import io.vertx.core.Vertx;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.HoldingsIQService;
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("java:S6813")
 public class RmApiTemplateContextBuilder {
 
-  private OkapiData okapiData;
+  private RequestContext requestContext;
   private KbCredentials credentials;
 
   @Autowired
@@ -39,7 +39,7 @@ public class RmApiTemplateContextBuilder {
   @Autowired
   private VertxCache<VendorCacheKey, VendorById> vendorCache;
   @Autowired
-  private VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private VertxCache<PackageCacheKey, PackageData> packageCache;
   @Autowired
   private VertxCache<ResourceCacheKey, Title> resourceCache;
   @Autowired
@@ -50,8 +50,8 @@ public class RmApiTemplateContextBuilder {
   @Autowired
   private Vertx vertx;
 
-  public RmApiTemplateContextBuilder okapiData(OkapiData okapiData) {
-    this.okapiData = okapiData;
+  public RmApiTemplateContextBuilder requestContext(RequestContext requestContext) {
+    this.requestContext = requestContext;
     return this;
   }
 
@@ -62,13 +62,13 @@ public class RmApiTemplateContextBuilder {
 
   @SuppressWarnings("checkstyle:MethodLength")
   public RmApiTemplateContext build() {
-    String tenant = okapiData.getTenant();
+    String tenant = requestContext.getTenant();
 
     Configuration configuration = converter.convert(credentials);
 
     final HoldingsIQService holdingsService = new HoldingsIQServiceImpl(configuration, vertx);
     final TitlesServiceImpl titlesService =
-      new TitlesServiceImpl(configuration, vertx, okapiData.getTenant(), titleCache);
+      new TitlesServiceImpl(configuration, vertx, requestContext.getTenant(), titleCache);
     final ProvidersServiceImpl providersService =
       new ProvidersServiceImpl(configuration, vertx, tenant, holdingsService, vendorCache);
     final PackageServiceImpl packagesService =
@@ -81,7 +81,7 @@ public class RmApiTemplateContextBuilder {
 
     return RmApiTemplateContext.builder()
       .configuration(configuration)
-      .okapiData(okapiData)
+      .requestContext(requestContext)
       .credentialsId(credentials.getId())
       .credentialsName(credentials.getAttributes().getName())
       .holdingsService(holdingsService)

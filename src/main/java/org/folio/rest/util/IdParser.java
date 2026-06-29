@@ -27,32 +27,29 @@ public final class IdParser {
   }
 
   public static ResourceId parseResourceId(String id) {
-    List<Long> parts = parseId(id, 3, RESOURCE_ID_INVALID_ERROR, RESOURCE_ID_INVALID_ERROR);
-    return ResourceId.builder()
-      .providerIdPart(parts.get(0))
-      .packageIdPart(parts.get(1))
-      .titleIdPart(parts.get(2)).build();
+    var parts = parseId(id, 3, RESOURCE_ID_INVALID_ERROR, RESOURCE_ID_INVALID_ERROR);
+    return new ResourceId(parts.get(0), parts.get(1), parts.get(2));
   }
 
   public static PackageId parsePackageId(String id) {
-    List<Long> parts = parseId(id, 2, PACKAGE_ID_MISSING_ERROR, PACKAGE_ID_INVALID_ERROR);
-    return PackageId.builder().providerIdPart(parts.get(0)).packageIdPart(parts.get(1)).build();
+    var parts = parseId(id, 2, PACKAGE_ID_MISSING_ERROR, PACKAGE_ID_INVALID_ERROR);
+    return new PackageId(parts.get(0), parts.get(1));
   }
 
-  public static Long parseTitleId(String id) {
+  public static Integer parseTitleId(String id) {
     return parseId(id, 1, TITLE_ID_IS_INVALID_ERROR, TITLE_ID_IS_INVALID_ERROR).getFirst();
   }
 
-  public static Long parseProviderId(String id) {
+  public static Integer parseProviderId(String id) {
     return parseId(id, 1, INVALID_PROVIDER_ID_ERROR, INVALID_PROVIDER_ID_ERROR).getFirst();
   }
 
   public static String packageIdToString(PackageId packageId) {
-    return concat(packageId.getProviderIdPart(), packageId.getPackageIdPart());
+    return concat(packageId.providerIdPart(), packageId.packageIdPart());
   }
 
   public static String resourceIdToString(ResourceId resourceId) {
-    return concat(resourceId.getProviderIdPart(), resourceId.getPackageIdPart(), resourceId.getTitleIdPart());
+    return concat(resourceId.providerIdPart(), resourceId.packageIdPart(), resourceId.titleIdPart());
   }
 
   public static List<String> resourceIdsToStrings(List<ResourceId> resourceIds) {
@@ -72,11 +69,7 @@ public final class IdParser {
   }
 
   public static ResourceId getResourceId(DbHoldingInfo resource) {
-    return ResourceId.builder()
-      .providerIdPart(resource.getVendorId())
-      .packageIdPart(resource.getPackageId())
-      .titleIdPart(resource.getTitleId())
-      .build();
+    return new ResourceId(resource.getVendorId(), resource.getPackageId(), resource.getTitleId());
   }
 
   public static List<PackageId> getPackageIds(List<DbPackage> packageIds) {
@@ -85,10 +78,7 @@ public final class IdParser {
 
   public static List<PackageId> getPackageIds(Packages packages) {
     return mapItems(packages.getPackagesList(), packageData ->
-      PackageId.builder()
-        .packageIdPart(packageData.getPackageId())
-        .providerIdPart(packageData.getVendorId())
-        .build());
+      new PackageId(packageData.getVendorId(), packageData.getPackageId()));
   }
 
   public static List<ResourceId> getTitleIds(List<DbResource> resources) {
@@ -103,16 +93,16 @@ public final class IdParser {
     return StringUtils.join(parts, '-');
   }
 
-  private static List<Long> parseId(String id, int partCount, String wrongCountErrorMessage,
+  private static List<Integer> parseId(String id, int partCount, String wrongCountErrorMessage,
                                     String numberFormatErrorMessage) {
-    String[] parts = id.split("-");
+    var parts = id.split("-");
     if (parts.length != partCount) {
       throw new ValidationException(String.format(wrongCountErrorMessage, id));
     }
-    List<Long> parsedParts = new ArrayList<>();
+    var parsedParts = new ArrayList<Integer>();
     try {
       for (String part : parts) {
-        parsedParts.add(Long.parseLong(part));
+        parsedParts.add(Integer.parseInt(part));
       }
       return parsedParts;
     } catch (NumberFormatException e) {

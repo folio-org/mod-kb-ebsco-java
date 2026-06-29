@@ -1,21 +1,18 @@
 package org.folio.rest.converter.accesstypes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.List;
-import org.folio.rest.jaxrs.model.AccessType;
-import org.folio.rest.jaxrs.model.AccessTypeCollection;
 import org.folio.util.AccessTypesTestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AccessTypeCollectionConverterTest {
+class AccessTypeCollectionConverterTest {
 
   @Test
-  public void testConvertCollection() {
-    List<AccessType> accessTypes = AccessTypesTestUtil.testData();
+  void convertCollection() {
+    var accessTypes = AccessTypesTestUtil.testData();
 
-    AccessTypeCollection convertedCollection = new AccessTypeCollectionConverter().convert(accessTypes);
+    var convertedCollection = new AccessTypeCollectionConverter().convert(accessTypes);
 
     assertNotNull(convertedCollection);
     assertNotNull(convertedCollection.getData());

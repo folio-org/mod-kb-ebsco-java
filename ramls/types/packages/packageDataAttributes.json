@@ -6,86 +6,147 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "allowKbToAddTitles": {
+      "description": "Allow KB to add titles",
+      "example": true,
+      "type": "boolean"
+    },
     "contentType": {
-      "type": "string",
+      "$ref": "contentTypeEnum.json",
       "description": "Content Type of Package",
-      "$ref" : "contentTypeEnum.json",
-      "example": "Online Reference"
+      "example": "Online Reference",
+      "type": "string"
+    },
+    "customAltNames": {
+      "description": "The list of custom alternate names for the package",
+      "items": {
+        "$ref": "packageAltName.json",
+        "type": "object"
+      },
+      "type": "array"
     },
     "customCoverage": {
-      "type": "object",
+      "$ref": "../coverage.json",
       "description": "Custom Coverage",
-      "$ref": "../coverage.json"
+      "type": "object"
+    },
+    "customDescription": {
+      "description": "The custom description of the package",
+      "example": "Package of medicinal journals (custom)",
+      "type": "string"
+    },
+    "customDisplayName": {
+      "description": "The custom description of the package",
+      "type": "string"
+    },
+    "isAvailableForSelection": {
+      "description": "Whether this package is available for full selection or not",
+      "example": false,
+      "type": "boolean"
     },
     "isCustom": {
-      "type": "boolean",
       "description": "Whether this package is custom or not",
-      "example": false
+      "example": false,
+      "type": "boolean"
+    },
+    "isFreeAccess": {
+      "description": "Whether this package has free access designation or not",
+      "example": false,
+      "type": "boolean"
+    },
+    "isPrimaryPackage": {
+      "description": "Whether this package is a vendor's primary package",
+      "example": false,
+      "type": "boolean"
     },
     "isSelected": {
-      "type": "boolean",
       "description": "Whether this package is selected or not",
-      "example": false
+      "example": false,
+      "type": "boolean"
+    },
+    "managedAltNames": {
+      "description": "The list of managed alternate names for the package",
+      "items": {
+        "$ref": "packageAltName.json",
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "managedDescription": {
+      "description": "The managed description of the package",
+      "example": "Package of medicinal journals",
+      "type": "string"
     },
     "name": {
-      "type": "string",
       "description": "Package name",
-      "example": "Shenbao"
+      "example": "Shenbao",
+      "type": "string"
     },
     "packageId": {
-      "type": "integer",
       "description": "Package Id",
-      "example": 1152699
+      "example": 1152699,
+      "type": "integer"
+    },
+    "packageToken": {
+      "$ref": "../token.json",
+      "description": "Package Token",
+      "type": "object"
     },
     "packageType": {
-      "type": "string",
       "description": "Package type",
-      "example": "Complete"
+      "example": "Complete",
+      "type": "string"
     },
     "providerId": {
-      "type": "integer",
       "description": "Provider Id",
-      "example": 91525
+      "example": 91525,
+      "type": "integer"
     },
     "providerName": {
-      "type": "string",
       "description": "Provider name",
-      "example": "Green Apple - Qingpingguo"
+      "example": "Green Apple - Qingpingguo",
+      "type": "string"
+    },
+    "proxiedUrl": {
+      "description": "URL with proxy applied",
+      "type": "string"
+    },
+    "proxy": {
+      "$ref": "../proxy.json",
+      "description": "Proxy",
+      "type": "object"
     },
     "selectedCount": {
-      "type": "integer",
       "description": "Selected count",
-      "example": 0
+      "example": 0,
+      "type": "integer"
+    },
+    "tags": {
+      "$ref": "../../raml-util/schemas/tags.schema",
+      "description": "Package tags",
+      "type": "object"
     },
     "titleCount": {
-      "type": "integer",
       "description": "Title count",
-      "example": 1
+      "example": 1,
+      "type": "integer"
+    },
+    "url": {
+      "description": "Package URL",
+      "type": "string"
+    },
+    "visibility": {
+      "description": "Visibility details",
+      "items": {
+        "$ref": "packageVisibility.json",
+        "type": "object"
+      },
+      "type": "array"
     },
     "visibilityData": {
       "type": "object",
       "description": "Visibility data",
       "$ref": "../visibilityData.json"
-    },
-    "allowKbToAddTitles": {
-      "type": "boolean",
-      "description": "Allow KB to add titles",
-      "example": true
-    },
-    "packageToken": {
-      "type": "object",
-      "description": "Package Token",
-      "$ref": "../token.json"
-    },
-    "proxy": {
-      "type": "object",
-      "description": "Proxy",
-      "$ref": "../proxy.json"
-    },
-    "tags": {
-      "type": "object",
-      "description": "Package tags",
-      "$ref": "../../raml-util/schemas/tags.schema"
     }
   }
 }

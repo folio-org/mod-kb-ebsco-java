@@ -32,14 +32,14 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
   }
 
   @Override
-  public CompletableFuture<Title> retrieveTitle(long titleId) {
+  public CompletableFuture<Title> retrieveTitle(int titleId) {
     var titleFuture = super.retrieveTitle(titleId);
     var cacheKey = buildTitleCacheKey(titleId);
     titleFuture.thenAccept(title -> titleCache.putValue(cacheKey, title));
     return titleFuture;
   }
 
-  public CompletableFuture<Title> retrieveTitle(long titleId, boolean useCache) {
+  public CompletableFuture<Title> retrieveTitle(int titleId, boolean useCache) {
     CompletableFuture<Title> titleFuture;
     if (useCache) {
       titleFuture = retrieveTitleWithCache(titleId);
@@ -49,7 +49,7 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
     return titleFuture;
   }
 
-  public CompletableFuture<Titles> retrieveTitles(List<Long> titleIds) {
+  public CompletableFuture<Titles> retrieveTitles(List<Integer> titleIds) {
     Set<CompletableFuture<Title>> futures = titleIds.stream()
       .map(id -> retrieveTitle(id, true))
       .collect(Collectors.toSet());
@@ -66,9 +66,15 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
     titleCache.putValue(cacheKey, title);
   }
 
-  private CompletableFuture<Title> retrieveTitleWithCache(long titleId) {
+  private CompletableFuture<Title> retrieveTitleWithCache(int titleId) {
     var cacheKey = buildTitleCacheKey(titleId);
-    return titleCache.getValueOrLoad(cacheKey, () -> super.retrieveTitle(titleId));
+    return titleCache.getValueOrLoad(cacheKey, () -> {
+      log.info("Title not found in cache, retrieving from HoldingsIQ");
+      return super.retrieveTitle(titleId);
+    }).handle((title, throwable) -> {
+      log.info("Title fetched from cache: " + title);
+      return title;
+    });
   }
 
   private void mergeCustomerResources(Title cachedTitle, Title title) {
@@ -94,7 +100,7 @@ public class TitlesServiceImpl extends TitlesHoldingsIQServiceImpl {
       .build();
   }
 
-  private TitleCacheKey buildTitleCacheKey(long titleId) {
+  private TitleCacheKey buildTitleCacheKey(int titleId) {
     return TitleCacheKey.builder()
       .titleId(titleId)
       .rmapiConfiguration(configuration)

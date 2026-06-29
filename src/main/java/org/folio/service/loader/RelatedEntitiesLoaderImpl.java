@@ -36,7 +36,7 @@ public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
     log.debug("loadAccessType:: by [recordKey: {}]", recordKey);
 
     CompletableFuture<Void> future = new CompletableFuture<>();
-    accessTypesService.findByRecord(recordKey, context.getCredentialsId(), context.getOkapiData().getHeaders())
+    accessTypesService.findByRecord(recordKey, context.getCredentialsId(), context.getRequestContext().getHeaders())
       .whenComplete((accessType, throwable) -> {
         if (throwable != null && !(throwable.getCause() instanceof NotFoundException)) {
           future.completeExceptionally(throwable.getCause());
@@ -50,7 +50,7 @@ public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
 
   @Override
   public CompletableFuture<Void> loadTags(Tagable tagable, RecordKey recordKey, RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     log.debug("loadTags:: by [recordKey: {}, tenant: {}]", recordKey, tenant);
 
     return tagRepository.findByRecord(tenant, recordKey.getRecordId(),

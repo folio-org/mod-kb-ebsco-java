@@ -1,35 +1,34 @@
 package org.folio.util;
 
-import static org.folio.rest.impl.PackagesTestData.FULL_PACKAGE_ID;
-import static org.folio.rest.impl.ResourcesTestData.STUB_CUSTOM_RESOURCE_ID;
-import static org.folio.rest.impl.TitlesTestData.STUB_CUSTOM_TITLE_ID;
+import static org.folio.util.RmApiConstants.CUSTOM_TITLE_ID;
+import static org.folio.util.RmApiConstants.FULL_PACKAGE_ID;
+import static org.folio.util.RmApiConstants.STUB_CUSTOM_RESOURCE_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.UUID;
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.rest.jaxrs.model.JsonapiError;
 import org.folio.rest.util.IdParser;
-import org.junit.Assert;
+import org.skyscreamer.jsonassert.JSONAssert;
 
+@UtilityClass
 public final class AssertTestUtil {
-
-  private AssertTestUtil() {
-  }
 
   public static void assertEqualsUuid(String string, UUID uuid) {
     assertEquals(string, uuid.toString());
   }
 
   public static void assertEqualsLong(Long l) {
-    assertEquals(STUB_CUSTOM_TITLE_ID, String.valueOf(l));
+    assertEquals(CUSTOM_TITLE_ID, l);
   }
 
   public static void assertEqualsPackageId(PackageId id) {
-    Assert.assertEquals(FULL_PACKAGE_ID, IdParser.packageIdToString(id));
+    assertEquals(FULL_PACKAGE_ID, IdParser.packageIdToString(id));
   }
 
   public static void assertEqualsResourceId(ResourceId id) {
@@ -37,12 +36,22 @@ public final class AssertTestUtil {
   }
 
   public static void assertErrorContainsTitle(JsonapiError error, String substring) {
-    assertThat(error.getErrors(), hasSize(1));
+    assertEquals(1, error.getErrors().size());
     assertThat(error.getErrors().getFirst().getTitle(), containsString(substring));
   }
 
   public static void assertErrorContainsDetail(JsonapiError error, String substring) {
-    assertThat(error.getErrors(), hasSize(1));
+    assertEquals(1, error.getErrors().size());
     assertThat(error.getErrors().getFirst().getDetail(), containsString(substring));
+  }
+
+  @SneakyThrows
+  public static void assertJsonEqual(String expected, String actual) {
+    JSONAssert.assertEquals(expected, actual, false);
+  }
+
+  @SneakyThrows
+  public static void assertJsonEqual(String expected, String actual, boolean strict) {
+    JSONAssert.assertEquals(expected, actual, strict);
   }
 }

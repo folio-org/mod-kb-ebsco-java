@@ -23,8 +23,8 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHeaders;
-import org.folio.common.OkapiParams;
+import org.folio.HttpHeaders;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.okapi.common.XOkapiHeaders;
 import org.folio.rest.util.RequestHeadersUtil;
 import org.folio.util.StringUtil;
@@ -38,11 +38,12 @@ import org.springframework.stereotype.Component;
 @Log4j2
 @Component
 public class UsersLookUpService {
-  private static final String USERS_ENDPOINT_TEMPLATE = "/users/%s";
-  private static final String USERS_ENDPOINT = "/users";
-  private static final String GROUPS_ENDPOINT = "/groups";
 
-  private static final String CQL_QUERY_PARAM = "query";
+  public static final String USERS_ENDPOINT = "/users";
+  public static final String USERS_BY_ID_ENDPOINT = USERS_ENDPOINT + "/%s";
+  public static final String GROUPS_ENDPOINT = "/groups";
+  public static final String CQL_QUERY_PARAM = "query";
+
   private static final String LIMIT_PARAM = "limit";
   private static final String AUTHORIZATION_FAIL_ERROR_MESSAGE = "Authorization failure";
   private static final String USER_NOT_FOUND_ERROR_MESSAGE = "User not found";
@@ -58,15 +59,15 @@ public class UsersLookUpService {
   /**
    * Returns the user information for the userid specified in X-Okapi-Token.
    *
-   * @param okapiParams The okapi params for the current API call.
+   * @param requestCtx The okapi params for the current API call.
    * @return User information.
    */
-  public CompletableFuture<User> lookUpUser(final OkapiParams okapiParams) {
+  public CompletableFuture<User> lookUpUser(final RequestContext requestCtx) {
     MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-    headers.addAll(okapiParams.getHeaders());
+    headers.addAll(requestCtx.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
-    return RequestHeadersUtil.userIdFuture(okapiParams.getHeaders())
+    return RequestHeadersUtil.userIdFuture(requestCtx.getHeaders())
       .thenCompose(userId -> {
         Promise<HttpResponse<JsonObject>> promise = Promise.promise();
         sendUserRequest(userId, headers, promise);
@@ -74,23 +75,23 @@ public class UsersLookUpService {
       });
   }
 
-  public CompletableFuture<List<User>> lookUpUsers(List<UUID> ids, final OkapiParams okapiParams) {
+  public CompletableFuture<List<User>> lookUpUsers(List<UUID> ids, final RequestContext requestCtx) {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    return lookUpUsersUsingCql(getIdsCql(ids), ids.size(), okapiParams);
+    return lookUpUsersUsingCql(getIdsCql(ids), ids.size(), requestCtx);
   }
 
-  public CompletableFuture<List<Group>> lookUpGroups(List<UUID> ids, final OkapiParams okapiParams) {
+  public CompletableFuture<List<Group>> lookUpGroups(List<UUID> ids, final RequestContext requestCtx) {
     if (ids.isEmpty()) {
       return CompletableFuture.completedFuture(emptyList());
     }
-    return lookUpGroupsUsingCql(getIdsCql(ids), ids.size(), okapiParams);
+    return lookUpGroupsUsingCql(getIdsCql(ids), ids.size(), requestCtx);
   }
 
-  public CompletableFuture<User> lookUpUserById(String userId, OkapiParams okapiParams) {
+  public CompletableFuture<User> lookUpUserById(String userId, RequestContext requestCtx) {
     MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-    headers.addAll(okapiParams.getHeaders());
+    headers.addAll(requestCtx.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();
@@ -103,7 +104,7 @@ public class UsersLookUpService {
   }
 
   private void sendUserRequest(String userId, MultiMap headers, Promise<HttpResponse<JsonObject>> promise) {
-    String usersPath = String.format(USERS_ENDPOINT_TEMPLATE, userId);
+    String usersPath = String.format(USERS_BY_ID_ENDPOINT, userId);
     webClient.getAbs(headers.get(XOkapiHeaders.URL) + usersPath)
       .putHeaders(headers)
       .as(BodyCodec.jsonObject())
@@ -133,19 +134,20 @@ public class UsersLookUpService {
     };
   }
 
-  private CompletableFuture<List<User>> lookUpUsersUsingCql(String query, int limit, OkapiParams okapiParams) {
-    Promise<HttpResponse<JsonObject>> promise = lookUpByCql(USERS_ENDPOINT, query, limit, okapiParams);
+  private CompletableFuture<List<User>> lookUpUsersUsingCql(String query, int limit, RequestContext requestCtx) {
+    Promise<HttpResponse<JsonObject>> promise = lookUpByCql(USERS_ENDPOINT, query, limit, requestCtx);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapUserCollection));
   }
 
-  private CompletableFuture<List<Group>> lookUpGroupsUsingCql(String query, int limit, OkapiParams okapiParams) {
-    Promise<HttpResponse<JsonObject>> promise = lookUpByCql(GROUPS_ENDPOINT, query, limit, okapiParams);
+  private CompletableFuture<List<Group>> lookUpGroupsUsingCql(String query, int limit, RequestContext requestCtx) {
+    Promise<HttpResponse<JsonObject>> promise = lookUpByCql(GROUPS_ENDPOINT, query, limit, requestCtx);
     return mapVertxFuture(promise.future().map(HttpResponse::body).map(this::mapGroupCollection));
   }
 
-  private Promise<HttpResponse<JsonObject>> lookUpByCql(String path, String query, int limit, OkapiParams okapiParams) {
+  private Promise<HttpResponse<JsonObject>> lookUpByCql(String path, String query, int limit,
+                                                        RequestContext requestCtx) {
     MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-    headers.addAll(okapiParams.getHeaders());
+    headers.addAll(requestCtx.getHeaders());
     headers.add(HttpHeaders.ACCEPT, HttpHeaderValues.APPLICATION_JSON);
 
     Promise<HttpResponse<JsonObject>> promise = Promise.promise();

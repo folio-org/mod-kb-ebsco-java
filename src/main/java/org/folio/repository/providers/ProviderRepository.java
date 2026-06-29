@@ -11,5 +11,5 @@ public interface ProviderRepository {
 
   CompletableFuture<Void> delete(String vendorId, UUID credentialsId, String tenantId);
 
-  CompletableFuture<List<Long>> findIdsByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId);
+  CompletableFuture<List<Integer>> findIdsByTagFilter(TagFilter tagFilter, UUID credentialsId, String tenantId);
 }

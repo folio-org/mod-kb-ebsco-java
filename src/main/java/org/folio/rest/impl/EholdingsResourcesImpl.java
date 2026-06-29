@@ -1,8 +1,7 @@
 package org.folio.rest.impl;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.protocol.HTTP.CONTENT_TYPE;
+import static org.folio.HttpStatus.SC_NOT_FOUND;
 import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.rest.util.ErrorUtil.createError;
 import static org.folio.rest.util.ExceptionMappers.error400NotFoundMapper;
@@ -32,12 +31,13 @@ import java.util.function.Function;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.BooleanUtils;
+import org.folio.HttpHeaders;
 import org.folio.db.RowSetUtils;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.FilterQuery;
-import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.ResourceId;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.ResourceSelectedPayload;
@@ -201,15 +201,15 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   @Override
   public void putEholdingsResourcesTagsByResourceId(String resourceId, String contentType,
                                                     ResourceTagsPutRequest entity,
-                                                    Map<String, String> okapiHeaders,
+                                                    Map<String, String> headers,
                                                     Handler<AsyncResult<Response>> asyncResultHandler,
                                                     Context vertxContext) {
-    userKbCredentialsService.findByUser(okapiHeaders)
+    userKbCredentialsService.findByUser(headers)
       .thenCompose(creds -> {
         ResourceTagsDataAttributes attributes = entity.getData().getAttributes();
         resourceTagsPutBodyValidator.validate(entity, attributes);
         return updateResourceTags(createDbResource(resourceId, creds.getId(), attributes),
-          new OkapiData(okapiHeaders).getTenant())
+          new RequestContext(headers).getTenant())
           .thenAccept(ob -> asyncResultHandler.handle(
             Future.succeededFuture(PutEholdingsResourcesTagsByResourceIdResponse.respond200WithApplicationVndApiJson(
               convertToResourceTags(attributes)))));
@@ -235,7 +235,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
 
   private Function<RmApiTemplateContext, CompletableFuture<?>> processResourcePost(
     ResourcePostDataAttributes attributes) {
-    long titleId = parseTitleId(attributes.getTitleId());
+    var titleId = parseTitleId(attributes.getTitleId());
     PackageId packageId = parsePackageId(attributes.getPackageId());
     return context -> (CompletableFuture<?>) getObjectsForPostResource(titleId, packageId, context.getTitlesService(),
       context.getPackagesService())
@@ -244,11 +244,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
         postValidator.validateRelatedObjects(result.packageData(), title, result.titles());
         ResourceSelectedPayload postRequest =
           new ResourceSelectedPayload(true, title.getTitleName(), title.getPubType(), attributes.getUrl());
-        ResourceId resourceId = ResourceId.builder()
-          .providerIdPart(packageId.getProviderIdPart())
-          .packageIdPart(packageId.getPackageIdPart())
-          .titleIdPart(titleId)
-          .build();
+        ResourceId resourceId = new ResourceId(packageId.providerIdPart(), packageId.packageIdPart(), titleId);
         return context.getResourcesService().postResource(postRequest, resourceId);
       })
       .thenCompose(title -> CompletableFuture.completedFuture(
@@ -262,7 +258,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
       return CompletableFuture.completedFuture(null);
     } else {
       return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId, false,
-        context.getOkapiData().getHeaders());
+        context.getRequestContext().getHeaders());
     }
   }
 
@@ -280,7 +276,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       RmApiTemplateContext context) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.RESOURCE, context.getCredentialsId(),
-      context.getOkapiData().getHeaders());
+      context.getRequestContext().getHeaders());
   }
 
   private CompletableFuture<ResourceResult> loadRelatedEntities(ResourceResult result, RmApiTemplateContext context) {
@@ -308,7 +304,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletableFuture<Void> deleteTags(String resourceId, RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     UUID credentialsId = RowSetUtils.toUUID(context.getCredentialsId());
 
     return resourceRepository.delete(resourceId, credentialsId, tenant)
@@ -317,17 +313,17 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   }
 
   private CompletionStage<ObjectsForPostResourceResult> getObjectsForPostResource(
-    Long titleId, PackageId packageId,
+    int titleId, PackageId packageId,
     TitlesHoldingsIQService titlesService,
     PackagesHoldingsIQService packagesService) {
     CompletableFuture<Title> titleFuture = titlesService.retrieveTitle(titleId);
-    CompletableFuture<PackageByIdData> packageFuture = packagesService.retrievePackage(packageId);
+    CompletableFuture<PackageData> packageFuture = packagesService.retrievePackage(packageId.packageIdPart());
     return CompletableFuture.allOf(titleFuture, packageFuture)
       .thenCompose(o -> {
         FilterQuery filterByName = FilterQuery.builder()
           .name(titleFuture.join().getTitleName())
           .build();
-        return titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
+        return titlesService.retrieveTitles(packageId.providerIdPart(), packageId.packageIdPart(),
           filterByName, searchProperties.titlesSearchType(), Sort.RELEVANCE, 1, MAX_TITLE_COUNT);
       })
       .thenCompose(titles -> CompletableFuture.completedFuture(
@@ -372,7 +368,7 @@ public class EholdingsResourcesImpl implements EholdingsResources {
   private Function<ResourceNotFoundException, Response> error404ResourceNotFoundMapper() {
     return exception ->
       Response.status(SC_NOT_FOUND)
-        .header(CONTENT_TYPE, JSON_API_TYPE)
+        .header(HttpHeaders.CONTENT_TYPE, JSON_API_TYPE)
         .entity(createError(RESOURCE_NOT_FOUND_MESSAGE))
         .build();
   }

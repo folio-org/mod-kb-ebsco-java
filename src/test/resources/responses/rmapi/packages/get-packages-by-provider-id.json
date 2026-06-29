@@ -2,17 +2,20 @@
   "totalResults": 1,
   "packagesList": [
     {
-      "packageId": 3964,
+      "listId": 3964,
       "packageName": "TEST_PACKAGE_NAME",
       "isCustom": true,
       "vendorId": 19,
       "vendorName": "TEST_VENDOR_NAME",
       "titleCount": 5,
       "isSelected": true,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        }
+      ],
       "selectedCount": 5,
       "isTokenNeeded": false,
       "contentType": "OnlineReference",

@@ -1,38 +1,30 @@
 package org.folio.rest.converter.holdings;
 
-import static org.folio.util.HoldingsTestUtil.getStubHolding;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.folio.util.TestUtil.readJsonFile;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.jaxrs.model.PublicationType;
-import org.folio.rest.jaxrs.model.ResourceCollectionItem;
-import org.folio.spring.config.TestConfig;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TestConfig.class)
-public class HoldingsCollectionItemConverterTest {
+class HoldingsCollectionItemConverterTest {
 
-  @Autowired
-  private HoldingCollectionItemConverter holdingCollectionItemConverter;
+  private final HoldingCollectionItemConverter holdingCollectionItemConverter = new HoldingCollectionItemConverter();
 
   @Test
-  public void shouldConvertHoldingToResource() throws IOException, URISyntaxException {
-    DbHoldingInfo holding = getStubHolding();
-    final ResourceCollectionItem resourceCollectionItem = holdingCollectionItemConverter.convert(holding);
-    assertThat(resourceCollectionItem, notNullValue());
-    assertThat(resourceCollectionItem.getId(), equalTo("123356-3157070-19412030"));
-    assertThat(resourceCollectionItem.getAttributes().getName(), equalTo("Test Title"));
-    assertThat(resourceCollectionItem.getAttributes().getTitleId(), equalTo(19412030));
-    assertThat(resourceCollectionItem.getAttributes().getPublisherName(), equalTo("Test one Press"));
-    assertThat(resourceCollectionItem.getAttributes().getPublicationType(), equalTo(PublicationType.BOOK));
+  void shouldConvertHoldingToResource() {
+    var holding = getStubHolding();
+    var resourceCollectionItem = holdingCollectionItemConverter.convert(holding);
+    assertNotNull(resourceCollectionItem);
+    assertEquals("123356-3157070-19412030", resourceCollectionItem.getId());
+    assertEquals("Test Title", resourceCollectionItem.getAttributes().getName());
+    assertEquals(19412030, resourceCollectionItem.getAttributes().getTitleId());
+    assertEquals("Test one Press", resourceCollectionItem.getAttributes().getPublisherName());
+    assertEquals(PublicationType.BOOK, resourceCollectionItem.getAttributes().getPublicationType());
+  }
+
+  private static DbHoldingInfo getStubHolding() {
+    return readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class);
   }
 }

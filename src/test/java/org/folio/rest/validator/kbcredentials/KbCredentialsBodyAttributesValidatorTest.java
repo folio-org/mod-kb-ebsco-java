@@ -1,13 +1,13 @@
 package org.folio.rest.validator.kbcredentials;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.KbCredentialsDataAttributes;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class KbCredentialsBodyAttributesValidatorTest {
+class KbCredentialsBodyAttributesValidatorTest {
 
   private static final int NAME_LENGTH_MAX = 10;
 
@@ -15,7 +15,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
     new KbCredentialsBodyAttributesValidator(NAME_LENGTH_MAX);
 
   @Test
-  public void shouldThrowExceptionWhenNullName() {
+  void shouldThrowExceptionWhenNullName() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withApiKey("key")
       .withCustomerId("custId")
@@ -26,7 +26,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenEmptyName() {
+  void shouldThrowExceptionWhenEmptyName() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("")
       .withApiKey("key")
@@ -38,7 +38,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenNameIsLongerThanMaxLength() {
+  void shouldThrowExceptionWhenNameIsLongerThanMaxLength() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("0".repeat(NAME_LENGTH_MAX + 1))
       .withApiKey("key")
@@ -50,7 +50,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenNullApiKey() {
+  void shouldThrowExceptionWhenNullApiKey() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("name")
       .withCustomerId("custId")
@@ -61,7 +61,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenEmptyApiKey() {
+  void shouldThrowExceptionWhenEmptyApiKey() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("name")
       .withApiKey("")
@@ -73,7 +73,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenNullCustomerId() {
+  void shouldThrowExceptionWhenNullCustomerId() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("name")
       .withApiKey("key")
@@ -84,7 +84,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenEmptyCustomerId() {
+  void shouldThrowExceptionWhenEmptyCustomerId() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("name")
       .withApiKey("key")
@@ -96,7 +96,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenNullUrl() {
+  void shouldThrowExceptionWhenNullUrl() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("name")
       .withApiKey("key")
@@ -107,7 +107,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenEmptyUrl() {
+  void shouldThrowExceptionWhenEmptyUrl() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("name")
       .withApiKey("key")
@@ -119,7 +119,7 @@ public class KbCredentialsBodyAttributesValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenInvalidUrl() {
+  void shouldThrowExceptionWhenInvalidUrl() {
     KbCredentialsDataAttributes attributes = new KbCredentialsDataAttributes()
       .withName("name")
       .withApiKey("key")

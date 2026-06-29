@@ -3,8 +3,8 @@ package org.folio.service.holdings;
 import static org.folio.repository.holdings.LoadStatus.COMPLETED;
 import static org.folio.repository.holdings.LoadStatus.IN_PROGRESS;
 import static org.folio.repository.holdings.LoadStatus.NONE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -18,15 +18,18 @@ import org.folio.holdingsiq.service.LoadService;
 import org.folio.holdingsiq.service.impl.LoadServiceImpl;
 import org.folio.repository.holdings.LoadStatus;
 import org.folio.service.holdings.message.LoadHoldingsMessage;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AbstractLoadServiceFacadeTest {
+@MockitoSettings(strictness = Strictness.WARN)
+@ExtendWith(MockitoExtension.class)
+class AbstractLoadServiceFacadeTest {
 
   private static final String TEST = "test";
 
@@ -65,7 +68,7 @@ public class AbstractLoadServiceFacadeTest {
 
   @Test
   @SneakyThrows
-  public void shouldRetryOnEmptyStatusFromHoldingsIq() {
+  void shouldRetryOnEmptyStatusFromHoldingsIq() {
     when(loadServiceFacadeSpy.getLastLoadingStatus(any()))
       .thenReturn(getHoldingsStatusFuture(getHoldingsStatus(NONE)));
     doReturn(
@@ -88,7 +91,7 @@ public class AbstractLoadServiceFacadeTest {
 
   @Test
   @SneakyThrows
-  public void shouldFailOnRetriesForLastStatusExceeded() {
+  void shouldFailOnRetriesForLastStatusExceeded() {
     when(loadServiceFacadeSpy.getLastLoadingStatus(any()))
       .thenReturn(getHoldingsStatusFuture(getHoldingsStatus(NONE)));
     doReturn(

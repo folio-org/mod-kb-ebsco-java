@@ -3,35 +3,41 @@
     "id": "19-3964",
     "type": "packages",
     "attributes": {
-      "name": "carole and sams test",
-      "packageId": 3964,
-      "isCustom": true,
-      "providerId": 19,
-      "providerName": "APIDEV CORPORATE CUSTOMER",
-      "titleCount": 6,
-      "isSelected": true,
-      "selectedCount": 6,
-      "packageType": "Custom",
+      "allowKbToAddTitles": false,
       "contentType": "Aggregated Full Text",
       "customCoverage": {
         "beginCoverage": "",
         "endCoverage": ""
       },
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
+      "isCustom": true,
+      "isSelected": true,
+      "name": "carole and sams test",
+      "packageId": 3964,
+      "packageToken": {
+        "factName": "[[gale.customcode.infocust]]",
+        "prompt": "res_id=info:sid/gale:",
+        "helpText": "help text",
+        "value": "token value"
       },
+      "packageType": "Custom",
+      "providerId": 19,
+      "providerName": "APIDEV CORPORATE CUSTOMER",
       "proxy": {
         "id": "<n>",
         "inherited": true
       },
-      "allowKbToAddTitles": false,
-      "packageToken": {
-        "factName": "[[gale.customcode.infocust]]",
-        "helpText": "help text",
-        "value": "token value",
-        "prompt": "res_id=info:sid/gale:"
-      }
+      "selectedCount": 6,
+      "tags": {
+        "tagList": []
+      },
+      "titleCount": 6,
+      "visibility": [
+        {
+          "category": "PF",
+          "reason": "Hidden by customer",
+          "hidden": false
+        }
+      ]
     }
   },
   "jsonapi": {

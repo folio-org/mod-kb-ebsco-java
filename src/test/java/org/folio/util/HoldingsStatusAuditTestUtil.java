@@ -12,7 +12,7 @@ import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTabl
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.JSONB_COLUMN;
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.OPERATION_COLUMN;
 import static org.folio.repository.holdings.status.audit.HoldingsStatusAuditTableConstants.UPDATED_AT_COLUMN;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -21,9 +21,11 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.rest.jaxrs.model.HoldingsLoadingStatus;
 import org.folio.rest.persist.PostgresClient;
 
+@UtilityClass
 public class HoldingsStatusAuditTestUtil {
 
   public static List<HoldingsLoadingStatus> getRecords(Vertx vertx) {

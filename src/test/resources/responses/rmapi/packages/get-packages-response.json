@@ -2,17 +2,42 @@
   "totalResults": 414,
   "packagesList": [
     {
-      "packageId": 3007,
+      "listId": 3007,
       "packageName": "American Academy of Family Physicians",
+      "customDisplayName": "Family Physicians American Academy",
+      "managedAltNames": [
+        "Health & Wellness Resource Center Alternative"
+      ],
+      "customAltNames": [
+        "Health/Wellness Resource Center"
+      ],
+      "managedDescription": "Health & Wellness Resource Description example",
+      "customDescription": "Custom Health & Wellness Resource Description example that's modified by a customer",
+      "packageFreeAccess": false,
       "isCustom": false,
       "vendorId": 392,
+      "availableForSelection": true,
       "vendorName": "American Academy of Family Physicians",
       "titleCount": 3,
       "isSelected": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        }
+      ],
+      "subjectAssociations": [
+        {
+          "id": 35408,
+          "parentId": 35407,
+          "schemaId": 3,
+          "name": "Technology",
+          "isCustom": false
+        }
+      ],
+      "consortia": "string",
+      "isPrimaryPackage": true,
       "selectedCount": 0,
       "isTokenNeeded": false,
       "contentType": "EJournal",
@@ -33,17 +58,24 @@
       }
     },
     {
-      "packageId": 1597443,
+      "listId": 1597443,
       "packageName": "American Academy of Orthopaedic Surgeons",
       "isCustom": false,
       "vendorId": 114569,
       "vendorName": "American Academy of Orthopaedic Surgeons",
       "titleCount": 108,
       "isSelected": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        },
+        {
+          "category": "MARC",
+          "hidden": true
+        }
+      ],
       "selectedCount": 0,
       "isTokenNeeded": false,
       "contentType": "AggregatedFullText",
@@ -54,17 +86,28 @@
       "packageType": "Variable"
     },
     {
-      "packageId": 3943,
+      "listId": 3943,
       "packageName": "American Academy of Pediatrics (AAP)",
       "isCustom": false,
       "vendorId": 554,
       "vendorName": "American Academy of Pediatrics (AAP)",
       "titleCount": 6,
       "isSelected": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        },
+        {
+          "category": "FTF",
+          "hidden": true
+        },
+        {
+          "category": "MARC",
+          "hidden": true
+        }
+      ],
       "selectedCount": 0,
       "isTokenNeeded": false,
       "contentType": "EJournal",
@@ -75,17 +118,19 @@
       "packageType": "Variable"
     },
     {
-      "packageId": 7566,
+      "listId": 7566,
       "packageName": "American Academy of Pediatrics (AAP) eBooks",
       "isCustom": false,
       "vendorId": 554,
       "vendorName": "American Academy of Pediatrics (AAP)",
       "titleCount": 207,
       "isSelected": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "FTF",
+          "hidden": false
+        }
+      ],
       "selectedCount": 0,
       "isTokenNeeded": false,
       "contentType": "EBook",
@@ -96,17 +141,20 @@
       "packageType": "Variable"
     },
     {
-      "packageId": 19236,
+      "listId": 19236,
       "packageName": "American Academy of Pediatrics (KMLA)",
       "isCustom": false,
       "vendorId": 554,
       "vendorName": "American Academy of Pediatrics (AAP)",
       "titleCount": 6,
       "isSelected": false,
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        }
+      ],
       "selectedCount": 0,
       "isTokenNeeded": false,
       "contentType": "EJournal",

@@ -5,14 +5,16 @@ import static org.folio.repository.SqlQueryHelper.insertQuery;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_COLUMN;
 import static org.folio.repository.holdings.transaction.TransactionIdTableConstants.TRANSACTION_ID_TABLE;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Tuple;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.db.RowSetUtils;
 import org.folio.rest.persist.PostgresClient;
 
+@UtilityClass
 public class TransactionIdTestUtil {
 
   public static void addTransactionId(String credentialsId, String transactionId, Vertx vertx) {

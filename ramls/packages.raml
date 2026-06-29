@@ -11,9 +11,10 @@ documentation:
 
 traits:
   queriable: !include traits/queriable.raml
+  packageQueriable: !include traits/packageQueriable.raml
   sortable: !include traits/sortable.raml
   pageable: !include traits/pageable.raml
-  filterable: !include traits/filterable.raml
+  packageFilterable: !include traits/packageFilterable.raml
   taggable: !include traits/taggable.raml
   accessible: !include traits/accessible.raml
   packageResourcesFilterable: !include traits/packageResourcesFilterable.raml
@@ -34,7 +35,7 @@ types:
   displayName: Packages
   get:
     description: Retrieve a collection of packages based on the search query.
-    is: [queriable, filterable, taggable, accessible,
+    is: [packageQueriable, packageFilterable, taggable, accessible,
     sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
     pageable: {maxCountValue: 100, defaultCountValue: 25}]
     queryParameters:

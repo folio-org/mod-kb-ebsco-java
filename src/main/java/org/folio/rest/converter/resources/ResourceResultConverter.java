@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
@@ -44,12 +44,12 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
   @Autowired
   private Converter<VendorById, Provider> vendorConverter;
   @Autowired
-  private Converter<PackageByIdData, Package> packageByIdConverter;
+  private Converter<PackageData, Package> packageByIdConverter;
 
   @Override
   public List<Resource> convert(ResourceResult resourceResult) {
     var rmapiTitle = resourceResult.getTitle();
-    PackageByIdData packageData = resourceResult.getPackageData();
+    PackageData packageData = resourceResult.getPackageData();
     VendorById vendor = resourceResult.getVendor();
     AccessType accessType = resourceResult.getAccessType();
     boolean includeTitle = resourceResult.isIncludeTitle();
@@ -63,7 +63,7 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
   private Function<CustomerResources, Resource> convertToResource(org.folio.holdingsiq.model.Title rmapiTitle,
                                                                   boolean titleHasSelectedResources,
                                                                   boolean includeTitle,
-                                                                  VendorById vendor, PackageByIdData packageData,
+                                                                  VendorById vendor, PackageData packageData,
                                                                   AccessType accessType) {
     return resource -> {
       Resource resultResource = new Resource()
@@ -83,7 +83,7 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
   }
 
   private void includedResources(org.folio.holdingsiq.model.Title rmapiTitle, boolean includeTitle,
-                                 @Nullable VendorById vendor, @Nullable PackageByIdData packageData,
+                                 @Nullable VendorById vendor, @Nullable PackageData packageData,
                                  @Nullable AccessType accessType, Resource resultResource) {
     resultResource.setIncluded(new ArrayList<>());
     if (includeTitle) {
@@ -112,7 +112,7 @@ public class ResourceResultConverter implements Converter<ResourceResult, List<R
           .withIncluded(true)));
   }
 
-  private void includePackage(PackageByIdData packageData, Resource resultResource) {
+  private void includePackage(PackageData packageData, Resource resultResource) {
     resultResource.getIncluded().add(requireNonNull(packageByIdConverter.convert(packageData)).getData());
     resultResource.getData()
       .getRelationships()

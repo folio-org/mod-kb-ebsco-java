@@ -7,7 +7,7 @@
 * Requires `API_NAME vX.Y`
 
 ### Features
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* Migrate Package Endpoints to HoldingsIQ v2 API ([MODKBEKBJ-804](https://folio-org.atlassian.net/browse/MODKBEKBJ-804))
 
 ### Bug fixes
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))

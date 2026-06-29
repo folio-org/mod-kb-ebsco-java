@@ -95,7 +95,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   @Override
   public CompletableFuture<ResourceCollectionResult> fetchResourcesByAccessTypeFilter(AccessTypeFilter accessTypeFilter,
                                                                                       RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     AtomicInteger totalCount = new AtomicInteger();
     return fetchAccessTypeMappings(accessTypeFilter, context, totalCount)
       .thenApply(this::extractResourceIds)
@@ -128,7 +128,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<Vendors> fetchProvidersByTagFilter(TagFilter tagFilter, RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     ProvidersServiceImpl providersService = context.getProvidersService();
     log.debug("fetchProvidersByTagFilter:: by [recordIdPrefix: {}, tenant: {}]",
@@ -144,7 +144,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   @Override
   public CompletableFuture<PackageCollectionResult> fetchPackagesByTagFilter(TagFilter tagFilter,
                                                                              RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     PackageServiceImpl packagesService = context.getPackagesService();
     log.debug("fetchPackagesByTagFilter:: by [recordIdPrefix: {}, tenant: {}]",
@@ -161,7 +161,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   @Override
   public CompletableFuture<ResourceCollectionResult> fetchResourcesByTagFilter(TagFilter tagFilter,
                                                                                RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     log.debug("fetchResourcesByTagFilter:: by [recordIdPrefix: {}. tenant: {}]",
       tagFilter.getRecordIdPrefix(), tenant);
@@ -182,7 +182,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
 
   @Override
   public CompletableFuture<Titles> fetchTitlesByTagFilter(TagFilter tagFilter, RmApiTemplateContext context) {
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
     UUID credentialsId = toUUID(context.getCredentialsId());
     log.debug("fetchTitlesByTagFilter:: by [recordIdPrefix: {}. tenant: {}]",
       tagFilter.getRecordIdPrefix(), tenant);
@@ -236,7 +236,7 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
   private CompletableFuture<Collection<AccessTypeMapping>> fetchAccessTypeMappings(AccessTypeFilter accessTypeFilter,
                                                                                    RmApiTemplateContext context,
                                                                                    AtomicInteger totalCount) {
-    Map<String, String> okapiHeaders = context.getOkapiData().getHeaders();
+    Map<String, String> okapiHeaders = context.getRequestContext().getHeaders();
     String credentialsId = context.getCredentialsId();
     RecordType recordType = accessTypeFilter.getRecordType();
     String recordIdPrefix = createRecordIdPrefix(accessTypeFilter);
@@ -277,19 +277,19 @@ public class FilteredEntitiesLoaderImpl implements FilteredEntitiesLoader {
       .collect(Collectors.toCollection(ArrayList::new));
   }
 
-  private List<Long> extractTitleIds(Collection<AccessTypeMapping> accessTypeMappings) {
+  private List<Integer> extractTitleIds(Collection<AccessTypeMapping> accessTypeMappings) {
     return accessTypeMappings.stream()
       .map(AccessTypeMapping::getRecordId)
       .map(IdParser::parseResourceId)
-      .map(ResourceId::getTitleIdPart)
+      .map(ResourceId::titleIdPart)
       .distinct()
       .collect(Collectors.toCollection(ArrayList::new));
   }
 
-  private List<Long> extractTitleIds(List<DbResource> dbResources) {
+  private List<Integer> extractTitleIds(List<DbResource> dbResources) {
     return dbResources.stream()
       .map(DbResource::getId)
-      .map(ResourceId::getTitleIdPart)
+      .map(ResourceId::titleIdPart)
       .distinct()
       .collect(Collectors.toCollection(ArrayList::new));
   }

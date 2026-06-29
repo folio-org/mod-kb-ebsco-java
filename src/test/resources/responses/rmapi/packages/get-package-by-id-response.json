@@ -1,15 +1,18 @@
 {
-  "packageId": 3964,
+  "listId": 3964,
   "packageName": "EBSCO Biotechnology Collection: India",
   "isCustom": false,
   "vendorId": 19,
   "vendorName": "EBSCO",
   "titleCount": 156,
   "isSelected": false,
-  "visibilityData": {
-    "isHidden": false,
-    "reason": ""
-  },
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": "Hidden by customer"
+    }
+  ],
   "selectedCount": 0,
   "isTokenNeeded": false,
   "contentType": "AggregatedFullText",

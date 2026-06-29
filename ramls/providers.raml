@@ -22,7 +22,8 @@ traits:
   queriable: !include traits/queriable.raml
   sortable: !include traits/sortable.raml
   pageable: !include traits/pageable.raml
-  filterable: !include traits/filterable.raml
+  packageFilterable: !include traits/packageFilterable.raml
+  packageQueriable: !include traits/packageQueriable.raml
   taggable: !include traits/taggable.raml
   accessible: !include traits/accessible.raml
   includable: !include traits/includePackages.raml
@@ -128,7 +129,7 @@ traits:
     /packages:
       get:
         description: Search within a list of packages associated with a given provider.
-        is: [queriable, taggable, accessible, filterable,
+        is: [packageQueriable, taggable, accessible, packageFilterable,
         sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
         pageable: {maxCountValue: 100, defaultCountValue: 25}]
         responses:

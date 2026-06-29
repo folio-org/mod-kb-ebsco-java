@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Collection;
 import java.util.Objects;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -87,6 +88,14 @@ public final class ValidatorUtil {
 
   public static void checkIsNull(String paramName, Object value) {
     if (Objects.nonNull(value)) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_BE_NULL_FORMAT, paramName));
+    }
+  }
+
+  public static <T> void checkIsEmptyCollection(String paramName, Collection<T> value) {
+    if (Objects.nonNull(value) && !value.isEmpty()) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_NULL_FORMAT, paramName));

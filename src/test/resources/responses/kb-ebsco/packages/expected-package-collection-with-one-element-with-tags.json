@@ -1,50 +1,56 @@
 {
-  "data" : [ {
-    "id" : "19-3964",
-    "type" : "packages",
-    "attributes" : {
-      "contentType" : "Online Reference",
-      "customCoverage" : {
-        "beginCoverage" : "",
-        "endCoverage" : ""
-      },
-      "isCustom" : true,
-      "isSelected" : true,
-      "name" : "TEST_PACKAGE_NAME",
-      "packageId" : 3964,
-      "packageType" : "Custom",
-      "providerId" : 19,
-      "providerName" : "TEST_VENDOR_NAME",
-      "selectedCount" : 5,
-      "titleCount" : 5,
-      "visibilityData" : {
-        "isHidden" : false,
-        "reason" : ""
-      },
-      "tags" : {
-        "tagList":[
-          "tag one",
-          "tag 2"
+  "data": [
+    {
+      "id": "19-3964",
+      "type": "packages",
+      "attributes": {
+        "contentType": "Online Reference",
+        "customCoverage": {
+          "beginCoverage": "",
+          "endCoverage": ""
+        },
+        "isCustom": true,
+        "isSelected": true,
+        "name": "TEST_PACKAGE_NAME",
+        "packageId": 3964,
+        "packageType": "Custom",
+        "providerId": 19,
+        "providerName": "TEST_VENDOR_NAME",
+        "selectedCount": 5,
+        "tags": {
+          "tagList": [
+            "tag one",
+            "tag 2"
+          ]
+        },
+        "titleCount": 5,
+        "visibility": [
+          {
+            "category": "PF",
+            "reason": "Hidden by customer",
+            "hidden": false
+          }
         ]
-      }
-    },
-    "relationships" : {
-      "resources" : {
-        "meta" : {
-          "included" : false
-        }
       },
-      "provider" : {
-        "meta" : {
-          "included" : false
+      "relationships": {
+        "resources": {
+          "data": [],
+          "meta": {
+            "included": false
+          }
+        },
+        "provider": {
+          "meta": {
+            "included": false
+          }
         }
       }
     }
-  } ],
-  "meta" : {
-    "totalResults" : 1
+  ],
+  "meta": {
+    "totalResults": 1
   },
-  "jsonapi" : {
-    "version" : "1.0"
+  "jsonapi": {
+    "version": "1.0"
   }
 }

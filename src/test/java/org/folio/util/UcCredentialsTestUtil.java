@@ -9,16 +9,18 @@ import static org.folio.repository.SqlQueryHelper.limitQuery;
 import static org.folio.repository.SqlQueryHelper.selectQuery;
 import static org.folio.repository.uc.UcCredentialsTableConstants.CLIENT_ID_COLUMN;
 import static org.folio.repository.uc.UcCredentialsTableConstants.CLIENT_SECRET_COLUMN;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.repository.uc.DbUcCredentials;
 import org.folio.rest.persist.PostgresClient;
 
+@UtilityClass
 public class UcCredentialsTestUtil {
 
   public static final String UC_CREDENTIALS_ENDPOINT = "eholdings/uc-credentials";
@@ -29,8 +31,8 @@ public class UcCredentialsTestUtil {
   public static void setUpUcCredentials(Vertx vertx) {
     var future = new CompletableFuture<>();
 
-    var query =
-      prepareQuery(insertQuery(CLIENT_ID_COLUMN, CLIENT_SECRET_COLUMN), getUcCredentialsTableName(STUB_TENANT));
+    var query = prepareQuery(insertQuery(CLIENT_ID_COLUMN, CLIENT_SECRET_COLUMN),
+      getUcCredentialsTableName(STUB_TENANT));
     Tuple params = Tuple.of(
       STUB_CLIENT_ID,
       STUB_CLIENT_SECRET

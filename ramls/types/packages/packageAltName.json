@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Alternate names schema",
+  "description": "Alternate names schema",
+  "javaType": "org.folio.rest.jaxrs.model.PackageAltName",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "The id of the alternate name of the package."
+    },
+    "altName": {
+      "type": "string",
+      "description": "The alternate name of the package"
+    }
+  },
+  "required": [
+    "altName"
+  ]
+}

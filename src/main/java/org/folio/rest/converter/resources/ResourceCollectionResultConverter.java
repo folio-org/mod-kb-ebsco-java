@@ -70,17 +70,12 @@ public class ResourceCollectionResultConverter implements Converter<ResourceColl
   }
 
   private ResourceId createResourceId(Title title) {
-    return ResourceId.builder()
-      .providerIdPart(title.getCustomerResourcesList().getFirst().getVendorId())
-      .packageIdPart(title.getCustomerResourcesList().getFirst().getPackageId())
-      .titleIdPart(title.getTitleId()).build();
+    return new ResourceId(title.getCustomerResourcesList().getFirst().getVendorId(),
+      title.getCustomerResourcesList().getFirst().getPackageId(),
+      title.getTitleId());
   }
 
   private ResourceId createResourceId(DbHoldingInfo holding) {
-    return ResourceId.builder()
-      .providerIdPart(holding.getVendorId())
-      .packageIdPart(holding.getPackageId())
-      .titleIdPart(holding.getTitleId())
-      .build();
+    return new ResourceId(holding.getVendorId(), holding.getPackageId(), holding.getTitleId());
   }
 }

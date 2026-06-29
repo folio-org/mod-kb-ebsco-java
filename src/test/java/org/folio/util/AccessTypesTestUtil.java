@@ -20,9 +20,9 @@ import static org.folio.repository.accesstypes.AccessTypesTableConstants.ID_COLU
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.NAME_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.USAGE_NUMBER_COLUMN;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.upsertAccessTypeQuery;
-import static org.folio.rest.impl.WireMockTestBase.JOHN_ID;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
 import static org.folio.util.KbCredentialsTestUtil.KB_CREDENTIALS_ENDPOINT;
+import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.util.WireMockTestBase.JOHN_ID;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.ObjectUtils;
 import org.folio.db.DbUtils;
 import org.folio.repository.RecordType;
@@ -47,6 +48,7 @@ import org.folio.rest.jaxrs.model.UserDisplayInfo;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.core.convert.converter.Converter;
 
+@UtilityClass
 public class AccessTypesTestUtil {
 
   public static final String STUB_ACCESS_TYPE_NAME = "Subscribed";
@@ -116,6 +118,17 @@ public class AccessTypesTestUtil {
     return future.join();
   }
 
+  public static List<AccessType> testData() {
+    return testData(null);
+  }
+
+  public static List<AccessType> testData(String credentialsId) {
+    var accessType1 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME, "Access Type description 1");
+    var accessType2 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME_2, "Access Type description 2");
+    var accessType3 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME_3, "Access Type description 3");
+    return Arrays.asList(accessType1, accessType2, accessType3);
+  }
+
   private static AccessTypeMapping mapAccessTypeMapping(Row entry) {
     return AccessTypeMapping.builder()
       .id(entry.getUUID(ID_COLUMN))
@@ -137,17 +150,6 @@ public class AccessTypesTestUtil {
       .updatedDate(resultRow.getOffsetDateTime(UPDATED_DATE_COLUMN))
       .updatedByUserId(resultRow.getUUID(UPDATED_BY_USER_ID_COLUMN))
       .build());
-  }
-
-  public static List<AccessType> testData() {
-    return testData(null);
-  }
-
-  public static List<AccessType> testData(String credentialsId) {
-    var accessType1 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME, "Access Type description 1");
-    var accessType2 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME_2, "Access Type description 2");
-    var accessType3 = getAccessType(credentialsId, STUB_ACCESS_TYPE_NAME_3, "Access Type description 3");
-    return Arrays.asList(accessType1, accessType2, accessType3);
   }
 
   private static AccessType getAccessType(String credentialsId, String name, String description) {

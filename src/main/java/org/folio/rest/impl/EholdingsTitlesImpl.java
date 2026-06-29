@@ -39,7 +39,9 @@ import org.folio.rest.jaxrs.model.TitleCollection;
 import org.folio.rest.jaxrs.model.TitlePostRequest;
 import org.folio.rest.jaxrs.model.TitlePutRequest;
 import org.folio.rest.jaxrs.resource.EholdingsTitles;
-import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.AccessTypeFilter;
+import org.folio.rest.model.filter.TagFilter;
+import org.folio.rest.model.filter.TitleFilter;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.IdParser;
 import org.folio.rest.util.template.RmApiTemplateContext;
@@ -94,8 +96,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                  List<String> filterPackageIds, String include, String sort, int page, int count,
                                  Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
                                  Context vertxContext) {
-    Filter filter = Filter.builder()
-      .recordType(RecordType.TITLE)
+    var filter = TitleFilter.builder()
       .filterTags(filterTags)
       .filterAccessType(filterAccessType)
       .filterSelected(filterSelected)
@@ -139,7 +140,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
   @HandleValidationErrors
   public void getEholdingsTitlesByTitleId(String titleId, String include, Map<String, String> okapiHeaders,
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    long titleIdLong = parseTitleId(titleId);
+    var titleIdLong = parseTitleId(titleId);
 
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
@@ -161,7 +162,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
                                           Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     titleCommonRequestAttributesValidator.validate(entity.getData().getAttributes());
 
-    Long parsedTitleId = parseTitleId(titleId);
+    var parsedTitleId = parseTitleId(titleId);
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
         context.getTitlesService().retrieveTitle(parsedTitleId)
@@ -182,15 +183,15 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
       .executeWithResult(Title.class);
   }
 
-  private CompletableFuture<Titles> fetchTitlesByFilter(Filter filter, RmApiTemplateContext context) {
+  private CompletableFuture<Titles> fetchTitlesByFilter(TitleFilter filter, RmApiTemplateContext context) {
     if (filter.isTagsFilter()) {
-      return filteredEntitiesLoader.fetchTitlesByTagFilter(filter.createTagFilter(), context);
+      return filteredEntitiesLoader.fetchTitlesByTagFilter(TagFilter.from(filter), context);
     } else if (filter.isAccessTypeFilter()) {
-      return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(filter.createAccessTypeFilter(), context);
+      return filteredEntitiesLoader.fetchTitlesByAccessTypeFilter(AccessTypeFilter.from(filter), context);
     } else {
       return context.getTitlesService()
         .retrieveTitles(filter.createFilterQuery(), searchProperties.titlesSearchType(),
-          filter.getSort(), filter.getPage(), filter.getCount()
+          filter.resolveSort(), filter.getPage(), filter.getCount()
         );
     }
   }
@@ -223,7 +224,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
         .stream()
         .map(IdParser::getResourceId)
         .toList();
-      return tagRepository.findByRecordByIds(context.getOkapiData().getTenant(), resourceIds, RecordType.RESOURCE)
+      return tagRepository.findByRecordByIds(context.getRequestContext().getTenant(), resourceIds, RecordType.RESOURCE)
         .thenApply(tags -> {
           result.setResourceTagList(tags);
           return result;
@@ -240,7 +241,7 @@ public class EholdingsTitlesImpl implements EholdingsTitles {
     if (Objects.isNull(tags)) {
       return completedFuture(result);
     } else {
-      String tenant = context.getOkapiData().getTenant();
+      String tenant = context.getRequestContext().getTenant();
       UUID credentialsId = toUUID(context.getCredentialsId());
 
       return updateStoredTitles(createDbTitle(result, credentialsId), tags, tenant)

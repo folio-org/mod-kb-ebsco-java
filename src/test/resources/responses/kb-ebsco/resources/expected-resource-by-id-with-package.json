@@ -72,9 +72,9 @@
       ],
       "customCoverages": [],
       "proxy": {
+        "proxiedUrl": "https://example.com",
         "id": "<n>",
-        "inherited": true,
-        "proxiedUrl": "https://example.com"
+        "inherited": true
       },
       "tags": {
         "tagList": []
@@ -109,6 +109,7 @@
       "id": "19-3964",
       "type": "packages",
       "attributes": {
+        "allowKbToAddTitles": false,
         "contentType": "Mixed Content",
         "customCoverage": {
           "beginCoverage": "2018-08-13",
@@ -121,16 +122,22 @@
         "packageType": "Variable",
         "providerId": 19,
         "providerName": "ABC-CLIO",
-        "selectedCount": 9590,
-        "titleCount": 9590,
-        "visibilityData": {
-          "isHidden": true,
-          "reason": ""
-        },
-        "allowKbToAddTitles": false,
         "proxy": {
           "id": "Proxy-ID-123",
           "inherited": true
+        },
+        "selectedCount": 9590,
+        "titleCount": 9590,
+        "visibility": [
+          {
+            "category": "PF",
+            "reason": "Hidden by customer",
+            "hidden": false
+          }
+        ],
+        "visibilityData": {
+          "isHidden": false,
+          "reason": ""
         }
       },
       "relationships": {

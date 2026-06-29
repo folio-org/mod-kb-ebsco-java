@@ -7,14 +7,37 @@
         "beginCoverage": "2003-01-01",
         "endCoverage": "2004-01-01"
       },
+      "customDescription": "Custom description",
+      "customAltNames": [
+        {
+          "altName": "Custom Alternate Name1"
+        },
+        {
+          "id": 1,
+          "altName": "Custom Alternate Name2"
+        }
+      ],
+      "customDisplayName": "Custome display name",
       "isCustom": false,
       "isSelected": true,
       "isFullPackage": true,
+      "isFreeAccess": true,
       "name": "name of the ages forever and ever",
-      "visibilityData": {
-        "isHidden": false,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        },
+        {
+          "category": "FTF",
+          "hidden": true
+        },
+        {
+          "category": "MARC",
+          "hidden": true
+        }
+      ],
       "allowKbToAddTitles": false,
       "proxy": {
         "id": "<n>",

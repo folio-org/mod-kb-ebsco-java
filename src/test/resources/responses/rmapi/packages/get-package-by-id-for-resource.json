@@ -1,15 +1,18 @@
 {
-  "packageId": 3964,
+  "listId": 3964,
   "packageName": "ABC-CLIO eBook Collection",
   "isCustom": false,
   "vendorId": 19,
   "vendorName": "ABC-CLIO",
   "titleCount": 9590,
   "isSelected": true,
-  "visibilityData": {
-    "isHidden": true,
-    "reason": "Hidden by Customer"
-  },
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": "Hidden by customer"
+    }
+  ],
   "selectedCount": 9590,
   "isTokenNeeded": false,
   "contentType": "mixedcontent",

@@ -5,7 +5,7 @@ import static org.folio.repository.assigneduser.AssignedUsersConstants.ASSIGNED_
 import static org.folio.repository.assigneduser.AssignedUsersConstants.CREDENTIALS_ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.ID_COLUMN;
 import static org.folio.repository.assigneduser.AssignedUsersConstants.insertAssignedUserQuery;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -13,6 +13,7 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.db.DbUtils;
 import org.folio.db.RowSetUtils;
 import org.folio.repository.DbUtil;
@@ -23,6 +24,7 @@ import org.folio.rest.jaxrs.model.AssignedUser;
 import org.folio.rest.persist.PostgresClient;
 import org.springframework.core.convert.converter.Converter;
 
+@UtilityClass
 public class AssignedUsersTestUtil {
 
   private static final Converter<DbAssignedUser, AssignedUser> CONVERTER =

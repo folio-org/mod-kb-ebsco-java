@@ -3,7 +3,7 @@ package org.folio.rmapi;
 import io.vertx.core.Vertx;
 import java.util.concurrent.CompletableFuture;
 import org.folio.holdingsiq.model.Configuration;
-import org.folio.holdingsiq.model.OkapiData;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.service.impl.ConfigurationServiceImpl;
 import org.folio.rest.jaxrs.model.KbCredentials;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
@@ -22,7 +22,7 @@ public class LocalConfigurationServiceImpl extends ConfigurationServiceImpl {
   }
 
   @Override
-  public CompletableFuture<Configuration> retrieveConfiguration(OkapiData okapiData) {
-    return userKbCredentialsService.findByUser(okapiData.getHeaders()).thenApply(converter::convert);
+  public CompletableFuture<Configuration> retrieveConfiguration(RequestContext requestContext) {
+    return userKbCredentialsService.findByUser(requestContext.getHeaders()).thenApply(converter::convert);
   }
 }

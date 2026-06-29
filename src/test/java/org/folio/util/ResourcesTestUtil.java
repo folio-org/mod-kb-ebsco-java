@@ -10,7 +10,7 @@ import static org.folio.repository.resources.ResourceTableConstants.ID_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.NAME_COLUMN;
 import static org.folio.repository.resources.ResourceTableConstants.RESOURCES_TABLE_NAME;
 import static org.folio.rest.util.IdParser.resourceIdToString;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
@@ -18,15 +18,16 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.repository.resources.DbResource;
+import org.folio.rest.jaxrs.model.ResourcePutData;
+import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
+import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
 
+@UtilityClass
 public final class ResourcesTestUtil {
-
-  private ResourcesTestUtil() {
-    throw new UnsupportedOperationException("Cannot instantiate utility class.");
-  }
 
   public static List<DbResource> getResources(Vertx vertx) {
     CompletableFuture<List<DbResource>> future = new CompletableFuture<>();
@@ -49,8 +50,15 @@ public final class ResourcesTestUtil {
     return buildResource(id, toUUID(credentialsId), name);
   }
 
-  private static DbResource buildResource(String id, UUID credentialsId, String name) {
+  public static DbResource buildResource(String id, UUID credentialsId, String name) {
     return DbResource.builder().id(IdParser.parseResourceId(id)).credentialsId(credentialsId).name(name).build();
+  }
+
+  public static ResourcePutRequest getResourcePutRequest(ResourcePutDataAttributes attributes) {
+    return new ResourcePutRequest()
+      .withData(new ResourcePutData()
+        .withType(ResourcePutData.Type.RESOURCES)
+        .withAttributes(attributes));
   }
 
   private static DbResource mapDbResource(Row row) {

@@ -1,15 +1,18 @@
 {
-  "packageId": 13964,
+  "listId": 13964,
   "packageName": "America and World War I: American Military Camp Newspapers",
   "isCustom": false,
   "vendorId": 19,
   "vendorName": "EBSCO",
   "titleCount": 156,
   "isSelected": false,
-  "visibilityData": {
-    "isHidden": false,
-    "reason": ""
-  },
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": false,
+      "reason": "Hidden by customer"
+    }
+  ],
   "selectedCount": 0,
   "isTokenNeeded": false,
   "contentType": "AggregatedFullText",

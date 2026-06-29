@@ -1,75 +1,87 @@
 {
-  "data" : {
-    "id" : "19-3964",
-    "type" : "packages",
-    "attributes" : {
-      "contentType" : "Aggregated Full Text",
-      "customCoverage" : {
-        "beginCoverage" : "",
-        "endCoverage" : ""
+  "data": {
+    "id": "19-3964",
+    "type": "packages",
+    "attributes": {
+      "allowKbToAddTitles": false,
+      "contentType": "Aggregated Full Text",
+      "customCoverage": {
+        "beginCoverage": "",
+        "endCoverage": ""
       },
-      "isCustom" : true,
-      "isSelected" : true,
-      "name" : "carole and sams test",
-      "packageId" : 3964,
-      "packageType" : "Custom",
-      "providerId" : 19,
-      "providerName" : "APIDEV CORPORATE CUSTOMER",
-      "selectedCount" : 6,
-      "titleCount" : 6,
-      "visibilityData" : {
-        "isHidden" : false,
-        "reason" : ""
+      "isCustom": true,
+      "isSelected": true,
+      "name": "carole and sams test",
+      "packageId": 3964,
+      "packageToken": {
+        "factName": "[[gale.customcode.infocust]]",
+        "prompt": "res_id=info:sid/gale:",
+        "helpText": "help text",
+        "value": "token value"
       },
-      "allowKbToAddTitles" : false,
-      "packageToken" : {
-        "factName" : "[[gale.customcode.infocust]]",
-        "prompt" : "res_id=info:sid/gale:",
-        "helpText" : "help text",
-        "value" : "token value"
+      "packageType": "Custom",
+      "providerId": 19,
+      "providerName": "APIDEV CORPORATE CUSTOMER",
+      "proxy": {
+        "id": "<n>",
+        "inherited": true
       },
-      "proxy" : {
-        "id" : "<n>",
-        "inherited" : true
+      "selectedCount": 6,
+      "tags": {
+        "tagList": []
+      },
+      "titleCount": 6,
+      "visibility": [
+        {
+          "category": "PF",
+          "reason": "Hidden by customer",
+          "hidden": false
+        }
+      ],
+      "visibilityData": {
+        "isHidden": false,
+        "reason": ""
       }
     },
-    "relationships" : {
-      "resources" : {
-        "data" : [ ],
-        "meta" : {
-          "included" : false
+    "relationships": {
+      "resources": {
+        "data": [],
+        "meta": {
+          "included": false
         }
       },
-      "provider" : {
-        "data" : {
-          "type" : "providers",
-          "id" : "19"
+      "provider": {
+        "data": {
+          "type": "providers",
+          "id": "19"
         }
       }
     }
   },
-  "included" : [ {
-    "id" : "19",
-    "type" : "providers",
-    "attributes" : {
-      "name" : "APIDEV CORPORATE CUSTOMER",
-      "packagesTotal" : 34,
-      "packagesSelected" : 1,
-      "supportsCustomPackages" : false,
-      "proxy" : {
-        "id" : "<n>",
-        "inherited" : true
-      }
-    },
-    "relationships" : {
-      "packages" : {
-        "meta" : {
-          "included" : false
+  "included": [
+    {
+      "id": "19",
+      "type": "providers",
+      "attributes": {
+        "name": "APIDEV CORPORATE CUSTOMER",
+        "packagesTotal": 34,
+        "packagesSelected": 1,
+        "supportsCustomPackages": false,
+        "proxy": {
+          "id": "<n>",
+          "inherited": true
+        }
+      },
+      "relationships": {
+        "packages": {
+          "meta": {
+            "included": false
+          }
         }
       }
     }
-  } ],
-  "jsonapi" : {
-    "version" : "1.0"
+  ],
+  "jsonapi": {
+    "version": "1.0"
   }
 }

@@ -2,6 +2,9 @@ package org.folio.rest.util;
 
 import java.util.List;
 import java.util.Map;
+import org.folio.holdingsiq.model.PackageFilterFreeAccess;
+import org.folio.holdingsiq.model.PackageFilterSelected;
+import org.folio.holdingsiq.model.PackageFilterVisibility;
 import org.folio.rest.jaxrs.model.JsonAPI;
 
 public final class RestConstants {
@@ -19,16 +22,28 @@ public final class RestConstants {
   public static final String TITLE_RECTYPE = "title";
   public static final String RESOURCE_RECTYPE = "resource";
 
-  public static final Map<String, String> FILTER_SELECTED_MAPPING =
+  public static final Map<String, PackageFilterSelected> FILTER_SELECTED_MAPPING =
     Map.of(
-      "true", "selected",
-      "false", "notselected",
-      "ebsco", "orderedthroughebsco"
+      "true", PackageFilterSelected.SELECTED,
+      "false", PackageFilterSelected.NOT_SELECTED,
+      "ebsco", PackageFilterSelected.ORDERED_THROUGH_EBSCO
     );
 
   public static final List<String> SUPPORTED_PACKAGE_FILTER_TYPE_VALUES =
     List.of("all", "aggregatedfulltext", "abstractandindex", "ebook", "ejournal", "print", "unknown",
       "onlinereference", "streamingmedia", "mixedcontent");
+
+  public static final Map<String, PackageFilterVisibility> FILTER_VISIBILITY_MAPPING =
+    Map.of("visibleInPF", PackageFilterVisibility.VISIBLE_IN_PF,
+      "visibleInFTF", PackageFilterVisibility.VISIBLE_IN_FTF,
+      "visibleInMARC", PackageFilterVisibility.INCLUDED_IN_MARC,
+      "hiddenInPF", PackageFilterVisibility.HIDDEN_IN_PF,
+      "hiddenInFTF", PackageFilterVisibility.HIDDEN_IN_FTF,
+      "hiddenInMARC", PackageFilterVisibility.EXCLUDED_FROM_MARC);
+
+  public static final Map<String, PackageFilterFreeAccess> FILTER_FREE_ACCESS_MAPPING =
+    Map.of("public", PackageFilterFreeAccess.TRUE,
+      "controlled", PackageFilterFreeAccess.FALSE);
 
   public static final List<String> SUPPORTED_TITLE_FILTER_TYPE_VALUES =
     List.of("audiobook", "book", "bookseries", "database", "journal", "newsletter", "newspaper", "proceedings",

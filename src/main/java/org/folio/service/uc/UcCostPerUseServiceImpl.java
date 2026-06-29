@@ -198,7 +198,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
       packageId, platform, fiscalYear);
     validateParams(platform, fiscalYear, sort);
     var id = parsePackageId(packageId);
-    var packageIdPart = valueOf(id.getPackageIdPart());
+    var packageIdPart = valueOf(id.packageIdPart());
     MutableObject<PlatformType> platformTypeHolder = new MutableObject<>();
 
     return templateFactory.createTemplate(okapiHeaders, Promise.promise()).getRmapiTemplateContext()
@@ -212,7 +212,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     String packageId, PlatformType platformType,
     RmApiTemplateContext context,
     CommonUcConfiguration ucConfiguration) {
-    var packageIdPart = valueOf(parsePackageId(packageId).getPackageIdPart());
+    var packageIdPart = valueOf(parsePackageId(packageId).packageIdPart());
     log.info("composePackageCostPerUseResult:: Composing Result for Package Cost Per use with packageIdPart: {}, "
              + "platformType: {}", packageIdPart, platformType);
     return client.getPackageCostPerUse(packageIdPart, createGetPackageConfiguration(ucConfiguration))
@@ -384,7 +384,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
   private CompletableFuture<List<DbHoldingInfo>> fetchHoldingsData(String packageIdPart, RmApiTemplateContext context) {
     log.info("fetchHoldingsData:: Get Holdings data by packageId: {} ", packageIdPart);
     return holdingsService
-      .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getOkapiData().getTenant());
+      .getHoldingsByPackageId(packageIdPart, context.getCredentialsId(), context.getRequestContext().getTenant());
   }
 
   private CompletableFuture<CommonUcConfiguration> fetchCommonConfiguration(
@@ -401,7 +401,7 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
     String platform, String fiscalYear,
     MutableObject<PlatformType> platformTypeHolder,
     RmApiTemplateContext context) {
-    Map<String, String> okapiHeaders = context.getOkapiData().getHeaders();
+    Map<String, String> okapiHeaders = context.getRequestContext().getHeaders();
     return authService.authenticate(okapiHeaders)
       .thenCombine(settingsService.fetchByCredentialsId(context.getCredentialsId(), false, okapiHeaders),
         toCommonUcConfiguration(platform, fiscalYear, platformTypeHolder)
@@ -465,8 +465,8 @@ public class UcCostPerUseServiceImpl implements UcCostPerUseService {
 
   private CompletableFuture<UcTitleCostPerUse> getTitleCost(ResourceId id, GetTitleUcConfiguration configuration) {
     log.info("getTitleCost:: Get by titleId: {}, packageId: {} and configurations",
-      id.getTitleIdPart(), id.getPackageIdPart());
-    return client.getTitleCostPerUse(valueOf(id.getTitleIdPart()), valueOf(id.getPackageIdPart()), configuration);
+      id.titleIdPart(), id.packageIdPart());
+    return client.getTitleCostPerUse(valueOf(id.titleIdPart()), valueOf(id.packageIdPart()), configuration);
   }
 
   private CommonUcConfiguration createCommonConfiguration(UCSettings ucSettings, String fiscalYear, String authToken) {

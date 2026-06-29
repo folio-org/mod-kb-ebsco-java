@@ -29,12 +29,12 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.folio.cache.VertxCache;
 import org.folio.config.cache.VendorIdCacheKey;
 import org.folio.holdingsiq.model.CustomerResources;
-import org.folio.holdingsiq.model.OkapiData;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.PackagePost;
 import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.RequestContext;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.service.exception.ResourceNotFoundException;
 import org.folio.properties.common.SearchProperties;
@@ -64,7 +64,10 @@ import org.folio.rest.jaxrs.model.PackageTagsPutRequest;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.jaxrs.resource.EholdingsPackages;
-import org.folio.rest.model.filter.Filter;
+import org.folio.rest.model.filter.AccessTypeFilter;
+import org.folio.rest.model.filter.PackageRecordFilter;
+import org.folio.rest.model.filter.ResourceFilter;
+import org.folio.rest.model.filter.TagFilter;
 import org.folio.rest.util.ErrorHandler;
 import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RmApiTemplate;
@@ -113,7 +116,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private RmApiTemplateFactory templateFactory;
   @Autowired
   @Qualifier("vendorIdCache")
-  private VertxCache<VendorIdCacheKey, Long> vendorIdCache;
+  private VertxCache<VendorIdCacheKey, Integer> vendorIdCache;
   @Autowired
   private TagRepository tagRepository;
   @Autowired
@@ -138,29 +141,43 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     SpringContextUtil.autowireDependencies(this, Vertx.currentContext());
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsPackages(String filterCustom, String q, String filterSelected, String filterType,
-                                   List<String> filterTags, List<String> filterAccessType, String sort, int page,
-                                   int count,
-                                   Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-                                   Context vertxContext) {
-
-    var filter = Filter.getSortableFilter(prepareFilterForPackage(filterCustom, q, filterSelected, filterType,
-      filterTags, filterAccessType), sort, page, count);
+  public void getEholdingsPackages(String filterCustom, String q, String queryField, String queryType,
+                                   boolean highlight, String filterSelected, String filterType, String filterVisibility,
+                                   String filterFreeAccess, List<String> filterTags, List<String> filterAccessType,
+                                   String sort, int page, int count, Map<String, String> okapiHeaders,
+                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
+    var filter = PackageRecordFilter.builder()
+      .query(q)
+      .queryField(queryField)
+      .queryType(queryType)
+      .highlight(highlight)
+      .filterCustom(filterCustom)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterVisibility(filterVisibility)
+      .filterFreeAccess(filterFreeAccess)
+      .filterTags(filterTags)
+      .filterAccessType(filterAccessType)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
 
     var template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(filter.createTagFilter(), context));
+        context -> filteredEntitiesLoader.fetchPackagesByTagFilter(TagFilter.from(filter), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(context -> filteredEntitiesLoader
-        .fetchPackagesByAccessTypeFilter(filter.createAccessTypeFilter(), context));
+        .fetchPackagesByAccessTypeFilter(AccessTypeFilter.from(filter), context));
     } else {
       template
         .requestAction(context -> {
-          if (Boolean.TRUE.equals(filter.getFilterCustom())) {
+          if (Boolean.TRUE.equals(filter.resolveFilterCustom())) {
             return getCustomProviderId(context)
               .thenCompose(providerId -> retrievePackages(providerId, filter, context));
           } else {
@@ -226,12 +243,13 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                               Map<String, String> okapiHeaders,
                                               Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     PackageId parsedPackageId = parsePackageId(packageId);
+    var packageIdPart = parsedPackageId.packageIdPart();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
-      .requestAction(context -> context.getPackagesService().retrievePackage(parsedPackageId)
-        .thenCompose(packageByIdData -> fetchAccessType(entity, context)
-          .thenCompose(accessType -> processUpdateRequest(entity, packageByIdData, context)
+      .requestAction(context -> context.getPackagesService().retrievePackage(packageIdPart)
+        .thenCompose(packageData -> fetchAccessType(entity, context)
+          .thenCompose(accessType -> processUpdateRequest(entity, packageData, context)
             .thenCompose(voidEntity -> {
-              CompletableFuture<PackageByIdData> future = context.getPackagesService().retrievePackage(parsedPackageId);
+              CompletableFuture<PackageData> future = context.getPackagesService().retrievePackage(packageIdPart);
               return handleDeletedPackage(future, parsedPackageId, context);
             })
             .thenApply(packageById -> new PackageResult(packageById, null, null))
@@ -250,19 +268,21 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                  Handler<AsyncResult<Response>> asyncResultHandler,
                                                  Context vertxContext) {
     PackageId parsedPackageId = parsePackageId(packageId);
+    var packageIdPart = parsedPackageId.packageIdPart();
     templateFactory.createTemplate(okapiHeaders, asyncResultHandler)
       .requestAction(context ->
-        context.getPackagesService().retrievePackage(parsedPackageId)
+        context.getPackagesService().retrievePackage(packageIdPart)
           .thenCompose(packageData -> {
             if (BooleanUtils.isNotTrue(packageData.getIsCustom())) {
               throw new InputValidationException(INVALID_PACKAGE_TITLE, INVALID_PACKAGE_DETAILS);
             }
-            return context.getPackagesService().deletePackage(parsedPackageId)
+            return context.getPackagesService().deletePackage(packageIdPart)
               .thenCompose(v -> deleteAssignedResources(parsedPackageId, context));
           }))
       .execute();
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   @Override
   @Validate
   @HandleValidationErrors
@@ -275,17 +295,29 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                        Handler<AsyncResult<Response>> asyncResultHandler,
                                                        Context vertxContext) {
 
-    var filter = Filter.getSortableFilter(prepareFilterForResource(packageId, filterTags, filterAccessType,
-      filterSelected, filterType, filterName, filterIsxn, filterSubject, filterPublisher), sort, page, count);
+    var filter = ResourceFilter.builder()
+      .packageId(packageId)
+      .filterTags(filterTags)
+      .filterAccessType(filterAccessType)
+      .filterSelected(filterSelected)
+      .filterType(filterType)
+      .filterName(filterName)
+      .filterIsxn(filterIsxn)
+      .filterSubject(filterSubject)
+      .filterPublisher(filterPublisher)
+      .sort(sort)
+      .page(page)
+      .count(count)
+      .build();
 
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
     if (filter.isTagsFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchResourcesByTagFilter(filter.createTagFilter(), context));
+        context -> filteredEntitiesLoader.fetchResourcesByTagFilter(TagFilter.from(filter), context));
     } else if (filter.isAccessTypeFilter()) {
       template.requestAction(
-        context -> filteredEntitiesLoader.fetchResourcesByAccessTypeFilter(filter.createAccessTypeFilter(), context));
+        context -> filteredEntitiesLoader.fetchResourcesByAccessTypeFilter(AccessTypeFilter.from(filter), context));
     } else {
       template.requestAction(retrievePackageTitles(filter));
     }
@@ -298,17 +330,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   @Override
   public void putEholdingsPackagesTagsByPackageId(String packageId, String contentType, PackageTagsPutRequest entity,
-                                                  Map<String, String> okapiHeaders,
+                                                  Map<String, String> headers,
                                                   Handler<AsyncResult<Response>> asyncResultHandler,
                                                   Context vertxContext) {
-    userKbCredentialsService.findByUser(okapiHeaders)
+    userKbCredentialsService.findByUser(headers)
       .thenCompose(creds -> {
         packageTagsPutBodyValidator.validate(entity);
 
         PackageTagsDataAttributes attributes = entity.getData().getAttributes();
 
         return updateTags(attributes.getTags(), createDbPackage(packageId, UUID.fromString(creds.getId()), attributes),
-          new OkapiData(okapiHeaders).getTenant())
+          new RequestContext(headers).getTenant())
           .thenAccept(o2 ->
             asyncResultHandler
               .handle(
@@ -334,53 +366,25 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .executeWithResult(PackageBulkFetchCollection.class);
   }
 
-  private Function<RmApiTemplateContext, CompletableFuture<?>> retrievePackageTitles(Filter filter) {
+  private Function<RmApiTemplateContext, CompletableFuture<?>> retrievePackageTitles(ResourceFilter filter) {
     return context -> {
-      var pkgId = filter.getPackageId();
+      var pkgId = filter.parsePackageId();
       return context.getTitlesService()
-        .retrieveTitles(pkgId.getProviderIdPart(), pkgId.getPackageIdPart(), filter.createFilterQuery(),
-          searchProperties.titlesSearchType(), filter.getSort(), filter.getPage(), filter.getCount())
+        .retrieveTitles(pkgId.providerIdPart(), pkgId.packageIdPart(), filter.createFilterQuery(),
+          searchProperties.titlesSearchType(), filter.resolveSort(), filter.getPage(), filter.getCount())
         .thenApply(titles -> titleCollectionConverter.convert(titles))
         .thenCompose(loadResourceTags(context))
         .thenCompose(loadResourceAccessTypes(context));
     };
   }
 
-  private CompletableFuture<Packages> retrievePackages(Long providerId, Filter filter, RmApiTemplateContext context) {
-    return context.getPackagesService()
-      .retrievePackages(filter.getFilterSelected(), filter.getFilterType(), searchProperties.packagesSearchType(),
-        providerId, filter.getQuery(), filter.getPage(), filter.getCount(), filter.getSort());
-  }
-
-  @SuppressWarnings("java:S107")
-  private Filter.FilterBuilder prepareFilterForResource(String packageId, List<String> filterTags,
-                                                        List<String> filterAccessType, String filterSelected,
-                                                        String filterType, String filterName, String filterIsxn,
-                                                        String filterSubject, String filterPublisher) {
-    return Filter.builder()
-      .recordType(RecordType.RESOURCE)
-      .filterTags(filterTags)
-      .packageId(packageId)
-      .filterAccessType(filterAccessType)
-      .filterSelected(filterSelected)
-      .filterType(filterType)
-      .filterName(filterName)
-      .filterIsxn(filterIsxn)
-      .filterSubject(filterSubject)
-      .filterPublisher(filterPublisher);
-  }
-
-  private Filter.FilterBuilder prepareFilterForPackage(String filterCustom, String q, String filterSelected,
-                                                       String filterType, List<String> filterTags,
-                                                       List<String> filterAccessType) {
-    return Filter.builder()
-      .recordType(RecordType.PACKAGE)
-      .query(q)
-      .filterTags(filterTags)
-      .filterCustom(filterCustom)
-      .filterAccessType(filterAccessType)
-      .filterSelected(filterSelected)
-      .filterType(filterType);
+  private CompletableFuture<Packages> retrievePackages(Integer providerId, PackageRecordFilter filter,
+                                                       RmApiTemplateContext context) {
+    var packageFilter = filter.toClientFilter(searchProperties);
+    var pageable = filter.toPageable();
+    return providerId == null
+           ? context.getPackagesService().retrievePackages(packageFilter, pageable)
+           : context.getPackagesService().retrievePackages(providerId, packageFilter, pageable);
   }
 
   private CompletableFuture<PackageResult> updateAccessTypeMapping(AccessType accessType,
@@ -397,17 +401,17 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private CompletableFuture<Void> updateRecordMapping(AccessType accessType, String recordId,
                                                       RmApiTemplateContext context) {
     return accessTypeMappingsService.update(accessType, recordId, RecordType.PACKAGE, context.getCredentialsId(),
-      context.getOkapiData().getHeaders());
+      context.getRequestContext().getHeaders());
   }
 
   private CompletableFuture<AccessType> fetchAccessType(PackagePutRequest entity,
                                                         RmApiTemplateContext context) {
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
     if (accessTypeId == null) {
-      return CompletableFuture.completedFuture(null);
+      return completedFuture(null);
     } else {
       return accessTypesService.findByCredentialsAndAccessTypeId(context.getCredentialsId(), accessTypeId, false,
-        context.getOkapiData().getHeaders());
+        context.getRequestContext().getHeaders());
     }
   }
 
@@ -439,7 +443,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return titleCollection -> {
       Map<String, TitleResult> resourceIdToTitle = mapResourceIdToTitleResult(titleCollection);
 
-      return tagRepository.findPerRecord(context.getOkapiData().getTenant(),
+      return tagRepository.findPerRecord(context.getRequestContext().getTenant(),
           new ArrayList<>(resourceIdToTitle.keySet()),
           RecordType.RESOURCE)
         .thenApply(tagMap -> {
@@ -461,7 +465,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return titleCollection -> {
       Map<String, TitleResult> resourceIdToAccessType = mapResourceIdToTitleResult(titleCollection);
       String credentialsId = context.getCredentialsId();
-      String tenant = context.getOkapiData().getTenant();
+      String tenant = context.getRequestContext().getTenant();
       return accessTypesService.findPerRecord(credentialsId, new ArrayList<>(resourceIdToAccessType.keySet()),
           RecordType.RESOURCE, tenant)
         .thenApply(accessTypeMap -> {
@@ -490,12 +494,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return resource.getVendorId() + "-" + resource.getPackageId() + "-" + resource.getTitleId();
   }
 
-  private CompletableFuture<Long> getCustomProviderId(RmApiTemplateContext context) {
+  private CompletableFuture<Integer> getCustomProviderId(RmApiTemplateContext context) {
     VendorIdCacheKey cacheKey = VendorIdCacheKey.builder()
-      .tenant(context.getOkapiData().getTenant())
+      .tenant(context.getRequestContext().getTenant())
       .rmapiConfiguration(context.getConfiguration())
       .build();
-    Long cachedId = vendorIdCache.getValue(cacheKey);
+    var cachedId = vendorIdCache.getValue(cacheKey);
     if (cachedId != null) {
       return completedFuture(cachedId);
     } else {
@@ -509,7 +513,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
   private CompletableFuture<Void> deleteTags(PackageId packageId, RmApiTemplateContext context) {
     UUID credentialsId = toUUID(context.getCredentialsId());
-    String tenant = context.getOkapiData().getTenant();
+    String tenant = context.getRequestContext().getTenant();
 
     return packageRepository.delete(packageId, credentialsId, tenant)
       .thenCompose(o -> tagRepository.deleteRecordTags(tenant, packageIdToString(packageId), RecordType.PACKAGE))
@@ -535,7 +539,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     return packageRepository.delete(pkg.getId(), pkg.getCredentialsId(), tenant);
   }
 
-  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageByIdData originalPackage,
+  private CompletableFuture<Void> processUpdateRequest(PackagePutRequest entity, PackageData originalPackage,
                                                        RmApiTemplateContext context) {
     Boolean isEntityCustom = entity.getData().getAttributes().getIsCustom();
     validateIsCustomMatch(originalPackage.getIsCustom(), isEntityCustom);
@@ -549,7 +553,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       packagePutBody = converter.convertToRmApiPackagePutRequest(entity);
     }
     return context.getPackagesService()
-      .updatePackage(parsePackageId(originalPackage.getFullPackageId()), packagePutBody);
+      .updatePackage(originalPackage.getPackageId(), packagePutBody);
   }
 
   private void validateIsCustomMatch(Boolean isOriginalCustom, Boolean isUpdatableCustom) {
@@ -565,8 +569,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
    *
    * @return future with initial result, or exceptionally completed future if deletion of tags failed
    */
-  private CompletableFuture<PackageByIdData> handleDeletedPackage(CompletableFuture<PackageByIdData> future,
-                                                                  PackageId packageId, RmApiTemplateContext context) {
+  private CompletableFuture<PackageData> handleDeletedPackage(CompletableFuture<PackageData> future,
+                                                              PackageId packageId, RmApiTemplateContext context) {
     CompletableFuture<Void> deleteFuture = new CompletableFuture<>();
     return future.whenComplete((packageById, e) -> {
       if (e instanceof ResourceNotFoundException) {

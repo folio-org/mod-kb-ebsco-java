@@ -33,7 +33,7 @@ import org.folio.db.exc.ConstraintViolationException;
 import org.folio.db.exc.DatabaseException;
 import org.folio.db.exc.translation.DBExceptionTranslator;
 import org.folio.db.exc.translation.DBExceptionTranslatorFactory;
-import org.folio.holdingsiq.model.PackageByIdData;
+import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.holdingsiq.service.ConfigurationService;
@@ -115,13 +115,13 @@ public class ApplicationConfig {
   }
 
   @Bean
-  public VertxCache<VendorIdCacheKey, Long> vendorIdCache(Vertx vertx,
+  public VertxCache<VendorIdCacheKey, Integer> vendorIdCache(Vertx vertx,
                                                           @Value("${vendor.id.cache.expire}") long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "vendorIdCache");
   }
 
   @Bean
-  public VertxCache<PackageCacheKey, PackageByIdData> packageCache(Vertx vertx,
+  public VertxCache<PackageCacheKey, PackageData> packageCache(Vertx vertx,
                                                                    @Value("${package.cache.expire}")
                                                                    long expirationTime) {
     return new VertxCache<>(vertx, expirationTime, "packageCache");
@@ -312,8 +312,10 @@ public class ApplicationConfig {
 
   @Bean
   public SearchProperties searchProperties(@Value("${kb.ebsco.search-type.titles}") String titlesSearchType,
-                                           @Value("${kb.ebsco.search-type.packages}") String packagesSearchType) {
-    return new SearchProperties(titlesSearchType, packagesSearchType);
+                                           @Value("${kb.ebsco.search-type.packages}") String packagesSearchType,
+                                           @Value("${kb-ebsco.highlight-tag}") String highlightTag
+                                           ) {
+    return new SearchProperties(titlesSearchType, packagesSearchType, highlightTag);
   }
 
   @Bean

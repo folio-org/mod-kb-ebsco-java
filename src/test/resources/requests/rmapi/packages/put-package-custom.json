@@ -1,11 +1,28 @@
 {
+  "packageName": "name of the ages forever and ever",
   "contentType": 8,
   "isSelected": true,
+  "visibility": [
+    {
+      "category": "PF",
+      "hidden": true,
+      "reason": "Hidden by customer"
+    }
+  ],
+  "customDescription": null,
+  "url": null,
+  "isFullPackage": null,
+  "allowEbscoToAddTitles": null,
   "customCoverage": {
     "beginCoverage": "2003-01-01",
     "endCoverage": "2004-01-01"
   },
+  "proxy": {
+    "id": "<n>",
+    "inherited": false
+  },
   "packageToken": null,
-  "isHidden": true,
-  "packageName": "name of the ages forever and ever"
+  "customAltNames": [],
+  "customDisplayName": null,
+  "packageFreeAccess": null
 }

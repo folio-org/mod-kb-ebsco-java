@@ -1,33 +1,33 @@
 package org.folio.rest.validator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.folio.properties.customlabels.CustomLabelsProperties;
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.impl.ResourcesTestData;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
-import org.junit.Test;
+import org.folio.util.ResourcesTestUtil;
+import org.junit.jupiter.api.Test;
 
-public class ResourcePutBodyValidatorTest {
+class ResourcePutBodyValidatorTest {
 
   private final ResourcePutBodyValidator validator = new ResourcePutBodyValidator(new CustomLabelsProperties(50, 100));
 
   @Test
-  public void shouldNotThrowExceptionWhenUrlIsValidFormatForCustomResource() {
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+  void shouldNotThrowExceptionWhenUrlIsValidFormatForCustomResource() {
+    validator.validate(ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
         .withUrl("https://hello")), true);
   }
 
   @Test
-  public void shouldThrowExceptionWhenUrlIsInvalidFormatForCustomResource() {
-    var request = ResourcesTestData.getResourcePutRequest(
+  void shouldThrowExceptionWhenUrlIsInvalidFormatForCustomResource() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
         .withUrl("hello"));
@@ -36,8 +36,8 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenCvgStmtExceedsLengthForCustomResource() {
-    var request = ResourcesTestData.getResourcePutRequest(
+  void shouldThrowExceptionWhenCvgStmtExceedsLengthForCustomResource() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
         .withCoverageStatement(RandomStringUtils.insecure().nextAlphanumeric(251)));
@@ -46,16 +46,16 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldNotThrowExceptionWhenCvgStmtIsValidForCustomResource() {
-    validator.validate(ResourcesTestData.getResourcePutRequest(
+  void shouldNotThrowExceptionWhenCvgStmtIsValidForCustomResource() {
+    validator.validate(ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
         .withCoverageStatement("my test coverage statement")), true);
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndIsHiddenIsTrue() {
-    var request = ResourcesTestData.getResourcePutRequest(
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndIsHiddenIsTrue() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
         .withVisibilityData(new VisibilityData().withIsHidden(true)));
@@ -64,8 +64,8 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndCvgStmtIsNotNull() {
-    var request = ResourcesTestData.getResourcePutRequest(
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndCvgStmtIsNotNull() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
         .withCoverageStatement("hello"));
@@ -74,8 +74,8 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedFieldIsNotNull() {
-    var request = ResourcesTestData.getResourcePutRequest(
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedFieldIsNotNull() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
         .withUserDefinedField1("not null"));
@@ -84,7 +84,7 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField2IsNotNull() {
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField2IsNotNull() {
     testUserDefinedFieldValidation(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
@@ -92,7 +92,7 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField3IsNotNull() {
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField3IsNotNull() {
     testUserDefinedFieldValidation(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
@@ -100,7 +100,7 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField4IsNotNull() {
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField4IsNotNull() {
     testUserDefinedFieldValidation(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
@@ -108,7 +108,7 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField5IsNotNull() {
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndUserDefinedField5IsNotNull() {
     testUserDefinedFieldValidation(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
@@ -116,8 +116,8 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenUserDefinedFieldIsLongerThanAllowed() {
-    var request = ResourcesTestData.getResourcePutRequest(
+  void shouldThrowExceptionWhenUserDefinedFieldIsLongerThanAllowed() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
         .withUserDefinedField1(RandomStringUtils.insecure().nextAlphanumeric(101)));
@@ -127,8 +127,8 @@ public class ResourcePutBodyValidatorTest {
   }
 
   @Test
-  public void shouldThrowExceptionWhenResourceIsNotSelectedAndCustomEmbargoIsNotNull() {
-    var request = ResourcesTestData.getResourcePutRequest(
+  void shouldThrowExceptionWhenResourceIsNotSelectedAndCustomEmbargoIsNotNull() {
+    var request = ResourcesTestUtil.getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(false)
         .withCustomEmbargoPeriod(new EmbargoPeriod().withEmbargoUnit(EmbargoUnit.DAYS)));
@@ -138,7 +138,7 @@ public class ResourcePutBodyValidatorTest {
   }
 
   private void testUserDefinedFieldValidation(ResourcePutDataAttributes value) {
-    var request = ResourcesTestData.getResourcePutRequest(value);
+    var request = ResourcesTestUtil.getResourcePutRequest(value);
 
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request, false));
     assertEquals("Resource cannot be updated unless added to holdings", exception.getMessage());

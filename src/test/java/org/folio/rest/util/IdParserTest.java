@@ -1,33 +1,36 @@
 package org.folio.rest.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import jakarta.validation.ValidationException;
 import org.folio.holdingsiq.model.ResourceId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IdParserTest {
+class IdParserTest {
 
   @Test
-  public void parseResourceIdWhenIdIsValid() {
+  void parseResourceIdWhenIdIsValid() {
     ResourceId resourceId = IdParser.parseResourceId("1-2-3");
-    assertEquals(1, resourceId.getProviderIdPart());
-    assertEquals(2, resourceId.getPackageIdPart());
-    assertEquals(3, resourceId.getTitleIdPart());
-  }
-
-  @Test(expected = ValidationException.class)
-  public void parseResourceIdThrowsExceptionWhenIdIsInvalid() {
-    IdParser.parseResourceId("a-b-c");
-  }
-
-  @Test(expected = ValidationException.class)
-  public void parseResourceIdThrowsExceptionWhenIdIsMissing() {
-    IdParser.parseResourceId("");
+    assertEquals(1, resourceId.providerIdPart());
+    assertEquals(2, resourceId.packageIdPart());
+    assertEquals(3, resourceId.titleIdPart());
   }
 
   @Test
-  public void parseTitleIdWhenIdIsValid() {
+  void parseResourceIdThrowsExceptionWhenIdIsInvalid() {
+    assertThrows(ValidationException.class, () ->
+      IdParser.parseResourceId("a-b-c"));
+  }
+
+  @Test
+  void parseResourceIdThrowsExceptionWhenIdIsMissing() {
+    assertThrows(ValidationException.class, () ->
+      IdParser.parseResourceId(""));
+  }
+
+  @Test
+  void parseTitleIdWhenIdIsValid() {
     long titleId = IdParser.parseTitleId("123");
     assertEquals(123, titleId);
   }

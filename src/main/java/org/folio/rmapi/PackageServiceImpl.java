@@ -20,7 +20,6 @@ import lombok.extern.log4j.Log4j2;
 import org.folio.cache.VertxCache;
 import org.folio.holdingsiq.model.Configuration;
 import org.folio.holdingsiq.model.FilterQuery;
-import org.folio.holdingsiq.model.PackageByIdData;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.holdingsiq.model.Packages;
@@ -42,14 +41,14 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
   private static final String INCLUDE_RESOURCES_VALUE = "resources";
   private final ProvidersServiceImpl providerService;
   private final TitlesHoldingsIQService titlesService;
-  private final VertxCache<PackageCacheKey, PackageByIdData> packageCache;
+  private final VertxCache<PackageCacheKey, PackageData> packageCache;
   private final SearchProperties searchProperties;
   private final Configuration configuration;
   private final String tenantId;
 
   public PackageServiceImpl(Configuration config, Vertx vertx, String tenantId, ProvidersServiceImpl providerService,
                             TitlesHoldingsIQService titlesService,
-                            VertxCache<PackageCacheKey, PackageByIdData> packageCache,
+                            VertxCache<PackageCacheKey, PackageData> packageCache,
                             SearchProperties searchProperties) {
     super(config, vertx);
     this.providerService = providerService;
@@ -66,16 +65,16 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
   public CompletableFuture<PackageResult> retrievePackage(PackageId packageId, List<String> includedObjects,
                                                           boolean useCache) {
-    CompletableFuture<PackageByIdData> packageFuture;
+    CompletableFuture<PackageData> packageFuture;
     if (useCache) {
       packageFuture = retrievePackageWithCache(packageId);
     } else {
-      packageFuture = retrievePackage(packageId);
+      packageFuture = retrievePackage(packageId.packageIdPart());
     }
 
     CompletableFuture<Titles> titlesFuture;
     if (includedObjects.contains(INCLUDE_RESOURCES_VALUE)) {
-      titlesFuture = titlesService.retrieveTitles(packageId.getProviderIdPart(), packageId.getPackageIdPart(),
+      titlesFuture = titlesService.retrieveTitles(packageId.providerIdPart(), packageId.packageIdPart(),
         FilterQuery.builder().build(), searchProperties.titlesSearchType(), Sort.NAME, 1, 25);
     } else {
       titlesFuture = completedFuture(null);
@@ -83,7 +82,7 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
 
     CompletableFuture<VendorResult> vendorFuture;
     if (includedObjects.contains(INCLUDE_PROVIDER_VALUE)) {
-      vendorFuture = providerService.retrieveProvider(packageId.getProviderIdPart(), null);
+      vendorFuture = providerService.retrieveProvider(packageId.providerIdPart(), null);
     } else {
       vendorFuture = completedFuture(new VendorResult(null, null));
     }
@@ -151,13 +150,13 @@ public class PackageServiceImpl extends PackagesHoldingsIQServiceImpl {
       .build();
   }
 
-  private CompletableFuture<PackageByIdData> retrievePackageWithCache(PackageId packageId) {
+  private CompletableFuture<PackageData> retrievePackageWithCache(PackageId packageId) {
     PackageCacheKey cacheKey = PackageCacheKey.builder()
       .packageId(IdParser.packageIdToString(packageId))
       .rmapiConfiguration(configuration)
       .tenant(tenantId)
       .build();
-    return packageCache.getValueOrLoad(cacheKey, () -> retrievePackage(packageId));
+    return packageCache.getValueOrLoad(cacheKey, () -> retrievePackage(packageId.packageIdPart()));
   }
 
   private interface Result<R, F> {

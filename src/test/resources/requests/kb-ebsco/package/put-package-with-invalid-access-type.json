@@ -11,10 +11,13 @@
       "isCustom": true,
       "isSelected": true,
       "name": "name of the ages forever and ever",
-      "visibilityData": {
-        "isHidden": true,
-        "reason": ""
-      },
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        }
+      ],
       "allowKbToAddTitles": true,
       "proxy": {
         "id": "<n>",

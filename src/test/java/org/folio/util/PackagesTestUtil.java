@@ -10,41 +10,25 @@ import static org.folio.repository.packages.PackageTableConstants.CREDENTIALS_ID
 import static org.folio.repository.packages.PackageTableConstants.ID_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.NAME_COLUMN;
 import static org.folio.repository.packages.PackageTableConstants.PACKAGES_TABLE_NAME;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_CONTENT_TYPE;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_2;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_ID_3;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_2;
-import static org.folio.rest.impl.PackagesTestData.STUB_PACKAGE_NAME_3;
-import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID;
-import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_2;
-import static org.folio.rest.impl.ProvidersTestData.STUB_VENDOR_ID_3;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.test.util.TestUtil.mockGetWithBody;
-import static org.folio.test.util.TestUtil.readJsonFile;
+import static org.folio.util.RmApiConstants.STUB_PACKAGE_CONTENT_TYPE;
+import static org.folio.util.TestUtil.STUB_TENANT;
 
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.folio.holdingsiq.model.PackageByIdData;
+import lombok.experimental.UtilityClass;
 import org.folio.repository.packages.DbPackage;
+import org.folio.rest.jaxrs.model.PackagePutData;
+import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
+import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.persist.PostgresClient;
 import org.folio.rest.util.IdParser;
 
+@UtilityClass
 public final class PackagesTestUtil {
-
-  private static final String STUB_PACKAGE_JSON_PATH = "responses/rmapi/packages/get-package-by-id-response.json";
-
-  private PackagesTestUtil() {
-  }
 
   public static List<DbPackage> getPackages(Vertx vertx) {
     CompletableFuture<List<DbPackage>> future = new CompletableFuture<>();
@@ -70,46 +54,24 @@ public final class PackagesTestUtil {
     future.join();
   }
 
-  public static String getPackageResponse(String packageName, String packageId, String providerId)
-    throws IOException, URISyntaxException {
-    PackageByIdData packageData = readJsonFile(STUB_PACKAGE_JSON_PATH, PackageByIdData.class);
-    return Json.encode(packageData.toByIdBuilder()
-      .packageName(packageName)
-      .packageId(Integer.parseInt(packageId))
-      .vendorId(Integer.parseInt(providerId))
-      .build());
-  }
-
-  public static void setUpPackages(Vertx vertx, String credentialsId) throws IOException, URISyntaxException {
-    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID, STUB_VENDOR_ID, STUB_PACKAGE_NAME);
-    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_2, STUB_VENDOR_ID_2, STUB_PACKAGE_NAME_2);
-    setUpPackage(vertx, credentialsId, STUB_PACKAGE_ID_3, STUB_VENDOR_ID_3, STUB_PACKAGE_NAME_3);
-  }
-
-  public static void setUpPackage(Vertx vertx, String credentialsId, String packageId, String vendorId,
-                                  String packageName)
-    throws IOException, URISyntaxException {
-    savePackage(buildDbPackage(vendorId + "-" + packageId, credentialsId, packageName), vertx);
-    mockPackageWithName(packageId, vendorId, packageName);
-  }
-
-  public static void mockPackageWithName(String stubPackageId, String stubProviderId, String stubPackageName)
-    throws IOException, URISyntaxException {
-    mockGetWithBody(new RegexPattern(".*vendors/" + stubProviderId + "/packages/" + stubPackageId),
-      getPackageResponse(stubPackageName, stubPackageId, stubProviderId));
-  }
-
   public static DbPackage buildDbPackage(String id, String credentialsId, String name) {
     return buildDbPackage(id, toUUID(credentialsId), name, STUB_PACKAGE_CONTENT_TYPE);
   }
 
-  private static DbPackage buildDbPackage(String id, UUID credentialsId, String name, String contentType) {
+  public static DbPackage buildDbPackage(String id, UUID credentialsId, String name, String contentType) {
     return DbPackage.builder()
       .id(IdParser.parsePackageId(id))
       .credentialsId(credentialsId)
       .name(name)
       .contentType(contentType)
       .build();
+  }
+
+  public static PackagePutRequest getPackagePutRequest(PackagePutDataAttributes attributes) {
+    return new PackagePutRequest()
+      .withData(new PackagePutData()
+        .withType(PackagePutData.Type.PACKAGES)
+        .withAttributes(attributes));
   }
 
   private static DbPackage mapDbPackage(Row row) {

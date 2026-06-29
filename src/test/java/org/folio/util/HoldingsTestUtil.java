@@ -12,21 +12,21 @@ import static org.folio.repository.holdings.HoldingsTableConstants.RESOURCE_TYPE
 import static org.folio.repository.holdings.HoldingsTableConstants.TITLE_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.VENDOR_ID_COLUMN;
 import static org.folio.repository.holdings.HoldingsTableConstants.insertOrUpdateHoldings;
-import static org.folio.test.util.TestUtil.STUB_TENANT;
-import static org.folio.test.util.TestUtil.readJsonFile;
+import static org.folio.util.TestUtil.STUB_TENANT;
+import static org.folio.util.TestUtil.readJsonFile;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import lombok.experimental.UtilityClass;
 import org.folio.repository.SqlQueryHelper;
 import org.folio.repository.holdings.DbHoldingInfo;
 import org.folio.rest.persist.PostgresClient;
 
+@UtilityClass
 public class HoldingsTestUtil {
 
   public static List<DbHoldingInfo> getHoldings(Vertx vertx) {
@@ -45,6 +45,12 @@ public class HoldingsTestUtil {
     future.join();
   }
 
+  public static void saveHoldingsFromFiles(String credentialsId, Vertx vertx, String... filePaths) {
+    for (String filePath : filePaths) {
+      saveHolding(credentialsId, readJsonFile(filePath, DbHoldingInfo.class), OffsetDateTime.now(), vertx);
+    }
+  }
+
   private static Tuple getHoldingsInsertParams(String credentialsId, DbHoldingInfo holding, OffsetDateTime updatedAt) {
     return Tuple.of(
       toUUID(credentialsId),
@@ -57,10 +63,6 @@ public class HoldingsTestUtil {
       holding.getPublicationTitle(),
       updatedAt
     );
-  }
-
-  public static DbHoldingInfo getStubHolding() throws IOException, URISyntaxException {
-    return readJsonFile("responses/kb-ebsco/holdings/custom-holding.json", DbHoldingInfo.class);
   }
 
   private static String holdingsTestTable() {

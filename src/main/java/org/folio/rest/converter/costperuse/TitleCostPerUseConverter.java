@@ -63,8 +63,7 @@ public class TitleCostPerUseConverter implements Converter<TitleCostPerUseResult
       .withAttributes(new TitleCostPerUseDataAttributes()
         .withUsage(usage)
         .withAnalysis(analysis)
-        .withParameters(convertParameters(source.getConfiguration()))
-      );
+        .withParameters(convertParameters(source.getConfiguration())));
   }
 
   private Integer processPlatformUsages(TitleCostPerUseResult source,
