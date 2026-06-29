@@ -6,26 +6,57 @@
   "javaType": "org.folio.rest.jaxrs.model.PackagePostDataAttributes",
   "additionalProperties": false,
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Package name",
-      "example": "Advanced Placement Psychology Collection"
-    },
-    "contentType": {
-      "type": "string",
-      "description": "Package content type",
-      "$ref": "contentTypeEnum.json"
-    },
     "accessTypeId": {
       "type": "string",
       "description": "Access type id",
       "$ref": "../../raml-util/schemas/uuid.schema",
       "example": "f973c3b6-85fc-4d35-bda8-f31b568957bf"
     },
+    "contentType": {
+      "type": "string",
+      "description": "Package content type",
+      "$ref": "contentTypeEnum.json"
+      },
+    "customAltNames": {
+      "description": "The list of custom alternate names for the package",
+      "items": {
+        "$ref": "packageAltName.json",
+        "type": "object"
+      },
+      "type": "array"
+    },
     "customCoverage": {
       "type": "object",
       "description": "Custom Coverage",
       "$ref": "../coverage.json"
+    },
+    "customDescription": {
+      "description": "The custom description of the package",
+      "example": "Package of medicinal journals (custom)",
+      "type": "string"
+    },
+    "customDisplayName": {
+      "description": "The custom description of the package",
+      "type": "string"
+    },
+    "isFreeAccess": {
+      "description": "Whether this package has free access designation or not",
+      "example": false,
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string",
+      "description": "Package name",
+      "example": "Advanced Placement Psychology Collection"
+    },
+    "proxy": {
+      "$ref": "../proxy.json",
+      "description": "Proxy",
+      "type": "object"
+    },
+    "url": {
+      "description": "Package URL",
+      "type": "string"
     }
   },
   "required": [

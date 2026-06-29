@@ -1,30 +1,34 @@
-package org.folio.rest.validator;
+package org.folio.rest.validator.packages;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.ContentType;
-import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.util.PackagesTestUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class CustomPackagePutBodyValidatorTest {
 
-  private final CustomPackagePutBodyValidator validator = new CustomPackagePutBodyValidator();
+  @Mock
+  private PackageCustomAttributesValidator customAttributesValidator;
 
-  @Test
-  void shouldThrowExceptionOnInvalidCoverageDate() {
-    var request = PackagesTestUtil.getPackagePutRequest(
-      new PackagePutDataAttributes()
-        .withIsSelected(true)
-        .withContentType(ContentType.MIXED_CONTENT)
-        .withName("package name")
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("abcd-10-ab")));
-    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
-    assertTrue(exception.getMessage().contains("beginCoverage"));
+  @InjectMocks
+  private CustomPackagePutBodyValidator validator;
+
+  @BeforeEach
+  void setUp() {
+    lenient().doNothing().when(customAttributesValidator).validate(any());
   }
 
   @Test
@@ -44,5 +48,14 @@ class CustomPackagePutBodyValidatorTest {
         .withName("package name"));
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertTrue(exception.getMessage().contains("contentType"));
+  }
+
+  @Test
+  void shouldNotThrowExceptionForValidRequest() {
+    var request = PackagesTestUtil.getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withName("package name")
+        .withContentType(ContentType.MIXED_CONTENT));
+    assertDoesNotThrow(() -> validator.validate(request));
   }
 }

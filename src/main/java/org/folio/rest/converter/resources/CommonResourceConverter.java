@@ -17,9 +17,11 @@ import org.folio.rest.converter.common.ConverterConsts;
 import org.folio.rest.jaxrs.model.AlternateTitle;
 import org.folio.rest.jaxrs.model.Contributors;
 import org.folio.rest.jaxrs.model.Coverage;
+import org.folio.rest.jaxrs.model.ProxyUrlDto;
 import org.folio.rest.jaxrs.model.ResourceDataAttributes;
 import org.folio.rest.jaxrs.model.TitleSubject;
 import org.folio.rest.jaxrs.model.VisibilityData;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +34,6 @@ public class CommonResourceConverter {
   private final Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter;
   private final Converter<VisibilityInfo, VisibilityData> visibilityInfoConverter;
   private final Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter;
-  private final Converter<ProxyUrl, org.folio.rest.jaxrs.model.ProxyUrl> proxyConverter;
   private final Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>>
     alternateTitleConverter;
 
@@ -43,7 +44,6 @@ public class CommonResourceConverter {
     Converter<EmbargoPeriod, org.folio.rest.jaxrs.model.EmbargoPeriod> embargoPeriodConverter,
     Converter<VisibilityInfo, VisibilityData> visibilityInfoConverter,
     Converter<List<CoverageDates>, List<Coverage>> coverageDatesConverter,
-    Converter<ProxyUrl, org.folio.rest.jaxrs.model.ProxyUrl> proxyConverter,
     Converter<List<org.folio.holdingsiq.model.AlternateTitle>, List<AlternateTitle>> alternateTitleConverter) {
     this.contributorsConverter = contributorsConverter;
     this.identifiersConverter = identifiersConverter;
@@ -51,7 +51,6 @@ public class CommonResourceConverter {
     this.embargoPeriodConverter = embargoPeriodConverter;
     this.visibilityInfoConverter = visibilityInfoConverter;
     this.coverageDatesConverter = coverageDatesConverter;
-    this.proxyConverter = proxyConverter;
     this.alternateTitleConverter = alternateTitleConverter;
   }
 
@@ -89,11 +88,21 @@ public class CommonResourceConverter {
         resource.getCustomCoverageList().stream()
           .sorted(Comparator.comparing(CoverageDates::getBeginCoverage).reversed())
           .toList()))
-      .withProxy(proxyConverter.convert(resource.getProxy()))
+      .withProxy(convertProxy(resource.getProxy()))
       .withUserDefinedField1(resource.getUserDefinedFields().getUserDefinedField1())
       .withUserDefinedField2(resource.getUserDefinedFields().getUserDefinedField2())
       .withUserDefinedField3(resource.getUserDefinedFields().getUserDefinedField3())
       .withUserDefinedField4(resource.getUserDefinedFields().getUserDefinedField4())
       .withUserDefinedField5(resource.getUserDefinedFields().getUserDefinedField5());
+  }
+
+  public @Nullable ProxyUrlDto convertProxy(@Nullable ProxyUrl proxy) {
+    if (Objects.isNull(proxy)) {
+      return null;
+    }
+    return new ProxyUrlDto()
+      .withId(proxy.getId())
+      .withInherited(proxy.getInherited())
+      .withProxiedUrl(proxy.getProxiedUrl());
   }
 }

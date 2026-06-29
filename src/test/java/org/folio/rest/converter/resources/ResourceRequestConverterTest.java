@@ -10,12 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
+import org.folio.holdingsiq.model.ProxyUrl;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.holdingsiq.model.VisibilityInfo;
 import org.folio.rest.jaxrs.model.EmbargoPeriod;
 import org.folio.rest.jaxrs.model.EmbargoPeriod.EmbargoUnit;
-import org.folio.rest.jaxrs.model.Proxy;
+import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.VisibilityData;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +50,7 @@ class ResourceRequestConverterTest {
           .beginCoverage(OLD_BEGIN_COVERAGE).endCoverage(OLD_END_COVERAGE).build()))
         .customEmbargoPeriod(org.folio.holdingsiq.model.EmbargoPeriod.builder()
           .embargoUnit(OLD_EMBARGO_UNIT).embargoValue(OLD_EMBARGO_VALUE).build())
-        .proxy(org.folio.holdingsiq.model.ProxyUrl.builder().proxiedUrl(OLD_URL)
+        .proxy(ProxyUrl.builder().proxiedUrl(OLD_URL)
           .id(OLD_PROXY_ID).inherited(true).build())
         .url(OLD_URL)
         .userDefinedFields(UserDefinedFields.builder().build())
@@ -82,7 +83,7 @@ class ResourceRequestConverterTest {
     var resourcePut = resourcesConverter.convertToRmApiResourcePutRequest(getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
-        .withProxy(new Proxy()
+        .withProxy(new ProxyDto()
           .withId("test-proxy-id"))), resourceData);
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }
@@ -92,7 +93,7 @@ class ResourceRequestConverterTest {
     var resourcePut = resourcesConverter.convertToRmApiCustomResourcePutRequest(getResourcePutRequest(
       new ResourcePutDataAttributes()
         .withIsSelected(true)
-        .withProxy(new Proxy()
+        .withProxy(new ProxyDto()
           .withId("test-proxy-id"))), resourceData);
     assertEquals("test-proxy-id", resourcePut.getProxy().getId());
   }

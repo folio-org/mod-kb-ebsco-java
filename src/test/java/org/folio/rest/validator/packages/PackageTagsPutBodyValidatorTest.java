@@ -1,4 +1,4 @@
-package org.folio.rest.validator;
+package org.folio.rest.validator.packages;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -20,8 +20,7 @@ class PackageTagsPutBodyValidatorTest {
           .withName("")
           .withContentType(ContentType.E_BOOK)
         ));
-    assertThrows(InputValidationException.class, () ->
-      validator.validate(request));
+    assertThrows(InputValidationException.class, () -> validator.validate(request));
   }
 
   @Test
@@ -31,7 +30,6 @@ class PackageTagsPutBodyValidatorTest {
         .withAttributes(new PackageTagsDataAttributes()
           .withName("name")
         ));
-    assertThrows(InputValidationException.class, () ->
-      validator.validate(request));
+    assertThrows(InputValidationException.class, () -> validator.validate(request));
   }
 }

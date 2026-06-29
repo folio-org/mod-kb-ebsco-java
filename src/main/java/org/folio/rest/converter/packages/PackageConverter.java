@@ -9,6 +9,7 @@ import static org.folio.rest.util.RestConstants.RESOURCES_TYPE;
 import java.util.List;
 import java.util.Objects;
 import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
@@ -20,7 +21,7 @@ import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageRelationship;
 import org.folio.rest.jaxrs.model.Provider;
-import org.folio.rest.jaxrs.model.Proxy;
+import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.ResourceCollection;
 import org.folio.rest.jaxrs.model.Token;
@@ -114,8 +115,8 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     }
   }
 
-  private @Nullable Proxy convertToProxy(org.folio.holdingsiq.model.Proxy proxy) {
-    return proxy != null ? new Proxy().withId(proxy.getId()).withInherited(proxy.getInherited()) : null;
+  private @Nullable ProxyDto convertToProxy(@Nullable Proxy proxy) {
+    return proxy != null ? new ProxyDto().withId(proxy.getId()).withInherited(proxy.getInherited()) : null;
   }
 
   private List<RelationshipData> convertResourcesRelationship(PackageData packageData, Titles titles) {

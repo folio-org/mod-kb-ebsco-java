@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Proxy Url Schema",
   "description": "Proxy Url Schema",
-  "javaType": "org.folio.rest.jaxrs.model.ProxyUrl",
+  "javaType": "org.folio.rest.jaxrs.model.ProxyUrlDto",
   "type": "object",
   "additionalProperties": false,
   "extends": {

@@ -7,6 +7,7 @@ import static org.folio.rest.util.RestConstants.PROVIDERS_TYPE;
 
 import java.util.List;
 import java.util.Objects;
+import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
@@ -15,7 +16,7 @@ import org.folio.rest.jaxrs.model.Packages;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProviderData;
 import org.folio.rest.jaxrs.model.ProviderGetDataAttributes;
-import org.folio.rest.jaxrs.model.Proxy;
+import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Relationships;
 import org.folio.rest.jaxrs.model.Token;
@@ -67,12 +68,16 @@ public class ProviderConverter implements Converter<VendorResult, Provider> {
         .withPackagesSelected(vendor.getPackagesSelected())
         .withSupportsCustomPackages(vendor.isCustomer())
         .withProviderToken(tokenInfoConverter.convert(vendorToken))
-        .withProxy(new Proxy()
-          .withId(vendor.getProxy().getId())
-          .withInherited(vendor.getProxy().getInherited()))
+        .withProxy(convertProxy(vendor.getProxy()))
         .withTags(result.getTags())
       )
       .withRelationships(createEmptyProviderRelationships());
+  }
+
+  private ProxyDto convertProxy(Proxy proxy) {
+    return new ProxyDto()
+      .withId(proxy.getId())
+      .withInherited(proxy.getInherited());
   }
 
   private List<RelationshipData> convertPackagesRelationship(org.folio.holdingsiq.model.Packages packages) {

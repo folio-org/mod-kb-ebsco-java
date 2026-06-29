@@ -1,14 +1,22 @@
-package org.folio.rest.validator;
+package org.folio.rest.validator.packages;
 
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
+import org.folio.rest.validator.ValidatorUtil;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CustomPackagePutBodyValidator {
+
   private static final String INVALID_REQUEST_BODY_TITLE = "Invalid request body";
   private static final String INVALID_REQUEST_BODY_DETAILS = "Json body must contain data.attributes";
+
+  private final PackageCustomAttributesValidator customAttributesValidator;
+
+  public CustomPackagePutBodyValidator(PackageCustomAttributesValidator customAttributesValidator) {
+    this.customAttributesValidator = customAttributesValidator;
+  }
 
   public void validate(PackagePutRequest request) {
     if (request == null
@@ -17,19 +25,14 @@ public class CustomPackagePutBodyValidator {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
     PackagePutDataAttributes attributes = request.getData().getAttributes();
-    String name = attributes.getName();
-
-    String beginCoverage = null;
-    String endCoverage = null;
-    if (attributes.getCustomCoverage() != null) {
-      beginCoverage = attributes.getCustomCoverage().getBeginCoverage();
-      endCoverage = attributes.getCustomCoverage().getEndCoverage();
-    }
-
-    ValidatorUtil.checkIsNotBlank("name", name);
-    ValidatorUtil.checkMaxLength("name", name, 200);
+    ValidatorUtil.checkIsNotBlank("name", attributes.getName());
+    ValidatorUtil.checkMaxLength("name", attributes.getName(), 200);
     ValidatorUtil.checkIsNotNull("contentType", attributes.getContentType());
-    ValidatorUtil.checkDateValid("beginCoverage", beginCoverage);
-    ValidatorUtil.checkDateValid("endCoverage", endCoverage);
+    customAttributesValidator.validate(new PackageCustomAttributesValidator.PackageCustomAttributes(
+      attributes.getCustomDescription(),
+      attributes.getCustomDisplayName(),
+      attributes.getUrl(),
+      attributes.getCustomAltNames(),
+      attributes.getCustomCoverage()));
   }
 }

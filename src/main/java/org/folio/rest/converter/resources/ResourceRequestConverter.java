@@ -6,10 +6,13 @@ import java.util.List;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.CustomerResources;
 import org.folio.holdingsiq.model.EmbargoPeriod;
+import org.folio.holdingsiq.model.Proxy;
+import org.folio.holdingsiq.model.ProxyUrl;
 import org.folio.holdingsiq.model.ResourcePut;
 import org.folio.holdingsiq.model.Title;
 import org.folio.holdingsiq.model.UserDefinedFields;
 import org.folio.rest.jaxrs.model.Coverage;
+import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.ResourcePutDataAttributes;
 import org.folio.rest.jaxrs.model.ResourcePutRequest;
 import org.jspecify.annotations.Nullable;
@@ -46,7 +49,7 @@ public class ResourceRequestConverter {
     var oldResource = oldTitle.getCustomerResourcesList().getFirst();
     builder.isSelected(valueOrDefault(attributes.getIsSelected(), oldResource.getIsSelected()));
 
-    convertProxy(attributes, oldResource, builder);
+    convertProxy(builder, attributes.getProxy(), oldResource.getProxy());
     convertHidden(attributes, oldResource, builder);
     if (Boolean.TRUE == oldResource.getIsPackageCustom()) {
       builder.url(valueOrDefault(attributes.getUrl(), oldResource.getUrl()));
@@ -71,7 +74,7 @@ public class ResourceRequestConverter {
   }
 
   private void convertHidden(ResourcePutDataAttributes attributes, CustomerResources oldResource,
-                         ResourcePut.ResourcePutBuilder builder) {
+                             ResourcePut.ResourcePutBuilder builder) {
     var oldHidden = oldResource.getVisibilityData() != null ? oldResource.getVisibilityData().getIsHidden() : null;
     var isHidden = attributes.getVisibilityData() != null && attributes.getVisibilityData().getIsHidden() != null
                    ? attributes.getVisibilityData().getIsHidden() : oldHidden;
@@ -79,13 +82,11 @@ public class ResourceRequestConverter {
     builder.isHidden(isHidden);
   }
 
-  private void convertProxy(ResourcePutDataAttributes attributes, CustomerResources oldResource,
-                         ResourcePut.ResourcePutBuilder builder) {
-    var proxy = attributes.getProxy();
-    var proxyId = proxy != null && proxy.getId() != null ? proxy.getId() : oldResource.getProxy().getId();
+  private void convertProxy(ResourcePut.ResourcePutBuilder builder, @Nullable ProxyDto newProxy, ProxyUrl oldProxy) {
+    var proxyId = newProxy != null && newProxy.getId() != null ? newProxy.getId() : oldProxy.getId();
     //RM API gives an error when we pass inherited as true along with updated proxy value
     //Hard code it to false; it should not affect the state of inherited that RM API maintains
-    var rmApiProxy = org.folio.holdingsiq.model.Proxy.builder()
+    var rmApiProxy = Proxy.builder()
       .id(proxyId)
       .inherited(false)
       .build();
@@ -93,7 +94,7 @@ public class ResourceRequestConverter {
   }
 
   private void convertCoverageDates(ResourcePutDataAttributes attributes, CustomerResources oldResource,
-                         ResourcePut.ResourcePutBuilder builder) {
+                                    ResourcePut.ResourcePutBuilder builder) {
     var coverageDates = attributes.getCustomCoverages() != null
                         ? convertToRmApiCustomCoverageList(attributes.getCustomCoverages())
                         : oldResource.getCustomCoverageList();
@@ -103,7 +104,7 @@ public class ResourceRequestConverter {
   private void convertEmbargoPeriod(ResourcePutDataAttributes attributes, ResourcePut.ResourcePutBuilder builder) {
     var embargoPeriod = attributes.getCustomEmbargoPeriod();
     if (embargoPeriod != null && embargoPeriod.getEmbargoUnit() != null
-      && embargoPeriod.getEmbargoValue() != null && embargoPeriod.getEmbargoValue() > 0) {
+        && embargoPeriod.getEmbargoValue() != null && embargoPeriod.getEmbargoValue() > 0) {
       var customEmbargo = EmbargoPeriod.builder()
         .embargoUnit(embargoPeriod.getEmbargoUnit().value())
         .embargoValue(embargoPeriod.getEmbargoValue())
@@ -113,7 +114,7 @@ public class ResourceRequestConverter {
   }
 
   private void convertUserDefinedFields(ResourcePutDataAttributes attributes, ResourcePut.ResourcePutBuilder builder,
-                         CustomerResources oldResource) {
+                                        CustomerResources oldResource) {
     builder.userDefinedFields(UserDefinedFields.builder()
       .userDefinedField1(
         valueOrDefault(attributes.getUserDefinedField1(), oldResource.getUserDefinedFields().getUserDefinedField1()))

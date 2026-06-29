@@ -1,5 +1,6 @@
 package org.folio.rest.converter.providers;
 
+import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.VendorPut;
 import org.folio.holdingsiq.model.VendorPutToken;
 import org.folio.rest.jaxrs.model.ProviderPutRequest;
@@ -19,7 +20,7 @@ public class ProviderPutRequestConverter implements Converter<ProviderPutRequest
     // API maintains
     if (provider.getData().getAttributes().getProxy() != null
       && provider.getData().getAttributes().getProxy().getId() != null) {
-      vpb.proxy(org.folio.holdingsiq.model.Proxy.builder()
+      vpb.proxy(Proxy.builder()
         .inherited(false)
         .id(provider.getData().getAttributes().getProxy().getId())
         .build());
