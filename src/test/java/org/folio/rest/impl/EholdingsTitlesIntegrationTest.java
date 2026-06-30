@@ -422,7 +422,7 @@ class EholdingsTitlesIntegrationTest extends IntegrationTestBase {
       readFile(POST_TITLE_REQUEST), SC_BAD_REQUEST)
       .as(JsonapiError.class);
 
-    assertErrorContainsTitle(error, "Package with the provided name already exists");
+    assertErrorContainsTitle(error, "Custom Package with the provided name already exists");
   }
 
   @Test

@@ -12,6 +12,7 @@
 
 ### Bug fixes
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))
+* Fix error messages format received from HoldingsIQ. ([MODKBEKBJ-826](https://folio-org.atlassian.net/browse/MODKBEKBJ-826))
 
 ### Tech Dept
 * Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
