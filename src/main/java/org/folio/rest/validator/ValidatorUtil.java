@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.exception.InputValidationException;
@@ -26,6 +27,7 @@ public final class ValidatorUtil {
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
   private static final String MUST_BE_EQUALS = "%s should be equals to '%s' but actual is '%s'";
+  private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]+>");
 
   private ValidatorUtil() {
   }
@@ -137,11 +139,19 @@ public final class ValidatorUtil {
     }
   }
 
-  public static void checkInRange(int minInclusive, int maxInclusive, Integer value, String paramName) {
+  public static void checkInRange(String paramName, Integer value, int minInclusive, int maxInclusive) {
     if (value == null || value < minInclusive || value > maxInclusive) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_IN_RANGE, paramName, minInclusive, maxInclusive));
+    }
+  }
+
+  public static void checkNoHtml(String paramName, String value, String errorDetails) {
+    if (value != null && HTML_TAG_PATTERN.matcher(value).find()) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        errorDetails);
     }
   }
 

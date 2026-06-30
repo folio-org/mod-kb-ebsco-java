@@ -8,6 +8,7 @@
 
 ### Features
 * Migrate Package Endpoints to HoldingsIQ v2 API ([MODKBEKBJ-804](https://folio-org.atlassian.net/browse/MODKBEKBJ-804))
+* Add additional fields to POST /eholdings/packages endpoint ([MODKBEKBJ-823](https://folio-org.atlassian.net/browse/MODKBEKBJ-823))
 
 ### Bug fixes
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))

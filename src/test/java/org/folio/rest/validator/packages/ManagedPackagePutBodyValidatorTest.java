@@ -1,8 +1,10 @@
-package org.folio.rest.validator;
+package org.folio.rest.validator.packages;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -12,21 +14,35 @@ import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackageVisibility;
 import org.folio.rest.jaxrs.model.Token;
 import org.folio.util.PackagesTestUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-class PackagePutBodyValidatorTest {
+@ExtendWith(MockitoExtension.class)
+class ManagedPackagePutBodyValidatorTest {
 
-  private final PackagePutBodyValidator validator = new PackagePutBodyValidator();
+  @Mock
+  private PackageCustomAttributesValidator customAttributesValidator;
+
+  @InjectMocks
+  private ManagedPackagePutBodyValidator validator;
+
+  @BeforeEach
+  void setUp() {
+    lenient().doNothing().when(customAttributesValidator).validate(any());
+  }
 
   @Test
   void shouldValidateWhenPackageIsSelected() {
-    var packagePutRequest = PackagesTestUtil.getPackagePutRequest(
+    var request = PackagesTestUtil.getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(true)
         .withCustomCoverage(new Coverage())
-        .withAllowKbToAddTitles(true)
-    );
-    assertDoesNotThrow(() -> validator.validate(packagePutRequest));
+        .withAllowKbToAddTitles(true));
+    assertDoesNotThrow(() -> validator.validate(request));
   }
 
   @Test
@@ -34,9 +50,10 @@ class PackagePutBodyValidatorTest {
     var request = PackagesTestUtil.getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(false)
-        .withVisibility(List.of(new PackageVisibility().withCategory(PackageVisibility.Category.PF).withHidden(true)))
-    );
-
+        .withVisibility(List.of(
+          new PackageVisibility()
+            .withCategory(PackageVisibility.Category.PF)
+            .withHidden(true))));
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertTrue(exception.getMessage().contains("visibility"));
   }
@@ -46,9 +63,7 @@ class PackagePutBodyValidatorTest {
     var request = PackagesTestUtil.getPackagePutRequest(
       new PackagePutDataAttributes()
         .withIsSelected(false)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("2000-01-01")));
-
+        .withCustomCoverage(new Coverage().withBeginCoverage("2000-01-01")));
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertTrue(exception.getMessage().contains("beginCoverage"));
   }
@@ -59,7 +74,6 @@ class PackagePutBodyValidatorTest {
       new PackagePutDataAttributes()
         .withIsSelected(false)
         .withAllowKbToAddTitles(true));
-
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertTrue(exception.getMessage().contains("allowKbToAddTitles"));
   }
@@ -70,7 +84,6 @@ class PackagePutBodyValidatorTest {
       new PackagePutDataAttributes()
         .withIsSelected(false)
         .withPackageToken(new Token().withValue("tokenValue")));
-
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertTrue(exception.getMessage().contains("value"));
   }
@@ -81,30 +94,7 @@ class PackagePutBodyValidatorTest {
       new PackagePutDataAttributes()
         .withIsSelected(true)
         .withPackageToken(new Token().withValue(StringUtils.repeat("tokenvalue", 200))));
-
     var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
     assertTrue(exception.getMessage().contains("value"));
-  }
-
-  @Test
-  void shouldThrowExceptionWhenPackageIsSelectedAndCoverageDateIsInvalid() {
-    var request = PackagesTestUtil.getPackagePutRequest(
-      new PackagePutDataAttributes()
-        .withIsSelected(true)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("abcd-ab-ab")));
-
-    var exception = assertThrows(InputValidationException.class, () -> validator.validate(request));
-    assertTrue(exception.getMessage().contains("beginCoverage"));
-  }
-
-  @Test
-  void shouldValidateWhenPackageIsSelectedAndCoverageDateIsEmpty() {
-    var packagePutRequest = PackagesTestUtil.getPackagePutRequest(
-      new PackagePutDataAttributes()
-        .withIsSelected(true)
-        .withCustomCoverage(new Coverage()
-          .withBeginCoverage("")));
-    assertDoesNotThrow(() -> validator.validate(packagePutRequest));
   }
 }

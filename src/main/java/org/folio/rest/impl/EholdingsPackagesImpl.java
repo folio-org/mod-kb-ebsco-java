@@ -48,7 +48,7 @@ import org.folio.repository.tag.TagRepository;
 import org.folio.rest.annotations.Validate;
 import org.folio.rest.aspect.HandleValidationErrors;
 import org.folio.rest.converter.common.ConverterConsts;
-import org.folio.rest.converter.packages.PackageRequestConverter;
+import org.folio.rest.converter.packages.PackageRequestConvertionService;
 import org.folio.rest.exception.InputValidationException;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.Package;
@@ -73,10 +73,7 @@ import org.folio.rest.util.ErrorUtil;
 import org.folio.rest.util.template.RmApiTemplate;
 import org.folio.rest.util.template.RmApiTemplateContext;
 import org.folio.rest.util.template.RmApiTemplateFactory;
-import org.folio.rest.validator.CustomPackagePutBodyValidator;
-import org.folio.rest.validator.PackagePutBodyValidator;
-import org.folio.rest.validator.PackageTagsPutBodyValidator;
-import org.folio.rest.validator.PackagesPostBodyValidator;
+import org.folio.rest.validator.packages.PackageValidationService;
 import org.folio.rmapi.result.PackageResult;
 import org.folio.rmapi.result.TitleCollectionResult;
 import org.folio.rmapi.result.TitleResult;
@@ -101,17 +98,9 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   private static final String PACKAGE_IS_CUSTOM_NOT_MATCHED_DETAILS = "Package isCustom: %s";
 
   @Autowired
-  private PackageRequestConverter converter;
+  private PackageRequestConvertionService requestConvertionService;
   @Autowired
-  private Converter<PackagePostRequest, PackagePost> packagePostRequestConverter;
-  @Autowired
-  private PackagePutBodyValidator packagePutBodyValidator;
-  @Autowired
-  private CustomPackagePutBodyValidator customPackagePutBodyValidator;
-  @Autowired
-  private PackageTagsPutBodyValidator packageTagsPutBodyValidator;
-  @Autowired
-  private PackagesPostBodyValidator packagesPostBodyValidator;
+  private PackageValidationService validationService;
   @Autowired
   private RmApiTemplateFactory templateFactory;
   @Autowired
@@ -193,10 +182,10 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @HandleValidationErrors
   public void postEholdingsPackages(String contentType, PackagePostRequest entity, Map<String, String> okapiHeaders,
                                     Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
-    packagesPostBodyValidator.validate(entity);
+    validationService.validateCustomPackagePostRequest(entity);
     RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
 
-    PackagePost packagePost = packagePostRequestConverter.convert(entity);
+    PackagePost packagePost = requestConvertionService.convertCustomPackagePostRequest(entity);
     String accessTypeId = entity.getData().getAttributes().getAccessTypeId();
 
     if (accessTypeId == null) {
@@ -335,7 +324,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
                                                   Context vertxContext) {
     userKbCredentialsService.findByUser(headers)
       .thenCompose(creds -> {
-        packageTagsPutBodyValidator.validate(entity);
+        validationService.validatePackageTagsPutRequest(entity);
 
         PackageTagsDataAttributes attributes = entity.getData().getAttributes();
 
@@ -546,11 +535,11 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     PackagePut packagePutBody;
     if (BooleanUtils.isTrue(isEntityCustom)) {
-      customPackagePutBodyValidator.validate(entity);
-      packagePutBody = converter.convertToRmApiCustomPackagePutRequest(entity);
+      validationService.validateCustomPackagePutRequest(entity);
+      packagePutBody = requestConvertionService.convertCustomPackagePutRequest(entity);
     } else {
-      packagePutBodyValidator.validate(entity);
-      packagePutBody = converter.convertToRmApiPackagePutRequest(entity);
+      validationService.validateManagedPackagePutRequest(entity);
+      packagePutBody = requestConvertionService.convertManagedPackagePutRequest(entity);
     }
     return context.getPackagesService()
       .updatePackage(originalPackage.getPackageId(), packagePutBody);

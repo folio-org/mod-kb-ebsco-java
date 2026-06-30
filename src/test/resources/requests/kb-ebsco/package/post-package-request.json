@@ -2,12 +2,29 @@
   "data": {
     "type": "packages",
     "attributes": {
-      "name": "TEST_NAME",
       "contentType": "Streaming Media",
+      "customAltNames": [
+        {
+          "altName": "TEST_ALT_NAME"
+        },
+        {
+          "id": 1,
+          "altName": "TEST_ALT_NAME_2"
+        }
+      ],
       "customCoverage": {
         "beginCoverage": "2017-12-23",
         "endCoverage": "2018-03-30"
-      }
+      },
+      "customDescription": "TEST_DESCRIPTION",
+      "customDisplayName": "TEST_DISPLAY_NAME",
+      "isFreeAccess": true,
+      "name": "TEST_NAME",
+      "proxy": {
+        "id": "proxy-id",
+        "inherited": true
+      },
+      "url": "https://example.com/test-url"
     }
   }
 }
