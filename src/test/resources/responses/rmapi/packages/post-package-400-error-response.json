@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "code": 1009,
-      "subCode": 0,
-      "message": "Custom Package with the provided name already exists"
+      "code": "0",
+      "subCode": "0",
+      "message": "400 Bad Request on POST request for http://example.com/packages: {message:1009: Custom Package with the provided name already exists }"
     }
   ]
 }

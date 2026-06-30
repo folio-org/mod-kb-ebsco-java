@@ -917,7 +917,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
         false, true), readFile(POST_PACKAGE_400_RESPONSE), SC_BAD_REQUEST);
 
     var response = postWithStatus(packagesPath(), readFile(POST_PACKAGE_REQUEST), SC_BAD_REQUEST);
-    assertErrorContainsTitle(response.as(JsonapiError.class), "name already exists");
+    assertErrorContainsTitle(response.as(JsonapiError.class), "Custom Package with the provided name already exists");
   }
 
   @Test
