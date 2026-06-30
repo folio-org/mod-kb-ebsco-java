@@ -139,7 +139,7 @@ public final class ValidatorUtil {
     }
   }
 
-  public static void checkInRange(int minInclusive, int maxInclusive, Integer value, String paramName) {
+  public static void checkInRange(String paramName, Integer value, int minInclusive, int maxInclusive) {
     if (value == null || value < minInclusive || value > maxInclusive) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),

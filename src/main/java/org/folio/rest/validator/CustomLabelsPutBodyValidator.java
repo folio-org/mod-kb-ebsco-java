@@ -39,7 +39,7 @@ public class CustomLabelsPutBodyValidator {
 
   private void validateCollectionItem(@NonNull CustomLabel customLabel) {
     CustomLabelDataAttributes attributes = customLabel.getAttributes();
-    checkInRange(1, 5, attributes.getId(), CUSTOM_LABEL_ID_PARAM);
+    checkInRange(CUSTOM_LABEL_ID_PARAM, attributes.getId(), 1, 5);
     checkMaxLength(CUSTOM_LABEL_NAME_PARAM, attributes.getDisplayLabel(), properties.labelMaxLength());
     checkIsNotNull(FULL_TEXT_FINDER_PARAM, attributes.getDisplayOnFullTextFinder());
     checkIsNotNull(PUBLICATION_FINDER_PARAM, attributes.getDisplayOnPublicationFinder());
