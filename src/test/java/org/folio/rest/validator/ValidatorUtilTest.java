@@ -1,5 +1,6 @@
 package org.folio.rest.validator;
 
+import static org.folio.rest.validator.ValidatorUtil.checkCollectionSize;
 import static org.folio.rest.validator.ValidatorUtil.checkDateValid;
 import static org.folio.rest.validator.ValidatorUtil.checkDatesOrder;
 import static org.folio.rest.validator.ValidatorUtil.checkFalseOrNull;
@@ -210,6 +211,35 @@ class ValidatorUtilTest {
   }
 
   @Nested
+  class CheckCollectionSize {
+
+    @Test
+    void shouldThrow_whenCollectionExceedsMazSize() {
+      var collection = List.of("item1", "item2", "item3");
+      var ex = assertThrows(InputValidationException.class, () -> checkCollectionSize("field", collection, 2));
+      assertEquals("Invalid field", ex.getMessage());
+      assertEquals("field maximum size of 2 has been exceeded", ex.getMessageDetail());
+    }
+
+    @Test
+    void shouldNotThrow_whenCollectionEqualsMaxSize() {
+      var collection = List.of("item1", "item2");
+      assertDoesNotThrow(() -> checkCollectionSize("field", collection, 2));
+    }
+
+    @Test
+    void shouldNotThrow_whenCollectionIsEmpty() {
+      var collection = Collections.emptyList();
+      assertDoesNotThrow(() -> checkCollectionSize("field", collection, 2));
+    }
+
+    @Test
+    void shouldNotThrow_whenCollectionIsNull() {
+      assertDoesNotThrow(() -> checkCollectionSize("field", null, 2));
+    }
+  }
+
+  @Nested
   class CheckDateValid {
 
     @Test
@@ -360,27 +390,27 @@ class ValidatorUtilTest {
     @Test
     void shouldThrow_whenValueContainsHtmlTag() {
       var ex = assertThrows(InputValidationException.class,
-        () -> checkNoHtml("field", "<b>bold</b>", "HTML not allowed"));
+        () -> checkNoHtml("field", "<b>bold</b>"));
       assertEquals("Invalid field", ex.getMessage());
-      assertEquals("HTML not allowed", ex.getMessageDetail());
+      assertEquals("Invalid characters. field does not accept HTML.", ex.getMessageDetail());
     }
 
     @Test
     void shouldThrow_whenValueContainsSelfClosingTag() {
       var ex = assertThrows(InputValidationException.class,
-        () -> checkNoHtml("field", "text <br/> more", "HTML not allowed"));
+        () -> checkNoHtml("field", "text <br/> more"));
       assertEquals("Invalid field", ex.getMessage());
-      assertEquals("HTML not allowed", ex.getMessageDetail());
+      assertEquals("Invalid characters. field does not accept HTML.", ex.getMessageDetail());
     }
 
     @Test
     void shouldNotThrow_whenValueHasNoHtml() {
-      assertDoesNotThrow(() -> checkNoHtml("field", "plain text", "HTML not allowed"));
+      assertDoesNotThrow(() -> checkNoHtml("field", "plain text"));
     }
 
     @Test
     void shouldNotThrow_whenValueIsNull() {
-      assertDoesNotThrow(() -> checkNoHtml("field", null, "HTML not allowed"));
+      assertDoesNotThrow(() -> checkNoHtml("field", null));
     }
   }
 

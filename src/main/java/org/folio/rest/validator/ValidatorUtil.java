@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,12 +22,14 @@ public final class ValidatorUtil {
   private static final String MUST_NOT_BE_EMPTY_FORMAT = "%s must not be empty";
   private static final String AT_LEAST_ONE_IS_NOT_EMPTY_FORMAT = "At least one of %s must not be empty";
   private static final String MUST_BE_SHORTER_THAN_N_CHARACTERS = "%s is too long (maximum is %s characters)";
+  private static final String MUST_HAVE_LESS_ITEMS = "%s maximum size of %s has been exceeded";
   private static final String MUST_BE_VALID_DATE = "%s has invalid format. Should be YYYY-MM-DD";
   private static final DateTimeFormatter DATE_PATTERN = DateTimeFormatter.ofPattern("yyyy-MM-dd");
   private static final String MUST_BE_VALID_URL = "%s has invalid format. Should start with https:// or http://";
   private static final String INVALID_DATES_ORDER = "Begin Coverage should be smaller than End Coverage";
   private static final String MUST_BE_IN_RANGE = "%s should be in range %d - %d";
   private static final String MUST_BE_EQUALS = "%s should be equals to '%s' but actual is '%s'";
+  private static final String CONTAINS_HTML = "Invalid characters. %s does not accept HTML.";
   private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]+>");
 
   private ValidatorUtil() {
@@ -104,6 +107,14 @@ public final class ValidatorUtil {
     }
   }
 
+  public static <T> void checkCollectionSize(String paramName, Collection<T> value, int maxSize) {
+    if (Objects.nonNull(value) && value.size() > maxSize) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        String.format(MUST_HAVE_LESS_ITEMS, paramName, maxSize));
+    }
+  }
+
   public static void checkDateValid(String paramName, String date) {
     if (!StringUtils.isEmpty(date) && !isDateValid(date)) {
       throw new InputValidationException(
@@ -147,11 +158,11 @@ public final class ValidatorUtil {
     }
   }
 
-  public static void checkNoHtml(String paramName, String value, String errorDetails) {
+  public static void checkNoHtml(String paramName, String value) {
     if (value != null && HTML_TAG_PATTERN.matcher(value).find()) {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
-        errorDetails);
+        String.format(CONTAINS_HTML, paramName));
     }
   }
 
@@ -160,6 +171,15 @@ public final class ValidatorUtil {
       throw new InputValidationException(
         String.format(INVALID_FIELD_FORMAT, paramName),
         String.format(MUST_BE_EQUALS, paramName, expected, actual)
+      );
+    }
+  }
+
+  public static <T> void check(String paramName, T param, Predicate<T> predicate, String errorDetails) {
+    if (predicate.test(param)) {
+      throw new InputValidationException(
+        String.format(INVALID_FIELD_FORMAT, paramName),
+        errorDetails
       );
     }
   }

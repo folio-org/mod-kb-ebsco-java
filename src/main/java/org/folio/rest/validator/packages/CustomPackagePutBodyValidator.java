@@ -1,7 +1,6 @@
 package org.folio.rest.validator.packages;
 
 import org.folio.rest.exception.InputValidationException;
-import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePutRequest;
 import org.folio.rest.validator.ValidatorUtil;
 import org.springframework.stereotype.Component;
@@ -20,11 +19,11 @@ public class CustomPackagePutBodyValidator {
 
   public void validate(PackagePutRequest request) {
     if (request == null
-      || request.getData() == null
-      || request.getData().getAttributes() == null) {
+        || request.getData() == null
+        || request.getData().getAttributes() == null) {
       throw new InputValidationException(INVALID_REQUEST_BODY_TITLE, INVALID_REQUEST_BODY_DETAILS);
     }
-    PackagePutDataAttributes attributes = request.getData().getAttributes();
+    var attributes = request.getData().getAttributes();
     ValidatorUtil.checkIsNotBlank("name", attributes.getName());
     ValidatorUtil.checkMaxLength("name", attributes.getName(), 200);
     ValidatorUtil.checkIsNotNull("contentType", attributes.getContentType());
