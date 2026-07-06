@@ -3,5 +3,5 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
 
-  <include file="liquibase/tenant/scripts/v7.1.0/increase-holdings-publisher-name-size.xml"/>
+  <include file="liquibase/tenant/scripts/v6.0.2/increase-holdings-publisher-name-size.xml"/>
 </databaseChangeLog>
