@@ -1,3 +1,7 @@
+## v7.0.1 2026-07-06
+### Bug fixes 
+* Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))
+
 ## v7.0.0 2026-04-16
 ### Breaking changes
 * Upgrade the module for Vert.X 5.0.x ([FHIQC-48](https://issues.folio.org/browse/FHIQC-48))
