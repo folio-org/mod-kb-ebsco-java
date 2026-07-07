@@ -1,3 +1,7 @@
+## v6.0.2 2026-07-07
+### Bug fixes
+* Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))
+
 ## v6.0.1 2025-12-11
 ### Dependencies
 * Bump `RMB` from `35.4.0` to `35.4.1` ([MODKBEKBJ-812](https://folio-org.atlassian.net/browse/MODKBEKBJ-812))
