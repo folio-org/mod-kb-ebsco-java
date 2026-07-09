@@ -109,6 +109,21 @@ class CustomPackagePostRequestConverterTest {
   }
 
   @Test
+  void shouldMapUrl() {
+    var result = converter.convert(buildRequest(new PackagePostDataAttributes()
+      .withContentType(ContentType.UNKNOWN)
+      .withUrl("https://example.com/package")));
+    assertEquals("https://example.com/package", result.getPackageUrl());
+  }
+
+  @Test
+  void shouldReturnNullUrlWhenNotProvided() {
+    var result = converter.convert(buildRequest(new PackagePostDataAttributes()
+      .withContentType(ContentType.UNKNOWN)));
+    assertNull(result.getPackageUrl());
+  }
+
+  @Test
   void shouldMapCustomAltNames() {
     var result = converter.convert(buildRequest(new PackagePostDataAttributes()
       .withContentType(ContentType.UNKNOWN)

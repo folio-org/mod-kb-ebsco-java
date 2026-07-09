@@ -31,6 +31,7 @@ public class CustomPackagePostRequestConverter implements Converter<PackagePostR
       .packageName(attributes.getName())
       .packageFreeAccess(attributes.getIsFreeAccess())
       .proxy(convertProxy(attributes.getProxy()))
+      .packageUrl(attributes.getUrl())
       .build();
   }
 
