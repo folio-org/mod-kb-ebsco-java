@@ -1,5 +1,8 @@
 package org.folio.rest.impl;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.folio.HttpStatus.SC_BAD_REQUEST;
 import static org.folio.HttpStatus.SC_CREATED;
 import static org.folio.HttpStatus.SC_NOT_FOUND;
@@ -9,6 +12,7 @@ import static org.folio.HttpStatus.SC_UNPROCESSABLE_CONTENT;
 import static org.folio.repository.accesstypes.AccessTypeMappingsTableConstants.ACCESS_TYPES_MAPPING_TABLE_NAME;
 import static org.folio.repository.accesstypes.AccessTypesTableConstants.ACCESS_TYPES_TABLE_NAME;
 import static org.folio.repository.kbcredentials.KbCredentialsTableConstants.KB_CREDENTIALS_TABLE_NAME;
+import static org.folio.service.users.UsersLookUpService.USERS_ENDPOINT;
 import static org.folio.util.AccessTypesTestUtil.ACCESS_TYPES_PATH;
 import static org.folio.util.AccessTypesTestUtil.KB_CREDENTIALS_ACCESS_TYPES_ENDPOINT;
 import static org.folio.util.AccessTypesTestUtil.KB_CREDENTIALS_ACCESS_TYPE_ID_ENDPOINT;
@@ -71,23 +75,26 @@ class EholdingsAccessTypesImplIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturnAccessTypeCollectionOnGet() {
-    List<AccessType> testAccessTypes = testData(credentialsId);
-    final String id0 = insertAccessType(testAccessTypes.get(0), vertx);
-    final String id1 = insertAccessType(testAccessTypes.get(1), vertx);
+    var testAccessTypes = testData(credentialsId);
+    // First access type is created by John and last updated by Jane (both served by the mocked /users lookup).
+    final var id0 = insertAccessType(testAccessTypes.get(0), JOHN_ID, JANE_ID, vertx);
+    final var id1 = insertAccessType(testAccessTypes.get(1), vertx);
 
-    AccessTypeCollection actual = getWithStatus(ACCESS_TYPES_PATH, SC_OK)
-      .as(AccessTypeCollection.class);
+    var actual = getWithStatus(ACCESS_TYPES_PATH, SC_OK).as(AccessTypeCollection.class);
 
     assertEquals(Integer.valueOf(2), actual.getMeta().getTotalResults());
     assertEquals(2, actual.getData().size());
-    assertThat(actual.getData().get(0), allOf(
-      hasProperty("id", equalTo(id0)),
-      allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
-    ));
-    assertThat(actual.getData().get(1), allOf(
-      hasProperty("id", equalTo(id1)),
-      allOf(hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue()))
-    ));
+    var first = actual.getData().get(0);
+    assertThat(first, allOf(hasProperty("id", equalTo(id0)),
+      hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue())));
+    assertThat(actual.getData().get(1), allOf(hasProperty("id", equalTo(id1)),
+      hasProperty("attributes", notNullValue()), hasProperty("metadata", notNullValue())));
+    assertEquals("John", first.getCreator().getFirstName());
+    assertEquals("Doe", first.getCreator().getLastName());
+    assertEquals("firstname_test", first.getUpdater().getFirstName());
+    assertEquals("lastname_test", first.getUpdater().getLastName());
+    // Regression guard: the updater's id (updatedByUserId) must be part of the /users query.
+    wm.verify(getRequestedFor(urlPathEqualTo(USERS_ENDPOINT)).withQueryParam("query", containing(JANE_ID)));
   }
 
   @Test

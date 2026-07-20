@@ -239,7 +239,7 @@ public class AccessTypesServiceImpl implements AccessTypesService {
                                                                    List<AccessType> accessTypes) {
     var usersIds = accessTypes.stream()
       .map(AccessType::getMetadata)
-      .map(metadata -> Arrays.asList(metadata.getCreatedByUserId(), metadata.getUpdatedByUsername()))
+      .map(metadata -> Arrays.asList(metadata.getCreatedByUserId(), metadata.getUpdatedByUserId()))
       .flatMap(List::stream)
       .filter(Objects::nonNull)
       .distinct()
