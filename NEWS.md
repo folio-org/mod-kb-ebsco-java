@@ -1,3 +1,7 @@
+## v7.0.2 2026-07-29
+### Bug fixes
+* Fix updater not returned on get access-types collection. ([MODKBEKBJ-842](https://folio-org.atlassian.net/browse/MODKBEKBJ-842))
+
 ## v7.0.1 2026-07-06
 ### Bug fixes 
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))

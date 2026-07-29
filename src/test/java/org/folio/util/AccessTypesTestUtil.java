@@ -78,6 +78,11 @@ public class AccessTypesTestUtil {
   }
 
   public static String insertAccessType(AccessType accessType, Vertx vertx) {
+    return insertAccessType(accessType, JOHN_ID, null, vertx);
+  }
+
+  public static String insertAccessType(AccessType accessType, String createdByUserId, String updatedByUserId,
+                                        Vertx vertx) {
     CompletableFuture<RowSet<Row>> future = new CompletableFuture<>();
 
     String query = prepareQuery(upsertAccessTypeQuery(), accessTypesTestTable());
@@ -89,9 +94,9 @@ public class AccessTypesTestUtil {
       accessType.getAttributes().getName(),
       accessType.getAttributes().getDescription(),
       OffsetDateTime.now(),
-      toUUID(JOHN_ID),
-      null,
-      null
+      toUUID(createdByUserId),
+      updatedByUserId == null ? null : OffsetDateTime.now(),
+      toUUID(updatedByUserId)
     );
 
     PostgresClient.getInstance(vertx).execute(query, params, event -> future.complete(null));
