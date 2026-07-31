@@ -14,6 +14,7 @@
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))
 * Fix error messages format received from HoldingsIQ. ([MODKBEKBJ-826](https://folio-org.atlassian.net/browse/MODKBEKBJ-826))
 * Fix updater not returned on get access-types collection. ([MODKBEKBJ-842](https://folio-org.atlassian.net/browse/MODKBEKBJ-842))
+* Set "permissions: contents: read" in maven.yml ([FOLIO-4553](https://folio-org.atlassian.net/browse/FOLIO-4553))
 
 ### Tech Dept
 * Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
