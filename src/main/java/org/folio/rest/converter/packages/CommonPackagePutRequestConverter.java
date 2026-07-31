@@ -2,7 +2,6 @@ package org.folio.rest.converter.packages;
 
 import static org.folio.common.ListUtils.mapItems;
 
-import java.util.Arrays;
 import java.util.List;
 import org.folio.holdingsiq.model.AlternateName;
 import org.folio.holdingsiq.model.CoverageDates;
@@ -10,8 +9,6 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
-import org.folio.rest.jaxrs.model.PackageVisibility;
-import org.folio.rest.jaxrs.model.VisibilityData;
 
 public abstract class CommonPackagePutRequestConverter {
 
@@ -32,13 +29,8 @@ public abstract class CommonPackagePutRequestConverter {
       builder.customAltNames(convertCustomAltNames(attributes));
     }
 
-    var visibilityData = attributes.getVisibilityData();
-    if (visibilityData == null || visibilityData.getIsHidden() == null) {
-      builder.visibilityDetails(mapItems(attributes.getVisibility(),
-        pv -> new Visibility(pv.getCategory().value(), pv.getHidden(), pv.getReason())));
-    } else {
-      builder.visibilityDetails(convertVisibilities(visibilityData));
-    }
+    builder.visibilityDetails(mapItems(attributes.getVisibility(),
+      pv -> new Visibility(pv.getCategory().value(), pv.getHidden(), pv.getReason())));
 
     return builder;
   }
@@ -50,12 +42,6 @@ public abstract class CommonPackagePutRequestConverter {
     builder.customDisplayName(attributes.getCustomDisplayName());
     builder.packageFreeAccess(attributes.getIsFreeAccess());
     builder.packageUrl(attributes.getUrl());
-  }
-
-  private List<Visibility> convertVisibilities(VisibilityData visibilityData) {
-    return Arrays.stream(PackageVisibility.Category.values())
-      .map(category -> new Visibility(category.value(), visibilityData.getIsHidden(), visibilityData.getReason()))
-      .toList();
   }
 
   private List<AlternateName> convertCustomAltNames(PackagePutDataAttributes attributes) {
