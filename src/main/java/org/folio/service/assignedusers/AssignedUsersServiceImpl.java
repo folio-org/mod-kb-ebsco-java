@@ -76,12 +76,11 @@ public class AssignedUsersServiceImpl implements AssignedUsersService {
 
     return usersLookUpService.lookUpUserById(assignedUserId.getId(), new RequestContext(okapiHeaders))
       .exceptionally(throwable -> {
-          if (throwable instanceof NotFoundException) {
-            throw new InputValidationException("Unable to assign user", "User doesn't exist");
-          }
-          throw new IllegalStateException("Unable to lookup user: " + throwable.getMessage());
+        if (throwable instanceof NotFoundException) {
+          throw new InputValidationException("Unable to assign user", "User doesn't exist");
         }
-      ).thenCompose(u -> {
+        throw new IllegalStateException("Unable to lookup user: " + throwable.getMessage());
+      }).thenCompose(u -> {
         log.info("save:: Attempts to save assignedUser by [tenant: {}]", tenantId);
         return assignedUserRepository.save(toDbConverter.convert(assignedUserId), tenantId)
           .thenApply(toAssignedUserIdConverter::convert);
