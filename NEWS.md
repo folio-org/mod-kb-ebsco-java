@@ -1,9 +1,9 @@
-## v7.1.0 YYYY-mm-DD
+## v8.0.0 YYYY-mm-DD
 ### Breaking changes
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* Drop `visibilityData` field from packages request/response ([MODKBEKBJ-835](https://folio-org.atlassian.net/browse/MODKBEKBJ-835))
 
 ### New APIs versions
-* Provides `API_NAME vX.Y`
+* Provides `eholdings v5.0`
 * Requires `API_NAME vX.Y`
 
 ### Features
