@@ -9,8 +9,11 @@ import org.folio.holdingsiq.model.PackagePut;
 import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
+import org.folio.rest.jaxrs.model.PackageVisibility;
 
 public abstract class CommonPackagePutRequestConverter {
+
+  static final String HIDDEN_BY_CUSTOMER = "Hidden by Customer";
 
   protected PackagePut.PackagePutBuilder convertCommonAttributes(PackagePutDataAttributes attributes) {
     var builder = PackagePut.builder();
@@ -29,10 +32,14 @@ public abstract class CommonPackagePutRequestConverter {
       builder.customAltNames(convertCustomAltNames(attributes));
     }
 
-    builder.visibilityDetails(mapItems(attributes.getVisibility(),
-      pv -> new Visibility(pv.getCategory().value(), pv.getHidden(), pv.getReason())));
+    builder.visibilityDetails(mapItems(attributes.getVisibility(), this::convertVisibility));
 
     return builder;
+  }
+
+  protected Visibility convertVisibility(PackageVisibility pv) {
+    var reason = Boolean.TRUE.equals(pv.getHidden()) ? HIDDEN_BY_CUSTOMER : null;
+    return new Visibility(pv.getCategory().value(), pv.getHidden(), reason);
   }
 
   private void convertSimpleFields(PackagePutDataAttributes attributes, PackagePut.PackagePutBuilder builder) {

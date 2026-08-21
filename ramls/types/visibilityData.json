@@ -9,12 +9,12 @@
     "isHidden": {
       "type": "boolean",
       "description": "Whether resource is hidden or not",
-      "example": false
+      "example": true
     },
     "reason": {
       "type": "string",
       "description": "Reason why resource is hidden",
-      "example": "Set by System"
+      "example": "Hidden by Customer"
     }
   }
 }

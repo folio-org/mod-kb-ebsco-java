@@ -6,17 +6,17 @@
     {
       "category": "PF",
       "hidden": false,
-      "reason": "Hidden by customer"
+      "reason": null
     },
     {
       "category": "FTF",
       "hidden": true,
-      "reason": null
+      "reason": "Hidden by Customer"
     },
     {
       "category": "MARC",
       "hidden": true,
-      "reason": null
+      "reason": "Hidden by Customer"
     }
   ],
   "customDescription": "Custom description",
