@@ -1,7 +1,10 @@
 package org.folio.rest.converter.packages;
 
+import static org.folio.rest.converter.packages.CommonPackagePutRequestConverter.HIDDEN_BY_CUSTOMER;
 import static org.folio.util.PackagesTestUtil.getPackagePutRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -63,6 +66,23 @@ class CustomPackagePutRequestConverterTest {
             .withHidden(true)
             .withCategory(PackageVisibility.Category.PF)))
       ));
-    assertTrue(packagePut.getVisibilityDetails().getFirst().hidden());
+    var visibility = packagePut.getVisibilityDetails().getFirst();
+    assertTrue(visibility.hidden());
+    assertEquals(HIDDEN_BY_CUSTOMER, visibility.reason());
+  }
+
+  @Test
+  void shouldIgnoreIncomingReasonAndClearReasonWhenHiddenFalse() {
+    var packagePut =
+      converter.convert(getPackagePutRequest(
+        new PackagePutDataAttributes()
+          .withVisibility(List.of(new PackageVisibility()
+            .withHidden(false)
+            .withReason("some incoming reason")
+            .withCategory(PackageVisibility.Category.PF)))
+      ));
+    var visibility = packagePut.getVisibilityDetails().getFirst();
+    assertFalse(visibility.hidden());
+    assertNull(visibility.reason());
   }
 }
