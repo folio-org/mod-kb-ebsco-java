@@ -132,6 +132,15 @@ traits:
         is: [packageQueriable, taggable, accessible, packageFilterable,
         sortable: {defaultValue: 'relevance', possibleValues: 'name, relevance'},
         pageable: {maxCountValue: 100, defaultCountValue: 25}]
+        queryParameters:
+          include:
+            displayName: Include access type
+            type: string
+            description: |
+              Include related objects in response
+              Possible values are
+                - accessType
+            required: false
         responses:
           200:
             description: OK
