@@ -1,10 +1,14 @@
 package org.folio.service.loader;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import javax.ws.rs.NotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.folio.repository.RecordKey;
+import org.folio.repository.RecordType;
+import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.repository.tag.DbTag;
 import org.folio.repository.tag.TagRepository;
 import org.folio.rest.jaxrs.model.Tags;
@@ -46,6 +50,15 @@ public class RelatedEntitiesLoaderImpl implements RelatedEntitiesLoader {
         }
       });
     return future;
+  }
+
+  @Override
+  public CompletableFuture<Map<String, DbAccessType>> loadAccessTypes(List<String> recordIds, RecordType recordType,
+                                                                       RmApiTemplateContext context) {
+    log.debug("loadAccessTypes:: by [recordIds count: {}, recordType: {}]", recordIds.size(), recordType);
+    String tenant = context.getRequestContext().getTenant();
+    return accessTypesService.findPerRecord(context.getCredentialsId(), new ArrayList<>(recordIds), recordType, tenant)
+      .toCompletableFuture();
   }
 
   @Override

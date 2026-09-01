@@ -15,7 +15,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,7 +61,6 @@ import org.folio.rest.validator.ProviderPutBodyValidator;
 import org.folio.rest.validator.ProviderTagsPutBodyValidator;
 import org.folio.rmapi.result.PackageCollectionResult;
 import org.folio.rmapi.result.VendorResult;
-import org.folio.service.accesstypes.AccessTypesService;
 import org.folio.service.kbcredentials.UserKbCredentialsService;
 import org.folio.service.loader.FilteredEntitiesLoader;
 import org.folio.service.loader.RelatedEntitiesLoader;
@@ -91,8 +89,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   private ProviderRepository providerRepository;
   @Autowired
   private PackageRepository packageRepository;
-  @Autowired
-  private AccessTypesService accessTypesService;
   @Autowired
   private RelatedEntitiesLoader relatedEntitiesLoader;
   @Autowired
@@ -263,15 +259,13 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
                                                                             List<String> includedObjects,
                                                                             RmApiTemplateContext context) {
     var credentialsId = toUUID(context.getCredentialsId());
-    var tenant = context.getRequestContext().getTenant();
-    var tagsFuture = packageRepository.findByIds(getPackageIds(packages), credentialsId, tenant);
+    var tagsFuture = packageRepository.findByIds(getPackageIds(packages), credentialsId,
+      context.getRequestContext().getTenant());
     if (includedObjects.contains(ACCESS_TYPE_INCLUDE_PARAM)) {
       var packageIds = packages.getPackagesList().stream()
         .map(packageData -> packageData.getVendorId() + "-" + packageData.getPackageId())
         .toList();
-      var accessTypesFuture = accessTypesService.findPerRecord(context.getCredentialsId(), new ArrayList<>(packageIds),
-          RecordType.PACKAGE, tenant);
-      return tagsFuture.thenCombine(accessTypesFuture,
+      return tagsFuture.thenCombine(relatedEntitiesLoader.loadAccessTypes(packageIds, RecordType.PACKAGE, context),
         (dbPackages, accessTypes) -> new PackageCollectionResult(packages, dbPackages, accessTypes));
     }
     return tagsFuture.thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
