@@ -453,10 +453,8 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
     RmApiTemplateContext context) {
     return titleCollection -> {
       Map<String, TitleResult> resourceIdToAccessType = mapResourceIdToTitleResult(titleCollection);
-      String credentialsId = context.getCredentialsId();
-      String tenant = context.getRequestContext().getTenant();
-      return accessTypesService.findPerRecord(credentialsId, new ArrayList<>(resourceIdToAccessType.keySet()),
-          RecordType.RESOURCE, tenant)
+      return relatedEntitiesLoader.loadAccessTypes(new ArrayList<>(resourceIdToAccessType.keySet()),
+          RecordType.RESOURCE, context)
         .thenApply(accessTypeMap -> {
           populateResourceAccessTypes(resourceIdToAccessType, accessTypeMap);
           return titleCollection;

@@ -2,6 +2,7 @@ package org.folio.rest.impl;
 
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.folio.common.ListUtils.parseByComma;
 import static org.folio.db.RowSetUtils.toUUID;
 import static org.folio.rest.util.ExceptionMappers.error422InputValidationMapper;
 import static org.folio.rest.util.IdParser.getPackageIds;
@@ -72,6 +73,7 @@ import org.springframework.core.convert.converter.Converter;
 public class EholdingsProvidersImpl implements EholdingsProviders {
 
   private static final String GET_PROVIDER_NOT_FOUND_MESSAGE = "Provider not found";
+  private static final String ACCESS_TYPE_INCLUDE_PARAM = "accessType";
 
   @Autowired
   private Converter<ProviderPutRequest, VendorPut> putRequestConverter;
@@ -197,7 +199,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsProvidersPackagesByProviderId(String providerId, String q, String queryField,
+  public void getEholdingsProvidersPackagesByProviderId(String providerId, String include, String q, String queryField,
                                                         String queryType, boolean highlight, List<String> filterTags,
                                                         List<String> filterAccessType, String filterSelected,
                                                         String filterType, String filterVisibility, String filterAccess,
@@ -222,7 +224,9 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .count(count)
       .build();
 
-    RmApiTemplate template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
+    var includedObjects = parseByComma(include);
+
+    var template = templateFactory.createTemplate(okapiHeaders, asyncResultHandler);
     if (filter.isTagsFilter()) {
       template.requestAction(
         context -> filteredEntitiesLoader.fetchPackagesByTagFilter(TagFilter.from(filter), context));
@@ -231,7 +235,7 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
         .fetchPackagesByAccessTypeFilter(AccessTypeFilter.from(filter), context)
         .thenApply(packages -> new PackageCollectionResult(packages, emptyList())));
     } else {
-      template.requestAction(retrieveFilteredPackages(parsedProviderId, filter));
+      template.requestAction(retrieveFilteredPackages(parsedProviderId, filter, includedObjects));
     }
     template
       .addErrorMapper(ResourceNotFoundException.class, exception ->
@@ -241,13 +245,30 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
   }
 
   private Function<RmApiTemplateContext, CompletableFuture<?>> retrieveFilteredPackages(int providerId,
-                                                                                        PackageRecordFilter filter) {
+                                                                                        PackageRecordFilter filter,
+                                                                                        List<String> includedObjects) {
     var packageFilter = filter.toClientFilter(searchProperties);
     var pageable = filter.toPageable();
     return context ->
       context.getPackagesService()
         .retrievePackages(providerId, packageFilter, pageable)
-        .thenCompose(packages -> loadTags(packages, context));
+        .thenCompose(packages -> loadTagsAndAccessTypes(packages, includedObjects, context));
+  }
+
+  private CompletableFuture<PackageCollectionResult> loadTagsAndAccessTypes(Packages packages,
+                                                                            List<String> includedObjects,
+                                                                            RmApiTemplateContext context) {
+    var credentialsId = toUUID(context.getCredentialsId());
+    var tagsFuture = packageRepository.findByIds(getPackageIds(packages), credentialsId,
+      context.getRequestContext().getTenant());
+    if (includedObjects.contains(ACCESS_TYPE_INCLUDE_PARAM)) {
+      var packageIds = packages.getPackagesList().stream()
+        .map(packageData -> packageData.getVendorId() + "-" + packageData.getPackageId())
+        .toList();
+      return tagsFuture.thenCombine(relatedEntitiesLoader.loadAccessTypes(packageIds, RecordType.PACKAGE, context),
+        (dbPackages, accessTypes) -> new PackageCollectionResult(packages, dbPackages, accessTypes));
+    }
+    return tagsFuture.thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 
   private CompletableFuture<VendorResult> loadTags(VendorResult result, RmApiTemplateContext context) {
@@ -256,13 +277,6 @@ public class EholdingsProvidersImpl implements EholdingsProviders {
       .recordType(RecordType.PROVIDER)
       .build();
     return relatedEntitiesLoader.loadTags(result, recordKey, context).thenApply(v -> result);
-  }
-
-  private CompletableFuture<PackageCollectionResult> loadTags(Packages packages, RmApiTemplateContext context) {
-    UUID credentialsId = toUUID(context.getCredentialsId());
-    String tenant = context.getRequestContext().getTenant();
-    return packageRepository.findByIds(getPackageIds(packages), credentialsId, tenant)
-      .thenApply(dbPackages -> new PackageCollectionResult(packages, dbPackages));
   }
 
   private CompletableFuture<Void> updateTags(DbProvider provider, Tags tags, String tenant) {

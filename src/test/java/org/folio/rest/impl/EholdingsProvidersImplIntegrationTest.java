@@ -38,7 +38,9 @@ import static org.folio.util.TestUtil.readJsonFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -465,6 +467,36 @@ class EholdingsProvidersImplIntegrationTest extends IntegrationTestBase {
       .as(JsonapiError.class);
 
     assertErrorContainsTitle(error, "Provider not found");
+  }
+
+  @Test
+  void shouldReturnProviderPackagesWithAccessTypeWhenIncludeParamPassed() {
+    var accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    var expectedAccessTypeId = accessTypes.getFirst().getId();
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, expectedAccessTypeId, vertx);
+
+    mockGet(new RegexPattern(providerPackagesRmApi(STUB_VENDOR_ID) + ".*"), readFile(STUB_PACKAGE_RESPONSE));
+
+    var collection = getWithOk(PROVIDER_PACKAGES + "?include=accessType").as(PackageCollection.class);
+    var packageItem = collection.getData().getFirst();
+
+    assertFalse(packageItem.getIncluded().isEmpty());
+    assertEquals(expectedAccessTypeId,
+      packageItem.getRelationships().getAccessType().getData().getId());
+  }
+
+  @Test
+  void shouldReturnProviderPackagesWithoutAccessTypeWhenIncludeParamNotPassed() {
+    var accessTypes = insertAccessTypes(testData(configuration.getId()), vertx);
+    insertAccessTypeMapping(FULL_PACKAGE_ID, PACKAGE, accessTypes.getFirst().getId(), vertx);
+
+    mockGet(new RegexPattern(providerPackagesRmApi(STUB_VENDOR_ID) + ".*"), readFile(STUB_PACKAGE_RESPONSE));
+
+    var collection = getWithOk(PROVIDER_PACKAGES).as(PackageCollection.class);
+    var packageItem = collection.getData().getFirst();
+
+    assertTrue(packageItem.getIncluded().isEmpty());
+    assertNull(packageItem.getRelationships().getAccessType());
   }
 
   private String getPackageResponse(String packageName, int packageId, int providerId) {
