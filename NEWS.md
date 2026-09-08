@@ -10,6 +10,7 @@
 * Migrate Package Endpoints to HoldingsIQ v2 API ([MODKBEKBJ-804](https://folio-org.atlassian.net/browse/MODKBEKBJ-804))
 * Add additional fields to POST /eholdings/packages endpoint ([MODKBEKBJ-823](https://folio-org.atlassian.net/browse/MODKBEKBJ-823))
 * Update visibility hidden reason handling ([MODKBEKBJ-823](https://folio-org.atlassian.net/browse/MODKBEKBJ-823))
+* Remove HTML validation for package's custom display name field ([MODKBEKBJ-855](https://folio-org.atlassian.net/browse/MODKBEKBJ-855))
 * Add access types to eholdings/providers/{id}/packages response ([MODKBEKBJ-839](https://folio-org.atlassian.net/browse/MODKBEKBJ-839))
 
 ### Bug fixes
