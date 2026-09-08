@@ -53,12 +53,6 @@ class PackageCustomAttributesValidatorTest {
   }
 
   @Test
-  void shouldThrowWhenCustomDisplayNameContainsHtml() {
-    var customAttributes = withDisplayName("<b>name</b>");
-    assertThrows(InputValidationException.class, () -> validator.validate(customAttributes));
-  }
-
-  @Test
   void shouldNotThrowWhenCustomDisplayNameIsNull() {
     var customAttributes = withDisplayName(null);
     assertDoesNotThrow(() -> validator.validate(customAttributes));

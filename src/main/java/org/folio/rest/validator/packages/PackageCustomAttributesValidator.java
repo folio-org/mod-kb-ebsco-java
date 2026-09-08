@@ -32,7 +32,6 @@ public class PackageCustomAttributesValidator {
 
   private void validateCustomDisplayName(String displayName) {
     ValidatorUtil.checkMaxLength("customDisplayName", displayName, MAX_DISPLAY_NAME_LENGTH);
-    ValidatorUtil.checkNoHtml("customDisplayName", displayName);
   }
 
   private void validateCustomAltNames(List<PackageAltName> altNames) {
