@@ -6,17 +6,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackageVisibility;
+import org.folio.service.sanitizer.Sanitizer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class CustomPackagePutRequestConverterTest {
 
-  private final CustomPackagePutRequestConverter converter = new CustomPackagePutRequestConverter();
+  @Mock
+  private Sanitizer<String> htmlSanitizer;
+
+  @InjectMocks
+  private CustomPackagePutRequestConverter converter;
 
   @Test
   void shouldCreateRequestToChangeCustomPackageName() {
@@ -46,6 +58,18 @@ class CustomPackagePutRequestConverterTest {
           .withEndCoverage(""))));
     assertEquals("", packagePut.getCustomCoverage().getBeginCoverage());
     assertEquals("", packagePut.getCustomCoverage().getEndCoverage());
+  }
+
+  @Test
+  void shouldSanitizeCustomDescription() {
+    when(htmlSanitizer.sanitize("Some description")).thenReturn("sanitized description");
+
+    var packagePut = converter.convert(getPackagePutRequest(
+      new PackagePutDataAttributes()
+        .withCustomDescription("Some description")));
+
+    assertEquals("sanitized description", packagePut.getCustomDescription());
+    verify(htmlSanitizer).sanitize("Some description");
   }
 
   @Test

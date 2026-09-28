@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import org.folio.rest.jaxrs.model.ContentType;
@@ -15,11 +17,21 @@ import org.folio.rest.jaxrs.model.PackagePostData;
 import org.folio.rest.jaxrs.model.PackagePostDataAttributes;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.ProxyDto;
+import org.folio.service.sanitizer.Sanitizer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class CustomPackagePostRequestConverterTest {
 
-  private final CustomPackagePostRequestConverter converter = new CustomPackagePostRequestConverter();
+  @Mock
+  private Sanitizer<String> htmlSanitizer;
+
+  @InjectMocks
+  private CustomPackagePostRequestConverter converter;
 
   @Test
   void shouldMapPackageName() {
@@ -30,11 +42,15 @@ class CustomPackagePostRequestConverterTest {
   }
 
   @Test
-  void shouldMapCustomDescription() {
+  void shouldSanitizeCustomDescription() {
+    when(htmlSanitizer.sanitize("Some description")).thenReturn("sanitized description");
+
     var result = converter.convert(buildRequest(new PackagePostDataAttributes()
       .withContentType(ContentType.UNKNOWN)
       .withCustomDescription("Some description")));
-    assertEquals("Some description", result.getCustomDescription());
+
+    assertEquals("sanitized description", result.getCustomDescription());
+    verify(htmlSanitizer).sanitize("Some description");
   }
 
   @Test

@@ -12,11 +12,18 @@ import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageAltName;
 import org.folio.rest.jaxrs.model.PackagePostRequest;
 import org.folio.rest.jaxrs.model.ProxyDto;
+import org.folio.service.sanitizer.Sanitizer;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CustomPackagePostRequestConverter implements Converter<PackagePostRequest, PackagePost> {
+
+  private final Sanitizer<String> htmlSanitizer;
+
+  public CustomPackagePostRequestConverter(Sanitizer<String> htmlSanitizer) {
+    this.htmlSanitizer = htmlSanitizer;
+  }
 
   @Override
   public PackagePost convert(PackagePostRequest postPackageBody) {
@@ -25,7 +32,7 @@ public class CustomPackagePostRequestConverter implements Converter<PackagePostR
     return PackagePost.builder()
       .customAltNames(mapItemsNullable(attributes.getCustomAltNames(), this::convertAlternateName))
       .coverage(convertCoverageDates(attributes.getCustomCoverage()))
-      .customDescription(attributes.getCustomDescription())
+      .customDescription(htmlSanitizer.sanitize(attributes.getCustomDescription()))
       .customDisplayName(attributes.getCustomDisplayName())
       .contentType(CONTENT_TYPE_TO_RMAPI_CODE.getOrDefault(attributes.getContentType(), 6))
       .packageName(attributes.getName())
