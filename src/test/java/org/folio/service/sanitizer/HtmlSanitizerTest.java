@@ -3,7 +3,11 @@ package org.folio.service.sanitizer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class HtmlSanitizerTest {
 
@@ -19,17 +23,10 @@ class HtmlSanitizerTest {
     assertEquals("   ", sanitizer.sanitize("   "));
   }
 
-  @Test
-  void shouldKeepNotHtmlContentAsIs() {
-    var html = "some custom description";
-    assertEquals(html, sanitizer.sanitize(html));
-  }
-
-  @Test
-  void shouldKeepAllowedTags() {
-    var html = "<p>paragraph</p><strong>bold</strong><em>italic</em><u>underline</u>"
-      + "<ol><li>one</li></ol><ul><li>two</li></ul><h1>h1</h1><h2>h2</h2><h3>h3</h3>line<br>break";
-    assertEquals(html, sanitizer.sanitize(html));
+  @ParameterizedTest
+  @MethodSource("testCasesWithoutChanges")
+  void shouldKeepContentWithoutChanges(String desc, String content) {
+    assertEquals(content, sanitizer.sanitize(content), desc);
   }
 
   @Test
@@ -43,18 +40,6 @@ class HtmlSanitizerTest {
   }
 
   @Test
-  void shouldKeepClassAndStyleAttributesOnAllowedTag() {
-    var html = "<p class=\"note\" style=\"color:red\">text</p>";
-    assertEquals(html, sanitizer.sanitize(html));
-  }
-
-  @Test
-  void shouldKeepHrefRelAndTargetAttributesOnAnchor() {
-    var html = "<a href=\"https://example.com\" rel=\"noopener\" target=\"_blank\">link</a>";
-    assertEquals(html, sanitizer.sanitize(html));
-  }
-
-  @Test
   void shouldStripDisallowedAttribute() {
     assertEquals("<p>text</p>", sanitizer.sanitize("<p onclick=\"doEvil()\">text</p>"));
   }
@@ -64,9 +49,17 @@ class HtmlSanitizerTest {
     assertEquals("<p>text</p>", sanitizer.sanitize("<p href=\"https://example.com\">text</p>"));
   }
 
-  @Test
-  void shouldNotPrettyPrintOutput() {
-    var html = "<ul><li>one</li><li>two</li></ul>";
-    assertEquals(html, sanitizer.sanitize(html));
+  private static Stream<Arguments> testCasesWithoutChanges() {
+    return Stream.of(
+      Arguments.of("should keep not html content as is", "some custom description"),
+      Arguments.of("should keep class and style attributes on allowed tag",
+        "<p class=\"note\" style=\"color:red\">text</p>"),
+      Arguments.of("should keep href rel and target attributes on anchor",
+        "<a href=\"https://example.com\" rel=\"noopener\" target=\"_blank\">link</a>"),
+      Arguments.of("should not pretty print output", "<ul><li>one</li><li>two</li></ul>"),
+      Arguments.of("should keep allowed tags",
+        "<p>paragraph</p><strong>bold</strong><em>italic</em><u>underline</u>"
+        + "<ol><li>one</li></ol><ul><li>two</li></ul><h1>h1</h1><h2>h2</h2><h3>h3</h3>line<br>break")
+    );
   }
 }
