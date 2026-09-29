@@ -10,10 +10,17 @@ import org.folio.holdingsiq.model.Proxy;
 import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.jaxrs.model.PackagePutDataAttributes;
 import org.folio.rest.jaxrs.model.PackageVisibility;
+import org.folio.service.sanitizer.Sanitizer;
 
 public abstract class CommonPackagePutRequestConverter {
 
   static final String HIDDEN_BY_CUSTOMER = "Hidden by Customer";
+
+  private final Sanitizer<String> htmlSanitizer;
+
+  protected CommonPackagePutRequestConverter(Sanitizer<String> htmlSanitizer) {
+    this.htmlSanitizer = htmlSanitizer;
+  }
 
   protected PackagePut.PackagePutBuilder convertCommonAttributes(PackagePutDataAttributes attributes) {
     var builder = PackagePut.builder();
@@ -45,7 +52,7 @@ public abstract class CommonPackagePutRequestConverter {
   private void convertSimpleFields(PackagePutDataAttributes attributes, PackagePut.PackagePutBuilder builder) {
     builder.isSelected(attributes.getIsSelected());
     builder.isFullPackage(attributes.getIsFullPackage());
-    builder.customDescription(attributes.getCustomDescription());
+    builder.customDescription(htmlSanitizer.sanitize(attributes.getCustomDescription()));
     builder.customDisplayName(attributes.getCustomDisplayName());
     builder.packageFreeAccess(attributes.getIsFreeAccess());
     builder.packageUrl(attributes.getUrl());
