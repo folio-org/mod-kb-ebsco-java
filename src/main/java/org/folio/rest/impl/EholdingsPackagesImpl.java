@@ -125,6 +125,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
 
     template
       .addErrorMapper(NotFoundException.class, error400NotFoundMapper())
+      .addErrorMapper(InputValidationException.class, error422InputValidationMapper())
       .executeWithResult(Package.class);
   }
 

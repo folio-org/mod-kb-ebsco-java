@@ -1,5 +1,6 @@
 package org.folio.rest.impl;
 
+import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -102,13 +103,6 @@ class EholdingsPackagesImplTest {
       .build();
   }
 
-  @SuppressWarnings("unchecked")
-  private Function<RmApiTemplateContext, CompletableFuture<?>> captureRequestAction() {
-    var captor = ArgumentCaptor.forClass(Function.class);
-    verify(template).requestAction(captor.capture());
-    return captor.getValue();
-  }
-
   @Test
   void shouldFetchPackagesByTagFilterWhenTagsFilterIsGiven() {
     var filter = PackageRecordFilter.builder().filterTags(List.of("tag1")).sort("relevance")
@@ -158,26 +152,33 @@ class EholdingsPackagesImplTest {
     verify(packageService).retrievePackages(null, filter, context);
   }
 
-  private void invokeGetEholdingsPackages(PackageRecordFilter filter) {
-    impl.getEholdingsPackages(filter.getFilterCustom(), filter.getQuery(), filter.getQueryField(),
-      filter.getQueryType(), filter.isHighlight(), filter.getFilterSelected(), filter.getFilterType(),
-      filter.getFilterVisibility(), filter.getFilterFreeAccess(), filter.getFilterTags(),
-      filter.getFilterAccessType(), filter.getSort(), filter.getPage(), filter.getCount(), OKAPI_HEADERS,
-      asyncResultHandler, null);
-  }
-
   @Test
   void shouldCreateCustomPackage() {
     var entity = new PackagePostRequest()
       .withData(new PackagePostData().withAttributes(new PackagePostDataAttributes()));
     when(packageService.createCustomPackage(entity, context)).thenReturn(completedFuture(null));
 
-    impl.postEholdingsPackages("application/json", entity, OKAPI_HEADERS, asyncResultHandler, null);
+    impl.postEholdingsPackages(APPLICATION_JSON.toString(), entity, OKAPI_HEADERS, asyncResultHandler, null);
 
     captureRequestAction().apply(context);
     verify(packageService).createCustomPackage(entity, context);
     verify(template).addErrorMapper(eq(NotFoundException.class), any());
     verify(template).executeWithResult(org.folio.rest.jaxrs.model.Package.class);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void shouldMapInputValidationExceptionTo422OnCreateCustomPackage() {
+    var entity = new PackagePostRequest()
+      .withData(new PackagePostData().withAttributes(new PackagePostDataAttributes()));
+
+    impl.postEholdingsPackages(APPLICATION_JSON.toString(), entity, OKAPI_HEADERS, asyncResultHandler, null);
+
+    var mapperCaptor = ArgumentCaptor.forClass(Function.class);
+    verify(template).addErrorMapper(eq(InputValidationException.class), mapperCaptor.capture());
+    var response = (Response) mapperCaptor.getValue()
+      .apply(new InputValidationException("Invalid name", "name must not be empty"));
+    assertEquals(422, response.getStatus());
   }
 
   @Test
@@ -198,7 +199,8 @@ class EholdingsPackagesImplTest {
       .withData(new PackagePutData().withAttributes(new PackagePutDataAttributes()));
     when(packageService.updatePackage(any(), any(), any())).thenReturn(completedFuture(null));
 
-    impl.putEholdingsPackagesByPackageId("19-3964", "application/json", entity, OKAPI_HEADERS, asyncResultHandler,
+    impl.putEholdingsPackagesByPackageId("19-3964", APPLICATION_JSON.toString(), entity, OKAPI_HEADERS,
+      asyncResultHandler,
       null);
 
     captureRequestAction().apply(context);
@@ -258,13 +260,6 @@ class EholdingsPackagesImplTest {
     verify(template).requestAction(same(stubFunction));
   }
 
-  private void invokeGetResources(ResourceFilter filter) {
-    impl.getEholdingsPackagesResourcesByPackageId(filter.getPackageId(), filter.getFilterTags(),
-      filter.getFilterAccessType(), filter.getFilterSelected(), filter.getFilterType(), filter.getFilterName(),
-      filter.getFilterIsxn(), filter.getFilterSubject(), filter.getFilterPublisher(), filter.getSort(),
-      filter.getPage(), filter.getCount(), OKAPI_HEADERS, asyncResultHandler, null);
-  }
-
   @Test
   void shouldUpdateTagsForPackage() {
     var credentialsId = UUID.randomUUID();
@@ -275,7 +270,7 @@ class EholdingsPackagesImplTest {
     when(packageService.updateTagsForPackage(entity, credentialsId, "19-3964", "fs"))
       .thenReturn(completedFuture(attributes));
 
-    impl.putEholdingsPackagesTagsByPackageId("19-3964", "application/json", entity, OKAPI_HEADERS,
+    impl.putEholdingsPackagesTagsByPackageId("19-3964", APPLICATION_JSON.toString(), entity, OKAPI_HEADERS,
       asyncResultHandler, null);
 
     verify(asyncResultHandler).handle(responseCaptor.capture());
@@ -294,7 +289,7 @@ class EholdingsPackagesImplTest {
     when(packageService.updateTagsForPackage(any(), any(), any(), any()))
       .thenReturn(CompletableFuture.failedFuture(new InputValidationException("invalid", "invalid tags")));
 
-    impl.putEholdingsPackagesTagsByPackageId("19-3964", "application/json", entity, OKAPI_HEADERS,
+    impl.putEholdingsPackagesTagsByPackageId("19-3964", APPLICATION_JSON.toString(), entity, OKAPI_HEADERS,
       asyncResultHandler, null);
 
     verify(asyncResultHandler).handle(responseCaptor.capture());
@@ -307,10 +302,32 @@ class EholdingsPackagesImplTest {
     var entity = new PackagePostBulkFetchRequest().withPackages(java.util.Set.of("19-3964"));
     when(packagesRmApiService.retrievePackagesBulk(entity.getPackages())).thenReturn(completedFuture(null));
 
-    impl.postEholdingsPackagesBulkFetch("application/json", entity, OKAPI_HEADERS, asyncResultHandler, null);
+    impl.postEholdingsPackagesBulkFetch(APPLICATION_JSON.toString(), entity, OKAPI_HEADERS, asyncResultHandler, null);
 
     captureRequestAction().apply(context);
     verify(packagesRmApiService).retrievePackagesBulk(entity.getPackages());
     verify(template).executeWithResult(org.folio.rest.jaxrs.model.PackageBulkFetchCollection.class);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Function<RmApiTemplateContext, CompletableFuture<?>> captureRequestAction() {
+    var captor = ArgumentCaptor.forClass(Function.class);
+    verify(template).requestAction(captor.capture());
+    return captor.getValue();
+  }
+
+  private void invokeGetEholdingsPackages(PackageRecordFilter filter) {
+    impl.getEholdingsPackages(filter.getFilterCustom(), filter.getQuery(), filter.getQueryField(),
+      filter.getQueryType(), filter.isHighlight(), filter.getFilterSelected(), filter.getFilterType(),
+      filter.getFilterVisibility(), filter.getFilterFreeAccess(), filter.getFilterTags(),
+      filter.getFilterAccessType(), filter.getSort(), filter.getPage(), filter.getCount(), OKAPI_HEADERS,
+      asyncResultHandler, null);
+  }
+
+  private void invokeGetResources(ResourceFilter filter) {
+    impl.getEholdingsPackagesResourcesByPackageId(filter.getPackageId(), filter.getFilterTags(),
+      filter.getFilterAccessType(), filter.getFilterSelected(), filter.getFilterType(), filter.getFilterName(),
+      filter.getFilterIsxn(), filter.getFilterSubject(), filter.getFilterPublisher(), filter.getSort(),
+      filter.getPage(), filter.getCount(), OKAPI_HEADERS, asyncResultHandler, null);
   }
 }

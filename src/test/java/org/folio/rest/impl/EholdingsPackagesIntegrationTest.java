@@ -902,6 +902,18 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
+  void shouldReturn422OnPostPackageWithEmptyName() {
+    var requestBody = readFile(POST_PACKAGE_REQUEST).replace("\"name\": \"TEST_NAME\"", "\"name\": \"\"");
+
+    var error = postWithStatus(packagesPath(), requestBody, SC_UNPROCESSABLE_CONTENT).as(JsonapiError.class);
+
+    assertEquals(1, error.getErrors().size());
+    assertErrorContainsTitle(error, "Invalid name");
+    assertEquals("name must not be empty", error.getErrors().getFirst().getDetail());
+    wm.verify(0, postRequestedFor(urlPathEqualTo(packageRmApiV1(STUB_VENDOR_ID))));
+  }
+
+  @Test
   void shouldReturn400WhenPackagePostDataIsInvalid() {
     mockGet(WireMock.equalTo(rootProxyCustomLabelsRmApi()), readFile(GET_PACKAGE_PROVIDER_RESPONSE));
     mockPost(WireMock.equalTo(packageRmApiV1(STUB_VENDOR_ID)),
