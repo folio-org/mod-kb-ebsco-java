@@ -27,10 +27,18 @@ public class PackageCustomAttributesValidator {
   }
 
   private void validateCustomDescription(String description) {
+    if (description == null) {
+      return;
+    }
+    ValidatorUtil.checkIsNotBlank("customDescription", description);
     ValidatorUtil.checkMaxLength("customDescription", description, MAX_DESCRIPTION_LENGTH);
   }
 
   private void validateCustomDisplayName(String displayName) {
+    if (displayName == null) {
+      return;
+    }
+    ValidatorUtil.checkIsNotBlank("customDisplayName", displayName);
     ValidatorUtil.checkMaxLength("customDisplayName", displayName, MAX_DISPLAY_NAME_LENGTH);
   }
 

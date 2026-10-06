@@ -41,6 +41,12 @@ class PackageCustomAttributesValidatorTest {
   }
 
   @Test
+  void shouldThrowWhenCustomDescriptionIsBlank() {
+    var customAttributes = withDescription("   ");
+    assertThrows(InputValidationException.class, () -> validator.validate(customAttributes));
+  }
+
+  @Test
   void shouldThrowWhenCustomDisplayNameExceedsMaxLength() {
     var customAttributes = withDisplayName("a".repeat(301));
     assertThrows(InputValidationException.class, () -> validator.validate(customAttributes));
@@ -56,6 +62,12 @@ class PackageCustomAttributesValidatorTest {
   void shouldNotThrowWhenCustomDisplayNameIsNull() {
     var customAttributes = withDisplayName(null);
     assertDoesNotThrow(() -> validator.validate(customAttributes));
+  }
+
+  @Test
+  void shouldThrowWhenCustomDisplayNameIsBlank() {
+    var customAttributes = withDisplayName("   ");
+    assertThrows(InputValidationException.class, () -> validator.validate(customAttributes));
   }
 
   @Test
