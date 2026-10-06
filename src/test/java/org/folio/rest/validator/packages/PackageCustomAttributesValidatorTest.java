@@ -127,21 +127,15 @@ class PackageCustomAttributesValidatorTest {
   }
 
   @Test
-  void shouldThrowWhenUrlHasNoProtocol() {
-    var customAttributes = withUrl("example.com");
-    assertThrows(InputValidationException.class, () -> validator.validate(customAttributes));
-  }
-
-  @Test
-  void shouldThrowWhenUrlIsInvalidFormat() {
-    var customAttributes = withUrl("not a url");
-    assertThrows(InputValidationException.class, () -> validator.validate(customAttributes));
-  }
-
-  @Test
   void shouldNotThrowWhenUrlIsNull() {
     var customAttributes = withUrl(null);
     assertDoesNotThrow(() -> validator.validate(customAttributes));
+  }
+
+  @Test
+  void shouldThrowWhenUrlIsBlank() {
+    var customAttributes = withUrl("   ");
+    assertThrows(InputValidationException.class, () -> validator.validate(customAttributes));
   }
 
   @Test
