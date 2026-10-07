@@ -58,8 +58,8 @@ public class PackageCustomAttributesValidator {
     if (url == null) {
       return;
     }
+    ValidatorUtil.checkIsNotBlank("url", url);
     ValidatorUtil.checkMaxLength("url", url, MAX_URL_LENGTH);
-    ValidatorUtil.checkUrlFormat("url", url);
   }
 
   private void validateCustomCoverage(Coverage coverage) {
