@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package Subject Schema",
+  "description": "Managed or custom subject associated with a package",
+  "javaType": "org.folio.rest.jaxrs.model.PackageSubject",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "description": "Subject id",
+      "example": 26224,
+      "type": "integer"
+    },
+    "name": {
+      "description": "Subject name",
+      "example": "Science",
+      "type": "string"
+    },
+    "schemaId": {
+      "description": "Subject schema id",
+      "example": 3,
+      "type": "integer"
+    },
+    "parentId": {
+      "description": "Parent subject id",
+      "example": 26224,
+      "type": "integer"
+    },
+    "isCustom": {
+      "description": "Whether this subject is custom or managed",
+      "example": false,
+      "type": "boolean"
+    },
+    "subjectHierarchy": {
+      "description": "Full subject hierarchy path",
+      "example": "Science -- Biology (General)",
+      "type": "string"
+    }
+  }
+}

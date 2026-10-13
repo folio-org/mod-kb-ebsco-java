@@ -5,14 +5,18 @@ import static org.folio.rest.converter.common.ConverterConsts.CONTENT_TYPES;
 import static org.folio.rest.converter.packages.PackageConverterUtils.createEmptyPackageRelationship;
 import static org.folio.rest.util.RestConstants.PACKAGES_TYPE;
 
+import java.util.List;
 import org.folio.holdingsiq.model.AlternateName;
 import org.folio.holdingsiq.model.PackageData;
+import org.folio.holdingsiq.model.SubjectAssociation;
 import org.folio.holdingsiq.model.Visibility;
 import org.folio.rest.jaxrs.model.Coverage;
 import org.folio.rest.jaxrs.model.PackageAltName;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageDataAttributes;
+import org.folio.rest.jaxrs.model.PackageSubject;
 import org.folio.rest.jaxrs.model.PackageVisibility;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -51,9 +55,26 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
       .withProviderName(packageData.getVendorName())
       .withProxiedUrl(packageData.getProxiedUrl())
       .withSelectedCount(packageData.getSelectedCount())
+      .withSubjects(convertSubjects(packageData.getSubjectAssociations()))
       .withTitleCount(packageData.getTitleCount())
       .withUrl(packageData.getPackageUrl())
       .withVisibility(mapItemsNullable(packageData.getVisibilityDetails(), this::convertVisibility));
+  }
+
+  private @Nullable List<PackageSubject> convertSubjects(@Nullable List<SubjectAssociation> subjects) {
+    if (subjects == null) {
+      return null;
+    }
+    return subjects.stream()
+      .filter(subject -> !Boolean.TRUE.equals(subject.isCustom()) || Boolean.TRUE.equals(subject.explicitAssignment()))
+      .map(subject -> new PackageSubject()
+        .withId(subject.id())
+        .withName(subject.name())
+        .withSchemaId(subject.schemaId())
+        .withParentId(subject.parentId())
+        .withIsCustom(subject.isCustom())
+        .withSubjectHierarchy(subject.subjectHierarchy()))
+      .toList();
   }
 
   private PackageVisibility convertVisibility(Visibility visibility) {

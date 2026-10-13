@@ -14,6 +14,7 @@
 * Add access types to eholdings/providers/{id}/packages response ([MODKBEKBJ-839](https://folio-org.atlassian.net/browse/MODKBEKBJ-839))
 * Sanitize HTML content for the package description field ([MODKBEKBJ-860](https://folio-org.atlassian.net/browse/MODKBEKBJ-860))
 * Validate blank package url and remove invalid format checks ([MODKBEKBJ-863](https://folio-org.atlassian.net/browse/MODKBEKBJ-863))
+* Add managed and custom subjects to package detail record ([MODKBEKBJ-853](https://folio-org.atlassian.net/browse/MODKBEKBJ-853))
 
 ### Bug fixes
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))
