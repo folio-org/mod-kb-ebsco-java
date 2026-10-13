@@ -14,6 +14,15 @@
     }
   ],
   "selectedCount": 6,
+  "subjectAssociations": [
+    {
+      "id": 35408,
+      "parentId": 35407,
+      "schemaId": 3,
+      "name": "Technology",
+      "isCustom": false
+    }
+  ],
   "isTokenNeeded": false,
   "contentType": "AggregatedFullText",
   "customCoverage": {

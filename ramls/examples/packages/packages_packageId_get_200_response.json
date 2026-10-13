@@ -15,6 +15,15 @@
       "providerId": 123355,
       "providerName": "API DEV CORPORATE CUSTOMER",
       "selectedCount": 0,
+      "subjects": [
+        {
+          "id": 35408,
+          "name": "Technology",
+          "schemaId": 3,
+          "parentId": 35407,
+          "isCustom": false
+        }
+      ],
       "titleCount": 0,
       "vendorId": 123355,
       "vendorName": "API DEV CORPORATE CUSTOMER",
