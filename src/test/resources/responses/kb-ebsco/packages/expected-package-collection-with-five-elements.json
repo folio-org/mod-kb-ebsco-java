@@ -40,6 +40,13 @@
             "schemaId": 3,
             "parentId": 35407,
             "isCustom": false
+          },
+          {
+            "id": 35410,
+            "name": "Robotics",
+            "schemaId": 3,
+            "parentId": 35408,
+            "isCustom": true
           }
         ],
         "titleCount": 3,

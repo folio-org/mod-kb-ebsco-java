@@ -34,6 +34,13 @@
           "schemaId": 3,
           "name": "Technology",
           "isCustom": false
+        },
+        {
+          "id": 35410,
+          "parentId": 35408,
+          "schemaId": 3,
+          "name": "Robotics",
+          "isCustom": true
         }
       ],
       "consortia": "string",

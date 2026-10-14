@@ -9,6 +9,7 @@ import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.SubjectAssociation;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackageSubject;
 import org.folio.spring.config.TestConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,25 +26,19 @@ class PackageCollectionItemConverterTest {
   private ConversionService conversionService;
 
   @Test
-  void shouldKeepManagedAndExplicitCustomSubjectsAndDropCustomPlaceholders() {
-    var packageData = PackageData.builder()
-      .packageId(1)
-      .vendorId(2)
-      .contentType("EJournal")
-      .customCoverage(CoverageDates.builder().beginCoverage("").endCoverage("").build())
+  void shouldKeepAllSubjects() {
+    var packageData = packageDataBuilder()
       .subjectAssociations(List.of(
-        new SubjectAssociation(1, 3, "Science", false, false, "Science", null),
-        new SubjectAssociation(2, 3, "Biology", true, false, "Science -- Biology", 1),
-        new SubjectAssociation(3, 3, "Genetics", true, true, "Science -- Biology -- Genetics", 2),
-        new SubjectAssociation(4, 3, "Botany", true, true, "Science -- Botany", 1)))
+        new SubjectAssociation(1, 3, "Science", false, null, null, null),
+        new SubjectAssociation(2, 3, "Biology", true, null, null, 1),
+        new SubjectAssociation(3, 3, "Genetics", true, false, "Science -- Biology -- Genetics", 2)))
       .build();
 
     var subjects = convert(packageData).getAttributes().getSubjects();
 
     assertNotNull(subjects);
-    assertEquals(List.of("Science", "Genetics", "Botany"),
-      subjects.stream().map(s -> s.getName()).toList());
-    var genetics = subjects.get(1);
+    assertEquals(List.of("Science", "Biology", "Genetics"), subjects.stream().map(PackageSubject::getName).toList());
+    var genetics = subjects.get(2);
     assertEquals(3, genetics.getId());
     assertEquals(3, genetics.getSchemaId());
     assertEquals(2, genetics.getParentId());
@@ -52,27 +47,18 @@ class PackageCollectionItemConverterTest {
   }
 
   @Test
-  void shouldTreatNullIsCustomAsManaged() {
-    var packageData = PackageData.builder()
+  void shouldReturnNullSubjectsWhenNoSubjectAssociations() {
+    var packageData = packageDataBuilder().build();
+
+    assertNull(convert(packageData).getAttributes().getSubjects());
+  }
+
+  private PackageData.PackageDataBuilder packageDataBuilder() {
+    return PackageData.builder()
       .packageId(1)
       .vendorId(2)
       .contentType("EJournal")
-      .customCoverage(CoverageDates.builder().beginCoverage("").endCoverage("").build())
-      .subjectAssociations(List.of(new SubjectAssociation(1, 3, "Science", null, null, null, null)))
-      .build();
-
-    var subjects = convert(packageData).getAttributes().getSubjects();
-
-    assertEquals(1, subjects.size());
-  }
-
-  @Test
-  void shouldReturnNullSubjectsWhenNoSubjectAssociations() {
-    var packageData = PackageData.builder().packageId(1).vendorId(2)
-      .contentType("EJournal")
-      .customCoverage(CoverageDates.builder().beginCoverage("").endCoverage("").build()).build();
-
-    assertNull(convert(packageData).getAttributes().getSubjects());
+      .customCoverage(CoverageDates.builder().beginCoverage("").endCoverage("").build());
   }
 
   private PackageCollectionItem convert(PackageData packageData) {
