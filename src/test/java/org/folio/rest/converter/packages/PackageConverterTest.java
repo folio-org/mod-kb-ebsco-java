@@ -38,8 +38,10 @@ class PackageConverterTest {
 
     var subjects = convert(packageData).getData().getAttributes().getSubjects();
 
-    assertNotNull(subjects);
-    assertEquals(List.of("Science", "Genetics", "Botany"), subjects.stream().map(PackageSubject::getName).toList());
+    assertEquals(List.of(
+      new PackageSubject().withId(1).withName("Science").withIsCustom(false),
+      new PackageSubject().withId(3).withName("Genetics").withIsCustom(true),
+      new PackageSubject().withId(4).withName("Botany").withIsCustom(true)), subjects);
   }
 
   @Test

@@ -19,10 +19,7 @@
         {
           "id": 35408,
           "name": "Technology",
-          "schemaId": 3,
-          "parentId": 35407,
-          "isCustom": false,
-          "subjectHierarchy": "Applied Sciences -- Technology"
+          "isCustom": false
         }
       ],
       "titleCount": 0,

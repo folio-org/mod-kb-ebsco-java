@@ -16,25 +16,10 @@
       "example": "Science",
       "type": "string"
     },
-    "schemaId": {
-      "description": "Subject schema id",
-      "example": 3,
-      "type": "integer"
-    },
-    "parentId": {
-      "description": "Parent subject id",
-      "example": 26224,
-      "type": "integer"
-    },
     "isCustom": {
       "description": "Whether this subject is custom or managed",
       "example": false,
       "type": "boolean"
-    },
-    "subjectHierarchy": {
-      "description": "Full subject hierarchy path",
-      "example": "Science -- Biology (General)",
-      "type": "string"
     }
   }
 }

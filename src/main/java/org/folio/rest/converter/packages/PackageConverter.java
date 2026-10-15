@@ -135,10 +135,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     return new PackageSubject()
       .withId(subject.id())
       .withName(subject.name())
-      .withSchemaId(subject.schemaId())
-      .withParentId(subject.parentId())
-      .withIsCustom(subject.isCustom())
-      .withSubjectHierarchy(subject.subjectHierarchy());
+      .withIsCustom(subject.isCustom());
   }
 
   private @Nullable ProxyDto convertToProxy(@Nullable Proxy proxy) {
