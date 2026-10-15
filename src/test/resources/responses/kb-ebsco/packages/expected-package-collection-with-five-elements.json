@@ -33,22 +33,6 @@
         "providerId": 392,
         "providerName": "American Academy of Family Physicians",
         "selectedCount": 0,
-        "subjects": [
-          {
-            "id": 35408,
-            "name": "Technology",
-            "schemaId": 3,
-            "parentId": 35407,
-            "isCustom": false
-          },
-          {
-            "id": 35410,
-            "name": "Robotics",
-            "schemaId": 3,
-            "parentId": 35408,
-            "isCustom": true
-          }
-        ],
         "titleCount": 3,
         "visibility": [
           {

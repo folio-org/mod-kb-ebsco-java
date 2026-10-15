@@ -17,15 +17,6 @@
         "providerId": 583,
         "providerName": "ABC-CLIO",
         "selectedCount": 9589,
-        "subjects": [
-          {
-            "id": 27110,
-            "name": "History",
-            "schemaId": 3,
-            "parentId": 27100,
-            "isCustom": false
-          }
-        ],
         "titleCount": 9590,
         "vendorId": 583,
         "vendorName": "ABC-CLIO",

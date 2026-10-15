@@ -4,13 +4,11 @@ import static java.util.Collections.unmodifiableMap;
 
 import java.util.EnumMap;
 import java.util.Map;
-import org.folio.holdingsiq.model.SubjectAssociation;
 import org.folio.rest.jaxrs.model.ContentType;
 import org.folio.rest.jaxrs.model.HasManyRelationship;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.PackageRelationship;
-import org.folio.rest.jaxrs.model.PackageSubject;
 
 public final class PackageConverterUtils {
 
@@ -41,15 +39,5 @@ public final class PackageConverterUtils {
       .withResources(new HasManyRelationship()
         .withMeta(new MetaDataIncluded()
           .withIncluded(false)));
-  }
-
-  public static PackageSubject convertSubject(SubjectAssociation subject) {
-    return new PackageSubject()
-      .withId(subject.id())
-      .withName(subject.name())
-      .withSchemaId(subject.schemaId())
-      .withParentId(subject.parentId())
-      .withIsCustom(subject.isCustom())
-      .withSubjectHierarchy(subject.subjectHierarchy());
   }
 }

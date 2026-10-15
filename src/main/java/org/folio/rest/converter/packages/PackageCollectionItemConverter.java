@@ -51,7 +51,8 @@ public class PackageCollectionItemConverter implements Converter<PackageData, Pa
       .withProviderName(packageData.getVendorName())
       .withProxiedUrl(packageData.getProxiedUrl())
       .withSelectedCount(packageData.getSelectedCount())
-      .withSubjects(mapItemsNullable(packageData.getSubjectAssociations(), PackageConverterUtils::convertSubject))
+      // subjects are returned only in the single package response, see PackageConverter
+      .withSubjects(null)
       .withTitleCount(packageData.getTitleCount())
       .withUrl(packageData.getPackageUrl())
       .withVisibility(mapItemsNullable(packageData.getVisibilityDetails(), this::convertVisibility));

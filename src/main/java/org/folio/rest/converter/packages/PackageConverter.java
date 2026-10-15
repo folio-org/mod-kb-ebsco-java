@@ -127,8 +127,18 @@ public class PackageConverter implements Converter<PackageResult, Package> {
     }
     return subjects.stream()
       .filter(subject -> !Boolean.TRUE.equals(subject.isCustom()) || Boolean.TRUE.equals(subject.explicitAssignment()))
-      .map(PackageConverterUtils::convertSubject)
+      .map(this::convertSubject)
       .toList();
+  }
+
+  private PackageSubject convertSubject(SubjectAssociation subject) {
+    return new PackageSubject()
+      .withId(subject.id())
+      .withName(subject.name())
+      .withSchemaId(subject.schemaId())
+      .withParentId(subject.parentId())
+      .withIsCustom(subject.isCustom())
+      .withSubjectHierarchy(subject.subjectHierarchy());
   }
 
   private @Nullable ProxyDto convertToProxy(@Nullable Proxy proxy) {
