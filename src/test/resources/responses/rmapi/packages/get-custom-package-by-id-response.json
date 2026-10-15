@@ -14,6 +14,26 @@
     }
   ],
   "selectedCount": 6,
+  "subjectAssociations": [
+    {
+      "id": 35408,
+      "parentId": 35407,
+      "schemaId": 3,
+      "name": "Technology",
+      "isCustom": false,
+      "subjectHierarchy": "Applied Sciences -- Technology",
+      "explicitAssignment": true
+    },
+    {
+      "id": 35410,
+      "parentId": 35408,
+      "schemaId": 3,
+      "name": "Robotics",
+      "isCustom": true,
+      "subjectHierarchy": "Applied Sciences -- Technology -- Robotics",
+      "explicitAssignment": false
+    }
+  ],
   "isTokenNeeded": false,
   "contentType": "AggregatedFullText",
   "customCoverage": {

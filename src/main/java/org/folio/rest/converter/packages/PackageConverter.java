@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Proxy;
+import org.folio.holdingsiq.model.SubjectAssociation;
 import org.folio.holdingsiq.model.Titles;
 import org.folio.holdingsiq.model.TokenInfo;
 import org.folio.holdingsiq.model.VendorById;
@@ -20,6 +21,7 @@ import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.Package;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
 import org.folio.rest.jaxrs.model.PackageRelationship;
+import org.folio.rest.jaxrs.model.PackageSubject;
 import org.folio.rest.jaxrs.model.Provider;
 import org.folio.rest.jaxrs.model.ProxyDto;
 import org.folio.rest.jaxrs.model.RelationshipData;
@@ -63,6 +65,7 @@ public class PackageConverter implements Converter<PackageResult, Package> {
       .getAttributes()
       .withProxy(convertToProxy(packageData.getProxy()))
       .withPackageToken(tokenInfoConverter.convert(packageData.getPackageToken()))
+      .withSubjects(convertSubjects(packageData.getSubjectAssociations()))
       .withTags(result.getTags());
 
     addTitlesRelationship(result, packageResult, packageData);
@@ -113,6 +116,26 @@ public class PackageConverter implements Converter<PackageResult, Package> {
           .withMeta(new MetaDataIncluded()
             .withIncluded(true)));
     }
+  }
+
+  /**
+   * Custom subjects without explicit assignment are hierarchy placeholders and are not shown on the package record.
+   */
+  private @Nullable List<PackageSubject> convertSubjects(@Nullable List<SubjectAssociation> subjects) {
+    if (subjects == null) {
+      return null;
+    }
+    return subjects.stream()
+      .filter(subject -> !Boolean.TRUE.equals(subject.isCustom()) || Boolean.TRUE.equals(subject.explicitAssignment()))
+      .map(this::convertSubject)
+      .toList();
+  }
+
+  private PackageSubject convertSubject(SubjectAssociation subject) {
+    return new PackageSubject()
+      .withId(subject.id())
+      .withName(subject.name())
+      .withIsCustom(subject.isCustom());
   }
 
   private @Nullable ProxyDto convertToProxy(@Nullable Proxy proxy) {

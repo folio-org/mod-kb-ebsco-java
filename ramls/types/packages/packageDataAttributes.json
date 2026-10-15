@@ -121,6 +121,15 @@
       "example": 0,
       "type": "integer"
     },
+    "subjects": {
+      "description": "Managed and custom subjects associated with the package. Returned only in the single package response",
+      "items": {
+        "$ref": "packageSubject.json",
+        "type": "object"
+      },
+      "readonly": true,
+      "type": "array"
+    },
     "tags": {
       "$ref": "../../raml-util/schemas/tags.schema",
       "description": "Package tags",

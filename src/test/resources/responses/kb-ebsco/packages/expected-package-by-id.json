@@ -27,6 +27,13 @@
         "inherited": true
       },
       "selectedCount": 6,
+      "subjects": [
+        {
+          "id": 35408,
+          "name": "Technology",
+          "isCustom": false
+        }
+      ],
       "tags": {
         "tagList": []
       },
