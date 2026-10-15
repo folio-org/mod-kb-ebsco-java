@@ -3,7 +3,7 @@
 * Drop `visibilityData` field from packages request/response ([MODKBEKBJ-835](https://folio-org.atlassian.net/browse/MODKBEKBJ-835))
 
 ### New APIs versions
-* Provides `eholdings v5.0`
+* Provides `eholdings v5.1`
 * Requires `API_NAME vX.Y`
 
 ### Features
@@ -15,6 +15,7 @@
 * Sanitize HTML content for the package description field ([MODKBEKBJ-860](https://folio-org.atlassian.net/browse/MODKBEKBJ-860))
 * Validate blank package url and remove invalid format checks ([MODKBEKBJ-863](https://folio-org.atlassian.net/browse/MODKBEKBJ-863))
 * Add managed and custom subjects to package detail record ([MODKBEKBJ-853](https://folio-org.atlassian.net/browse/MODKBEKBJ-853))
+* Add subjects (major headings) facet and `filter[subject]` to packages search ([MODKBEKBJ-850](https://folio-org.atlassian.net/browse/MODKBEKBJ-850))
 
 ### Bug fixes
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))

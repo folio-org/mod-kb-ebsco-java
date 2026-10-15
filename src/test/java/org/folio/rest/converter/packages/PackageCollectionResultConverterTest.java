@@ -7,9 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.folio.holdingsiq.model.Facets;
 import org.folio.holdingsiq.model.Packages;
+import org.folio.holdingsiq.model.SubjectFacet;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.rest.jaxrs.model.AccessType;
 import org.folio.rest.jaxrs.model.PackageCollection;
@@ -77,5 +80,35 @@ class PackageCollectionResultConverterTest {
 
     assertTrue(item.getIncluded().isEmpty());
     assertNull(item.getRelationships().getAccessType());
+  }
+
+  @Test
+  void shouldMapSubjectFacetsWhenFacetsArePresent() {
+    var packages = readJsonFile(PACKAGES_FIXTURE, Packages.class).toBuilder()
+      .facets(Facets.builder()
+        .subjects(List.of(
+          new SubjectFacet(1, null, "BISAC", "Science", 10),
+          new SubjectFacet(2, 1, "BISAC", "Genetics", 4)))
+        .build())
+      .build();
+    var result = new PackageCollectionResult(packages, Collections.emptyList());
+
+    var packageCollection = conversionService.convert(result, PackageCollection.class);
+
+    assertNotNull(packageCollection);
+    assertNotNull(packageCollection.getFacets());
+    assertEquals(1, packageCollection.getFacets().getSubjects().size());
+    assertEquals("Science", packageCollection.getFacets().getSubjects().getFirst().getName());
+  }
+
+  @Test
+  void shouldNotSetFacetsWhenFacetsAreAbsent() {
+    var packages = readJsonFile(PACKAGES_FIXTURE, Packages.class);
+    var result = new PackageCollectionResult(packages, Collections.emptyList());
+
+    var packageCollection = conversionService.convert(result, PackageCollection.class);
+
+    assertNotNull(packageCollection);
+    assertNull(packageCollection.getFacets());
   }
 }

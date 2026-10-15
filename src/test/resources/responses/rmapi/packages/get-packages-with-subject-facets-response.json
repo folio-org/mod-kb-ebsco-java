@@ -1,0 +1,54 @@
+{
+  "totalResults": 1,
+  "packagesList": [
+    {
+      "listId": 3964,
+      "packageName": "TEST_PACKAGE_NAME",
+      "isCustom": true,
+      "vendorId": 19,
+      "vendorName": "TEST_VENDOR_NAME",
+      "titleCount": 5,
+      "isSelected": true,
+      "visibility": [
+        {
+          "category": "PF",
+          "hidden": false,
+          "reason": "Hidden by customer"
+        }
+      ],
+      "selectedCount": 5,
+      "isTokenNeeded": false,
+      "contentType": "OnlineReference",
+      "customCoverage": {
+        "beginCoverage": "",
+        "endCoverage": ""
+      },
+      "packageType": "Custom"
+    }
+  ],
+  "facets": {
+    "subjects": [
+      {
+        "id": 2,
+        "parentId": 1,
+        "schema": "BISAC",
+        "name": "Genetics",
+        "count": 4
+      },
+      {
+        "id": 3,
+        "parentId": null,
+        "schema": "BISAC",
+        "name": "History",
+        "count": 20
+      },
+      {
+        "id": 1,
+        "parentId": null,
+        "schema": "BISAC",
+        "name": "Science",
+        "count": 10
+      }
+    ]
+  }
+}

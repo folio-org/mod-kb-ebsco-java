@@ -110,6 +110,8 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     "responses/rmapi/packages/get-packages-response.json";
   private static final String GET_PACKAGES_BY_PROVIDER_RESPONSE =
     "responses/rmapi/packages/get-packages-by-provider-id.json";
+  private static final String GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE =
+    "responses/rmapi/packages/get-packages-with-subject-facets-response.json";
   private static final String GET_PACKAGE_PROVIDER_RESPONSE =
     "responses/rmapi/packages/get-package-provider-by-id.json";
   private static final String POST_PACKAGE_CREATED_RESPONSE =
@@ -213,6 +215,45 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     var actual = getWithOk(packagesPath() + "?q=American&filter[type]=abstractandindex&count=5")
       .as(PackageCollection.class);
     assertEquals(expected, actual);
+  }
+
+  @Test
+  void shouldReturnSubjectFacetsAndSendSubjectFilterToRmApi() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE));
+
+    var actual = getWithOk(packagesPath() + "?q=foo&filter[subject]=1&filter[subject]=2")
+      .as(PackageCollection.class);
+
+    var subjects = actual.getFacets().getSubjects();
+    assertEquals(2, subjects.size());
+    assertEquals(3, subjects.get(0).getId());
+    assertEquals("History", subjects.get(0).getName());
+    assertEquals(20, subjects.get(0).getCount());
+    assertEquals(1, subjects.get(1).getId());
+    assertEquals("Science", subjects.get(1).getName());
+    assertEquals(10, subjects.get(1).getCount());
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("facetstoinclude", WireMock.equalTo("subject"))
+      .withQueryParam("subjectfilter", WireMock.equalTo("1,2")));
+  }
+
+  @Test
+  void shouldNotRequestSubjectFacetsWhenNoSearchOrFilterIsApplied() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_BY_PROVIDER_RESPONSE));
+
+    var actual = getWithOk(packagesPath()).as(PackageCollection.class);
+
+    assertNull(actual.getFacets());
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("facetstoinclude", WireMock.absent())
+      .withQueryParam("subjectfilter", WireMock.absent()));
+  }
+
+  @Test
+  void shouldReturn400OnNonNumericFilterSubject() {
+    var response = getWithStatus(packagesPath() + "?filter[subject]=abc", SC_BAD_REQUEST).asString();
+
+    assertTrue(response.contains("Invalid Query Parameter for filter[subject]"));
   }
 
   @Test

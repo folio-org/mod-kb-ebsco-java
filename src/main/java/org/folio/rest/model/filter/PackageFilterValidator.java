@@ -7,6 +7,7 @@ import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 import static org.folio.rest.util.RestConstants.FILTER_VISIBILITY_MAPPING;
 import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.folio.holdingsiq.model.PackageSearchField;
@@ -28,6 +29,8 @@ public final class PackageFilterValidator implements FilterValidator<PackageReco
   static final String INVALID_FILTER_VISIBILITY_PARAMETER_MESSAGE = "Invalid Query Parameter for filter[visibility]";
   static final String INVALID_FILTER_SELECTED_PARAMETER_MESSAGE =
     "Invalid Query Parameter for filter[selected]";
+  static final String INVALID_FILTER_SUBJECT_PARAMETER_MESSAGE =
+    "Invalid Query Parameter for filter[subject]: only numeric subject ids are supported";
 
   private static final List<FilterValidatorLogic<PackageRecordFilter>> VALIDATORS = List.of(
     of(PackageRecordFilter::getSort, PackageFilterValidator::isSortValid, INVALID_SORT_PARAMETER_MESSAGE),
@@ -54,14 +57,24 @@ public final class PackageFilterValidator implements FilterValidator<PackageReco
         || isNotEmpty(filter.getFilterAccessType())) {
       return;
     }
-    var failMessages = VALIDATORS.stream()
+    var failMessages = new ArrayList<>(VALIDATORS.stream()
       .map(logic -> validate(filter, logic))
       .filter(Optional::isPresent)
       .map(Optional::get)
-      .toList();
+      .toList());
+    if (!isFilterSubjectValid(filter.getFilterSubject())) {
+      failMessages.add(INVALID_FILTER_SUBJECT_PARAMETER_MESSAGE);
+    }
     if (!failMessages.isEmpty()) {
       throw new QueryParamsValidationException(failMessages);
     }
+  }
+
+  private static boolean isFilterSubjectValid(List<String> filterSubject) {
+    if (filterSubject == null) {
+      return true;
+    }
+    return filterSubject.stream().allMatch(subject -> subject != null && subject.matches("\\d{1,9}"));
   }
 
   private static boolean isFilterFreeAccessValid(String filterFreeAccess) {
