@@ -48,6 +48,14 @@ types:
             - true
         example: "true"
         required: false
+      filter[subject]:
+        displayName: Subject
+        type: string[]
+        description: |
+          Filter to narrow down results based on subject ids (major headings).
+          Only numeric subject ids are supported (for example 26224); the parameter is repeatable (OR semantics).
+          Packages that have any of the specified subjects are returned.
+        required: false
     responses:
       200:
         description: OK

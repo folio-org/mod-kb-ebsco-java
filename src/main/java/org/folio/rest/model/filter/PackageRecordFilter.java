@@ -1,6 +1,9 @@
 package org.folio.rest.model.filter;
 
 import static java.util.Arrays.asList;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +26,7 @@ import org.folio.rest.util.RestConstants;
 public class PackageRecordFilter implements Filter {
 
   private static final FilterValidator<PackageRecordFilter> VALIDATOR = new PackageFilterValidator();
+  private static final String ALL_FILTER_VALUE = "all";
 
   String query;
   String queryField;
@@ -40,6 +44,8 @@ public class PackageRecordFilter implements Filter {
   int count;
   List<String> filterTags;
   List<String> filterAccessType;
+  List<String> filterSubject;
+  boolean includeSubjectFacet;
 
   public static PackageRecordFilterBuilder builder() {
     return new PackageRecordFilterBuilder() {
@@ -104,6 +110,24 @@ public class PackageRecordFilter implements Filter {
       .filterType(getPackageFilterType().orElse(null))
       .filterPackageFreeAccess(getPackageFilterFreeAccess().orElse(null))
       .filterVisibility(getPackageFilterVisibility().orElse(null))
+      .includeSubjectFacet(includeSubjectFacet && isSearchOrFilterApplied())
+      .filterSubjectIds(parseSubjectIds())
       .build();
+  }
+
+  private List<Integer> parseSubjectIds() {
+    return isEmpty(filterSubject) ? null : filterSubject.stream().map(Integer::valueOf).toList();
+  }
+
+  private boolean isSearchOrFilterApplied() {
+    return isNotBlank(query)
+           || isNotEmpty(filterSubject)
+           || isFilterApplied(filterType)
+           || isFilterApplied(filterSelected)
+           || isNotBlank(filterFreeAccess);
+  }
+
+  private static boolean isFilterApplied(String filterValue) {
+    return isNotBlank(filterValue) && !ALL_FILTER_VALUE.equalsIgnoreCase(filterValue);
   }
 }

@@ -1,15 +1,18 @@
 package org.folio.rest.converter.packages;
 
+import static java.util.Objects.isNull;
 import static org.folio.common.ListUtils.mapItems;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.folio.holdingsiq.model.Facets;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackageId;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.repository.packages.DbPackage;
 import org.folio.rest.jaxrs.model.AccessType;
+import org.folio.rest.jaxrs.model.FacetsDto;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
@@ -27,12 +30,15 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
 
   private final Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
   private final Converter<DbAccessType, AccessType> accessTypeConverter;
+  private final Converter<Facets, FacetsDto> facetsConverter;
 
   public PackageCollectionResultConverter(
     Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter,
-    Converter<DbAccessType, AccessType> accessTypeConverter) {
+    Converter<DbAccessType, AccessType> accessTypeConverter,
+    Converter<Facets, FacetsDto> facetsConverter) {
     this.packageCollectionItemConverter = packageCollectionItemConverter;
     this.accessTypeConverter = accessTypeConverter;
+    this.facetsConverter = facetsConverter;
   }
 
   @Override
@@ -50,8 +56,11 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
         return item;
       });
 
+    var facetsDto = isNull(packages.getFacets()) ? null : facetsConverter.convert(packages.getFacets());
+
     return new PackageCollection()
       .withJsonapi(RestConstants.JSONAPI)
+      .withFacets(facetsDto)
       .withMeta(new MetaTotalResults().withTotalResults(packages.getTotalResults()))
       .withData(packageList);
   }

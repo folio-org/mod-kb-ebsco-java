@@ -131,7 +131,8 @@ class EholdingsPackagesImplTest {
 
   @Test
   void shouldResolveCustomProviderIdWhenFilterCustomIsTrue() {
-    var filter = PackageRecordFilter.builder().filterCustom("true").sort("relevance").page(1).count(25).build();
+    var filter = PackageRecordFilter.builder().filterCustom("true").includeSubjectFacet(true).sort("relevance")
+      .page(1).count(25).build();
     when(packageService.getCustomProviderIdAndRetrievePackages(filter, context)).thenReturn(completedFuture(null));
 
     invokeGetEholdingsPackages(filter);
@@ -143,13 +144,28 @@ class EholdingsPackagesImplTest {
 
   @Test
   void shouldRetrieveAllPackagesWhenFilterCustomIsNotSet() {
-    var filter = PackageRecordFilter.builder().sort("relevance").page(1).count(25).build();
+    var filter = PackageRecordFilter.builder().includeSubjectFacet(true).sort("relevance").page(1).count(25).build();
     when(packageService.retrievePackages(null, filter, context)).thenReturn(completedFuture(null));
 
     invokeGetEholdingsPackages(filter);
 
     captureRequestAction().apply(context);
     verify(packageService).retrievePackages(null, filter, context);
+  }
+
+  @Test
+  void shouldPassFilterSubjectToPackageRecordFilter() {
+    var filter = PackageRecordFilter.builder().query("foo").filterSubject(List.of("1", "2")).includeSubjectFacet(true)
+      .sort("relevance").page(1).count(25).build();
+    when(packageService.retrievePackages(any(), any(), any())).thenReturn(completedFuture(null));
+
+    invokeGetEholdingsPackages(filter);
+
+    captureRequestAction().apply(context);
+    var filterCaptor = ArgumentCaptor.forClass(PackageRecordFilter.class);
+    verify(packageService).retrievePackages(eq(null), filterCaptor.capture(), eq(context));
+    assertEquals(List.of("1", "2"), filterCaptor.getValue().getFilterSubject());
+    assertEquals(true, filterCaptor.getValue().isIncludeSubjectFacet());
   }
 
   @Test
@@ -317,9 +333,9 @@ class EholdingsPackagesImplTest {
   }
 
   private void invokeGetEholdingsPackages(PackageRecordFilter filter) {
-    impl.getEholdingsPackages(filter.getFilterCustom(), filter.getQuery(), filter.getQueryField(),
-      filter.getQueryType(), filter.isHighlight(), filter.getFilterSelected(), filter.getFilterType(),
-      filter.getFilterVisibility(), filter.getFilterFreeAccess(), filter.getFilterTags(),
+    impl.getEholdingsPackages(filter.getFilterCustom(), filter.getFilterSubject(), filter.getQuery(),
+      filter.getQueryField(), filter.getQueryType(), filter.isHighlight(), filter.getFilterSelected(),
+      filter.getFilterType(), filter.getFilterVisibility(), filter.getFilterFreeAccess(), filter.getFilterTags(),
       filter.getFilterAccessType(), filter.getSort(), filter.getPage(), filter.getCount(), OKAPI_HEADERS,
       asyncResultHandler, null);
   }
