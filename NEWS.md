@@ -15,6 +15,7 @@
 * Sanitize HTML content for the package description field ([MODKBEKBJ-860](https://folio-org.atlassian.net/browse/MODKBEKBJ-860))
 * Validate blank package url and remove invalid format checks ([MODKBEKBJ-863](https://folio-org.atlassian.net/browse/MODKBEKBJ-863))
 * Add managed and custom subjects to package detail record ([MODKBEKBJ-853](https://folio-org.atlassian.net/browse/MODKBEKBJ-853))
+* Support visibleSomewhere and hiddenSomewhere for package visibility filter ([MODKBEKBJ-865](https://folio-org.atlassian.net/browse/MODKBEKBJ-865))
 
 ### Bug fixes
 * Fix offset handling when retrieving holdings from HoldingsIQ. ([MODKBEKBJ-825](https://folio-org.atlassian.net/browse/MODKBEKBJ-825))

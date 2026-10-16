@@ -34,9 +34,11 @@ public final class RestConstants {
       "onlinereference", "streamingmedia", "mixedcontent");
 
   public static final Map<String, PackageFilterVisibility> FILTER_VISIBILITY_MAPPING =
-    Map.of("visibleInPF", PackageFilterVisibility.VISIBLE_IN_PF,
+    Map.of("visibleSomewhere", PackageFilterVisibility.VISIBLE_SOMEWHERE,
+      "visibleInPF", PackageFilterVisibility.VISIBLE_IN_PF,
       "visibleInFTF", PackageFilterVisibility.VISIBLE_IN_FTF,
       "visibleInMARC", PackageFilterVisibility.INCLUDED_IN_MARC,
+      "hiddenSomewhere", PackageFilterVisibility.HIDDEN_SOMEWHERE,
       "hiddenInPF", PackageFilterVisibility.HIDDEN_IN_PF,
       "hiddenInFTF", PackageFilterVisibility.HIDDEN_IN_FTF,
       "hiddenInMARC", PackageFilterVisibility.EXCLUDED_FROM_MARC);
