@@ -12,12 +12,12 @@ import org.folio.holdingsiq.model.PackageId;
 import org.folio.repository.accesstypes.DbAccessType;
 import org.folio.repository.packages.DbPackage;
 import org.folio.rest.jaxrs.model.AccessType;
-import org.folio.rest.jaxrs.model.FacetsDto;
 import org.folio.rest.jaxrs.model.HasOneRelationship;
 import org.folio.rest.jaxrs.model.MetaDataIncluded;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackageFacetsDto;
 import org.folio.rest.jaxrs.model.RelationshipData;
 import org.folio.rest.jaxrs.model.Tags;
 import org.folio.rest.util.RestConstants;
@@ -30,12 +30,12 @@ public class PackageCollectionResultConverter implements Converter<PackageCollec
 
   private final Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
   private final Converter<DbAccessType, AccessType> accessTypeConverter;
-  private final Converter<Facets, FacetsDto> facetsConverter;
+  private final Converter<Facets, PackageFacetsDto> facetsConverter;
 
   public PackageCollectionResultConverter(
     Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter,
     Converter<DbAccessType, AccessType> accessTypeConverter,
-    Converter<Facets, FacetsDto> facetsConverter) {
+    Converter<Facets, PackageFacetsDto> facetsConverter) {
     this.packageCollectionItemConverter = packageCollectionItemConverter;
     this.accessTypeConverter = accessTypeConverter;
     this.facetsConverter = facetsConverter;

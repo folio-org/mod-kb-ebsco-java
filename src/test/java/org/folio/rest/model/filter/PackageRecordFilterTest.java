@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.folio.properties.common.SearchProperties;
@@ -23,14 +22,16 @@ class PackageRecordFilterTest {
   static List<Object[]> facetRequestCases() {
     return List.of(
       new Object[] {"no query or filters", builder(), false},
-      new Object[] {"filterType=all", builder().filterType("all"), false},
+      new Object[] {"blank query", builder().query(" "), false},
+      new Object[] {"default filterType (all)", builder().filterType("all"), false},
       new Object[] {"query", builder().query("foo"), true},
-      new Object[] {"filterType=ebook", builder().filterType("ebook"), true},
-      new Object[] {"filterSelected=true", builder().filterSelected("true"), true},
-      new Object[] {"filterFreeAccess=public", builder().filterFreeAccess("public"), true},
+      new Object[] {"filterType", builder().filterType("ebook"), true},
+      new Object[] {"filterSelected", builder().filterSelected("true"), true},
+      new Object[] {"filterFreeAccess", builder().filterFreeAccess("public"), true},
       new Object[] {"filterSubject", builder().filterSubject(List.of("1")), true},
-      new Object[] {"includeSubjectFacet=false with query",
-        builder().query("foo").includeSubjectFacet(false), false}
+      new Object[] {"filterVisibility", builder().filterVisibility("visibleInPF"), true},
+      new Object[] {"filterCustom", builder().filterCustom("true"), true},
+      new Object[] {"includeSubjectFacet=false with query", builder().query("foo").includeSubjectFacet(false), false}
     );
   }
 
@@ -44,21 +45,62 @@ class PackageRecordFilterTest {
 
   @Test
   void shouldConvertFilterSubjectToIntegerIds() {
-    var filter = builder().filterSubject(List.of("1", "22")).build();
+    var clientFilter = builder().filterSubject(List.of("1", "22")).build().toClientFilter(SEARCH_PROPERTIES);
 
-    assertEquals(List.of(1, 22), filter.toClientFilter(SEARCH_PROPERTIES).filterSubjectIds());
+    assertEquals(List.of(1, 22), clientFilter.filterSubjectIds());
   }
 
   @Test
-  void shouldReturnNullSubjectIdsWhenFilterSubjectIsNullOrEmpty() {
-    assertNull(builder().build().toClientFilter(SEARCH_PROPERTIES).filterSubjectIds());
-    assertNull(builder().filterSubject(new ArrayList<>()).build().toClientFilter(SEARCH_PROPERTIES)
-      .filterSubjectIds());
+  void shouldPassNullSubjectIdsToClientFilterWhenNotProvided() {
+    var clientFilter = builder().build().toClientFilter(SEARCH_PROPERTIES);
+
+    assertNull(clientFilter.filterSubjectIds());
   }
 
   @Test
-  void shouldFailValidationWhenFilterSubjectIsNotNumeric() {
-    var builder = builder().filterSubject(Arrays.asList("1", "abc"));
+  void shouldPassSubjectFacetCountToClientFilter() {
+    var clientFilter = builder().subjectFacetCount(50).build().toClientFilter(SEARCH_PROPERTIES);
+
+    assertEquals(50, clientFilter.subjectFacetCount());
+  }
+
+  @Test
+  void shouldPassNullSubjectFacetCountToClientFilterWhenNotProvided() {
+    var clientFilter = builder().build().toClientFilter(SEARCH_PROPERTIES);
+
+    assertNull(clientFilter.subjectFacetCount());
+  }
+
+  @Test
+  void shouldBeTagsFilterWhenOnlyTagsAreProvided() {
+    assertTrue(builder().filterTags(List.of("tag")).build().isTagsFilter());
+  }
+
+  @Test
+  void shouldNotBeTagsFilterWhenFilterSubjectIsProvidedWithTags() {
+    var filter = builder().filterTags(List.of("tag")).filterSubject(List.of("1")).build();
+
+    assertFalse(filter.isTagsFilter());
+  }
+
+  @Test
+  void shouldNotBeAccessTypeFilterWhenFilterSubjectIsProvidedWithAccessType() {
+    var filter = builder().filterAccessType(List.of("type")).filterSubject(List.of("1")).build();
+
+    assertFalse(filter.isAccessTypeFilter());
+  }
+
+  @Test
+  void shouldValidateFilterSubjectWhenProvidedWithTags() {
+    var builder = builder().filterTags(List.of("tag")).filterSubject(List.of("abc"));
+
+    assertThrows(QueryParamsValidationException.class, builder::build);
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("invalidFilterSubjectCases")
+  void shouldFailValidationWhenFilterSubjectIsNotNumeric(String name, List<String> filterSubject) {
+    var builder = builder().filterSubject(filterSubject);
 
     var exception = assertThrows(QueryParamsValidationException.class, builder::build);
 
@@ -66,11 +108,14 @@ class PackageRecordFilterTest {
       .contains(PackageFilterValidator.INVALID_FILTER_SUBJECT_PARAMETER_MESSAGE));
   }
 
-  @Test
-  void shouldPassValidationWhenFilterSubjectIsNumeric() {
-    var filter = builder().filterSubject(List.of("26224")).build();
-
-    assertFalse(filter.getFilterSubject().isEmpty());
+  static List<Object[]> invalidFilterSubjectCases() {
+    return List.of(
+      new Object[] {"non-numeric", List.of("1", "abc")},
+      new Object[] {"empty", List.of("")},
+      new Object[] {"negative", List.of("-1")},
+      new Object[] {"too large for integer", List.of("12345678901")},
+      new Object[] {"null element", Arrays.asList("1", null)}
+    );
   }
 
   private static PackageRecordFilterBuilder builder() {

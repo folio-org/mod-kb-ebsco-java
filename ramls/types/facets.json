@@ -13,14 +13,6 @@
         "type": "object",
         "$ref": "packages/packageFacet.json"
       }
-    },
-    "subjects": {
-      "type": "array",
-      "description": "Subject (major heading) facets",
-      "items": {
-        "type": "object",
-        "$ref": "packages/subjectFacet.json"
-      }
     }
   }
 }

@@ -21,7 +21,7 @@ public sealed interface FilterValidator<F extends Filter> permits PackageFilterV
     }
   }
 
-  default Optional<String> validate(@NonNull F filter, @NonNull FilterValidatorLogic<F> logic) {
+  default <P> Optional<String> validate(@NonNull F filter, @NonNull FilterValidatorLogic<F, P> logic) {
     var param = logic.extractor().apply(filter);
     if (logic.validator().test(param)) {
       return Optional.empty();

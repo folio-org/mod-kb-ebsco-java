@@ -17,7 +17,7 @@
     "facets": {
       "type": "object",
       "description": "Facets for a package collection",
-      "$ref": "../facets.json"
+      "$ref": "packageFacets.json"
     },
     "meta": {
       "type": "object",

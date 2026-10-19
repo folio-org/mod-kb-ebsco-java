@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.folio.common.ListUtils.mapItemsNullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +27,6 @@ import org.folio.rest.util.RestConstants;
 public class PackageRecordFilter implements Filter {
 
   private static final FilterValidator<PackageRecordFilter> VALIDATOR = new PackageFilterValidator();
-  private static final String ALL_FILTER_VALUE = "all";
 
   String query;
   String queryField;
@@ -45,6 +45,7 @@ public class PackageRecordFilter implements Filter {
   List<String> filterTags;
   List<String> filterAccessType;
   List<String> filterSubject;
+  Integer subjectFacetCount;
   boolean includeSubjectFacet;
 
   public static PackageRecordFilterBuilder builder() {
@@ -89,7 +90,7 @@ public class PackageRecordFilter implements Filter {
 
   @Override
   public List<String> searchCriteriaValues() {
-    return asList(query, filterCustom, filterSelected);
+    return asList(query, filterCustom, filterSelected, isEmpty(filterSubject) ? null : String.join(",", filterSubject));
   }
 
   public Integer parseProviderId() {
@@ -111,23 +112,18 @@ public class PackageRecordFilter implements Filter {
       .filterPackageFreeAccess(getPackageFilterFreeAccess().orElse(null))
       .filterVisibility(getPackageFilterVisibility().orElse(null))
       .includeSubjectFacet(includeSubjectFacet && isSearchOrFilterApplied())
-      .filterSubjectIds(parseSubjectIds())
+      .subjectFacetCount(subjectFacetCount)
+      .filterSubjectIds(mapItemsNullable(filterSubject, Integer::valueOf))
       .build();
-  }
-
-  private List<Integer> parseSubjectIds() {
-    return isEmpty(filterSubject) ? null : filterSubject.stream().map(Integer::valueOf).toList();
   }
 
   private boolean isSearchOrFilterApplied() {
     return isNotBlank(query)
            || isNotEmpty(filterSubject)
-           || isFilterApplied(filterType)
-           || isFilterApplied(filterSelected)
-           || isNotBlank(filterFreeAccess);
-  }
-
-  private static boolean isFilterApplied(String filterValue) {
-    return isNotBlank(filterValue) && !ALL_FILTER_VALUE.equalsIgnoreCase(filterValue);
+           || getPackageFilterType().filter(type -> type != PackageFilterType.ALL).isPresent()
+           || isNotBlank(filterSelected)
+           || isNotBlank(filterFreeAccess)
+           || isNotBlank(filterVisibility)
+           || isNotBlank(filterCustom);
   }
 }

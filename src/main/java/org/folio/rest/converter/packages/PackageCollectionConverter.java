@@ -7,10 +7,10 @@ import java.util.List;
 import org.folio.holdingsiq.model.Facets;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.Packages;
-import org.folio.rest.jaxrs.model.FacetsDto;
 import org.folio.rest.jaxrs.model.MetaTotalResults;
 import org.folio.rest.jaxrs.model.PackageCollection;
 import org.folio.rest.jaxrs.model.PackageCollectionItem;
+import org.folio.rest.jaxrs.model.PackageFacetsDto;
 import org.folio.rest.util.RestConstants;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -19,10 +19,10 @@ import org.springframework.stereotype.Component;
 public class PackageCollectionConverter implements Converter<Packages, PackageCollection> {
 
   private final Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter;
-  private final Converter<Facets, FacetsDto> facetsConverter;
+  private final Converter<Facets, PackageFacetsDto> facetsConverter;
 
   public PackageCollectionConverter(Converter<PackageData, PackageCollectionItem> packageCollectionItemConverter,
-                                    Converter<Facets, FacetsDto> facetsConverter) {
+                                    Converter<Facets, PackageFacetsDto> facetsConverter) {
     this.packageCollectionItemConverter = packageCollectionItemConverter;
     this.facetsConverter = facetsConverter;
   }

@@ -99,6 +99,7 @@ class PackageCollectionResultConverterTest {
     assertNotNull(packageCollection.getFacets());
     assertEquals(1, packageCollection.getFacets().getSubjects().size());
     assertEquals("Science", packageCollection.getFacets().getSubjects().getFirst().getName());
+    assertEquals(10, packageCollection.getFacets().getSubjects().getFirst().getCount());
   }
 
   @Test

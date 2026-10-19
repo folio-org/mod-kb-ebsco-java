@@ -73,12 +73,12 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
   @Override
   @Validate
   @HandleValidationErrors
-  public void getEholdingsPackages(String filterCustom, List<String> filterSubject, String q, String queryField,
-                                   String queryType, boolean highlight, String filterSelected, String filterType,
-                                   String filterVisibility, String filterFreeAccess, List<String> filterTags,
-                                   List<String> filterAccessType, String sort, int page, int count,
-                                   Map<String, String> okapiHeaders, Handler<AsyncResult<Response>> asyncResultHandler,
-                                   Context vertxContext) {
+  public void getEholdingsPackages(String filterCustom, List<String> filterSubject, int subjectFacetCount, String q,
+                                   String queryField, String queryType, boolean highlight, String filterSelected,
+                                   String filterType, String filterVisibility, String filterFreeAccess,
+                                   List<String> filterTags, List<String> filterAccessType, String sort, int page,
+                                   int count, Map<String, String> okapiHeaders,
+                                   Handler<AsyncResult<Response>> asyncResultHandler, Context vertxContext) {
     var filter = PackageRecordFilter.builder()
       .query(q)
       .queryField(queryField)
@@ -92,6 +92,7 @@ public class EholdingsPackagesImpl implements EholdingsPackages {
       .filterTags(filterTags)
       .filterAccessType(filterAccessType)
       .filterSubject(filterSubject)
+      .subjectFacetCount(subjectFacetCount > 0 ? subjectFacetCount : null)
       .includeSubjectFacet(true)
       .sort(sort)
       .page(page)

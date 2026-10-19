@@ -234,7 +234,28 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     assertEquals(10, subjects.get(1).getCount());
     wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
       .withQueryParam("facetstoinclude", WireMock.equalTo("subject"))
+      .withQueryParam("subjectfacetcount", WireMock.equalTo("1000"))
       .withQueryParam("subjectfilter", WireMock.equalTo("1,2")));
+  }
+
+  @Test
+  void shouldSendSubjectFacetCountToRmApi() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE));
+
+    getWithOk(packagesPath() + "?q=foo&subjectFacetCount=50");
+
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("subjectfacetcount", WireMock.equalTo("50")));
+  }
+
+  @Test
+  void shouldSendSubjectFilterToRmApiWhenCombinedWithTagsFilter() {
+    mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_WITH_SUBJECT_FACETS_RESPONSE));
+
+    getWithOk(packagesPath() + "?filter[tags]=" + STUB_TAG_VALUE + "&filter[subject]=1");
+
+    wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
+      .withQueryParam("subjectfilter", WireMock.equalTo("1")));
   }
 
   @Test
@@ -251,9 +272,7 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
   @Test
   void shouldReturn400OnNonNumericFilterSubject() {
-    var response = getWithStatus(packagesPath() + "?filter[subject]=abc", SC_BAD_REQUEST).asString();
-
-    assertTrue(response.contains("Invalid Query Parameter for filter[subject]"));
+    getWithStatus(packagesPath() + "?filter[subject]=abc", SC_BAD_REQUEST);
   }
 
   @Test

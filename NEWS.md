@@ -3,7 +3,7 @@
 * Drop `visibilityData` field from packages request/response ([MODKBEKBJ-835](https://folio-org.atlassian.net/browse/MODKBEKBJ-835))
 
 ### New APIs versions
-* Provides `eholdings v5.1`
+* Provides `eholdings v5.0`
 * Requires `API_NAME vX.Y`
 
 ### Features

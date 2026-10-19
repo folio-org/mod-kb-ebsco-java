@@ -1,15 +1,14 @@
 package org.folio.rest.model.filter;
 
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.rest.model.filter.FilterValidatorLogic.of;
 import static org.folio.rest.util.RestConstants.FILTER_FREE_ACCESS_MAPPING;
 import static org.folio.rest.util.RestConstants.FILTER_SELECTED_MAPPING;
 import static org.folio.rest.util.RestConstants.FILTER_VISIBILITY_MAPPING;
 import static org.folio.rest.util.RestConstants.SUPPORTED_PACKAGE_FILTER_TYPE_VALUES;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.folio.holdingsiq.model.PackageSearchField;
 import org.folio.holdingsiq.model.SearchType;
 import org.folio.holdingsiq.model.Sort;
@@ -32,7 +31,9 @@ public final class PackageFilterValidator implements FilterValidator<PackageReco
   static final String INVALID_FILTER_SUBJECT_PARAMETER_MESSAGE =
     "Invalid Query Parameter for filter[subject]: only numeric subject ids are supported";
 
-  private static final List<FilterValidatorLogic<PackageRecordFilter>> VALIDATORS = List.of(
+  private static final Pattern SUBJECT_ID_PATTERN = Pattern.compile("\\d{1,9}");
+
+  private static final List<FilterValidatorLogic<PackageRecordFilter, ?>> VALIDATORS = List.of(
     of(PackageRecordFilter::getSort, PackageFilterValidator::isSortValid, INVALID_SORT_PARAMETER_MESSAGE),
     of(PackageRecordFilter::getQueryType, PackageFilterValidator::isQueryTypeValid,
       INVALID_QUERY_TYPE_PARAMETER_MESSAGE),
@@ -48,23 +49,21 @@ public final class PackageFilterValidator implements FilterValidator<PackageReco
     of(PackageRecordFilter::getFilterVisibility, PackageFilterValidator::isFilterVisibilityValid,
       INVALID_FILTER_VISIBILITY_PARAMETER_MESSAGE),
     of(PackageRecordFilter::getFilterFreeAccess, PackageFilterValidator::isFilterFreeAccessValid,
-      INVALID_FILTER_FREE_ACCESS_PARAMETER_MESSAGE)
+      INVALID_FILTER_FREE_ACCESS_PARAMETER_MESSAGE),
+    of(PackageRecordFilter::getFilterSubject, PackageFilterValidator::isFilterSubjectValid,
+      INVALID_FILTER_SUBJECT_PARAMETER_MESSAGE)
   );
 
   @Override
   public void validate(@NonNull PackageRecordFilter filter) {
-    if (isNotEmpty(filter.getFilterTags())
-        || isNotEmpty(filter.getFilterAccessType())) {
+    if (filter.isTagsFilter() || filter.isAccessTypeFilter()) {
       return;
     }
-    var failMessages = new ArrayList<>(VALIDATORS.stream()
+    var failMessages = VALIDATORS.stream()
       .map(logic -> validate(filter, logic))
       .filter(Optional::isPresent)
       .map(Optional::get)
-      .toList());
-    if (!isFilterSubjectValid(filter.getFilterSubject())) {
-      failMessages.add(INVALID_FILTER_SUBJECT_PARAMETER_MESSAGE);
-    }
+      .toList();
     if (!failMessages.isEmpty()) {
       throw new QueryParamsValidationException(failMessages);
     }
@@ -74,7 +73,7 @@ public final class PackageFilterValidator implements FilterValidator<PackageReco
     if (filterSubject == null) {
       return true;
     }
-    return filterSubject.stream().allMatch(subject -> subject != null && subject.matches("\\d{1,9}"));
+    return filterSubject.stream().allMatch(id -> id != null && SUBJECT_ID_PATTERN.matcher(id).matches());
   }
 
   private static boolean isFilterFreeAccessValid(String filterFreeAccess) {

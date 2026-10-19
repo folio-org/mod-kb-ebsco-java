@@ -3,6 +3,8 @@ package org.folio.rest.impl;
 import static io.netty.handler.codec.http.HttpHeaderValues.APPLICATION_JSON;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
@@ -155,8 +157,8 @@ class EholdingsPackagesImplTest {
 
   @Test
   void shouldPassFilterSubjectToPackageRecordFilter() {
-    var filter = PackageRecordFilter.builder().query("foo").filterSubject(List.of("1", "2")).includeSubjectFacet(true)
-      .sort("relevance").page(1).count(25).build();
+    var filter = PackageRecordFilter.builder().query("foo").filterSubject(List.of("1", "2")).subjectFacetCount(50)
+      .includeSubjectFacet(true).sort("relevance").page(1).count(25).build();
     when(packageService.retrievePackages(any(), any(), any())).thenReturn(completedFuture(null));
 
     invokeGetEholdingsPackages(filter);
@@ -165,7 +167,21 @@ class EholdingsPackagesImplTest {
     var filterCaptor = ArgumentCaptor.forClass(PackageRecordFilter.class);
     verify(packageService).retrievePackages(eq(null), filterCaptor.capture(), eq(context));
     assertEquals(List.of("1", "2"), filterCaptor.getValue().getFilterSubject());
-    assertEquals(true, filterCaptor.getValue().isIncludeSubjectFacet());
+    assertEquals(50, filterCaptor.getValue().getSubjectFacetCount());
+    assertTrue(filterCaptor.getValue().isIncludeSubjectFacet());
+  }
+
+  @Test
+  void shouldPassNullSubjectFacetCountWhenNotProvided() {
+    var filter = PackageRecordFilter.builder().includeSubjectFacet(true).sort("relevance").page(1).count(25).build();
+    when(packageService.retrievePackages(any(), any(), any())).thenReturn(completedFuture(null));
+
+    invokeGetEholdingsPackages(filter);
+
+    captureRequestAction().apply(context);
+    var filterCaptor = ArgumentCaptor.forClass(PackageRecordFilter.class);
+    verify(packageService).retrievePackages(eq(null), filterCaptor.capture(), eq(context));
+    assertNull(filterCaptor.getValue().getSubjectFacetCount());
   }
 
   @Test
@@ -333,11 +349,12 @@ class EholdingsPackagesImplTest {
   }
 
   private void invokeGetEholdingsPackages(PackageRecordFilter filter) {
-    impl.getEholdingsPackages(filter.getFilterCustom(), filter.getFilterSubject(), filter.getQuery(),
-      filter.getQueryField(), filter.getQueryType(), filter.isHighlight(), filter.getFilterSelected(),
-      filter.getFilterType(), filter.getFilterVisibility(), filter.getFilterFreeAccess(), filter.getFilterTags(),
-      filter.getFilterAccessType(), filter.getSort(), filter.getPage(), filter.getCount(), OKAPI_HEADERS,
-      asyncResultHandler, null);
+    var subjectFacetCount = filter.getSubjectFacetCount() == null ? 0 : filter.getSubjectFacetCount();
+    impl.getEholdingsPackages(filter.getFilterCustom(), filter.getFilterSubject(), subjectFacetCount,
+      filter.getQuery(), filter.getQueryField(), filter.getQueryType(), filter.isHighlight(),
+      filter.getFilterSelected(), filter.getFilterType(), filter.getFilterVisibility(), filter.getFilterFreeAccess(),
+      filter.getFilterTags(), filter.getFilterAccessType(), filter.getSort(), filter.getPage(), filter.getCount(),
+      OKAPI_HEADERS, asyncResultHandler, null);
   }
 
   private void invokeGetResources(ResourceFilter filter) {

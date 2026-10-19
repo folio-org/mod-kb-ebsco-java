@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Package facets schema",
+  "description": "Facets for a package collection",
+  "javaType": "org.folio.rest.jaxrs.model.PackageFacetsDto",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "subjects": {
+      "type": "array",
+      "description": "Subject (major heading) facets",
+      "items": {
+        "type": "object",
+        "$ref": "subjectFacet.json"
+      }
+    }
+  }
+}
