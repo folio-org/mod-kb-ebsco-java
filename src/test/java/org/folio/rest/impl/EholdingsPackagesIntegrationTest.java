@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.folio.holdingsiq.model.CoverageDates;
 import org.folio.holdingsiq.model.PackageData;
 import org.folio.holdingsiq.model.PackagePut;
@@ -88,6 +89,9 @@ import org.folio.util.TagsTestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
 
@@ -259,20 +263,16 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
   }
 
   @Test
-  void shouldNotRequestSubjectFacetsWhenNoSearchOrFilterIsApplied() {
+  void shouldRequestSubjectFacetsWithoutSearchOrFilterAndReturnNullFacetsWhenAbsent() {
     mockGet(matching(packagesRmApi() + ".*"), readFile(GET_PACKAGES_BY_PROVIDER_RESPONSE));
 
     var actual = getWithOk(packagesPath()).as(PackageCollection.class);
 
     assertNull(actual.getFacets());
     wm.verify(1, getRequestedFor(urlPathEqualTo(packagesRmApi()))
-      .withQueryParam("facetstoinclude", WireMock.absent())
+      .withQueryParam("facetstoinclude", WireMock.equalTo("subject"))
+      .withQueryParam("subjectfacetcount", WireMock.equalTo("1000"))
       .withQueryParam("subjectfilter", WireMock.absent()));
-  }
-
-  @Test
-  void shouldReturn400OnNonNumericFilterSubject() {
-    getWithStatus(packagesPath() + "?filter[subject]=abc", SC_BAD_REQUEST);
   }
 
   @Test
@@ -357,20 +357,12 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
     assertEquals(2, (int) packageCollection.getMeta().getTotalResults());
   }
 
-  @Test
-  void shouldReturn400OnInvalidFilterCustomParameter() {
-    var resourcePath = packagesPath() + "?filter[custom]=test";
-    var response = getWithStatus(resourcePath, SC_BAD_REQUEST).asString();
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("invalidFilterParameters")
+  void shouldReturn400OnInvalidFilterParameter(String name, String queryParam, String expectedMessage) {
+    var response = getWithStatus(packagesPath() + "?" + queryParam, SC_BAD_REQUEST).asString();
 
-    assertTrue(response.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
-  }
-
-  @Test
-  void shouldReturn400OnNotSupportedFilterCustomParameter() {
-    var resourcePath = packagesPath() + "?filter[custom]=false";
-    var response = getWithStatus(resourcePath, SC_BAD_REQUEST).asString();
-
-    assertTrue(response.contains("Invalid Query Parameter for filter[custom]: only 'true' is supported"));
+    assertTrue(response.contains(expectedMessage));
   }
 
   @Test
@@ -1201,6 +1193,16 @@ class EholdingsPackagesIntegrationTest extends IntegrationTestBase {
       .packageId(packageId)
       .vendorId(providerId)
       .build());
+  }
+
+  static Stream<Arguments> invalidFilterParameters() {
+    var customMessage = "Invalid Query Parameter for filter[custom]: only 'true' is supported";
+    var subjectMessage = "Invalid Query Parameter for filter[subject]: only numeric subject ids are supported";
+    return Stream.of(
+      Arguments.of("invalid filter[custom]", "filter[custom]=test", customMessage),
+      Arguments.of("not supported filter[custom]", "filter[custom]=false", customMessage),
+      Arguments.of("non-numeric filter[subject]", "filter[subject]=test", subjectMessage)
+    );
   }
 
   private void setUpPackages(Vertx vertx, String credentialsId) {

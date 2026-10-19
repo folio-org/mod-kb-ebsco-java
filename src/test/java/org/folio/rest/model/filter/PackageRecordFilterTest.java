@@ -19,28 +19,18 @@ class PackageRecordFilterTest {
 
   private static final SearchProperties SEARCH_PROPERTIES = new SearchProperties("contains", "contains", "mark");
 
-  static List<Object[]> facetRequestCases() {
-    return List.of(
-      new Object[] {"no query or filters", builder(), false},
-      new Object[] {"blank query", builder().query(" "), false},
-      new Object[] {"default filterType (all)", builder().filterType("all"), false},
-      new Object[] {"query", builder().query("foo"), true},
-      new Object[] {"filterType", builder().filterType("ebook"), true},
-      new Object[] {"filterSelected", builder().filterSelected("true"), true},
-      new Object[] {"filterFreeAccess", builder().filterFreeAccess("public"), true},
-      new Object[] {"filterSubject", builder().filterSubject(List.of("1")), true},
-      new Object[] {"filterVisibility", builder().filterVisibility("visibleInPF"), true},
-      new Object[] {"filterCustom", builder().filterCustom("true"), true},
-      new Object[] {"includeSubjectFacet=false with query", builder().query("foo").includeSubjectFacet(false), false}
-    );
+  @Test
+  void shouldIncludeSubjectFacetWhenRequestedRegardlessOfFilters() {
+    var clientFilter = builder().build().toClientFilter(SEARCH_PROPERTIES);
+
+    assertTrue(clientFilter.includeSubjectFacet());
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("facetRequestCases")
-  void shouldResolveIncludeSubjectFacet(String name, PackageRecordFilterBuilder builder, boolean expected) {
-    var clientFilter = builder.build().toClientFilter(SEARCH_PROPERTIES);
+  @Test
+  void shouldNotIncludeSubjectFacetWhenNotRequested() {
+    var clientFilter = builder().query("foo").includeSubjectFacet(false).build().toClientFilter(SEARCH_PROPERTIES);
 
-    assertEquals(expected, clientFilter.includeSubjectFacet());
+    assertFalse(clientFilter.includeSubjectFacet());
   }
 
   @Test

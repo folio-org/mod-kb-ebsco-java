@@ -2,8 +2,6 @@ package org.folio.rest.model.filter;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.folio.common.ListUtils.mapItemsNullable;
 
 import java.util.List;
@@ -111,19 +109,9 @@ public class PackageRecordFilter implements Filter {
       .filterType(getPackageFilterType().orElse(null))
       .filterPackageFreeAccess(getPackageFilterFreeAccess().orElse(null))
       .filterVisibility(getPackageFilterVisibility().orElse(null))
-      .includeSubjectFacet(includeSubjectFacet && isSearchOrFilterApplied())
+      .includeSubjectFacet(includeSubjectFacet)
       .subjectFacetCount(subjectFacetCount)
       .filterSubjectIds(mapItemsNullable(filterSubject, Integer::valueOf))
       .build();
-  }
-
-  private boolean isSearchOrFilterApplied() {
-    return isNotBlank(query)
-           || isNotEmpty(filterSubject)
-           || getPackageFilterType().filter(type -> type != PackageFilterType.ALL).isPresent()
-           || isNotBlank(filterSelected)
-           || isNotBlank(filterFreeAccess)
-           || isNotBlank(filterVisibility)
-           || isNotBlank(filterCustom);
   }
 }
